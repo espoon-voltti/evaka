@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import 'react'
 import type { LatLngExpression } from 'leaflet'
+import React from 'react'
 
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -243,6 +243,12 @@ interface BaseFeatureFlags {
    * Note the corresponding backend environment variable feature flag.
    */
   forceUnpublishDocumentTemplate?: boolean
+
+  /**
+   * Create absences for preschool/preparatory/5-year-old children automatically
+   * when adding reservations.
+   */
+  automaticFixedScheduleAbsences?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

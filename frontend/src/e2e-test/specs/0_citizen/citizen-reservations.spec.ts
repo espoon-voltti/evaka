@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import zip from 'lodash/zip'
+
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -29,6 +32,7 @@ import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
+  getAbsences,
   resetServiceState
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -38,21 +42,23 @@ import { enduserLogin } from '../../utils/user'
 
 const e: EnvType[] = ['desktop', 'mobile']
 const today = LocalDate.of(2022, 1, 5)
-let page: Page
 
 async function openCalendarPage(
   envType: EnvType,
-  options?: { featureFlags?: DeepPartial<FeatureFlags> }
+  options?: {
+    featureFlags?: DeepPartial<FeatureFlags>
+    mockedTime?: HelsinkiDateTime
+  }
 ) {
   const viewport =
     envType === 'mobile'
       ? { width: 375, height: 812 }
       : { width: 1920, height: 1080 }
 
-  page = await Page.open({
+  const page = await Page.open({
     viewport,
-    screen: viewport,
-    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0)),
+    mockedTime:
+      options?.mockedTime ?? today.toHelsinkiDateTime(LocalTime.of(12, 0)),
     citizenCustomizations: {
       featureFlags: options?.featureFlags
     }
@@ -76,14 +82,18 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserChildFixturePorriHatterRestricted
     ]
-    const placementFixtures = children.map((child) =>
-      createDaycarePlacementFixture(
-        uuidv4(),
-        child.id,
-        fixtures.daycareFixture.id,
-        today,
-        today.addYears(1)
-      )
+    const placementTypes = ['DAYCARE', 'PRESCHOOL_DAYCARE', 'DAYCARE'] as const
+
+    const placementFixtures = zip(children, placementTypes).map(
+      ([child, placementType]) =>
+        createDaycarePlacementFixture(
+          uuidv4(),
+          child!.id,
+          fixtures.daycareFixture.id,
+          today,
+          today.addYears(1),
+          placementType
+        )
     )
     await createDaycarePlacements({ body: placementFixtures })
     await createDefaultServiceNeedOptions()
@@ -275,6 +285,71 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await dayView.assertNoReservation(children[0].id)
     await dayView.assertReservations(children[1].id, [reservation1])
     await dayView.assertNoReservation(children[2].id)
+  })
+
+  test('Citizen creates a part-day reservation for a preschooler from day view', async () => {
+    const calendarPage = await openCalendarPage(env)
+
+    const reservationDay = today.addDays(14)
+
+    const reservation1 = {
+      startTime: '09:00',
+      endTime: '13:00'
+    }
+    const childIds = children.map((child) => child.id)
+
+    await calendarPage.assertDay(reservationDay, [
+      { childIds, text: 'Ilmoitus puuttuu' }
+    ])
+
+    const dayView = await calendarPage.openDayView(reservationDay)
+
+    expect(children.length).toEqual(3)
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertNoReservation(children[1].id)
+    await dayView.assertNoReservation(children[2].id)
+
+    const editor = await dayView.edit()
+    const child = editor.childSection(children[1].id)
+    await child.reservationStart.fill(reservation1.startTime)
+    await child.reservationEnd.fill(reservation1.endTime)
+    await editor.saveButton.click()
+
+    await dayView.assertNoReservation(children[0].id)
+    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertNoReservation(children[2].id)
+
+    // There's no way for the citizen to see that an absence was created, so use DevApi for that
+    const absences = await getAbsences({
+      childId: children[1].id,
+      date: reservationDay
+    })
+    expect(absences.map((a) => a.category)).toEqual(['BILLABLE'])
+
+    await dayView.close()
+    await calendarPage.assertDay(reservationDay, [
+      { childIds: [children[0].id, children[2].id], text: 'Ilmoitus puuttuu' },
+      { childIds: [children[1].id], text: '09:00–13:00' }
+    ])
+
+    // When the day with a part-day absence is in the past and the child has no attendances,
+    // it should be shown as an absence
+    const calendarPageInFuture = await openCalendarPage(env, {
+      mockedTime: reservationDay
+        .addDays(1)
+        .toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+
+    await calendarPageInFuture.assertDay(reservationDay, [
+      { childIds: [children[0].id, children[2].id], text: 'Ilmoitus puuttuu' },
+      { childIds: [children[1].id], text: 'Poissa' }
+    ])
+
+    const dayViewInFuture =
+      await calendarPageInFuture.openDayView(reservationDay)
+    await dayViewInFuture.assertNoReservation(children[0].id)
+    await dayViewInFuture.assertAbsence(children[1].id, 'Poissa')
+    await dayViewInFuture.assertNoReservation(children[2].id)
   })
 
   test('If absence modal is opened from day view, that day is filled by default', async () => {

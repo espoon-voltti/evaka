@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
+import { featureFlags } from 'lib-customizations/employee'
 
 import {
   acceptPlacementProposal,
@@ -185,7 +186,12 @@ export const unitGroupDetailsQuery = query({
 })
 
 export const postReservationsMutation = mutation({
-  api: postReservations,
+  api: (arg: Pick<Arg0<typeof postReservations>, 'body'>) =>
+    postReservations({
+      ...arg,
+      automaticFixedScheduleAbsencesEnabled:
+        featureFlags.automaticFixedScheduleAbsences
+    }),
   invalidateQueryKeys: () => [queryKeys.unitAttendanceReservations()]
 })
 

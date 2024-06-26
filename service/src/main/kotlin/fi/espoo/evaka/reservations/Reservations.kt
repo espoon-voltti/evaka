@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.AbsenceUpsert
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.clearOldAbsences
 import fi.espoo.evaka.absence.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.absence.getAbsenceDatesForChildrenInRange
 import fi.espoo.evaka.absence.setChildDateAbsences
+import fi.espoo.evaka.absence.upsertAbsences
 import fi.espoo.evaka.absence.upsertFullDayAbsences
 import fi.espoo.evaka.attendance.deleteAttendancesByDate
 import fi.espoo.evaka.attendance.getChildPlacementTypes
@@ -170,7 +172,8 @@ fun createReservationsAndAbsences(
     user: AuthenticatedUser,
     requests: List<DailyReservationRequest>,
     citizenReservationThresholdHours: Long,
-    plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false
+    plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
+    automaticFixedScheduleAbsencesEnabled: Boolean = false
 ): CreateReservationsResult {
     val (userId, isCitizen) =
         when (user) {
@@ -324,7 +327,7 @@ fun createReservationsAndAbsences(
                 }
         )
 
-    val absences =
+    val fullDayAbsences =
         validated.filterIsInstance<DailyReservationRequest.Absent>().map {
             val plannedAbsenceEnabled =
                 plannedAbsenceEnabledRanges[it.childId]?.includes(it.date) ?: false
@@ -336,9 +339,49 @@ fun createReservationsAndAbsences(
                 else AbsenceType.OTHER_ABSENCE
             )
         }
-    val upsertedAbsences =
-        if (absences.isNotEmpty()) {
-            tx.upsertFullDayAbsences(userId, now, absences)
+    val upsertedFullDayAbsences =
+        if (fullDayAbsences.isNotEmpty()) {
+            tx.upsertFullDayAbsences(userId, now, fullDayAbsences)
+        } else {
+            emptyList()
+        }
+
+    val fixedScheduleAbsences =
+        if (automaticFixedScheduleAbsencesEnabled) {
+            validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { req ->
+                val placement =
+                    placements[req.childId]?.find { p -> p.range.includes(req.date) }
+                        ?: return@flatMap emptyList()
+                val plannedAbsenceEnabled =
+                    plannedAbsenceEnabledRanges[req.childId]?.includes(req.date) ?: false
+                getExpectedAbsenceCategories(
+                        req.date,
+                        listOfNotNull(req.reservation, req.secondReservation),
+                        placement.type,
+                        placement.unitLanguage,
+                        placement.dailyPreschoolTime,
+                        placement.dailyPreparatoryTime,
+                        preschoolTerms
+                    )
+                    ?.map {
+                        AbsenceUpsert(
+                            req.childId,
+                            req.date,
+                            it,
+                            if (plannedAbsenceEnabled && reservableRange.includes(req.date)) {
+                                AbsenceType.PLANNED_ABSENCE
+                            } else {
+                                AbsenceType.OTHER_ABSENCE
+                            }
+                        )
+                    } ?: emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    val upsertedFixedScheduleAbsences =
+        if (fixedScheduleAbsences.isNotEmpty()) {
+            tx.upsertAbsences(now, user.evakaUserId, fixedScheduleAbsences)
         } else {
             emptyList()
         }
@@ -346,7 +389,7 @@ fun createReservationsAndAbsences(
     return CreateReservationsResult(
         deletedAbsences,
         deletedReservations,
-        upsertedAbsences,
+        upsertedFullDayAbsences + upsertedFixedScheduleAbsences,
         upsertedReservations
     )
 }

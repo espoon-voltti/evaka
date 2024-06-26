@@ -253,7 +253,8 @@ class ReservationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: List<DailyReservationRequest>
+        @RequestBody body: List<DailyReservationRequest>,
+        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false
     ) {
         val children = body.map { it.childId }.toSet()
 
@@ -274,7 +275,8 @@ class ReservationControllerCitizen(
                         user,
                         body,
                         featureConfig.citizenReservationThresholdHours,
-                        env.plannedAbsenceEnabledForHourBasedServiceNeeds
+                        env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                        automaticFixedScheduleAbsencesEnabled
                     )
                 }
             }
@@ -465,18 +467,11 @@ private fun placementDay(
 }
 
 /**
- * Show at most one absence per child per day. Taking the non-billable one is just a random choice
- * without any real meaning.
+ * Show at most one absence per child per day. Take billable one if available, as it affects
+ * invoicing and is more important in that sense.
  */
 private fun selectSingleAbsence(absences: List<Absence>): AbsenceInfo? =
-    absences
-        .let {
-            if (it.size > 1) {
-                it.first { a -> a.category == AbsenceCategory.NONBILLABLE }
-            } else {
-                it.firstOrNull()
-            }
-        }
+    (absences.firstOrNull { it.category == AbsenceCategory.BILLABLE } ?: absences.firstOrNull())
         ?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
 
 data class ReservationsResponse(

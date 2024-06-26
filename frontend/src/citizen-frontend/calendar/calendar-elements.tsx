@@ -9,11 +9,13 @@ import styled, { css } from 'styled-components'
 
 import { mapScheduleType } from 'lib-common/api-types/placement'
 import {
+  AbsenceInfo,
   ReservableTimeRange,
   Reservation,
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
+import LocalDate from 'lib-common/local-date'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
@@ -52,8 +54,13 @@ export const Reservations = React.memo(function Reservations({
   )
 
   const groupedChildren = useMemo(
-    () => groupChildren(data.children, i18n),
-    [data.children, i18n]
+    () =>
+      groupChildren({
+        children: data.children,
+        isPast: data.date.isBefore(LocalDate.todayInHelsinkiTz()),
+        i18n
+      }),
+    [data.children, data.date, i18n]
   )
 
   return data.children.length === 0 && data.holiday && !isReservable ? (
@@ -154,13 +161,28 @@ interface GroupedDailyChildren {
   key: string
 }
 
-const groupChildren = (
-  relevantChildren: ReservationResponseDayChild[],
+const absenceElementType = (
+  absence: AbsenceInfo
+): DailyChildGroupElementType =>
+  absence.type === 'FREE_ABSENCE'
+    ? 'absent-free'
+    : featureFlags.citizenAttendanceSummary &&
+        absence.type === 'PLANNED_ABSENCE'
+      ? 'absent-planned'
+      : 'absent'
+
+const groupChildren = ({
+  children,
+  isPast,
+  i18n
+}: {
+  children: ReservationResponseDayChild[]
+  isPast: boolean
   i18n: Translations
-) =>
+}): GroupedDailyChildren[] =>
   Object.entries(
     groupBy(
-      relevantChildren.map((child): DailyChildGroupElement => {
+      children.map((child): DailyChildGroupElement => {
         if (child.attendances.length > 0) {
           return {
             childId: child.childId,
@@ -169,16 +191,13 @@ const groupChildren = (
           }
         }
 
-        if (child.absence) {
+        if (
+          (isPast || !featureFlags.automaticFixedScheduleAbsences) &&
+          child.absence
+        ) {
           return {
             childId: child.childId,
-            type:
-              child.absence.type === 'FREE_ABSENCE'
-                ? 'absent-free'
-                : featureFlags.citizenAttendanceSummary &&
-                    child.absence.type === 'PLANNED_ABSENCE'
-                  ? 'absent-planned'
-                  : 'absent'
+            type: absenceElementType(child.absence)
           }
         }
 
@@ -204,6 +223,13 @@ const groupChildren = (
                 formatReservation(reservation, child.reservableTimeRange, i18n)
               )
               .join(', ')
+          }
+        }
+
+        if (child.absence) {
+          return {
+            childId: child.childId,
+            type: absenceElementType(child.absence)
           }
         }
 

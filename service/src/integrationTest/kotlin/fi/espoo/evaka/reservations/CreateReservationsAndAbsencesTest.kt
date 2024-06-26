@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -29,6 +30,7 @@ import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -53,35 +55,32 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val monday = LocalDate.of(2021, 8, 23)
     private val tuesday = monday.plusDays(1)
     private val wednesday = monday.plusDays(2)
+    private val thursday = monday.plusDays(3)
     private val saturday = monday.plusDays(5)
     private val startTime = LocalTime.of(9, 0)
     private val endTime: LocalTime = LocalTime.of(17, 0)
     private val queryRange = FiniteDateRange(monday.minusDays(10), monday.plusDays(10))
 
-    private val citizenReservationThresholdHours: Long = 150
+    private val citizenReservationThresholdHours = 150L
     private val beforeThreshold = HelsinkiDateTime.of(monday.minusDays(7), LocalTime.of(12, 0))
     private val afterThreshold = HelsinkiDateTime.of(monday.minusDays(7), LocalTime.of(21, 0))
 
-    private lateinit var daycare: DevDaycare
-    private lateinit var employee: DevEmployee
-    private lateinit var adult: DevPerson
-    private lateinit var child: DevPerson
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+    private val employee = DevEmployee()
+    private val adult = DevPerson()
+    private val child = DevPerson()
 
     @BeforeEach
     fun before() {
-        val area = DevCareArea()
-        daycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-        employee = DevEmployee()
-
-        child = DevPerson()
-        adult = DevPerson()
-
         db.transaction {
             it.insertServiceNeedOptions()
             it.insert(area)
@@ -1538,5 +1537,326 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         val absences =
             db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
         assertEquals(0, absences.size)
+    }
+
+    @ParameterizedTest
+    @EnumSource(names = ["PRESCHOOL_DAYCARE", "PRESCHOOL_CLUB", "PREPARATORY_DAYCARE"])
+    fun `automatic absence creation when creating part-day reservations`(
+        placementType: PlacementType
+    ) {
+        // given
+        val term = FiniteDateRange.ofYear(monday.year)
+        val placementRange = FiniteDateRange(monday, thursday)
+
+        val start = LocalTime.of(8, 0)
+        val fixedScheduleStart = LocalTime.of(9, 0)
+        val fixedScheduleEnd = LocalTime.of(13, 0)
+        val end = LocalTime.of(16, 0)
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                dailyPreschoolTime = TimeRange(fixedScheduleStart, fixedScheduleEnd),
+                dailyPreparatoryTime = TimeRange(fixedScheduleStart, fixedScheduleEnd),
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+            )
+
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = term,
+                    swedishPreschool = term,
+                    extendedTerm = term,
+                    applicationPeriod = term,
+                    termBreaks = DateSet.empty()
+                )
+            )
+            tx.insertServiceNeedOption(snDaycareHours120)
+            tx.insert(daycare)
+            tx.insert(
+                    DevPlacement(
+                        type = placementType,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = placementRange.start,
+                        endDate = placementRange.end
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = placementRange.start,
+                            endDate = placementRange.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                }
+            tx.insertGuardian(guardianId = adult.id, childId = child.id)
+        }
+
+        // when
+
+        //    -TTTT---  fixed schedule time range
+        // mo -xxxx---  exact match
+        // tu --xx----  inside fixed schedule time range
+        // we xxxx----  partly outside fixed schedule time range
+        // th -----xxx  outside fixed schedule time range
+        val times =
+            listOf(
+                monday to TimeRange(fixedScheduleStart, fixedScheduleEnd),
+                tuesday to
+                    TimeRange(fixedScheduleStart.plusHours(1), fixedScheduleEnd.minusHours(1)),
+                wednesday to TimeRange(start, fixedScheduleEnd.minusHours(1)),
+                thursday to TimeRange(fixedScheduleEnd, end),
+            )
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.WEAK),
+                times.map { (date, timeRange) ->
+                    DailyReservationRequest.Reservations(child.id, date, timeRange)
+                },
+                citizenReservationThresholdHours,
+                plannedAbsenceEnabledForHourBasedServiceNeeds = true,
+                automaticFixedScheduleAbsencesEnabled = true
+            )
+        }
+
+        // then reservations are added
+        val reservations =
+            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+                .sortedWith(compareBy({ it.date }, { it.reservation }))
+        assertEquals(
+            times.map { (date, timeRange) -> date to Reservation.Times(timeRange) },
+            reservations.map { it.date to it.reservation }
+        )
+
+        // and absences are automatically created based on reserved times
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, placementRange.asDateRange()) }
+                .sortedBy { it.date }
+        assertEquals(
+            listOf(
+                Triple(monday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
+                Triple(tuesday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.BILLABLE),
+                // No absence for wednesday
+                Triple(thursday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.NONBILLABLE),
+            ),
+            absences.map { Triple(it.date, it.absenceType, it.category) }
+        )
+    }
+
+    @Test
+    fun `automatic absence creation for 5-year-olds`() {
+        // given
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = wednesday
+                )
+            )
+            tx.insertGuardian(guardianId = adult.id, childId = child.id)
+        }
+
+        // when
+        val times =
+            listOf(
+                // > 4 hours -> no absence
+                monday to TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                // = 4 hours -> billable absence
+                tuesday to TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+                // < 4 hours -> billable absence
+                wednesday to TimeRange(LocalTime.of(10, 0), LocalTime.of(13, 45)),
+            )
+
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.WEAK),
+                times.map { (date, timeRange) ->
+                    DailyReservationRequest.Reservations(child.id, date, timeRange)
+                },
+                citizenReservationThresholdHours,
+                plannedAbsenceEnabledForHourBasedServiceNeeds = true,
+                automaticFixedScheduleAbsencesEnabled = true
+            )
+        }
+
+        // then reservations are added
+        val reservations =
+            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+                .sortedWith(compareBy({ it.date }, { it.reservation }))
+        assertEquals(
+            times.map { (date, timeRange) -> date to Reservation.Times(timeRange) },
+            reservations.map { it.date to it.reservation }
+        )
+
+        // and absences are automatically created based on reserved times
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, wednesday)) }
+                .sortedBy { it.date }
+        assertEquals(
+            listOf(
+                Triple(tuesday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
+                Triple(wednesday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
+            ),
+            absences.map { Triple(it.date, it.absenceType, it.category) }
+        )
+    }
+
+    @Test
+    fun `automatic absence creation should delete the full-day absence`() {
+        // given
+        val term = FiniteDateRange.ofYear(monday.year)
+        val placementRange = FiniteDateRange(monday, monday)
+
+        val preschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+        val daycare =
+            DevDaycare(
+                areaId = area.id,
+                dailyPreschoolTime = preschoolTime,
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+            )
+
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = term,
+                    swedishPreschool = term,
+                    extendedTerm = term,
+                    applicationPeriod = term,
+                    termBreaks = DateSet.empty()
+                )
+            )
+            tx.insert(daycare)
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = placementRange.start,
+                    endDate = placementRange.end
+                )
+            )
+            tx.insertGuardian(guardianId = adult.id, childId = child.id)
+
+            // Already has a full-day absence created by the citizen
+            listOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE).forEach { category ->
+                tx.insert(
+                    DevAbsence(
+                        childId = child.id,
+                        date = monday,
+                        absenceType = AbsenceType.PLANNED_ABSENCE,
+                        absenceCategory = category,
+                        modifiedBy = adult.evakaUserId
+                    )
+                )
+            }
+        }
+
+        // when
+
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(DailyReservationRequest.Reservations(child.id, monday, preschoolTime)),
+                citizenReservationThresholdHours,
+                automaticFixedScheduleAbsencesEnabled = true
+            )
+        }
+
+        // then reservation is added
+        val reservations =
+            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+                .sortedWith(compareBy({ it.date }, { it.reservation }))
+        assertEquals(
+            listOf(monday to Reservation.Times(preschoolTime)),
+            reservations.map { it.date to it.reservation }
+        )
+
+        // full-day absence is gone, only the automatic absence remains
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, placementRange.asDateRange()) }
+                .sortedBy { it.date }
+        assertEquals(
+            listOf(Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE)),
+            absences.map { Triple(it.date, it.absenceType, it.category) }
+        )
+    }
+
+    @Test
+    fun `if automatic absence is a full-day one, the reservations are still created`() {
+        // given
+        val term = FiniteDateRange.ofYear(monday.year)
+        val placementRange = FiniteDateRange(monday, monday)
+
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = term,
+                    swedishPreschool = term,
+                    extendedTerm = term,
+                    applicationPeriod = term,
+                    termBreaks = DateSet.empty()
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = placementRange.start,
+                    endDate = placementRange.end
+                )
+            )
+            tx.insertGuardian(guardianId = adult.id, childId = child.id)
+        }
+
+        // when
+
+        val veryShortReservation = TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 14))
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.WEAK),
+                listOf(
+                    DailyReservationRequest.Reservations(child.id, monday, veryShortReservation)
+                ),
+                citizenReservationThresholdHours,
+                automaticFixedScheduleAbsencesEnabled = true
+            )
+        }
+
+        // then reservation is added
+        val reservations =
+            db.read { it.getReservationsCitizen(monday, adult.id, queryRange) }
+                .sortedWith(compareBy({ it.date }, { it.reservation }))
+        assertEquals(
+            listOf(monday to Reservation.Times(veryShortReservation)),
+            reservations.map { it.date to it.reservation }
+        )
+
+        // full-day absence is created, because the reservation is so short
+        val absences =
+            db.read { it.getAbsencesOfChildByRange(child.id, placementRange.asDateRange()) }
+                .sortedBy { it.date }
+        assertEquals(
+            listOf(
+                Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
+                Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.NONBILLABLE)
+            ),
+            absences.map { Triple(it.date, it.absenceType, it.category) }
+        )
     }
 }

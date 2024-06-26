@@ -201,6 +201,7 @@ function View({
     />
   ) : undefined
 
+  const isPast = modalData.response.date.isBefore(LocalDate.todayInSystemTz())
   return (
     <DayModal
       date={modalData.response.date}
@@ -212,7 +213,10 @@ function View({
     >
       {(childIndex) => {
         const child = modalData.response.children[childIndex]
-        return child.absence !== null ? (
+        return (!featureFlags.automaticFixedScheduleAbsences ||
+          isPast ||
+          child.reservations.length === 0) &&
+          child.absence !== null ? (
           <Absence absence={child.absence} />
         ) : (
           <Reservations

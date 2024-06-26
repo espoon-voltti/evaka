@@ -9,6 +9,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.absence.getAbsencesOfChildByDate
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -995,7 +996,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     fakeAdmin,
                     body,
                     featureConfig.citizenReservationThresholdHours,
-                    true
+                    plannedAbsenceEnabledForHourBasedServiceNeeds = true,
+                    automaticFixedScheduleAbsencesEnabled = false
                 )
             }
         }
@@ -1487,6 +1489,10 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
     @PostMapping("/absence")
     fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
         db.connect { dbc -> dbc.transaction { it.insert(body) } }
+
+    @GetMapping("/absences")
+    fun getAbsences(db: Database, @RequestParam childId: ChildId, @RequestParam date: LocalDate) =
+        db.connect { dbc -> dbc.transaction { it.getAbsencesOfChildByDate(childId, date) } }
 
     @PostMapping("/club-term")
     fun createClubTerm(db: Database, @RequestBody body: DevClubTerm) {
