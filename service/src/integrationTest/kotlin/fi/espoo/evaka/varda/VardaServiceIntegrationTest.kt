@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
@@ -67,7 +68,10 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction {
+            it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptions()
+        }
         insertVardaUnit(db)
         db.transaction {
             @Suppress("DEPRECATION")

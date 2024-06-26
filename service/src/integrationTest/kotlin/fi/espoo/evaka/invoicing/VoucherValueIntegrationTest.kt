@@ -7,6 +7,7 @@ package fi.espoo.evaka.invoicing
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.controller.FinanceBasicsController
 import fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
 import fi.espoo.evaka.invoicing.controller.deleteVoucherValue
@@ -60,6 +61,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
         }
     }

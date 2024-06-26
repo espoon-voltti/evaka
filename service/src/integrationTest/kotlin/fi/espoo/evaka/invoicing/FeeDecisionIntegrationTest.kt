@@ -314,7 +314,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         MockSfiMessagesClient.clearMessages()
         MockEmailClient.clear()
 
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(snDaycareFullDay35, snDaycarePartDay25, snDefaultDaycare).forEach {
+                tx.insert(it)
+            }
+        }
     }
 
     @Test

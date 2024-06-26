@@ -1747,6 +1747,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `daycare with known service need option`() {
+        db.transaction { tx -> tx.insert(snPreschoolDaycare45) }
+
         // given
         val serviceNeedOption =
             ServiceNeedOption(

@@ -576,8 +576,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
 
     preschoolTerms.forEach { insert(it) }
     insertClubTerms()
-
-    insertServiceNeedOptions()
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

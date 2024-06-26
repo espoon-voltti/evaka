@@ -1814,3 +1814,14 @@ VALUES (${bind(fee.serviceNeedOptionId)}, ${bind(fee.validity)}, ${bind(fee.base
         )
     }
 }
+
+fun Database.Transaction.insert(sn: ServiceNeedOption) {
+    execute {
+        sql(
+            """
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
+VALUES (${bind(sn.id)}, ${bind(sn.nameFi)}, ${bind(sn.nameSv)}, ${bind(sn.nameEn)}, ${bind(sn.validPlacementType)}, ${bind(sn.defaultOption)}, ${bind(sn.feeCoefficient)}, ${bind(sn.occupancyCoefficient)}, ${bind(sn.occupancyCoefficientUnder3y)}, ${bind(sn.realizedOccupancyCoefficient)}, ${bind(sn.realizedOccupancyCoefficientUnder3y)}, ${bind(sn.daycareHoursPerWeek)}, ${bind(sn.contractDaysPerMonth)}, ${bind(sn.daycareHoursPerMonth)}, ${bind(sn.partDay)}, ${bind(sn.partWeek)}, ${bind(sn.feeDescriptionFi)}, ${bind(sn.feeDescriptionSv)}, ${bind(sn.voucherValueDescriptionFi)}, ${bind(sn.voucherValueDescriptionSv)}, ${bind(sn.validFrom)}, ${bind(sn.validTo)})
+"""
+        )
+    }
+}

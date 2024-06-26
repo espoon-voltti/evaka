@@ -78,6 +78,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(snPreschoolDaycare45, snPreschoolDaycarePartDay35).forEach { tx.insert(it) }
             tx.insert(daycareGroup)
             tx.insert(daycareGroup2)
             tx.insertGuardian(parent.id, child.id)

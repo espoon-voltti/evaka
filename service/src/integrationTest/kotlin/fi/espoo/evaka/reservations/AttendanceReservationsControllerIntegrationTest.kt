@@ -15,6 +15,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2020
@@ -107,6 +108,7 @@ class AttendanceReservationsControllerIntegrationTest :
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptions()
             it.insert(testGroup1)
             it.insert(testGroup2)
             it.insert(testGroupInDaycare2)

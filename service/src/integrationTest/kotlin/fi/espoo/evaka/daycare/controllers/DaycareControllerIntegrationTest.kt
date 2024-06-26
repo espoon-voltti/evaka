@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.placement.ChildBasics
@@ -71,6 +72,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insertServiceNeedOptions()
 
             tx.insert(DevEmployee(id = supervisorId, firstName = "Elina", lastName = "Esimies"))
             tx.insert(DevEmployee(id = staffId))

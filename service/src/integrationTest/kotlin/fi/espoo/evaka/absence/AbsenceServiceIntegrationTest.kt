@@ -11,6 +11,7 @@ import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.reservations.Reservation
@@ -103,6 +104,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun prepare() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptions()
             it.insert(DevEmployee(id = employeeId))
             it.insert(
                 DevDaycareGroup(

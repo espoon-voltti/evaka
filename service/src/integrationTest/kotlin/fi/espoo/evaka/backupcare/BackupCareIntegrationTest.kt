@@ -153,6 +153,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             }
         db.transaction { tx ->
+            tx.insert(snDefaultDaycare)
             tx.insert(
                 DevServiceNeed(
                     placementId = placementId,

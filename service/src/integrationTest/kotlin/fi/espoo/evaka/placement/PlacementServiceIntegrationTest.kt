@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -55,8 +56,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun setUp() {
-        db.transaction { it.insertGeneralTestFixtures() }
         db.transaction {
+            it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptions()
             groupId1 =
                 it.insert(
                     DevDaycareGroup(

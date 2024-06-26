@@ -11,6 +11,7 @@ import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -47,6 +48,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptions()
             it.insert(DevDaycareGroup(groupId, testDaycare.id))
         }
     }
