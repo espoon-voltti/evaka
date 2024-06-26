@@ -14,12 +14,14 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -58,7 +60,10 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(preschoolTerm2023)
+        }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 

@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
@@ -57,6 +58,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(preschoolTerm2023)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
         }

@@ -572,8 +572,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
             temporaryFeeSiblingPartDay = 800
         )
     )
-
-    preschoolTerms.forEach { insert(it) }
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

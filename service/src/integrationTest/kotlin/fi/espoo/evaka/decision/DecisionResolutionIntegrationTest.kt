@@ -15,6 +15,7 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -25,6 +26,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
@@ -63,7 +65,10 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(preschoolTerm2020)
+        }
     }
 
     @Suppress("unused")

@@ -16,6 +16,7 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
@@ -252,6 +253,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     fun `email is sent after sending preschool application`() {
         val applicationId = ApplicationId(UUID.randomUUID())
         db.transaction { tx ->
+            tx.insert(preschoolTerm2021)
             tx.insertApplication(
                 guardian = guardian,
                 appliedType = PlacementType.PRESCHOOL,
