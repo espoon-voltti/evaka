@@ -1023,9 +1023,7 @@ export default function UnitEditor(props: Props) {
             {props.editable ? (
               <DatePickerDeprecated
                 date={form.openingDate ?? undefined}
-                options={{
-                  placeholderText: i18n.unitEditor.placeholder.openingDate
-                }}
+                placeholder={i18n.unitEditor.placeholder.openingDate}
                 onChange={(openingDate) => updateForm({ openingDate })}
                 className="inline-block"
                 maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
@@ -1037,9 +1035,7 @@ export default function UnitEditor(props: Props) {
             {props.editable ? (
               <DatePickerClearableDeprecated
                 date={form.closingDate}
-                options={{
-                  placeholderText: i18n.unitEditor.placeholder.closingDate
-                }}
+                placeholder={i18n.unitEditor.placeholder.closingDate}
                 onCleared={() => updateForm({ closingDate: null })}
                 onChange={(closingDate) => updateForm({ closingDate })}
                 className="inline-block"

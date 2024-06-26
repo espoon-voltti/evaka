@@ -3834,17 +3834,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-datepicker@npm:6.2.0":
-  version: 6.2.0
-  resolution: "@types/react-datepicker@npm:6.2.0"
-  dependencies:
-    "@floating-ui/react": "npm:^0.26.2"
-    "@types/react": "npm:*"
-    date-fns: "npm:^3.3.1"
-  checksum: 10/827805a10eb21ac671513f83a16b8a51dfacf25c8668b14e39c17dc0feea780a02c2abcf942b05b0652410a4f759ec5d96fb046a14c991df0e54fa51bb2d6c79
-  languageName: node
-  linkType: hard
-
 "@types/react-dom@npm:^18.3.0":
   version: 18.3.0
   resolution: "@types/react-dom@npm:18.3.0"
@@ -3860,6 +3849,15 @@ __metadata:
   dependencies:
     "@types/react": "npm:*"
   checksum: 10/e39435c6f261a3b95b71f18cb3728fbbbb3180e5e911e642f344a1ec15005d1d564b5c67d3f475ca3695dc0a2a3b9971cfbf1074a2050549c6c5d250816b4fee
+  languageName: node
+  linkType: hard
+
+"@types/react-onclickoutside@npm:^6.7.10":
+  version: 6.7.10
+  resolution: "@types/react-onclickoutside@npm:6.7.10"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10/9381959ac55a4cf9732451561f72301f7c8b074224aa8935570546d4f76e24d873ed65ef911c8a3d7a7e4ae41e9469ae56ab65ff62ab3d3131f1dbf04a408020
   languageName: node
   linkType: hard
 
@@ -6906,9 +6904,9 @@ __metadata:
     "@types/punycode": "npm:^2.1.0"
     "@types/react": "npm:^18.3.1"
     "@types/react-csv": "npm:^1.1.3"
-    "@types/react-datepicker": "npm:6.2.0"
     "@types/react-dom": "npm:^18.3.0"
     "@types/react-linkify": "npm:^1.0.1"
+    "@types/react-onclickoutside": "npm:^6.7.10"
     "@types/react-router-dom": "npm:^5.3.3"
     "@types/styled-components": "npm:^5.1.26"
     "@types/uuid": "npm:^10.0.0"
@@ -6967,7 +6965,7 @@ __metadata:
     react: "npm:^18.3.1"
     react-chartjs-2: "npm:^5.2.0"
     react-csv: "npm:^2.2.2"
-    react-datepicker: "npm:^6.9.0"
+    react-datepicker: "npm:^7.1.0"
     react-day-picker: "npm:^8.10.0"
     react-dom: "npm:^18.3.1"
     react-focus-lock: "npm:2.12.1"
@@ -10945,9 +10943,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-datepicker@npm:^6.9.0":
-  version: 6.9.0
-  resolution: "react-datepicker@npm:6.9.0"
+"react-datepicker@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "react-datepicker@npm:7.1.0"
   dependencies:
     "@floating-ui/react": "npm:^0.26.2"
     clsx: "npm:^2.1.0"
@@ -10957,7 +10955,7 @@ __metadata:
   peerDependencies:
     react: ^16.9.0 || ^17 || ^18
     react-dom: ^16.9.0 || ^17 || ^18
-  checksum: 10/7effd81e0e00e77d691c552bed77e2b08f7abc377528ae67727de9cc08eb05f7ec021f3daa40748dd7d32b12dd6cf2833eac0cbc2d9f3026fa8c606100752d32
+  checksum: 10/6d66580edc00f2b2b2e17026f11fbe25f0f0cd14701239db37a693feaf8004d1306b15f76f8fbb1f6672825cd32d7fa0aea3b35962bfdca436a58872e202fb89
   languageName: node
   linkType: hard
 
