@@ -101,7 +101,17 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departedAutomatically
                                             )
                                         },
-                                plannedAttendances = plannedAttendances[employeeId] ?: emptyList()
+                                plannedAttendances = plannedAttendances[employeeId] ?: emptyList(),
+                                allowedToEdit =
+                                    accessControl
+                                        .checkPermissionFor(
+                                            tx,
+                                            user,
+                                            clock,
+                                            Action.Employee.UPDATE_STAFF_ATTENDANCES,
+                                            employeeId
+                                        )
+                                        .isPermitted()
                             )
                         }
                     val staffWithoutAttendance =
@@ -127,7 +137,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departedAutomatically
                                             )
                                         },
-                                    plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
+                                    plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
+                                    allowedToEdit = true
                                 )
                             }
                     StaffAttendanceResponse(

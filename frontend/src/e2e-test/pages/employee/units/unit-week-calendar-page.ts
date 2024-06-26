@@ -199,6 +199,19 @@ export class UnitStaffAttendancesTable extends Element {
       .findByDataQa('attendance-tooltip')
       .assertTextEquals(expectedTooltipText)
   }
+
+  async assertOpenDetailsVisible(
+    row: number,
+    date: LocalDate,
+    visible: boolean
+  ): Promise<void> {
+    const cell = this.#attendanceCell(date, row)
+    await cell.hover()
+
+    visible
+      ? await cell.findByDataQa('open-details').waitUntilVisible()
+      : await cell.findByDataQa('open-details').waitUntilHidden()
+  }
 }
 
 export class UnitChildReservationsTable extends Element {

@@ -180,6 +180,7 @@ export default React.memo(function StaffAttendanceTable({
                   }
                 })
               }}
+              allowedToEdit={row.allowedToEdit}
             />
           ))}
           {externalRowsGroupedByName.map((row, index) => (
@@ -201,6 +202,7 @@ export default React.memo(function StaffAttendanceTable({
                   target: { type: 'external', name: row.name }
                 })
               }}
+              allowedToEdit={row.allowedToEdit}
             />
           ))}
         </Tbody>
@@ -352,6 +354,7 @@ interface StaffRow {
   plannedAttendances: PlannedStaffAttendance[]
   employeeGroups: UUID[]
   currentOccupancyCoefficient: number
+  allowedToEdit: boolean
 }
 
 function getStaffRows(
@@ -378,7 +381,8 @@ function getStaffRows(
           ),
           plannedAttendances: entry.plannedAttendances,
           employeeGroups: entry.groups,
-          currentOccupancyCoefficient: entry.currentOccupancyCoefficient
+          currentOccupancyCoefficient: entry.currentOccupancyCoefficient,
+          allowedToEdit: entry.allowedToEdit
         })
       )
       .filter(
@@ -391,6 +395,7 @@ function getStaffRows(
 interface ExternalRow {
   name: string
   attendances: ExternalAttendance[]
+  allowedToEdit: boolean
 }
 
 function getExternalRows(
@@ -405,7 +410,8 @@ function getExternalRows(
           attendances: sortBy(
             attendances.filter((a) => groupFilter([a.groupId])),
             ({ departed }) => departed?.timestamp ?? Infinity
-          )
+          ),
+          allowedToEdit: true
         })
       )
       .filter((row) => row.attendances.length > 0),
@@ -477,6 +483,7 @@ interface AttendanceRowProps extends BaseProps {
   plannedAttendances?: PlannedStaffAttendance[]
   groupFilter: (ids: UUID[]) => boolean
   openDetails: (date: LocalDate) => void
+  allowedToEdit: boolean
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
@@ -488,7 +495,8 @@ const AttendanceRow = React.memo(function AttendanceRow({
   attendances,
   plannedAttendances,
   groupFilter,
-  openDetails
+  openDetails,
+  allowedToEdit
 }: AttendanceRowProps) {
   const { i18n } = useTranslation()
   const today = LocalDate.todayInHelsinkiTz()
@@ -542,7 +550,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
             plannedAttendancesForToday,
             attendancesForToday: matchingAttendances,
             hasHiddenAttendances,
-            allowDetailsModal: date.isEqualOrBefore(today)
+            allowDetailsModal: date.isEqualOrBefore(today) && allowedToEdit
           }
         })
         .map(

@@ -116,7 +116,8 @@ data class EmployeeAttendance(
     val lastName: String,
     val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>,
-    val plannedAttendances: List<PlannedStaffAttendance>
+    val plannedAttendances: List<PlannedStaffAttendance>,
+    val allowedToEdit: Boolean
 )
 
 data class StaffAttendanceResponse(
