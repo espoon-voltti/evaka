@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -72,6 +73,8 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `family with children placed into voucher and municipal daycares get sibling discounts in fee and voucher value decisions`() {
+        db.transaction { it.insertServiceNeedOptionVoucherValues() }
+
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(
             testAdult_1.id,

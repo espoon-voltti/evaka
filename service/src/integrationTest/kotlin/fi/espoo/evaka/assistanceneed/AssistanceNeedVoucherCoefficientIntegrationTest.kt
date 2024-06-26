@@ -9,6 +9,7 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoe
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -51,6 +52,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insertServiceNeedOptionVoucherValues()
 
             val placementId =
                 it.insert(
