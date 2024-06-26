@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.InvoiceController
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
@@ -188,6 +189,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(feeThresholds)
             tx.insert(snDaycareFullDay35)
         }
     }

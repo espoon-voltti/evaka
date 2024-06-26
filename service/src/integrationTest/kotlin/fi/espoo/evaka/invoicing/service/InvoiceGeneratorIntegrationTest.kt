@@ -10,6 +10,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceUpsert
 import fi.espoo.evaka.absence.insertAbsences
+import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
@@ -92,6 +93,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
             tx.execute {
                 sql(

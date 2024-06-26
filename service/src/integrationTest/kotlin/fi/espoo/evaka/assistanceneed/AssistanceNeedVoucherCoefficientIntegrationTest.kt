@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
@@ -53,6 +54,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insert(feeThresholds)
             it.insertServiceNeedOptions()
             it.insertServiceNeedOptionVoucherValues()
 
