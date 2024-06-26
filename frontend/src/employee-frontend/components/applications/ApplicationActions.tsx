@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationSummary } from 'lib-common/generated/api-types/application'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 
 import ActionCheckbox from '../../components/applications/ActionCheckbox'
 import PrimaryAction from '../../components/applications/PrimaryAction'
@@ -38,6 +39,8 @@ export default React.memo(function ApplicationActions({
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
   const [actionInFlight, setActionInFlight] = useState(false)
+  const [confirmingApplicationCancel, setConfirmingApplicationCancel] =
+    useState(false)
 
   const handlePromise = (promise: Promise<void>) => {
     void promise
@@ -49,7 +52,10 @@ export default React.memo(function ApplicationActions({
           resolveLabel: i18n.common.ok
         })
       )
-      .finally(() => setActionInFlight(false))
+      .finally(() => {
+        setActionInFlight(false)
+        setConfirmingApplicationCancel(false)
+      })
   }
 
   const actions: Action[] = useMemo(
@@ -92,13 +98,7 @@ export default React.memo(function ApplicationActions({
           application.status === 'WAITING_PLACEMENT',
         disabled: actionInFlight,
         onClick: () => {
-          setActionInFlight(true)
-          handlePromise(
-            simpleApplicationAction({
-              applicationId: application.id,
-              action: 'cancel-application'
-            })
-          )
+          setConfirmingApplicationCancel(true)
         }
       },
       {
@@ -248,11 +248,35 @@ export default React.memo(function ApplicationActions({
   )
 
   return (
-    <ActionsContainer>
-      <PrimaryAction action={primaryAction} />
-      <ActionMenu actions={applicableActions} />
-      <ActionCheckbox applicationId={application.id} />
-    </ActionsContainer>
+    <>
+      <ActionsContainer>
+        <PrimaryAction action={primaryAction} />
+        <ActionMenu actions={applicableActions} />
+        <ActionCheckbox applicationId={application.id} />
+      </ActionsContainer>
+      {confirmingApplicationCancel && (
+        <InfoModal
+          type="warning"
+          title={i18n.applications.actions.cancelApplicationConfirm}
+          resolve={{
+            action: () => {
+              setActionInFlight(true)
+              handlePromise(
+                simpleApplicationAction({
+                  applicationId: application.id,
+                  action: 'cancel-application'
+                })
+              )
+            },
+            label: i18n.common.confirm
+          }}
+          reject={{
+            action: () => setConfirmingApplicationCancel(false),
+            label: i18n.common.cancel
+          }}
+        />
+      )}
+    </>
   )
 })
 
