@@ -100,8 +100,8 @@ export default React.memo(function PersonVoucherValueDecisions({
           <Tbody>
             {orderBy(
               voucherValueDecisions,
-              ['sentAt', 'validFrom'],
-              ['desc']
+              ['validFrom', 'sentAt'],
+              ['desc', 'desc']
             ).map((decision) => {
               const formattedRange = `${decision.validFrom.format()} - ${
                 decision.validTo?.format() ?? ''
