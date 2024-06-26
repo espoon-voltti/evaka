@@ -33,12 +33,6 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
             MobileAuthLevel.DEFAULT -> !requirePinLogin
         }
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        when (ctx.user) {
-            is AuthenticatedUser.MobileDevice -> isPermittedAuthLevel(ctx.user.authLevel)
-            else -> false
-        }
-
     private fun <T : Id<*>> rule(filter: FilterByMobile): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
@@ -148,13 +142,9 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
     fun any() =
         object : StaticActionRule {
             override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
-                if (
-                    user is AuthenticatedUser.MobileDevice && isPermittedAuthLevel(user.authLevel)
-                ) {
+                if (user is AuthenticatedUser.MobileDevice && isPermittedAuthLevel(user.authLevel))
                     AccessControlDecision.Permitted(this)
-                } else {
-                    AccessControlDecision.None
-                }
+                else AccessControlDecision.None
         }
 
     fun inPlacementUnitOfChild(cfg: ChildAclConfig = ChildAclConfig()) =

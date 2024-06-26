@@ -74,29 +74,6 @@ data class HasUnitRole(
     fun withUnitProviderTypes(vararg allOf: ProviderType) =
         copy(unitProviderTypes = allOf.toEnumSet())
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        when (ctx.user) {
-            is AuthenticatedUser.Employee ->
-                ctx.tx
-                    .createQuery {
-                        sql(
-                            """
-SELECT EXISTS (
-    SELECT 1
-    FROM daycare
-    JOIN daycare_acl acl ON daycare.id = acl.daycare_id
-    WHERE acl.employee_id = ${bind(ctx.user.id)}
-    AND role = ANY(${bind(oneOf.toSet())})
-    AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
-    ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
-)
-                """
-                        )
-                    }
-                    .exactlyOne<Boolean>()
-            else -> false
-        }
-
     private fun <T : Id<*>> rule(
         getUnitRoles: GetUnitRoles
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =

@@ -37,12 +37,6 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) =
         authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        when (ctx.user) {
-            is AuthenticatedUser.Citizen -> isPermittedAuthLevel(ctx.user.authLevel)
-            else -> false
-        }
-
     private fun <T : Id<*>> rule(filter: FilterByCitizen): DatabaseActionRule.Scoped<T, IsCitizen> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
