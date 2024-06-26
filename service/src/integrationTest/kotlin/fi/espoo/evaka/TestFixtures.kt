@@ -20,7 +20,6 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.*
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
@@ -43,7 +42,6 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -78,8 +76,6 @@ val allAreas = listOf(testArea, testArea2, testAreaSvebi)
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
-
-val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
 
 val testDecisionMaker_1 =
     DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Decision", lastName = "Maker")
@@ -525,18 +521,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insert(testClub)
     insert(testGhostUnitDaycare)
     insert(testRoundTheClockDaycare)
-
-    unitSupervisorOfTestDaycare.let {
-        insert(
-            DevEmployee(
-                id = it.id,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                externalId = unitSupervisorExternalId
-            )
-        )
-        updateDaycareAcl(testDaycare.id, unitSupervisorExternalId, UserRole.UNIT_SUPERVISOR)
-    }
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

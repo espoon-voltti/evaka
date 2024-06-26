@@ -56,6 +56,10 @@ internal class AttendanceReservationReportByChildTest :
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
             listOf(
                     testChild_1,
                     testChild_2,

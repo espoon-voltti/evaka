@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -55,6 +56,10 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
             listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }

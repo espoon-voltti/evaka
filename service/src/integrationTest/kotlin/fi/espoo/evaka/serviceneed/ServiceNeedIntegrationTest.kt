@@ -55,6 +55,10 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
             placementId =

@@ -145,6 +145,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
             listOf(testAdult_1, testAdult_4).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertGuardian(testAdult_1.id, testChild_1.id)

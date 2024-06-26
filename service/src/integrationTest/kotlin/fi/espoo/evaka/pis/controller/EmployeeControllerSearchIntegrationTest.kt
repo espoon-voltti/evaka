@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -29,7 +30,13 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun setUp() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
+        }
     }
 
     @Test
