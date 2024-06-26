@@ -40,7 +40,6 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -538,8 +537,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
         )
         updateDaycareAcl(testDaycare.id, unitSupervisorExternalId, UserRole.UNIT_SUPERVISOR)
     }
-
-    allAdults.forEach { insert(it, DevPersonType.ADULT) }
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

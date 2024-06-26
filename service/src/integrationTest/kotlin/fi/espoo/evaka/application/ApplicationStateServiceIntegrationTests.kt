@@ -61,6 +61,7 @@ import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
@@ -109,6 +110,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_6, testChild_7).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }

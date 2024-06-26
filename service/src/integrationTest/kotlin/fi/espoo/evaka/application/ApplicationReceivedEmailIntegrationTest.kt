@@ -84,6 +84,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_6).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(clubTerm2021)
         }

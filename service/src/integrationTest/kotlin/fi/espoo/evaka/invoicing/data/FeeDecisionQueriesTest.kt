@@ -128,6 +128,16 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(
+                    testAdult_1,
+                    testAdult_2,
+                    testAdult_3,
+                    testAdult_4,
+                    testAdult_5,
+                    testAdult_6,
+                    testAdult_7
+                )
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }

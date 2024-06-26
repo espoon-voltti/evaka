@@ -59,6 +59,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(
                     testChild_1,
                     testChild_2,

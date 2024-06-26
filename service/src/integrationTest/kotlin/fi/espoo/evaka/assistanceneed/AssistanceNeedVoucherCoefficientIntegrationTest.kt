@@ -53,15 +53,16 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(testChild_1, DevPersonType.CHILD)
-            it.insert(feeThresholds)
-            it.insertServiceNeedOptions()
-            it.insertServiceNeedOptionVoucherValues()
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOptionVoucherValues()
 
             val placementId =
-                it.insert(
+                tx.insert(
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testVoucherDaycare.id,
@@ -70,7 +71,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     )
                 )
             val period = FiniteDateRange(today, today.plusDays(30))
-            it.insert(
+            tx.insert(
                 DevServiceNeed(
                     placementId = placementId,
                     startDate = period.start,
@@ -80,7 +81,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     confirmedAt = HelsinkiDateTime.now()
                 )
             )
-            it.insert(
+            tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,

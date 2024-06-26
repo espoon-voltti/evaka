@@ -54,6 +54,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testAdult_6, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
 
             tx.insertTestApplication(

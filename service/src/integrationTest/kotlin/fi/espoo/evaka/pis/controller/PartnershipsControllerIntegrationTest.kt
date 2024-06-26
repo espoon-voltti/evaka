@@ -53,13 +53,14 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @BeforeEach
     fun init() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(testChild_1, DevPersonType.CHILD)
-            it.insert(DevEmployee(unitSupervisorId))
-            it.insert(DevEmployee(serviceWorkerId))
-            it.insert(DevEmployee(decisionMakerId))
-            it.insert(
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(DevEmployee(unitSupervisorId))
+            tx.insert(DevEmployee(serviceWorkerId))
+            tx.insert(DevEmployee(decisionMakerId))
+            tx.insert(
                 DevParentship(
                     id = ParentshipId(UUID.randomUUID()),
                     headOfChildId = person.id,
@@ -68,12 +69,12 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     endDate = LocalDate.now()
                 )
             )
-            it.insertDaycareAclRow(
+            tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
