@@ -109,6 +109,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2, testChild_6, testChild_7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insert(preschoolTerm2020)
         }
         MockPersonDetailsService.add(legacyMockVtjDataset())

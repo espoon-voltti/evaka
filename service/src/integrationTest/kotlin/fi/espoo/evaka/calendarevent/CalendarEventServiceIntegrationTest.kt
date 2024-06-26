@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -97,6 +98,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
             tx.insert(group1Data)

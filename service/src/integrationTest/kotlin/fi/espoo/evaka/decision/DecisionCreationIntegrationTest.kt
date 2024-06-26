@@ -32,6 +32,8 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -77,6 +79,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_6, DevPersonType.CHILD)
             MockPersonDetailsService.add(legacyMockVtjDataset())
             @Suppress("DEPRECATION")
             tx.createUpdate(

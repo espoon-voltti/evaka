@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -42,6 +43,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insert(testChild_1, DevPersonType.CHILD)
             it.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
         }
     }

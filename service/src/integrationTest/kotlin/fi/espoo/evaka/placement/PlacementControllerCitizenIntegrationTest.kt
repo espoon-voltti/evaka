@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -78,6 +79,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
             listOf(snPreschoolDaycare45, snPreschoolDaycarePartDay35).forEach { tx.insert(it) }
             tx.insert(daycareGroup)
             tx.insert(daycareGroup2)

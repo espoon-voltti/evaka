@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
@@ -79,6 +80,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
                     childId = childId,

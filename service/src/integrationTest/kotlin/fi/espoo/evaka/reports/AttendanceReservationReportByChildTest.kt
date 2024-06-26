@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -53,7 +54,20 @@ internal class AttendanceReservationReportByChildTest :
 
     @BeforeEach
     fun setup() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7,
+                    testChild_8
+                )
+                .forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
     }
 
     @Test

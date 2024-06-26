@@ -102,11 +102,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @BeforeEach
     fun prepare() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insertServiceNeedOptions()
-            it.insert(DevEmployee(id = employeeId))
-            it.insert(
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insertServiceNeedOptions()
+            tx.insert(DevEmployee(id = employeeId))
+            tx.insert(
                 DevDaycareGroup(
                     daycareId = testDaycare.id,
                     id = testDaycareGroup.id,

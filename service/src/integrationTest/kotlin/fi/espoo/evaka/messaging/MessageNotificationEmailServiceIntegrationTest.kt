@@ -71,6 +71,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
 
             val groupId = GroupId(UUID.randomUUID())
             tx.insert(

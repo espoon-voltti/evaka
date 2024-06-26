@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -68,6 +69,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(feeThresholds)
             tx.insert(preschoolTerm2020)
         }

@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -54,6 +55,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insert(testChild_1, DevPersonType.CHILD)
             it.insert(feeThresholds)
             it.insertServiceNeedOptions()
             it.insertServiceNeedOptionVoucherValues()

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
@@ -54,6 +55,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun init() {
         db.transaction {
             it.insertGeneralTestFixtures()
+            it.insert(testChild_1, DevPersonType.CHILD)
             it.insert(DevEmployee(unitSupervisorId))
             it.insert(DevEmployee(serviceWorkerId))
             it.insert(DevEmployee(decisionMakerId))

@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
@@ -63,6 +64,9 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testChild_3, testChild_4, testChild_5, testChild_6).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insert(snDaycareFullDay35)
         }
     }

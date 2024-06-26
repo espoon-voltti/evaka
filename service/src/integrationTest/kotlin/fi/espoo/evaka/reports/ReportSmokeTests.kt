@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -32,7 +33,10 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     @BeforeAll
     override fun beforeAll() {
         super.beforeAll()
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

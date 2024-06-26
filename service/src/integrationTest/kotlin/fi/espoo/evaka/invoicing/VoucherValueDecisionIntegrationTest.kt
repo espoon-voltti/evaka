@@ -83,12 +83,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         MockSfiMessagesClient.clearMessages()
         MockEmailClient.clear()
 
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(feeThresholds)
-            it.insertServiceNeedOptions()
-            it.insertServiceNeedOptionVoucherValues()
-            it.insert(
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOptionVoucherValues()
+            tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
@@ -96,7 +97,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
                 )
             )
-            it.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
         }
     }
 

@@ -72,6 +72,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
 
             val groupId = GroupId(UUID.randomUUID())

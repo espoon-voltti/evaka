@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -44,17 +45,18 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @BeforeEach
     fun init() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(serviceWorker)
-            it.insert(financeAdmin)
-            it.insert(unitSupervisor)
-            it.insertDaycareAclRow(
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(serviceWorker)
+            tx.insert(financeAdmin)
+            tx.insert(unitSupervisor)
+            tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisor.id,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
             )
         }

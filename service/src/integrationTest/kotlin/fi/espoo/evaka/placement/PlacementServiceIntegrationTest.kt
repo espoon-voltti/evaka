@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -56,11 +57,12 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun setUp() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insertServiceNeedOptions()
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insertServiceNeedOptions()
             groupId1 =
-                it.insert(
+                tx.insert(
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
@@ -68,7 +70,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     )
                 )
             groupId2 =
-                it.insert(
+                tx.insert(
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
@@ -77,7 +79,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
 
             oldPlacement =
-                it.insertPlacement(
+                tx.insertPlacement(
                     PlacementType.DAYCARE,
                     childId,
                     unitId,
@@ -88,7 +90,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             daycarePlacementId = oldPlacement.id
 
             groupPlacementId =
-                it.insert(
+                tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = daycarePlacementId,
                         daycareGroupId = groupId1,

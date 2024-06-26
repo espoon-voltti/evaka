@@ -123,6 +123,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_8).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insert(feeThresholds)
             tx.insertServiceNeedOptions()
         }

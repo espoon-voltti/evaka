@@ -540,8 +540,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     }
 
     allAdults.forEach { insert(it, DevPersonType.ADULT) }
-
-    allChildren.forEach { insert(it, DevPersonType.CHILD) }
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

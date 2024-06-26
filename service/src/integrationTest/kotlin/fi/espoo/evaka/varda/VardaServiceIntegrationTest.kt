@@ -68,9 +68,10 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insertServiceNeedOptions()
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insertServiceNeedOptions()
         }
         insertVardaUnit(db)
         db.transaction {

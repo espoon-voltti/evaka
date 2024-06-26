@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -55,14 +56,15 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.execute {
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.execute {
                 sql(
                     "INSERT INTO holiday (date, description) VALUES (${bind(janFirst)}, ${bind("New Year")})"
                 )
             }
-            it.execute {
+            tx.execute {
                 sql(
                     "INSERT INTO holiday (date, description) VALUES (${bind(janFirst.plusDays(5))}, ${bind("Epiphany")})"
                 )

@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevPreschoolAssistance
 import fi.espoo.evaka.shared.dev.insert
@@ -69,6 +70,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            listOf(testChildDuplicated, testChildDuplicateOf, testChild_1, testChild_7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.setUnitOids()
         }
         koskiEndpoint.clearData()
