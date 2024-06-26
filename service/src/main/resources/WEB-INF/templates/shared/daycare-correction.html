@@ -22,7 +22,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <li th:text="#{section.main.4.list.4}"></li>
         </ul>
         <p th:text="#{section.main.5}"></p>
-        <p th:text="#{section.main.6}"></p>
+        <p th:utext="#{section.main.6}"></p>
     </div>
 
     <div th:if="${#locale.toString()} == 'sv'" class="correction-content">
@@ -41,6 +41,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <li th:text="#{section.main.4.list.4}"></li>
         </ul>
         <p th:text="#{section.main.5}"></p>
+        <p th:if="#{section.main.6} != ''" th:utext="#{section.main.6}"></p>
     </div>
 
     <div class="col-row" th:text="#{address.title}"></div>
