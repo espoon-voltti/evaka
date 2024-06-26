@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faComment } from 'Icons'
 import sum from 'lodash/sum'
 import React, {
   MutableRefObject,
@@ -57,6 +58,9 @@ export interface Props {
   calendarDays: ReservationResponseDay[]
   onCreateReservationClicked: () => void
   onCreateAbsencesClicked: (initialDate: LocalDate | undefined) => void
+  onOpenDiscussionReservationsClicked: (
+    initialDate: LocalDate | undefined
+  ) => void
   onReportHolidaysClicked: () => void
   selectedDate: LocalDate | undefined
   selectDate: (date: LocalDate) => void
@@ -65,11 +69,52 @@ export interface Props {
   events: CitizenCalendarEvent[]
 }
 
+export function countEventsForDay(
+  events: CitizenCalendarEvent[],
+  day: LocalDate
+) {
+  const currentEvents = events.filter((e) => e.period.includes(day))
+
+  if (currentEvents.length > 0) {
+    const daycareEvents = currentEvents.filter(
+      (e) => e.eventType === 'DAYCARE_EVENT'
+    )
+    const discussionSurveys = currentEvents.filter(
+      (e) => e.eventType === 'DISCUSSION_SURVEY'
+    )
+    //the number of children that are attending the event at this calendar day
+    const eventCount = sum(
+      daycareEvents.map(
+        ({ attendingChildren }) =>
+          Object.values(attendingChildren).filter((ac) =>
+            ac.some(({ periods }) => periods.some((p) => p.includes(day)))
+          ).length
+      )
+    )
+
+    const discussionReservationCount = discussionSurveys.reduce(
+      (acc, curr) =>
+        //the number of children that have a reserved discussion time for this survey at this calendar date
+        //(if a reserved time is returned, it belongs to the child)
+        acc +
+        Object.values(curr.timesByChild).filter((times) =>
+          times.some((t) => t.date.isEqual(day) && t.childId)
+        ).length,
+      0
+    )
+
+    return eventCount + discussionReservationCount
+  } else {
+    return 0
+  }
+}
+
 export default React.memo(function CalendarGridView({
   childData,
   calendarDays,
   onCreateReservationClicked,
   onCreateAbsencesClicked,
+  onOpenDiscussionReservationsClicked,
   onReportHolidaysClicked,
   selectedDate,
   selectDate,
@@ -97,6 +142,11 @@ export default React.memo(function CalendarGridView({
   const onCreateAbsences = useCallback(
     () => onCreateAbsencesClicked(undefined),
     [onCreateAbsencesClicked]
+  )
+
+  const onOpenDiscussionReservations = useCallback(
+    () => onOpenDiscussionReservationsClicked(undefined),
+    [onOpenDiscussionReservationsClicked]
   )
 
   const holidayPeriodResult = useQueryResult(holidayPeriodsQuery())
@@ -129,6 +179,13 @@ export default React.memo(function CalendarGridView({
               data-qa="open-holiday-modal"
             />
           )}
+          <Button
+            appearance="inline"
+            onClick={onOpenDiscussionReservations}
+            text={i18n.calendar.discussionTimeReservation.surveyModalButtonText}
+            icon={faComment}
+            data-qa="open-discussions-modal"
+          />
           <Button
             appearance="inline"
             onClick={onCreateAbsences}
@@ -447,17 +504,7 @@ const Day = React.memo(function Day({
   )
 
   const eventCount = useMemo(
-    () =>
-      sum(
-        events.map(
-          ({ attendingChildren }) =>
-            Object.values(attendingChildren).filter((attending) =>
-              attending.some(({ periods }) =>
-                periods.some((period) => period.includes(day.date))
-              )
-            ).length
-        )
-      ),
+    () => countEventsForDay(events, day.date),
     [day.date, events]
   )
 

@@ -31,6 +31,7 @@ import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import ReservationModal from './ReservationModal'
+import DiscussionSurveyModal from './discussion-reservation-modal/DiscussionSurveyModal'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 import {
   activeQuestionnaireQuery,
@@ -75,6 +76,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     openReservationModal,
     openHolidayModal,
     openAbsenceModal,
+    openDiscussionSurveyModal,
     openDayModal,
     closeModal
   } = useCalendarModalState()
@@ -170,6 +172,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   openReservationModalWithoutInitialRange
                 }
                 onCreateAbsencesClicked={openAbsenceModal}
+                onOpenDiscussionReservationsClicked={openDiscussionSurveyModal}
                 onReportHolidaysClicked={openHolidayModal}
                 selectedDate={
                   modalState?.type === 'day' ? modalState.date : undefined
@@ -195,6 +198,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               <ActionPickerModal
                 close={closeModal}
                 openReservations={openReservationModalWithoutInitialRange}
+                openDiscussionReservations={openDiscussionSurveyModal}
                 openAbsences={openAbsenceModal}
                 openHolidays={openHolidayModal}
               />
@@ -216,6 +220,15 @@ const CalendarPage = React.memo(function CalendarPage() {
                 close={closeModal}
                 initialDate={modalState.initialDate}
                 reservationsResponse={response}
+              />
+            )}
+            {modalState?.type === 'discussions' && (
+              <DiscussionSurveyModal
+                close={closeModal}
+                childData={response.children}
+                surveys={events.filter(
+                  (e) => e.eventType === 'DISCUSSION_SURVEY'
+                )}
               />
             )}
             {modalState?.type === 'holidays' && questionnaire && (
@@ -248,6 +261,7 @@ type URLModalState =
   | { type: 'absences'; initialDate: LocalDate | undefined }
   | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
+  | { type: 'discussions'; initialDate: LocalDate | undefined }
 
 // Modal state not stored to the URL
 type NonURLModalState = { type: 'pickAction' }
@@ -262,6 +276,7 @@ interface UseModalStateResult {
   openReservationModal: (initialRange: FiniteDateRange | undefined) => void
   openAbsenceModal: (initialDate: LocalDate | undefined) => void
   openHolidayModal: () => void
+  openDiscussionSurveyModal: (initialDate: LocalDate | undefined) => void
   closeModal: () => void
 }
 
@@ -301,6 +316,12 @@ export function useCalendarModalState(): UseModalStateResult {
       openModal({ type: 'absences', initialDate }),
     [openModal]
   )
+
+  const openDiscussionSurveyModal = useCallback(
+    (initialDate: LocalDate | undefined) =>
+      openModal({ type: 'discussions', initialDate }),
+    [openModal]
+  )
   const openHolidayModal = useCallback(
     () => openModal({ type: 'holidays' }),
     [openModal]
@@ -318,6 +339,7 @@ export function useCalendarModalState(): UseModalStateResult {
     openReservationModal,
     openAbsenceModal,
     openHolidayModal,
+    openDiscussionSurveyModal,
     closeModal
   }
 }
@@ -344,9 +366,11 @@ function parseQueryString(qs: string): URLModalState | undefined {
       ? { type: 'holidays' }
       : modalParam === 'absences'
         ? { type: 'absences', initialDate: date }
-        : date
-          ? { type: 'day', date }
-          : undefined
+        : modalParam === 'discussions'
+          ? { type: 'discussions', initialDate: date }
+          : date
+            ? { type: 'day', date }
+            : undefined
 }
 
 function buildQueryString(modal: URLModalState): string {
@@ -365,6 +389,10 @@ function buildQueryString(modal: URLModalState): string {
       }`
     case 'day':
       return `day=${modal.date.toString()}`
+    case 'discussions':
+      return `modal=discussions${
+        modal.initialDate ? '&day=' + modal.initialDate.toString() : ''
+      }`
   }
 }
 

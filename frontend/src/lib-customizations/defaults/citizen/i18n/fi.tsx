@@ -320,9 +320,25 @@ export default {
       SICKLEAVE: 'Sairauspoissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      reservationModalButtonText: 'Siirry varaamaan',
+      surveyModalTitle: 'Ajanvaraus',
+      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalInstruction:
+        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
+      surveyListTitle: 'Varattavat keskustelut',
+      timePreDescriptor: 'klo',
+      reservationLabelText: 'Valittu keskusteluaika:',
+      reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
+      reservationInfoText:
+        'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi'
+    },
+
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
     contactStaffToEditAbsence:
       'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
+
     intermittentShiftCareNotification: 'Ilta-/vuorohoito',
     newReservationOrAbsence: 'Läsnäolo / Poissaolo',
     newHoliday: 'Vastaa poissaolokyselyyn',

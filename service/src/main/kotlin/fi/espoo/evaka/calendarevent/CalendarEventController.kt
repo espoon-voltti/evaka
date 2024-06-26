@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,6 +36,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
@@ -520,30 +520,89 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_CALENDAR_EVENTS,
                         user.id
                     )
-                    tx.getCalendarEventsForGuardian(user.id, range)
-                        .groupBy { it.id }
-                        .map { (eventId, attendees) ->
-                            CitizenCalendarEvent(
-                                id = eventId,
-                                title = attendees[0].title,
-                                description = attendees[0].description,
-                                attendingChildren =
-                                    attendees
-                                        .groupBy { it.childId }
-                                        .mapValues { (_, attendee) ->
-                                            attendee
-                                                .groupBy { Triple(it.type, it.groupId, it.unitId) }
-                                                .map { (t, attendance) ->
-                                                    AttendingChild(
-                                                        periods = attendance.map { it.period },
-                                                        type = t.first,
-                                                        groupName = attendance[0].groupName,
-                                                        unitName = attendance[0].unitName
-                                                    )
-                                                }
-                                        }
-                            )
-                        }
+                    val daycareEvents = tx.getDaycareEventsForGuardian(user.id, range)
+                    val discussionEvents = tx.getDiscussionSurveysForGuardian(user.id, range)
+
+                    val daycareEventResults =
+                        daycareEvents
+                            .groupBy { it.id }
+                            .map { (eventId, attendees) ->
+                                CitizenCalendarEvent(
+                                    id = eventId,
+                                    title = attendees[0].title,
+                                    description = attendees[0].description,
+                                    period = attendees[0].eventPeriod,
+                                    eventType = CalendarEventType.DAYCARE_EVENT,
+                                    attendingChildren =
+                                        attendees
+                                            .groupBy { it.childId }
+                                            .mapValues { (_, attendee) ->
+                                                attendee
+                                                    .groupBy {
+                                                        Triple(it.type, it.groupId, it.unitId)
+                                                    }
+                                                    .map { (t, attendance) ->
+                                                        AttendingChild(
+                                                            periods = attendance.map { it.period },
+                                                            type = t.first,
+                                                            groupName = attendance[0].groupName,
+                                                            unitName = attendance[0].unitName
+                                                        )
+                                                    }
+                                            },
+                                    timesByChild = emptyMap()
+                                )
+                            }
+                    val discussionEventResults =
+                        discussionEvents
+                            .groupBy { it.id }
+                            .map { (eventId, attendeeRows) ->
+                                CitizenCalendarEvent(
+                                    id = eventId,
+                                    title = attendeeRows[0].title,
+                                    description = attendeeRows[0].description,
+                                    eventType = CalendarEventType.DISCUSSION_SURVEY,
+                                    period = attendeeRows[0].eventPeriod,
+                                    attendingChildren =
+                                        attendeeRows
+                                            .groupBy { it.childId }
+                                            .mapValues { (_, attendee) ->
+                                                attendee
+                                                    .groupBy {
+                                                        Triple(
+                                                            it.type,
+                                                            it.groupId,
+                                                            it.unitId
+                                                        )
+                                                    }
+                                                    .map { (t, attendance) ->
+                                                        AttendingChild(
+                                                            periods = attendance.map { it.period }.distinct(),
+                                                            type = t.first,
+                                                            groupName = attendance[0].groupName,
+                                                            unitName = attendance[0].unitName
+                                                        )
+                                                    }
+                                            },
+                                    timesByChild =
+                                        attendeeRows
+                                            .groupBy { it.childId }
+                                            .map { (key, values) ->
+                                                key to
+                                                    values.map {
+                                                        CalendarEventTime(
+                                                            id = it.eventTimeId,
+                                                            childId = it.eventTimeOccupant,
+                                                            startTime = it.eventTimeStart,
+                                                            endTime = it.eventTimeEnd,
+                                                            date = it.eventTimeDate,
+                                                        )
+                                                    }
+                                            }
+                                            .toMap(),
+                                )
+                            }
+                    daycareEventResults + discussionEventResults
                 }
             }
             .also {

@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendar } from 'Icons'
-import sum from 'lodash/sum'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -25,6 +24,7 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
+import { countEventsForDay } from './CalendarGridView'
 import { HistoryOverlay } from './HistoryOverlay'
 import { ChildImageData } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
@@ -84,17 +84,7 @@ export default React.memo(function DayElem({
   }, [])
 
   const eventCount = useMemo(
-    () =>
-      sum(
-        events.map(
-          ({ attendingChildren }) =>
-            Object.values(attendingChildren).filter((attending) =>
-              attending.some(({ periods }) =>
-                periods.some((period) => period.includes(calendarDay.date))
-              )
-            ).length
-        )
-      ),
+    () => countEventsForDay(events, calendarDay.date),
     [calendarDay.date, events]
   )
 

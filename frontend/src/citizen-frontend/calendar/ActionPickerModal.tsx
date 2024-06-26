@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faComment } from 'Icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
@@ -27,18 +28,24 @@ interface Props {
   openReservations: () => void
   openAbsences: (initialDate: LocalDate | undefined) => void
   openHolidays: () => void
+  openDiscussionReservations: (initialDate: LocalDate | undefined) => void
 }
 
 export default React.memo(function ActionPickerModal({
   close,
   openReservations,
   openAbsences,
-  openHolidays
+  openHolidays,
+  openDiscussionReservations
 }: Props) {
   const i18n = useTranslation()
   const onCreateAbsences = useCallback(
     () => openAbsences(undefined),
     [openAbsences]
+  )
+  const onOpenDiscussionReservation = useCallback(
+    () => openDiscussionReservations(undefined),
+    [openDiscussionReservations]
   )
   const questionnaireAvailable = isQuestionnaireAvailable(
     useQueryResult(activeQuestionnaireQuery()),
@@ -59,6 +66,15 @@ export default React.memo(function ActionPickerModal({
               </IconBackground>
             </Action>
           )}
+          <Action
+            onClick={onOpenDiscussionReservation}
+            data-qa="calendar-action-discussion"
+          >
+            {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
+            <IconBackground>
+              <FontAwesomeIcon icon={faComment} size="1x" />
+            </IconBackground>
+          </Action>
           <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
             {i18n.calendar.newAbsence}
             <IconBackground>
