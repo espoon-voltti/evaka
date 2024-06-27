@@ -22,12 +22,6 @@ private typealias FilterByEmployee =
     QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
 
 data object IsEmployee : DatabaseActionRule.Params {
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        when (ctx.user) {
-            is AuthenticatedUser.Employee -> true
-            else -> false
-        }
-
     private fun <T : Id<*>> rule(
         filter: FilterByEmployee
     ): DatabaseActionRule.Scoped<T, IsEmployee> =

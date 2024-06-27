@@ -39,34 +39,6 @@ data class HasGroupRole(
     fun withUnitProviderTypes(vararg allOf: ProviderType) =
         copy(unitProviderTypes = allOf.toEnumSet())
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        when (ctx.user) {
-            is AuthenticatedUser.Employee ->
-                ctx.tx
-                    .createQuery {
-                        sql(
-                            """
-SELECT EXISTS (
-    SELECT 1
-    FROM daycare
-    JOIN daycare_acl acl ON daycare.id = acl.daycare_id
-    JOIN daycare_group ON daycare.id = daycare_group.daycare_id
-    JOIN daycare_group_acl group_acl ON daycare_group.id = group_acl.daycare_group_id
-    JOIN evaka_service.public.daycare_group_acl
-    WHERE acl.employee_id = ${bind(ctx.user.id)}
-    AND group_acl.employee_id = ${bind(ctx.user.id)}
-    AND role = ANY(${bind(oneOf.toSet())})
-    AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
-    ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
-)
-                """
-                                .trimIndent()
-                        )
-                    }
-                    .exactlyOne<Boolean>()
-            else -> false
-        }
-
     private fun <T : Id<*>> rule(
         getGroupRoles: GetGroupRoles
     ): DatabaseActionRule.Scoped<T, HasGroupRole> =

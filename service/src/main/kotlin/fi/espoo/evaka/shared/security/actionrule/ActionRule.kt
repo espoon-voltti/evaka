@@ -97,8 +97,6 @@ object DatabaseActionRule {
     }
 
     interface Params {
-        fun isPermittedForSomeTarget(ctx: QueryContext): Boolean
-
         override fun hashCode(): Int
 
         override fun equals(other: Any?): Boolean
@@ -122,6 +120,9 @@ object DatabaseActionRule {
 
             fun queryWithParams(ctx: QueryContext, params: P): QuerySql?
         }
+
+        fun queryWithParams(ctx: QueryContext): QuerySql? =
+            this.query.queryWithParams(ctx, this.params)
 
         data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
             Scoped<T, P>

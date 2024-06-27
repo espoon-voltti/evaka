@@ -41,9 +41,6 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
             AccessControlDecision.None
         }
 
-    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
-        evaluate(ctx.user).isPermitted()
-
     private fun <T : Id<*>> rule(filter: Filter): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
 
