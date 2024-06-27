@@ -65,8 +65,6 @@ val testAreaSvebi =
         areaCode = 400
     )
 
-val allAreas = listOf(testArea, testAreaSvebi)
-
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
 
@@ -466,25 +464,6 @@ val testChildDuplicateOf =
         duplicateOf = testChildDuplicated.id
     )
 
-val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2, testDecisionMaker_3)
-val allAdults =
-    setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
-val allChildren =
-    setOf(
-        testChild_1,
-        testChild_2,
-        testChild_3,
-        testChild_4,
-        testChild_5,
-        testChild_6,
-        testChild_7,
-        testChild_8,
-        testChildWithNamelessGuardian,
-        testChildDuplicated,
-        testChildDuplicateOf
-    )
-val allDaycares = setOf(testDaycare, testDaycare2)
-
 fun Database.Transaction.insertTestDecisionMaker() {
     testDecisionMaker_1.let {
         insert(
@@ -847,12 +826,3 @@ fun DevPerson.toPersonDetailed() =
 
 fun DevEmployee.toEmployeeWithName() =
     EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
-
-fun DevDaycare.toUnitData() =
-    UnitData(
-        id = this.id,
-        name = this.name,
-        areaId = this.areaId,
-        areaName = allAreas.find { it.id == this.areaId }?.name ?: "",
-        language = this.language.name
-    )

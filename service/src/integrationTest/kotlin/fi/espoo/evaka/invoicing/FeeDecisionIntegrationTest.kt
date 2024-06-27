@@ -18,11 +18,13 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -67,7 +69,10 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.toEmployeeWithName
 import fi.espoo.evaka.toFeeDecisionServiceNeed
+import fi.espoo.evaka.toPersonBasic
+import fi.espoo.evaka.toPersonDetailed
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -313,31 +318,32 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
     }
 
+    private val allAreas = listOf(area1, area2)
+    private val allDaycares = listOf(daycare1, daycare2)
+    private val allWorkers = listOf(testDecisionMaker_1, testDecisionMaker_2)
+    private val allAdults =
+        listOf(
+            testAdult_1,
+            testAdult_2,
+            testAdult_3,
+            testAdult_4,
+            testAdult_5,
+            testAdult_6,
+            testAdult_7
+        )
+    private val allChildren = listOf(testChild_1, testChild_2, testChild_3, testChild_4)
+
     @BeforeEach
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
         MockEmailClient.clear()
 
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDecisionMaker_2)
-            tx.insert(area1)
-            tx.insert(area2)
-            tx.insert(daycare1)
-            tx.insert(daycare2)
-            listOf(
-                    testAdult_1,
-                    testAdult_2,
-                    testAdult_3,
-                    testAdult_4,
-                    testAdult_5,
-                    testAdult_6,
-                    testAdult_7
-                )
-                .forEach { tx.insert(it, DevPersonType.ADULT) }
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
-                tx.insert(it, DevPersonType.CHILD)
-            }
+            allWorkers.forEach { tx.insert(it) }
+            allAreas.forEach { tx.insert(it) }
+            allDaycares.forEach { tx.insert(it) }
+            allAdults.forEach { tx.insert(it, DevPersonType.ADULT) }
+            allChildren.forEach { tx.insert(it, DevPersonType.CHILD) }
             listOf(snDaycareFullDay35, snDaycarePartDay25, snDefaultDaycare).forEach {
                 tx.insert(it)
             }
@@ -2302,4 +2308,76 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
+
+    private fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed =
+        FeeDecisionDetailed(
+            id = feeDecision.id,
+            status = feeDecision.status,
+            decisionNumber = feeDecision.decisionNumber,
+            decisionType = feeDecision.decisionType,
+            validDuring = feeDecision.validDuring,
+            headOfFamily =
+                allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonDetailed(),
+            partner = allAdults.find { it.id == feeDecision.partnerId }?.toPersonDetailed(),
+            headOfFamilyIncome = feeDecision.headOfFamilyIncome,
+            partnerIncome = feeDecision.partnerIncome,
+            familySize = feeDecision.familySize,
+            feeThresholds = feeDecision.feeThresholds,
+            children =
+                feeDecision.children.map { child ->
+                    FeeDecisionChildDetailed(
+                        child = allChildren.find { it.id == child.child.id }!!.toPersonDetailed(),
+                        placementType = child.placement.type,
+                        placementUnit =
+                            allDaycares.find { it.id == child.placement.unitId }!!.toUnitData(),
+                        serviceNeedOptionId = child.serviceNeed.optionId,
+                        serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
+                        serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
+                        serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,
+                        serviceNeedMissing = child.serviceNeed.missing,
+                        baseFee = child.baseFee,
+                        siblingDiscount = child.siblingDiscount,
+                        fee = child.fee,
+                        feeAlterations = child.feeAlterations,
+                        finalFee = child.finalFee,
+                        childIncome = child.childIncome
+                    )
+                },
+            documentKey = feeDecision.documentKey,
+            approvedBy =
+                allWorkers.find { it.id == feeDecision.approvedById }?.toEmployeeWithName(),
+            approvedAt = feeDecision.approvedAt,
+            financeDecisionHandlerFirstName =
+                allWorkers.find { it.id == feeDecision.decisionHandlerId }?.firstName,
+            financeDecisionHandlerLastName =
+                allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
+            created = feeDecision.created,
+            documentContainsContactInfo = false
+        )
+
+    private fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary =
+        FeeDecisionSummary(
+            id = feeDecision.id,
+            status = feeDecision.status,
+            decisionNumber = feeDecision.decisionNumber,
+            validDuring = feeDecision.validDuring,
+            headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonBasic(),
+            children =
+                feeDecision.children.map { child ->
+                    allChildren.find { it.id == child.child.id }!!.toPersonBasic()
+                },
+            approvedAt = feeDecision.approvedAt,
+            finalPrice = feeDecision.children.fold(0) { sum, child -> sum + child.finalFee },
+            created = feeDecision.created,
+            difference = feeDecision.difference
+        )
+
+    private fun DevDaycare.toUnitData() =
+        UnitData(
+            id = this.id,
+            name = this.name,
+            areaId = this.areaId,
+            areaName = allAreas.find { it.id == this.areaId }?.name ?: "",
+            language = this.language.name
+        )
 }

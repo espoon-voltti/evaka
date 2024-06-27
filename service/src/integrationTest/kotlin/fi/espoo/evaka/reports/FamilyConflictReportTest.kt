@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.allAreas
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -176,7 +175,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         unit: DevDaycare = testDaycare
     ) =
         FamilyConflictReportRow(
-            careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
+            careAreaName = testArea.name,
             unitId = unit.id,
             unitName = unit.name,
             id = person.id,
