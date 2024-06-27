@@ -918,11 +918,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val groupPlacementEndDates =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
-                    )
-                    .bind("id", groupId)
+                it.createQuery {
+                        sql(
+                            "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+                        )
+                    }
                     .toList<LocalDate>()
             }
         assertEquals(1, groupPlacementEndDates.size)
@@ -930,9 +930,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val serviceNeedEndDates =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
-                    .bind("id", oldPlacement.id)
+                it.createQuery {
+                        sql(
+                            "SELECT end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}"
+                        )
+                    }
                     .toList<LocalDate>()
             }
         assertEquals(1, serviceNeedEndDates.size)
@@ -996,11 +998,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val groupPlacements =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
-                    )
-                    .bind("id", groupId)
+                it.createQuery {
+                        sql(
+                            "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+                        )
+                    }
                     .toList<QueryResult>()
             }
 
@@ -1010,11 +1012,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val serviceNeeds =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT start_date, end_date FROM service_need WHERE placement_id = :id"
-                    )
-                    .bind("id", oldPlacement.id)
+                it.createQuery {
+                        sql(
+                            "SELECT start_date, end_date FROM service_need WHERE placement_id = ${bind(oldPlacement.id)}"
+                        )
+                    }
                     .toList<QueryResult>()
             }
 
