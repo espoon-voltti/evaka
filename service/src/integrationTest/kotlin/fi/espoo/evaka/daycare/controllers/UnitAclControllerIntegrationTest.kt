@@ -601,15 +601,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun employeeMessageAccountState(): MessageAccountState =
         db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        """
-                    SELECT active FROM message_account
-                    WHERE employee_id = :employeeId
-                """
-                            .trimIndent()
-                    )
-                    .bind("employeeId", employee.id)
+                it.createQuery {
+                        sql(
+                            "SELECT active FROM message_account WHERE employee_id = ${bind(employee.id)}"
+                        )
+                    }
                     .toList<Boolean>()
             }
             .let { accounts ->
