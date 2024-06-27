@@ -449,14 +449,15 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getAllReservations(): List<Reservation> {
         return db.read { tx ->
-            @Suppress("DEPRECATION")
-            tx.createQuery(
-                    """
+            tx.createQuery {
+                    sql(
+                        """
                 SELECT child_id, date, start_time, end_time
                 FROM attendance_reservation
                 ORDER BY child_id, date
                 """
-                )
+                    )
+                }
                 .toList<Reservation>()
         }
     }
