@@ -38,6 +38,8 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -130,7 +132,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2.copy(financeDecisionHandler = testDecisionMaker_2.id))
             listOf(
                     testAdult_1,

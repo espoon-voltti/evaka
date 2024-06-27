@@ -62,6 +62,8 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschool
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_4
@@ -109,7 +111,9 @@ class AttendanceReservationsControllerIntegrationTest :
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testChild_1, testChild_2, testChild_4, testChild_5, testChild_6).forEach {
                 tx.insert(it, DevPersonType.CHILD)

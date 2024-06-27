@@ -27,6 +27,7 @@ import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snPreschoolDaycare45
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -56,6 +57,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,

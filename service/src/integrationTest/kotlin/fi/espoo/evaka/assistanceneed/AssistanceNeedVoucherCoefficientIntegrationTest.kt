@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
@@ -56,6 +57,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testVoucherDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)

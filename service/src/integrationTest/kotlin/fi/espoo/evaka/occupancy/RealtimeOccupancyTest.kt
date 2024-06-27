@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
@@ -49,6 +50,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insertServiceNeedOptions()
             tx.insert(DevDaycareGroup(groupId, testDaycare.id))

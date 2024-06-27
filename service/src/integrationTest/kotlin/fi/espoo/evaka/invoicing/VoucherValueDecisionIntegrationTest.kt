@@ -56,6 +56,7 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -87,6 +88,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testVoucherDaycare.copy(financeDecisionHandler = testDecisionMaker_2.id))
             tx.insert(testVoucherDaycare2)

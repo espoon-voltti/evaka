@@ -37,7 +37,9 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }

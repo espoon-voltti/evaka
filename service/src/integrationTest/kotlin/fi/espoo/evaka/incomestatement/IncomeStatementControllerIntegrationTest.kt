@@ -36,6 +36,8 @@ import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -65,7 +67,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(testPurchasedDaycare)
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)

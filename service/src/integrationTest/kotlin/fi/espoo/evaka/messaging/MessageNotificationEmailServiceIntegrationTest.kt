@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.util.UUID
@@ -71,6 +72,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
 

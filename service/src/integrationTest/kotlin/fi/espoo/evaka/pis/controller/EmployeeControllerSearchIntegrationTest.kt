@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
@@ -37,6 +38,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(testDecisionMaker_1.copy(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.insert(testDecisionMaker_2)
             tx.insert(testDecisionMaker_3)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,

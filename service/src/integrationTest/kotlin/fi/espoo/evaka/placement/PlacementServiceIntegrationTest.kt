@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
@@ -60,7 +61,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()

@@ -53,8 +53,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     fun beforeEach() {
         db.transaction { tx ->
             tx.insert(testArea)
-            tx.insert(testArea2)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2.copy(financeDecisionHandler = null))
             tx.insert(testDaycareGroup)
             tx.insert(testDaycareGroup2)

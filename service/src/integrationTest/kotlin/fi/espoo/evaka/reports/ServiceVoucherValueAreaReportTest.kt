@@ -56,7 +56,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
                 tx.insert(it, DevPersonType.ADULT)

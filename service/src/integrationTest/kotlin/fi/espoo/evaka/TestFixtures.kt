@@ -492,11 +492,7 @@ val allChildren =
     )
 val allDaycares = setOf(testDaycare, testDaycare2)
 
-fun Database.Transaction.insertGeneralTestFixtures() {
-    insert(testArea)
-    insert(testArea2)
-    insert(testAreaSvebi)
-}
+fun Database.Transaction.insertGeneralTestFixtures() {}
 
 fun Database.Transaction.insertTestDecisionMaker() {
     testDecisionMaker_1.let {

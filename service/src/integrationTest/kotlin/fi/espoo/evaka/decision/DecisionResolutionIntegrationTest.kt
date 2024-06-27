@@ -39,6 +39,7 @@ import fi.espoo.evaka.test.getDecisionRowsByApplication
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.test.getPlacementRowsByChild
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -70,6 +71,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)

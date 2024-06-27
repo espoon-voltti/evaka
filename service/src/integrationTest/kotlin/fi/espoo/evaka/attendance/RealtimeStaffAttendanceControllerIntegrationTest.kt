@@ -17,6 +17,8 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -49,7 +51,9 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(
                 DevDaycareGroup(id = groupId1, daycareId = testDaycare.id, name = "Testiläiset 1")

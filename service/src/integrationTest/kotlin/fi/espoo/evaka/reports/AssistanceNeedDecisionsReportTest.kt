@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -109,6 +110,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testDecisionMaker_3)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)

@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -80,7 +81,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {

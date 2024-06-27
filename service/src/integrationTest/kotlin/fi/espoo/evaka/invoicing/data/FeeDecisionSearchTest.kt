@@ -66,8 +66,11 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testAreaSvebi)
             tx.insert(testSvebiDaycare)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2.copy(financeDecisionHandler = testDecisionMaker_2.id))
             listOf(testAdult_3, testAdult_4).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_3, testChild_4, testChild_5, testChild_6).forEach {

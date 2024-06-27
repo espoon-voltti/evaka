@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -46,6 +47,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testVoucherDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)

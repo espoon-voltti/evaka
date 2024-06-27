@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -71,6 +72,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_3).forEach {

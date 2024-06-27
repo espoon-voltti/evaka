@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -50,6 +51,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_2, testChild_3).forEach {

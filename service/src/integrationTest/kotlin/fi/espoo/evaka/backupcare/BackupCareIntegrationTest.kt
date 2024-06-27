@@ -27,6 +27,8 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -60,7 +62,9 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(testChild_1, DevPersonType.CHILD)
             placementId =

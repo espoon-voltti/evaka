@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import java.util.UUID
@@ -30,6 +31,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun setup() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart))
             tx.execute {

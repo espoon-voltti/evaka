@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -27,6 +28,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }

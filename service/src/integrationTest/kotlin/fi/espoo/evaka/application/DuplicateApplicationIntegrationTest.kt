@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -30,6 +31,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }

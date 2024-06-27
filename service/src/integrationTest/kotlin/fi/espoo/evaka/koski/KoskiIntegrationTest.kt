@@ -30,6 +30,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChildDuplicateOf
 import fi.espoo.evaka.testChildDuplicated
 import fi.espoo.evaka.testChild_1
@@ -71,7 +72,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testChildDuplicated, testChildDuplicateOf, testChild_1, testChild_7).forEach {
                 tx.insert(it, DevPersonType.CHILD)

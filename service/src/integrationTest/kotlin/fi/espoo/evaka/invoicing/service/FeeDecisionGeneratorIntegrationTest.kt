@@ -85,6 +85,8 @@ import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
+import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -125,7 +127,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
             tx.insert(testDaycare)
+            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(testDaycareNotInvoiced)
             tx.insert(testClub)

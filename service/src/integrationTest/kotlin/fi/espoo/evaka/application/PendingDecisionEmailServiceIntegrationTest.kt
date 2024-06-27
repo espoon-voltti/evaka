@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_6
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -55,6 +56,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_6, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)

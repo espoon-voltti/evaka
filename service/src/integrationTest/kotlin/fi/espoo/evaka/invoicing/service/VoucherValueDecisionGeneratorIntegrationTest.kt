@@ -58,6 +58,7 @@ import fi.espoo.evaka.snDefaultPreparatory
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_6
@@ -93,6 +94,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
             tx.insert(testVoucherDaycare)
             tx.insert(testVoucherDaycare2)
             listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
