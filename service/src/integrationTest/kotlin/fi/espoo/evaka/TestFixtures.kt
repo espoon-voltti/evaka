@@ -18,7 +18,6 @@ import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.*
 import fi.espoo.evaka.placement.PlacementType
@@ -57,13 +56,6 @@ Queries and data classes for initializing integration tests with person and unit
 */
 
 val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
-val testAreaSvebi =
-    DevCareArea(
-        id = AreaId(UUID.randomUUID()),
-        name = "Svenska Bildningstjanster",
-        shortName = "svenska-bildningstjanster",
-        areaCode = 400
-    )
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
@@ -109,14 +101,6 @@ val testDaycareNotInvoiced =
         name = "Not Invoiced",
         areaId = testArea.id,
         invoicedByMunicipality = false
-    )
-
-val testSvebiDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Svebi Daycare",
-        areaId = testAreaSvebi.id,
-        language = Language.sv
     )
 
 val testPurchasedDaycare =

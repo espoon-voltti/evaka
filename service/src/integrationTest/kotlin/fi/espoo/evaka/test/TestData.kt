@@ -18,10 +18,10 @@ import fi.espoo.evaka.application.Preferences
 import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import java.time.LocalTime
@@ -30,9 +30,9 @@ import java.util.UUID
 val defaultPreferredUnit = PreferredUnit(id = testDaycare.id, name = testDaycare.name)
 
 fun getValidDaycareApplication(
-    preferredUnit: PreferredUnit = defaultPreferredUnit,
+    preferredUnit: DevDaycare = testDaycare,
     shiftCare: Boolean = false
-) = applicationDetails(preferredUnit, shiftCare = shiftCare)
+) = applicationDetails(PreferredUnit(preferredUnit.id, preferredUnit.name), shiftCare = shiftCare)
 
 val validDaycareApplication = getValidDaycareApplication()
 
@@ -223,7 +223,7 @@ val validPreschoolApplication =
             )
     )
 
-val validClubApplication =
+fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDate) =
     ApplicationDetails(
         id = ApplicationId(UUID.randomUUID()),
         type = ApplicationType.CLUB,
@@ -296,8 +296,8 @@ val validClubApplication =
                 preferences =
                     Preferences(
                         preferredUnits =
-                            listOf(PreferredUnit(id = testClub.id, name = testClub.name)),
-                        preferredStartDate = LocalDate.of(2021, 8, 15),
+                            listOf(PreferredUnit(id = preferredUnit.id, name = preferredUnit.name)),
+                        preferredStartDate = preferredStartDate,
                         connectedDaycarePreferredStartDate = null,
                         serviceNeed = null,
                         siblingBasis = null,
