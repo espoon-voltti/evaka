@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -32,6 +34,9 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1.copy(roles = setOf(UserRole.SERVICE_WORKER)))
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testDecisionMaker_3)
             tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,

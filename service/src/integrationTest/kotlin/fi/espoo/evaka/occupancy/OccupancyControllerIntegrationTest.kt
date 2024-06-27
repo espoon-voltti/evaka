@@ -49,6 +49,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             listOf(testChild_1, testChild_2, testChild_3).forEach {

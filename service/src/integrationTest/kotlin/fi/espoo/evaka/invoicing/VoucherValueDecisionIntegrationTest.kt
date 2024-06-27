@@ -85,8 +85,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
             tx.insert(testDaycare)
-            tx.insert(testVoucherDaycare)
+            tx.insert(testVoucherDaycare.copy(financeDecisionHandler = testDecisionMaker_2.id))
             tx.insert(testVoucherDaycare2)
             listOf(
                     testAdult_1,
@@ -553,10 +555,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `VoucherValueDecision handler is set to the daycare handler when forced when decision is not normal`() {
         val approvedDecision = createReliefDecision(true)
-        assertEquals(
-            testVoucherDaycare.financeDecisionHandler?.raw,
-            approvedDecision.decisionHandler
-        )
+        assertEquals(testDecisionMaker_2.id.raw, approvedDecision.decisionHandler)
     }
 
     @Test

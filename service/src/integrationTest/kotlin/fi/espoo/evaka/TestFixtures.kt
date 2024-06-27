@@ -110,7 +110,6 @@ val testDaycare2 =
         name = "Test Daycare 2",
         areaId = testArea2.id,
         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-        financeDecisionHandler = testDecisionMaker_2.id
     )
 
 val testDaycareNotInvoiced =
@@ -157,7 +156,6 @@ val testVoucherDaycare =
         providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
         ophOrganizerOid = defaultPurchasedOrganizerOid,
         invoicedByMunicipality = false,
-        financeDecisionHandler = testDecisionMaker_2.id,
         businessId = "1234567-8",
         iban = "FI12 3456 7891 2345 67",
         providerId = "1234"
@@ -498,16 +496,6 @@ fun Database.Transaction.insertGeneralTestFixtures() {
     insert(testArea)
     insert(testArea2)
     insert(testAreaSvebi)
-
-    insertTestDecisionMaker()
-
-    testDecisionMaker_2.let {
-        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
-    }
-
-    testDecisionMaker_3.let {
-        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
-    }
 }
 
 fun Database.Transaction.insertTestDecisionMaker() {

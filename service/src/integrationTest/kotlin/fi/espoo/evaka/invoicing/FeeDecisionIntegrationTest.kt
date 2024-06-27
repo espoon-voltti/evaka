@@ -316,6 +316,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)
             listOf(

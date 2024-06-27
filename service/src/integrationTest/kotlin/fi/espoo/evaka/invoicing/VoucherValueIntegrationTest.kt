@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionVoucherValueId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -61,6 +62,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insertServiceNeedOptions()
             tx.insertServiceNeedOptionVoucherValues()
         }

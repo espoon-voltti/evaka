@@ -76,6 +76,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insert(testDaycare)
             tx.insert(testVoucherDaycare)
             tx.insert(testVoucherDaycare2)

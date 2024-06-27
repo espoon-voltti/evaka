@@ -63,6 +63,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insert(testSvebiDaycare)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)

@@ -128,8 +128,10 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
             tx.insert(testDaycare)
-            tx.insert(testDaycare2)
+            tx.insert(testDaycare2.copy(financeDecisionHandler = testDecisionMaker_2.id))
             listOf(
                     testAdult_1,
                     testAdult_2,

@@ -48,6 +48,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insert(testDaycare)
             tx.insertServiceNeedOptions()
             tx.insert(DevDaycareGroup(groupId, testDaycare.id))

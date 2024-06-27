@@ -79,6 +79,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
             tx.insert(testDaycare)
             listOf(testAdult_5, testAdult_6).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_6, DevPersonType.CHILD)

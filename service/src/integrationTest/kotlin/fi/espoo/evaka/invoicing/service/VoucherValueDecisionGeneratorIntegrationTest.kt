@@ -91,6 +91,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
             tx.insert(testVoucherDaycare)
             tx.insert(testVoucherDaycare2)
             listOf(testAdult_1, testAdult_2, testAdult_3).forEach {

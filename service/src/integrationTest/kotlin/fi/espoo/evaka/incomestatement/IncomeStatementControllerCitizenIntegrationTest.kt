@@ -642,12 +642,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `cannot update a handled income statement`() {
+        val employee = DevEmployee()
+        db.transaction { it.insert(employee) }
+
         createIncomeStatement(
             IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
         )
         val id = getIncomeStatements().data.first().id
 
-        markIncomeStatementHandled(id, "foooooo")
+        markIncomeStatementHandled(id, employee.id, "foooooo")
 
         assertThrows<Forbidden> {
             updateIncomeStatement(
@@ -662,13 +665,16 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `cannot see handler note or remove a handled income statement`() {
+        val employee = DevEmployee()
+        db.transaction { it.insert(employee) }
+
         createIncomeStatement(
             IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
         )
         val incomeStatement = getIncomeStatements().data.first()
         assertEquals("", incomeStatement.handlerNote)
 
-        markIncomeStatementHandled(incomeStatement.id, "foo bar")
+        markIncomeStatementHandled(incomeStatement.id, employee.id, "foo bar")
 
         val handled = getIncomeStatements().data.first()
         assertEquals(true, handled.handled)
@@ -717,18 +723,23 @@ class IncomeStatementControllerCitizenIntegrationTest :
         }
     }
 
-    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
+    private fun markIncomeStatementHandled(
+        id: IncomeStatementId,
+        handlerId: EmployeeId,
+        note: String
+    ) =
         db.transaction { tx ->
             @Suppress("DEPRECATION")
             tx.createUpdate(
                     """
             UPDATE income_statement
-            SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
+            SET handler_id = :handlerId, handler_note = :note
             WHERE id = :id
             """
                         .trimIndent()
                 )
                 .bind("id", id)
+                .bind("handlerId", handlerId)
                 .bind("note", note)
                 .execute()
         }
