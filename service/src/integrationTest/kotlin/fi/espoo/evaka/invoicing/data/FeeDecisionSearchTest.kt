@@ -347,18 +347,13 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             id: FeeDecisionId,
             created: HelsinkiDateTime,
             sentAt: HelsinkiDateTime
-        ) =
-            @Suppress("DEPRECATION")
-            createUpdate(
-                    """
-                UPDATE fee_decision SET created = :created, sent_at = :sentAt WHERE id = :id
+        ) = execute {
+            sql(
+                """
+                UPDATE fee_decision SET created = ${bind(created)}, sent_at = ${bind(sentAt)} WHERE id = ${bind(id)}
             """
-                        .trimIndent()
-                )
-                .bind("created", created)
-                .bind("sentAt", sentAt)
-                .bind("id", id)
-                .execute()
+            )
+        }
         lateinit var decisions: List<FeeDecision>
         db.transaction { tx ->
             decisions =

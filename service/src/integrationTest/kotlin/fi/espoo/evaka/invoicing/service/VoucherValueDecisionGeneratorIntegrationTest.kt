@@ -1069,11 +1069,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
-                )
-                .bind("endDate", subPeriod1.end)
+            tx.createUpdate {
+                    sql(
+                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')"
+                    )
+                }
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
@@ -1429,8 +1429,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
-                @Suppress("DEPRECATION")
-                tx.createQuery("SELECT * FROM voucher_value_decision")
+                tx.createQuery { sql("SELECT * FROM voucher_value_decision") }
                     .toList<VoucherValueDecision>()
             }
             .shuffled() // randomize order to expose assumptions

@@ -25,14 +25,11 @@ internal data class KoskiStudyRightRaw(
 )
 
 internal fun Database.Read.getStoredResults() =
-    @Suppress("DEPRECATION")
-    createQuery("select * from koski_study_right").toList<KoskiStudyRightRaw>()
+    createQuery { sql("SELECT * FROM koski_study_right") }.toList<KoskiStudyRightRaw>()
 
-internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) =
-    createUpdate {
-            sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
-        }
-        .execute()
+internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) = execute {
+    sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
+}
 
 internal fun Database.Transaction.setUnitOids() {
     setUnitOid(testDaycare.id, "1.2.246.562.10.1111111111")

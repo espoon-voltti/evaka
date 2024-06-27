@@ -1835,10 +1835,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(false, beforeForcing.requiresManualSending)
 
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate("update person set force_manual_fee_decisions = true where id = :id")
-                .bind("id", decision.headOfFamilyId)
-                .execute()
+            tx.execute {
+                sql(
+                    "UPDATE person SET force_manual_fee_decisions = true WHERE id = ${bind(decision.headOfFamilyId)}"
+                )
+            }
         }
 
         confirmDrafts(listOf(decision.id))

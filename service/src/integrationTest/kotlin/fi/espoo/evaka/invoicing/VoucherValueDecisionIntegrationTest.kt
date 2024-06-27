@@ -220,13 +220,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `value decision handler is set to approver for relief decision`() {
         createPlacement(startDate, endDate)
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate(
-                    "UPDATE voucher_value_decision d SET decision_type = :decisionType WHERE child_id = :childId"
+            val decisionType = VoucherValueDecisionType.RELIEF_ACCEPTED
+            val childId = testChild_1.id
+            it.execute {
+                sql(
+                    "UPDATE voucher_value_decision d SET decision_type = ${bind(decisionType)} WHERE child_id = ${bind(childId)}"
                 )
-                .bind("decisionType", VoucherValueDecisionType.RELIEF_ACCEPTED)
-                .bind("childId", testChild_1.id)
-                .execute()
+            }
 
             it.execute {
                 sql(
@@ -398,11 +398,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE placement SET start_date = :now WHERE id = :placementId")
-                .bind("placementId", placementId)
-                .bind("now", now.toLocalDate())
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE placement SET start_date = ${bind(now.toLocalDate())} WHERE id = ${bind(placementId)}"
+                )
+            }
         }
 
         searchValueDecisions("SENT", "", """["NO_STARTING_PLACEMENTS"]""").let { decisions ->
@@ -690,12 +690,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decision = getAllValueDecisions().getOrNull(0)!!
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate(
-                    "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = :id"
+            it.execute {
+                sql(
+                    "UPDATE voucher_value_decision SET decision_type='RELIEF_ACCEPTED' WHERE id = ${bind(decision.id)}"
                 )
-                .bind("id", decision.id)
-                .execute()
+            }
         }
 
         db.transaction {
@@ -852,8 +851,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getAllValueDecisions(): List<VoucherValueDecision> {
         return db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT * FROM voucher_value_decision")
+                it.createQuery { sql("SELECT * FROM voucher_value_decision") }
                     .toList<VoucherValueDecision>()
             }
             .shuffled() // randomize order to expose assumptions

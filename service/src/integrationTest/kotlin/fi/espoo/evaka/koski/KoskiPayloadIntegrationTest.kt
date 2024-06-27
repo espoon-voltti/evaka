@@ -778,10 +778,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("DELETE FROM placement WHERE id = :placementId")
-                .bind("placementId", placementId)
-                .execute()
+            it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
         }
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
 
