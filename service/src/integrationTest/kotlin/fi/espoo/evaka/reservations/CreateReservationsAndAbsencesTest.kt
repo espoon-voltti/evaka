@@ -1051,6 +1051,65 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `reservations with times added to open holiday period are changed to reservations without times`() {
+        val holidayPeriodStart = monday.plusMonths(1)
+        val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
+        val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+
+        // given
+        db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday,
+                    endDate = monday.plusYears(1)
+                )
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            it.insertHolidayPeriod(holidayPeriod, monday)
+        }
+
+        // when
+        db.transaction {
+            createReservationsAndAbsences(
+                it,
+                beforeThreshold,
+                adult.user(CitizenAuthLevel.STRONG),
+                listOf(
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = holidayPeriodStart,
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    ),
+                    DailyReservationRequest.Reservations(
+                        childId = child.id,
+                        date = holidayPeriodStart.plusDays(1),
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+                        secondReservation = TimeRange(LocalTime.of(16, 0), LocalTime.of(19, 0))
+                    )
+                ),
+                citizenReservationThresholdHours
+            )
+        }
+
+        // then
+        val dailyReservations =
+            db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }
+        assertEquals(2, dailyReservations.size)
+        dailyReservations.first().let {
+            assertEquals(holidayPeriodStart, it.date)
+            assertEquals(Reservation.NoTimes, it.reservation)
+            assertFalse(it.staffCreated)
+        }
+        dailyReservations.last().let {
+            assertEquals(holidayPeriodStart.plusDays(1), it.date)
+            assertEquals(Reservation.NoTimes, it.reservation)
+            assertFalse(it.staffCreated)
+        }
+    }
+
+    @Test
     fun `reservations without times cannot be added to closed holiday period or outside holiday periods`() {
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
