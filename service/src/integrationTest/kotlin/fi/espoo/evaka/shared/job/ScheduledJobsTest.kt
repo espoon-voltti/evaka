@@ -115,16 +115,15 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun setApplicationCreatedDate(
-        db: Database.Transaction,
+        tx: Database.Transaction,
         applicationId: ApplicationId,
         created: LocalDate
-    ) {
-        db.handle
-            .createUpdate("""UPDATE application SET created = :created WHERE id = :id""")
-            .bind("created", created)
-            .bind("id", applicationId)
-            .execute()
-    }
+    ) =
+        tx.execute {
+            sql(
+                "UPDATE application SET created = ${bind(created)} WHERE id = ${bind(applicationId)}"
+            )
+        }
 
     @Test
     fun `a transfer application for a child without any placements is cancelled`() {
@@ -424,12 +423,11 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     )
                 )
                 .let { id ->
-                    @Suppress("DEPRECATION")
-                    it.createUpdate(
-                            "UPDATE child_daily_note SET modified_at = :date WHERE id = :id"
-                        )
-                        .bind("id", id)
-                        .bind("date", sixteenHoursAgo)
+                    it.createUpdate {
+                            sql(
+                                "UPDATE child_daily_note SET modified_at = ${bind(sixteenHoursAgo)} WHERE id = ${bind(id)}"
+                            )
+                        }
                         .updateExactlyOne()
                 }
         }
@@ -555,9 +553,9 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getApplicationStatus(applicationId: ApplicationId): ApplicationStatus {
         return db.read {
-            @Suppress("DEPRECATION")
-            it.createQuery("SELECT status FROM application WHERE id = :id")
-                .bind("id", applicationId)
+            it.createQuery {
+                    sql("SELECT status FROM application WHERE id = ${bind(applicationId)}")
+                }
                 .exactlyOne<ApplicationStatus>()
         }
     }
