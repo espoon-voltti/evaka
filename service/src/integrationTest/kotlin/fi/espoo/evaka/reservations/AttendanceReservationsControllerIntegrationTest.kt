@@ -10,11 +10,12 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.ChildServiceNeedInfo
 import fi.espoo.evaka.assistance.AssistanceFactorUpdate
 import fi.espoo.evaka.assistance.insertAssistanceFactor
+import fi.espoo.evaka.clubTerms
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.preschoolTerm2020
@@ -60,6 +61,7 @@ import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDefaultPreschool
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_4
@@ -105,16 +107,23 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(testGroup1)
-            it.insert(testGroup2)
-            it.insert(testGroupInDaycare2)
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            listOf(testChild_1, testChild_2, testChild_4, testChild_5, testChild_6).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            clubTerms.forEach { tx.insert(it) }
+            tx.insertServiceNeedOptions()
+            tx.insert(testGroup1)
+            tx.insert(testGroup2)
+            tx.insert(testGroupInDaycare2)
 
-            it.insert(DevEmployee(employeeId))
-            it.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
-            it.insert(DevEmployee(employeeId2))
-            it.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
+            tx.insert(DevEmployee(employeeId))
+            tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
+            tx.insert(DevEmployee(employeeId2))
+            tx.insertDaycareAclRow(testDaycare.id, employeeId2, UserRole.STAFF)
         }
     }
 

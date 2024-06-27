@@ -5,7 +5,6 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -15,6 +14,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -57,7 +58,11 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             placementId =
                 tx.insert(
                     DevPlacement(
@@ -153,6 +158,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             }
         db.transaction { tx ->
+            tx.insert(snDefaultDaycare)
             tx.insert(
                 DevServiceNeed(
                     placementId = placementId,

@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attachment.getAttachment
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -20,6 +19,8 @@ import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -49,7 +50,10 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @BeforeEach
     fun setup() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     private val testFeeAlterationId = FeeAlterationId(UUID.randomUUID())

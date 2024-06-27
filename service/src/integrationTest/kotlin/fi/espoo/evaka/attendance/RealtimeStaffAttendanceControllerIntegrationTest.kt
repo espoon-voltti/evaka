@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -17,6 +16,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -46,7 +46,11 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(
                 DevDaycareGroup(id = groupId1, daycareId = testDaycare.id, name = "Testiläiset 1")
             )

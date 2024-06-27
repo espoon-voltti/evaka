@@ -8,7 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.children.Group
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.DevServiceNeed
@@ -28,6 +29,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -62,7 +64,27 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
 
     @BeforeEach
     fun setup() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
+            listOf(
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7,
+                    testChild_8
+                )
+                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insertServiceNeedOptions()
+        }
     }
 
     @Test

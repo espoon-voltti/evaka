@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.TestInvoiceProductProvider
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createInvoiceFixture
 import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.data.insertInvoices
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -51,7 +51,13 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

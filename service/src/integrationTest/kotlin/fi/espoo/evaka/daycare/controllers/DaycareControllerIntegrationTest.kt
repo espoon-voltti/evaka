@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.daycare.service.DaycareGroup
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.messaging.createDaycareGroupMessageAccount
 import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.placement.ChildBasics
@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
@@ -37,6 +38,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -70,7 +72,13 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insertServiceNeedOptions()
 
             tx.insert(DevEmployee(id = supervisorId, firstName = "Elina", lastName = "Esimies"))
             tx.insert(DevEmployee(id = staffId))

@@ -7,14 +7,15 @@ package fi.espoo.evaka.absence
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.deleteChildDailyServiceTimes
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -23,6 +24,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -52,7 +54,17 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+        }
     }
 
     @Test

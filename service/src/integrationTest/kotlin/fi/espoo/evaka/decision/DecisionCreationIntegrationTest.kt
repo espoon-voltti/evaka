@@ -19,7 +19,6 @@ import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -32,6 +31,8 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -42,6 +43,7 @@ import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -76,7 +78,11 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_5, testAdult_6).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_6, DevPersonType.CHILD)
             MockPersonDetailsService.add(legacyMockVtjDataset())
             @Suppress("DEPRECATION")
             tx.createUpdate(

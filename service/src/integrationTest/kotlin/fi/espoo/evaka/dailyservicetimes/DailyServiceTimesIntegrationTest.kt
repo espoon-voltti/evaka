@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
@@ -24,6 +23,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -36,6 +36,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -80,7 +81,12 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))

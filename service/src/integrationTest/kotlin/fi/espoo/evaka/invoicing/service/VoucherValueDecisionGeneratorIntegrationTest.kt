@@ -7,7 +7,9 @@ package fi.espoo.evaka.invoicing.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.insertAssistanceNeedVoucherCoefficient
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController
 import fi.espoo.evaka.invoicing.domain.FeeAlterationType
@@ -55,6 +57,7 @@ import fi.espoo.evaka.snDefaultPreparatory
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_6
@@ -86,7 +89,22 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testVoucherDaycare2)
+            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(testChild_1, testChild_2, testChild_6).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOptionVoucherValues()
+        }
     }
 
     @Test

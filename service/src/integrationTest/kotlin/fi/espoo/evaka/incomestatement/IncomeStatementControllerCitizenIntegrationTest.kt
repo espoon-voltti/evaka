@@ -6,7 +6,6 @@ package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentsController
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
@@ -17,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -47,7 +48,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test
@@ -636,12 +642,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `cannot update a handled income statement`() {
+        val employee = DevEmployee()
+        db.transaction { it.insert(employee) }
+
         createIncomeStatement(
             IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
         )
         val id = getIncomeStatements().data.first().id
 
-        markIncomeStatementHandled(id, "foooooo")
+        markIncomeStatementHandled(id, employee.id, "foooooo")
 
         assertThrows<Forbidden> {
             updateIncomeStatement(
@@ -656,13 +665,16 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `cannot see handler note or remove a handled income statement`() {
+        val employee = DevEmployee()
+        db.transaction { it.insert(employee) }
+
         createIncomeStatement(
             IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
         )
         val incomeStatement = getIncomeStatements().data.first()
         assertEquals("", incomeStatement.handlerNote)
 
-        markIncomeStatementHandled(incomeStatement.id, "foo bar")
+        markIncomeStatementHandled(incomeStatement.id, employee.id, "foo bar")
 
         val handled = getIncomeStatements().data.first()
         assertEquals(true, handled.handled)
@@ -711,18 +723,23 @@ class IncomeStatementControllerCitizenIntegrationTest :
         }
     }
 
-    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
+    private fun markIncomeStatementHandled(
+        id: IncomeStatementId,
+        handlerId: EmployeeId,
+        note: String
+    ) =
         db.transaction { tx ->
             @Suppress("DEPRECATION")
             tx.createUpdate(
                     """
             UPDATE income_statement
-            SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
+            SET handler_id = :handlerId, handler_note = :note
             WHERE id = :id
             """
                         .trimIndent()
                 )
                 .bind("id", id)
+                .bind("handlerId", handlerId)
                 .bind("note", note)
                 .execute()
         }

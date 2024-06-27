@@ -10,7 +10,7 @@ import fi.espoo.evaka.attendance.ExternalStaffDeparture
 import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.snDaycareContractDays10
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.math.BigDecimal
@@ -45,9 +46,12 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun setUp() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(DevDaycareGroup(groupId, testDaycare.id))
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insertServiceNeedOptions()
+            tx.insert(DevDaycareGroup(groupId, testDaycare.id))
         }
     }
 

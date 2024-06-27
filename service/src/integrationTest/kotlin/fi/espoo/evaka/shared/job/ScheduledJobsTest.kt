@@ -13,7 +13,6 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.getApplicationAttachments
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNoteForChild
@@ -29,6 +28,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -37,8 +37,10 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_5
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -66,7 +68,15 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_1, testAdult_5).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2, testChild_6).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+        }
     }
 
     @Test

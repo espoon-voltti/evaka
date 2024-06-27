@@ -1850,7 +1850,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         // full-day absence is created, because the reservation is so short
         val absences =
             db.read { it.getAbsencesOfChildByRange(child.id, placementRange.asDateRange()) }
-                .sortedBy { it.date }
+                .sortedWith(compareBy({ it.date }, { it.category }))
         assertEquals(
             listOf(
                 Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),

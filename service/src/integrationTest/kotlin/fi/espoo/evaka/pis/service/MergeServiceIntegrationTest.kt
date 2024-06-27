@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.childimages.ChildImageController
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.archiveThread
@@ -40,6 +39,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.utils.decodeHex
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -72,7 +72,12 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun setUp() {
         mergeServiceAsyncJobRunnerMock = mock {}
         mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

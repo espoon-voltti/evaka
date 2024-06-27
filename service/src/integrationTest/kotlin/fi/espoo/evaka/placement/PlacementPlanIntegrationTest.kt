@@ -13,13 +13,17 @@ import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -30,10 +34,7 @@ import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -53,12 +54,31 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
 
+    private val area = DevCareArea(name = "Area", shortName = "area")
+    private val daycare1 = DevDaycare(areaId = area.id)
+    private val daycare2 = DevDaycare(areaId = area.id)
+
+    // isSvebiUnit uses hard-coded area short name "svenska-bildningstjanster"
+    private val areaSvebi =
+        DevCareArea(name = "Svenska Bildningstjänster", shortName = "svenska-bildningstjanster")
+    private val daycareSvebi = DevDaycare(areaId = areaSvebi.id, language = Language.sv)
+
     private val clock =
         MockEvakaClock(HelsinkiDateTime.Companion.of(LocalDate.of(2020, 1, 1), LocalTime.of(15, 0)))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(area)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(areaSvebi)
+            tx.insert(daycareSvebi)
+            listOf(testAdult_1, testAdult_7).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(preschoolTerm2023)
+        }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
@@ -81,7 +101,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.DAYCARE,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
@@ -109,7 +129,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.DAYCARE,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
@@ -136,7 +156,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.DAYCARE_PART_TIME,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
@@ -162,7 +182,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.PRESCHOOL,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
@@ -191,7 +211,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.PRESCHOOL_DAYCARE,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
                 preschoolDaycarePeriod =
@@ -233,7 +253,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.PRESCHOOL_CLUB,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
                 preschoolDaycarePeriod =
@@ -251,7 +271,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 type = ApplicationType.PRESCHOOL,
                 preschoolDaycare = true,
                 preferredStartDate = preferredStartDate,
-                preferredUnits = listOf(testSvebiDaycare)
+                preferredUnits = listOf(daycareSvebi)
             )
         val svebiEndDate = LocalDate.of(2024, 6, 6)
         val defaultDaycareEndDate = LocalDate.of(2024, 7, 31)
@@ -260,13 +280,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             type = PlacementType.PRESCHOOL_DAYCARE,
             period = FiniteDateRange(preferredStartDate, svebiEndDate),
             preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultDaycareEndDate),
-            preferredUnits = listOf(testSvebiDaycare)
+            preferredUnits = listOf(daycareSvebi)
         )
         createPlacementPlanAndAssert(
             applicationId,
             PlacementType.PRESCHOOL_DAYCARE,
             DaycarePlacementPlan(
-                unitId = testSvebiDaycare.id,
+                unitId = daycareSvebi.id,
                 period = FiniteDateRange(preferredStartDate.plusDays(1), svebiEndDate.minusDays(1)),
                 preschoolDaycarePeriod =
                     FiniteDateRange(
@@ -297,7 +317,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             applicationId,
             PlacementType.PREPARATORY,
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
@@ -331,7 +351,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         }
         val proposal =
             DaycarePlacementPlan(
-                unitId = testDaycare.id,
+                unitId = daycare1.id,
                 period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
             )
         invalidRoleLists.forEach { roles ->
@@ -351,7 +371,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         applicationId: ApplicationId,
         type: PlacementType,
         child: DevPerson = testChild_1,
-        preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
+        preferredUnits: List<DevDaycare> = listOf(daycare1, daycare2),
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         placements: List<PlacementSummary> = emptyList(),
@@ -419,7 +439,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         partTime: Boolean = false,
         serviceNeedOption: ServiceNeedOption? = null,
         preschoolDaycare: Boolean = false,
-        preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
+        preferredUnits: List<DevDaycare> = listOf(daycare1, daycare2),
         preparatory: Boolean = false
     ): ApplicationId =
         db.transaction { tx ->

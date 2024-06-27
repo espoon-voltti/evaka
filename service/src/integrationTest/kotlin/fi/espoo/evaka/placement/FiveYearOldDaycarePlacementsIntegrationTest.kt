@@ -5,8 +5,10 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -23,7 +25,11 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

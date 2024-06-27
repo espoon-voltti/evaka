@@ -5,7 +5,8 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import java.lang.IllegalStateException
@@ -22,7 +23,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx -> tx.insert(testChild_1, DevPersonType.CHILD) }
         mockEndpoint.cleanUp()
     }
 

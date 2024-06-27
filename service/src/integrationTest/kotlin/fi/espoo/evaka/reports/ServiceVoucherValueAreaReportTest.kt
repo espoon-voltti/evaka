@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
@@ -21,20 +20,20 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
@@ -49,9 +48,26 @@ import org.springframework.beans.factory.annotation.Autowired
 class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
+    private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
+    private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
+    private val daycareInArea1 = DevDaycare(areaId = area1.id)
+    private val daycareInArea2 = DevDaycare(areaId = area2.id)
+
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(area1)
+            tx.insert(area2)
+            tx.insert(daycareInArea1)
+            tx.insert(daycareInArea2)
+            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+        }
     }
 
     private val janFirst = LocalDate.of(2020, 1, 1)
@@ -63,9 +79,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
     fun `unfrozen area voucher report includes value decisions that begin in the beginning of reports month`() {
         val sum = createTestSetOfDecisions()
 
-        val janReport = getAreaReport(testArea.id, janFirst.year, janFirst.monthValue)
+        val janReport = getAreaReport(area1.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
-        janReport.assertContainsSum(testDaycare.id, sum)
+        janReport.assertContainsSum(daycareInArea1.id, sum)
     }
 
     @Test
@@ -75,9 +91,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
         }
 
-        val janReport = getAreaReport(testArea.id, janFirst.year, janFirst.monthValue)
+        val janReport = getAreaReport(area1.id, janFirst.year, janFirst.monthValue)
         assertEquals(1, janReport.size)
-        janReport.assertContainsSum(testDaycare.id, sum)
+        janReport.assertContainsSum(daycareInArea1.id, sum)
     }
 
     @Test
@@ -89,7 +105,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         // co payment is dropped from 28800 to 0
         createVoucherDecision(
             janFirst,
-            testDaycare.id,
+            daycareInArea1.id,
             87000,
             0,
             testAdult_1.id,
@@ -97,9 +113,9 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             janFreeze.plusSeconds(3600)
         )
 
-        val febReport = getAreaReport(testArea.id, febFirst.year, febFirst.monthValue)
+        val febReport = getAreaReport(area1.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReport.size)
-        febReport.assertContainsSum(testDaycare.id, sum + 2 * 28800)
+        febReport.assertContainsSum(daycareInArea1.id, sum + 2 * 28800)
     }
 
     @Test
@@ -111,7 +127,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         // child is placed into another area
         createVoucherDecision(
             janFirst,
-            testDaycare2.id,
+            daycareInArea2.id,
             87000,
             28800,
             testAdult_1.id,
@@ -119,13 +135,13 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             janFreeze.plusSeconds(3600)
         )
 
-        val febReportOldArea = getAreaReport(testArea.id, febFirst.year, febFirst.monthValue)
+        val febReportOldArea = getAreaReport(area1.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportOldArea.size)
-        febReportOldArea.assertContainsSum(testDaycare.id, sum - 2 * 58200)
+        febReportOldArea.assertContainsSum(daycareInArea1.id, sum - 2 * 58200)
 
-        val febReportNewArea = getAreaReport(testArea2.id, febFirst.year, febFirst.monthValue)
+        val febReportNewArea = getAreaReport(area2.id, febFirst.year, febFirst.monthValue)
         assertEquals(1, febReportNewArea.size)
-        febReportNewArea.assertContainsSum(testDaycare2.id, 2 * 58200)
+        febReportNewArea.assertContainsSum(daycareInArea2.id, 2 * 58200)
     }
 
     private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(
@@ -162,7 +178,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         return listOf(
                 createVoucherDecision(
                     janFirst,
-                    testDaycare.id,
+                    daycareInArea1.id,
                     87000,
                     28800,
                     testAdult_1.id,
@@ -170,7 +186,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 ),
                 createVoucherDecision(
                     janFirst,
-                    testDaycare.id,
+                    daycareInArea1.id,
                     52200,
                     28800,
                     testAdult_2.id,
@@ -178,7 +194,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 ),
                 createVoucherDecision(
                     janFirst,
-                    testDaycare.id,
+                    daycareInArea1.id,
                     134850,
                     0,
                     testAdult_3.id,

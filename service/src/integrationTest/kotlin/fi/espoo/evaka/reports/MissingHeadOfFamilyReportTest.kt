@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.deleteFosterParentRelationship
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.shared.EmployeeId
@@ -15,12 +14,14 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -43,7 +44,11 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insert(
                 DevEmployee(
                     id = employeeId,

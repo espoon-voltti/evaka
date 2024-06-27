@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
@@ -14,12 +13,14 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -44,17 +45,20 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @BeforeEach
     fun init() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(serviceWorker)
-            it.insert(financeAdmin)
-            it.insert(unitSupervisor)
-            it.insertDaycareAclRow(
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(serviceWorker)
+            tx.insert(financeAdmin)
+            tx.insert(unitSupervisor)
+            tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisor.id,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
             )
         }

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.UserRole
@@ -15,6 +14,7 @@ import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testRoundTheClockDaycare
 import java.math.BigDecimal
@@ -42,7 +42,9 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testRoundTheClockDaycare)
             tx.insert(group1)
             tx.insert(group2)
             tx.insert(group3)

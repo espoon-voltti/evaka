@@ -13,6 +13,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.insertAssistanceActionOptionRefs
 import fi.espoo.evaka.attendance.StaffAttendanceType
+import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.identity.ExternalId
@@ -25,6 +26,7 @@ import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
@@ -1566,6 +1568,15 @@ VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPresch
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+fun Database.Transaction.insert(row: ClubTerm) = execute {
+    sql(
+        """
+INSERT INTO club_term (id, term, application_period, term_breaks)
+VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bind(row.termBreaks)})
+"""
+    )
+}
+
 fun Database.Transaction.insert(row: DevClubTerm): ClubTermId =
     createUpdate {
             sql(
@@ -1801,4 +1812,26 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+}
+
+fun Database.Transaction.insert(fee: ServiceNeedOptionFee) {
+    execute {
+        sql(
+            """
+INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
+VALUES (${bind(fee.serviceNeedOptionId)}, ${bind(fee.validity)}, ${bind(fee.baseFee)}, ${bind(fee.siblingDiscount2)}, ${bind(fee.siblingFee2)}, ${bind(fee.siblingDiscount2Plus)}, ${bind(fee.siblingFee2Plus)})
+"""
+        )
+    }
+}
+
+fun Database.Transaction.insert(sn: ServiceNeedOption) {
+    execute {
+        sql(
+            """
+INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
+VALUES (${bind(sn.id)}, ${bind(sn.nameFi)}, ${bind(sn.nameSv)}, ${bind(sn.nameEn)}, ${bind(sn.validPlacementType)}, ${bind(sn.defaultOption)}, ${bind(sn.feeCoefficient)}, ${bind(sn.occupancyCoefficient)}, ${bind(sn.occupancyCoefficientUnder3y)}, ${bind(sn.realizedOccupancyCoefficient)}, ${bind(sn.realizedOccupancyCoefficientUnder3y)}, ${bind(sn.daycareHoursPerWeek)}, ${bind(sn.contractDaysPerMonth)}, ${bind(sn.daycareHoursPerMonth)}, ${bind(sn.partDay)}, ${bind(sn.partWeek)}, ${bind(sn.feeDescriptionFi)}, ${bind(sn.feeDescriptionSv)}, ${bind(sn.voucherValueDescriptionFi)}, ${bind(sn.voucherValueDescriptionSv)}, ${bind(sn.validFrom)}, ${bind(sn.validTo)})
+"""
+        )
+    }
 }

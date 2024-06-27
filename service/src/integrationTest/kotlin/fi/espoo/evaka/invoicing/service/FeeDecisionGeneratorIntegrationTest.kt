@@ -5,7 +5,8 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -38,6 +39,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
+import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -82,6 +84,7 @@ import fi.espoo.evaka.snPreschoolDaycarePartDay35to45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -118,7 +121,23 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testDaycareNotInvoiced)
+            tx.insert(testClub)
+            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_8).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+        }
     }
 
     @Test
@@ -272,6 +291,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is generated for child with a preschool club`() {
+        db.transaction { tx ->
+            tx.insert(
+                ServiceNeedOptionFee(
+                    serviceNeedOptionId = snPreschoolClub45.id,
+                    validity = DateRange(LocalDate.of(2000, 1, 1), null),
+                    baseFee = 14000,
+                    siblingDiscount2 = BigDecimal("0.4"),
+                    siblingFee2 = 8000,
+                    siblingDiscount2Plus = BigDecimal("0.4"),
+                    siblingFee2Plus = 8000
+                )
+            )
+        }
+
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertServiceNeed(
             insertPlacement(
@@ -296,6 +329,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `fee decision is formed correctly for two children in preschool club`() {
+        db.transaction { tx ->
+            tx.insert(
+                ServiceNeedOptionFee(
+                    serviceNeedOptionId = snPreschoolClub45.id,
+                    validity = DateRange(LocalDate.of(2000, 1, 1), null),
+                    baseFee = 14000,
+                    siblingDiscount2 = BigDecimal("0.4"),
+                    siblingFee2 = 8000,
+                    siblingDiscount2Plus = BigDecimal("0.4"),
+                    siblingFee2Plus = 8000
+                )
+            )
+        }
+
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolClub45
         insertServiceNeed(

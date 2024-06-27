@@ -10,7 +10,6 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
@@ -24,12 +23,14 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertEmployeeToDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -73,7 +74,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
             tx.insert(DevEmployee(id = employeeId, roles = setOf(UserRole.ADMIN)))
             tx.insert(DevEmployee(id = supervisorId, roles = setOf()))

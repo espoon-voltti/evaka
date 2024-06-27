@@ -18,13 +18,9 @@ import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.ClubTerm
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.insertClubTerm
-import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.*
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -42,11 +38,9 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPreschoolTerm
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -62,27 +56,9 @@ Queries and data classes for initializing integration tests with person and unit
 */
 
 val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
-val testArea2 =
-    DevCareArea(
-        id = AreaId(UUID.randomUUID()),
-        name = "Lwiz Foo",
-        shortName = "short name 2",
-        areaCode = 300
-    )
-val testAreaSvebi =
-    DevCareArea(
-        id = AreaId(UUID.randomUUID()),
-        name = "Svenska Bildningstjanster",
-        shortName = "svenska-bildningstjanster",
-        areaCode = 400
-    )
-
-val allAreas = listOf(testArea, testArea2, testAreaSvebi)
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
-
-val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
 
 val testDecisionMaker_1 =
     DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Decision", lastName = "Maker")
@@ -115,44 +91,15 @@ val testDaycare2 =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare 2",
-        areaId = testArea2.id,
+        areaId = testArea.id,
         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
-        financeDecisionHandler = testDecisionMaker_2.id
     )
 
 val testDaycareNotInvoiced =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
         name = "Not Invoiced",
-        areaId = testArea2.id,
-        invoicedByMunicipality = false
-    )
-
-val testSvebiDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Svebi Daycare",
-        areaId = testAreaSvebi.id,
-        language = Language.sv
-    )
-
-val testPurchasedDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Purchased Daycare",
         areaId = testArea.id,
-        providerType = ProviderType.PURCHASED,
-        ophOrganizerOid = defaultPurchasedOrganizerOid,
-        invoicedByMunicipality = false
-    )
-
-val testExternalPurchasedDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test External Purchased Daycare",
-        areaId = testArea.id,
-        providerType = ProviderType.EXTERNAL_PURCHASED,
-        ophOrganizerOid = defaultPurchasedOrganizerOid,
         invoicedByMunicipality = false
     )
 
@@ -164,7 +111,6 @@ val testVoucherDaycare =
         providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
         ophOrganizerOid = defaultPurchasedOrganizerOid,
         invoicedByMunicipality = false,
-        financeDecisionHandler = testDecisionMaker_2.id,
         businessId = "1234567-8",
         iban = "FI12 3456 7891 2345 67",
         providerId = "1234"
@@ -195,19 +141,6 @@ val testClub =
         uploadToVarda = false,
         uploadChildrenToVarda = false,
         uploadToKoski = false
-    )
-
-val testGhostUnitDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Ghost Unit Daycare",
-        areaId = testArea.id,
-        type = setOf(CareType.CENTRE),
-        uploadToVarda = false,
-        uploadChildrenToVarda = false,
-        uploadToKoski = false,
-        ghostUnit = true,
-        invoicedByMunicipality = false
     )
 
 val allDayTimeRange = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
@@ -441,149 +374,6 @@ val testChild_8 =
         restrictedDetailsEnabled = false
     )
 
-val testChildWithNamelessGuardian =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = "311218A999J",
-        firstName = "Niilo",
-        lastName = "Nimettömänpoika",
-        streetAddress = "Kankkulankaivo 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false
-    )
-
-val testChildDuplicated =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = "311218A999X",
-        firstName = "Monika",
-        lastName = "Monistettu",
-        streetAddress = "Testikatu 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false
-    )
-
-val testChildDuplicateOf =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = null,
-        ophPersonOid = "1.2.246.562.10.735773577357",
-        firstName = "Monika",
-        lastName = "Monistettu",
-        streetAddress = "Testikatu 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false,
-        duplicateOf = testChildDuplicated.id
-    )
-
-val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2, testDecisionMaker_3)
-val allAdults =
-    setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
-val allChildren =
-    setOf(
-        testChild_1,
-        testChild_2,
-        testChild_3,
-        testChild_4,
-        testChild_5,
-        testChild_6,
-        testChild_7,
-        testChild_8,
-        testChildWithNamelessGuardian,
-        testChildDuplicated,
-        testChildDuplicateOf
-    )
-val allDaycares = setOf(testDaycare, testDaycare2)
-
-fun Database.Transaction.insertGeneralTestFixtures() {
-    insert(testArea)
-    insert(testArea2)
-    insert(testAreaSvebi)
-
-    insertTestDecisionMaker()
-
-    testDecisionMaker_2.let {
-        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
-    }
-
-    testDecisionMaker_3.let {
-        insert(DevEmployee(id = it.id, firstName = it.firstName, lastName = it.lastName))
-    }
-
-    insert(testSvebiDaycare)
-    insert(testDaycare)
-    insert(testDaycare2)
-    insert(testDaycareNotInvoiced)
-    insert(testPurchasedDaycare)
-    insert(testExternalPurchasedDaycare)
-    insert(testVoucherDaycare)
-    insert(testVoucherDaycare2)
-
-    insert(testClub)
-    insert(testGhostUnitDaycare)
-    insert(testRoundTheClockDaycare)
-
-    unitSupervisorOfTestDaycare.let {
-        insert(
-            DevEmployee(
-                id = it.id,
-                firstName = it.firstName,
-                lastName = it.lastName,
-                externalId = unitSupervisorExternalId
-            )
-        )
-        updateDaycareAcl(testDaycare.id, unitSupervisorExternalId, UserRole.UNIT_SUPERVISOR)
-    }
-
-    allAdults.forEach { insert(it, DevPersonType.ADULT) }
-
-    allChildren.forEach { insert(it, DevPersonType.CHILD) }
-
-    insert(
-        FeeThresholds(
-            validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
-            minIncomeThreshold2 = 210200,
-            minIncomeThreshold3 = 271300,
-            minIncomeThreshold4 = 308000,
-            minIncomeThreshold5 = 344700,
-            minIncomeThreshold6 = 381300,
-            maxIncomeThreshold2 = 479900,
-            maxIncomeThreshold3 = 541000,
-            maxIncomeThreshold4 = 577700,
-            maxIncomeThreshold5 = 614400,
-            maxIncomeThreshold6 = 651000,
-            incomeMultiplier2 = BigDecimal("0.1070"),
-            incomeMultiplier3 = BigDecimal("0.1070"),
-            incomeMultiplier4 = BigDecimal("0.1070"),
-            incomeMultiplier5 = BigDecimal("0.1070"),
-            incomeMultiplier6 = BigDecimal("0.1070"),
-            incomeThresholdIncrease6Plus = 14200,
-            siblingDiscount2 = BigDecimal("0.5"),
-            siblingDiscount2Plus = BigDecimal("0.8"),
-            maxFee = 28900,
-            minFee = 2700,
-            temporaryFee = 2900,
-            temporaryFeePartDay = 1500,
-            temporaryFeeSibling = 1500,
-            temporaryFeeSiblingPartDay = 800
-        )
-    )
-
-    preschoolTerms.forEach { insert(it) }
-    insertClubTerms()
-
-    insertServiceNeedOptions()
-    insertServiceNeedOptionFees()
-    insertServiceNeedOptionVoucherValues()
-    insertAssistanceActionOptions()
-}
-
 fun Database.Transaction.insertTestDecisionMaker() {
     testDecisionMaker_1.let {
         insert(
@@ -596,6 +386,35 @@ fun Database.Transaction.insertTestDecisionMaker() {
         )
     }
 }
+
+val feeThresholds =
+    FeeThresholds(
+        validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+        minIncomeThreshold2 = 210200,
+        minIncomeThreshold3 = 271300,
+        minIncomeThreshold4 = 308000,
+        minIncomeThreshold5 = 344700,
+        minIncomeThreshold6 = 381300,
+        maxIncomeThreshold2 = 479900,
+        maxIncomeThreshold3 = 541000,
+        maxIncomeThreshold4 = 577700,
+        maxIncomeThreshold5 = 614400,
+        maxIncomeThreshold6 = 651000,
+        incomeMultiplier2 = BigDecimal("0.1070"),
+        incomeMultiplier3 = BigDecimal("0.1070"),
+        incomeMultiplier4 = BigDecimal("0.1070"),
+        incomeMultiplier5 = BigDecimal("0.1070"),
+        incomeMultiplier6 = BigDecimal("0.1070"),
+        incomeThresholdIncrease6Plus = 14200,
+        siblingDiscount2 = BigDecimal("0.5"),
+        siblingDiscount2Plus = BigDecimal("0.8"),
+        maxFee = 28900,
+        minFee = 2700,
+        temporaryFee = 2900,
+        temporaryFeePartDay = 1500,
+        temporaryFeeSibling = 1500,
+        temporaryFeeSiblingPartDay = 800
+    )
 
 val preschoolTerm2020 =
     DevPreschoolTerm(
@@ -660,57 +479,55 @@ val preschoolTerms =
         preschoolTerm2024
     )
 
-val clubTerms =
-    listOf(
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-            FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
-            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
-            FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
-            DateSet.empty()
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
-            FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
-            DateSet.of(
-                FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
-                FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-                FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
-            )
-        ),
-        ClubTerm(
-            ClubTermId(UUID.randomUUID()),
-            FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
-            FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
-            DateSet.of(
-                FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
-                FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
-                FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
-            )
+val clubTerm2020 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
+        FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2021 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+        FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2022 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
+        FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
+        DateSet.empty()
+    )
+
+val clubTerm2023 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2023, 8, 10), LocalDate.of(2024, 5, 31)),
+        FiniteDateRange(LocalDate.of(2023, 3, 1), LocalDate.of(2023, 3, 1)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+            FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+            FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
         )
     )
 
-fun Database.Transaction.insertClubTerms() {
-    clubTerms.forEach {
-        insertClubTerm(
-            term = it.term,
-            applicationPeriod = it.applicationPeriod,
-            termBreaks = it.termBreaks
+val clubTerm2024 =
+    ClubTerm(
+        ClubTermId(UUID.randomUUID()),
+        FiniteDateRange(LocalDate.of(2024, 8, 8), LocalDate.of(2025, 5, 30)),
+        FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+        DateSet.of(
+            FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
+            FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
+            FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
         )
-    }
-}
+    )
+
+val clubTerms = listOf(clubTerm2020, clubTerm2021, clubTerm2022, clubTerm2023, clubTerm2024)
 
 fun Database.Transaction.insertServiceNeedOptions() {
     executeBatch(serviceNeedTestFixtures) {
@@ -718,17 +535,6 @@ fun Database.Transaction.insertServiceNeedOptions() {
             """
 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, contract_days_per_month, daycare_hours_per_month, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from, valid_to)
 VALUES (${bind { it.id }}, ${bind { it.nameFi }}, ${bind { it.nameSv }}, ${bind { it.nameEn }}, ${bind { it.validPlacementType }}, ${bind { it.defaultOption }}, ${bind { it.feeCoefficient }}, ${bind { it.occupancyCoefficient }}, ${bind { it.occupancyCoefficientUnder3y }}, ${bind { it.realizedOccupancyCoefficient }}, ${bind { it.realizedOccupancyCoefficientUnder3y }}, ${bind { it.daycareHoursPerWeek }}, ${bind { it.contractDaysPerMonth }}, ${bind { it.daycareHoursPerMonth }}, ${bind { it.partDay }}, ${bind { it.partWeek }}, ${bind { it.feeDescriptionFi }}, ${bind { it.feeDescriptionSv }}, ${bind { it.voucherValueDescriptionFi }}, ${bind { it.voucherValueDescriptionSv }}, ${bind { it.validFrom }}, ${bind { it.validTo }})
-"""
-        )
-    }
-}
-
-fun Database.Transaction.insertServiceNeedOptionFees() {
-    executeBatch(serviceNeedOptionFeeTestFixtures) {
-        sql(
-            """
-INSERT INTO service_need_option_fee (service_need_option_id, validity, base_fee, sibling_discount_2, sibling_fee_2, sibling_discount_2_plus, sibling_fee_2_plus)
-VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it.baseFee }}, ${bind { it.siblingDiscount2 }}, ${bind { it.siblingFee2 }}, ${bind { it.siblingDiscount2Plus }}, ${bind { it.siblingFee2Plus }})
 """
         )
     }
@@ -778,6 +584,7 @@ fun Database.Transaction.insertApplication(
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
     transferApplication: Boolean = false,
+    preferredUnit: DevDaycare = testDaycare
 ): ApplicationDetails {
     val application =
         ApplicationDetails(
@@ -819,7 +626,7 @@ fun Database.Transaction.insertApplication(
                     preferences =
                         Preferences(
                             preferredUnits =
-                                listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
+                                listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
                             preferredStartDate = preferredStartDate,
                             connectedDaycarePreferredStartDate = null,
                             serviceNeed =
@@ -929,12 +736,3 @@ fun DevPerson.toPersonDetailed() =
 
 fun DevEmployee.toEmployeeWithName() =
     EmployeeWithName(id = this.id, firstName = this.firstName, lastName = this.lastName)
-
-fun DevDaycare.toUnitData() =
-    UnitData(
-        id = this.id,
-        name = this.name,
-        areaId = this.areaId,
-        areaName = allAreas.find { it.id == this.areaId }?.name ?: "",
-        language = this.language.name
-    )

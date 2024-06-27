@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -13,6 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
@@ -49,7 +49,9 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @BeforeEach
     fun setUp() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+        }
         service =
             VTJBatchRefreshService(
                 fridgeFamilyService = fridgeFamilyService,

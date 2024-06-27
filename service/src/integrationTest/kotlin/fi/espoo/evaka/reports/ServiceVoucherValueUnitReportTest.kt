@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.sendVoucherValueDecisions
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
@@ -28,12 +27,14 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -55,14 +56,19 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.execute {
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.execute {
                 sql(
                     "INSERT INTO holiday (date, description) VALUES (${bind(janFirst)}, ${bind("New Year")})"
                 )
             }
-            it.execute {
+            tx.execute {
                 sql(
                     "INSERT INTO holiday (date, description) VALUES (${bind(janFirst.plusDays(5))}, ${bind("Epiphany")})"
                 )

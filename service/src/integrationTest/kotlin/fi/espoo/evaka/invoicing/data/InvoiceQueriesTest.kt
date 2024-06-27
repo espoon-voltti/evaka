@@ -5,11 +5,12 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createInvoiceFixture
 import fi.espoo.evaka.invoicing.createInvoiceRowFixture
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -59,7 +60,12 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
     }
 
     @Test

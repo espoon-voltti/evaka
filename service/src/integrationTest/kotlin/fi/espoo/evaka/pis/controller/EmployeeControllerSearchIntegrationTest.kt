@@ -5,16 +5,19 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
+import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -29,7 +32,17 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun setUp() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1.copy(roles = setOf(UserRole.SERVICE_WORKER)))
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testDecisionMaker_3)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(
+                unitSupervisorOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+            )
+        }
     }
 
     @Test

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
@@ -19,6 +18,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
@@ -58,7 +58,23 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(
+                    testAdult_1,
+                    testAdult_2,
+                    testAdult_3,
+                    testAdult_4,
+                    testAdult_5,
+                    testAdult_6,
+                    testAdult_7
+                )
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+        }
     }
 
     @Test

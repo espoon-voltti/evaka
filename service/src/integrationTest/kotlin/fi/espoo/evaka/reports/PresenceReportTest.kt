@@ -9,7 +9,6 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceCategory.BILLABLE
 import fi.espoo.evaka.absence.AbsenceCategory.NONBILLABLE
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
@@ -18,8 +17,10 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -31,7 +32,9 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
         }
     }

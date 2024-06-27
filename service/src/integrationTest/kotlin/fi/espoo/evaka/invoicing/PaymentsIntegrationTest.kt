@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.PaymentController
 import fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.PaymentSortParam
@@ -32,6 +31,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -41,6 +42,7 @@ import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -72,7 +74,19 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testVoucherDaycare2)
+            listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
+                tx.insert(it, DevPersonType.ADULT)
+            }
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+        }
     }
 
     @Test

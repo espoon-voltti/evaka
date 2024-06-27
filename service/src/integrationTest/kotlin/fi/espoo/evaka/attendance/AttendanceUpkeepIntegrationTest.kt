@@ -5,8 +5,8 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -30,7 +31,13 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testRoundTheClockDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

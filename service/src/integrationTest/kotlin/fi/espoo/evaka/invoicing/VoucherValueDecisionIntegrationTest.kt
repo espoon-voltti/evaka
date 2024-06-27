@@ -12,7 +12,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
@@ -53,6 +55,7 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -80,9 +83,28 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         MockSfiMessagesClient.clearMessages()
         MockEmailClient.clear()
 
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare.copy(financeDecisionHandler = testDecisionMaker_2.id))
+            tx.insert(testVoucherDaycare2)
+            listOf(
+                    testAdult_1,
+                    testAdult_2,
+                    testAdult_3,
+                    testAdult_4,
+                    testAdult_5,
+                    testAdult_6,
+                    testAdult_7
+                )
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOptionVoucherValues()
+            tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
@@ -90,7 +112,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
                 )
             )
-            it.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
         }
     }
 
@@ -533,10 +555,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `VoucherValueDecision handler is set to the daycare handler when forced when decision is not normal`() {
         val approvedDecision = createReliefDecision(true)
-        assertEquals(
-            testVoucherDaycare.financeDecisionHandler?.raw,
-            approvedDecision.decisionHandler
-        )
+        assertEquals(testDecisionMaker_2.id.raw, approvedDecision.decisionHandler)
     }
 
     @Test

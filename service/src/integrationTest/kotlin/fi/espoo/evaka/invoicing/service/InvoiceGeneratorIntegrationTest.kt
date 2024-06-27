@@ -10,7 +10,8 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.AbsenceUpsert
 import fi.espoo.evaka.absence.insertAbsences
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
@@ -44,6 +45,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -60,6 +62,7 @@ import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -90,7 +93,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testRoundTheClockDaycare)
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
             tx.execute {
                 sql(
                     """

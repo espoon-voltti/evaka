@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
 import fi.espoo.evaka.invoicing.controller.InvoiceController
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SearchInvoicesRequest
@@ -22,6 +22,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
+import fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
+import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
@@ -35,6 +37,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevFeeDecision
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -54,6 +57,8 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
+import fi.espoo.evaka.toPersonBasic
+import fi.espoo.evaka.toPersonDetailed
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -184,9 +189,22 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val testUser =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
+    private val allAreas = listOf(testArea)
+    private val allDaycares = listOf(testDaycare, testDaycare2)
+    private val allAdults = listOf(testAdult_1, testAdult_2, testAdult_3)
+    private val allChildren = listOf(testChild_1, testChild_2, testChild_3)
+
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            allAreas.forEach { tx.insert(it) }
+            allDaycares.forEach { tx.insert(it) }
+            allAdults.forEach { tx.insert(it, DevPersonType.ADULT) }
+            allChildren.forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insert(feeThresholds)
+            tx.insert(snDaycareFullDay35)
+        }
     }
 
     @Test
@@ -960,4 +978,72 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
         db.transaction { tx -> tx.searchInvoices(status) }
+
+    private fun toDetailed(invoice: Invoice): InvoiceDetailed =
+        InvoiceDetailed(
+            id = invoice.id,
+            status = invoice.status,
+            periodStart = invoice.periodStart,
+            periodEnd = invoice.periodEnd,
+            dueDate = invoice.dueDate,
+            invoiceDate = invoice.invoiceDate,
+            agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
+            areaId = invoice.areaId,
+            headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+            codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
+            rows =
+                invoice.rows.map { row ->
+                    val unit = allDaycares.find { it.id == row.unitId }!!
+                    InvoiceRowDetailed(
+                        id = row.id!!,
+                        child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
+                        amount = row.amount,
+                        unitPrice = row.unitPrice,
+                        periodStart = row.periodStart,
+                        periodEnd = row.periodEnd,
+                        product = row.product,
+                        unitId = row.unitId,
+                        unitName = unit.name,
+                        unitProviderType = unit.providerType,
+                        daycareType = unit.type,
+                        costCenter = unit.costCenter!!,
+                        subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
+                        savedCostCenter =
+                            if (
+                                invoice.status == InvoiceStatus.SENT ||
+                                    invoice.status == InvoiceStatus.WAITING_FOR_SENDING
+                            )
+                                unit.costCenter
+                            else null,
+                        description = row.description,
+                        correctionId = row.correctionId,
+                        note = null
+                    )
+                },
+            number = invoice.number,
+            sentBy = invoice.sentBy,
+            sentAt = invoice.sentAt,
+            relatedFeeDecisions = emptyList()
+        )
+
+    private fun toSummary(invoice: Invoice): InvoiceSummary =
+        InvoiceSummary(
+            id = invoice.id,
+            status = invoice.status,
+            periodStart = invoice.periodStart,
+            periodEnd = invoice.periodEnd,
+            headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+            codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
+            rows =
+                invoice.rows.map { row ->
+                    InvoiceRowSummary(
+                        id = row.id!!,
+                        child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
+                        amount = row.amount,
+                        unitPrice = row.unitPrice
+                    )
+                },
+            sentBy = invoice.sentBy,
+            sentAt = invoice.sentAt
+        )
 }

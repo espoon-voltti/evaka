@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -24,6 +23,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -34,6 +34,7 @@ import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -77,7 +78,12 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            listOf(snPreschoolDaycare45, snPreschoolDaycarePartDay35).forEach { tx.insert(it) }
             tx.insert(daycareGroup)
             tx.insert(daycareGroup2)
             tx.insertGuardian(parent.id, child.id)

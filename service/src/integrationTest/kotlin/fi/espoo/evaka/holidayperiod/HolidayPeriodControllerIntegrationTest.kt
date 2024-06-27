@@ -8,10 +8,10 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.FullDayAbsenseUpsert
 import fi.espoo.evaka.absence.upsertFullDayAbsences
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -42,7 +43,11 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
                     childId = testChild_1.id,

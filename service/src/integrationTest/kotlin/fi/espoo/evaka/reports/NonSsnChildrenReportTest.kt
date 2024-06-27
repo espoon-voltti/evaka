@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,6 +15,7 @@ import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
@@ -59,11 +59,13 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(jimmyNoSsn, DevPersonType.CHILD)
-            it.insert(jackieNoSsn, DevPersonType.CHILD)
-            it.insert(
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(jimmyNoSsn, DevPersonType.CHILD)
+            tx.insert(jackieNoSsn, DevPersonType.CHILD)
+            tx.insert(
                 DevPlacement(
                     childId = jimmyNoSsn.id,
                     unitId = testDaycare.id,
@@ -71,7 +73,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     endDate = testDay.plusYears(1)
                 )
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(
                     childId = jackieNoSsn.id,
                     unitId = testDaycare2.id,

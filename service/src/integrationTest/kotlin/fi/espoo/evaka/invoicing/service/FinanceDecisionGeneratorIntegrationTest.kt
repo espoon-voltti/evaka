@@ -5,7 +5,9 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.data.feeDecisionQuery
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -19,10 +21,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -40,7 +44,16 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insert(feeThresholds)
+        }
     }
 
     @Test
@@ -72,6 +85,11 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `family with children placed into voucher and municipal daycares get sibling discounts in fee and voucher value decisions`() {
+        db.transaction {
+            it.insertServiceNeedOptions()
+            it.insertServiceNeedOptionVoucherValues()
+        }
+
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(
             testAdult_1.id,

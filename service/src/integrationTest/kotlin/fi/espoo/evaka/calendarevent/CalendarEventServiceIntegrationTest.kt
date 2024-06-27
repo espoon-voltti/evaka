@@ -10,7 +10,6 @@ import fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 import fi.espoo.evaka.backupcare.NewBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonalDetails
@@ -34,6 +33,7 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -46,6 +46,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_3
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -96,7 +97,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            listOf(testAdult_1, testAdult_3).forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2, testChild_3).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
             tx.insert(group1Data)

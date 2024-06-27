@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
@@ -18,9 +17,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -61,7 +63,12 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
 
             tx.insertGuardian(parent.id, child1.id)
 

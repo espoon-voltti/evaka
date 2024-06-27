@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -28,6 +27,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.math.BigDecimal
@@ -64,7 +64,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val groupName2 = "Group in daycare 2"
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.insert(
                 DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName2)

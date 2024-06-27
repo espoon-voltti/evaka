@@ -9,7 +9,6 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.ReservationResponse
 import fi.espoo.evaka.shared.ChildId
@@ -22,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -63,7 +64,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
             tx.insert(

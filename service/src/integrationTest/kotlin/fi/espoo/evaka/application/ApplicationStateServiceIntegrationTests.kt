@@ -17,7 +17,6 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -26,7 +25,8 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.getPlacementsForChild
-import fi.espoo.evaka.preschoolTerms
+import fi.espoo.evaka.preschoolTerm2020
+import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.ProcessMetadataController
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
@@ -60,9 +60,11 @@ import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_6
@@ -106,7 +108,18 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @BeforeEach
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2, testChild_6, testChild_7).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insert(preschoolTerm2020)
+        }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 
@@ -133,10 +146,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `preschool application initialization uses correct term's start as default preferred start date`() {
-        val (_, secondTerm) = preschoolTerms.sortedBy { it.extendedTerm.start }
-
         db.transaction { tx ->
-            val applicationDate = secondTerm.applicationPeriod.start.minusWeeks(1)
+            tx.insert(preschoolTerm2021)
+            val applicationDate = preschoolTerm2021.applicationPeriod.start.minusWeeks(1)
             val applicationId =
                 service.createApplication(
                     tx,
@@ -153,7 +165,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
 
         db.transaction { tx ->
-            val applicationDate = secondTerm.applicationPeriod.start
+            val applicationDate = preschoolTerm2021.applicationPeriod.start
             val applicationId =
                 service.createApplication(
                     tx,
@@ -166,7 +178,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 )
 
             val result = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(secondTerm.extendedTerm.start, result.form.preferences.preferredStartDate)
+            assertEquals(
+                preschoolTerm2021.extendedTerm.start,
+                result.form.preferences.preferredStartDate
+            )
         }
     }
 
@@ -1747,6 +1762,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `daycare with known service need option`() {
+        db.transaction { tx -> tx.insert(snPreschoolDaycare45) }
+
         // given
         val serviceNeedOption =
             ServiceNeedOption(

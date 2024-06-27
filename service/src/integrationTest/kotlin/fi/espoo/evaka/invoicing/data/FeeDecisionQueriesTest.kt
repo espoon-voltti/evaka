@@ -5,7 +5,6 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -24,6 +23,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -36,6 +37,7 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -124,7 +126,27 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2.copy(financeDecisionHandler = testDecisionMaker_2.id))
+            listOf(
+                    testAdult_1,
+                    testAdult_2,
+                    testAdult_3,
+                    testAdult_4,
+                    testAdult_5,
+                    testAdult_6,
+                    testAdult_7
+                )
+                .forEach { tx.insert(it, DevPersonType.ADULT) }
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
+                tx.insert(it, DevPersonType.CHILD)
+            }
+            tx.insert(snDaycareFullDay35)
+        }
     }
 
     @Test

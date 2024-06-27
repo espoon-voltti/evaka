@@ -10,7 +10,6 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
 import fi.espoo.evaka.reservations.getReservationsForChildInRange
@@ -24,6 +23,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -78,7 +79,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
                     childId = childId,

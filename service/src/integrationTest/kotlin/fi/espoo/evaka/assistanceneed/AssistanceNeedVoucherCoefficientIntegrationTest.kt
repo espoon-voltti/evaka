@@ -8,7 +8,9 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.feeThresholds
+import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -16,6 +18,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
@@ -24,6 +27,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
@@ -49,11 +53,18 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(feeThresholds)
+            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOptionVoucherValues()
 
             val placementId =
-                it.insert(
+                tx.insert(
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testVoucherDaycare.id,
@@ -62,7 +73,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     )
                 )
             val period = FiniteDateRange(today, today.plusDays(30))
-            it.insert(
+            tx.insert(
                 DevServiceNeed(
                     placementId = placementId,
                     startDate = period.start,
@@ -72,7 +83,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     confirmedAt = HelsinkiDateTime.now()
                 )
             )
-            it.insert(
+            tx.insert(
                 DevParentship(
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,

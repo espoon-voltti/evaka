@@ -6,8 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.allAreas
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -17,9 +15,11 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevFridgeChild
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -34,7 +34,13 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test
@@ -169,7 +175,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         unit: DevDaycare = testDaycare
     ) =
         FamilyConflictReportRow(
-            careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
+            careAreaName = testArea.name,
             unitId = unit.id,
             unitName = unit.name,
             id = person.id,

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
@@ -17,12 +16,14 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -52,12 +53,16 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @BeforeEach
     fun init() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-            it.insert(DevEmployee(unitSupervisorId))
-            it.insert(DevEmployee(serviceWorkerId))
-            it.insert(DevEmployee(decisionMakerId))
-            it.insert(
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(DevEmployee(unitSupervisorId))
+            tx.insert(DevEmployee(serviceWorkerId))
+            tx.insert(DevEmployee(decisionMakerId))
+            tx.insert(
                 DevParentship(
                     id = ParentshipId(UUID.randomUUID()),
                     headOfChildId = person.id,
@@ -66,12 +71,12 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     endDate = LocalDate.now()
                 )
             )
-            it.insertDaycareAclRow(
+            tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insert(
+            tx.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,

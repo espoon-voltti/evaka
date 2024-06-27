@@ -6,10 +6,12 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
@@ -26,7 +28,12 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @BeforeEach
     fun setUp() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
     }
 
     @Test

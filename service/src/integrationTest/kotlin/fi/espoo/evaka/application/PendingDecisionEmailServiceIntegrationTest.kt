@@ -10,12 +10,13 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.TestDecision
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -24,6 +25,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_6
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -51,7 +53,11 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_6, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
 
             tx.insertTestApplication(
                 id = applicationId,

@@ -7,7 +7,7 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insert
@@ -27,6 +28,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -60,7 +62,20 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val groupName2 = "Tyhjä"
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testDaycare2)
+            listOf(
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7
+                )
+                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insertServiceNeedOptions()
             tx.addUnitFeatures(
                 listOf(testDaycare.id),
                 listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE)

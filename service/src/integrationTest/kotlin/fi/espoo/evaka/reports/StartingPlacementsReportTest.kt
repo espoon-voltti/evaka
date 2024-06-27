@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -14,6 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testArea
@@ -29,7 +29,12 @@ import org.junit.jupiter.api.Test
 class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testVoucherDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

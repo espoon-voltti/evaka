@@ -11,7 +11,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
@@ -35,6 +34,7 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.io.File
@@ -71,7 +71,9 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         val placementEnd = LocalDate.now().plusDays(30)
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testChild_1, DevPersonType.CHILD)
             tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.VASU_AND_PEDADOC))
 
             val groupId = GroupId(UUID.randomUUID())

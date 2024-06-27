@@ -12,13 +12,16 @@ import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_5
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_6
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
@@ -32,7 +35,10 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { it.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testAdult_5, DevPersonType.ADULT)
+            listOf(testChild_1, testChild_6).forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
     }
 
     @Test

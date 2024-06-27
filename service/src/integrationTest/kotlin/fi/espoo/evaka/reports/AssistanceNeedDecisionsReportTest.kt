@@ -18,14 +18,16 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.assistanceneed.decision.ServiceOptions
 import fi.espoo.evaka.assistanceneed.decision.StructuralMotivationOptions
 import fi.espoo.evaka.assistanceneed.decision.UnitIdInfo
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -102,7 +104,15 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testDecisionMaker_2)
+            tx.insert(testDecisionMaker_3)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            tx.insert(testChild_1, DevPersonType.CHILD)
+        }
     }
 
     @Test

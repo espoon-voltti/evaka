@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -16,6 +15,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -25,6 +25,7 @@ import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -33,6 +34,7 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testClub
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
@@ -56,7 +58,23 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx -> tx.insertGeneralTestFixtures() }
+        db.transaction { tx ->
+            tx.insert(testDecisionMaker_1)
+            tx.insert(testArea)
+            tx.insert(testDaycare)
+            tx.insert(testClub)
+            tx.insert(testAdult_1, DevPersonType.ADULT)
+            listOf(
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7
+                )
+                .forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
         applicationId_1 = createApplication(child = testChild_1, guardian = testAdult_1)
         applicationId_2 =
             createApplication(
