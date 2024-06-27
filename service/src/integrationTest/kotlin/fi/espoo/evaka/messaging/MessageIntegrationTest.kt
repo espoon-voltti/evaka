@@ -473,20 +473,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.read {
             assertEquals(
                 1,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_content").exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_content") }.exactlyOne<Int>()
             )
             assertEquals(
                 3,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_thread").exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_thread") }.exactlyOne<Int>()
             )
-            @Suppress("DEPRECATION")
-            assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message").exactlyOne<Int>())
+            assertEquals(
+                3,
+                it.createQuery { sql("SELECT COUNT(id) FROM message") }.exactlyOne<Int>()
+            )
             assertEquals(
                 5,
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT COUNT(id) FROM message_recipients").exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
             )
         }
 
@@ -724,10 +723,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             2,
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
-                    )
+                it.createQuery {
+                        sql("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL")
+                    }
                     .exactlyOne<Int>()
             }
         )
@@ -970,9 +968,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             // and the threadId points to the correct thread
             val messageThreadId =
-                @Suppress("DEPRECATION")
-                tx.createQuery("""SELECT thread_id FROM message WHERE content_id = :contentId""")
-                    .bind("contentId", messageContentId)
+                tx.createQuery {
+                        sql(
+                            "SELECT thread_id FROM message WHERE content_id = ${bind(messageContentId)}"
+                        )
+                    }
                     .exactlyOne<MessageThreadId>()
             assertEquals(messageThreadId, note.messageThreadId)
         }

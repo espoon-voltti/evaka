@@ -187,8 +187,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(
             0,
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT count(*) FROM message_thread").exactlyOne<Int>()
+                it.createQuery { sql("SELECT count(*) FROM message_thread") }.exactlyOne<Int>()
             }
         )
     }
@@ -264,21 +263,18 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     private fun markAllRecipientMessagesRead(person: DevPerson, clock: EvakaClock) {
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx.execute {
+                sql(
                     """
-                UPDATE message_recipients mr SET read_at = :now
-                WHERE mr.id IN (
-                    SELECT mr.id 
-                    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
-                    WHERE ma.person_id = :recipientId
+UPDATE message_recipients mr SET read_at = ${bind(clock.now())}
+WHERE mr.id IN (
+    SELECT mr.id 
+    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
+    WHERE ma.person_id = ${bind(person.id)}
+)
+"""
                 )
-            """
-                        .trimIndent()
-                )
-                .bind("now", clock.now())
-                .bind("recipientId", person.id)
-                .execute()
+            }
         }
     }
 }
