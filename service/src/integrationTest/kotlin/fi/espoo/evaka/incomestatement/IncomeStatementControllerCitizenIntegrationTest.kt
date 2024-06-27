@@ -729,19 +729,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
         note: String
     ) =
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
+            tx.execute {
+                sql(
                     """
-            UPDATE income_statement
-            SET handler_id = :handlerId, handler_note = :note
-            WHERE id = :id
-            """
-                        .trimIndent()
+UPDATE income_statement
+SET handler_id = ${bind(handlerId)}, handler_note = ${bind(note)}
+WHERE id = ${bind(id)}
+"""
                 )
-                .bind("id", id)
-                .bind("handlerId", handlerId)
-                .bind("note", note)
-                .execute()
+            }
         }
 
     @Test
