@@ -10,7 +10,6 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -54,7 +53,6 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

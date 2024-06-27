@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.childimages.ChildImageController
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.archiveThread
@@ -74,7 +73,6 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         mergeServiceAsyncJobRunnerMock = mock {}
         mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.IncomeController
 import fi.espoo.evaka.invoicing.data.insertIncome
 import fi.espoo.evaka.invoicing.domain.Income
@@ -75,7 +74,6 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testAdult_1, DevPersonType.ADULT)
         }

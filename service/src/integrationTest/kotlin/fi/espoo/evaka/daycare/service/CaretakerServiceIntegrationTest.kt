@@ -8,7 +8,6 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getCaretakers
 import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.updateCaretakers
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
@@ -30,7 +29,6 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart))

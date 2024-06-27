@@ -7,7 +7,6 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.addUnitFeatures
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
@@ -64,7 +63,6 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val groupName2 = "Tyhjä"
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testArea2)

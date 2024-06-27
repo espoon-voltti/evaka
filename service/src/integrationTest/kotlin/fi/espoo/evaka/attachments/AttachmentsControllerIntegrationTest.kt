@@ -12,7 +12,6 @@ import fi.espoo.evaka.attachment.AttachmentType
 import fi.espoo.evaka.incomestatement.IncomeStatementBody
 import fi.espoo.evaka.incomestatement.createIncomeStatement
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -37,7 +36,6 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testAdult_5, DevPersonType.ADULT)
             listOf(testChild_1, testChild_6).forEach { tx.insert(it, DevPersonType.CHILD) }
         }

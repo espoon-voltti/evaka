@@ -5,7 +5,6 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
@@ -71,7 +70,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

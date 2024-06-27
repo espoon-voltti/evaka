@@ -13,7 +13,6 @@ import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.getApplicationAttachments
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
 import fi.espoo.evaka.note.child.daily.getChildDailyNoteForChild
@@ -70,7 +69,6 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.PaymentController
 import fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.PaymentSortParam
@@ -76,7 +75,6 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

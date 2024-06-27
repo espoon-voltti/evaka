@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentParent
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.attachment.getAttachment
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
 import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -52,7 +51,6 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testChild_1, DevPersonType.CHILD)
         }

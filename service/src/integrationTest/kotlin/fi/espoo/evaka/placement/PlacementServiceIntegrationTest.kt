@@ -7,7 +7,6 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -59,7 +58,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

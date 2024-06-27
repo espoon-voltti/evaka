@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.PureJdbiTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
@@ -27,7 +26,6 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }

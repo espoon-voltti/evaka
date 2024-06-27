@@ -10,7 +10,6 @@ import fi.espoo.evaka.attendance.ExternalStaffDeparture
 import fi.espoo.evaka.attendance.markExternalStaffArrival
 import fi.espoo.evaka.attendance.markExternalStaffDeparture
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
@@ -48,7 +47,6 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

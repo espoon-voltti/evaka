@@ -5,7 +5,6 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -48,7 +47,6 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
     @BeforeEach
     fun setup() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testArea)

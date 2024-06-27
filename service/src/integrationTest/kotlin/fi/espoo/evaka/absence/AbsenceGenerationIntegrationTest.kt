@@ -7,7 +7,6 @@ package fi.espoo.evaka.absence
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.deleteChildDailyServiceTimes
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -56,7 +55,6 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(

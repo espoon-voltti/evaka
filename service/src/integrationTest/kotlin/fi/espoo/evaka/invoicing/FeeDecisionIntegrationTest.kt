@@ -9,7 +9,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionController
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
@@ -317,7 +316,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         MockEmailClient.clear()
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testArea)

@@ -13,7 +13,6 @@ import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.preschoolTerm2023
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -65,7 +64,6 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testAreaSvebi)
             tx.insert(testSvebiDaycare)

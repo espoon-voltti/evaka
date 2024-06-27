@@ -5,7 +5,6 @@
 package fi.espoo.evaka.childimages
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.s3.responseEntityToS3URL
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
@@ -42,7 +41,6 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.insertGeneralTestFixtures()
             it.insert(testChild_1, DevPersonType.CHILD)
             it.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
         }

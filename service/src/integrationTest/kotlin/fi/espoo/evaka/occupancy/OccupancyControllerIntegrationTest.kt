@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.createParentship
@@ -49,7 +48,6 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

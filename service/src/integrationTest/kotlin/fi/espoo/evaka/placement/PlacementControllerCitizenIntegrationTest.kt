@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -80,7 +79,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testArea2)

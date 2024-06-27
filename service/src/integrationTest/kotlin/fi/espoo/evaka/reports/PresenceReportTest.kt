@@ -9,7 +9,6 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceCategory.BILLABLE
 import fi.espoo.evaka.absence.AbsenceCategory.NONBILLABLE
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
@@ -33,7 +32,6 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)

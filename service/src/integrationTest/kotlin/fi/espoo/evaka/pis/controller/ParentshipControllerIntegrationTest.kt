@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.Creator
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
@@ -47,7 +46,6 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     fun init() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testAdult_1, DevPersonType.ADULT)

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.DaycareRole
 import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
@@ -34,7 +33,6 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1.copy(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.insert(testDecisionMaker_2)
             tx.insert(testDecisionMaker_3)

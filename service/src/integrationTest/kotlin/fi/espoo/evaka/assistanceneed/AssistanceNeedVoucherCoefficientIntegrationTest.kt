@@ -9,7 +9,6 @@ import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoe
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController
 import fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 import fi.espoo.evaka.feeThresholds
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
@@ -55,7 +54,6 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testVoucherDaycare)

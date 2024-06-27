@@ -10,7 +10,6 @@ import fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 import fi.espoo.evaka.backupcare.NewBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.emailclient.MockEmailClient
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonalDetails
@@ -99,7 +98,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testArea2)

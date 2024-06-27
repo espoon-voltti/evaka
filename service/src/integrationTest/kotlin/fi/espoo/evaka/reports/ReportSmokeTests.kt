@@ -6,7 +6,6 @@ package fi.espoo.evaka.reports
 
 import com.github.kittinunf.fuel.core.Request
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,7 +33,6 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     override fun beforeAll() {
         super.beforeAll()
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)

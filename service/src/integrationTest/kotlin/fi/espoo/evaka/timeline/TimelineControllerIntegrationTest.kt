@@ -5,7 +5,6 @@
 package fi.espoo.evaka.timeline
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.CreationModificationMetadata
 import fi.espoo.evaka.shared.EvakaUserId
@@ -43,7 +42,6 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testAdult_1, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)

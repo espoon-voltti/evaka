@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.calculateIncomeTotal
 import fi.espoo.evaka.invoicing.calculateMonthlyAmount
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -40,10 +39,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-            tx.insert(testAdult_1, DevPersonType.ADULT)
-        }
+        db.transaction { tx -> tx.insert(testAdult_1, DevPersonType.ADULT) }
     }
 
     private val personId = testAdult_1.id

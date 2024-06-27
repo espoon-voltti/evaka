@@ -10,7 +10,6 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.reservations.DailyReservationRequest
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
 import fi.espoo.evaka.reservations.getReservationsForChildInRange
@@ -81,7 +80,6 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testArea)

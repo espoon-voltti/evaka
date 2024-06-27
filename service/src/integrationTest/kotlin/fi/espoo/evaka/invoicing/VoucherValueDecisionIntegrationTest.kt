@@ -13,7 +13,6 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.feeThresholds
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.insertServiceNeedOptionVoucherValues
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
@@ -85,7 +84,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         MockEmailClient.clear()
 
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
             tx.insert(testArea)

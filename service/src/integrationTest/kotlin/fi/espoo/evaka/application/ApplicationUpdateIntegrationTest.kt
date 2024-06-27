@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.ApplicationStatus.CREATED
 import fi.espoo.evaka.application.ApplicationStatus.SENT
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -44,7 +43,6 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)

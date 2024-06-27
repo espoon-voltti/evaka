@@ -17,7 +17,6 @@ import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.decision.updateDecisionDrafts
 import fi.espoo.evaka.insertApplication
-import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -111,7 +110,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)
