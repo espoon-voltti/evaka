@@ -23,17 +23,8 @@ import java.time.Instant
 import java.time.LocalDate
 
 fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            """
-SELECT status
-FROM application
-WHERE id = :applicationId
-"""
-        )
-        .bind("applicationId", applicationId)
-        .exactlyOne<ApplicationStatus>()
+    createQuery { sql("SELECT status FROM application WHERE id = ${bind(applicationId)}") }
+        .exactlyOne()
 
 data class DecisionTableRow(
     val id: DecisionId,
@@ -55,21 +46,15 @@ data class DecisionTableRow(
 }
 
 fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
-        )
-        .bind("applicationId", applicationId)
+    createQuery {
+            sql(
+                "SELECT * FROM decision WHERE application_id = ${bind(applicationId)} ORDER BY type"
+            )
+        }
         .mapTo<DecisionTableRow>()
 
 fun Database.Read.getDecisionRowById(id: DecisionId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM decision WHERE id = :id"
-        )
-        .bind("id", id)
+    createQuery { sql("SELECT * FROM decision WHERE id = ${bind(id)}") }
         .exactlyOne<DecisionTableRow>()
 
 data class PlacementTableRow(
@@ -84,12 +69,9 @@ data class PlacementTableRow(
 }
 
 fun Database.Read.getPlacementRowsByChild(childId: ChildId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
-        )
-        .bind("childId", childId)
+    createQuery {
+            sql("SELECT * FROM placement WHERE child_id = ${bind(childId)} ORDER BY start_date")
+        }
         .mapTo<PlacementTableRow>()
 
 data class PlacementPlanTableRow(
@@ -116,12 +98,9 @@ data class PlacementPlanTableRow(
 }
 
 fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM placement_plan WHERE application_id = :applicationId"
-        )
-        .bind("applicationId", applicationId)
+    createQuery {
+            sql("SELECT * FROM placement_plan WHERE application_id = ${bind(applicationId)}")
+        }
         .exactlyOne<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
@@ -136,19 +115,11 @@ data class BackupCareTableRow(
 }
 
 fun Database.Read.getBackupCareRowById(id: BackupCareId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM backup_care WHERE id = :id"
-        )
-        .bind("id", id)
+    createQuery { sql("SELECT * FROM backup_care WHERE id = ${bind(id)}") }
         .exactlyOne<BackupCareTableRow>()
 
 fun Database.Read.getBackupCareRowsByChild(childId: ChildId) =
-    @Suppress("DEPRECATION")
-    createQuery(
-            // language=SQL
-            "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"
-        )
-        .bind("childId", childId)
+    createQuery {
+            sql("SELECT * FROM backup_care WHERE child_id = ${bind(childId)} ORDER BY start_date")
+        }
         .mapTo<BackupCareTableRow>()
