@@ -4,7 +4,10 @@
 
 package fi.espoo.evaka.varda
 
+import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
+import fi.espoo.evaka.defaultPurchasedOrganizerOid
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
@@ -27,6 +30,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -47,9 +51,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testExternalPurchasedDaycare
-import fi.espoo.evaka.testGhostUnitDaycare
-import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -66,6 +67,36 @@ import org.springframework.beans.factory.annotation.Autowired
 class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
+    private val purchasedDaycare =
+        DevDaycare(
+            name = "Test Purchased Daycare",
+            areaId = testArea.id,
+            providerType = ProviderType.PURCHASED,
+            ophOrganizerOid = defaultPurchasedOrganizerOid,
+            invoicedByMunicipality = false
+        )
+
+    private val externalPurchasedDaycare =
+        DevDaycare(
+            name = "Test External Purchased Daycare",
+            areaId = testArea.id,
+            providerType = ProviderType.EXTERNAL_PURCHASED,
+            ophOrganizerOid = defaultPurchasedOrganizerOid,
+            invoicedByMunicipality = false
+        )
+
+    private val ghostUnitDaycare =
+        DevDaycare(
+            name = "Test Ghost Unit Daycare",
+            areaId = testArea.id,
+            type = setOf(CareType.CENTRE),
+            uploadToVarda = false,
+            uploadChildrenToVarda = false,
+            uploadToKoski = false,
+            ghostUnit = true,
+            invoicedByMunicipality = false
+        )
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -73,9 +104,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDaycareNotInvoiced)
-            tx.insert(testPurchasedDaycare)
-            tx.insert(testExternalPurchasedDaycare)
-            tx.insert(testGhostUnitDaycare)
+            tx.insert(purchasedDaycare)
+            tx.insert(externalPurchasedDaycare)
+            tx.insert(ghostUnitDaycare)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertServiceNeedOptions()
@@ -239,7 +270,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     fun `calculateEvakaVsVardaServiceNeedChangesByChild finds updated evaka service need from purchased daycare`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultDaycare.copy(updated = since)
-        val snId = createServiceNeed(db, option, unitId = testPurchasedDaycare.id)
+        val snId = createServiceNeed(db, option, unitId = purchasedDaycare.id)
         val childId =
             db.read { it.getChildIdByServiceNeedId(snId) }
                 ?: throw Exception("Created service need not found?!?")
@@ -663,7 +694,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             PlacementType.PRESCHOOL,
-            testGhostUnitDaycare.id
+            ghostUnitDaycare.id
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1349,7 +1380,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             child,
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
-            unitId = testGhostUnitDaycare.id
+            unitId = ghostUnitDaycare.id
         )
         createFeeDecision(
             db,
@@ -1357,7 +1388,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             feeDecisionPeriod,
             since.toInstant(),
-            daycareId = testGhostUnitDaycare.id
+            daycareId = ghostUnitDaycare.id
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1520,7 +1551,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 serviceNeedPeriod.start,
                 serviceNeedPeriod.end!!,
                 PlacementType.DAYCARE,
-                testExternalPurchasedDaycare.id
+                externalPurchasedDaycare.id
             )
 
         val result = db.read { it.getEvakaServiceNeedInfoForVarda(snId) }

@@ -29,8 +29,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChildDuplicateOf
-import fi.espoo.evaka.testChildDuplicated
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
@@ -50,6 +48,32 @@ import org.springframework.beans.factory.annotation.Autowired
 class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var koskiEndpoint: MockKoskiEndpoint
     private lateinit var koskiTester: KoskiTester
+
+    private val childDuplicated =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2018, 12, 31),
+            ssn = "311218A999X",
+            firstName = "Monika",
+            lastName = "Monistettu",
+            streetAddress = "Testikatu 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false
+        )
+
+    private val childDuplicateOf =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2018, 12, 31),
+            ssn = null,
+            ophPersonOid = "1.2.246.562.10.735773577357",
+            firstName = "Monika",
+            lastName = "Monistettu",
+            streetAddress = "Testikatu 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false,
+            duplicateOf = childDuplicated.id
+        )
 
     @BeforeAll
     fun initDependencies() {
@@ -72,7 +96,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)
-            listOf(testChildDuplicated, testChildDuplicateOf, testChild_1, testChild_7).forEach {
+            listOf(childDuplicated, childDuplicateOf, testChild_1, testChild_7).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
             tx.setUnitOids()
@@ -901,7 +925,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `will send duplicate child's preschool daycare placement, but not the original child's`() {
         val placementPeriodOfOriginal = preschoolTerm2019
         insertPlacement(
-            child = testChildDuplicated,
+            child = childDuplicated,
             period = placementPeriodOfOriginal,
             type = PlacementType.PRESCHOOL_DAYCARE
         )
@@ -915,7 +939,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             FiniteDateRange(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
 
         insertPlacement(
-            child = testChildDuplicateOf,
+            child = childDuplicateOf,
             period = placementPeriodOfDuplicate,
             type = PlacementType.PRESCHOOL_DAYCARE
         )

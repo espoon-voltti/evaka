@@ -103,26 +103,6 @@ val testDaycareNotInvoiced =
         invoicedByMunicipality = false
     )
 
-val testPurchasedDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Purchased Daycare",
-        areaId = testArea.id,
-        providerType = ProviderType.PURCHASED,
-        ophOrganizerOid = defaultPurchasedOrganizerOid,
-        invoicedByMunicipality = false
-    )
-
-val testExternalPurchasedDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test External Purchased Daycare",
-        areaId = testArea.id,
-        providerType = ProviderType.EXTERNAL_PURCHASED,
-        ophOrganizerOid = defaultPurchasedOrganizerOid,
-        invoicedByMunicipality = false
-    )
-
 val testVoucherDaycare =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
@@ -161,19 +141,6 @@ val testClub =
         uploadToVarda = false,
         uploadChildrenToVarda = false,
         uploadToKoski = false
-    )
-
-val testGhostUnitDaycare =
-    DevDaycare(
-        id = DaycareId(UUID.randomUUID()),
-        name = "Test Ghost Unit Daycare",
-        areaId = testArea.id,
-        type = setOf(CareType.CENTRE),
-        uploadToVarda = false,
-        uploadChildrenToVarda = false,
-        uploadToKoski = false,
-        ghostUnit = true,
-        invoicedByMunicipality = false
     )
 
 val allDayTimeRange = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
@@ -405,47 +372,6 @@ val testChild_8 =
         postalCode = "02770",
         postOffice = "Espoo",
         restrictedDetailsEnabled = false
-    )
-
-val testChildWithNamelessGuardian =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = "311218A999J",
-        firstName = "Niilo",
-        lastName = "Nimettömänpoika",
-        streetAddress = "Kankkulankaivo 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false
-    )
-
-val testChildDuplicated =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = "311218A999X",
-        firstName = "Monika",
-        lastName = "Monistettu",
-        streetAddress = "Testikatu 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false
-    )
-
-val testChildDuplicateOf =
-    DevPerson(
-        id = ChildId(UUID.randomUUID()),
-        dateOfBirth = LocalDate.of(2018, 12, 31),
-        ssn = null,
-        ophPersonOid = "1.2.246.562.10.735773577357",
-        firstName = "Monika",
-        lastName = "Monistettu",
-        streetAddress = "Testikatu 1",
-        postalCode = "00340",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false,
-        duplicateOf = testChildDuplicated.id
     )
 
 fun Database.Transaction.insertTestDecisionMaker() {
