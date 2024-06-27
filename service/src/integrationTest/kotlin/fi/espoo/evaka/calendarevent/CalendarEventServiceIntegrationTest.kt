@@ -47,7 +47,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -100,7 +99,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testAdult_1, testAdult_3).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_3).forEach {

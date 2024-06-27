@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -67,7 +66,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))

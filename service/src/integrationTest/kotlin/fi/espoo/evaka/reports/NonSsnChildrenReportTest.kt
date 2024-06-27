@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
@@ -63,7 +62,6 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(jimmyNoSsn, DevPersonType.CHILD)
             tx.insert(jackieNoSsn, DevPersonType.CHILD)

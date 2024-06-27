@@ -32,7 +32,6 @@ import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testAreaSvebi
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -69,7 +68,6 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             tx.insert(testSvebiDaycare)
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(testAdult_1, testAdult_7).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)

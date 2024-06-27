@@ -36,6 +36,8 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -59,14 +61,10 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
@@ -86,6 +84,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
     @Autowired private lateinit var emailEnv: EmailEnv
 
+    private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
+    private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
+    private val daycare1 = DevDaycare(areaId = area1.id)
+    private val daycare2 = DevDaycare(areaId = area2.id)
+
     private val user =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val adminUser =
@@ -103,14 +106,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         ),
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             siblingDiscount = 50,
@@ -128,7 +131,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -144,7 +147,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -160,7 +163,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_3.id,
                             dateOfBirth = testChild_3.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -176,7 +179,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_4.id,
                             dateOfBirth = testChild_4.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -192,7 +195,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_4.id,
                             dateOfBirth = testChild_4.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -208,7 +211,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_4.id,
                             dateOfBirth = testChild_4.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -224,7 +227,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_4.id,
                             dateOfBirth = testChild_4.dateOfBirth,
-                            placementUnitId = testDaycare2.id,
+                            placementUnitId = daycare2.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         )
@@ -244,14 +247,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.PRESCHOOL_CLUB,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         ),
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             siblingDiscount = 50,
@@ -269,14 +272,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
                         ),
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.PRESCHOOL_CLUB,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             siblingDiscount = 50,
@@ -318,10 +321,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx ->
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testArea2)
-            tx.insert(testDaycare2)
+            tx.insert(area1)
+            tx.insert(area2)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
             listOf(
                     testAdult_1,
                     testAdult_2,
@@ -549,7 +552,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf("test_area"))
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf(area1.shortName))
             )
 
         assertEqualEnough(testDecisions.map(::toSummary).take(3), result.data)
@@ -564,7 +567,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 SearchFeeDecisionRequest(
                     page = 0,
                     pageSize = 50,
-                    area = listOf("test_area"),
+                    area = listOf(area1.shortName),
                     statuses = listOf(FeeDecisionStatus.DRAFT)
                 )
             )
@@ -588,13 +591,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, unit = testDaycare.id)
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50, unit = daycare1.id))
 
         val expected =
             testDecisions.filter { decision ->
-                decision.children.any { it.placement.unitId == testDaycare.id }
+                decision.children.any { it.placement.unitId == daycare1.id }
             }
         assertEqualEnough(expected.map(::toSummary), result.data)
     }
@@ -1340,7 +1341,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             createFeeDecisionChildFixture(
                                 childId = testChild_1.id,
                                 dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
+                                placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
@@ -1362,7 +1363,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             createFeeDecisionChildFixture(
                                 childId = testChild_2.id,
                                 dateOfBirth = testChild_2.dateOfBirth,
-                                placementUnitId = testDaycare.id,
+                                placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
@@ -1387,7 +1388,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
@@ -1397,7 +1398,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
@@ -1456,7 +1457,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             createFeeDecisionChildFixture(
                                 childId = testChild_1.id,
                                 dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
+                                placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
@@ -1478,7 +1479,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                             createFeeDecisionChildFixture(
                                 childId = testChild_2.id,
                                 dateOfBirth = testChild_2.dateOfBirth,
-                                placementUnitId = testDaycare.id,
+                                placementUnitId = daycare1.id,
                                 placementType = PlacementType.DAYCARE,
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
@@ -1503,7 +1504,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_1.id,
                             dateOfBirth = testChild_1.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
@@ -1513,7 +1514,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
                             dateOfBirth = testChild_2.dateOfBirth,
-                            placementUnitId = testDaycare.id,
+                            placementUnitId = daycare1.id,
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
@@ -2258,7 +2259,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     createFeeDecisionChildFixture(
                         childId = it.id,
                         dateOfBirth = it.dateOfBirth,
-                        placementUnitId = testDaycare.id,
+                        placementUnitId = daycare1.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         siblingDiscount = 50,

@@ -43,7 +43,6 @@ import fi.espoo.evaka.snDefaultPreschool
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
@@ -73,7 +72,6 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             tx.insert(testDecisionMaker_1)
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycareNotInvoiced)
             tx.insert(testPurchasedDaycare)
             tx.insert(testExternalPurchasedDaycare)

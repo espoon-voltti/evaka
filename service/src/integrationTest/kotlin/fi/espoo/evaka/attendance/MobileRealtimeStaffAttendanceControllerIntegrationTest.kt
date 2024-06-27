@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.math.BigDecimal
@@ -67,7 +66,6 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             tx.insert(

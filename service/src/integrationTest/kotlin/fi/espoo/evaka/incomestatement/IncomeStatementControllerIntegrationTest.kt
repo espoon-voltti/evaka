@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevParentship
@@ -35,16 +37,11 @@ import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.testPurchasedDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -58,6 +55,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     @Autowired private lateinit var incomeStatementController: IncomeStatementController
     @Autowired private lateinit var attachmentsController: AttachmentsController
 
+    private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
+    private val daycare1 = DevDaycare(areaId = area1.id)
+    private val daycarePurchased =
+        DevDaycare(areaId = area1.id, providerType = ProviderType.PURCHASED)
+    private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
+    private val daycare2 = DevDaycare(areaId = area2.id)
+
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
@@ -65,11 +69,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testArea2)
-            tx.insert(testDaycare2)
-            tx.insert(testPurchasedDaycare)
+            tx.insert(area1)
+            tx.insert(area2)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycarePurchased)
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
                 .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
@@ -286,7 +290,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -320,7 +324,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -330,7 +334,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId3,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_3.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -344,7 +348,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     endDate = placementEnd
                 )
             )
-            tx.insertApplication(testAdult_4, testChild_4)
+            tx.insertApplication(testAdult_4, testChild_4, preferredUnit = daycare1)
 
             tx.insertGuardian(testAdult_5.id, testChild_5.id)
             tx.insert(
@@ -352,7 +356,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId4,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_5.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -378,7 +382,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -388,7 +392,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = area2.name,
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -398,7 +402,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
                         personName = "Foo Mark",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = area2.name,
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
@@ -408,7 +412,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
                         personName = "Aman Dork",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = area1.name,
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement5.id,
@@ -438,7 +442,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.CHILD_INCOME,
                         personId = testChild_1.id,
                         personName = "Doe Ricky",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 7,
@@ -468,7 +472,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -487,7 +491,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -508,16 +512,15 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Lwiz Foo"
+                        primaryCareArea = area2.name
                     )
                 ),
                 1,
                 1
             ),
-            // short name for the "Lwiz Foo" care area is "short name 2"
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
-                    areas = listOf("short name 2"),
+                    areas = listOf(area2.shortName),
                     providerTypes = listOf(ProviderType.MUNICIPAL)
                 )
             )
@@ -544,7 +547,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testPurchasedDaycare.id,
+                    unitId = daycarePurchased.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -563,7 +566,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -584,7 +587,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 1,
@@ -616,7 +619,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -635,7 +638,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -666,7 +669,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 1,
@@ -691,7 +694,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 1,
@@ -726,7 +729,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placement1Start,
                     endDate = placement1End
                 )
@@ -745,7 +748,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End
                 )
@@ -757,7 +760,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId3,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placement2Start,
                     endDate = placement2End
                 )
@@ -789,7 +792,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -799,7 +802,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -831,7 +834,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 1,
@@ -854,7 +857,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -864,7 +867,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area"
+                        primaryCareArea = area1.name
                     )
                 ),
                 2,
@@ -897,7 +900,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId1,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -916,7 +919,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     id = placementId2,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd
                 )
@@ -946,7 +949,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = citizenId,
                 personName = "Doe John",
-                primaryCareArea = "Test Area"
+                primaryCareArea = area1.name
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -957,7 +960,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = testAdult_2.id,
                 personName = "Doe Joan",
-                primaryCareArea = "Test Area"
+                primaryCareArea = area1.name
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),

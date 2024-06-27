@@ -29,7 +29,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -65,7 +64,6 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             listOf(
                     testChild_1,

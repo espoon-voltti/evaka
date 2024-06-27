@@ -57,13 +57,6 @@ Queries and data classes for initializing integration tests with person and unit
 */
 
 val testArea = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
-val testArea2 =
-    DevCareArea(
-        id = AreaId(UUID.randomUUID()),
-        name = "Lwiz Foo",
-        shortName = "short name 2",
-        areaCode = 300
-    )
 val testAreaSvebi =
     DevCareArea(
         id = AreaId(UUID.randomUUID()),
@@ -72,7 +65,7 @@ val testAreaSvebi =
         areaCode = 400
     )
 
-val allAreas = listOf(testArea, testArea2, testAreaSvebi)
+val allAreas = listOf(testArea, testAreaSvebi)
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
@@ -108,7 +101,7 @@ val testDaycare2 =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
         name = "Test Daycare 2",
-        areaId = testArea2.id,
+        areaId = testArea.id,
         enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
     )
 
@@ -116,7 +109,7 @@ val testDaycareNotInvoiced =
     DevDaycare(
         id = DaycareId(UUID.randomUUID()),
         name = "Not Invoiced",
-        areaId = testArea2.id,
+        areaId = testArea.id,
         invoicedByMunicipality = false
     )
 
@@ -702,6 +695,7 @@ fun Database.Transaction.insertApplication(
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
     transferApplication: Boolean = false,
+    preferredUnit: DevDaycare = testDaycare
 ): ApplicationDetails {
     val application =
         ApplicationDetails(
@@ -743,7 +737,7 @@ fun Database.Transaction.insertApplication(
                     preferences =
                         Preferences(
                             preferredUnits =
-                                listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
+                                listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
                             preferredStartDate = preferredStartDate,
                             connectedDaycarePreferredStartDate = null,
                             serviceNeed =

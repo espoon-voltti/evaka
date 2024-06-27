@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevPersonType
@@ -24,12 +26,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDefaultDaycare
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
@@ -41,9 +39,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
+    private val daycare1 = DevDaycare(areaId = area1.id, name = "Daycare 1")
+    private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
+    private val daycare2 =
+        DevDaycare(
+            areaId = area2.id,
+            name = "Daycare 2",
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+        )
 
     val childId = testChild_1.id
-    val unitId = testDaycare.id
+    val unitId = daycare1.id
     final val year = LocalDate.now().year + 1
     final val month = 1
     val placementStart = LocalDate.of(year, month, 10)
@@ -59,10 +66,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun setUp() {
         db.transaction { tx ->
             tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testArea2)
-            tx.insert(testDaycare2)
+            tx.insert(area1)
+            tx.insert(daycare1)
+            tx.insert(area2)
+            tx.insert(daycare2)
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
             groupId1 =
@@ -1143,15 +1150,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     id = daycarePlacementId,
                     type = daycarePlacementType,
                     childId = testChild_2.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate
                 )
             )
         }
 
-        val placements =
-            db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
@@ -1167,11 +1173,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                     daycare =
                         DaycareBasics(
-                            testDaycare2.id,
-                            testDaycare2.name,
-                            testArea2.name,
+                            daycare2.id,
+                            daycare2.name,
+                            area2.name,
                             ProviderType.MUNICIPAL,
-                            listOf(PilotFeature.MESSAGING),
+                            daycare2.enabledPilotFeatures.toList(),
                             Language.fi
                         ),
                     startDate = daycarePlacementStartDate,
@@ -1214,7 +1220,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     id = daycarePlacementId,
                     type = daycarePlacementType,
                     childId = testChild_2.id,
-                    unitId = testDaycare2.id,
+                    unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate
                 )
@@ -1250,8 +1256,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
         }
 
-        val placements =
-            db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements = db.read { it.getDetailedDaycarePlacements(daycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
@@ -1267,11 +1272,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                     daycare =
                         DaycareBasics(
-                            testDaycare2.id,
-                            testDaycare2.name,
-                            testArea2.name,
+                            daycare2.id,
+                            daycare2.name,
+                            area2.name,
                             ProviderType.MUNICIPAL,
-                            listOf(PilotFeature.MESSAGING),
+                            daycare2.enabledPilotFeatures.toList(),
                             Language.fi
                         ),
                     startDate = daycarePlacementStartDate,
@@ -1372,7 +1377,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     tx.insertPlacement(
                         PlacementType.DAYCARE,
                         testChild_1.id,
-                        testDaycare.id,
+                        daycare1.id,
                         evakaLaunch.minusYears(1),
                         evakaLaunch.plusYears(1),
                         false
@@ -1388,7 +1393,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 placement
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, testDaycare.id) }
+        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare1.id) }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
@@ -1418,7 +1423,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     tx.insertPlacement(
                         PlacementType.DAYCARE,
                         testChild_1.id,
-                        testDaycare.id,
+                        daycare1.id,
                         evakaLaunch.minusYears(1),
                         evakaLaunch.plusYears(1),
                         false
@@ -1434,7 +1439,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 tx.insert(
                     DevBackupCare(
                         childId = testChild_1.id,
-                        unitId = testDaycare2.id,
+                        unitId = daycare2.id,
                         groupId = null,
                         period =
                             FiniteDateRange(evakaLaunch.minusYears(1), evakaLaunch.minusDays(1))
@@ -1443,14 +1448,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 tx.insert(
                     DevBackupCare(
                         childId = testChild_1.id,
-                        unitId = testDaycare2.id,
+                        unitId = daycare2.id,
                         groupId = null,
                         period = FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
                     )
                 )
             }
 
-        val result = db.read { tx -> getMissingGroupPlacements(tx, testDaycare2.id) }
+        val result = db.read { tx -> getMissingGroupPlacements(tx, daycare2.id) }
         assertEquals(
             listOf(
                 MissingGroupPlacement(
@@ -1462,7 +1467,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     testChild_1.firstName,
                     testChild_1.lastName,
                     testChild_1.dateOfBirth,
-                    listOf(testDaycare.name),
+                    listOf(daycare1.name),
                     listOf(),
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
                 )

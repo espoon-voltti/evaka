@@ -42,7 +42,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -144,7 +143,6 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             tx.insert(testDecisionMaker_3)
             tx.insert(testArea)
             tx.insert(testDaycare)
-            tx.insert(testArea2)
             tx.insert(testDaycare2)
             tx.insert(
                 unitSupervisorOfTestDaycare,

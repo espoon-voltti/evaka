@@ -14,16 +14,14 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -32,13 +30,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
+    private val area1 = DevCareArea(areaCode = 100, name = "Area 1", shortName = "area1")
+    private val area2 = DevCareArea(areaCode = 200, name = "Area 2", shortName = "area2")
+    private val daycare1 = DevDaycare(areaId = area1.id)
+    private val daycare2 = DevDaycare(areaId = area2.id)
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testArea2)
-            tx.insert(testDaycare2)
+            tx.insert(area1)
+            tx.insert(area2)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
             listOf(testAdult_1, testAdult_2).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
@@ -55,7 +58,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 reportRows =
                     listOf(
                         InvoiceReportRow(
-                            areaCode = testArea.areaCode!!,
+                            areaCode = area1.areaCode!!,
                             amountOfInvoices = 1,
                             totalSumCents = 28900,
                             amountWithoutSSN = 0,
@@ -63,7 +66,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             amountWithZeroPrice = 0
                         ),
                         InvoiceReportRow(
-                            areaCode = testArea2.areaCode!!,
+                            areaCode = area2.areaCode!!,
                             amountOfInvoices = 2,
                             totalSumCents = 28900,
                             amountWithoutSSN = 0,
@@ -94,25 +97,21 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_1.id,
-                areaId = testArea.id,
+                areaId = area1.id,
                 rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    )
+                    listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = daycare1.id))
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
-                areaId = testArea2.id,
+                areaId = area2.id,
                 rows =
-                    listOf(
-                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare2.id)
-                    )
+                    listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = daycare2.id))
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
-                areaId = testArea2.id,
+                areaId = area2.id,
                 rows = listOf()
             )
         )

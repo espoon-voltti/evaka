@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -24,6 +25,8 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -34,18 +37,12 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testArea2
-import fi.espoo.evaka.testAreaSvebi
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
-import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
 import fi.espoo.evaka.toPersonBasic
 import java.math.BigDecimal
@@ -59,17 +56,25 @@ import org.junit.jupiter.api.Test
 class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
+    private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
+    private val daycare1 = DevDaycare(areaId = area1.id)
+    private val area2 = DevCareArea(name = "Area 2", shortName = "area2")
+    private val daycare2 =
+        DevDaycare(areaId = area2.id, financeDecisionHandler = testDecisionMaker_2.id)
+    private val areaSv = DevCareArea(name = "Area sv", shortName = "area_sv")
+    private val daycareSv = DevDaycare(areaId = areaSv.id, language = Language.sv)
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insert(testDecisionMaker_1)
             tx.insert(testDecisionMaker_2)
-            tx.insert(testAreaSvebi)
-            tx.insert(testSvebiDaycare)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testArea2)
-            tx.insert(testDaycare2.copy(financeDecisionHandler = testDecisionMaker_2.id))
+            tx.insert(areaSv)
+            tx.insert(daycareSv)
+            tx.insert(area1)
+            tx.insert(daycare1)
+            tx.insert(area2)
+            tx.insert(daycare2)
             listOf(testAdult_3, testAdult_4).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_3, testChild_4, testChild_5, testChild_6).forEach {
                 tx.insert(it, DevPersonType.CHILD)
@@ -171,27 +176,22 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
-                        children = listOf(childFixture(testChild_5, testDaycare.id))
+                        children = listOf(childFixture(testChild_5, daycare1.id))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
-                        children = listOf(childFixture(testChild_6, testDaycare2.id))
+                        children = listOf(childFixture(testChild_6, daycare2.id))
                     )
                 )
             )
         }
-        val areaTestCases =
-            listOf(testArea to testChild_5, testArea2 to testChild_6, testAreaSvebi to null)
+        val areaTestCases = listOf(area1 to testChild_5, area2 to testChild_6, areaSv to null)
         for ((area, child) in areaTestCases) {
             val result = search(areas = listOf(area.shortName))
             assertResultsByChild(result, child)
         }
         val unitTestCases =
-            listOf(
-                testDaycare to testChild_5,
-                testDaycare2 to testChild_6,
-                testSvebiDaycare to null
-            )
+            listOf(daycare1 to testChild_5, daycare2 to testChild_6, daycareSv to null)
         for ((unit, child) in unitTestCases) {
             val result = search(unit = unit.id)
             assertResultsByChild(result, child)
@@ -206,11 +206,11 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
                         children =
-                            listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null))
+                            listOf(childFixture(testChild_3, daycare1.id, serviceNeed = null))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
-                        children = listOf(childFixture(testChild_4, testDaycare2.id)),
+                        children = listOf(childFixture(testChild_4, daycare2.id)),
                         period = DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1))
                     )
                 )
@@ -238,7 +238,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
                         children =
-                            listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null)),
+                            listOf(childFixture(testChild_3, daycare1.id, serviceNeed = null)),
                         period = DateRange(now.today(), now.today())
                     )
                 )
@@ -252,7 +252,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             1,
             search(
-                    areas = listOf(testArea.shortName),
+                    areas = listOf(area1.shortName),
                     distinctiveParams = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS)
                 )
                 .size
@@ -262,7 +262,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insert(
                 DevPlacement(
                     childId = testChild_3.id,
-                    unitId = testDaycare.id,
+                    unitId = daycare1.id,
                     startDate = now.today(),
                     endDate = now.today()
                 )
@@ -325,11 +325,11 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
-                        children = listOf(childFixture(testChild_3, testDaycare2.id))
+                        children = listOf(childFixture(testChild_3, daycare2.id))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
-                        children = listOf(childFixture(testChild_4, testDaycare.id))
+                        children = listOf(childFixture(testChild_4, daycare1.id))
                     )
                 )
             )
@@ -415,7 +415,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun childFixture(
         child: DevPerson,
-        placementUnit: DaycareId = testDaycare.id,
+        placementUnit: DaycareId = daycare1.id,
         serviceNeed: ServiceNeedOption? = snDaycareFullDay35,
         fee: Int = 28900
     ) =
