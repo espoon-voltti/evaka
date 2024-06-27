@@ -35,16 +35,16 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val runAt =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT run_at FROM async_job").exactlyOne<HelsinkiDateTime>()
+                it.createQuery { sql("SELECT run_at FROM async_job") }
+                    .exactlyOne<HelsinkiDateTime>()
             }
 
         val ref = db.transaction { it.claimJob(HelsinkiDateTime.now(), listOf(jobType))!! }
         assertEquals(jobType, ref.jobType)
         val (retryRunAt, retryCount) =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT run_at, retry_count FROM async_job").exactlyOne<Retry>()
+                it.createQuery { sql("SELECT run_at, retry_count FROM async_job") }
+                    .exactlyOne<Retry>()
             }
         assertTrue(retryRunAt > runAt)
         assertEquals(1233, retryCount)
@@ -58,8 +58,8 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val completedAt =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT completed_at FROM async_job").exactlyOne<HelsinkiDateTime>()
+                it.createQuery { sql("SELECT completed_at FROM async_job") }
+                    .exactlyOne<HelsinkiDateTime>()
             }
         assertTrue(completedAt > runAt)
     }
@@ -132,10 +132,11 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val remainingJobs =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
-                    )
+                it.createQuery {
+                        sql(
+                            "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
+                        )
+                    }
                     .toList {
                         TestJobParams(
                             runAt = column<HelsinkiDateTime>("run_at").toLocalDate(),
@@ -158,18 +159,17 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
 private data class TestJobParams(val runAt: LocalDate, val completed: Boolean)
 
-private fun Database.Transaction.insertTestJob(params: TestJobParams) =
-    @Suppress("DEPRECATION")
-    createUpdate(
+private fun Database.Transaction.insertTestJob(params: TestJobParams) {
+    val runAt = HelsinkiDateTime.of(params.runAt, LocalTime.of(12, 0))
+    val completedAt =
+        HelsinkiDateTime.of(params.runAt, LocalTime.of(14, 0)).takeIf { params.completed }
+    val claimedBy = 42.takeIf { params.completed }
+    execute {
+        sql(
             """
 INSERT INTO async_job (type, run_at, retry_count, retry_interval, payload, claimed_at, claimed_by, completed_at)
-VALUES ('TestJob', :runAt, 0, interval '1 hours', '{}', :completedAt, :claimedBy, :completedAt)
-    """
+VALUES ('TestJob', ${bind(runAt)}, 0, interval '1 hours', '{}', ${bind(completedAt)}, ${bind(claimedBy)}, ${bind(completedAt)})
+"""
         )
-        .bind("runAt", HelsinkiDateTime.of(params.runAt, LocalTime.of(12, 0)))
-        .bind(
-            "completedAt",
-            HelsinkiDateTime.of(params.runAt, LocalTime.of(14, 0)).takeIf { params.completed }
-        )
-        .bind("claimedBy", 42.takeIf { params.completed })
-        .execute()
+    }
+}
