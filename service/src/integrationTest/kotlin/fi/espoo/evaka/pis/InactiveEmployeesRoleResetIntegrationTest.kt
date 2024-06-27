@@ -237,19 +237,16 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         employeeId: EmployeeId,
         timestamp: HelsinkiDateTime
     ) {
-        @Suppress("DEPRECATION")
-        createUpdate(
+        execute {
+            sql(
                 """
 ALTER TABLE daycare_acl DISABLE TRIGGER USER;
-UPDATE daycare_acl SET updated = :timestamp
-WHERE daycare_id = :unitId AND employee_id = :employeeId;
+UPDATE daycare_acl SET updated = ${bind(timestamp)}
+WHERE daycare_id = ${bind(unitId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_acl ENABLE TRIGGER USER;
 """
             )
-            .bind("timestamp", timestamp)
-            .bind("unitId", unitId)
-            .bind("employeeId", employeeId)
-            .execute()
+        }
     }
 
     private fun Database.Transaction.setDaycareGroupAclUpdated(
@@ -257,18 +254,15 @@ ALTER TABLE daycare_acl ENABLE TRIGGER USER;
         employeeId: EmployeeId,
         timestamp: HelsinkiDateTime
     ) {
-        @Suppress("DEPRECATION")
-        createUpdate(
+        execute {
+            sql(
                 """
 ALTER TABLE daycare_group_acl DISABLE TRIGGER USER;
-UPDATE daycare_group_acl SET updated = :timestamp
-WHERE daycare_group_id = :groupId AND employee_id = :employeeId;
+UPDATE daycare_group_acl SET updated = ${bind(timestamp)}
+WHERE daycare_group_id = ${bind(groupId)} AND employee_id = ${bind(employeeId)};
 ALTER TABLE daycare_group_acl ENABLE TRIGGER USER;
 """
             )
-            .bind("timestamp", timestamp)
-            .bind("groupId", groupId)
-            .bind("employeeId", employeeId)
-            .execute()
+        }
     }
 }
