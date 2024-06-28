@@ -14,15 +14,26 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val summerRange =
+        FiniteDateRange(start = LocalDate.of(2021, 6, 1), end = LocalDate.of(2021, 8, 31))
+    private val summerReservationsOpen: LocalDate = summerRange.start.minusWeeks(6)
+    private val summerDeadline: LocalDate = summerRange.start.minusWeeks(3)
 
     private val christmasRange =
         FiniteDateRange(LocalDate.of(2021, 12, 18), LocalDate.of(2022, 1, 6))
+    private val christmasReservationsOpen = christmasRange.start.minusWeeks(8)
     private val christmasDeadline = christmasRange.start.minusWeeks(4)
 
     @Test
     fun `holiday periods can be created, updated and deleted`() {
-        val summer = db.transaction { it.insertHolidayPeriod(summerRange, summerDeadline) }
-        val christmas = db.transaction { it.insertHolidayPeriod(christmasRange, christmasDeadline) }
+        val summer =
+            db.transaction {
+                it.insertHolidayPeriod(summerRange, summerReservationsOpen, summerDeadline)
+            }
+        val christmas =
+            db.transaction {
+                it.insertHolidayPeriod(christmasRange, summerReservationsOpen, christmasDeadline)
+            }
 
         assertEquals(summer, db.read { it.getHolidayPeriod(summer.id) })
 
@@ -32,7 +43,14 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val newDeadline = christmasDeadline.minusWeeks(1)
-        db.transaction { it.updateHolidayPeriod(christmas.id, christmasRange, newDeadline) }
+        db.transaction {
+            it.updateHolidayPeriod(
+                christmas.id,
+                christmasRange,
+                christmasReservationsOpen,
+                newDeadline
+            )
+        }
         assertEquals(
             listOf(summer.reservationDeadline, newDeadline),
             db.read { it.getHolidayPeriods() }.map { p -> p.reservationDeadline }
@@ -46,15 +64,24 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `cannot create overlapping holiday periods`() {
         val summer =
             db.transaction {
-                it.insertHolidayPeriod(christmasRange, christmasDeadline)
-                it.insertHolidayPeriod(summerRange, summerDeadline)
+                it.insertHolidayPeriod(christmasRange, christmasReservationsOpen, christmasDeadline)
+                it.insertHolidayPeriod(summerRange, summerReservationsOpen, summerDeadline)
             }
 
         assertConstraintViolation {
-            db.transaction { it.insertHolidayPeriod(summerRange, summerDeadline) }
+            db.transaction {
+                it.insertHolidayPeriod(summerRange, summerReservationsOpen, summerDeadline)
+            }
         }
         assertConstraintViolation {
-            db.transaction { it.updateHolidayPeriod(summer.id, christmasRange, summerDeadline) }
+            db.transaction {
+                it.updateHolidayPeriod(
+                    summer.id,
+                    christmasRange,
+                    christmasReservationsOpen,
+                    summerDeadline
+                )
+            }
         }
     }
 

@@ -6,52 +6,51 @@ package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
+
+private fun Database.Read.getHolidayPeriods(where: Predicate): Database.Result<HolidayPeriod> =
+    createQuery {
+            sql(
+                """
+SELECT id, period, reservations_open_on, reservation_deadline
+FROM holiday_period h
+WHERE ${predicate(where.forTable("h"))}
+"""
+            )
+        }
+        .mapTo<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriodsInRange(
     range: FiniteDateRange,
 ): List<HolidayPeriod> =
-    createQuery {
-            sql(
-                "SELECT id, period, reservation_deadline FROM holiday_period h WHERE h.period && ${bind(range)}"
-            )
-        }
-        .toList<HolidayPeriod>()
+    getHolidayPeriods(Predicate { where("$it.period && ${bind(range)}") }).toList()
 
 fun Database.Read.getHolidayPeriodsWithReservationDeadline(
     reservationDeadline: LocalDate,
 ): List<HolidayPeriod> =
-    createQuery {
-            sql(
-                "SELECT id, period, reservation_deadline FROM holiday_period h WHERE ${bind(reservationDeadline)} = h.reservation_deadline"
-            )
-        }
-        .toList<HolidayPeriod>()
+    getHolidayPeriods(
+            Predicate { where("$it.reservation_deadline = ${bind(reservationDeadline)}") }
+        )
+        .toList()
 
 fun Database.Read.getHolidayPeriods(): List<HolidayPeriod> =
-    createQuery {
-            sql("SELECT id, period, reservation_deadline FROM holiday_period ORDER BY period")
-        }
-        .toList<HolidayPeriod>()
+    getHolidayPeriods(Predicate.alwaysTrue()).toList().sortedBy { it.period.start }
 
 fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
-    createQuery {
-            sql(
-                "SELECT id, period, reservation_deadline FROM holiday_period WHERE id = ${bind(id)}"
-            )
-        }
-        .exactlyOneOrNull<HolidayPeriod>()
+    getHolidayPeriods(Predicate { where("$it.id = ${bind(id)}") }).exactlyOneOrNull()
 
 fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
+    reservationsOpenOn: LocalDate,
     reservationDeadline: LocalDate
 ): HolidayPeriod =
     createQuery {
             sql(
                 """
-INSERT INTO holiday_period (period, reservation_deadline)
-VALUES (${bind(period)}, ${bind(reservationDeadline)})
+INSERT INTO holiday_period (period, reservations_open_on, reservation_deadline)
+VALUES (${bind(period)}, ${bind(reservationsOpenOn)}, ${bind(reservationDeadline)})
 RETURNING *
         """
             )
@@ -61,13 +60,17 @@ RETURNING *
 fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,
     period: FiniteDateRange,
+    reservationsOpenOn: LocalDate,
     reservationDeadline: LocalDate
 ) =
     createUpdate {
             sql(
                 """
 UPDATE holiday_period
-SET period = ${bind(period)}, reservation_deadline = ${bind(reservationDeadline)}
+SET
+    period = ${bind(period)},
+    reservations_open_on = ${bind(reservationsOpenOn)},
+    reservation_deadline = ${bind(reservationDeadline)}
 WHERE id = ${bind(id)}
         """
             )

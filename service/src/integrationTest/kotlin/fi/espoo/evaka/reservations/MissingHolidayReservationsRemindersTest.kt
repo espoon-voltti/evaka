@@ -77,6 +77,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
             tx.insert(
                 DevHolidayPeriod(
                     period = holidayPeriod,
+                    reservationsOpenOn = clockToday.today(),
                     reservationDeadline = clockToday.today().plusDays(2)
                 )
             )

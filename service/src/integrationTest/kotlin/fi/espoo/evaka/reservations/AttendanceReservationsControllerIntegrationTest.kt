@@ -795,7 +795,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational days for holiday period with upcoming deadline`() {
-        db.transaction { tx -> tx.insertHolidayPeriod(monFri, mon) }
+        db.transaction { tx -> tx.insertHolidayPeriod(monFri, mon, mon) }
 
         val result = getAttendanceReservations()
         assertEquals(5, result.days.size)
@@ -815,7 +815,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
     @Test
     fun `operational days for holiday period with past deadline`() {
-        db.transaction { tx -> tx.insertHolidayPeriod(monFri, mon) }
+        db.transaction { tx -> tx.insertHolidayPeriod(monFri, mon, mon) }
 
         val result =
             getAttendanceReservations(

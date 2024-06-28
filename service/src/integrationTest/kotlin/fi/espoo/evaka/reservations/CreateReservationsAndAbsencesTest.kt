@@ -1020,7 +1020,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, monday)
+            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate(), monday)
         }
 
         // when
@@ -1067,7 +1067,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, monday)
+            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate(), monday)
         }
 
         // when
@@ -1126,7 +1126,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
         }
 
         // when
@@ -1184,7 +1188,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1255,7 +1263,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1311,7 +1323,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.insert(
                 DevReservation(
                     childId = child.id,
@@ -1367,7 +1383,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1428,7 +1448,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.insert(
                 // NoTimes reservation
                 DevReservation(

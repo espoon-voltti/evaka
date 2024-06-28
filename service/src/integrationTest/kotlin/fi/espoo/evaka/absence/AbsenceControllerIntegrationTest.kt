@@ -233,6 +233,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.insertHolidayPeriod(
                 period = FiniteDateRange(startDate.plusDays(1), endDate),
+                reservationsOpenOn = today,
                 reservationDeadline = today
             )
 
@@ -307,6 +308,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         db.transaction { tx ->
             tx.insertHolidayPeriod(
                 period = FiniteDateRange(startDate.plusDays(1), endDate),
+                reservationsOpenOn = today,
                 reservationDeadline = today
             )
 

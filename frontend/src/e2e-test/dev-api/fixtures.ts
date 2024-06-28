@@ -2197,6 +2197,7 @@ export class Fixture {
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
+      reservationsOpenOn: LocalDate.todayInSystemTz(),
       reservationDeadline: LocalDate.todayInSystemTz()
     })
   }

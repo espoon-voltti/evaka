@@ -166,8 +166,13 @@ fun Database.Transaction.insert(holidayPeriod: DevHolidayPeriod) {
     createUpdate {
             sql(
                 """
-INSERT INTO holiday_period (id, period, reservation_deadline)
-VALUES (${bind(holidayPeriod.id)}, ${bind(holidayPeriod.period)}, ${bind(holidayPeriod.reservationDeadline)})
+INSERT INTO holiday_period (id, period, reservations_open_on, reservation_deadline)
+VALUES (
+    ${bind(holidayPeriod.id)},
+    ${bind(holidayPeriod.period)},
+    ${bind(holidayPeriod.reservationsOpenOn)},
+    ${bind(holidayPeriod.reservationDeadline)}
+)
 """
             )
         }
