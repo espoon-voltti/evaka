@@ -431,40 +431,27 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun givenPairing(pairing: Pairing, attempts: Int = 0) {
-        // language=sql
-        val sql =
-            """
-            INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts, mobile_device_id) 
-            VALUES (:id, :unitId, :expires, :status, :challengeKey, :responseKey, :attempts, :mobileDeviceId);
-            """
-                .trimIndent()
         db.transaction { tx ->
             if (pairing.mobileDeviceId != null) {
-                @Suppress("DEPRECATION")
-                tx.createUpdate(
-                        "INSERT INTO employee (id, first_name, last_name, active) VALUES (:id, '', '', TRUE)"
+                tx.execute {
+                    sql(
+                        "INSERT INTO employee (id, first_name, last_name, active) VALUES (${bind(pairing.mobileDeviceId)}, '', '', TRUE)"
                     )
-                    .bind("id", pairing.mobileDeviceId)
-                    .execute()
-                @Suppress("DEPRECATION")
-                tx.createUpdate(
-                        "INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, 'Laite')"
+                }
+                tx.execute {
+                    sql(
+                        "INSERT INTO mobile_device (id, unit_id, name) VALUES (${bind(pairing.mobileDeviceId)}, ${bind(pairing.unitId)}, 'Laite')"
                     )
-                    .bind("id", pairing.mobileDeviceId)
-                    .bind("unitId", pairing.unitId)
-                    .execute()
+                }
             }
-            @Suppress("DEPRECATION")
-            tx.createUpdate(sql)
-                .bind("id", pairing.id)
-                .bind("unitId", pairing.unitId)
-                .bind("expires", pairing.expires)
-                .bind("status", pairing.status)
-                .bind("challengeKey", pairing.challengeKey)
-                .bind("responseKey", pairing.responseKey)
-                .bind("attempts", attempts)
-                .bind("mobileDeviceId", pairing.mobileDeviceId)
-                .execute()
+            tx.execute {
+                sql(
+                    """
+            INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts, mobile_device_id) 
+            VALUES (${bind(pairing.id)}, ${bind(pairing.unitId)}, ${bind(pairing.expires)}, ${bind(pairing.status)}, ${bind(pairing.challengeKey)}, ${bind(pairing.responseKey)}, ${bind(attempts)}, ${bind(pairing.mobileDeviceId)});
+            """
+                )
+            }
         }
     }
 

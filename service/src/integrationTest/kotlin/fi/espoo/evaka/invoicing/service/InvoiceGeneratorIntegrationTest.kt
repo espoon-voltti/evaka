@@ -6689,14 +6689,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
-        @Suppress("DEPRECATION")
-        r.createQuery(
-                """
-            $invoiceQueryBase
-            ORDER BY invoice.id, row.idx
-            """
-                    .trimIndent()
-            )
+        r.createQuery { sql("$invoiceQueryBase ORDER BY invoice.id, row.idx") }
             .toList(Row::toInvoice)
             .let(::flatten)
             .shuffled() // randomize order to expose assumptions

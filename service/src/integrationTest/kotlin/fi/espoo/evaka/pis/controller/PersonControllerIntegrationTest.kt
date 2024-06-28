@@ -120,9 +120,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             .isEqualTo(original)
         val duplicateOf =
             db.transaction { tx ->
-                @Suppress("DEPRECATION")
-                tx.createQuery("SELECT duplicate_of FROM person WHERE id = :id")
-                    .bind("id", duplicateId)
+                tx.createQuery {
+                        sql("SELECT duplicate_of FROM person WHERE id = ${bind(duplicateId)}")
+                    }
                     .exactlyOne<PersonId>()
             }
         assertThat(duplicateOf).isEqualTo(person.id)

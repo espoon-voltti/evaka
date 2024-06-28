@@ -1497,11 +1497,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')"
-                )
-                .bind("endDate", subPeriod1.end)
+            tx.createUpdate {
+                    sql(
+                        "UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), ${bind(subPeriod1.end)}, '[]')"
+                    )
+                }
                 .updateExactlyOne()
             tx.insert(
                 FeeThresholds(
@@ -1592,8 +1592,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+            tx.execute { sql("UPDATE fee_decision SET status = 'SENT'") }
         }
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
 
@@ -1616,9 +1615,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
-            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM placement").execute()
+            tx.execute { sql("UPDATE fee_decision SET status = 'SENT'") }
+            tx.execute { sql("DELETE FROM placement") }
         }
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE_PART_TIME, testDaycare2.id)
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
@@ -1662,8 +1660,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
         db.transaction { tx ->
             generator.generateNewDecisionsForAdult(tx, testAdult_1.id)
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+            tx.execute { sql("UPDATE fee_decision SET status = 'SENT'") }
         }
         insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
 
@@ -3021,8 +3018,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("DELETE FROM placement WHERE id=:id").bind("id", placementId).execute()
+            it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
         }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -3224,10 +3220,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         asyncJobRunner.runPendingJobsSync(clock)
 
-        db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income SET effect = 'INCOMPLETE'").execute()
-        }
+        db.transaction { it.execute { sql("UPDATE income SET effect = 'INCOMPLETE'") } }
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
 
@@ -3389,9 +3382,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deleteIncomes() {
-        db.transaction { tx ->
-            @Suppress("DEPRECATION") tx.createUpdate("DELETE FROM income").execute()
-        }
+        db.transaction { tx -> tx.execute { sql("DELETE FROM income") } }
     }
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {

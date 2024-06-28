@@ -119,15 +119,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
             it.insertInvoices(testInvoices)
-            @Suppress("DEPRECATION")
-            it.createUpdate(
-                    """
-                UPDATE invoice SET sent_at = :sentAt
-                """
-                        .trimIndent()
-                )
-                .bind("sentAt", date)
-                .execute()
+            it.execute { sql("UPDATE invoice SET sent_at = ${bind(date)}") }
         }
     }
 }

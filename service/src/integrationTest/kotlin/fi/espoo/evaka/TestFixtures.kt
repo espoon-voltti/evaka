@@ -552,9 +552,9 @@ VALUES (${bind { it.serviceNeedOptionId }}, ${bind { it.validity }}, ${bind { it
 }
 
 fun Database.Transaction.insertAssistanceActionOptions() {
-    // language=sql
-    val sql =
-        """
+    execute {
+        sql(
+            """
 INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),
     ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20),
@@ -566,8 +566,8 @@ INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70),
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80);
 """
-
-    @Suppress("DEPRECATION") createUpdate(sql).execute()
+        )
+    }
 }
 
 fun Database.Transaction.insertApplication(

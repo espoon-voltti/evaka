@@ -151,13 +151,11 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         uploadAttachment(applicationId = application.id, serviceWorker)
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
+            tx.execute {
+                sql(
+                    "UPDATE attachment SET received_at = ${bind(sentDate)} WHERE application_id = ${bind(application.id)}"
                 )
-                .bind("receivedAt", sentDate)
-                .bind("applicationId", application.id)
-                .execute()
+            }
         }
 
         // when

@@ -40,7 +40,6 @@ import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -228,18 +227,15 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             }
 
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    """update application set created = :createdAt where id = :applicationId"""
+            tx.execute {
+                sql(
+                    "UPDATE application SET created = '2020-01-01T00:00:00Z' WHERE id = ${bind(old)}"
                 )
-                .bind("applicationId", old)
-                .bind("createdAt", Instant.parse("2020-01-01T00:00:00Z"))
-                .execute()
+            }
         }
 
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            val data = tx.createQuery("""select id from application""").toList<ApplicationId>()
+            val data = tx.createQuery { sql("SELECT id FROM application") }.toList<ApplicationId>()
 
             assertEquals(3, data.size)
         }
@@ -247,8 +243,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         scheduledJobs.removeOldDraftApplications(db, clock)
 
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            val data = tx.createQuery("""select id from application""").toSet<ApplicationId>()
+            val data = tx.createQuery { sql("SELECT id FROM application") }.toSet<ApplicationId>()
 
             assertEquals(setOf(id1, id2), data)
         }

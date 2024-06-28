@@ -99,37 +99,32 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             setOf(accounts.person1.id, accounts.person2.id),
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT recipient_id FROM message_recipients")
+                it.createQuery { sql("SELECT recipient_id FROM message_recipients") }
                     .toSet<MessageAccountId>()
             }
         )
         assertEquals(
             content,
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT content FROM message_content").exactlyOne<String>()
+                it.createQuery { sql("SELECT content FROM message_content") }.exactlyOne<String>()
             }
         )
         assertEquals(
             title,
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT title FROM message_thread").exactlyOne<String>()
+                it.createQuery { sql("SELECT title FROM message_thread") }.exactlyOne<String>()
             }
         )
         assertEquals(
             "Employee Firstname",
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT sender_name FROM message").exactlyOne<String>()
+                it.createQuery { sql("SELECT sender_name FROM message") }.exactlyOne<String>()
             }
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
             db.read {
-                    @Suppress("DEPRECATION")
-                    it.createQuery("SELECT recipient_names FROM message")
+                    it.createQuery { sql("SELECT recipient_names FROM message") }
                         .exactlyOne<Array<String>>()
                 }
                 .toSet()
@@ -352,9 +347,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val participants =
             db.read {
                 val messageId =
-                    @Suppress("DEPRECATION")
-                    it.createQuery("SELECT id FROM message WHERE thread_id = :threadId")
-                        .bind("threadId", threadId)
+                    it.createQuery {
+                            sql("SELECT id FROM message WHERE thread_id = ${bind(threadId)}")
+                        }
                         .exactlyOne<MessageId>()
                 it.getThreadByMessageId(messageId)
             }

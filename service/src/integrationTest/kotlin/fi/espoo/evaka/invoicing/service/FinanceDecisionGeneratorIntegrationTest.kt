@@ -177,7 +177,6 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                @Suppress("DEPRECATION")
                 tx.createQuery(feeDecisionQuery()).mapTo<FeeDecision>().useIterable { rows ->
                     rows
                         .map { row ->
@@ -193,8 +192,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
-                @Suppress("DEPRECATION")
-                tx.createQuery("SELECT * FROM voucher_value_decision")
+                tx.createQuery { sql("SELECT * FROM voucher_value_decision") }
                     .toList<VoucherValueDecision>()
             }
             .shuffled() // randomize order to expose assumptions

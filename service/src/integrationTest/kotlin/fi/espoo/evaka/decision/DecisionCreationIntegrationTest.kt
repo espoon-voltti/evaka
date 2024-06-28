@@ -84,9 +84,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             listOf(testAdult_5, testAdult_6).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_6, DevPersonType.CHILD)
             MockPersonDetailsService.add(legacyMockVtjDataset())
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    // language=SQL
+            tx.execute {
+                sql(
                     """
 UPDATE daycare SET
   name = 'Test Daycare',
@@ -98,11 +97,10 @@ UPDATE daycare SET
   phone = 'Test phone',
   decision_handler = 'Test decision handler',
   decision_handler_address = 'Test decision handler address'
-WHERE id = :unitId
+WHERE id = ${bind(testDaycare.id)}
 """
                 )
-                .bind("unitId", testDaycare.id)
-                .execute()
+            }
         }
     }
 

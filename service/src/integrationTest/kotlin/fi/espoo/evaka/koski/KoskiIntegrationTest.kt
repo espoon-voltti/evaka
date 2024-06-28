@@ -170,8 +170,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         fun countActiveStudyRights() =
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
+                it.createQuery {
+                        sql("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
+                    }
                     .exactlyOne<Long>()
             }
 
@@ -206,11 +207,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertSingleStudyRight(version = 0)
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE placement SET end_date = :endDate WHERE id = :id")
-                .bind("id", placementId)
-                .bind("endDate", preschoolTerm2019.end.minusDays(1))
-                .execute()
+            val endDate = preschoolTerm2019.end.minusDays(1)
+            it.execute {
+                sql(
+                    "UPDATE placement SET end_date = ${bind(endDate)} WHERE id = ${bind(placementId)}"
+                )
+            }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
@@ -611,9 +613,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         koskiTester.triggerUploads(today)
 
         val oldOid = koskiEndpoint.getStudyRights().keys.single()
-        db.transaction {
-            @Suppress("DEPRECATION") it.createUpdate("DELETE FROM placement").execute()
-        }
+        db.transaction { it.execute { sql("DELETE FROM placement") } }
         koskiTester.triggerUploads(today.plusDays(1))
         assertTrue(koskiEndpoint.getStudyRights().isEmpty())
 
@@ -837,11 +837,11 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         insertPlacement(child = testChild_7)
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person SET oph_person_oid = :oid WHERE id = :id")
-                .bind("id", testChild_7.id)
-                .bind("oid", personOid)
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE person SET oph_person_oid = ${bind(personOid)} WHERE id = ${bind(testChild_7.id)}"
+                )
+            }
         }
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
@@ -1073,12 +1073,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 }
 
-private fun Database.Transaction.clearKoskiInputCache() =
-    @Suppress("DEPRECATION")
-    createUpdate(
-            "UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL"
-        )
-        .execute()
+private fun Database.Transaction.clearKoskiInputCache() = execute {
+    sql("UPDATE koski_study_right SET preschool_input_data = NULL, preparatory_input_data = NULL")
+}
 
 private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))

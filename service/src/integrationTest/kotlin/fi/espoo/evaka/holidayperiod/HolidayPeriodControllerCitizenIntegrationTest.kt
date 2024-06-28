@@ -274,9 +274,10 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     private data class Absence(val childId: ChildId, val date: LocalDate, val type: AbsenceType)
 
     private fun Database.Read.getAllAbsences(): List<Absence> =
-        @Suppress("DEPRECATION")
-        createQuery(
-                "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
-            )
+        createQuery {
+                sql(
+                    "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
+                )
+            }
             .toList<Absence>()
 }

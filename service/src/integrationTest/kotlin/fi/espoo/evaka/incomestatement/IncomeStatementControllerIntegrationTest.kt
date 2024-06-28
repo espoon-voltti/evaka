@@ -651,11 +651,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val newCreated = HelsinkiDateTime.now().minusDays(2)
 
         db.transaction {
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
-                .bind("newCreated", newCreated)
-                .bind("id", incomeStatement1.id)
-                .execute()
+            it.execute {
+                sql(
+                    "UPDATE income_statement SET created = ${bind(newCreated)} WHERE id = ${bind(incomeStatement1.id)}"
+                )
+            }
         }
 
         assertEquals(

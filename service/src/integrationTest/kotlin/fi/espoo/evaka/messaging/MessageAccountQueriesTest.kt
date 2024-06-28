@@ -286,8 +286,9 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employeeAccount = counts.first().accountId
         db.transaction { tx ->
             val allAccounts =
-                @Suppress("DEPRECATION")
-                tx.createQuery("SELECT id, name, 'PERSONAL' as type from message_account_view")
+                tx.createQuery {
+                        sql("SELECT id, name, 'PERSONAL' as type from message_account_view")
+                    }
                     .toList<MessageAccount>()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)

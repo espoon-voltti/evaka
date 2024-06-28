@@ -172,10 +172,11 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
 
     private fun readVoucherValueDecisionAssistanceCoefficients(): List<BigDecimal> {
         return db.read { tx ->
-            @Suppress("DEPRECATION")
-            tx.createQuery(
-                    "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from"
-                )
+            tx.createQuery {
+                    sql(
+                        "SELECT assistance_need_coefficient FROM voucher_value_decision ORDER BY valid_from"
+                    )
+                }
                 .toList<BigDecimal>()
         }
     }

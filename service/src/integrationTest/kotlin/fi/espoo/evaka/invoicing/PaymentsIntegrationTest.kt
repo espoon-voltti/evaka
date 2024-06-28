@@ -525,8 +525,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         return db.read { tx ->
-            @Suppress("DEPRECATION")
-            tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
+            tx.createQuery { sql("SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount") }
                 .toList<PaymentId>()
         }
     }

@@ -154,10 +154,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
         assertFalse(PlacementType.requiringAttendanceReservations.contains(placementType))
 
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate("UPDATE placement SET type = :type")
-                .bind("type", placementType)
-                .execute()
+            tx.execute { sql("UPDATE placement SET type = ${bind(placementType)}") }
         }
         assertEquals(emptyList(), getReminderRecipients())
     }

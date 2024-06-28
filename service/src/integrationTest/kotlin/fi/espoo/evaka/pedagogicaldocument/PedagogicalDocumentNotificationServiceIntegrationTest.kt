@@ -143,11 +143,11 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
         db.read {
             val emailJobCreatedAt =
-                @Suppress("DEPRECATION")
-                it.createQuery(
-                        "SELECT email_job_created_at FROM pedagogical_document WHERE id = :id"
-                    )
-                    .bind("id", doc.id)
+                it.createQuery {
+                        sql(
+                            "SELECT email_job_created_at FROM pedagogical_document WHERE id = ${bind(doc.id)}"
+                        )
+                    }
                     .exactlyOne<HelsinkiDateTime>()
             assertTrue(
                 HelsinkiDateTime.now().durationSince(emailJobCreatedAt) < Duration.ofSeconds(1)
@@ -196,9 +196,9 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(
             sent,
             db.read {
-                @Suppress("DEPRECATION")
-                it.createQuery("SELECT email_sent FROM pedagogical_document WHERE id = :id")
-                    .bind("id", id)
+                it.createQuery {
+                        sql("SELECT email_sent FROM pedagogical_document WHERE id = ${bind(id)}")
+                    }
                     .exactlyOne<Boolean>()
             }
         )

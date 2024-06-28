@@ -308,13 +308,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
         )
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
+            tx.execute {
+                sql(
+                    "UPDATE attachment SET received_at = ${bind(now.minusWeeks(1))} WHERE application_id = ${bind(applicationId)}"
                 )
-                .bind("applicationId", applicationId)
-                .bind("receivedAt", now.minusWeeks(1))
-                .execute()
+            }
         }
         assertTrue(
             uploadAttachment(
@@ -362,22 +360,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         // when
         db.transaction { tx ->
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
+            tx.execute {
+                sql(
+                    "UPDATE attachment SET received_at = ${bind(now.plusWeeks(1))} WHERE type = ${bind(AttachmentType.EXTENDED_CARE)} AND application_id = ${bind(applicationId)}"
                 )
-                .bind("type", AttachmentType.EXTENDED_CARE)
-                .bind("applicationId", applicationId)
-                .bind("receivedAt", now.plusWeeks(1))
-                .execute()
-            @Suppress("DEPRECATION")
-            tx.createUpdate(
-                    "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
+            }
+            tx.execute {
+                sql(
+                    "UPDATE attachment SET received_at = ${bind(now.plusDays(3))} WHERE type = ${bind(AttachmentType.URGENCY)} AND application_id = ${bind(applicationId)}"
                 )
-                .bind("type", AttachmentType.URGENCY)
-                .bind("applicationId", applicationId)
-                .bind("receivedAt", now.plusDays(3))
-                .execute()
+            }
         }
         db.transaction { tx ->
             // when

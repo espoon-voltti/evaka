@@ -403,10 +403,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     endDate = startDate
                 )
             )
-            @Suppress("DEPRECATION")
-            it.createUpdate("UPDATE person set date_of_death = :dod")
-                .bind("dod", startDate.minusDays(1))
-                .execute()
+            it.execute { sql("UPDATE person set date_of_death = ${bind(startDate.minusDays(1))}") }
         }
 
         assertEquals(listOf(), getReport(startDate, startDate))

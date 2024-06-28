@@ -571,8 +571,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getReservationDates(): List<LocalDate> =
         db.read {
-            @Suppress("DEPRECATION")
-            it.createQuery("SELECT date FROM attendance_reservation ORDER BY date")
+            it.createQuery { sql("SELECT date FROM attendance_reservation ORDER BY date") }
                 .toList<LocalDate>()
         }
 }
