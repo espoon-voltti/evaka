@@ -41,6 +41,7 @@ describe('Holiday and term periods page', () => {
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
       start: '15.12.2021',
       end: '31.12.2021',
+      reservationsOpenOn: '1.12.2021',
       reservationDeadline: '7.12.2021'
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
@@ -54,6 +55,7 @@ describe('Holiday and term periods page', () => {
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
       start: '1.2.2022',
       end: '7.2.2022',
+      reservationsOpenOn: '7.1.2022',
       reservationDeadline: '15.1.2022'
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()
@@ -83,6 +85,7 @@ describe('Holiday and term periods page', () => {
     await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
       start: '15.12.2021',
       end: '31.12.2021',
+      reservationsOpenOn: '1.12.2021',
       reservationDeadline: '7.12.2021'
     })
     await holidayAndTermPeriodsPage.confirmCheckbox.check()

@@ -93,6 +93,9 @@ export class HolidayAndTermPeriodsPage {
     end: new DatePicker(
       this.page.findByDataQa('period').findAll('input').last()
     ),
+    reservationsOpenOn: new DatePicker(
+      this.page.findByDataQa('input-reservations-open-on')
+    ),
     reservationDeadline: new DatePicker(
       this.page.findByDataQa('input-reservation-deadline')
     )
@@ -101,6 +104,7 @@ export class HolidayAndTermPeriodsPage {
   async fillHolidayPeriodForm(params: {
     start?: string
     end?: string
+    reservationsOpenOn?: string
     reservationDeadline?: string
   }) {
     for (const [key, val] of Object.entries(params)) {
