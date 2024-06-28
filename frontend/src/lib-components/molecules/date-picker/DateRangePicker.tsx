@@ -7,7 +7,7 @@ import React, { useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { LocalDateRangeField } from 'lib-common/form/fields'
-import { BoundForm, useFormFields } from 'lib-common/form/hooks'
+import { BoundForm, useBoolean, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
 import {
   InputFieldUnderRow,
@@ -162,10 +162,13 @@ export interface DateRangePickerFProps
 export const DateRangePickerF = React.memo(function DateRangePickerF({
   bind,
   info: infoOverride,
+  hideErrorsBeforeTouched,
   ...props
 }: DateRangePickerFProps) {
   const { start, end, config } = useFormFields(bind)
   const { update } = bind
+
+  const [touched, useTouched] = useBoolean(false)
 
   const handleChange = useCallback(
     ([newStart, newEnd]: [string, string]) => {
@@ -184,13 +187,15 @@ export const DateRangePickerF = React.memo(function DateRangePickerF({
       <DateRangePickerLowLevel
         value={[start.state, end.state]}
         onChange={handleChange}
+        onBlur={useTouched.on}
         startInfo={start.inputInfo()}
         endInfo={end.inputInfo()}
         minDate={config.state?.minDate}
         maxDate={config.state?.maxDate}
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         {...props}
       />
-      {info !== undefined ? (
+      {info !== undefined && (!hideErrorsBeforeTouched || touched) ? (
         <InputFieldUnderRow className={classNames(info.status)}>
           <span>{info.text}</span> <UnderRowStatusIcon status={info.status} />
         </InputFieldUnderRow>
