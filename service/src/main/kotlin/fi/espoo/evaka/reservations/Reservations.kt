@@ -227,6 +227,7 @@ fun createReservationsAndAbsences(
 
     val validated =
         requests
+            .asSequence()
             .mapNotNull { request ->
                 val isReservable = isReservableChild(request)
                 val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
@@ -278,12 +279,11 @@ fun createReservationsAndAbsences(
                     request
                 }
             }
+            // Don't create reservations for children whose placement type doesn't require them
             .map { request ->
                 when (request) {
                     is DailyReservationRequest.Reservations,
                     is DailyReservationRequest.Present -> {
-                        // Don't create reservations for children whose placement type doesn't
-                        // require them
                         if (!isReservableChild(request)) {
                             DailyReservationRequest.Nothing(request.childId, request.date)
                         } else {
@@ -293,6 +293,18 @@ fun createReservationsAndAbsences(
                     else -> request
                 }
             }
+            // Transform `Reservation` to `Present` on open holiday period days
+            .map { request ->
+                if (
+                    request is DailyReservationRequest.Reservations &&
+                        openHolidayPeriodDates.contains(request.date)
+                ) {
+                    DailyReservationRequest.Present(request.childId, request.date)
+                } else {
+                    request
+                }
+            }
+            .toList()
 
     val deletedAbsences =
         if (isCitizen) {
