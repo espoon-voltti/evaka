@@ -29,6 +29,7 @@ sealed interface HolidayPeriodEffect {
 data class HolidayPeriod(
     val id: HolidayPeriodId,
     val period: FiniteDateRange,
+    val reservationsOpenOn: LocalDate,
     val reservationDeadline: LocalDate
 ) {
     /**
@@ -43,4 +44,8 @@ data class HolidayPeriod(
         }
 }
 
-data class HolidayPeriodBody(val period: FiniteDateRange, val reservationDeadline: LocalDate)
+data class HolidayPeriodBody(
+    val period: FiniteDateRange,
+    val reservationsOpenOn: LocalDate,
+    val reservationDeadline: LocalDate
+)

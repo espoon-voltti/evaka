@@ -944,14 +944,19 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
-                    tx.createUpdate {
-                            sql(
-                                "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
-                            )
-                        }
-                        .execute()
-                }
+                tx.insertHolidayPeriod(
+                        body.period,
+                        body.reservationsOpenOn,
+                        body.reservationDeadline
+                    )
+                    .let {
+                        tx.createUpdate {
+                                sql(
+                                    "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
+                                )
+                            }
+                            .execute()
+                    }
             }
         }
     }
@@ -1830,6 +1835,7 @@ data class DevHolidayPeriod(
     val id: HolidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
     val period: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+    val reservationsOpenOn: LocalDate = LocalDate.of(2024, 3, 1),
     val reservationDeadline: LocalDate = LocalDate.of(2024, 3, 1)
 )
 

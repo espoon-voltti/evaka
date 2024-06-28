@@ -357,6 +357,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     dailyServiceTimesValidity.start.plusDays(7),
                     dailyServiceTimesValidity.start.plusDays(13),
                 ),
+                reservationsOpenOn = now.toLocalDate(),
                 reservationDeadline = now.toLocalDate(),
             )
         }

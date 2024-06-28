@@ -13,9 +13,11 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-
     @Test
     fun `fixed period questionnaires can be saved`() {
+        val emptyTranslatable = Translatable("", "", "")
+        val summerRange =
+            FiniteDateRange(start = LocalDate.of(2021, 6, 1), end = LocalDate.of(2021, 8, 31))
         val options =
             listOf(
                 FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),

@@ -5,9 +5,14 @@
 import React, { useCallback } from 'react'
 
 import { boolean, localDate, localDateRange } from 'lib-common/form/fields'
-import { object, required, validated } from 'lib-common/form/form'
+import { object, required, transformed, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
-import { StateOf } from 'lib-common/form/types'
+import {
+  FieldErrors,
+  StateOf,
+  ValidationError,
+  ValidationSuccess
+} from 'lib-common/form/types'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
@@ -35,22 +40,40 @@ const minStartDate = (mockToday() ?? LocalDate.todayInSystemTz()).addWeeks(4)
 const maxPeriod = 15 * 7 * 24 * 60 * 60 * 1000 // 15 weeks
 
 function makeHolidayPeriodForm(mode: 'create' | 'update') {
-  return object({
-    period: validated(required(localDateRange()), (output) =>
-      // Extra validations when creating a new holiday period
-      mode === 'create'
-        ? output.start.isBefore(minStartDate)
-          ? 'tooSoon'
-          : output.end.toSystemTzDate().valueOf() -
-                output.start.toSystemTzDate().valueOf() >
-              maxPeriod
-            ? 'tooLong'
-            : undefined
-        : undefined
-    ),
-    reservationDeadline: required(localDate()),
-    confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
-  })
+  return transformed(
+    object({
+      period: validated(required(localDateRange()), (output) =>
+        // Extra validations when creating a new holiday period
+        mode === 'create'
+          ? output.start.isBefore(minStartDate)
+            ? 'tooSoon'
+            : output.end.toSystemTzDate().valueOf() -
+                  output.start.toSystemTzDate().valueOf() >
+                maxPeriod
+              ? 'tooLong'
+              : undefined
+          : undefined
+      ),
+      reservationsOpenOn: required(localDate()),
+      reservationDeadline: required(localDate()),
+      confirm: validated(boolean(), (value) => (value ? undefined : 'required'))
+    }),
+    (output) => {
+      const errors: FieldErrors<'afterStart' | 'afterReservationsOpen'> = {}
+      let hasErrors = false
+      if (output.reservationsOpenOn > output.period.start) {
+        errors.reservationsOpenOn = 'afterStart'
+        hasErrors = true
+      }
+      if (output.reservationDeadline > output.period.start) {
+        errors.reservationDeadline = 'afterReservationsOpen'
+        hasErrors = true
+      }
+      return hasErrors
+        ? ValidationError.fromFieldErrors(errors)
+        : ValidationSuccess.of(output)
+    }
+  )
 }
 
 const createHolidayPeriodForm = makeHolidayPeriodForm('create')
@@ -60,6 +83,7 @@ type HolidayPeriodFormState = StateOf<typeof createHolidayPeriodForm>
 
 const emptyFormState: HolidayPeriodFormState = {
   period: localDateRange.empty(),
+  reservationsOpenOn: localDate.empty(),
   reservationDeadline: localDate.empty(),
   confirm: false
 }
@@ -67,7 +91,11 @@ const emptyFormState: HolidayPeriodFormState = {
 function initialFormState(p: HolidayPeriod): HolidayPeriodFormState {
   return {
     period: localDateRange.fromRange(p.period),
+    reservationsOpenOn: localDate.fromDate(p.reservationsOpenOn, {
+      maxDate: p.period.start
+    }),
     reservationDeadline: localDate.fromDate(p.reservationDeadline, {
+      minDate: p.reservationsOpenOn,
       maxDate: p.period.start
     }),
     confirm: true
@@ -102,16 +130,33 @@ export default React.memo(function HolidayPeriodForm({
     {
       onUpdate(_, nextState, form) {
         const period = form.shape().period.validate(nextState.period)
+        const reservationsOpenOn = form
+          .shape()
+          .reservationsOpenOn.validate(nextState.reservationsOpenOn)
+
+        let state = nextState
         if (period.isValid) {
-          return {
-            ...nextState,
-            reservationDeadline: {
-              ...nextState.reservationDeadline,
-              config: { maxDate: period.value.start } // reservation deadline must be before the start of the period
+          state = {
+            ...state,
+            reservationsOpenOn: {
+              ...state.reservationsOpenOn,
+              config: { maxDate: period.value.start } // reservations must open before the start of the period
             }
           }
         }
-        return nextState
+        if (period.isValid && reservationsOpenOn.isValid) {
+          state = {
+            ...state,
+            reservationDeadline: {
+              ...nextState.reservationDeadline,
+              config: {
+                minDate: reservationsOpenOn.value, // reservation deadline must be after reservations open
+                maxDate: period.value.start // reservation deadline must be before the start of the period
+              }
+            }
+          }
+        }
+        return state
       }
     }
   )
@@ -133,15 +178,29 @@ export default React.memo(function HolidayPeriodForm({
 
   const hideErrorsBeforeTouched = holidayPeriod === undefined
 
-  const { period, reservationDeadline, confirm } = useFormFields(form)
+  const { period, reservationsOpenOn, reservationDeadline, confirm } =
+    useFormFields(form)
   return (
     <>
       <H1>{i18n.titles.holidayPeriod}</H1>
       <ListGrid>
         <Label>{i18n.holidayPeriods.period} *</Label>
         <FixedSpaceRow alignItems="center">
-          <DateRangePickerF bind={period} locale={lang} data-qa="period" />
+          <DateRangePickerF
+            bind={period}
+            locale={lang}
+            hideErrorsBeforeTouched
+            data-qa="period"
+          />
         </FixedSpaceRow>
+
+        <Label>{i18n.holidayPeriods.reservationsOpenOn} *</Label>
+        <DatePickerF
+          bind={reservationsOpenOn}
+          locale={lang}
+          hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+          data-qa="input-reservations-open-on"
+        />
 
         <Label>{i18n.holidayPeriods.reservationDeadline} *</Label>
         <DatePickerF

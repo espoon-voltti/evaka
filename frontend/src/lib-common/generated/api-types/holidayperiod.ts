@@ -66,6 +66,7 @@ export interface HolidayPeriod {
   id: UUID
   period: FiniteDateRange
   reservationDeadline: LocalDate
+  reservationsOpenOn: LocalDate
 }
 
 /**
@@ -74,6 +75,7 @@ export interface HolidayPeriod {
 export interface HolidayPeriodBody {
   period: FiniteDateRange
   reservationDeadline: LocalDate
+  reservationsOpenOn: LocalDate
 }
 
 
@@ -166,7 +168,8 @@ export function deserializeJsonHolidayPeriod(json: JsonOf<HolidayPeriod>): Holid
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
-    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
   }
 }
 
@@ -175,7 +178,8 @@ export function deserializeJsonHolidayPeriodBody(json: JsonOf<HolidayPeriodBody>
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
-    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
   }
 }
 
