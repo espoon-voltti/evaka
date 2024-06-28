@@ -20,6 +20,7 @@ export default class ChildAttendancePage {
   #setTimeInput: TextInput
   groupNote: ElementCollection
   setTimeInfo: Element
+  #noChildrenIndicator: Element
   constructor(private readonly page: Page) {
     this.#presentTab = page.findByDataQa('present-tab')
     this.#markPresentButton = page.findByDataQa('mark-present-btn')
@@ -30,12 +31,12 @@ export default class ChildAttendancePage {
     this.#setTimeInput = new TextInput(page.findByDataQa('set-time'))
     this.groupNote = page.findAllByDataQa('group-note')
     this.setTimeInfo = page.findByDataQa('set-time-info')
+    this.#noChildrenIndicator = page
+      .findAll('[data-qa="no-children-indicator"]')
+      .first()
   }
 
   #childLink = (n: number) => this.page.findAll('[data-qa="child-name"]').nth(n)
-  #noChildrenIndicator = this.page
-    .findAll('[data-qa="no-children-indicator"]')
-    .first()
 
   #markAbsentByTypeButton = (type: AbsenceType) =>
     this.page.findByDataQa(`mark-absent-${type}`)

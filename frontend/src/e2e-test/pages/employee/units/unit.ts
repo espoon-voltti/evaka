@@ -14,6 +14,7 @@ import {
   Checkbox,
   Combobox,
   Element,
+  ElementCollection,
   Modal,
   Page,
   SelectionChip,
@@ -119,10 +120,32 @@ export class UnitInfoPage {
   #unitName: Element
   #visitingAddress: Element
   #unitDetailsLink: Element
+  supervisorAcl: AclSection
+  specialEducationTeacherAcl: AclSection
+  earlyChildhoodEducationSecretary: AclSection
+  staffAcl: AclSection
+  mobileAcl: MobileDevicesSection
   constructor(private readonly page: Page) {
     this.#unitName = page.findByDataQa('unit-name')
     this.#visitingAddress = page.findByDataQa('unit-visiting-address')
     this.#unitDetailsLink = page.findByDataQa('unit-details-link')
+    this.supervisorAcl = new AclSection(
+      page,
+      page.findByDataQa('daycare-acl-supervisors')
+    )
+    this.specialEducationTeacherAcl = new AclSection(
+      page,
+      page.findByDataQa('daycare-acl-set')
+    )
+    this.earlyChildhoodEducationSecretary = new AclSection(
+      page,
+      page.findByDataQa('daycare-acl-eces')
+    )
+    this.staffAcl = new AclSection(page, page.findByDataQa('daycare-acl-staff'))
+    this.mobileAcl = new MobileDevicesSection(
+      page,
+      page.findByDataQa('daycare-mobile-devices')
+    )
   }
 
   async waitUntilLoaded() {
@@ -139,27 +162,6 @@ export class UnitInfoPage {
     await this.#visitingAddress.assertTextEquals(expectedAddress)
   }
 
-  supervisorAcl = new AclSection(
-    this.page,
-    this.page.findByDataQa('daycare-acl-supervisors')
-  )
-  specialEducationTeacherAcl = new AclSection(
-    this.page,
-    this.page.findByDataQa('daycare-acl-set')
-  )
-  earlyChildhoodEducationSecretary = new AclSection(
-    this.page,
-    this.page.findByDataQa('daycare-acl-eces')
-  )
-  staffAcl = new AclSection(
-    this.page,
-    this.page.findByDataQa('daycare-acl-staff')
-  )
-  mobileAcl = new MobileDevicesSection(
-    this.page,
-    this.page.findByDataQa('daycare-mobile-devices')
-  )
-
   async openUnitDetails(): Promise<UnitDetailsPage> {
     await this.#unitDetailsLink.click()
     const unitDetails = new UnitDetailsPage(this.page)
@@ -170,19 +172,17 @@ export class UnitInfoPage {
 
 export class UnitDetailsPage {
   #editUnitButton: Element
+  #unitName: Element
   #unitManagerName: Element
   #unitManagerPhone: Element
   #unitManagerEmail: Element
   constructor(private readonly page: Page) {
     this.#editUnitButton = page.findByDataQa('enable-edit-button')
+    this.#unitName = page.find('[data-qa="unit-editor-container"]').find('h1')
     this.#unitManagerName = page.findByDataQa('unit-manager-name')
     this.#unitManagerPhone = page.findByDataQa('unit-manager-phone')
     this.#unitManagerEmail = page.findByDataQa('unit-manager-email')
   }
-
-  readonly #unitName = this.page
-    .find('[data-qa="unit-editor-container"]')
-    .find('h1')
 
   async waitUntilLoaded() {
     await this.#editUnitButton.waitUntilVisible()
@@ -233,6 +233,11 @@ export class UnitEditor {
   #managerEmailInputField: TextInput
   #checkInvoicedByMunicipality: Element
   #invoiceByMunicipality: Checkbox
+  #closingDateInput: Element
+  #reactDatePickerDays: ElementCollection
+  #reactDatePickerCloseIcon: Element
+  #unitHandlerAddressInput: TextInput
+  #unitCostCenterInput: TextInput
   saveButton: Element
   constructor(private readonly page: Page) {
     this.#unitNameInput = new TextInput(page.findByDataQa('unit-name-input'))
@@ -255,6 +260,13 @@ export class UnitEditor {
     this.#invoiceByMunicipality = new Checkbox(
       page.findByDataQa('check-invoice-by-municipality')
     )
+    this.#closingDateInput = page.find('[data-qa="closing-date-input"] input')
+    this.#reactDatePickerDays = page.findAll('.react-datepicker__day')
+    this.#reactDatePickerCloseIcon = page.find('.react-datepicker__close-icon')
+    this.#unitHandlerAddressInput = new TextInput(
+      page.find('#unit-handler-address')
+    )
+    this.#unitCostCenterInput = new TextInput(page.find('#unit-cost-center'))
     this.saveButton = page.findByDataQa('save-button')
   }
 
@@ -335,26 +347,8 @@ export class UnitEditor {
     return new TextInput(this.page.findByDataQa(`${type}-post-office-input`))
   }
 
-  readonly #closingDateInput = this.page.find(
-    '[data-qa="closing-date-input"] input'
-  )
-
-  readonly #reactDatePickerDays = this.page.findAll('.react-datepicker__day')
-
-  readonly #reactDatePickerCloseIcon = this.page.find(
-    '.react-datepicker__close-icon'
-  )
-
   readonly #providerTypeRadio = (providerType: UnitProviderType) =>
     this.page.findByDataQa(`provider-type-${providerType}`)
-
-  readonly #unitHandlerAddressInput = new TextInput(
-    this.page.find('#unit-handler-address')
-  )
-
-  readonly #unitCostCenterInput = new TextInput(
-    this.page.find('#unit-cost-center')
-  )
 
   static async openById(page: Page, unitId: UUID) {
     await page.goto(`${config.employeeUrl}/units/${unitId}/details`)
@@ -821,10 +815,12 @@ class AclRow extends Element {
 
 export class ApplicationProcessPage {
   waitingConfirmation: WaitingConfirmationSection
+  placementProposals: PlacementProposalsSection
   constructor(private readonly page: Page) {
     this.waitingConfirmation = new WaitingConfirmationSection(
       page.findByDataQa('waiting-confirmation-section')
     )
+    this.placementProposals = new PlacementProposalsSection(this.page)
   }
 
   async waitUntilLoaded() {
@@ -832,8 +828,6 @@ export class ApplicationProcessPage {
       .find('[data-qa="application-process-page"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  placementProposals = new PlacementProposalsSection(this.page)
 
   async waitUntilVisible() {
     await this.waitingConfirmation.waitUntilVisible()

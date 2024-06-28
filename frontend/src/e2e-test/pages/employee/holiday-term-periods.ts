@@ -23,6 +23,35 @@ export class HolidayAndTermPeriodsPage {
   confirmCheckbox: Checkbox
   #addTermBreakButton: Element
   #termBreakRows: ElementCollection
+  #periodInputs: {
+    start: DatePicker
+    end: DatePicker
+    reservationDeadline: DatePicker
+  }
+  #questionnaireInputs: {
+    activeStart: DatePicker
+    activeEnd: DatePicker
+    title: TextInput
+    description: TextInput
+    descriptionSv: TextInput
+    descriptionEn: TextInput
+    descriptionLink: TextInput
+    descriptionLinkSv: TextInput
+    descriptionLinkEn: TextInput
+    fixedPeriodOptions: TextInput
+    fixedPeriodOptionLabel: TextInput
+  }
+  #preschoolTermInputs: {
+    finnishPreschoolStart: DatePicker
+    finnishPreschoolEnd: DatePicker
+    extendedTermStart: DatePicker
+    applicationPeriodStart: DatePicker
+  }
+  #clubTermInputs: {
+    termStart: DatePicker
+    termEnd: DatePicker
+    applicationPeriodStart: DatePicker
+  }
   constructor(private readonly page: Page) {
     this.#periodRows = page.findAllByDataQa('holiday-period-row')
     this.#questionnaireRows = page.findAllByDataQa('questionnaire-row')
@@ -31,6 +60,63 @@ export class HolidayAndTermPeriodsPage {
     this.confirmCheckbox = new Checkbox(page.findByDataQa('confirm-checkbox'))
     this.#addTermBreakButton = page.findByDataQa('add-term-break-button')
     this.#termBreakRows = page.findAllByDataQa('term-break')
+    this.#periodInputs = {
+      start: new DatePicker(
+        page.findByDataQa('period').findAll('input').first()
+      ),
+      end: new DatePicker(page.findByDataQa('period').findAll('input').last()),
+      reservationDeadline: new DatePicker(
+        page.findByDataQa('input-reservation-deadline')
+      )
+    }
+    this.#questionnaireInputs = {
+      activeStart: new DatePicker(page.findByDataQa('input-start')),
+      activeEnd: new DatePicker(page.findByDataQa('input-end')),
+      title: new TextInput(page.findByDataQa('input-title-fi')),
+      description: new TextInput(page.findByDataQa('input-description-fi')),
+      descriptionSv: new TextInput(page.findByDataQa('input-description-sv')),
+      descriptionEn: new TextInput(page.findByDataQa('input-description-en')),
+      descriptionLink: new TextInput(
+        page.findByDataQa('input-description-link-fi')
+      ),
+      descriptionLinkSv: new TextInput(
+        page.findByDataQa('input-description-link-sv')
+      ),
+      descriptionLinkEn: new TextInput(
+        page.findByDataQa('input-description-link-en')
+      ),
+      fixedPeriodOptions: new TextInput(
+        page.findByDataQa('input-fixed-period-options')
+      ),
+      fixedPeriodOptionLabel: new TextInput(
+        page.findByDataQa('input-fixed-period-option-label-fi')
+      )
+    }
+    this.#preschoolTermInputs = {
+      finnishPreschoolStart: new DatePicker(
+        page.findByDataQa('finnish-preschool').findAll('input').first()
+      ),
+      finnishPreschoolEnd: new DatePicker(
+        page.findByDataQa('finnish-preschool').findAll('input').last()
+      ),
+      extendedTermStart: new DatePicker(
+        page.findByDataQa('input-extended-term-start')
+      ),
+      applicationPeriodStart: new DatePicker(
+        page.findByDataQa('input-application-period-start')
+      )
+    }
+    this.#clubTermInputs = {
+      termStart: new DatePicker(
+        page.findByDataQa('term').findAll('input').first()
+      ),
+      termEnd: new DatePicker(
+        page.findByDataQa('term').findAll('input').last()
+      ),
+      applicationPeriodStart: new DatePicker(
+        page.findByDataQa('input-application-period-start')
+      )
+    }
   }
 
   get visiblePeriods(): Promise<string[]> {
@@ -86,18 +172,6 @@ export class HolidayAndTermPeriodsPage {
     return this.page.findByDataQa('add-club-term-button').click()
   }
 
-  #periodInputs = {
-    start: new DatePicker(
-      this.page.findByDataQa('period').findAll('input').first()
-    ),
-    end: new DatePicker(
-      this.page.findByDataQa('period').findAll('input').last()
-    ),
-    reservationDeadline: new DatePicker(
-      this.page.findByDataQa('input-reservation-deadline')
-    )
-  }
-
   async fillHolidayPeriodForm(params: {
     start?: string
     end?: string
@@ -108,34 +182,6 @@ export class HolidayAndTermPeriodsPage {
         await this.#periodInputs[key as keyof typeof params].fill(val)
       }
     }
-  }
-
-  #questionnaireInputs = {
-    activeStart: new DatePicker(this.page.findByDataQa('input-start')),
-    activeEnd: new DatePicker(this.page.findByDataQa('input-end')),
-    title: new TextInput(this.page.findByDataQa('input-title-fi')),
-    description: new TextInput(this.page.findByDataQa('input-description-fi')),
-    descriptionSv: new TextInput(
-      this.page.findByDataQa('input-description-sv')
-    ),
-    descriptionEn: new TextInput(
-      this.page.findByDataQa('input-description-en')
-    ),
-    descriptionLink: new TextInput(
-      this.page.findByDataQa('input-description-link-fi')
-    ),
-    descriptionLinkSv: new TextInput(
-      this.page.findByDataQa('input-description-link-sv')
-    ),
-    descriptionLinkEn: new TextInput(
-      this.page.findByDataQa('input-description-link-en')
-    ),
-    fixedPeriodOptions: new TextInput(
-      this.page.findByDataQa('input-fixed-period-options')
-    ),
-    fixedPeriodOptionLabel: new TextInput(
-      this.page.findByDataQa('input-fixed-period-option-label-fi')
-    )
   }
 
   async fillQuestionnaireForm(params: {
@@ -201,21 +247,6 @@ export class HolidayAndTermPeriodsPage {
         await endInput.fill(termBreak.end.format())
       }
     }
-  }
-
-  #preschoolTermInputs = {
-    finnishPreschoolStart: new DatePicker(
-      this.page.findByDataQa('finnish-preschool').findAll('input').first()
-    ),
-    finnishPreschoolEnd: new DatePicker(
-      this.page.findByDataQa('finnish-preschool').findAll('input').last()
-    ),
-    extendedTermStart: new DatePicker(
-      this.page.findByDataQa('input-extended-term-start')
-    ),
-    applicationPeriodStart: new DatePicker(
-      this.page.findByDataQa('input-application-period-start')
-    )
   }
 
   async removeTermBreakEntry(nth: number) {
@@ -293,18 +324,6 @@ export class HolidayAndTermPeriodsPage {
         await endInput.fill(termBreak.end.format())
       }
     }
-  }
-
-  #clubTermInputs = {
-    termStart: new DatePicker(
-      this.page.findByDataQa('term').findAll('input').first()
-    ),
-    termEnd: new DatePicker(
-      this.page.findByDataQa('term').findAll('input').last()
-    ),
-    applicationPeriodStart: new DatePicker(
-      this.page.findByDataQa('input-application-period-start')
-    )
   }
 
   async editClubTerm(nth: number) {

@@ -10,14 +10,14 @@ import { Page, TextInput, Element } from '../../utils/page'
 export default class MobileAbsencesPage {
   #markAbsentBtn: Element
   #confirmDeleteBtn: Element
+  #firstDeleteAbsencePeriodBtn: Element
   constructor(private readonly page: Page) {
     this.#markAbsentBtn = page.findByDataQa('mark-absent-btn')
     this.#confirmDeleteBtn = page.findByDataQa('modal-okBtn')
+    this.#firstDeleteAbsencePeriodBtn = page
+      .findAll('[data-qa="delete-absence-period"]')
+      .first()
   }
-
-  #firstDeleteAbsencePeriodBtn = this.page
-    .findAll('[data-qa="delete-absence-period"]')
-    .first()
 
   async markAbsent() {
     return this.#markAbsentBtn.click()

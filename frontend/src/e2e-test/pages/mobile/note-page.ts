@@ -10,40 +10,61 @@ import {
 import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Modal, Page, TextInput, Element } from '../../utils/page'
+import {
+  Modal,
+  Page,
+  TextInput,
+  Element,
+  ElementCollection
+} from '../../utils/page'
 
 export default class MobileNotePage {
   #createNoteButton: Element
   #deleteNoteButton: Element
+  #stickyNote: {
+    note: ElementCollection
+    newNoteBtn: Element
+    editBtn: ElementCollection
+    removeBtn: ElementCollection
+    saveBtn: Element
+    input: TextInput
+  }
+  #note: {
+    dailyNote: TextInput
+    sleepingTimeHours: TextInput
+    sleepingTimeMinutes: TextInput
+    reminderNote: TextInput
+    feedingNote: (level: ChildDailyNoteLevel) => Element
+    sleepingNote: (level: ChildDailyNoteLevel) => Element
+    reminders: (reminder: ChildDailyNoteReminder) => Element
+  }
   constructor(private readonly page: Page) {
     this.#createNoteButton = page.findByDataQa('create-daily-note-btn')
     this.#deleteNoteButton = page.findByDataQa('open-delete-dialog-btn')
-  }
-
-  #stickyNote = {
-    note: this.page.findAll('[data-qa="sticky-note"]'),
-    newNoteBtn: this.page.findByDataQa('sticky-note-new'),
-    editBtn: this.page.findAll('[data-qa="sticky-note-edit"]'),
-    removeBtn: this.page.findAll('[data-qa="sticky-note-remove"]'),
-    saveBtn: this.page.findByDataQa('sticky-note-save'),
-    input: new TextInput(this.page.findByDataQa('sticky-note-input'))
-  }
-
-  #note = {
-    dailyNote: new TextInput(this.page.findByDataQa('daily-note-note-input')),
-    sleepingTimeHours: new TextInput(
-      this.page.findByDataQa('sleeping-time-hours-input')
-    ),
-    sleepingTimeMinutes: new TextInput(
-      this.page.findByDataQa('sleeping-time-minutes-input')
-    ),
-    reminderNote: new TextInput(this.page.findByDataQa('reminder-note-input')),
-    feedingNote: (level: ChildDailyNoteLevel) =>
-      this.page.findByDataQa(`feeding-note-${level}`),
-    sleepingNote: (level: ChildDailyNoteLevel) =>
-      this.page.findByDataQa(`sleeping-note-${level}`),
-    reminders: (reminder: ChildDailyNoteReminder) =>
-      this.page.findByDataQa(`reminders-${reminder}`)
+    this.#stickyNote = {
+      note: page.findAll('[data-qa="sticky-note"]'),
+      newNoteBtn: page.findByDataQa('sticky-note-new'),
+      editBtn: page.findAll('[data-qa="sticky-note-edit"]'),
+      removeBtn: page.findAll('[data-qa="sticky-note-remove"]'),
+      saveBtn: page.findByDataQa('sticky-note-save'),
+      input: new TextInput(page.findByDataQa('sticky-note-input'))
+    }
+    this.#note = {
+      dailyNote: new TextInput(page.findByDataQa('daily-note-note-input')),
+      sleepingTimeHours: new TextInput(
+        page.findByDataQa('sleeping-time-hours-input')
+      ),
+      sleepingTimeMinutes: new TextInput(
+        page.findByDataQa('sleeping-time-minutes-input')
+      ),
+      reminderNote: new TextInput(page.findByDataQa('reminder-note-input')),
+      feedingNote: (level: ChildDailyNoteLevel) =>
+        page.findByDataQa(`feeding-note-${level}`),
+      sleepingNote: (level: ChildDailyNoteLevel) =>
+        page.findByDataQa(`sleeping-note-${level}`),
+      reminders: (reminder: ChildDailyNoteReminder) =>
+        page.findByDataQa(`reminders-${reminder}`)
+    }
   }
 
   async selectTab(tab: 'note' | 'group' | 'sticky') {

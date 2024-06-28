@@ -265,13 +265,13 @@ export class VoucherServiceProvidersReport {
   #month: Select
   #year: Select
   #area: Select
+  #downloadCsvLink: Element
   constructor(private page: Page) {
     this.#month = new Select(page.findByDataQa('select-month'))
     this.#year = new Select(page.findByDataQa('select-year'))
     this.#area = new Select(page.findByDataQa('select-area'))
+    this.#downloadCsvLink = page.find('[data-qa="download-csv"] a')
   }
-
-  #downloadCsvLink = this.page.find('[data-qa="download-csv"] a')
 
   async selectMonth(month: 'Tammikuu') {
     await this.#month.selectOption({ label: month.toLowerCase() })
@@ -389,11 +389,12 @@ export class ManualDuplicationReport {
 
 export class VardaErrorsReport {
   #errorsTable: Element
+  #errorRows: ElementCollection
   constructor(private page: Page) {
     this.#errorsTable = page.findByDataQa('varda-errors-table')
+    this.#errorRows = page.findAll('[data-qa="varda-error-row"]')
   }
 
-  #errorRows = this.page.findAll('[data-qa="varda-error-row"]')
   #errors = (childId: string) => this.page.findByDataQa(`errors-${childId}`)
   #resetChild = (childId: string) =>
     this.page.findByDataQa(`reset-button-${childId}`)

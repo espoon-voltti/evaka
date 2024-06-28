@@ -7,7 +7,14 @@ import { Element, Page } from '../../utils/page'
 import ApplicationReadView from './applications/application-read-view'
 
 export default class ApplicationsPage {
-  constructor(private readonly page: Page) {}
+  details: {
+    applicantDeadIndicator: Element
+  }
+  constructor(private readonly page: Page) {
+    this.details = {
+      applicantDeadIndicator: page.findByDataQa('applicant-dead')
+    }
+  }
 
   applicationStatusFilter(status: 'ALL') {
     return this.page.findByDataQa(`application-status-filter-${status}`)
@@ -20,10 +27,6 @@ export default class ApplicationsPage {
   applicationRow(id: string) {
     const element = this.page.find(`[data-application-id="${id}"]`)
     return new ApplicationRow(this.page, element)
-  }
-
-  readonly details = {
-    applicantDeadIndicator: this.page.findByDataQa('applicant-dead')
   }
 }
 

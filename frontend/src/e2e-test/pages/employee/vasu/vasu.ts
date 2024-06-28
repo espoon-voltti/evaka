@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
-import { Page, TextInput, Element, Checkbox } from '../../../utils/page'
+import {
+  Page,
+  TextInput,
+  Element,
+  Checkbox,
+  ElementCollection
+} from '../../../utils/page'
 
 import {
   AuthoringSection,
@@ -19,14 +25,12 @@ import {
 } from './pageSections'
 
 class VasuPageCommon {
-  constructor(readonly page: Page) {}
-
-  readonly #documentSection = this.page.findAll(
-    '[data-qa="vasu-document-section"]'
-  )
-  readonly #followupQuestions = this.page.findAll(
-    '[data-qa="vasu-followup-question"]'
-  )
+  #documentSection: ElementCollection
+  #followupQuestions: ElementCollection
+  constructor(readonly page: Page) {
+    this.#documentSection = page.findAll('[data-qa="vasu-document-section"]')
+    this.#followupQuestions = page.findAll('[data-qa="vasu-followup-question"]')
+  }
 
   getDocumentSection(ix: number): Element {
     // Note: indexes might change if the template used in the test changes

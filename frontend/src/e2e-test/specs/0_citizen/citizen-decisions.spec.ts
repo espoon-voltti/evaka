@@ -455,7 +455,7 @@ describe('Citizen assistance decisions', () => {
     const assistanceNeedDecisionPage = new AssistanceNeedDecisionPage(page)
 
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.pedagogicalMotivation,
+      () => assistanceNeedDecisionPage.pedagogicalMotivation(),
       'Pedagogical motivation text'
     )
     await assistanceNeedDecisionPage.assertStructuralMotivationOption(
@@ -472,42 +472,42 @@ describe('Citizen assistance decisions', () => {
     )
     await assistanceNeedDecisionPage.assertServiceOption('partTimeSpecialEd')
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.careMotivation,
+      () => assistanceNeedDecisionPage.careMotivation(),
       'Care motivation text'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.guardiansHeardOn,
+      () => assistanceNeedDecisionPage.guardiansHeardOn(),
       '05.04.2020'
     )
     await assistanceNeedDecisionPage.otherRepresentativeDetails.assertTextEquals(
       'John Doe, 01020304050, via phone'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.viewOfGuardians,
+      () => assistanceNeedDecisionPage.viewOfGuardians(),
       'VOG text'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.futureLevelOfAssistance,
+      () => assistanceNeedDecisionPage.futureLevelOfAssistance(),
       'Tehostettu tuki'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.startDate,
+      () => assistanceNeedDecisionPage.startDate(),
       '05.02.2020'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.selectedUnit,
+      () => assistanceNeedDecisionPage.selectedUnit(),
       `${fixtures.daycareFixture.name}\n${fixtures.daycareFixture.visitingAddress.streetAddress}\n${fixtures.daycareFixture.visitingAddress.postalCode} ${fixtures.daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.motivationForDecision,
+      () => assistanceNeedDecisionPage.motivationForDecision(),
       'Motivation for decision text'
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.preparedBy1,
+      () => assistanceNeedDecisionPage.preparedBy1(),
       `${serviceWorker.firstName} ${serviceWorker.lastName}, teacher\n010202020202`
     )
     await waitUntilEqual(
-      () => assistanceNeedDecisionPage.decisionMaker,
+      () => assistanceNeedDecisionPage.decisionMaker(),
       `${serviceWorker.firstName} ${serviceWorker.lastName}, head teacher`
     )
   })

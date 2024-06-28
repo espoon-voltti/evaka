@@ -279,6 +279,9 @@ class ReservationsModal {
   #dailyStartTimeInput: TextInput
   #dailyEndTimeInput: TextInput
   #modalSendButton: Element
+  #weeklyStartTimeInputs: TextInput[]
+  #weeklyEndTimeInputs: TextInput[]
+  #weeklyAbsentButtons: Element[]
   constructor(private readonly page: Page) {
     this.#startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.#endDateInput = new TextInput(page.findByDataQa('end-date'))
@@ -289,21 +292,19 @@ class ReservationsModal {
     this.#dailyEndTimeInput = new TextInput(
       page.findByDataQa('daily-time-0-end')
     )
+    this.#weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
+      (index) =>
+        new TextInput(page.findByDataQa(`weekly-${index}-time-0-start`))
+    )
+    this.#weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
+      (index) => new TextInput(page.findByDataQa(`weekly-${index}-time-0-end`))
+    )
+    this.#weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
+      (index) =>
+        new TextInput(page.findByDataQa(`weekly-${index}-absent-button`))
+    )
     this.#modalSendButton = page.findByDataQa('modal-okBtn')
   }
-
-  #weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
-    (index) =>
-      new TextInput(this.page.findByDataQa(`weekly-${index}-time-0-start`))
-  )
-  #weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
-    (index) =>
-      new TextInput(this.page.findByDataQa(`weekly-${index}-time-0-end`))
-  )
-  #weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
-    (index) =>
-      new TextInput(this.page.findByDataQa(`weekly-${index}-absent-button`))
-  )
 
   irregularStartTimeInput = (date: LocalDate) =>
     new TextInput(

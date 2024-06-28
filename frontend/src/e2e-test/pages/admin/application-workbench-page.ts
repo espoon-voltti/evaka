@@ -102,8 +102,6 @@ export class ApplicationWorkbenchPage {
     )
   }
 
-  searchFilter = new SearchFilter(this.page)
-
   getApplicationListItem(applicationId: string) {
     return this.#applicationList.find(
       `tr[data-application-id="${applicationId}"]`

@@ -21,7 +21,24 @@ export default class PersonSearchPage {
   #disableSsnAddingCheckbox: Checkbox
   #ssnInput: TextInput
   #modalConfirm: Element
-  constructor(private readonly page: Page) {
+  #personLink: Element
+  #createPersonModal: {
+    modal: Element
+    firstNameInput: TextInput
+    lastNameInput: TextInput
+    dateOfBirthInput: TextInput
+    streetAddressInput: TextInput
+    postalCodeInput: TextInput
+    postOfficeInput: TextInput
+  }
+  #personData: {
+    firstName: Element
+    lastName: Element
+    dateOfBirth: Element
+    address: Element
+    ssn: Element
+  }
+  constructor(page: Page) {
     this.searchInput = new TextInput(page.findByDataQa('search-input'))
     this.searchResults = page.findAllByDataQa('person-row')
     this.#createPersonButton = page.findByDataQa('create-person-button')
@@ -32,28 +49,25 @@ export default class PersonSearchPage {
     )
     this.#ssnInput = new TextInput(page.findByDataQa('ssn-input'))
     this.#modalConfirm = page.findByDataQa('modal-okBtn')
-  }
-
-  #personLink = this.page.find('[data-qa="person-row"] a')
-  #createPersonModal = {
-    modal: this.page.findByDataQa('modal'),
-    firstNameInput: new TextInput(this.page.findByDataQa('first-name-input')),
-    lastNameInput: new TextInput(this.page.findByDataQa('last-name-input')),
-    dateOfBirthInput: new TextInput(
-      this.page.findByDataQa('date-of-birth-input')
-    ),
-    streetAddressInput: new TextInput(
-      this.page.findByDataQa('street-address-input')
-    ),
-    postalCodeInput: new TextInput(this.page.findByDataQa('postal-code-input')),
-    postOfficeInput: new TextInput(this.page.findByDataQa('post-office-input'))
-  }
-  #personData = {
-    firstName: this.page.findByDataQa('person-first-names'),
-    lastName: this.page.findByDataQa('person-last-name'),
-    dateOfBirth: this.page.findByDataQa('person-birthday'),
-    address: this.page.findByDataQa('person-address'),
-    ssn: this.page.findByDataQa('person-ssn')
+    this.#personLink = page.find('[data-qa="person-row"] a')
+    this.#createPersonModal = {
+      modal: page.findByDataQa('modal'),
+      firstNameInput: new TextInput(page.findByDataQa('first-name-input')),
+      lastNameInput: new TextInput(page.findByDataQa('last-name-input')),
+      dateOfBirthInput: new TextInput(page.findByDataQa('date-of-birth-input')),
+      streetAddressInput: new TextInput(
+        page.findByDataQa('street-address-input')
+      ),
+      postalCodeInput: new TextInput(page.findByDataQa('postal-code-input')),
+      postOfficeInput: new TextInput(page.findByDataQa('post-office-input'))
+    }
+    this.#personData = {
+      firstName: page.findByDataQa('person-first-names'),
+      lastName: page.findByDataQa('person-last-name'),
+      dateOfBirth: page.findByDataQa('person-birthday'),
+      address: page.findByDataQa('person-address'),
+      ssn: page.findByDataQa('person-ssn')
+    }
   }
 
   async createPerson(personData: {

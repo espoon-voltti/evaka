@@ -19,6 +19,7 @@ export default class CitizenMapPage {
   unitDetailsPanel: UnitDetailsPanel
   map: Map
   searchInput: MapSearchInput
+  languageChips: { fi: SelectionChip; sv: SelectionChip }
   constructor(private readonly page: Page) {
     this.daycareFilter = new Radio(page.findByDataQa('map-filter-DAYCARE'))
     this.preschoolFilter = new Radio(page.findByDataQa('map-filter-PRESCHOOL'))
@@ -28,11 +29,10 @@ export default class CitizenMapPage {
     )
     this.map = new Map(page.findByDataQa('map-view'))
     this.searchInput = new MapSearchInput(page.findByDataQa('map-search-input'))
-  }
-
-  readonly languageChips = {
-    fi: new SelectionChip(this.page.findByDataQa('map-filter-fi')),
-    sv: new SelectionChip(this.page.findByDataQa('map-filter-sv'))
+    this.languageChips = {
+      fi: new SelectionChip(page.findByDataQa('map-filter-fi')),
+      sv: new SelectionChip(page.findByDataQa('map-filter-sv'))
+    }
   }
 
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {

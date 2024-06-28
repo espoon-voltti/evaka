@@ -12,6 +12,7 @@ import {
   Checkbox,
   Combobox,
   Element,
+  ElementCollection,
   Page,
   PinInput,
   Select,
@@ -109,7 +110,47 @@ export class StaffAttendancePage {
   departureTime: Element
 
   #addNewExternalMemberButton: Element
+  #tabs: { present: Element; absent: Element }
   pinInput: Element
+
+  anyArrivalPage: {
+    arrivedInput: TextInput
+    markArrived: Element
+  }
+  externalArrivalPage: {
+    nameInput: TextInput
+    groupSelect: Combobox
+  }
+  staffArrivalPage: {
+    groupSelect: Select
+    occupancyEffectCheckbox: Checkbox
+    timeInputWarningText: Element
+    arrivalTypeCheckbox: (type: StaffAttendanceType) => Checkbox
+    arrivalIsBeforeDeparture: Element
+  }
+  staffDeparturePage: {
+    departureTime: TextInput
+    markDepartedBtn: Element
+    timeInputWarningText: Element
+    departureTypeCheckbox: (type: StaffAttendanceType) => Checkbox
+    departureIsBeforeArrival: Element
+  }
+  anyMemberPage: {
+    back: Element
+    status: Element
+    markDeparted: Element
+  }
+  staffMemberPage: {
+    markArrivedBtn: Element
+    shiftTimeText: Element
+    attendanceTimeTexts: ElementCollection
+    attendanceTimes: ElementCollection
+  }
+  externalMemberPage: {
+    arrivalTime: Element
+    departureTimeInput: TextInput
+    departureIsBeforeArrival: Element
+  }
 
   constructor(private readonly page: Page) {
     this.editButton = this.page.findByDataQa('edit')
@@ -118,64 +159,63 @@ export class StaffAttendancePage {
     this.#addNewExternalMemberButton = page.findByDataQa(
       'add-external-member-btn'
     )
+    this.#tabs = {
+      present: page.findByDataQa('present-tab'),
+      absent: page.findByDataQa('absent-tab')
+    }
+
     this.pinInput = page.findByDataQa('pin-input')
-  }
+    this.anyArrivalPage = {
+      arrivedInput: new TextInput(page.findByDataQa('input-arrived')),
+      markArrived: page.findByDataQa('mark-arrived-btn')
+    }
+    this.externalArrivalPage = {
+      nameInput: new TextInput(page.findByDataQa('input-name')),
+      groupSelect: new Combobox(page.findByDataQa('input-group'))
+    }
+    this.staffArrivalPage = {
+      groupSelect: new Select(page.findByDataQa('group-select')),
+      occupancyEffectCheckbox: new Checkbox(
+        page.findByDataQa('has-occupancy-effect')
+      ),
+      timeInputWarningText: page.findByDataQa('input-arrived-info'),
+      arrivalTypeCheckbox: (type: StaffAttendanceType) =>
+        new Checkbox(page.findByDataQa(`attendance-type-${type}`)),
+      arrivalIsBeforeDeparture: page.findByDataQa(
+        'arrival-before-departure-notification'
+      )
+    }
+    this.staffDeparturePage = {
+      departureTime: new TextInput(page.findByDataQa('set-time')),
+      markDepartedBtn: page.findByDataQa('mark-departed-btn'),
+      timeInputWarningText: page.findByDataQa('set-time-info'),
+      departureTypeCheckbox: (type: StaffAttendanceType) =>
+        new Checkbox(page.findByDataQa(`attendance-type-${type}`)),
+      departureIsBeforeArrival: page.findByDataQa(
+        'departure-before-arrival-notification'
+      )
+    }
 
-  #tabs = {
-    present: this.page.findByDataQa('present-tab'),
-    absent: this.page.findByDataQa('absent-tab')
-  }
-
-  anyArrivalPage = {
-    arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
-    markArrived: this.page.findByDataQa('mark-arrived-btn')
-  }
-  externalArrivalPage = {
-    nameInput: new TextInput(this.page.findByDataQa('input-name')),
-    groupSelect: new Combobox(this.page.findByDataQa('input-group'))
-  }
-  staffArrivalPage = {
-    groupSelect: new Select(this.page.findByDataQa('group-select')),
-    occupancyEffectCheckbox: new Checkbox(
-      this.page.findByDataQa('has-occupancy-effect')
-    ),
-    timeInputWarningText: this.page.findByDataQa('input-arrived-info'),
-    arrivalTypeCheckbox: (type: StaffAttendanceType) =>
-      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`)),
-    arrivalIsBeforeDeparture: this.page.findByDataQa(
-      'arrival-before-departure-notification'
-    )
-  }
-  staffDeparturePage = {
-    departureTime: new TextInput(this.page.findByDataQa('set-time')),
-    markDepartedBtn: this.page.findByDataQa('mark-departed-btn'),
-    timeInputWarningText: this.page.findByDataQa('set-time-info'),
-    departureTypeCheckbox: (type: StaffAttendanceType) =>
-      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`)),
-    departureIsBeforeArrival: this.page.findByDataQa(
-      'departure-before-arrival-notification'
-    )
-  }
-
-  anyMemberPage = {
-    back: this.page.findByDataQa('back-btn'),
-    status: this.page.findByDataQa('employee-status'),
-    markDeparted: this.page.findByDataQa('mark-departed-btn')
-  }
-  staffMemberPage = {
-    attendanceTimes: this.page.findAllByDataQa('attendance-time'),
-    markArrivedBtn: this.page.findByDataQa('mark-arrived-btn'),
-    shiftTimeText: this.page.findByDataQa('shift-time'),
-    attendanceTimeTexts: this.page.findAllByDataQa('attendance-time')
-  }
-  externalMemberPage = {
-    arrivalTime: this.page.findByDataQa('arrival-time'),
-    departureTimeInput: new TextInput(
-      this.page.findByDataQa('departure-time-input')
-    ),
-    departureIsBeforeArrival: this.page.findByDataQa(
-      'departure-before-arrival-notification'
-    )
+    this.anyMemberPage = {
+      back: page.findByDataQa('back-btn'),
+      status: page.findByDataQa('employee-status'),
+      markDeparted: page.findByDataQa('mark-departed-btn')
+    }
+    this.staffMemberPage = {
+      attendanceTimes: page.findAllByDataQa('attendance-time'),
+      markArrivedBtn: page.findByDataQa('mark-arrived-btn'),
+      shiftTimeText: page.findByDataQa('shift-time'),
+      attendanceTimeTexts: page.findAllByDataQa('attendance-time')
+    }
+    this.externalMemberPage = {
+      arrivalTime: page.findByDataQa('arrival-time'),
+      departureTimeInput: new TextInput(
+        page.findByDataQa('departure-time-input')
+      ),
+      departureIsBeforeArrival: page.findByDataQa(
+        'departure-before-arrival-notification'
+      )
+    }
   }
 
   #staffLink = (name: string) =>

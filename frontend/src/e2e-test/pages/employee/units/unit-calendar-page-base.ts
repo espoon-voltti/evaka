@@ -16,11 +16,13 @@ export class UnitCalendarPageBase {
   weekModeButton: Element
   nextWeekButton: Element
   previousWeekButton: Element
+  calendarEventsSection: UnitCalendarEventsSection
   constructor(protected readonly page: Page) {
     this.monthModeButton = page.findByDataQa('choose-calendar-mode-month')
     this.weekModeButton = page.findByDataQa('choose-calendar-mode-week')
     this.nextWeekButton = page.findByDataQa('next-week')
     this.previousWeekButton = page.findByDataQa('previous-week')
+    this.calendarEventsSection = new UnitCalendarEventsSection(page)
   }
 
   async waitUntilLoaded() {
@@ -28,8 +30,6 @@ export class UnitCalendarPageBase {
       .find('[data-qa="unit-attendances"][data-isloading="false"]')
       .waitUntilVisible()
   }
-
-  calendarEventsSection = new UnitCalendarEventsSection(this.page)
 
   private async getSelectedDateRange() {
     const rawRange = await this.page
