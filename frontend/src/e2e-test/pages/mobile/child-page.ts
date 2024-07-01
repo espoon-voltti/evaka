@@ -4,7 +4,7 @@
 
 import { DevChild } from '../../generated/api-types'
 import { waitUntilEqual } from '../../utils'
-import { Page, Element } from '../../utils/page'
+import { Page, Element, ElementCollection } from '../../utils/page'
 
 export default class MobileChildPage {
   childName: Element
@@ -25,7 +25,22 @@ export default class MobileChildPage {
   saveNoteButton: Element
   goBack: Element
   goBackFromSensitivePage: Element
-  constructor(private readonly page: Page) {
+  sensitiveInfo: {
+    name: Element
+    allergies: Element
+    diet: Element
+    medication: Element
+    contactName: (n: number) => Element
+    contactPhone: (n: number) => Element
+    contactEmail: (n: number) => Element
+    backupPickupName: (n: number) => Element
+    backupPickupPhone: (n: number) => Element
+  }
+  attendance: {
+    arrivalTimes: ElementCollection
+    departureTimes: ElementCollection
+  }
+  constructor(page: Page) {
     this.childName = page.findByDataQa('child-name')
     this.reservation = page.findByDataQa('reservation')
     this.termBreak = page.findByDataQa('term-break')
@@ -44,28 +59,26 @@ export default class MobileChildPage {
     this.saveNoteButton = page.findByDataQa('create-daily-note-btn')
     this.goBack = page.findByDataQa('back-btn')
     this.goBackFromSensitivePage = page.findByDataQa('go-back')
-  }
-
-  sensitiveInfo = {
-    name: this.page.findByDataQa('child-info-name'),
-    allergies: this.page.findByDataQa('child-info-allergies'),
-    diet: this.page.findByDataQa('child-info-diet'),
-    medication: this.page.findByDataQa('child-info-medication'),
-    contactName: (n: number) =>
-      this.page.findByDataQa(`child-info-contact${n + 1}-name`),
-    contactPhone: (n: number) =>
-      this.page.findByDataQa(`child-info-contact${n + 1}-phone`),
-    contactEmail: (n: number) =>
-      this.page.findByDataQa(`child-info-contact${n + 1}-email`),
-    backupPickupName: (n: number) =>
-      this.page.findByDataQa(`child-info-backup-pickup${n + 1}-name`),
-    backupPickupPhone: (n: number) =>
-      this.page.findByDataQa(`child-info-backup-pickup${n + 1}-phone`)
-  }
-
-  attendance = {
-    arrivalTimes: this.page.findAllByDataQa('arrival-time'),
-    departureTimes: this.page.findAllByDataQa('departure-time')
+    this.sensitiveInfo = {
+      name: page.findByDataQa('child-info-name'),
+      allergies: page.findByDataQa('child-info-allergies'),
+      diet: page.findByDataQa('child-info-diet'),
+      medication: page.findByDataQa('child-info-medication'),
+      contactName: (n: number) =>
+        page.findByDataQa(`child-info-contact${n + 1}-name`),
+      contactPhone: (n: number) =>
+        page.findByDataQa(`child-info-contact${n + 1}-phone`),
+      contactEmail: (n: number) =>
+        page.findByDataQa(`child-info-contact${n + 1}-email`),
+      backupPickupName: (n: number) =>
+        page.findByDataQa(`child-info-backup-pickup${n + 1}-name`),
+      backupPickupPhone: (n: number) =>
+        page.findByDataQa(`child-info-backup-pickup${n + 1}-phone`)
+    }
+    this.attendance = {
+      arrivalTimes: page.findAllByDataQa('arrival-time'),
+      departureTimes: page.findAllByDataQa('departure-time')
+    }
   }
 
   async waitUntilLoaded() {

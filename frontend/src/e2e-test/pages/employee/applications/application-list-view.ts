@@ -6,18 +6,61 @@ import { ApplicationTypeToggle } from 'lib-common/generated/api-types/applicatio
 
 import config from '../../../config'
 import { waitUntilEqual } from '../../../utils'
-import { MultiSelect, Page, Element } from '../../../utils/page'
+import {
+  MultiSelect,
+  Page,
+  Element,
+  ElementCollection
+} from '../../../utils/page'
 
 export default class ApplicationListView {
   applicationStatus: Element
   allApplications: Element
   #areaFilter: MultiSelect
   #unitFilter: MultiSelect
+  #applications: ElementCollection
+  actionsMenuItems: {
+    verify: Element
+    setVerified: Element
+    createPlacement: Element
+    createDecision: Element
+    acceptPlacementWihtoutDecision: Element
+  }
+  specialFilterItems: {
+    duplicate: Element
+  }
+  voucherUnitFilter: {
+    firstChoice: Element
+    voucherOnly: Element
+    voucherHide: Element
+    noFilter: Element
+  }
   constructor(private page: Page) {
     this.applicationStatus = page.findByDataQa('application-status')
     this.allApplications = page.findByDataQa('application-status-filter-ALL')
     this.#areaFilter = new MultiSelect(page.findByDataQa('area-filter'))
     this.#unitFilter = new MultiSelect(page.findByDataQa('unit-selector'))
+    this.#applications = page
+      .find('[data-qa="table-of-applications"]')
+      .findAll('[data-qa="table-application-row"]')
+    this.actionsMenuItems = {
+      verify: this.#actionsMenuItemSelector('verify'),
+      setVerified: this.#actionsMenuItemSelector('set-verified'),
+      createPlacement: this.#actionsMenuItemSelector('placement-draft'),
+      createDecision: this.#actionsMenuItemSelector('decision'),
+      acceptPlacementWihtoutDecision: this.#actionsMenuItemSelector(
+        'placement-without-decision'
+      )
+    }
+    this.specialFilterItems = {
+      duplicate: page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
+    }
+    this.voucherUnitFilter = {
+      firstChoice: page.findByDataQa('filter-voucher-first-choice'),
+      voucherOnly: page.findByDataQa('filter-voucher-all'),
+      voucherHide: page.findByDataQa('filter-voucher-hide'),
+      noFilter: page.findByDataQa('filter-voucher-no-filter')
+    }
   }
 
   static url = `${config.employeeUrl}/applications`
@@ -30,22 +73,8 @@ export default class ApplicationListView {
   #actionsMenuItemSelector = (id: string) =>
     this.page.findByDataQa(`action-item-${id}`)
 
-  actionsMenuItems = {
-    verify: this.#actionsMenuItemSelector('verify'),
-    setVerified: this.#actionsMenuItemSelector('set-verified'),
-    createPlacement: this.#actionsMenuItemSelector('placement-draft'),
-    createDecision: this.#actionsMenuItemSelector('decision'),
-    acceptPlacementWihtoutDecision: this.#actionsMenuItemSelector(
-      'placement-without-decision'
-    )
-  }
-
   async toggleArea(areaName: string) {
     await this.#areaFilter.fillAndSelectFirst(areaName)
-  }
-
-  specialFilterItems = {
-    duplicate: this.page.findByDataQa('application-basis-DUPLICATE_APPLICATION')
   }
 
   toggleUnit = async (unitName: string) => {
@@ -58,19 +87,8 @@ export default class ApplicationListView {
     await this.#application(applicationId).waitUntilVisible()
   }
 
-  #applications = this.page
-    .find('[data-qa="table-of-applications"]')
-    .findAll('[data-qa="table-application-row"]')
-
   async assertApplicationCount(n: number) {
     await waitUntilEqual(() => this.#applications.count(), n)
-  }
-
-  voucherUnitFilter = {
-    firstChoice: this.page.findByDataQa('filter-voucher-first-choice'),
-    voucherOnly: this.page.findByDataQa('filter-voucher-all'),
-    voucherHide: this.page.findByDataQa('filter-voucher-hide'),
-    noFilter: this.page.findByDataQa('filter-voucher-no-filter')
   }
 
   async filterByApplicationType(type: ApplicationTypeToggle) {

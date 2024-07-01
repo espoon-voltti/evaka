@@ -16,17 +16,18 @@ import {
 export class DocumentTemplatesListPage {
   createNewButton: Element
   importTemplate: Element
+  templateImportModal: TemplateImportModal
+  templateModal: TemplateModal
   constructor(private readonly page: Page) {
     this.createNewButton = page.findByDataQa('create-template-button')
     this.importTemplate = page.findByDataQa('import-template')
+    this.templateImportModal = new TemplateImportModal(
+      page.findByDataQa('template-import-modal').locator
+    )
+    this.templateModal = new TemplateModal(
+      page.findByDataQa('template-modal').locator
+    )
   }
-
-  readonly templateImportModal = new TemplateImportModal(
-    this.page.findByDataQa('template-import-modal').locator
-  )
-  readonly templateModal = new TemplateModal(
-    this.page.findByDataQa('template-modal').locator
-  )
 
   async openTemplate(name: string) {
     await this.page.find('a', { hasText: name }).click()
@@ -127,9 +128,10 @@ export class DocumentTemplateEditorPage {
 }
 
 class Section {
-  constructor(readonly element: Element) {}
-
-  readonly createNewQuestionButton = this.element.findByDataQa(
-    'create-question-button'
-  )
+  createNewQuestionButton: Element
+  constructor(readonly element: Element) {
+    this.createNewQuestionButton = element.findByDataQa(
+      'create-question-button'
+    )
+  }
 }

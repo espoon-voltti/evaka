@@ -7,6 +7,7 @@ import {
   DatePicker,
   DatePickerDeprecated,
   Element,
+  ElementCollection,
   Modal,
   Page,
   TextInput
@@ -16,9 +17,27 @@ import { UnitMonthCalendarPage } from './unit-month-calendar-page'
 
 export class UnitGroupsPage {
   childCapacityFactorColumnHeading: Element
+  #groupCollapsibles: ElementCollection
+  terminatedPlacementsSection: TerminatedPlacementsSection
+  missingPlacementsSection: MissingPlacementsSection
+  childCapacityFactorColumnData: ElementCollection
   constructor(private readonly page: Page) {
     this.childCapacityFactorColumnHeading = page.findByDataQa(
       `child-capacity-factor-heading`
+    )
+    this.#groupCollapsibles = page.findAll(
+      `[data-qa^="daycare-group-collapsible-"]`
+    )
+    this.terminatedPlacementsSection = new TerminatedPlacementsSection(
+      page,
+      page.findByDataQa('terminated-placements-section')
+    )
+    this.missingPlacementsSection = new MissingPlacementsSection(
+      page,
+      page.findByDataQa('missing-placements-section')
+    )
+    this.childCapacityFactorColumnData = page.findAll(
+      `[data-qa="child-capacity-factor-column"]`
     )
   }
 
@@ -28,9 +47,6 @@ export class UnitGroupsPage {
       .waitUntilVisible()
   }
 
-  #groupCollapsibles = this.page.findAll(
-    `[data-qa^="daycare-group-collapsible-"]`
-  )
   #groupCollapsible = (groupId: string) =>
     this.page.findByDataQa(`daycare-group-collapsible-${groupId}`)
 
@@ -48,25 +64,11 @@ export class UnitGroupsPage {
     await this.waitUntilLoaded()
   }
 
-  terminatedPlacementsSection = new TerminatedPlacementsSection(
-    this.page,
-    this.page.findByDataQa('terminated-placements-section')
-  )
-
-  missingPlacementsSection = new MissingPlacementsSection(
-    this.page,
-    this.page.findByDataQa('missing-placements-section')
-  )
-
   async assertChildCapacityFactor(childId: string, factor: string) {
     await this.page
       .find(`[data-qa="child-capacity-factor-${childId}"]`)
       .assertTextEquals(factor)
   }
-
-  readonly childCapacityFactorColumnData = this.page.findAll(
-    `[data-qa="child-capacity-factor-column"]`
-  )
 
   async assertGroupCount(expectedCount: number) {
     await waitUntilEqual(() => this.#groupCollapsibles.count(), expectedCount)
@@ -97,16 +99,13 @@ export class UnitGroupsPage {
 }
 
 export class TerminatedPlacementsSection extends Element {
-  constructor(
-    private page: Page,
-    self: Element
-  ) {
+  #terminatedPlacementRows: ElementCollection
+  constructor(page: Page, self: Element) {
     super(self)
+    this.#terminatedPlacementRows = page.findAll(
+      '[data-qa="terminated-placement-row"]'
+    )
   }
-
-  readonly #terminatedPlacementRows = this.page.findAll(
-    '[data-qa="terminated-placement-row"]'
-  )
 
   async assertRowCount(expectedCount: number) {
     await waitUntilEqual(
@@ -302,11 +301,16 @@ export class GroupDailyNoteModal extends Modal {
 }
 
 export class GroupCollapsibleChildRow extends Element {
-  constructor(
-    self: Element,
-    private childId: string
-  ) {
+  #dailyNoteIcon: Element
+  #dailyNoteTooltip: Element
+  constructor(self: Element, childId: string) {
     super(self)
+    this.#dailyNoteIcon = this.find(
+      `[data-qa="daycare-daily-note-icon-${childId}"]`
+    )
+    this.#dailyNoteTooltip = this.find(
+      `[data-qa="daycare-daily-note-hover-${childId}"]`
+    )
   }
 
   #childName = this.find('[data-qa="child-name"]')
@@ -323,13 +327,6 @@ export class GroupCollapsibleChildRow extends Element {
       await this.#placementDuration.assertTextEquals(fields.placementDuration)
     }
   }
-
-  #dailyNoteIcon = this.find(
-    `[data-qa="daycare-daily-note-icon-${this.childId}"]`
-  )
-  #dailyNoteTooltip = this.find(
-    `[data-qa="daycare-daily-note-hover-${this.childId}"]`
-  )
 
   async assertDailyNoteContainsText(expectedText: string) {
     await this.#dailyNoteIcon.hover()

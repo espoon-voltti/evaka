@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, Page, TextInput, Element } from '../../utils/page'
+import {
+  Checkbox,
+  Page,
+  TextInput,
+  Element,
+  ElementCollection
+} from '../../utils/page'
 
 export class IncomeStatementPage {
   #form: Element
@@ -11,16 +17,16 @@ export class IncomeStatementPage {
   #handledCheckbox: Checkbox
   #noteInput: TextInput
   #submitBtn: Element
-  constructor(private readonly page: Page) {
+  #attachments: ElementCollection
+  constructor(page: Page) {
     this.#form = page.findByDataQa(`handler-notes-form`)
     this.#childOtherInfo = page.findByDataQa('other-info')
     this.#noAttachments = page.findByDataQa('no-attachments')
     this.#handledCheckbox = new Checkbox(this.#form.findByDataQa('set-handled'))
     this.#noteInput = new TextInput(this.#form.find('input[type="text"]'))
     this.#submitBtn = this.#form.find('button')
+    this.#attachments = page.findAll('[data-qa="attachments"]')
   }
-
-  #attachments = this.page.findAll('[data-qa="attachments"]')
 
   async assertChildIncomeStatement(
     expectedOtherInfo: string,

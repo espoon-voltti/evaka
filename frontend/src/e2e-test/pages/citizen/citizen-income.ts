@@ -2,21 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Checkbox, Page, Radio, TextInput, Element } from '../../utils/page'
+import {
+  Checkbox,
+  Page,
+  Radio,
+  TextInput,
+  Element,
+  ElementCollection
+} from '../../utils/page'
 
 export default class CitizenIncomePage {
   requiredAttachments: Element
+  rows: ElementCollection
   assureCheckBox: Checkbox
   #entrepreneurDate: TextInput
+  #startDate: TextInput
   constructor(private readonly page: Page) {
     this.requiredAttachments = page.findByDataQa('required-attachments')
+    this.rows = page.findAll('tbody tr')
     this.assureCheckBox = new Checkbox(page.findByDataQa('assure-checkbox'))
     this.#entrepreneurDate = new TextInput(
       page.findByDataQa('entrepreneur-start-date')
     )
+    this.#startDate = new TextInput(page.find('#start-date'))
   }
-
-  rows = this.page.findAll('tbody tr')
 
   async createNewIncomeStatement() {
     await this.page.findByDataQa('new-income-statement-btn').click()
@@ -27,8 +36,6 @@ export default class CitizenIncomePage {
   ) {
     await this.page.findByDataQa(`${type}-checkbox`).click()
   }
-
-  #startDate = new TextInput(this.page.find('#start-date'))
 
   async setValidFromDate(date: string) {
     await this.#startDate.fill(date)

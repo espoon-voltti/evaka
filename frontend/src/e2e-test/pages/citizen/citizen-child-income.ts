@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
-import { Checkbox, FileInput, Page, TextInput, Element } from '../../utils/page'
+import {
+  Checkbox,
+  FileInput,
+  Page,
+  TextInput,
+  Element,
+  ElementCollection
+} from '../../utils/page'
 
 export class CitizenChildIncomeStatementViewPage {
   startDate: Element
@@ -79,17 +86,18 @@ export class CitizenChildIncomeStatementEditPage {
 }
 
 export class CitizenChildIncomeStatementListPage {
+  private childIncomeStatementList: Element
+  private childIncomeStatementRow: ElementCollection
   constructor(
     private readonly page: Page,
     private readonly nth: number
-  ) {}
-
-  private childIncomeStatementList = this.page
-    .findAll(`[data-qa="child-income-statement"]`)
-    .nth(this.nth)
-
-  private childIncomeStatementRow =
-    this.childIncomeStatementList.findAll('tbody>tr')
+  ) {
+    this.childIncomeStatementList = page
+      .findAll(`[data-qa="child-income-statement"]`)
+      .nth(this.nth)
+    this.childIncomeStatementRow =
+      this.childIncomeStatementList.findAll('tbody>tr')
+  }
 
   async createIncomeStatement(): Promise<CitizenChildIncomeStatementEditPage> {
     await this.childIncomeStatementList

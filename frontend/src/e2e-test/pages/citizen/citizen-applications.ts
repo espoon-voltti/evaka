@@ -156,6 +156,7 @@ class CitizenApplicationEditor {
   #preferredStartDateInput: TextInput
   #preferredStartDateWarning: Element
   #preferredStartDateInfo: Element
+  #preferredUnitsInput: TextInput
   saveAsDraftButton: Element
   modalOkBtn: Element
   guardianPhoneInput: TextInput
@@ -179,6 +180,9 @@ class CitizenApplicationEditor {
     this.#preferredStartDateInfo = page.findByDataQa(
       'preferredStartDate-input-info'
     )
+    this.#preferredUnitsInput = new TextInput(
+      page.find('[data-qa="preferredUnits-input"] input')
+    )
     this.saveAsDraftButton = page.findByDataQa('save-as-draft-btn')
     this.modalOkBtn = page.findByDataQa('modal-okBtn')
     this.guardianPhoneInput = new TextInput(
@@ -189,9 +193,6 @@ class CitizenApplicationEditor {
   #section = (name: string) => this.page.findByDataQa(`${name}-section`)
   #sectionHeader = (name: string) =>
     this.page.findByDataQa(`${name}-section-header`)
-  #preferredUnitsInput = new TextInput(
-    this.page.find('[data-qa="preferredUnits-input"] input')
-  )
 
   async writeAssistanceNeedDescription(description: string) {
     const assistanceNeededCheckbox = new Checkbox(

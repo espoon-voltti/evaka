@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Element, MultiSelect, Page, TextInput } from '../../utils/page'
+import {
+  Element,
+  ElementCollection,
+  MultiSelect,
+  Page,
+  TextInput
+} from '../../utils/page'
 
 export class MockStrongAuthPage {
   constructor(private readonly page: Page) {}
@@ -25,6 +31,10 @@ export default class CitizenMessagesPage {
   #sendReplyButton: Element
   #messageEditor: Element
   discardMessageButton: Element
+  #inboxEmpty: Element
+  #threadContent: ElementCollection
+  #threadUrgent: Element
+  newMessageButton: Element
   constructor(private readonly page: Page) {
     this.#messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
@@ -39,14 +49,17 @@ export default class CitizenMessagesPage {
     this.#sendReplyButton = page.findByDataQa('message-send-btn')
     this.#messageEditor = page.findByDataQa('message-editor')
     this.discardMessageButton = page.findByDataQa('message-discard-btn')
+    this.#inboxEmpty = page.find(
+      '[data-qa="inbox-empty"][data-loading="false"]'
+    )
+    this.#threadContent = page.findAll('[data-qa="thread-reader-content"]')
+    this.#threadUrgent = page
+      .findByDataQa('thread-reader')
+      .findByDataQa('urgent')
+    this.newMessageButton = page.findAllByDataQa('new-message-btn').first()
   }
 
   replyButtonTag = 'message-reply-editor-btn'
-
-  #inboxEmpty = this.page.find('[data-qa="inbox-empty"][data-loading="false"]')
-  #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
-  #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
-  newMessageButton = this.page.findAllByDataQa('new-message-btn').first()
 
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()

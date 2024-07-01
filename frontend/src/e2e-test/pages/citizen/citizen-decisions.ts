@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { Page, Element } from '../../utils/page'
 
 export default class CitizenDecisionsPage {
   constructor(private readonly page: Page) {}
@@ -200,9 +200,11 @@ export default class CitizenDecisionsPage {
 }
 
 class CitizenDecisionResponsePage {
-  constructor(private readonly page: Page) {}
+  #title: Element
+  constructor(private readonly page: Page) {
+    this.#title = page.find('h1')
+  }
 
-  #title = this.page.find('h1')
   #decisionBlock = (decisionId: string) =>
     this.page.findByDataQa(`decision-${decisionId}`)
   #acceptRadioButton = (decisionId: string) =>

@@ -17,7 +17,7 @@ export default class AssistanceNeedDecisionPage {
   }
 
   private getLabelledValue(label: string) {
-    return this.page.findByDataQa(`labelled-value-${label}`).text
+    return () => this.page.findByDataQa(`labelled-value-${label}`).text
   }
 
   readonly pedagogicalMotivation = this.getLabelledValue(
