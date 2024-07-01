@@ -65,7 +65,7 @@ class JacksonConfig {
  * actual variant:
  * ```
  * @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
- * @JsonTypeIdResolver(SealedClassSimpleName::class)
+ * @JsonTypeIdResolver(SealedSubclassSimpleName::class)
  * sealed interface Super {
  *   data class Sub1(val a: String): Super
  *   @JsonTypeName("OTHER") // overrides the default name
