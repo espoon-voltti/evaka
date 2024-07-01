@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM node:20.14.0-bookworm-slim AS base
+FROM node:20.15.0-bookworm-slim AS base
 ARG CACHE_BUST
 
 WORKDIR /project
