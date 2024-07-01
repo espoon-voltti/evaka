@@ -96,10 +96,27 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         if (Period.between(body.period.start, body.period.end).days > 8 * 7) {
                             throw BadRequest("Holiday period must be at most 8 weeks long")
                         }
+                        if (body.reservationsOpenOn > body.period.start) {
+                            throw BadRequest(
+                                "Reservations open must be before holiday period starts"
+                            )
+                        }
+                        if (
+                            !(body.reservationDeadline <= body.reservationDeadline &&
+                                body.reservationDeadline <= body.period.start)
+                        ) {
+                            throw BadRequest(
+                                "Reservation deadline must be between reservations open and holiday period start"
+                            )
+                        }
 
                         it.deleteAllCitizenReservationsInRange(body.period)
                         it.deleteAllCitizenEditableAbsencesInRange(body.period)
-                        it.insertHolidayPeriod(body.period, body.reservationDeadline)
+                        it.insertHolidayPeriod(
+                            body.period,
+                            body.reservationsOpenOn,
+                            body.reservationDeadline
+                        )
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
                     }
@@ -127,7 +144,12 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     Action.Global.UPDATE_HOLIDAY_PERIOD
                 )
                 try {
-                    it.updateHolidayPeriod(id, body.period, body.reservationDeadline)
+                    it.updateHolidayPeriod(
+                        id,
+                        body.period,
+                        body.reservationsOpenOn,
+                        body.reservationDeadline
+                    )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }

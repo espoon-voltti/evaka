@@ -558,6 +558,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertHolidayPeriod(
                 period = holidayPeriod,
+                reservationsOpenOn = placementStart,
                 reservationDeadline = placementStart // doesn't matter for group month calendar
             )
             tx.insert(
@@ -758,6 +759,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertHolidayPeriod(
                 period = isInHolidayPeriod,
+                reservationsOpenOn = placementStart,
                 reservationDeadline = placementStart // doesn't matter for group month calendar
             )
         }
@@ -808,6 +810,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertHolidayPeriod(
                 period = isInHolidayPeriod,
+                reservationsOpenOn = placementStart,
                 reservationDeadline = placementStart // doesn't matter for group month calendar
             )
         }

@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.Translatable
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -37,7 +38,8 @@ import org.junit.jupiter.api.Test
 
 class HolidayPeriodControllerCitizenIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
-    private final val freePeriodQuestionnaire =
+    private val emptyTranslatable = Translatable("", "", "")
+    private val freePeriodQuestionnaire =
         FixedPeriodQuestionnaireBody(
             active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
             periodOptions =
@@ -55,10 +57,9 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         )
     private val mockToday: LocalDate = freePeriodQuestionnaire.active.end.minusWeeks(1)
 
-    private final val child1 = testChild_1
-    private final val parent = testAdult_1
-    private final val authenticatedParent =
-        AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
+    private val child1 = testChild_1
+    private val parent = testAdult_1
+    private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun setUp() {

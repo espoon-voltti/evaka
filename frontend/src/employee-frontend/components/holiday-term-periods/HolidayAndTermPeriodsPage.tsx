@@ -84,6 +84,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
             <Thead>
               <Tr>
                 <Th>{i18n.holidayPeriods.period}</Th>
+                <Th>{i18n.holidayPeriods.reservationsOpenOn}</Th>
                 <Th>{i18n.holidayPeriods.reservationDeadline}</Th>
                 <Th />
               </Tr>
@@ -92,7 +93,8 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
               {data.map((holiday) => (
                 <Tr key={holiday.id} data-qa="holiday-period-row">
                   <Td data-qa="holiday-period">{holiday.period.format()}</Td>
-                  <Td>{holiday.reservationDeadline?.format()}</Td>
+                  <Td>{holiday.reservationsOpenOn.format()}</Td>
+                  <Td>{holiday.reservationDeadline.format()}</Td>
                   <Td>
                     <FixedSpaceRow spacing="s">
                       <IconOnlyButton
