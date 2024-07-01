@@ -29,7 +29,7 @@ class NonSsnChildrenReportController(private val accessControl: AccessControl) {
         return db.connect { dbc ->
                 dbc.read {
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    accessControl.checkPermissionFor(
+                    accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
