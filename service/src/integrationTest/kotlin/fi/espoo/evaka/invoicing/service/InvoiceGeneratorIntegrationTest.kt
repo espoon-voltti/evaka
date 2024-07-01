@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevInvoiceCorrection
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -4401,7 +4402,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `invoice generation with daily fee divisor 20 and only 19 operational days with a force majeure absences`() {
+    fun `invoice generation with daily fee divisor 20 and only 19 operational days with a force majeure absence`() {
         // Easter
         db.transaction { tx ->
             tx.execute {
@@ -4449,6 +4450,61 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(productProvider.dailyRefund, invoiceRow.product)
                 assertEquals(-1445, invoiceRow.unitPrice) // 28900 / 20
                 assertEquals(-1445, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with daily fee divisor 20 and only 19 operational days with force majeure absence on all days`() {
+        val pitkaperjantai = LocalDate.of(2022, 4, 15)
+        val toinenPaasiaispaiva = LocalDate.of(2022, 4, 18)
+        db.transaction { tx ->
+            tx.insert(DevHoliday(pitkaperjantai))
+            tx.insert(DevHoliday(toinenPaasiaispaiva))
+        }
+
+        // 19 operational days
+        val period = FiniteDateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+
+        // All operation days are force majeure absences
+        val absenceDays =
+            datesBetween(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
+                .filterNot {
+                    it.dayOfWeek == DayOfWeek.SATURDAY ||
+                        it.dayOfWeek == DayOfWeek.SUNDAY ||
+                        it == pitkaperjantai ||
+                        it == toinenPaasiaispaiva
+                }
+                .map { it to AbsenceType.FORCE_MAJEURE }
+
+        initDataForAbsences(listOf(period), absenceDays)
+
+        // Override to use 20 as the daily fee divisor
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
+            )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(0, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(productProvider.dailyRefund, invoiceRow.product)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price)
             }
         }
     }
