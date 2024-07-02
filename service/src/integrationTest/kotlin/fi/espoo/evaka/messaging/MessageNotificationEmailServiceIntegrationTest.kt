@@ -153,6 +153,41 @@ class MessageNotificationEmailServiceIntegrationTest :
     }
 
     @Test
+    fun `bulletin notifications are sent to citizens`() {
+        val municipalAccountId = db.transaction { tx -> tx.createMunicipalMessageAccount() }
+
+        val adminUser =
+            db.transaction { tx ->
+                AuthenticatedUser.Employee(
+                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                    roles = setOf(UserRole.ADMIN)
+                )
+            }
+
+        postNewThread(
+            sender = municipalAccountId,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            user = adminUser,
+            clock,
+            type = MessageType.BULLETIN
+        )
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
+        )
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals("Juhannus/Midsommar/Midsummer", getEmailFor(testPersonFi).content.subject)
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress
+        )
+    }
+
+    @Test
     fun `a notification is not sent when the message has been undone`() {
         val employeeAccount =
             db.read {
@@ -239,7 +274,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             clock,
             sender,
             MessageController.PostMessageBody(
-                title = "Juhannus",
+                title = "Juhannus/Midsommar/Midsummer",
                 content = "Juhannus tulee pian",
                 type = type,
                 recipients = recipients.toSet(),
