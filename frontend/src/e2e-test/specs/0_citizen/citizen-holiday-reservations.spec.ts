@@ -35,7 +35,7 @@ const period = new FiniteDateRange(
   LocalDate.of(2036, 1, 8)
 )
 const child = enduserChildFixtureJari
-const mockedDate = LocalDate.of(2035, 12, 1)
+const today = LocalDate.of(2035, 12, 1)
 let daycare: DaycareBuilder
 let guardian: PersonBuilder
 
@@ -84,7 +84,7 @@ async function assertCalendarDayRange(
 beforeEach(async () => {
   await resetServiceState()
   page = await Page.open({
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
   daycare = await Fixture.daycare()
@@ -132,29 +132,64 @@ async function setupAnotherChild(
   return child2.data
 }
 
-describe('Holiday periods', () => {
-  describe('Holiday period questionnaire is inactive and there is a holiday', () => {
-    test('cta toast is shown when a holiday with a deadline exists', async () => {
+describe('Holiday periods and questionnaires', () => {
+  describe('Holiday period CTA toast visibility', () => {
+    test('No holiday period exists -> no CTA toast', async () => {
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaNotVisible()
+    })
+    test('Holiday period with reservations not open yet -> no CTA toast', async () => {
       await Fixture.holidayPeriod()
         .with({
           period,
-          reservationDeadline: LocalDate.of(2035, 12, 6)
+          reservationsOpenOn: today.addDays(1),
+          reservationDeadline: today.addDays(5)
         })
         .save()
 
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      expect(await calendar.getHolidayCtaContent()).toEqual(
+      await calendar.assertHolidayCtaNotVisible()
+    })
+    test('Holiday period with reservations open -> CTA toast is visible', async () => {
+      await Fixture.holidayPeriod()
+        .with({
+          period,
+          reservationsOpenOn: today,
+          reservationDeadline: today.addDays(5)
+        })
+        .save()
+
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaContent(
         'Ilmoita tästä\n läsnä- ja poissaolot välille 18.12.-08.01.2036 viimeistään 06.12.2035. Läsnäolojen tarkat kellonajat merkitään, kun kysely on päättynyt.'
       )
 
       await calendar.clickHolidayCta()
       await calendar.reservationModal.waitUntilVisible()
     })
+    test('Holiday period with reservations deadline passed -> no CTA toast', async () => {
+      await Fixture.holidayPeriod()
+        .with({
+          period,
+          reservationsOpenOn: today.addDays(-2),
+          reservationDeadline: today.addDays(-1)
+        })
+        .save()
+
+      await enduserLogin(page)
+      await new CitizenHeader(page).selectTab('calendar')
+      const calendar = new CitizenCalendarPage(page, 'desktop')
+      await calendar.assertHolidayCtaNotVisible()
+    })
   })
 
-  describe('Holiday period questionnaire is active', () => {
+  describe('Holiday questionnaire is active', () => {
     beforeEach(async () => {
       await holidayQuestionnaireFixture().save()
     })
@@ -163,7 +198,7 @@ describe('Holiday periods', () => {
       await enduserLogin(page)
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      expect(await calendar.getHolidayCtaContent()).toEqual(
+      await calendar.assertHolidayCtaContent(
         'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
       )
     })
@@ -269,7 +304,7 @@ describe('Holiday periods', () => {
     })
   })
 
-  describe('Holiday period questionnaire is inactive', () => {
+  describe('Holiday questionnaire is inactive', () => {
     beforeEach(async () => {
       await holidayQuestionnaireFixture()
         .with({

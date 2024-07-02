@@ -228,8 +228,8 @@ export default class CitizenCalendarPage {
       .assertTextEquals(formatter(twoPartReservation))
   }
 
-  async getHolidayCtaContent(): Promise<string> {
-    return this.#holidayCtas.nth(0).text
+  async assertHolidayCtaContent(content: string): Promise<void> {
+    await this.#holidayCtas.nth(0).assertTextEquals(content)
   }
 
   async clickHolidayCta(): Promise<void> {
