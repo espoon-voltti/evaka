@@ -298,7 +298,11 @@ $unsubscribeEn
     override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
         assistanceNeedDecisionNotification(language) // currently same content
 
-    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent {
+    override fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub,
+        showMessageSubjectInEmailSubject: Boolean
+    ): EmailContent {
         val (typeFi, typeSv, typeEn) =
             when (thread.type) {
                 MessageType.MESSAGE ->
@@ -319,7 +323,9 @@ $unsubscribeEn
                     else Triple("tiedote", "allmänt meddelande", "bulletin")
             }
         return EmailContent.fromHtml(
-            subject = "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
+            subject =
+                if (showMessageSubjectInEmailSubject) thread.title
+                else "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
             html =
                 """
 <p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>

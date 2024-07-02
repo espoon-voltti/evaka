@@ -41,6 +41,7 @@ SELECT DISTINCT
     m.thread_id,
     m.id AS message_id,
     mr.id as message_recipient_id,
+    m.sender_id,
     mr.recipient_id,
     p.id as person_id,
     CASE 
@@ -103,6 +104,12 @@ WHERE m.id = ANY(${bind(messageIds)})
                 }
             } ?: return
 
+        val isMunicipalBulletin =
+            db.transaction { tx ->
+                thread.type == MessageType.BULLETIN &&
+                    tx.getMessageAccountType(msg.senderId) == AccountType.MUNICIPAL
+            }
+
         Email.create(
                 dbc = db,
                 personId = msg.personId,
@@ -112,7 +119,12 @@ WHERE m.id = ANY(${bind(messageIds)})
                         MessageType.BULLETIN -> EmailMessageType.BULLETIN_NOTIFICATION
                     },
                 fromAddress = emailEnv.sender(msg.language),
-                content = emailMessageProvider.messageNotification(msg.language, thread),
+                content =
+                    emailMessageProvider.messageNotification(
+                        msg.language,
+                        thread,
+                        isMunicipalBulletin
+                    ),
                 traceId = msg.messageRecipientId.toString(),
             )
             ?.also {

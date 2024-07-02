@@ -75,7 +75,11 @@ interface IEmailMessageProvider {
 
     fun missingHolidayReservationsNotification(language: Language): EmailContent
 
-    fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
+    fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub,
+        showMessageSubjectInEmailSubject: Boolean
+    ): EmailContent
 
     fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
 

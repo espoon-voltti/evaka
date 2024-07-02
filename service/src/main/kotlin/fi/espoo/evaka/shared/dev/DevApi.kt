@@ -1575,7 +1575,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                             urgent = false,
                             sensitive = false,
                             isCopy = false
-                        )
+                        ),
+                        showMessageSubjectInEmailSubject = false
                     )
                 EmailMessageType.vasuNotification ->
                     emailMessageProvider.vasuNotification(Language.fi, ChildId(UUID.randomUUID()))
