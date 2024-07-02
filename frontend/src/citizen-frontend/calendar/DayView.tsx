@@ -85,7 +85,6 @@ import { postReservationsMutation } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
   day,
-  HolidayPeriodInfo,
   resetDay,
   toDailyReservationRequest
 } from './reservation-modal/form'
@@ -97,7 +96,6 @@ interface Props {
   onClose: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
-  holidayPeriods: HolidayPeriodInfo[]
 }
 
 export default React.memo(function DayView({
@@ -106,8 +104,7 @@ export default React.memo(function DayView({
   selectDate,
   onClose,
   openAbsenceModal,
-  events,
-  holidayPeriods
+  events
 }: Props) {
   const i18n = useTranslation()
 
@@ -144,12 +141,7 @@ export default React.memo(function DayView({
       rightButton={undefined}
     />
   ) : editing ? (
-    <Edit
-      modalData={modalData}
-      holidayPeriods={holidayPeriods}
-      onClose={onClose}
-      onCancel={edit.off}
-    />
+    <Edit modalData={modalData} onClose={onClose} onCancel={edit.off} />
   ) : (
     <View
       modalData={modalData}
@@ -232,26 +224,19 @@ function View({
 
 function Edit({
   modalData,
-  holidayPeriods,
   onClose,
   onCancel
 }: {
   modalData: ModalData
-  holidayPeriods: HolidayPeriodInfo[]
   onClose: () => void
   onCancel: () => void
 }) {
   const i18n = useTranslation()
 
-  const form = useForm(
-    editorForm,
-    () =>
-      initialFormState(
-        modalData,
-        holidayPeriods.find((p) => p.period.includes(modalData.response.date))
-      ),
-    { ...i18n.validationErrors, ...i18n.calendar.validationErrors }
-  )
+  const form = useForm(editorForm, () => initialFormState(modalData), {
+    ...i18n.validationErrors,
+    ...i18n.calendar.validationErrors
+  })
   const formElems = useFormElems(form)
 
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
@@ -611,12 +596,11 @@ const childForm = object({
 
 function initialChildFormState(
   childId: UUID,
-  day: ReservationResponseDay,
-  holidayPeriod: HolidayPeriodInfo | undefined
+  day: ReservationResponseDay
 ): StateOf<typeof childForm> {
   return {
     childId,
-    day: resetDay(holidayPeriod?.state, [day], [childId])
+    day: resetDay([day], [childId])
   }
 }
 
@@ -631,12 +615,9 @@ const editorForm = mapped(
       )
 )
 
-function initialFormState(
-  day: ModalData,
-  holidayPeriod: HolidayPeriodInfo | undefined
-): StateOf<typeof editorForm> {
+function initialFormState(day: ModalData): StateOf<typeof editorForm> {
   return day.response.children.map((child) =>
-    initialChildFormState(child.childId, day.response, holidayPeriod)
+    initialChildFormState(child.childId, day.response)
   )
 }
 

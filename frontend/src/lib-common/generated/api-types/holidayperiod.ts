@@ -76,6 +76,29 @@ export interface HolidayPeriodBody {
   reservationDeadline: LocalDate
 }
 
+
+export namespace HolidayPeriodEffect {
+  /**
+  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsClosed
+  */
+  export interface ReservationsClosed {
+    type: 'ReservationsClosed'
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsOpen
+  */
+  export interface ReservationsOpen {
+    type: 'ReservationsOpen'
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
+*/
+export type HolidayPeriodEffect = HolidayPeriodEffect.ReservationsClosed | HolidayPeriodEffect.ReservationsOpen
+
+
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
 */

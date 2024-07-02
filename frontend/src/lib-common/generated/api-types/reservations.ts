@@ -12,6 +12,7 @@ import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
 import { ChildServiceNeedInfo } from './absence'
 import { DailyServiceTimesValue } from './dailyservicetimes'
+import { HolidayPeriodEffect } from './holidayperiod'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
@@ -354,7 +355,7 @@ export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: TimeInterval[]
   childId: UUID
-  lockedByHolidayPeriod: boolean
+  holidayPeriodEffect: HolidayPeriodEffect | null
   reservableTimeRange: ReservableTimeRange
   reservations: ReservationResponse[]
   scheduleType: ScheduleType

@@ -10,6 +10,7 @@ import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-u
 import { Failure } from 'lib-common/api'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { combine } from 'lib-common/form/types'
+import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
@@ -48,7 +49,6 @@ import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import {
   DayProperties,
-  HolidayPeriodInfo,
   initialState,
   reservationForm,
   resetTimes
@@ -60,7 +60,7 @@ interface Props {
   reservationsResponse: ReservationsResponse
   initialStart: LocalDate | null
   initialEnd: LocalDate | null
-  holidayPeriods: HolidayPeriodInfo[]
+  holidayPeriods: HolidayPeriod[]
 }
 
 export default React.memo(function ReservationModal({
@@ -81,8 +81,8 @@ export default React.memo(function ReservationModal({
   } = reservationsResponse
 
   const dayProperties = useMemo(
-    () => new DayProperties(calendarDays, reservableRange, holidayPeriods),
-    [calendarDays, holidayPeriods, reservableRange]
+    () => new DayProperties(calendarDays, reservableRange),
+    [calendarDays, reservableRange]
   )
   const form = useForm(
     reservationForm,
@@ -233,7 +233,7 @@ export default React.memo(function ReservationModal({
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
 
-                <HolidayPeriodInfoBox upcomingHolidayPeriods={holidayPeriods} />
+                <HolidayPeriodInfoBox holidayPeriods={holidayPeriods} />
 
                 <Label>{i18n.calendar.reservationModal.selectRecurrence}</Label>
                 <Gap size="xxs" />
@@ -332,16 +332,20 @@ export default React.memo(function ReservationModal({
 })
 
 const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
-  upcomingHolidayPeriods
+  holidayPeriods
 }: {
-  upcomingHolidayPeriods: HolidayPeriodInfo[]
+  holidayPeriods: HolidayPeriod[]
 }) {
   const i18n = useTranslation()
-  const openHolidayPeriod = upcomingHolidayPeriods.find(
-    ({ state }) => state === 'open'
+
+  const today = LocalDate.todayInHelsinkiTz()
+  const openHolidayPeriod: HolidayPeriod | undefined = useMemo(
+    () =>
+      holidayPeriods.find((h) => today.isEqualOrBefore(h.reservationDeadline)),
+    [holidayPeriods, today]
   )
 
-  return openHolidayPeriod ? (
+  return openHolidayPeriod !== undefined ? (
     <InfoBox
       wide
       message={i18n.calendar.reservationModal.holidayPeriod(

@@ -12,7 +12,6 @@ import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendareve
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
-import { mockToday } from 'lib-common/utils/helpers'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
@@ -98,20 +97,6 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const holidayPeriodInfo = useMemo(() => {
-    const today = mockToday() ?? LocalDate.todayInSystemTz()
-    return holidayPeriods.map((periods) =>
-      periods
-        .filter((p) => p.period.end.isEqualOrAfter(today))
-        .map((p) => ({
-          period: p.period,
-          state: p.reservationDeadline.isEqualOrAfter(today)
-            ? ('open' as const)
-            : ('closed' as const)
-        }))
-    )
-  }, [holidayPeriods])
-
   const { data: questionnaire } = useQuery(activeQuestionnaireQuery())
 
   const firstReservableDate = useMemo(() => {
@@ -141,8 +126,8 @@ const CalendarPage = React.memo(function CalendarPage() {
       <DailyServiceTimeNotifications />
 
       {renderResult(
-        combine(data, events, holidayPeriodInfo),
-        ([response, events, holidayPeriodInfo]) => (
+        combine(data, events, holidayPeriods),
+        ([response, events, holidayPeriods]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
             <CalendarNotifications calendarDays={response.days} />
             <RenderOnlyOn mobile tablet>
@@ -188,7 +173,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                 onClose={closeModal}
                 openAbsenceModal={openAbsenceModal}
                 events={events}
-                holidayPeriods={holidayPeriodInfo}
               />
             )}
             {modalState?.type === 'pickAction' && (
@@ -208,7 +192,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   modalState.initialRange?.start ?? firstReservableDate
                 }
                 initialEnd={modalState.initialRange?.end ?? null}
-                holidayPeriods={holidayPeriodInfo}
+                holidayPeriods={holidayPeriods}
               />
             )}
             {modalState?.type === 'absences' && (

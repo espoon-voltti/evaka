@@ -25,7 +25,7 @@ import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.holidayperiod.HolidayPeriod
+import fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
@@ -153,6 +153,10 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
+                                                        val holidayPeriod =
+                                                            holidayPeriods.find {
+                                                                it.period.includes(date)
+                                                            }
                                                         val childAbsences =
                                                             absences[key] ?: listOf()
                                                         val childReservations =
@@ -200,10 +204,8 @@ class ReservationControllerCitizen(
                                                             usedService = usedServiceResult,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange,
-                                                            lockedByHolidayPeriod =
-                                                                isLockedByHolidayPeriod(
-                                                                    holidayPeriods,
-                                                                    date,
+                                                            holidayPeriodEffect =
+                                                                holidayPeriod?.effect(
                                                                     today,
                                                                     childStartDates[child.id]!!
                                                                 )
@@ -234,18 +236,6 @@ class ReservationControllerCitizen(
                     meta = mapOf("from" to from, "to" to to)
                 )
             }
-    }
-
-    private fun isLockedByHolidayPeriod(
-        holidayPeriods: List<HolidayPeriod>,
-        date: LocalDate,
-        today: LocalDate,
-        placementStartDate: LocalDate
-    ): Boolean {
-        val holidayPeriod = holidayPeriods.find { it.period.includes(date) }
-        return holidayPeriod != null &&
-            holidayPeriod.reservationDeadline < today &&
-            placementStartDate < holidayPeriod.reservationDeadline
     }
 
     @PostMapping("/citizen/reservations")
@@ -583,7 +573,7 @@ data class ReservationResponseDayChild(
     val attendances: List<TimeInterval>,
     val usedService: UsedServiceResult?,
     val reservableTimeRange: ReservableTimeRange,
-    val lockedByHolidayPeriod: Boolean
+    val holidayPeriodEffect: HolidayPeriodEffect?
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")

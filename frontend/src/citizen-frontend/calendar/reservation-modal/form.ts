@@ -30,6 +30,7 @@ import {
   ValidationResult,
   ValidationSuccess
 } from 'lib-common/form/types'
+import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
 import {
   DailyReservationRequest,
   ReservationChild,
@@ -291,11 +292,6 @@ function repetitionOptions(i18n: Translations) {
   ]
 }
 
-export interface HolidayPeriodInfo {
-  period: FiniteDateRange
-  state: 'open' | 'closed'
-}
-
 export function initialState(
   dayProperties: DayProperties,
   availableChildren: ReservationChild[],
@@ -361,9 +357,6 @@ export function resetTimes(
   }
 
   if (repetition === 'DAILY') {
-    const holidayPeriodState =
-      dayProperties.holidayPeriodStateForRange(selectedRange)
-
     return {
       branch: 'dailyTimes',
       state: {
@@ -371,16 +364,13 @@ export function resetTimes(
           includedWeekDays[0],
           includedWeekDays[includedWeekDays.length - 1]
         ],
-        day: resetDay(holidayPeriodState, calendarDaysInRange, selectedChildren)
+        day: resetDay(calendarDaysInRange, selectedChildren)
       }
     }
   } else if (repetition === 'WEEKLY') {
     const groupedDays = groupBy(selectedRangeDates, (date) =>
       date.getIsoDayOfWeek()
     )
-
-    const holidayPeriodState =
-      dayProperties.holidayPeriodStateForRange(selectedRange)
 
     const weeklyTimes = includedWeekDays.map(
       (dayOfWeek): StateOf<typeof weekDay> => {
@@ -398,11 +388,7 @@ export function resetTimes(
 
         return {
           weekDay: dayOfWeek,
-          day: resetDay(
-            holidayPeriodState,
-            relevantCalendarDays,
-            selectedChildren
-          )
+          day: resetDay(relevantCalendarDays, selectedChildren)
         }
       }
     )
@@ -428,11 +414,7 @@ export function resetTimes(
 
         return {
           date: rangeDate,
-          day: resetDay(
-            dayProperties.holidayPeriodStateForDate(rangeDate),
-            [calendarDay],
-            selectedChildren
-          )
+          day: resetDay([calendarDay], selectedChildren)
         }
       }
     )
@@ -446,10 +428,14 @@ export function resetTimes(
 }
 
 export function resetDay(
-  holidayPeriodState: 'open' | 'closed' | undefined,
   calendarDays: ReservationResponseDay[],
   selectedChildren: UUID[]
 ): StateOf<typeof day> {
+  const holidayPeriodEffect = getHolidayPeriodEffect(
+    calendarDays,
+    selectedChildren
+  )
+
   const reservationNotRequired = reservationNotRequiredForAnyChild(
     calendarDays,
     selectedChildren
@@ -501,10 +487,10 @@ export function resetDay(
     MAX_TIME_RANGE
 
   if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
-    return holidayPeriodState === 'open' ||
-      (holidayPeriodState === undefined && reservationNotRequired)
+    return holidayPeriodEffect?.type === 'ReservationsOpen' ||
+      (holidayPeriodEffect === null && reservationNotRequired)
       ? { branch: 'reservationNoTimes', state: 'absent' }
-      : holidayPeriodState === 'closed'
+      : holidayPeriodEffect?.type === 'ReservationsClosed'
         ? { branch: 'readOnly', state: 'reservationClosed' }
         : {
             branch: 'reservation',
@@ -516,7 +502,10 @@ export function resetDay(
   }
 
   if (hasReservationsForEveryChild(calendarDays, selectedChildren)) {
-    if (holidayPeriodState === 'open' || reservationNotRequired) {
+    if (
+      holidayPeriodEffect?.type === 'ReservationsOpen' ||
+      reservationNotRequired
+    ) {
       return { branch: 'reservationNoTimes', state: 'present' }
     }
 
@@ -536,14 +525,15 @@ export function resetDay(
   }
 
   if (
-    holidayPeriodState === 'closed' &&
+    holidayPeriodEffect?.type === 'ReservationsClosed' &&
     hasNoReservationsForSomeChild(calendarDays, selectedChildren) &&
     allChildrenAreLockedDueHolidayPeriod(calendarDays, selectedChildren)
   ) {
     return { branch: 'readOnly', state: 'reservationClosed' }
   }
 
-  return holidayPeriodState === 'open' || reservationNotRequired
+  return holidayPeriodEffect?.type === 'ReservationsOpen' ||
+    reservationNotRequired
     ? { branch: 'reservationNoTimes', state: 'notSet' }
     : {
         branch: 'reservation',
@@ -556,6 +546,25 @@ export function resetDay(
         }
       }
 }
+
+const getHolidayPeriodEffect = (
+  calendarDays: ReservationResponseDay[],
+  selectedChildren: string[]
+): HolidayPeriodEffect | null => {
+  const effects = calendarDays.flatMap((day) =>
+    day.children.flatMap((child) =>
+      selectedChildren.includes(child.childId) ? child.holidayPeriodEffect : []
+    )
+  )
+  if (effects.length === 0) return null
+  return effects.reduce(combineHolidayPeriodEffects)
+}
+
+const combineHolidayPeriodEffects = (
+  e1: HolidayPeriodEffect | null,
+  e2: HolidayPeriodEffect | null
+): HolidayPeriodEffect | null =>
+  e1 === null || e2 === null ? null : e1.type === e2.type ? e1 : null
 
 const holidayWithNoChildrenInShiftCare = (
   calendarDays: ReservationResponseDay[],
@@ -608,7 +617,9 @@ const allChildrenAreLockedDueHolidayPeriod = (
   calendarDays.every((day) =>
     selectedChildren.every((childId) =>
       day.children.some(
-        (child) => child.childId === childId && child.lockedByHolidayPeriod
+        (child) =>
+          child.childId === childId &&
+          child.holidayPeriodEffect?.type === 'ReservationsClosed'
       )
     )
   )
@@ -711,8 +722,6 @@ const getCommonTimeRanges = (
   return undefined
 }
 
-type HolidayPeriodState = 'open' | 'closed' | undefined
-
 export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly operationDaysByChild: Record<UUID, Set<number> | undefined>
@@ -722,8 +731,7 @@ export class DayProperties {
 
   constructor(
     public readonly calendarDays: ReservationResponseDay[],
-    reservableRange: FiniteDateRange,
-    private readonly holidayPeriods: HolidayPeriodInfo[]
+    reservableRange: FiniteDateRange
   ) {
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const operationDaysByChild: Record<UUID, Set<number> | undefined> = {}
@@ -786,17 +794,5 @@ export class DayProperties {
     return [...range.dates()].filter((date) =>
       reservableDays.has(date.formatIso())
     )
-  }
-
-  holidayPeriodStateForDate(date: LocalDate): HolidayPeriodState {
-    return this.holidayPeriods.find((holidayPeriod) =>
-      holidayPeriod.period.includes(date)
-    )?.state
-  }
-
-  holidayPeriodStateForRange(dateRange: FiniteDateRange): HolidayPeriodState {
-    return this.holidayPeriods.find((holidayPeriod) =>
-      holidayPeriod.period.contains(dateRange)
-    )?.state
   }
 }
