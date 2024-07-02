@@ -407,10 +407,11 @@ class DraftInvoiceGenerator(
                                     rowStub,
                                     rowStub.placement.unit,
                                     dailyFeeDivisor,
-                                    minOf(
-                                        contractDaysPerMonth ?: businessDays.size,
-                                        dailyFeeDivisor
-                                    ),
+                                    numRelevantOperationalDays =
+                                        minOf(
+                                            contractDaysPerMonth ?: businessDays.size,
+                                            dailyFeeDivisor
+                                        ),
                                     attendanceDates,
                                     relevantAbsences,
                                     fullMonthAbsenceType,
@@ -547,7 +548,7 @@ class DraftInvoiceGenerator(
 
         // If this is a full month for a contract day child (not in partialMonthChildren), make sure
         // that there's no less than `contractDaysPerMonth` days even if they have more
-        // planned absences than  they should
+        // planned absences than they should
         return if (
             contractDaysPerMonth != null &&
                 !partialMonthChildren.contains(child.id) &&
@@ -768,6 +769,7 @@ class DraftInvoiceGenerator(
                     child,
                     absences,
                     periodAttendanceDates,
+                    numRelevantOperationalDays,
                     isFullMonth,
                     dailyFeeDivisor
                 ) { refundProduct, refundAmount, refundUnitPrice ->
@@ -898,6 +900,7 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>,
         periodAttendanceDates: List<LocalDate>,
+        numRelevantOperationalDays: Int,
         isFullMonth: Boolean,
         dailyFeeDivisor: Int,
         toInvoiceRow: (ProductKey, Int, Int) -> InvoiceRow
@@ -907,11 +910,11 @@ class DraftInvoiceGenerator(
         val total = invoiceRowTotal(rows)
         if (total == 0) return listOf()
 
-        val refundedDayCount = getRefundedDays(period, child, absences, dailyFeeDivisor)
+        val refundedDayCount = getRefundedDays(period, child, absences)
         if (refundedDayCount == 0) return listOf()
 
         val (amount, unitPrice) =
-            if (refundedDayCount >= dailyFeeDivisor) {
+            if (refundedDayCount >= minOf(dailyFeeDivisor, numRelevantOperationalDays)) {
                 1 to -total
             } else {
                 refundedDayCount to
@@ -927,8 +930,7 @@ class DraftInvoiceGenerator(
     private fun getRefundedDays(
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
-        absences: List<AbsenceStub>,
-        dailyFeeDivisor: Int
+        absences: List<AbsenceStub>
     ): Int {
         val forceMajeureAndFreeAbsences =
             absences
@@ -951,7 +953,7 @@ class DraftInvoiceGenerator(
                 listOf()
             }
 
-        return minOf(forceMajeureDays.size + parentLeaveDays.size, dailyFeeDivisor)
+        return forceMajeureDays.size + parentLeaveDays.size
     }
 
     private fun monthlyAbsenceDiscount(
