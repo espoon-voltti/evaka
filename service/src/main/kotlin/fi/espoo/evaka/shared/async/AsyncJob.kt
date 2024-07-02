@@ -85,6 +85,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendMessageNotificationEmail(
         val threadId: MessageThreadId,
         val messageId: MessageId,
+        val senderId: MessageAccountId,
         val recipientId: MessageAccountId,
         val messageRecipientId: MessageRecipientId,
         val personId: PersonId,
