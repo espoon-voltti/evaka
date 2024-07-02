@@ -142,6 +142,7 @@ export interface DepartureRequest {
 * Generated from fi.espoo.evaka.attendance.EmployeeAttendance
 */
 export interface EmployeeAttendance {
+  allowedToEdit: boolean
   attendances: Attendance[]
   currentOccupancyCoefficient: number
   employeeId: UUID

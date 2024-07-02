@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
@@ -238,6 +239,34 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             )
         )
         assertEquals(0, getAttendances(testDaycare.id).staff.get(0).attendances.size)
+    }
+
+    @Test
+    fun `Staff cannot update other employee's attendances`() {
+        // Employee tries to upsert supervisor's attendance which should be forbidden
+        assertThrows<Forbidden> {
+            realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
+                dbInstance(),
+                AuthenticatedUser.Employee(staff.id, setOf()),
+                MockEvakaClock(now),
+                RealtimeStaffAttendanceController.StaffAttendanceBody(
+                    unitId = testDaycare.id,
+                    date = now.toLocalDate(),
+                    employeeId = supervisor.id,
+                    entries =
+                        listOf(
+                            RealtimeStaffAttendanceController.StaffAttendanceUpsert(
+                                id = null,
+                                groupId = null,
+                                arrived = now.minusHours(3),
+                                departed = now.minusHours(2),
+                                type = StaffAttendanceType.TRAINING,
+                                hasStaffOccupancyEffect = false
+                            )
+                        )
+                )
+            )
+        }
     }
 
     private fun getAttendances(unitId: DaycareId): StaffAttendanceResponse {

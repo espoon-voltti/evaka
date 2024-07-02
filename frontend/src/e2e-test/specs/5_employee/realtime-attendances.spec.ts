@@ -257,6 +257,49 @@ describe('Realtime staff attendances', () => {
       })
     })
 
+    test('Staff can edit only own attendances', async () => {
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          employeeId: groupStaff.id,
+          groupId,
+          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 30))
+        })
+        .save()
+
+      await Fixture.realtimeStaffAttendance()
+        .with({
+          employeeId: nonGroupStaff.id,
+          groupId,
+          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
+        })
+        .save()
+
+      await employeeLogin(page, groupStaff)
+
+      attendancesSection = await openWeekCalendar()
+      await attendancesSection.selectGroup(groupId)
+      const staffAttendances = attendancesSection.staffAttendances
+
+      await staffAttendances.assertTableRow({
+        rowIx: 0,
+        nth: 2,
+        name: staffName(nonGroupStaff),
+        attendances: [['07:00', '12:15']]
+      })
+      await staffAttendances.assertOpenDetailsVisible(0, mockedToday, false)
+
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 2,
+        name: staffName(groupStaff),
+        attendances: [['08:00', '15:30']]
+      })
+
+      await staffAttendances.assertOpenDetailsVisible(1, mockedToday, true)
+    })
+
     test('Automatically closed attendance is indicated and cleared on edit', async () => {
       const yesterday = mockedToday.subDays(1)
 

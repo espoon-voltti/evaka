@@ -79,6 +79,16 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     staffForAttendanceCalendar.map { it.id }
                             )
                             .groupBy { it.employeeId }
+
+                    val allowedToEdit =
+                        accessControl.checkPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Employee.UPDATE_STAFF_ATTENDANCES,
+                            attendancesByEmployee.entries.map { (employeeId) -> employeeId }
+                        )
+
                     val staffWithAttendance =
                         attendancesByEmployee.entries.map { (employeeId, data) ->
                             EmployeeAttendance(
@@ -101,7 +111,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departedAutomatically
                                             )
                                         },
-                                plannedAttendances = plannedAttendances[employeeId] ?: emptyList()
+                                plannedAttendances = plannedAttendances[employeeId] ?: emptyList(),
+                                allowedToEdit = allowedToEdit[employeeId]?.isPermitted() ?: false
                             )
                         }
                     val staffWithoutAttendance =
@@ -127,7 +138,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departedAutomatically
                                             )
                                         },
-                                    plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
+                                    plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
+                                    allowedToEdit = true
                                 )
                             }
                     StaffAttendanceResponse(
@@ -204,6 +216,15 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         wholeDay,
                         body.entries.mapNotNull { it.id }
                     )
+
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Employee.UPDATE_STAFF_ATTENDANCES,
+                        body.employeeId
+                    )
+
                     body.entries.map { entry ->
                         val occupancyCoefficient =
                             if (entry.hasStaffOccupancyEffect) occupancyCoefficientSeven
