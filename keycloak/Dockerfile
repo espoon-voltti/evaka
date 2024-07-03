@@ -52,7 +52,7 @@ ADD ./evaka-logging/ /project/
 RUN mvn --batch-mode clean install
 
 
-FROM node:16 AS builder-theme
+FROM node:20 AS builder-theme
 
 WORKDIR /work
 
