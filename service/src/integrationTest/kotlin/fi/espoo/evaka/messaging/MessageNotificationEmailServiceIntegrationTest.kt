@@ -176,7 +176,19 @@ class MessageNotificationEmailServiceIntegrationTest :
         )
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
-        assertEquals("Juhannus/Midsommar/Midsummer", getEmailFor(testPersonFi).content.subject)
+        assertEquals(
+            "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
+            getEmailFor(testPersonFi).content.subject
+        )
+        assertTrue(
+            getEmailFor(testPersonFi)
+                .content
+                .text
+                .startsWith(
+                    "Sinulle on saapunut uusi tiedote eVakaan otsikolla \"Juhannus/Midsommar/Midsummer\"."
+                )
+        )
+
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
             getEmailFor(testPersonSv).fromAddress

@@ -104,11 +104,8 @@ WHERE m.id = ANY(${bind(messageIds)})
                 }
             } ?: return
 
-        val isMunicipalBulletin =
-            db.transaction { tx ->
-                thread.type == MessageType.BULLETIN &&
-                    tx.getMessageAccountType(msg.senderId) == AccountType.MUNICIPAL
-            }
+        val isSenderMunicipalAccount =
+            db.transaction { tx -> tx.getMessageAccountType(msg.senderId) == AccountType.MUNICIPAL }
 
         Email.create(
                 dbc = db,
@@ -123,7 +120,7 @@ WHERE m.id = ANY(${bind(messageIds)})
                     emailMessageProvider.messageNotification(
                         msg.language,
                         thread,
-                        isMunicipalBulletin
+                        isSenderMunicipalAccount
                     ),
                 traceId = msg.messageRecipientId.toString(),
             )
