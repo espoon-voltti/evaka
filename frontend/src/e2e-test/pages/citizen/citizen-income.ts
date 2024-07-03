@@ -34,7 +34,8 @@ export default class CitizenIncomePage {
   async selectIncomeStatementType(
     type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
   ) {
-    await this.page.findByDataQa(`${type}-checkbox`).click()
+    await new Checkbox(this.page.findByDataQa(`highest-fee-checkbox`)).uncheck()
+    await new Checkbox(this.page.findByDataQa(`${type}-checkbox`)).check()
   }
 
   async setValidFromDate(date: string) {

@@ -322,6 +322,22 @@ const IncomeTypeSelection = React.memo(
       [formData.startDate, t]
     )
 
+    const endDateInputInfo = useMemo(
+      () =>
+        errorToInputInfo(
+          formData.highestFeeSelected
+            ? undefined
+            : formData.endDate
+              ? undefined
+              : 'required',
+          t.validationErrors
+        ),
+      [formData.highestFeeSelected, formData.endDate, t]
+    )
+
+    const isValidEndDate = (date: LocalDate) =>
+      formData.highestFeeSelected || !!date
+
     return (
       <ContentArea opaque paddingVertical="L" ref={ref}>
         <FixedSpaceColumn spacing="zero">
@@ -363,8 +379,12 @@ const IncomeTypeSelection = React.memo(
                 date={formData.endDate}
                 onChange={useFieldDispatch(onChange, 'endDate')}
                 minDate={formData.startDate ?? undefined}
-                hideErrorsBeforeTouched
+                hideErrorsBeforeTouched={false}
                 locale={lang}
+                info={endDateInputInfo}
+                isInvalidDate={(d) =>
+                  isValidEndDate(d) ? null : t.validationErrors.unselectableDate
+                }
               />
             </div>
           </FixedSpaceRow>
