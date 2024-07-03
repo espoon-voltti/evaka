@@ -33,8 +33,14 @@ import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
+import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
+import {
+  defaultCitizenWeakAccount,
+  employeeLogin,
+  enduserLogin,
+  enduserLoginWeak
+} from '../../utils/user'
 
 let unitSupervisorPage: Page
 let citizenPage: Page
@@ -64,6 +70,13 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
   careArea = fixtures.careAreaFixture
   await createDaycareGroups({ body: [daycareGroupFixture] })
+
+  const keycloak = await KeycloakRealmClient.createCitizenClient()
+  await keycloak.deleteAllUsers()
+  await keycloak.createUser({
+    ...defaultCitizenWeakAccount,
+    enabled: true
+  })
 
   unitSupervisor = (
     await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()

@@ -34,11 +34,22 @@ export async function enduserLogin(page: Page, ssn = '070644-937X') {
   await page.goto(config.enduserUrl + '/applications')
 }
 
-export type CitizenWeakAccount = { username: string; password: string }
+export type CitizenWeakAccount = {
+  username: string
+  password: string
+  email: string
+  socialSecurityNumber: string
+  firstName: string
+  lastName: string
+}
 
 export const defaultCitizenWeakAccount: CitizenWeakAccount = {
   username: 'test@example.com',
-  password: 'test123'
+  password: 'test123',
+  email: 'test@example.com',
+  socialSecurityNumber: '070644-937X',
+  firstName: 'Seppo',
+  lastName: 'Sorsa'
 }
 
 export async function enduserLoginWeak(

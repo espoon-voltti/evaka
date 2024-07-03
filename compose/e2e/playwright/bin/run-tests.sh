@@ -14,6 +14,7 @@ export CI="${CI:-false}"
 export FORCE_COLOR=1
 export PROXY_URL=${PROXY_URL:-http://localhost:9099}
 export KEYCLOAK_URL=${KEYCLOAK_URL:-http://localhost:8080}
+export DUMMY_SUOMIFI_URL=${DUMMY_SUOMIFI_URL:-http://localhost:9000}
 
 cd /repo/frontend
 yarn set version self
@@ -23,6 +24,7 @@ yarn exec playwright install
 echo 'INFO: Waiting for compose stack to be up ...'
 ./wait-for-url.sh "${PROXY_URL}/api/internal/dev-api"
 ./wait-for-url.sh "${KEYCLOAK_URL}/auth/realms/evaka-customer/account/" "200"
+./wait-for-url.sh "${DUMMY_SUOMIFI_URL}/health" "200"
 
 echo "Running tests ..."
 
