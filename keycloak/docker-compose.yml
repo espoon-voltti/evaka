@@ -46,6 +46,13 @@ services:
     depends_on:
       - smtp
       - keycloak-postgres
+      - dummy-suomifi
+
+  dummy-suomifi:
+    build:
+      context: dummy-suomifi
+    ports:
+      - "9000:9000"
 
 volumes:
   postgres_data:

@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+[versions]
+java = "21"
+jackson = "2.17.1"
+jboss-logging = "3.6.0.Final"
+keycloak = "25.0.1"
+kotlin = "2.0.0"
+http4k = "5.24.0.0"
+shadow = "8.1.1"
+slf4j = "2.0.9"
+unbescape = "1.1.6.RELEASE"
+
+[libraries]
+http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
+http4k-core = { module = "org.http4k:http4k-core" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jboss-logging = { module = "org.jboss.logging:jboss-logging", version.ref = "jboss-logging" }
+keycloak-common = { module = "org.keycloak:keycloak-common", version.ref = "keycloak" }
+keycloak-saml-core = { module = "org.keycloak:keycloak-saml-core", version.ref = "keycloak" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+unbescape = { module = "org.unbescape:unbescape", version.ref = "unbescape" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow"}
