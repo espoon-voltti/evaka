@@ -25,18 +25,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      KEYCLOAK_WELCOME_THEME: evaka
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      KC_HOSTNAME_URL: "http://${KEYCLOAK_HOST:-localhost}:8080/auth/"
-      KC_HOSTNAME_ADMIN_URL: "http://${KEYCLOAK_HOST:-localhost}:8080/auth/"
+      # Initial admin user via environment, required when running with a container
+      # https://www.keycloak.org/server/configuration#_creating_the_initial_admin_user
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # Configuration options
+      # https://www.keycloak.org/server/all-config?f=config
+      # Database
       KC_DB_DATABASE: keycloak
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
       KC_DB_URL_HOST: keycloak-postgres
+      # Hostname v1 (Deprecated)
+      KC_HOSTNAME_URL: "http://localhost:8080/auth"
+      KC_HOSTNAME_ADMIN_URL: "http://localhost:8080/auth"
+      # HTTP(S)
       KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
+      # Logging
       # KC_LOG_LEVEL: "debug"
     entrypoint: /configuration/entrypoint.sh
     command: ["start", "--optimized", "--log-console-output=json"]
