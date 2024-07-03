@@ -34,6 +34,7 @@ export type VoucherValueEditorProps = {
   initialState: FormState
   close: () => void
   existingVoucherValues: ServiceNeedOptionVoucherValueRangeWithId[]
+  latestVoucherValue: ServiceNeedOptionVoucherValueRangeWithId | null
 }
 
 export default React.memo(function VoucherValueEditor({
@@ -41,13 +42,15 @@ export default React.memo(function VoucherValueEditor({
   id,
   initialState,
   close,
-  existingVoucherValues
+  existingVoucherValues,
+  latestVoucherValue
 }: VoucherValueEditorProps) {
   const [editorState, setEditorState] = useState<FormState>(initialState)
   const validationResult = validateForm(
     i18n,
     editorState,
-    existingVoucherValues.filter((voucherValue) => voucherValue.id != id)
+    existingVoucherValues.filter((voucherValue) => voucherValue.id != id),
+    latestVoucherValue
   )
 
   const validationErrorInfo = (
@@ -292,7 +295,8 @@ const decimalRegex = /^[0-9]+(([,.])[0-9]+)?$/
 function validateForm(
   i18n: Translations,
   form: FormState,
-  existingVoucherValues: ServiceNeedOptionVoucherValueRangeWithId[]
+  existingVoucherValues: ServiceNeedOptionVoucherValueRangeWithId[],
+  latestVoucherValue: ServiceNeedOptionVoucherValueRangeWithId | null
 ):
   | { errors: ValidationErrors }
   | { payload: ServiceNeedOptionVoucherValueRange } {
@@ -330,6 +334,19 @@ function validateForm(
       validationErrors.validFrom =
         i18n.financeBasics.serviceNeeds.errors['date-overlap']
   })
+
+  if (
+    form.validFrom !== null &&
+    latestVoucherValue !== null &&
+    latestVoucherValue.voucherValues.range.end !== null
+  ) {
+    if (form.validFrom > latestVoucherValue.voucherValues.range.end.addDays(1))
+      validationErrors.validFrom =
+        i18n.financeBasics.serviceNeeds.errors['date-gap']
+    if (form.validFrom <= latestVoucherValue.voucherValues.range.end)
+      validationErrors.validFrom =
+        i18n.financeBasics.serviceNeeds.errors['end-date-overlap']
+  }
 
   try {
     return Object.keys(validationErrors).length === 0
