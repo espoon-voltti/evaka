@@ -4551,6 +4551,9 @@ export const fi = {
       errors: {
         'date-overlap':
           'Voimassaolo ei voi alkaa ennen toisen palveluseteliarvon alkamispäivää',
+        'end-date-overlap':
+          'Voimassaolo ei voi alkaa ennen edellisen palvelusetelin päättymispäivää seuraavaa päivää',
+        'date-gap': 'Voimassaolojen välissä ei voi olla aukkoja',
         shouldNotHappen: 'Odottamaton virhe'
       },
       modals: {

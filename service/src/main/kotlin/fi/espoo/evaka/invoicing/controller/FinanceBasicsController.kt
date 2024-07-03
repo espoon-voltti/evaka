@@ -185,6 +185,14 @@ class FinanceBasicsController(
                                     "New voucher value range must start after existing ones"
                                 )
 
+                            if (
+                                latest.voucherValues.range.end != null &&
+                                    body.range.start != latest.voucherValues.range.start.plusDays(1)
+                            )
+                                throw BadRequest(
+                                    "New voucher value can't leave a gap in validities"
+                                )
+
                             if (latest.voucherValues.range.overlaps(body.range)) {
                                 tx.updateVoucherValueEndDate(
                                     latest.id,

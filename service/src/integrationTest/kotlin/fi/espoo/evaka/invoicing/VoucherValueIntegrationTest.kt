@@ -177,6 +177,29 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         addVoucherValue(testVoucherValue)
     }
 
+    @Test
+    fun `should throw if trying to add a new voucher value such that it would leave a gap after the end of the previous one`() {
+        val voucherValuesBefore =
+            getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }
+
+        val endedVoucherValue =
+            voucherValuesBefore[1]
+                .voucherValues
+                .copy(
+                    range =
+                        DateRange(
+                            voucherValuesBefore[1].voucherValues.range.start,
+                            LocalDate.of(2024, 5, 31)
+                        )
+                )
+        updateVoucherValue(voucherValuesBefore[1].id, endedVoucherValue)
+
+        val newVoucherValue =
+            testVoucherValue.copy(range = DateRange(LocalDate.of(2024, 6, 3), null))
+        assertThrows<BadRequest> { addVoucherValue(newVoucherValue) }
+    }
+
+    @Test
     fun `should update an existing voucher value`() {
         val voucherValuesBefore =
             getVoucherValues()[snDefaultDaycare.id]!!.sortedBy { it.voucherValues.range.start }

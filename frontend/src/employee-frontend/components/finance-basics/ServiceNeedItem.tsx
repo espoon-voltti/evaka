@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faPen, faTrash } from 'Icons'
+import maxBy from 'lodash/maxBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -60,20 +61,40 @@ export default React.memo(function ServiceNeedItem({
 
   const closeEditor = useCallback(() => setEditorState({}), [setEditorState])
 
-  const previousCoeffient = useMemo(
+  const latestVouchervalue = useMemo(
     () =>
       voucherValuesList.length > 0
-        ? voucherValuesList[0].voucherValues.coefficient
-        : 1,
+        ? maxBy(
+            voucherValuesList,
+            (element) => element.voucherValues.range.start
+          ) || null
+        : null,
     [voucherValuesList]
+  )
+
+  const nextValidFrom = useMemo(
+    () =>
+      latestVouchervalue !== null &&
+      latestVouchervalue.voucherValues.range.end != null
+        ? latestVouchervalue.voucherValues.range.end.addDays(1)
+        : null,
+    [latestVouchervalue]
+  )
+
+  const previousCoeffient = useMemo(
+    () =>
+      latestVouchervalue !== null
+        ? latestVouchervalue.voucherValues.coefficient
+        : 1,
+    [latestVouchervalue]
   )
 
   const previousCoeffientUnder3y = useMemo(
     () =>
-      voucherValuesList.length > 0
-        ? voucherValuesList[0].voucherValues.coefficientUnder3y
+      latestVouchervalue !== null
+        ? latestVouchervalue.voucherValues.coefficientUnder3y
         : 1,
-    [voucherValuesList]
+    [latestVouchervalue]
   )
 
   const createNewVoucherValue = useCallback(
@@ -82,11 +103,18 @@ export default React.memo(function ServiceNeedItem({
         editing: 'new',
         form: emptyForm(
           serviceNeedId,
+          nextValidFrom,
           previousCoeffient,
           previousCoeffientUnder3y
         )
       }),
-    [setEditorState, serviceNeedId, previousCoeffient, previousCoeffientUnder3y]
+    [
+      setEditorState,
+      serviceNeedId,
+      nextValidFrom,
+      previousCoeffient,
+      previousCoeffientUnder3y
+    ]
   )
 
   const editVoucherValue = useCallback(
@@ -144,6 +172,7 @@ export default React.memo(function ServiceNeedItem({
                 initialState={editorState.form}
                 close={closeEditor}
                 existingVoucherValues={voucherValuesList}
+                latestVoucherValue={latestVouchervalue}
               />
             ) : null}
             {voucherValuesList
@@ -161,6 +190,7 @@ export default React.memo(function ServiceNeedItem({
                     close={closeEditor}
                     key={i}
                     existingVoucherValues={voucherValuesList}
+                    latestVoucherValue={latestVouchervalue}
                   />
                 ) : (
                   <Tr key={i} data-qa={`voucher-value-row-${i}`}>
@@ -191,33 +221,35 @@ export default React.memo(function ServiceNeedItem({
                     </Td>
                     <Td data-qa="buttons">
                       <FixedSpaceRow>
-                        {voucherValue.voucherValues.range.end == null && (
-                          <IconOnlyButton
-                            icon={faPen}
-                            onClick={() =>
-                              editVoucherValue(
-                                voucherValue.id,
-                                voucherValue.voucherValues
-                              )
-                            }
-                            data-qa="copy"
-                            aria-label={i18n.common.edit}
-                          />
-                        )}
-                        {voucherValue.voucherValues.range.end == null && (
-                          <ConfirmedMutation
-                            buttonStyle="INLINE"
-                            data-qa="btn-delete"
-                            icon={faTrash}
-                            buttonText=""
-                            mutation={deleteVoucherValueMutation}
-                            onClick={() => ({ id: voucherValue.id })}
-                            confirmationTitle={
-                              i18n.financeBasics.serviceNeeds.modals
-                                .deleteVoucherValue.title
-                            }
-                          />
-                        )}
+                        {latestVouchervalue !== null &&
+                          voucherValue.id === latestVouchervalue.id && (
+                            <IconOnlyButton
+                              icon={faPen}
+                              onClick={() =>
+                                editVoucherValue(
+                                  voucherValue.id,
+                                  voucherValue.voucherValues
+                                )
+                              }
+                              data-qa="copy"
+                              aria-label={i18n.common.edit}
+                            />
+                          )}
+                        {latestVouchervalue !== null &&
+                          voucherValue.id === latestVouchervalue.id && (
+                            <ConfirmedMutation
+                              buttonStyle="INLINE"
+                              data-qa="btn-delete"
+                              icon={faTrash}
+                              buttonText=""
+                              mutation={deleteVoucherValueMutation}
+                              onClick={() => ({ id: voucherValue.id })}
+                              confirmationTitle={
+                                i18n.financeBasics.serviceNeeds.modals
+                                  .deleteVoucherValue.title
+                              }
+                            />
+                          )}
                       </FixedSpaceRow>
                     </Td>
                   </Tr>
@@ -247,11 +279,12 @@ export type FormState = {
 
 const emptyForm = (
   serviceNeedOptionId: UUID,
+  validFrom: LocalDate | null,
   coefficient: number,
   coefficientUnder3y: number
 ): FormState => ({
   serviceNeedOptionId: serviceNeedOptionId,
-  validFrom: null,
+  validFrom: validFrom,
   validTo: null,
   baseValue: '0.00',
   coefficient: coefficient.toString(),
