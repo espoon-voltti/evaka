@@ -328,7 +328,7 @@ const sv: Translations = {
     reservationNotRequired: 'Närvaroanmälan krävs inte',
     termBreak: 'Ingen undervisning idag',
     reservation: 'Anmäld närvaro',
-    reservationNoTimes: 'Närvarande',
+    present: 'Närvarande',
     attendance: 'Förverkligad närvaro',
     exceedStart: 'Kommit i förtid.',
     exceedEnd: 'Blivit avhämtad senare än vad anmälts.',

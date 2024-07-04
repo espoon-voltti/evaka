@@ -707,7 +707,7 @@ const Reservations = React.memo(function Reservations({
   return withoutTimes.length > 0 ? (
     // In theory, we could have reservations with and without times, but this shouldn't happen in practice
     <ReservationStatus data-qa="reservations-no-times">
-      {i18n.calendar.reservationNoTimes}
+      {i18n.calendar.present}
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
     <div data-qa="reservations">

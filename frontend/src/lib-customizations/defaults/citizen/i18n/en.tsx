@@ -331,7 +331,7 @@ const en: Translations = {
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
-    reservationNoTimes: 'Present',
+    present: 'Present',
     attendance: 'Actual attendance',
     exceedStart: 'Arrived earlier than reported.',
     exceedEnd: 'Departed later than reported.',

@@ -332,7 +332,7 @@ export default {
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
     reservation: 'Ilmoitettu läsnäolo',
-    reservationNoTimes: 'Läsnä',
+    present: 'Läsnä',
     attendance: 'Toteutunut läsnäolo',
     exceedStart: 'Saapunut ilmoitettua aikaisemmin.',
     exceedEnd: 'Lähtenyt ilmoitettua myöhemmin.',
