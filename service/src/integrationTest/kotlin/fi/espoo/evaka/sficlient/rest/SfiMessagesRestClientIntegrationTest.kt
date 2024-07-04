@@ -124,6 +124,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                         ),
                     paperMail =
                         NewNormalPaperMail(
+                            createCoverPage = true,
                             files = listOf(FileReference(fileId)),
                             printingAndEnvelopingService =
                                 PrintingAndEnvelopingService(

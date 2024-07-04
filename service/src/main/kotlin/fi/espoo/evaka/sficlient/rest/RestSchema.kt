@@ -93,6 +93,7 @@ enum class Visibility(@JsonValue val jsonValue: String) {
 
 // https://api.messages-qa.suomi.fi/api-docs#model-NewNormalPaperMail
 data class NewNormalPaperMail(
+    val createCoverPage: Boolean,
     val files: List<FileReference>,
     val printingAndEnvelopingService: PrintingAndEnvelopingService,
     val recipient: NewPaperMailRecipient,

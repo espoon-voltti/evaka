@@ -83,6 +83,7 @@ class Config(env: SfiEnv) {
                 files = listOf(file)
             ),
             NewNormalPaperMail(
+                createCoverPage = true,
                 listOf(file),
                 printingAndEnvelopingService,
                 NewPaperMailRecipient(
