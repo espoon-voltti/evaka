@@ -310,7 +310,8 @@ export class PinInput extends Element {
 export class DatePicker extends Element {
   #input = new TextInput(this)
 
-  async fill(text: string) {
+  async fill(date: LocalDate | string) {
+    const text = typeof date === 'string' ? date : date.format()
     await this.#input.fill(text)
     await this.#input.press('Escape')
   }
