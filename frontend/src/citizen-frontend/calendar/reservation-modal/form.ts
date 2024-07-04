@@ -34,7 +34,8 @@ import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperio
 import {
   DailyReservationRequest,
   ReservationChild,
-  ReservationResponseDay
+  ReservationResponseDay,
+  ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -107,6 +108,18 @@ export const reservation = object({
 
 export const noTimes = value<'present' | 'absent' | 'notSet'>()
 
+export type ReadOnlyState =
+  | { type: 'noChildren' }
+  | { type: 'holiday' }
+  | { type: 'absentNotEditable' }
+  | { type: 'termBreak' }
+  | {
+      type: 'notYetReservable'
+      period: FiniteDateRange
+      reservationsOpenOn: LocalDate
+    }
+  | { type: 'reservationClosed' }
+
 type DayOutput =
   | { type: 'readOnly' }
   | { type: 'reservations'; first: TimeRange; second: TimeRange | undefined }
@@ -117,13 +130,7 @@ type DayOutput =
 
 export const day = mapped(
   union({
-    readOnly: value<
-      | 'noChildren'
-      | 'holiday'
-      | 'absentNotEditable'
-      | 'termBreak'
-      | 'reservationClosed'
-    >(),
+    readOnly: value<ReadOnlyState>(),
     reservation,
     reservationNoTimes: noTimes
   }),
@@ -378,7 +385,7 @@ export function resetTimes(
         if (!dayOfWeekDays) {
           return {
             weekDay: dayOfWeek,
-            day: { branch: 'readOnly', state: 'noChildren' }
+            day: { branch: 'readOnly', state: { type: 'noChildren' } }
           }
         }
 
@@ -442,33 +449,44 @@ export function resetDay(
 
   const isHoliday = calendarDays.every((d) => d.holiday)
   if (isHoliday && everyChild((c) => !c.shiftCare)) {
-    return { branch: 'readOnly', state: 'holiday' }
+    return { branch: 'readOnly', state: { type: 'holiday' } }
   }
 
   if (children.length === 0) {
     return {
       branch: 'readOnly',
-      state: 'noChildren'
+      state: { type: 'noChildren' }
     }
   }
 
   if (everyChild((c) => c.absence !== null && !c.absence.editable)) {
-    return { branch: 'readOnly', state: 'absentNotEditable' }
+    return { branch: 'readOnly', state: { type: 'absentNotEditable' } }
   }
 
-  if (everyChild((c) => c.scheduleType === 'TERM_BREAK')) {
-    return { branch: 'readOnly', state: 'termBreak' }
-  }
-
-  const reservationNotRequired = everyChild(
-    (c) => c.scheduleType !== 'RESERVATION_REQUIRED'
-  )
   const holidayPeriodEffect =
     children.length > 0
       ? children
           .map((c) => c.holidayPeriodEffect)
           .reduce(combineHolidayPeriodEffects)
       : null
+  if (holidayPeriodEffect?.type === 'NotYetReservable') {
+    return {
+      branch: 'readOnly',
+      state: {
+        type: 'notYetReservable',
+        period: holidayPeriodEffect.period,
+        reservationsOpenOn: holidayPeriodEffect.reservationsOpenOn
+      }
+    }
+  }
+
+  if (everyChild((c) => c.scheduleType === 'TERM_BREAK')) {
+    return { branch: 'readOnly', state: { type: 'termBreak' } }
+  }
+
+  const reservationNotRequired = everyChild(
+    (c) => c.scheduleType !== 'RESERVATION_REQUIRED'
+  )
   const validTimeRanges = children.map((c) =>
     // Any times can be reserved for intermittent shift care children
     c.reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE'
@@ -484,7 +502,7 @@ export function resetDay(
       (holidayPeriodEffect === null && reservationNotRequired)
       ? { branch: 'reservationNoTimes', state: 'absent' }
       : holidayPeriodEffect?.type === 'ReservationsClosed'
-        ? { branch: 'readOnly', state: 'reservationClosed' }
+        ? { branch: 'readOnly', state: { type: 'reservationClosed' } }
         : {
             branch: 'reservation',
             state: {
@@ -532,7 +550,7 @@ export function resetDay(
         c.absence === null
     )
   ) {
-    return { branch: 'readOnly', state: 'reservationClosed' }
+    return { branch: 'readOnly', state: { type: 'reservationClosed' } }
   }
 
   return holidayPeriodEffect?.type === 'ReservationsOpen' ||

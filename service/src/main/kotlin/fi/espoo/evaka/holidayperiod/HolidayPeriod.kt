@@ -14,6 +14,10 @@ import java.time.LocalDate
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface HolidayPeriodEffect {
+    /** Reservations cannot be made: the holiday period is not yet open for reservations */
+    data class NotYetReservable(val period: FiniteDateRange, val reservationsOpenOn: LocalDate) :
+        HolidayPeriodEffect
+
     /**
      * Reservations are open: Can make PRESENT/ABSENT reservations, i.e. reservations without time
      */
@@ -39,7 +43,9 @@ data class HolidayPeriod(
     fun effect(today: LocalDate, placementStartDate: LocalDate): HolidayPeriodEffect? =
         when {
             placementStartDate > reservationDeadline -> null
-            today <= reservationDeadline -> HolidayPeriodEffect.ReservationsOpen
+            today < reservationsOpenOn ->
+                HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn)
+            today in reservationsOpenOn..reservationDeadline -> HolidayPeriodEffect.ReservationsOpen
             else -> HolidayPeriodEffect.ReservationsClosed
         }
 }

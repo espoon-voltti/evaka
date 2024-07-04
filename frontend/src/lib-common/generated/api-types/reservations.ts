@@ -19,6 +19,7 @@ import { ScheduleType } from './placement'
 import { UUID } from '../../types'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
+import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
@@ -629,6 +630,7 @@ export function deserializeJsonReservationResponseDayChild(json: JsonOf<Reservat
   return {
     ...json,
     attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    holidayPeriodEffect: (json.holidayPeriodEffect != null) ? deserializeJsonHolidayPeriodEffect(json.holidayPeriodEffect) : null,
     reservableTimeRange: deserializeJsonReservableTimeRange(json.reservableTimeRange),
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
     usedService: (json.usedService != null) ? deserializeJsonUsedServiceResult(json.usedService) : null

@@ -341,7 +341,11 @@ const HolidayPeriodInfoBox = React.memo(function HolidayPeriodInfoBox({
   const today = LocalDate.todayInHelsinkiTz()
   const openHolidayPeriod: HolidayPeriod | undefined = useMemo(
     () =>
-      holidayPeriods.find((h) => today.isEqualOrBefore(h.reservationDeadline)),
+      holidayPeriods.find(
+        (h) =>
+          h.reservationsOpenOn.isEqualOrBefore(today) &&
+          today.isEqualOrBefore(h.reservationDeadline)
+      ),
     [holidayPeriods, today]
   )
 

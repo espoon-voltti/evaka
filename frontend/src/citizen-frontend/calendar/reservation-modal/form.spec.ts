@@ -397,7 +397,7 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'readOnly',
-            state: 'termBreak'
+            state: { type: 'termBreak' }
           }
         }
       })
@@ -974,10 +974,7 @@ describe('resetTimes', () => {
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
-          day: {
-            branch: 'readOnly',
-            state: 'absentNotEditable'
-          }
+          day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
         }))
       })
 
@@ -1022,7 +1019,7 @@ describe('resetTimes', () => {
             day: {
               // this day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'absentNotEditable'
+              state: { type: 'absentNotEditable' }
             }
           },
           {
@@ -1397,10 +1394,7 @@ describe('resetTimes', () => {
         state: [
           {
             weekDay: 1,
-            day: {
-              branch: 'readOnly',
-              state: 'holiday'
-            }
+            day: { branch: 'readOnly', state: { type: 'holiday' } }
           },
           {
             weekDay: 2,
@@ -1729,10 +1723,7 @@ describe('resetTimes', () => {
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
-          day: {
-            branch: 'readOnly',
-            state: 'absentNotEditable'
-          }
+          day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
         }))
       })
 
@@ -1765,7 +1756,7 @@ describe('resetTimes', () => {
             day: {
               // This day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'absentNotEditable'
+              state: { type: 'absentNotEditable' }
             }
           },
           {
@@ -2131,7 +2122,7 @@ describe('resetTimes', () => {
                   }
                 }
               }
-            : { branch: 'readOnly', state: 'noChildren' }
+            : { branch: 'readOnly', state: { type: 'noChildren' } }
         }))
       })
     })
@@ -2464,7 +2455,7 @@ describe('resetTimes', () => {
           },
           {
             date: rangeWeekDays[5],
-            day: { branch: 'readOnly', state: 'absentNotEditable' }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: rangeWeekDays[6],
@@ -2593,10 +2584,7 @@ describe('resetTimes', () => {
         state: [
           {
             date: monday,
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           }
         ]
       })
@@ -2642,10 +2630,7 @@ describe('resetTimes', () => {
         state: [
           {
             date: monday,
-            day: {
-              branch: 'readOnly',
-              state: 'holiday'
-            }
+            day: { branch: 'readOnly', state: { type: 'holiday' } }
           },
           {
             date: tuesday,
@@ -2891,10 +2876,7 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[5],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[6],
@@ -3066,10 +3048,7 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[1],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[2],
@@ -3086,31 +3065,19 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[3],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[4],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[5],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[6],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           }
         ]
       })
@@ -3175,17 +3142,11 @@ describe('resetTimes', () => {
         state: [
           {
             date: selectedRangeWeekDays[0],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[1],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[2],

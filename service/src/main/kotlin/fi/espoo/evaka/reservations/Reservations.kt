@@ -21,6 +21,7 @@ import fi.espoo.evaka.attendance.getChildPlacementTypes
 import fi.espoo.evaka.attendance.insertAttendance
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
+import fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
@@ -207,10 +208,6 @@ fun createReservationsAndAbsences(
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
     val childAbsenceDates = tx.getAbsenceDatesForChildrenInRange(childIds, reservationsRange)
 
-    val (open, closed) = holidayPeriods.partition { it.reservationDeadline >= today }
-    val openHolidayPeriodDates = open.flatMap { it.period.dates() }.toSet()
-    val closedHolidayPeriodDates = closed.flatMap { it.period.dates() }.toSet()
-
     val isReservableChild = { req: DailyReservationRequest ->
         placements[req.childId]
             ?.find { it.range.includes(req.date) }
@@ -219,12 +216,14 @@ fun createReservationsAndAbsences(
     }
     val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
 
-    val placementStartAfterHolidayDeadline = { req: DailyReservationRequest ->
+    val holidayPeriodEffect = { req: DailyReservationRequest ->
         val holidayPeriod = holidayPeriods.find { it.period.includes(req.date) }
         val placementStartDate = childStartDates[req.childId]
-        holidayPeriod != null &&
-            placementStartDate != null &&
-            placementStartDate > holidayPeriod.reservationDeadline
+        if (holidayPeriod != null && placementStartDate != null) {
+            holidayPeriod.effect(today, placementStartDate)
+        } else {
+            null
+        }
     }
 
     val validated =
@@ -232,20 +231,22 @@ fun createReservationsAndAbsences(
             .asSequence()
             .mapNotNull { request ->
                 val isReservable = isReservableChild(request)
-                val isOpenHolidayPeriod = openHolidayPeriodDates.contains(request.date)
-                val isClosedHolidayPeriod = closedHolidayPeriodDates.contains(request.date)
-
-                if (isOpenHolidayPeriod) {
-                    // Everything is allowed on open holiday periods
+                val effect = holidayPeriodEffect(request)
+                if (effect is HolidayPeriodEffect.NotYetReservable) {
+                    // Not allowed to make any changes
+                    null
+                } else if (effect is HolidayPeriodEffect.ReservationsOpen) {
+                    // Everything is allowed on open holiday periods, but reservations with times
+                    // are changed to reservations without times in a later step
                     request
-                } else if (isClosedHolidayPeriod) {
+                } else if (effect is HolidayPeriodEffect.ReservationsClosed) {
                     // Only reservations with times are allowed on closed holiday periods
                     if (isReservable && request is DailyReservationRequest.Present) {
                         throw BadRequest("Reservations in closed holiday periods must have times")
                     }
                     if (isCitizen) {
-                        // Citizens cannot add reservations on days without existing reservations OR
-                        // with absences on closed holiday periods
+                        // Citizens cannot add reservations on days without existing
+                        // reservations OR with absences on closed holiday periods
                         val hasReservation =
                             (childReservationDates[request.childId] ?: setOf()).contains(
                                 request.date
@@ -253,22 +254,14 @@ fun createReservationsAndAbsences(
                         val hasAbsence =
                             (childAbsenceDates[request.childId] ?: setOf()).contains(request.date)
 
-                        val isAllowed =
-                            when (request) {
-                                // if placement start date is after holiday period response deadline
-                                // reservation is allowed
-                                is DailyReservationRequest.Reservations ->
-                                    placementStartAfterHolidayDeadline(request) ||
-                                        hasReservation && !hasAbsence
-                                is DailyReservationRequest.Present -> hasReservation && !hasAbsence
-                                is DailyReservationRequest.Absent -> true
-                                is DailyReservationRequest.Nothing -> false
-                            }
-
-                        if (isAllowed) {
-                            request
-                        } else {
-                            null
+                        when (request) {
+                            // if placement start date is after holiday period response deadline
+                            // reservation is allowed
+                            is DailyReservationRequest.Reservations,
+                            is DailyReservationRequest.Present ->
+                                request.takeIf { hasReservation && !hasAbsence }
+                            is DailyReservationRequest.Absent -> request
+                            is DailyReservationRequest.Nothing -> null
                         }
                     } else {
                         request
@@ -299,7 +292,7 @@ fun createReservationsAndAbsences(
             .map { request ->
                 if (
                     request is DailyReservationRequest.Reservations &&
-                        openHolidayPeriodDates.contains(request.date)
+                        holidayPeriodEffect(request) is HolidayPeriodEffect.ReservationsOpen
                 ) {
                     DailyReservationRequest.Present(request.childId, request.date)
                 } else {

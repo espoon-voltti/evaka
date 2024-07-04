@@ -759,6 +759,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(
                 DevHolidayPeriod(
                     period = FiniteDateRange(thursday, thursday),
+                    reservationsOpenOn = tuesday,
                     reservationDeadline = wednesday
                 )
             )
@@ -822,12 +823,17 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     holiday = false,
                     children =
                         listOf(
-                            dayChild(
-                                child1.id,
-                                holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen
-                            ),
-                            dayChild(child2.id, holidayPeriodEffect = null),
-                        )
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect =
+                                        HolidayPeriodEffect.NotYetReservable(
+                                            period = FiniteDateRange(thursday, thursday),
+                                            reservationsOpenOn = tuesday
+                                        )
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
                 )
             ),
             resOnMonday.days
@@ -846,12 +852,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     holiday = false,
                     children =
                         listOf(
-                            dayChild(
-                                child1.id,
-                                holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen
-                            ),
-                            dayChild(child2.id, holidayPeriodEffect = null),
-                        )
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
                 )
             ),
             resOnTuesday.days
@@ -870,12 +877,13 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     holiday = false,
                     children =
                         listOf(
-                            dayChild(
-                                child1.id,
-                                holidayPeriodEffect = HolidayPeriodEffect.ReservationsClosed
-                            ),
-                            dayChild(child2.id, holidayPeriodEffect = null),
-                        )
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect = HolidayPeriodEffect.ReservationsClosed
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
                 )
             ),
             resOnThursday.days

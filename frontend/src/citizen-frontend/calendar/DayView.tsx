@@ -22,6 +22,7 @@ import {
   AttendingChild,
   CitizenCalendarEvent
 } from 'lib-common/generated/api-types/calendarevent'
+import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   AbsenceInfo,
@@ -215,6 +216,7 @@ function View({
             reservations={child.reservations}
             scheduleType={child.scheduleType}
             reservableTimeRange={child.reservableTimeRange}
+            holidayPeriodEffect={child.holidayPeriodEffect}
           />
         )
       }}
@@ -690,11 +692,13 @@ const Absence = React.memo(function Absence({
 const Reservations = React.memo(function Reservations({
   reservations,
   scheduleType,
-  reservableTimeRange
+  reservableTimeRange,
+  holidayPeriodEffect
 }: {
   reservations: Reservation[]
   scheduleType: ScheduleType
   reservableTimeRange: ReservableTimeRange
+  holidayPeriodEffect: HolidayPeriodEffect | null
 }) {
   const i18n = useTranslation()
 
@@ -704,7 +708,17 @@ const Reservations = React.memo(function Reservations({
     [reservations]
   )
 
-  return withoutTimes.length > 0 ? (
+  return holidayPeriodEffect?.type === 'NotYetReservable' ? (
+    <ExpandingInfo
+      width="full"
+      info={i18n.calendar.reservationModal.notYetReservableInfo(
+        holidayPeriodEffect.period,
+        holidayPeriodEffect.reservationsOpenOn
+      )}
+    >
+      {i18n.calendar.reservationModal.notYetReservable}
+    </ExpandingInfo>
+  ) : withoutTimes.length > 0 ? (
     // In theory, we could have reservations with and without times, but this shouldn't happen in practice
     <ReservationStatus data-qa="reservations-no-times">
       {i18n.calendar.present}

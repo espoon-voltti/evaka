@@ -138,6 +138,7 @@ class ReservationControllerCitizen(
                                         // activity on the date. This excludes e.g. Christmas or
                                         // winter holidays.
                                         children
+                                            .sortedBy { it.id }
                                             .mapNotNull { child ->
                                                 placements[child.id]
                                                     ?.find { it.range.includes(date) }
@@ -212,7 +213,6 @@ class ReservationControllerCitizen(
                                                         )
                                                     }
                                             }
-                                            .sortedBy { it.childId }
                                 )
                             }
                             .toList()

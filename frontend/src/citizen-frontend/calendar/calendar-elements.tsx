@@ -143,6 +143,7 @@ type DailyChildGroupElementType =
   | 'reservation'
   | 'present'
   | 'absent'
+  | 'notYetReservable'
   | 'missingReservation'
   | 'absentFree'
   | 'absentPlanned'
@@ -180,6 +181,16 @@ const groupChildren = ({
   Object.entries(
     groupBy(
       children.map((child): DailyChildGroupElement => {
+        if (child.holidayPeriodEffect?.type === 'NotYetReservable') {
+          return {
+            childId: child.childId,
+            type: 'notYetReservable',
+            text: i18n.calendar.reservationsOpenOn(
+              child.holidayPeriodEffect.reservationsOpenOn
+            )
+          }
+        }
+
         if (child.attendances.length > 0) {
           return {
             childId: child.childId,
