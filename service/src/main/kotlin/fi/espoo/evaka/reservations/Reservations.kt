@@ -174,7 +174,9 @@ fun createReservationsAndAbsences(
     citizenReservationThresholdHours: Long,
     plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
     automaticFixedScheduleAbsencesEnabled: Boolean = false
-): CreateReservationsResult {
+): CreateReservationsResult? {
+    if (requests.isEmpty()) return null
+
     val (userId, isCitizen) =
         when (user) {
             is AuthenticatedUser.Citizen -> Pair(user.evakaUserId, true)

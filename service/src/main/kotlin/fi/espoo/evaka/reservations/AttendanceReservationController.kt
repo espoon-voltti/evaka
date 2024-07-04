@@ -221,8 +221,7 @@ class AttendanceReservationController(
     ) {
         val children = body.map { it.childId }.toSet()
 
-        val result =
-            db.connect { dbc ->
+        db.connect { dbc ->
                 dbc.transaction {
                     ac.requirePermissionFor(
                         it,
@@ -242,16 +241,18 @@ class AttendanceReservationController(
                     )
                 }
             }
-        Audit.AttendanceReservationEmployeeCreate.log(
-            targetId = AuditId(children),
-            meta =
-                mapOf(
-                    "deletedAbsences" to result.deletedAbsences,
-                    "deletedReservations" to result.deletedReservations,
-                    "upsertedAbsences" to result.upsertedAbsences,
-                    "upsertedReservations" to result.upsertedReservations
+            ?.also {
+                Audit.AttendanceReservationEmployeeCreate.log(
+                    targetId = AuditId(children),
+                    meta =
+                        mapOf(
+                            "deletedAbsences" to it.deletedAbsences,
+                            "deletedReservations" to it.deletedReservations,
+                            "upsertedAbsences" to it.upsertedAbsences,
+                            "upsertedReservations" to it.upsertedReservations
+                        )
                 )
-        )
+            }
     }
 
     @PostMapping(
