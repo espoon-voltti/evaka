@@ -28,8 +28,13 @@ import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
+import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import { enduserLogin, enduserLoginWeak } from '../../utils/user'
+import {
+  defaultCitizenWeakAccount,
+  enduserLogin,
+  enduserLoginWeak
+} from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
@@ -612,6 +617,12 @@ describe.each(['desktop', 'mobile'] as const)(
         })
         .save()
 
+      const keycloak = await KeycloakRealmClient.createCitizenClient()
+      await keycloak.deleteAllUsers()
+      await keycloak.createUser({
+        ...defaultCitizenWeakAccount,
+        enabled: true
+      })
       await enduserLoginWeak(page)
       const header = new CitizenHeader(page, env)
       const childPage = new CitizenChildPage(page, env)

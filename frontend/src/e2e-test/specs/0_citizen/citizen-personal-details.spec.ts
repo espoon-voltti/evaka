@@ -9,6 +9,7 @@ import CitizenPersonalDetailsPage, {
   CitizenNotificationSettingsSection,
   CitizenPersonalDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
+import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
   defaultCitizenWeakAccount,
@@ -96,6 +97,12 @@ describe('Citizen personal details', () => {
 
 test('Citizen keycloak email is shown', async () => {
   const account = defaultCitizenWeakAccount
+  const keycloak = await KeycloakRealmClient.createCitizenClient()
+  await keycloak.deleteAllUsers()
+  await keycloak.createUser({
+    ...account,
+    enabled: true
+  })
   await enduserLoginWeak(page, account)
   header = new CitizenHeader(page)
 

@@ -5,8 +5,13 @@
 import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
+import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
-import { enduserLogin, enduserLoginWeak } from '../../utils/user'
+import {
+  defaultCitizenWeakAccount,
+  enduserLogin,
+  enduserLoginWeak
+} from '../../utils/user'
 
 describe('Citizen authentication', () => {
   let page: Page
@@ -14,6 +19,12 @@ describe('Citizen authentication', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+    const keycloak = await KeycloakRealmClient.createCitizenClient()
+    await keycloak.deleteAllUsers()
+    await keycloak.createUser({
+      ...defaultCitizenWeakAccount,
+      enabled: true
+    })
     page = await Page.open()
   })
 

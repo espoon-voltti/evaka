@@ -1206,9 +1206,9 @@
   "internationalizationEnabled": true,
   "supportedLocales": [
     "fi",
-    "sv",
-    "en"
+    "sv"
   ],
+  "defaultLocale": "fi",
   "authenticationFlows" : [ {
     "id" : "824ffa0f-b295-41da-bd25-dfd4239338ff",
     "alias" : "Account verification options",
@@ -1861,7 +1861,17 @@
       "clientRole" : false,
       "containerId" : "evaka-customer",
       "attributes" : { }
-    }, {
+    },
+    {
+      "id": "a931e945-dc43-4c62-8c7f-649361c46939",
+      "name": "suomifi-link",
+      "description": "",
+      "composite": false,
+      "clientRole": false,
+      "containerId": "evaka-customer",
+      "attributes": {}
+    },
+    {
       "id" : "a03d2089-16cc-4014-ba24-f9203cfa1afc",
       "name" : "default-roles-evaka-customer",
       "description" : "${role_default-roles}",
@@ -2171,9 +2181,14 @@
     "enabled" : true,
     "totp" : false,
     "emailVerified" : true,
-    "firstName" : "Test",
-    "lastName" : "Tester",
+    "firstName" : "Seppo",
+    "lastName" : "Sorsa",
     "email" : "test@example.com",
+    "attributes" : {
+      "suomi_nationalIdentificationNumber" : [ "070644-937X" ],
+      "suomi_sn" : [ "Sorsa" ],
+      "suomi_givenName" : [ "Seppo" ]
+    },
     "credentials" : [ {
       "id" : "964453af-f3c7-4607-b579-00aac0a2dc6b",
       "type" : "password",
@@ -2396,61 +2411,68 @@
     "authenticationFlowBindingOverrides" : { },
     "fullScopeAllowed" : true,
     "nodeReRegistrationTimeout" : -1,
-    "protocolMappers" : [ {
-      "id" : "a27550d8-c168-47d1-a3a0-53737851e731",
-      "name" : "firstName",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-hardcode-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "attribute.value" : "Seppo",
-        "attribute.nameformat" : "Basic",
-        "attribute.name" : "firstName"
+    "protocolMappers": [
+      {
+        "id": "07e11604-ffeb-49ad-8ea8-e0858070d416",
+        "name": "suomi_nationalIdentificationNumber to socialSecurityNumber",
+        "protocol": "saml",
+        "protocolMapper": "saml-user-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "attribute.nameformat": "Basic",
+          "user.attribute": "suomi_nationalIdentificationNumber",
+          "attribute.name": "socialSecurityNumber"
+        }
+      },
+      {
+        "id": "c28e60c1-f78e-443c-b7e1-e6c97eda3cc9",
+        "name": "email",
+        "protocol": "saml",
+        "protocolMapper": "saml-user-property-mapper",
+        "consentRequired": false,
+        "config": {
+          "attribute.nameformat": "Basic",
+          "user.attribute": "email",
+          "attribute.name": "email"
+        }
+      },
+      {
+        "id": "88694fa6-c1ee-4afc-971c-3ffdb5d97b1f",
+        "name": "id",
+        "protocol": "saml",
+        "protocolMapper": "saml-user-property-mapper",
+        "consentRequired": false,
+        "config": {
+          "attribute.nameformat": "Basic",
+          "user.attribute": "id",
+          "attribute.name": "id"
+        }
+      },
+      {
+        "id": "c62ad8be-82d4-4b68-9e7e-eb077c46dc22",
+        "name": "suomi_givenName to firstName",
+        "protocol": "saml",
+        "protocolMapper": "saml-user-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "attribute.nameformat": "Basic",
+          "user.attribute": "suomi_givenName",
+          "attribute.name": "firstName"
+        }
+      },
+      {
+        "id": "451dcc94-3d1b-4eef-a7ba-03d246fd718f",
+        "name": "suomi_sn to lastName",
+        "protocol": "saml",
+        "protocolMapper": "saml-user-attribute-mapper",
+        "consentRequired": false,
+        "config": {
+          "attribute.nameformat": "Basic",
+          "user.attribute": "suomi_sn",
+          "attribute.name": "lastName"
+        }
       }
-    }, {
-      "id" : "ae7fce4e-2762-40cc-9ee8-84a3d5466c20",
-      "name" : "email",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-hardcode-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "attribute.value" : "test@example.com",
-        "attribute.nameformat" : "Basic",
-        "attribute.name" : "email"
-      }
-    }, {
-      "id" : "3f89c026-6596-4255-96c5-8f8d41784ca8",
-      "name" : "id",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-hardcode-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "attribute.value" : "dummyid",
-        "attribute.nameformat" : "Basic",
-        "attribute.name" : "id"
-      }
-    }, {
-      "id" : "49324dae-e7ae-4199-ab72-0754289793c4",
-      "name" : "socialSecurityNumber",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-hardcode-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "attribute.value" : "070644-937X",
-        "attribute.nameformat" : "Basic",
-        "attribute.name" : "socialSecurityNumber"
-      }
-    }, {
-      "id" : "c75c1dc6-a4bd-42f5-a911-1ac72e56c9aa",
-      "name" : "lastName",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-hardcode-attribute-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "attribute.value" : "Sorsa",
-        "attribute.name" : "lastName"
-      }
-    } ],
+    ],
     "defaultClientScopes" : [ "role_list" ],
     "optionalClientScopes" : [ ]
   }, {
@@ -2987,14 +3009,127 @@
   },
   "loginTheme": "evaka",
   "accountTheme": "evaka",
+  "adminTheme": "keycloak.v2",
   "emailTheme": "evaka",
   "eventsEnabled" : false,
-  "eventsListeners" : [ "jboss-logging" ],
+  "eventsListeners" : [ "evaka-logging" ],
   "enabledEventTypes" : [ ],
   "adminEventsEnabled" : false,
   "adminEventsDetailsEnabled" : false,
-  "identityProviders" : [ ],
-  "identityProviderMappers" : [ ],
+  "identityProviders": [
+    {
+      "alias": "suomi.fi",
+      "displayName": "",
+      "internalId": "c1eabb14-d113-44da-9b0b-7f5f1a0e9ffc",
+      "providerId": "saml",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "saml",
+      "config": {
+        "postBindingLogout": "true",
+        "postBindingResponse": "true",
+        "backchannelSupported": "false",
+        "loginHint": "false",
+        "allowCreate": "false",
+        "authnContextComparisonType": "exact",
+        "syncMode": "IMPORT",
+        "singleSignOnServiceUrl": "http://localhost:9000/idp/sso",
+        "wantAuthnRequestsSigned": "false",
+        "allowedClockSkew": "0",
+        "validateSignature": "false",
+        "hideOnLoginPage": "false",
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:transient",
+        "principalAttribute": "nationalIdentificationNumber",
+        "entityId": "http://localhost:8080/auth/realms/evaka-customer",
+        "signSpMetadata": "false",
+        "wantAssertionsEncrypted": "false",
+        "sendClientIdOnLogout": "false",
+        "wantAssertionsSigned": "false",
+        "sendIdTokenOnLogout": "true",
+        "postBindingAuthnRequest": "true",
+        "forceAuthn": "false",
+        "attributeConsumingServiceIndex": "0",
+        "principalType": "FRIENDLY_ATTRIBUTE"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "id": "96cc0fec-7737-48e1-84f4-da085690bce3",
+      "name": "nationalIdentificationNumber to suomi_nationalIdentificationNumber",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "user.attribute": "suomi_nationalIdentificationNumber",
+        "attribute.friendly.name": "nationalIdentificationNumber",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC"
+      }
+    },
+    {
+      "id": "7d42ca76-0258-429b-a8a3-f725c094210a",
+      "name": "givenName to suomi_givenName",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "user.attribute": "suomi_givenName",
+        "attribute.friendly.name": "givenName",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC"
+      }
+    },
+    {
+      "id": "960bdf62-99e5-4e07-9dfe-8927207dfaa7",
+      "name": "Set suomifi-link",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "oidc-hardcoded-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "role": "suomifi-link"
+      }
+    },
+    {
+      "id": "deede004-8cb9-4f81-aec0-1e630f91b822",
+      "name": "sn to lastName",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "user.attribute": "lastName",
+        "attribute.friendly.name": "sn",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC"
+      }
+    },
+    {
+      "id": "bfdcb085-3ec8-48a2-9b83-0ef4aa2d78ea",
+      "name": "sn to suomi_sn",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "user.attribute": "suomi_sn",
+        "attribute.friendly.name": "sn",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC"
+      }
+    },
+    {
+      "id": "35e6be0f-fc61-41b9-994a-e54a4f359aba",
+      "name": "givenName to firstName",
+      "identityProviderAlias": "suomi.fi",
+      "identityProviderMapper": "saml-user-attribute-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "user.attribute": "firstName",
+        "attribute.friendly.name": "givenName",
+        "attribute.name.format": "ATTRIBUTE_FORMAT_BASIC"
+      }
+    }
+  ],
   "components" : {
     "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy" : [ {
       "id" : "d197a363-bbf6-42dd-a313-71da14a1377f",
@@ -3105,9 +3240,9 @@
   "internationalizationEnabled": true,
   "supportedLocales": [
     "fi",
-    "sv",
-    "en"
+    "sv"
   ],
+  "defaultLocale": "fi",
   "authenticationFlows" : [ {
     "id" : "0d9e9783-8d1b-481d-8299-d333fa8741a7",
     "alias" : "Account verification options",
@@ -3585,7 +3720,34 @@
       "userSetupAllowed" : false,
       "autheticatorFlow" : true
     } ]
-  }, {
+  },
+  {
+    "id": "98d566eb-5edf-4338-8405-a0dc7ef93ae4",
+    "alias": "saml",
+    "description": "",
+    "providerId": "basic-flow",
+    "topLevel": true,
+    "builtIn": false,
+    "authenticationExecutions": [
+      {
+        "authenticator": "evaka-review-profile",
+        "authenticatorFlow": false,
+        "requirement": "REQUIRED",
+        "priority": 0,
+        "autheticatorFlow": false,
+        "userSetupAllowed": false
+      },
+      {
+        "authenticator": "idp-create-user-if-unique",
+        "authenticatorFlow": false,
+        "requirement": "REQUIRED",
+        "priority": 1,
+        "autheticatorFlow": false,
+        "userSetupAllowed": false
+      }
+    ]
+  },
+  {
     "id" : "294246eb-caf7-4226-940d-c7ff91c78e25",
     "alias" : "saml ecp",
     "description" : "SAML ECP Profile Authentication Flow",
