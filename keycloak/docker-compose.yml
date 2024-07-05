@@ -40,6 +40,8 @@ services:
       # Hostname v1 (Deprecated)
       KC_HOSTNAME_URL: "http://localhost:8080/auth"
       KC_HOSTNAME_ADMIN_URL: "http://localhost:8080/auth"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
       # HTTP(S)
       KC_HTTP_ENABLED: "true"
       # Logging
