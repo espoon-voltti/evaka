@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import java.util.*
 
-private val logger = LoggerFactory.getLogger("dummy_saml.Saml")
+private val logger = LoggerFactory.getLogger("dummy_suomifi.Saml")
 
 fun readSamlLoginRequest(xmlDocument: Document, relayState: String?): LoginRequest {
     val parsed =
