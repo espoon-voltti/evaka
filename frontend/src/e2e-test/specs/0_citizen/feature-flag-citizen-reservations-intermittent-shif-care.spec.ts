@@ -38,7 +38,7 @@ describe.each(e)(
 
       const firstReservationDay = june7th2023.addDays(14).addDays(1) //Thursday
 
-      const reservationsModal = await calendarPage.openReservationsModal()
+      const reservationsModal = await calendarPage.openReservationModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(
           firstReservationDay,
@@ -67,7 +67,7 @@ describe.each(e)(
         parent
       )
 
-      const reservationsModal = await calendarPage.openReservationsModal()
+      const reservationsModal = await calendarPage.openReservationModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(firstReservationDay, firstReservationDay),
         '08:00',
@@ -89,7 +89,7 @@ describe.each(e)(
 
       const firstReservationDay = june7th2023.addDays(14).addDays(3) //Sunday, weekend
 
-      const reservationsModal = await calendarPage.openReservationsModal()
+      const reservationsModal = await calendarPage.openReservationModal()
       await reservationsModal.createRepeatingDailyReservation(
         new FiniteDateRange(firstReservationDay, firstReservationDay),
         '08:00',
@@ -123,7 +123,7 @@ describe.each(e)(
         isOverdraft: true
       }
 
-      const reservationsModal = await calendarPage.openReservationsModal()
+      const reservationsModal = await calendarPage.openReservationModal()
 
       await reservationsModal.fillDailyReservationInfo(
         new FiniteDateRange(firstReservationDay, firstReservationDay),

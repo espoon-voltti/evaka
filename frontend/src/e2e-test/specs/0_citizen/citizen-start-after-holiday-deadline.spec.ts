@@ -79,7 +79,7 @@ describe('Placement start after deadline end', () => {
       }
     ])
 
-    const reservationsModal = await calendar.openReservationsModal()
+    const reservationsModal = await calendar.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(startDate, LocalDate.of(2024, 6, 7)),
       '08:00',

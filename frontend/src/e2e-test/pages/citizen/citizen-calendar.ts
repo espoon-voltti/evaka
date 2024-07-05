@@ -15,7 +15,8 @@ import {
   Page,
   Select,
   TextInput,
-  ElementCollection
+  ElementCollection,
+  DatePicker
 } from '../../utils/page'
 
 export type FormatterReservation = {
@@ -32,6 +33,7 @@ export default class CitizenCalendarPage {
   #expiringIncomeCta: Element
   #dailyServiceTimeNotifications: ElementCollection
   #dailyServiceTimeNotificationModal: Element
+
   constructor(
     private readonly page: Page,
     private readonly type: 'desktop' | 'mobile'
@@ -72,14 +74,14 @@ export default class CitizenCalendarPage {
       .assertTextEquals(count.toString())
   }
 
-  async openReservationsModal() {
+  async openReservationModal() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
       await this.page.findByDataQa('calendar-action-reservations').click()
     } else {
       await this.page.findByDataQa('open-reservations-modal').click()
     }
-    return new ReservationsModal(this.page)
+    return new ReservationModal(this.page.findByDataQa('reservation-modal'))
   }
 
   async openAbsencesModal() {
@@ -125,6 +127,7 @@ export default class CitizenCalendarPage {
     await this.dayCell(date).click()
     return new DayView(this.page, this.page.findByDataQa('calendar-dayview'))
   }
+
   getMonthlySummary(year: number, month: number) {
     return new MonthlySummary(
       this.page.findByDataQa(
@@ -272,9 +275,9 @@ export default class CitizenCalendarPage {
   }
 }
 
-class ReservationsModal {
-  #startDateInput: TextInput
-  #endDateInput: TextInput
+class ReservationModal extends Element {
+  startDate: DatePicker
+  endDate: DatePicker
   #repetitionSelect: Select
   #dailyStartTimeInput: TextInput
   #dailyEndTimeInput: TextInput
@@ -282,45 +285,49 @@ class ReservationsModal {
   #weeklyStartTimeInputs: TextInput[]
   #weeklyEndTimeInputs: TextInput[]
   #weeklyAbsentButtons: Element[]
-  constructor(private readonly page: Page) {
-    this.#startDateInput = new TextInput(page.findByDataQa('start-date'))
-    this.#endDateInput = new TextInput(page.findByDataQa('end-date'))
-    this.#repetitionSelect = new Select(page.findByDataQa('repetition'))
+
+  constructor(el: Element) {
+    super(el)
+    this.startDate = new DatePicker(this.findByDataQa('start-date'))
+    this.endDate = new DatePicker(this.findByDataQa('end-date'))
+    this.#repetitionSelect = new Select(this.findByDataQa('repetition'))
     this.#dailyStartTimeInput = new TextInput(
-      page.findByDataQa('daily-time-0-start')
+      this.findByDataQa('daily-time-0-start')
     )
     this.#dailyEndTimeInput = new TextInput(
-      page.findByDataQa('daily-time-0-end')
+      this.findByDataQa('daily-time-0-end')
     )
     this.#weeklyStartTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
       (index) =>
-        new TextInput(page.findByDataQa(`weekly-${index}-time-0-start`))
+        new TextInput(this.findByDataQa(`weekly-${index}-time-0-start`))
     )
     this.#weeklyEndTimeInputs = [0, 1, 2, 3, 4, 5, 6].map(
-      (index) => new TextInput(page.findByDataQa(`weekly-${index}-time-0-end`))
+      (index) => new TextInput(this.findByDataQa(`weekly-${index}-time-0-end`))
     )
     this.#weeklyAbsentButtons = [0, 1, 2, 3, 4, 5, 6].map(
       (index) =>
-        new TextInput(page.findByDataQa(`weekly-${index}-absent-button`))
+        new TextInput(this.findByDataQa(`weekly-${index}-absent-button`))
     )
-    this.#modalSendButton = page.findByDataQa('modal-okBtn')
+    this.#modalSendButton = this.findByDataQa('modal-okBtn')
   }
 
   irregularStartTimeInput = (date: LocalDate) =>
     new TextInput(
-      this.page.findByDataQa(`irregular-${date.formatIso()}-time-0-start`)
+      this.findByDataQa(`irregular-${date.formatIso()}-time-0-start`)
     )
 
   irregularEndTimeInput = (date: LocalDate) =>
-    new TextInput(
-      this.page.findByDataQa(`irregular-${date.formatIso()}-time-0-end`)
-    )
+    new TextInput(this.findByDataQa(`irregular-${date.formatIso()}-time-0-end`))
 
   #childCheckbox = (childId: string) =>
-    new Checkbox(this.page.findByDataQa(`child-${childId}`))
+    new Checkbox(this.findByDataQa(`child-${childId}`))
 
   async save() {
     await this.#modalSendButton.click()
+  }
+
+  async selectRepetition(repetition: 'DAILY' | 'WEEKLY' | 'IRREGULAR') {
+    await this.#repetitionSelect.selectOption({ value: repetition })
   }
 
   async fillDailyReservationInfo(
@@ -337,22 +344,22 @@ class ReservationsModal {
       }
     }
 
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
     await this.#dailyStartTimeInput.fill(startTime)
     await this.#dailyEndTimeInput.fill(endTime)
     await this.#dailyEndTimeInput.press('Tab')
   }
 
   async fillDaily2ndReservationInfo(startTime: string, endTime: string) {
-    const addReservationButton = this.page.findByDataQa('daily-add-res-button')
+    const addReservationButton = this.findByDataQa('daily-add-res-button')
     await addReservationButton.click()
     const daily2ndReservationStartTimeInput = new TextInput(
-      this.page.findByDataQa('daily-time-1-start')
+      this.findByDataQa('daily-time-1-start')
     )
 
     const daily2ndReservationEndTimeInput = new TextInput(
-      this.page.findByDataQa('daily-time-1-end')
+      this.findByDataQa('daily-time-1-end')
     )
     await daily2ndReservationStartTimeInput.fill(startTime)
     await daily2ndReservationEndTimeInput.fill(endTime)
@@ -378,28 +385,28 @@ class ReservationsModal {
 
   private async deselectChildren(n: number) {
     for (let i = 0; i < n; i++) {
-      await this.page.findAllByDataQa('relevant-child').nth(i).click()
+      await this.findAllByDataQa('relevant-child').nth(i).click()
     }
   }
 
   async deselectAllChildren() {
-    const pills = this.page.findAllByDataQa('relevant-child')
+    const pills = this.findAllByDataQa('relevant-child')
     for (const el of await pills.elementHandles()) {
       await el.click()
     }
   }
 
   async selectChild(childId: string) {
-    await this.page.findByDataQa(`child-${childId}`).click()
+    await this.findByDataQa(`child-${childId}`).click()
   }
 
   async fillWeeklyReservationInfo(
     dateRange: FiniteDateRange,
     weeklyTimes: ({ startTime: string; endTime: string } | { absence: true })[]
   ) {
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#repetitionSelect.selectOption({ value: 'WEEKLY' })
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition('WEEKLY')
     await weeklyTimes.reduce(async (promise, weeklyTime, index) => {
       await promise
       if ('absence' in weeklyTime) {
@@ -425,9 +432,9 @@ class ReservationsModal {
     dateRange: FiniteDateRange,
     irregularTimes: { date: LocalDate; startTime: string; endTime: string }[]
   ) {
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#repetitionSelect.selectOption({ value: 'IRREGULAR' })
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition('IRREGULAR')
 
     await irregularTimes.reduce(async (promise, weeklyTime) => {
       await promise
@@ -450,12 +457,12 @@ class ReservationsModal {
 
   async assertUnmodifiableDayExists(
     dateRange: FiniteDateRange,
-    repetitionMode: string
+    repetitionMode: 'DAILY' | 'WEEKLY' | 'IRREGULAR'
   ) {
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#repetitionSelect.selectOption({ value: repetitionMode })
-    await this.page.findByDataQa('not-editable-info-button').waitUntilVisible()
+    await this.startDate.fill(dateRange.start.format())
+    await this.endDate.fill(dateRange.end.format())
+    await this.selectRepetition(repetitionMode)
+    await this.findByDataQa('not-editable-info-button').waitUntilVisible()
   }
 
   async assertSendButtonDisabled(targetValue: boolean) {
@@ -466,9 +473,9 @@ class ReservationsModal {
     input: 'start' | 'end',
     reservationIndex: 0 | 1
   ) {
-    await this.page
-      .findByDataQa(`daily-time-${reservationIndex}-${input}-info`)
-      .waitUntilVisible()
+    await this.findByDataQa(
+      `daily-time-${reservationIndex}-${input}-info`
+    ).waitUntilVisible()
   }
 
   async assertWeeklyInputValidationWarningVisible(
@@ -476,11 +483,9 @@ class ReservationsModal {
     weekDayIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6,
     reservationIndex: 0 | 1
   ) {
-    await this.page
-      .findByDataQa(
-        `weekly-${weekDayIndex}-time-${reservationIndex}-${input}-info`
-      )
-      .waitUntilVisible()
+    await this.findByDataQa(
+      `weekly-${weekDayIndex}-time-${reservationIndex}-${input}-info`
+    ).waitUntilVisible()
   }
 
   async assertIrregularInputValidationWarningVisible(
@@ -488,21 +493,17 @@ class ReservationsModal {
     reservationIndex: 0 | 1,
     date: LocalDate
   ) {
-    await this.page
-      .findByDataQa(
-        `irregular-${date.formatIso()}-time-${reservationIndex}-${input}-info`
-      )
-      .waitUntilVisible()
+    await this.findByDataQa(
+      `irregular-${date.formatIso()}-time-${reservationIndex}-${input}-info`
+    ).waitUntilVisible()
   }
 
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
-      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
+      await this.findByDataQa(`child-${childId}`).waitUntilVisible()
     }
 
-    await this.page
-      .findAllByDataQa('relevant-child')
-      .assertCount(childIds.length)
+    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
   }
 }
 
@@ -511,6 +512,7 @@ class AbsencesModal {
   endDateInput: TextInput
   #modalSendButton: Element
   absenceTypeRequiredError: Element
+
   constructor(private readonly page: Page) {
     this.startDateInput = new TextInput(page.findByDataQa('start-date'))
     this.endDateInput = new TextInput(page.findByDataQa('end-date'))
@@ -628,9 +630,11 @@ class DayView extends Element {
       reservations.map(formatter).join(', ')
     )
   }
+
   getServiceUsageWarning(childId: UUID) {
     return this.#childSection(childId).findByDataQa('service-usage-warning')
   }
+
   getUsedService(childId: UUID) {
     return this.#childSection(childId).findByDataQa('used-service')
   }
@@ -749,6 +753,7 @@ class HolidayModal extends Element {
 class DayModal {
   childName: ElementCollection
   closeModal: Element
+
   constructor(readonly page: Page) {
     this.childName = page.findAllByDataQa('child-name')
     this.closeModal = page.findByDataQa('day-view-close-button')
