@@ -112,7 +112,9 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
+import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
+import fi.espoo.evaka.reservations.insertValidReservations
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -1004,6 +1006,20 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
                     automaticFixedScheduleAbsencesEnabled = false
                 )
+            }
+        }
+    }
+
+    @PostMapping("/reservations/raw")
+    fun postReservationsRaw(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: List<ReservationInsert>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                tx.insertValidReservations(fakeAdmin.evakaUserId, body)
             }
         }
     }

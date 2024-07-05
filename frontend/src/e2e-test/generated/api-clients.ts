@@ -91,6 +91,7 @@ import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { PostVasuDocBody } from './api-types'
+import { ReservationInsert } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
@@ -2026,6 +2027,27 @@ export async function postReservations(
       url: uri`/reservations`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.postReservationsRaw
+*/
+export async function postReservationsRaw(
+  request: {
+    body: ReservationInsert[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/reservations/raw`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<ReservationInsert[]>
     })
     return json
   } catch (e) {

@@ -102,6 +102,7 @@ import {
   insertGuardians,
   postAttendances,
   postReservations,
+  postReservationsRaw,
   upsertStaffOccupancyCoefficient,
   upsertVtjDataset
 } from '../generated/api-clients'
@@ -146,6 +147,7 @@ import {
   DevVardaReset,
   DevVardaServiceNeed,
   PlacementPlan,
+  ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
 
@@ -2378,6 +2380,12 @@ export class Fixture {
     return new AttendanceReservationBuilder(data)
   }
 
+  static attendanceReservationRaw(
+    data: ReservationInsert
+  ): AttendanceReservationRawBuilder {
+    return new AttendanceReservationRawBuilder(data)
+  }
+
   static absence(): AbsenceBuilder {
     return new AbsenceBuilder({
       id: uuidv4(),
@@ -3280,6 +3288,17 @@ export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservatio
 
   copy() {
     return new AttendanceReservationBuilder({ ...this.data })
+  }
+}
+
+export class AttendanceReservationRawBuilder extends FixtureBuilder<ReservationInsert> {
+  async save() {
+    await postReservationsRaw({ body: [this.data] })
+    return this
+  }
+
+  copy() {
+    return new AttendanceReservationRawBuilder({ ...this.data })
   }
 }
 

@@ -192,10 +192,11 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await reservationsModal.selectChild(
       fixtures.enduserChildFixturePorriHatterRestricted.id
     )
-    await reservationsModal.assertUnmodifiableDayExists(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      'WEEKLY'
-    )
+    await reservationsModal.startDate.fill(firstReservationDay)
+    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+    await reservationsModal.selectRepetition('WEEKLY')
+
+    await reservationsModal.assertReadOnlyWeeklyDay(2, 'absentNotEditable')
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
@@ -740,13 +741,17 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Reservation without times', async () => {
     await init()
     await Fixture.holidayPeriod()
-      .with({ period: new FiniteDateRange(today, today) })
+      .with({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today,
+        reservationDeadline: today
+      })
       .save()
 
-    await Fixture.attendanceReservation({
-      type: 'PRESENT',
+    await Fixture.attendanceReservationRaw({
+      childId: enduserChildFixtureKaarina.id,
       date: today,
-      childId: enduserChildFixtureKaarina.id
+      range: null
     }).save()
 
     const calendarPage = await openCalendarPage(env)

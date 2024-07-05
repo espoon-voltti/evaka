@@ -455,14 +455,17 @@ class ReservationModal extends Element {
     await this.save()
   }
 
-  async assertUnmodifiableDayExists(
-    dateRange: FiniteDateRange,
-    repetitionMode: 'DAILY' | 'WEEKLY' | 'IRREGULAR'
+  async assertReadOnlyWeeklyDay(
+    dayIndex: number,
+    state:
+      | 'noChildren'
+      | 'absentNotEditable'
+      | 'termBreak'
+      | 'notYetReservable'
+      | 'reservationClosed'
+      | 'holiday'
   ) {
-    await this.startDate.fill(dateRange.start.format())
-    await this.endDate.fill(dateRange.end.format())
-    await this.selectRepetition(repetitionMode)
-    await this.findByDataQa('not-editable-info-button').waitUntilVisible()
+    await this.findByDataQa(`weekly-${dayIndex}-${state}`).waitUntilVisible()
   }
 
   async assertSendButtonDisabled(targetValue: boolean) {

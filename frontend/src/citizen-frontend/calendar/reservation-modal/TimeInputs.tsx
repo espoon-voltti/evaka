@@ -148,10 +148,17 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
 }: ReadOnlyDayProps) {
   const i18n = useTranslation()
 
+  const dataQa = (suffix: string) =>
+    dataQaPrefix ? `${dataQaPrefix}-${suffix}` : undefined
+
   switch (state.type) {
     case 'noChildren':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('noChildren')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell />
           <RightCell />
@@ -161,14 +168,18 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       return (
         <WithInfo
           label={label}
-          dataQaPrefix={dataQaPrefix}
           shortText={i18n.calendar.reservationModal.absent}
           longText={i18n.calendar.contactStaffToEditAbsence}
+          data-qa={dataQa('absentNotEditable')}
         />
       )
     case 'termBreak':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('termBreak')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.termBreak}</MiddleCell>
           <RightCell />
@@ -178,26 +189,30 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       return (
         <WithInfo
           label={label}
-          dataQaPrefix={dataQaPrefix}
           shortText={i18n.calendar.reservationModal.notYetReservable}
           longText={i18n.calendar.reservationModal.notYetReservableInfo(
             state.period,
             state.reservationsOpenOn
           )}
+          data-qa={dataQa('notYetReservable')}
         />
       )
     case 'reservationClosed':
       return (
         <WithInfo
           label={label}
-          dataQaPrefix={dataQaPrefix}
           shortText={i18n.calendar.reservationModal.reservationClosed}
           longText={i18n.calendar.reservationModal.reservationClosedInfo}
+          data-qa={dataQa('reservationClosed')}
         />
       )
     case 'holiday':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('holiday')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
@@ -210,36 +225,30 @@ function WithInfo({
   label,
   shortText,
   longText,
-  dataQaPrefix
+  'data-qa': dataQa
 }: {
   label?: React.ReactNode
   shortText: string
   longText: string
-  dataQaPrefix?: string
+  'data-qa'?: string
 }) {
   const i18n = useTranslation()
   const [infoOpen, useInfoOpen] = useBoolean(false)
   return (
     <>
-      <FixedSpaceRow fullWidth alignItems="center">
+      <FixedSpaceRow fullWidth alignItems="center" data-qa={dataQa}>
         {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
         <MiddleCell>{shortText}</MiddleCell>
         <RightCell>
           <InfoButton
             onClick={useInfoOpen.toggle}
             aria-label={i18n.common.openExpandingInfo}
-            data-qa="reservation-closed-info-button"
           />
         </RightCell>
       </FixedSpaceRow>
       {infoOpen && (
         <FixedSpaceRow fullWidth>
           <ExpandingInfoBox
-            data-qa={
-              dataQaPrefix
-                ? `${dataQaPrefix}-reservation-closed-info-box`
-                : undefined
-            }
             close={useInfoOpen.off}
             aria-label={shortText}
             info={longText}
