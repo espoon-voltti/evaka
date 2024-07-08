@@ -1,8 +1,8 @@
 {
-  "environment": "<%= ENV['NGINX_ENV'] %>",
+  "environment": "{{ .Env.NGINX_ENV }}",
   "service": "evaka-proxy",
-  "version": "<%= ENV['APP_COMMIT'] %>",
+  "version": "{{ .Env.APP_COMMIT }}",
   "operation_name_override": "nginx.handle",
-  "agent_host": "<%= ENV['DD_AGENT_HOST'] %>",
-  "agent_port": <%= ENV['DD_AGENT_PORT'] %>
+  "agent_host": "{{ .Env.DD_AGENT_HOST }}",
+  "agent_port": {{ .Env.DD_AGENT_PORT }}
 }

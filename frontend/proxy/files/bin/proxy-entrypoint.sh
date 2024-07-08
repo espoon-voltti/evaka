@@ -52,13 +52,8 @@ if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
   s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
 fi
 
-for template in /etc/nginx/conf.d/*.template /etc/nginx/*.template /internal/*.template; do
-    if ! test -f "$template"; then
-      continue
-    fi
-    target=$(echo "$template" | sed -e "s/.template$//")
-
-    erb -T - "$template" > "$target"
+for directory in /etc/nginx/conf.d/ /etc/nginx/ /internal/; do
+  gomplate --input-dir="$directory" --output-map="$directory"'{{ .in | strings.ReplaceAll ".template" "" }}'
 done
 
 mkdir -p /static/.well-known

@@ -2,13 +2,13 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-<% if ENV.key?("KEYCLOAK_PARAMETERS") && ENV["KEYCLOAK_PARAMETERS"] != "" %>
-<%= ENV["KEYCLOAK_PARAMETERS"] %>
-<% end %>
+{{ if env.Getenv "KEYCLOAK_PARAMETERS" "" }}
+{{ .Env.KEYCLOAK_PARAMETERS }}
+{{ end }}
 
-<% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
+{{ if eq (env.Getenv "BASIC_AUTH_ENABLED" "") "true" }}
 auth_basic "off";
-<% end %>
+{{ end }}
 
 add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'; form-action 'self' ${formActionUrl}";
 

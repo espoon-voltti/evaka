@@ -5,12 +5,12 @@
 # Hide version information
 server_tokens off;
 
-<% if ENV.key?("RESOLVER") %>
-resolver <%= ENV["RESOLVER"] %>;
-<% else %>
+{{ if has .Env "RESOLVER" }}
+resolver {{ .Env.RESOLVER }};
+{{ else }}
 # DNS resolver in a AWS VPC: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html
 resolver 169.254.169.253;
-<% end %>
+{{ end }}
 
 # Helper for check content-type for static file error handler.
 # Should always be ~text/html.
@@ -59,9 +59,11 @@ set_real_ip_from 0.0.0.0/0;
 # Set $limit to 0 if client's IP address matches whitelisted CIDR(s).
 geo $limit {
   default 1;
-<% (ENV["RATE_LIMIT_CIDR_WHITELIST"] || "").split(";").each do |cidr| %>
-  <%= cidr %> 0;
-<% end %>
+{{ if has .Env "RATE_LIMIT_CIDR_WHITELIST" }}
+{{range ( .Env.RATE_LIMIT_CIDR_WHITELIST | strings.Split ";" ) }}
+  {{ . }} 0;
+{{ end }}
+{{ end }}
 }
 
 # If $limit matched to a whitelisted CIDR,
@@ -122,13 +124,13 @@ map $msec $millisec {
 log_format json_access escape=json
   '{'
     '"@timestamp":"$time_iso8601_p1.$millisec+$time_iso8601_p2",'
-    '"appBuild":"<%= ENV["APP_BUILD"] %>",'
-    '"appCommit":"<%= ENV["APP_COMMIT"] %>",'
+    '"appBuild":"{{ .Env.APP_BUILD }}",'
+    '"appCommit":"{{ .Env.APP_COMMIT }}",'
     '"appName":"evaka-proxy",'
     '"clientIp":"$remote_addr",'
     '"contentLength":$bytes_sent,'
-    '"env":"<%= ENV["NGINX_ENV"] %>",'
-    '"hostIp":"<%= ENV["HOST_IP"] %>",'
+    '"env":"{{ .Env.NGINX_ENV }}",'
+    '"hostIp":"{{ .Env.HOST_IP }}",'
     '"httpMethod":"$request_method",'
     '"path":"$uri",'
     '"queryString":"$query_string",'
@@ -138,10 +140,10 @@ log_format json_access escape=json
     '"traceId":"$request_id",'
     '"type":"app-requests-received",'
     '"userIdHash":"",'
-<% if ENV["DD_PROFILING_ENABLED"] == "true" %>
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
     '"dd.trace_id":"$opentracing_context_x_datadog_trace_id",'
     '"dd.span_id":"$opentracing_context_x_datadog_parent_id",'
-<% end %>
+{{ end }}
     '"version":1'
   '}';
 
@@ -156,12 +158,12 @@ server {
 
   # Variables
 
-  set $enduserUrl "<%= ENV["ENDUSER_GW_URL"] %>";
-  set $internalUrl "<%= ENV["INTERNAL_GW_URL"] %>";
-  set $httpScheme "<%= ENV["HTTP_SCHEME"] || "https" %>";
-  <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
-  set $staticEndpoint "<%= ENV["STATIC_FILES_ENDPOINT_URL"] %>";
-  <% end %>
+  set $enduserUrl "{{ .Env.ENDUSER_GW_URL }}";
+  set $internalUrl "{{ .Env.INTERNAL_GW_URL }}";
+  set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
+  {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
+  set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
+  {{ end }}
 
   access_log off;
 
@@ -194,9 +196,9 @@ server {
   gzip_vary     on;
   gzip_types    text/plain text/css application/javascript text/xml application/xml image/svg+xml;
 
-  <% if ENV.key?("LIMIT_CONFIGURATION") && ENV["LIMIT_CONFIGURATION"] != "" %>
-  <%= ENV["LIMIT_CONFIGURATION"] %>
-  <% end %>
+  {{ if env.Getenv "LIMIT_CONFIGURATION" "" }}
+  {{ .Env.LIMIT_CONFIGURATION }}
+  {{ end }}
 
   ############################
   # Well-known & common routes
@@ -230,11 +232,11 @@ server {
       auth_basic off;
     }
 
-    <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
+    {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
     try_files $uri $uri/ @static;
-    <% else %>
+    {{ else }}
     try_files $uri $uri/ @indexPage;
-    <% end %>
+    {{ end }}
   }
 
   location /admin/ {
@@ -245,7 +247,7 @@ server {
     return 301 $httpScheme://$host/employee;
   }
 
-  <% if ENV.key?("STATIC_FILES_ENDPOINT_URL") && ENV["STATIC_FILES_ENDPOINT_URL"] != "" %>
+  {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
   location @static {
     proxy_set_header        Authorization '';
     proxy_hide_header       x-amz-id-2;
@@ -257,7 +259,7 @@ server {
     proxy_intercept_errors  on;
     error_page 404 = @indexPage;
   }
-  <% end %>
+  {{ end }}
 
   location @indexPage {
     if ($content_type_not_ok) {
@@ -332,15 +334,15 @@ server {
     root /;
   }
 
-  <% if ENV.key?("KEYCLOAK_CONFIGURATION") && ENV["KEYCLOAK_CONFIGURATION"] != "" %>
-  <%= ENV["KEYCLOAK_CONFIGURATION"] %>
-  <% elsif ENV.key?("KEYCLOAK_URL") && ENV["KEYCLOAK_URL"] != "" %>
+  {{ if env.Getenv "KEYCLOAK_CONFIGURATION" "" }}
+  {{ .Env.KEYCLOAK_CONFIGURATION }}
+  {{ else if env.Getenv "KEYCLOAK_URL" "" }}
   # KeyCloak configuration with separate environment variables.
   # Used as backwards combability and can be removed in future.
-  set $authUrl "<%= ENV["KEYCLOAK_URL"] %>";
-  set $formActionUrl "<%= ENV["FORM_ACTION_URL"] %>";
+  set $authUrl "{{ .Env.KEYCLOAK_URL }}";
+  set $formActionUrl "{{ .Env.FORM_ACTION_URL }}";
 
-  <% if ENV["KEYCLOAK_ADMIN_ALLOWLIST"] %>
+  {{ if has .Env "KEYCLOAK_ADMIN_ALLOWLIST" }}
   # https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
   location /auth/js/ {
     include keycloak-proxy.conf;
@@ -360,39 +362,39 @@ server {
     include keycloak-proxy.conf;
     allow all;
   }
-  <% end %>
+  {{ end }}
 
   location /auth {
     include keycloak-proxy.conf;
-    <% if ENV["KEYCLOAK_ADMIN_ALLOWLIST"] %>
-    <% ENV["KEYCLOAK_ADMIN_ALLOWLIST"].split(',').each do |entry| %>
-    allow <%= entry %>;
-    <% end %>
+    {{ if has .Env "KEYCLOAK_ADMIN_ALLOWLIST" }}
+    {{range ( .Env.KEYCLOAK_ADMIN_ALLOWLIST | strings.Split "," ) }}
+    allow {{ . }};
+    {{ end }}
     deny all;
-    <% end %>
+    {{ end }}
   }
-  <% end %>
+  {{ end }}
 
-  <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
+  {{ if  eq (env.Getenv "BASIC_AUTH_ENABLED" "false") "true" }}
   auth_basic            "Log in";
   auth_basic_user_file  "/etc/nginx/.htpasswd";
-  <% end %>
+  {{ end }}
 }
 
-<% if ENV.key?("SERVICE_DOMAIN_SV") && ENV.key?("SERVICE_DOMAIN") %>
+{{ if and (env.Getenv "SERVICE_DOMAIN_SV" "") (env.Getenv "SERVICE_DOMAIN" "") }}
 server {
     listen 8080;
-    server_name <%= ENV["SERVICE_DOMAIN_SV"] %>;
+    server_name {{ .Env.SERVICE_DOMAIN_SV }};
 
     access_log off;
 
-    set $httpScheme "<%= ENV["HTTP_SCHEME"] || "https" %>";
+    set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
 
     add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection '1; mode=block';
     add_header X-DNS-Prefetch-Control off;
 
-    rewrite ^ $httpScheme://<%= ENV["SERVICE_DOMAIN"] %>$uri?lang=sv redirect;
+    rewrite ^ $httpScheme://{{ .Env.SERVICE_DOMAIN }}$uri?lang=sv redirect;
 }
-<% end %>
+{{ end }}
