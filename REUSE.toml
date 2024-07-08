@@ -1,0 +1,135 @@
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+version = 1
+SPDX-PackageName = "evaka"
+SPDX-PackageDownloadLocation = "https://github.com/espoon-voltti/evaka"
+
+[[annotations]]
+path = ".github/PULL_REQUEST_TEMPLATE.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "apigw/.yarn/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-present Yarn Contributors"
+SPDX-License-Identifier = "BSD-2-Clause"
+SPDX-FileComment = "Directory also includes code with other licenses and other copyright holders but those are clearly identified\n  in the source code with prefixed comments. Only the not-explicitly licensed portions are licensed with information\n  described here."
+
+[[annotations]]
+path = "apigw/config/certificates/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "apigw/config/test-cert/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "frontend/packages/enduser-frontend/src/localization/**.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "frontend/.yarn/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-present Yarn Contributors"
+SPDX-License-Identifier = "BSD-2-Clause"
+SPDX-FileComment = "Directory also includes code with other licenses and other copyright holders but those are clearly identified\n  in the source code with prefixed comments. Only the not-explicitly licensed portions are licensed with information\n  described here."
+
+[[annotations]]
+path = "**/src/main/resources/db/migration/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = ".nvmrc"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2022 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**.yarnrc.yml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2021 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/.sentryclirc"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/**.cert"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/**.pem"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/jwks.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/package.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/tsconfig**.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/tslint.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/yarn.lock"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017-2020 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "**/gradlew**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2007-2020 The original author or authors <info@gradle.com>"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "**/gradle/wrapper/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2007-2020 The original author or authors <info@gradle.com>"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "keycloak/evaka-review-profile/src/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-2022 The original author or authors"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "keycloak/theme/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2020 City of Helsinki", "2021-2022 City of Espoo"]
+SPDX-License-Identifier = "MIT"
