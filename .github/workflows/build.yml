@@ -53,7 +53,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Reuse Compliance Check
-      uses: fsfe/reuse-action@v3
+      uses: fsfe/reuse-action@v4
 
   keycloak:
     runs-on: ubuntu-latest
