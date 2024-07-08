@@ -275,6 +275,14 @@ export default class CitizenCalendarPage {
   }
 }
 
+type ReadOnlyDayState =
+  | 'noChildren'
+  | 'absentNotEditable'
+  | 'termBreak'
+  | 'notYetReservable'
+  | 'reservationClosed'
+  | 'holiday'
+
 class ReservationModal extends Element {
   startDate: DatePicker
   endDate: DatePicker
@@ -455,17 +463,14 @@ class ReservationModal extends Element {
     await this.save()
   }
 
-  async assertReadOnlyWeeklyDay(
-    dayIndex: number,
-    state:
-      | 'noChildren'
-      | 'absentNotEditable'
-      | 'termBreak'
-      | 'notYetReservable'
-      | 'reservationClosed'
-      | 'holiday'
-  ) {
+  async assertReadOnlyWeeklyDay(dayIndex: number, state: ReadOnlyDayState) {
     await this.findByDataQa(`weekly-${dayIndex}-${state}`).waitUntilVisible()
+  }
+
+  async assertReadOnlyIrregularDay(date: LocalDate, state: ReadOnlyDayState) {
+    await this.findByDataQa(
+      `irregular-${date.formatIso()}-${state}`
+    ).waitUntilVisible()
   }
 
   async assertSendButtonDisabled(targetValue: boolean) {
