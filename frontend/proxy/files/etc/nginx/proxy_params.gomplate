@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2017-2021 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For "$http_x_forwarded_for, $realip_remote_addr";
+proxy_set_header X-Forwarded-Host $http_host;
+proxy_set_header X-Original-Forwarded-Proto $http_x_forwarded_proto;
+proxy_set_header X-Request-ID $request_id;
+proxy_set_header Connection "";
+
+# Prevent forwarding of sensitive headers
+proxy_set_header X-User "";
+
+# Actual caching headers should be set by downstream API Gateways;
+# this is just to prevent caching at the proxy level.
+proxy_no_cache 1;
+
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+opentracing_operation_name "$request_method $uri";
+opentracing_propagate_context;
+{{ end }}

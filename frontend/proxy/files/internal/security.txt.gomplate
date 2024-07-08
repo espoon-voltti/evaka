@@ -1,0 +1,12 @@
+{{- /* Contact: A link or e-mail address for people to contact you about security issues. Remember to include "https://" for URLs, and "mailto:" for e-mails. */ -}}
+{{ if env.Getenv "SECURITYTXT_CONTACTS" "" }}
+{{ range ( .Env.RATE_LIMIT_CIDR_WHITELIST | strings.Split ";" ) }}
+Contact: {{ . }}
+{{ end }}
+{{ "" }}
+{{ end }}
+{{- /* Preferred-Languages: A comma-separated list of language codes that your security team speaks. You may include more than one language. */ -}}
+Preferred-Languages: {{ env.Getenv "SECURITYTXT_LANGUAGES" "en" }}
+{{ "" }}
+{{- /* Expires: The date and time when the content of the security.txt file should be considered stale (so security researchers should then not trust it). Make sure you update this value periodically and keep your file under review */ -}}
+Expires: {{ (time.Now.AddDate 0 3 0).Format "2006-01-02T00:00:00+00:00" }}

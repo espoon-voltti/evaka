@@ -1,0 +1,400 @@
+# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Hide version information
+server_tokens off;
+
+{{ if has .Env "RESOLVER" }}
+resolver {{ .Env.RESOLVER }};
+{{ else }}
+# DNS resolver in a AWS VPC: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html
+resolver 169.254.169.253;
+{{ end }}
+
+# Helper for check content-type for static file error handler.
+# Should always be ~text/html.
+map $content_type $content_type_not_ok {
+  default "0";
+  ~text/html "1";
+}
+
+# Helper for cache expiration.
+# Never cache "text/html" as it should always contains references to
+# the latest resources (that can be cached, with their hashed names).
+map $sent_http_content_type $expires {
+  default                    off;
+  text/html                  -1;
+  text/css                   max;
+  application/javascript     max;
+  application/woff2          max;
+  ~image/                    max;
+}
+
+# Extra Cache-Control header values based on response content type.
+# Enhances expires directive's functionality with "no-store" for "text/html".
+map $sent_http_content_type $cache_control {
+  default   '';
+  text/html 'no-store';
+}
+
+# Map nginx's request_time which is presented in seconds with a millisecond precision ("10.3 format")
+# to milliseconds.
+# 0.000 is a special case for static responses (e.g. health checks)
+# Strip all prefixing zeroes.
+#
+# TODO: This should be done externally from nginx but currently we feed logs directly to Elasticsearch via Functionbeat,
+# so there's nowhere to format logs before ES.
+map $request_time $request_time_ms {
+  "0.000"       0;
+  ~^0\.(0*)(.*) $2;
+  ~(.*)\.(.*)   $1$2;
+}
+
+real_ip_header X-Forwarded-For;
+set_real_ip_from 0.0.0.0/0;
+
+# Global rate limiting
+
+# Set $limit to 0 if client's IP address matches whitelisted CIDR(s).
+geo $limit {
+  default 1;
+{{ if has .Env "RATE_LIMIT_CIDR_WHITELIST" }}
+{{range ( .Env.RATE_LIMIT_CIDR_WHITELIST | strings.Split ";" ) }}
+  {{ . }} 0;
+{{ end }}
+{{ end }}
+}
+
+# If $limit matched to a whitelisted CIDR,
+# $limit_key will be set to and empty string,
+# otherwise $limit_key key will be the client's IP address in binary format.
+#
+# When $limit_key is an empty string (whitelisted CIDR), the first limit_req_zone
+# WON'T be applied. That means all whitelisted CIDR(s) are handled by the second
+# limit_req_zone with a higher limit, as $binary_remote_addr is always defined.
+# The more restrictive limit is applied, so even though all clients will match
+# the second limit_req_zone, the first will be applied to non-whitelisted clients.
+#
+map $limit $limit_key {
+  0 "";
+  1 $binary_remote_addr;
+}
+
+# rate=Rr/s : allow a request every 1/R seconds
+# burst=B   : allow B requests to be queued, each gets a 1/R second slot
+# ==> a user can make B requests in a B/R second window
+#
+# This is explained more verbosely in https://www.nginx.com/blog/rate-limiting-nginx/#Queueing-with-No-Delay
+
+# Normal: rate=10, burst=50 => 50 requests in a 5 second window
+limit_req_zone $limit_key zone=req_zone:10m rate=10r/s;
+limit_req      zone=req_zone burst=50 nodelay;
+
+# Whitelisted: rate=100, burst=100 => 100 requests in a 1 second window
+limit_req_zone $binary_remote_addr zone=req_zone_wl:1m rate=100r/s;
+limit_req      zone=req_zone_wl burst=100 nodelay;
+
+limit_req_status  429;
+
+# Logging
+
+# As nginx does not currently have a built-in variable for outputting ISO 8601
+# timestamps with millisecond resolution, generate it manually from
+# $time_iso8601 and $msec (which is in ms resolution but as seconds).
+#
+# This is less performant than the alternative of having an external tool like
+# Functionbeat or Logstash ingest the timestamps in another format but
+# shouldn't matter in eVaka's context + has the benefit of being human-readable
+# in its raw format.
+#
+# Source: https://thatsamguy.com/nginx-iso8601-time-format/
+map $time_iso8601 $time_iso8601_p1 {
+  ~([^+]+) $1;
+}
+map $time_iso8601 $time_iso8601_p2 {
+  ~\+([0-9:]+)$ $1;
+}
+map $msec $millisec {
+  ~\.([0-9]+)$ $1;
+}
+
+# Output logs in accordance to eVaka's log schema (type app-requests-received).
+# NOTE: userIdHash cannot easily be computed here, so left empty.
+log_format json_access escape=json
+  '{'
+    '"@timestamp":"$time_iso8601_p1.$millisec+$time_iso8601_p2",'
+    '"appBuild":"{{ .Env.APP_BUILD }}",'
+    '"appCommit":"{{ .Env.APP_COMMIT }}",'
+    '"appName":"evaka-proxy",'
+    '"clientIp":"$remote_addr",'
+    '"contentLength":$bytes_sent,'
+    '"env":"{{ .Env.NGINX_ENV }}",'
+    '"hostIp":"{{ .Env.HOST_IP }}",'
+    '"httpMethod":"$request_method",'
+    '"path":"$uri",'
+    '"queryString":"$query_string",'
+    '"responseTime":$request_time_ms,'
+    '"spanId":"$request_id",'
+    '"statusCode":"$status",'
+    '"traceId":"$request_id",'
+    '"type":"app-requests-received",'
+    '"userIdHash":"",'
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
+    '"dd.trace_id":"$opentracing_context_x_datadog_trace_id",'
+    '"dd.span_id":"$opentracing_context_x_datadog_parent_id",'
+{{ end }}
+    '"version":1'
+  '}';
+
+server {
+  # Basic configs
+  root /static;
+  index index.html;
+
+  listen 8080;
+  server_name _;
+  port_in_redirect off;
+
+  # Variables
+
+  set $enduserUrl "{{ .Env.ENDUSER_GW_URL }}";
+  set $internalUrl "{{ .Env.INTERNAL_GW_URL }}";
+  set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
+  {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
+  set $staticEndpoint "{{ .Env.STATIC_FILES_ENDPOINT_URL }}";
+  {{ end }}
+
+  access_log off;
+
+  # Security
+
+  # Add response headers. N.B. Never use add_header directive in
+  # a location bloc as it overrides the parent headers
+  add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
+  add_header X-Content-Type-Options nosniff;
+  add_header X-XSS-Protection '1; mode=block';
+  add_header X-DNS-Prefetch-Control off;
+  add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"$httpScheme://$host/api/csp"}]}';
+
+  set $loadFailedInlineScript "'sha256-z1vaAvxob9VDuw7klCB049Y2Xr6lf7KjhDrsLvsvcPU='"; # SHA256 calculated from the script contents
+  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org; connect-src 'self' https://o4507111645052928.ingest.de.sentry.io/ https://o318158.ingest.sentry.io https://api.digitransit.fi; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+  add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' ${loadFailedInlineScript}; frame-ancestors 'none'; form-action 'self';";
+
+  # Tracing
+  # Return the request ID to the client to make tracing of test requests very easy
+  add_header X-Request-ID $request_id always;
+
+  # Caching
+
+  # Sets Expires and Cache-Control headers
+  expires       $expires;
+  # Add additional Cache-Control headers
+  add_header    Cache-Control $cache_control;
+  # Gzipping to minimize network traffic
+  gzip          on;
+  gzip_vary     on;
+  gzip_types    text/plain text/css application/javascript text/xml application/xml image/svg+xml;
+
+  {{ if env.Getenv "LIMIT_CONFIGURATION" "" }}
+  {{ .Env.LIMIT_CONFIGURATION }}
+  {{ end }}
+
+  ############################
+  # Well-known & common routes
+  ############################
+
+  location /health {
+    access_log  off;
+    return      200;
+  }
+
+  ####################
+  # Application routes
+  ####################
+
+  rewrite ^/employee/mobile$ $httpScheme://$http_host/employee/mobile/ permanent;
+  rewrite ^/employee$ $httpScheme://$http_host/employee/ permanent;
+  rewrite ^/admin$ $httpScheme://$http_host/employee/ permanent;
+  rewrite ^/manager$ $httpScheme://$http_host/employee/ permanent;
+
+  # STATIC FILE ROUTING
+
+  location ~ ^/employee/mobile/service-worker.js(\.map)? {
+    expires        off;
+    add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+    proxy_no_cache 1
+    auth_basic off;
+  }
+
+  location / {
+    location ~ /employee/mobile/manifest\.([a-z0-9]+)\.json$ {
+      auth_basic off;
+    }
+
+    {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
+    try_files $uri $uri/ @static;
+    {{ else }}
+    try_files $uri $uri/ @indexPage;
+    {{ end }}
+  }
+
+  location /admin/ {
+    return 301 $httpScheme://$host/employee;
+  }
+
+  location /manager/ {
+    return 301 $httpScheme://$host/employee;
+  }
+
+  {{ if env.Getenv "STATIC_FILES_ENDPOINT_URL" "" }}
+  location @static {
+    proxy_set_header        Authorization '';
+    proxy_hide_header       x-amz-id-2;
+    proxy_hide_header       x-amz-request-id;
+    proxy_hide_header       Set-Cookie;
+    proxy_ignore_headers    Set-Cookie;
+    proxy_pass              $staticEndpoint$uri;
+
+    proxy_intercept_errors  on;
+    error_page 404 = @indexPage;
+  }
+  {{ end }}
+
+  location @indexPage {
+    if ($content_type_not_ok) {
+      return 404;
+    }
+
+    rewrite     /employee/mobile/(.*) /employee/mobile/index.html break;
+    rewrite     /employee/(.*) /employee/index.html break;
+    rewrite     /(.*) /index.html break;
+  }
+
+  location /api/application {
+    access_log /var/log/nginx/access.log json_access;
+
+    include     proxy_params;
+    proxy_pass  $enduserUrl;
+
+    location /api/application/citizen/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
+
+    location /api/application/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
+  }
+
+  location /api/internal {
+    access_log /var/log/nginx/access.log json_access;
+
+    include     proxy_params;
+    proxy_pass  $internalUrl;
+
+    location /api/internal/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
+  }
+
+  # Direct all CPS reports to internal endpoint /api/csp/csp-report
+  location /api/csp {
+    access_log /var/log/nginx/access.log json_access;
+
+    include     proxy_params;
+    proxy_pass  $internalUrl/api/csp/csp-report;
+  }
+
+  # Fox X-Accel-Redirect to S3
+  location ~* ^/internal_redirect/(.*) {
+    internal;
+
+    # Don't proxy sensitive headers
+    proxy_set_header        Authorization '';
+    proxy_set_header        Cookie '';
+    proxy_hide_header       x-amz-id-2;
+    proxy_hide_header       x-amz-request-id;
+    proxy_hide_header       Set-Cookie;
+    proxy_ignore_headers    Set-Cookie;
+
+    # Do not touch local disks when proxying content to clients
+    proxy_max_temp_file_size 0;
+
+    proxy_pass $1$is_args$args;
+
+    proxy_intercept_errors on;
+    error_page 403 404 /internal/try-again-later.txt;
+  }
+
+  location /internal/ {
+    internal;
+    root /;
+  }
+
+  {{ if env.Getenv "KEYCLOAK_CONFIGURATION" "" }}
+  {{ .Env.KEYCLOAK_CONFIGURATION }}
+  {{ else if env.Getenv "KEYCLOAK_URL" "" }}
+  # KeyCloak configuration with separate environment variables.
+  # Used as backwards combability and can be removed in future.
+  set $authUrl "{{ .Env.KEYCLOAK_URL }}";
+  set $formActionUrl "{{ .Env.FORM_ACTION_URL }}";
+
+  {{ if has .Env "KEYCLOAK_ADMIN_ALLOWLIST" }}
+  # https://www.keycloak.org/server/reverseproxy#_exposed_path_recommendations
+  location /auth/js/ {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/realms/ {
+    access_log /var/log/nginx/access.log json_access;
+
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/resources/ {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  location /auth/robots.txt {
+    include keycloak-proxy.conf;
+    allow all;
+  }
+  {{ end }}
+
+  location /auth {
+    include keycloak-proxy.conf;
+    {{ if has .Env "KEYCLOAK_ADMIN_ALLOWLIST" }}
+    {{range ( .Env.KEYCLOAK_ADMIN_ALLOWLIST | strings.Split "," ) }}
+    allow {{ . }};
+    {{ end }}
+    deny all;
+    {{ end }}
+  }
+  {{ end }}
+
+  {{ if  eq (env.Getenv "BASIC_AUTH_ENABLED" "false") "true" }}
+  auth_basic            "Log in";
+  auth_basic_user_file  "/etc/nginx/.htpasswd";
+  {{ end }}
+}
+
+{{ if and (env.Getenv "SERVICE_DOMAIN_SV" "") (env.Getenv "SERVICE_DOMAIN" "") }}
+server {
+    listen 8080;
+    server_name {{ .Env.SERVICE_DOMAIN_SV }};
+
+    access_log off;
+
+    set $httpScheme "{{ env.Getenv "HTTP_SCHEME" "https" }}";
+
+    add_header Strict-Transport-Security 'max-age=31536000; includeSubdomains; preload';
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection '1; mode=block';
+    add_header X-DNS-Prefetch-Control off;
+
+    rewrite ^ $httpScheme://{{ .Env.SERVICE_DOMAIN }}$uri?lang=sv redirect;
+}
+{{ end }}

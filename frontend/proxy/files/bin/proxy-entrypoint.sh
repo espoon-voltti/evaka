@@ -52,14 +52,23 @@ if [ "${DEPLOYMENT_BUCKET:-X}" != 'X' ]; then
   s3download "$DEPLOYMENT_BUCKET" "proxy" /etc/nginx/
 fi
 
-for template in /etc/nginx/conf.d/*.template /etc/nginx/*.template /internal/*.template; do
-    if ! test -f "$template"; then
-      continue
-    fi
-    target=$(echo "$template" | sed -e "s/.template$//")
-
-    erb -T - "$template" > "$target"
+for directory in /etc/nginx/conf.d/ /etc/nginx/ /internal/; do
+  gomplate --input-dir="$directory" --output-map="$directory"'{{ .in | strings.ReplaceAll ".gomplate" "" }}'
 done
+
+if [ "${CHECK_OLD_TEMPLATES:-true}" = "true" ]; then
+  for template in /etc/nginx/conf.d/*.template /etc/nginx/*.template /internal/*.template; do
+      if ! test -f "$template"; then
+        continue
+      fi
+      target="$(echo "$template" | sed -e "s/.template$//")"
+
+      erb -T - "$template" > "${target}.old"
+
+      diff --ignore-blank-lines -u "$target" "${target}.old"
+      rm "${target}.old"
+  done
+fi
 
 mkdir -p /static/.well-known
 cp /internal/security.txt /static/.well-known/

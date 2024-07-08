@@ -53,13 +53,24 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV NGINX_ENV=local \
     TZ=UTC
 
+# https://github.com/hairyhenderson/gomplate
+ARG GOMPLATE_VERSION=v4.0.1
+ARG GOMPLATE_SHA256="5aeae23cbc51e243967162a62edba0098218668a09cdaa6d6de1b228c070990f"
+# https://github.com/espoon-voltti/s3-downloader/
+ARG S3_DOWNLOADER_VERSION=v1.4.1
+ARG S3_DOWNLOADER_SHA256="520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f"
+
 RUN apt-get update \
  && apt-get -y dist-upgrade \
  && apt-get -y --no-install-recommends install ruby \
- && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/v1.4.1/s3downloader-linux-amd64 \
+ && curl -sSfL "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64" \
+       -o /bin/gomplate \
+ && chmod +x /bin/gomplate \
+ && echo "${GOMPLATE_SHA256}  /bin/gomplate" | sha256sum -c - \
+ && curl -sSfL https://github.com/espoon-voltti/s3-downloader/releases/download/${S3_DOWNLOADER_VERSION}/s3downloader-linux-amd64 \
        -o /bin/s3download \
  && chmod +x /bin/s3download \
- && echo "520ea232e83a7cefe2a87d4f2af8433e383a4351464e213b7dd3b78ca0dc200f  /bin/s3download" | sha256sum -c - \
+ && echo "${S3_DOWNLOADER_SHA256}  /bin/s3download" | sha256sum -c - \
  && rm -rf /var/lib/apt/lists/*
 
 
