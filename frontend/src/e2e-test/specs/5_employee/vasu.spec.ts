@@ -20,7 +20,6 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
@@ -29,7 +28,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee, DevPlacement } from '../../generated/api-types'
+import { DevEmployee, DevPerson, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
   ChildDocumentsSection
 } from '../../pages/employee/child-information'
@@ -42,9 +41,9 @@ let page: Page
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let childInformationPage: ChildInformationPage
-let child: PersonDetailWithDependants
-let firstGuardian: PersonDetailWithDependants
-let secondGuardian: PersonDetailWithDependants
+let child: DevPerson
+let firstGuardian: DevPerson
+let secondGuardian: DevPerson
 let templateId: UUID
 let daycarePlacementFixture: DevPlacement
 
@@ -125,8 +124,7 @@ describe('Child Information - Vasu documents section', () => {
 describe('Child Information - Vasu language', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
-    const child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    const child = await Fixture.person().saveChild()
     const swedishUnit = await Fixture.daycare()
       .careArea(await Fixture.careArea().save())
       .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })

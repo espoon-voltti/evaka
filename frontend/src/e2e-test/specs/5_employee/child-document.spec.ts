@@ -7,9 +7,8 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import { Page } from '../../utils/page'
@@ -23,8 +22,8 @@ beforeEach(async (): Promise<void> => resetServiceState())
 describe('child document with person duplicate', () => {
   let admin: DevEmployee
   let daycareSupervisor: DevEmployee
-  let child: PersonDetailWithDependants
-  let duplicate: PersonDetailWithDependants
+  let child: DevPerson
+  let duplicate: DevPerson
 
   beforeEach(async () => {
     admin = await Fixture.employeeAdmin().save()
@@ -45,8 +44,7 @@ describe('child document with person duplicate', () => {
       })
       .save()
 
-    child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    child = await Fixture.person().saveChild()
     await Fixture.placement()
       .with({
         childId: child.id,
@@ -59,11 +57,10 @@ describe('child document with person duplicate', () => {
 
     duplicate = await Fixture.person()
       .with({
-        ssn: undefined,
+        ssn: null,
         duplicateOf: child.id
       })
-      .save()
-    await Fixture.child(duplicate.id).save()
+      .saveChild()
     await Fixture.placement()
       .with({
         childId: duplicate.id,

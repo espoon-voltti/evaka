@@ -14,7 +14,6 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -22,6 +21,7 @@ import {
   createFridgePartner,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
@@ -37,7 +37,7 @@ let childPage: MobileChildPage
 let pinLoginPage: PinLoginPage
 let topNav: TopNav
 
-let child: PersonDetail
+let child: DevPerson
 
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'

@@ -19,13 +19,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createMessageAccounts,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
@@ -37,8 +36,8 @@ let staffPage: Page
 let staff: DevEmployee
 let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
-let childInAreaA: PersonDetail
-let childInAreaB: PersonDetail
+let childInAreaA: DevPerson
+let childInAreaB: DevPerson
 
 const mockedDate = LocalDate.of(2022, 11, 8)
 const messageSendTime = HelsinkiDateTime.fromLocal(
@@ -100,8 +99,8 @@ beforeEach(async () => {
         })
         .save()
     )
-  const guardian2 = await Fixture.person().with({ ssn: undefined }).save()
-  const guardian3 = await Fixture.person().with({ ssn: undefined }).save()
+  const guardian2 = await Fixture.person().with({ ssn: null }).saveAdult()
+  const guardian3 = await Fixture.person().with({ ssn: null }).saveAdult()
   await insertGuardians({
     body: [
       {

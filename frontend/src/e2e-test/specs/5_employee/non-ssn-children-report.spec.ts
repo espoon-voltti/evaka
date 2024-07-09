@@ -7,19 +7,18 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { NonSsnChildrenReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2023, 6, 12)
-let child: PersonDetailWithDependants
-let child2: PersonDetailWithDependants
-let child3: PersonDetailWithDependants
-let child4: PersonDetailWithDependants
+let child: DevPerson
+let child2: DevPerson
+let child3: DevPerson
+let child4: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
@@ -29,25 +28,19 @@ beforeEach(async () => {
     .with({
       firstName: 'Esko',
       lastName: 'Beck',
-      ssn: undefined,
+      ssn: null,
       ophPersonOid: 'mock-oid-1'
     })
-    .save()
+    .saveChild()
   child2 = await Fixture.person()
-    .with({ firstName: 'Maija', lastName: 'Äänikolu', ssn: undefined })
-    .save()
-
+    .with({ firstName: 'Maija', lastName: 'Äänikolu', ssn: null })
+    .saveChild()
   child3 = await Fixture.person()
-    .with({ firstName: 'Pasi', lastName: 'Pastplacement', ssn: undefined })
-    .save()
-
+    .with({ firstName: 'Pasi', lastName: 'Pastplacement', ssn: null })
+    .saveChild()
   child4 = await Fixture.person()
     .with({ firstName: 'Sami', lastName: 'Ssnhaver', ssn: '050520A999M' })
-    .save()
-  await Fixture.child(child.id).save()
-  await Fixture.child(child2.id).save()
-  await Fixture.child(child3.id).save()
-  await Fixture.child(child4.id).save()
+    .saveChild()
 
   await Fixture.placement()
     .with({

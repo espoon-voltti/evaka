@@ -90,23 +90,21 @@ export const initializeAreaAndPersonData = async (): Promise<
     .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserGuardianFixture)
-    .withDependants(
+    .saveAndUpdateMockVtj([
       areaAndPersonFixtures.enduserChildFixtureJari,
       areaAndPersonFixtures.enduserChildFixtureKaarina,
       areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted
-    )
-    .saveAndUpdateMockVtj()
+    ])
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildJariOtherGuardianFixture)
-    .withDependants(areaAndPersonFixtures.enduserChildFixtureJari)
-    .saveAndUpdateMockVtj()
+    .saveAndUpdateMockVtj([areaAndPersonFixtures.enduserChildFixtureJari])
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserDeceasedChildFixture)
     .saveAndUpdateMockVtj()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserNonSsnChildFixture)
-    .with({ ssn: undefined })
-    .save()
+    .with({ ssn: null })
+    .saveChild()
 
   await Promise.all(
     areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
@@ -162,7 +160,7 @@ export const initializeAreaAndPersonData = async (): Promise<
 
   await Fixture.person()
     .with(areaAndPersonFixtures.personFixtureChildZeroYearOld)
-    .save()
+    .saveChild()
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])

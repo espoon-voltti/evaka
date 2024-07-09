@@ -23,8 +23,7 @@ describe('Placement guarantee report', () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare().with({ areaId: area.id }).save()
-    const child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    const child = await Fixture.person().saveChild()
     await Fixture.placement()
       .with({
         childId: child.id,
@@ -65,8 +64,7 @@ describe('Placement guarantee report', () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare().with({ areaId: area.id }).save()
-    const child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    const child = await Fixture.person().saveChild()
     await Fixture.placement()
       .with({
         childId: child.id,
@@ -100,8 +98,7 @@ describe('Placement guarantee report', () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare().with({ areaId: area.id }).save()
-    const child1 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child1.id).save()
+    const child1 = await Fixture.person().with({ ssn: null }).saveChild()
     await Fixture.placement()
       .with({
         childId: child1.id,
@@ -120,7 +117,7 @@ describe('Placement guarantee report', () => {
         placeGuarantee: true
       })
       .save()
-    const child2 = await Fixture.person().with({ ssn: undefined }).save()
+    const child2 = await Fixture.person().with({ ssn: null }).saveChild()
     await Fixture.child(child2.id).save()
     await Fixture.placement()
       .with({
@@ -173,8 +170,7 @@ describe('Placement guarantee report', () => {
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare().with({ areaId: area.id }).save()
     const unit2 = await Fixture.daycare().with({ areaId: area.id }).save()
-    const child1 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child1.id).save()
+    const child1 = await Fixture.person().with({ ssn: null }).saveChild()
     await Fixture.placement()
       .with({
         childId: child1.id,
@@ -193,8 +189,7 @@ describe('Placement guarantee report', () => {
         placeGuarantee: true
       })
       .save()
-    const child2 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child2.id).save()
+    const child2 = await Fixture.person().with({ ssn: null }).saveChild()
     await Fixture.placement()
       .with({
         childId: child2.id,

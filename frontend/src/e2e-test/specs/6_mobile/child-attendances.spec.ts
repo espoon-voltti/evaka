@@ -68,17 +68,13 @@ beforeEach(async () => {
   await Fixture.daycareGroup().with(daycareGroupFixture).save()
   await Fixture.daycareGroup().with(group2).save()
 
-  await Fixture.person().with(enduserChildFixtureKaarina).save()
-  await Fixture.child(enduserChildFixtureKaarina.id).save()
+  await Fixture.person().with(enduserChildFixtureKaarina).saveChild()
+  await Fixture.person().with(enduserChildFixtureJari).saveChild()
+  await Fixture.person().with(familyWithTwoGuardians.children[0]).saveChild()
 
-  await Fixture.person().with(enduserChildFixtureJari).save()
-  await Fixture.child(enduserChildFixtureJari.id).save()
-
-  await Fixture.person().with(familyWithTwoGuardians.children[0]).save()
-  await Fixture.child(familyWithTwoGuardians.children[0].id).save()
-
-  await Fixture.person().with(enduserChildFixturePorriHatterRestricted).save()
-  await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
+  await Fixture.person()
+    .with(enduserChildFixturePorriHatterRestricted)
+    .saveChild()
 
   await Fixture.employee()
     .with({ roles: ['ADMIN'] })

@@ -8,11 +8,11 @@ import TimeRange from 'lib-common/time-range'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
   DevEmployee,
+  DevPerson,
   DevPreschoolTerm
 } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -22,7 +22,7 @@ import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2023, 12, 13)
 let term: DevPreschoolTerm
-let child: PersonDetailWithDependants
+let child: DevPerson
 let unit: DevDaycare
 
 beforeEach(async () => {
@@ -43,7 +43,7 @@ beforeEach(async () => {
       firstName: 'Esko',
       lastName: 'Beck'
     })
-    .save()
+    .saveChild()
 
   await Fixture.child(child.id).save()
 

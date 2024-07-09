@@ -15,7 +15,6 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createApplications,
   createDefaultServiceNeedOptions,
@@ -24,7 +23,8 @@ import {
 import {
   DevApplicationWithForm,
   DevDaycare,
-  DevEmployee
+  DevEmployee,
+  DevPerson
 } from '../../generated/api-types'
 import {
   ApplicationProcessPage,
@@ -36,8 +36,8 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: PersonDetail
-let child2Fixture: PersonDetail
+let child1Fixture: DevPerson
+let child2Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 

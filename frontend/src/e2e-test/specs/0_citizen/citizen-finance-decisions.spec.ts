@@ -21,13 +21,12 @@ import {
   uuidv4,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createFeeDecisions,
   createVoucherValueDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { VoucherValueDecision } from '../../generated/api-types'
+import { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -41,9 +40,9 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 let feeDecision: FeeDecision
 let voucherValueDecision: VoucherValueDecision
-let headOfFamily: PersonDetail
-let partner: PersonDetail
-let child: PersonDetail
+let headOfFamily: DevPerson
+let partner: DevPerson
+let child: DevPerson
 
 const feeDecisionValidDuring = new DateRange(LocalDate.of(2023, 1, 1), null)
 const voucherValueDecisionValidDuring = new DateRange(
@@ -85,7 +84,7 @@ beforeEach(async () => {
   await insertVoucherValueDecision(voucherValueDecision)
 })
 
-const parsePersonNames = (persons: PersonDetail[]) =>
+const parsePersonNames = (persons: DevPerson[]) =>
   persons.map((person) => `${person.firstName} ${person.lastName}`)
 
 describe('Citizen finance decisions', () => {
@@ -117,7 +116,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, partner.ssn)
+    await enduserLogin(page, partner.ssn!)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')

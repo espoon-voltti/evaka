@@ -7,7 +7,6 @@ import LocalTime from 'lib-common/local-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -15,6 +14,7 @@ import {
 import {
   DevDaycare,
   DevDaycareGroup,
+  DevPerson,
   DevPlacement
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -24,7 +24,7 @@ import { employeeLogin } from '../../utils/user'
 
 let unitFixture: DevDaycare
 let groupFixture: DevDaycareGroup
-let childFixture: PersonDetail
+let childFixture: DevPerson
 let placementFixture: DevPlacement
 let page: Page
 

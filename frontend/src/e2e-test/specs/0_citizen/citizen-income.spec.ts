@@ -15,9 +15,8 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare } from '../../generated/api-types'
+import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -31,7 +30,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
   let page: Page
   const child = enduserChildFixtureJari
   let daycare: DevDaycare
-  let guardian: PersonDetailWithDependants
+  let guardian: DevPerson
   let financeAdminId: UUID
 
   const today = LocalDate.of(2022, 1, 5)
@@ -54,8 +53,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
     guardian = await Fixture.person()
       .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     await Fixture.child(child1.id).save()
     await Fixture.guardian(child1, guardian).save()
     const placement = await Fixture.placement()

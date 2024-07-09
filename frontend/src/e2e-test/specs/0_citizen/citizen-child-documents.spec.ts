@@ -12,20 +12,20 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let child: PersonDetail
+let child: DevPerson
 let templateIdHojks: UUID
 let documentIdHojks: UUID
 let templateIdPed: UUID
@@ -110,7 +110,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page, fixtures.enduserGuardianFixture.ssn)
+  await enduserLogin(page, fixtures.enduserGuardianFixture.ssn!)
 })
 
 describe('Citizen child documents listing page', () => {

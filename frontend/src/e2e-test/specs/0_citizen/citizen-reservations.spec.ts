@@ -28,13 +28,13 @@ import {
   systemInternalUser,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
   getAbsences,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -72,7 +72,7 @@ async function openCalendarPage(
 }
 
 describe.each(e)('Citizen attendance reservations (%s)', (env) => {
-  let children: PersonDetail[]
+  let children: DevPerson[]
   let fixtures: AreaAndPersonFixtures
 
   beforeEach(async () => {
@@ -686,8 +686,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       .saveAndUpdateMockVtj()
     const guardian = await Fixture.person()
       .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     await Fixture.child(enduserChildFixtureKaarina.id).save()
     await Fixture.guardian(child, guardian).save()
 
@@ -1003,8 +1002,8 @@ describe('Citizen calendar child visibility', () => {
   const placement2start = today.addMonths(8)
   const placement2end = today.addMonths(12)
   let fixtures: AreaAndPersonFixtures
-  let child: PersonDetail
-  let child2: PersonDetail
+  let child: DevPerson
+  let child2: DevPerson
 
   beforeEach(async () => {
     await resetServiceState()
@@ -1190,7 +1189,7 @@ describe('Citizen calendar child visibility', () => {
 describe('Citizen calendar visibility', () => {
   let page: Page
   const today = LocalDate.todayInSystemTz()
-  let child: PersonDetail
+  let child: DevPerson
   let daycareId: string
 
   beforeEach(async () => {

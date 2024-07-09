@@ -306,7 +306,7 @@ describe('Citizen daycare applications', () => {
     })
     await enduserLogin(
       otherGuardianPage,
-      fixtures.enduserChildJariOtherGuardianFixture.ssn
+      fixtures.enduserChildJariOtherGuardianFixture.ssn!
     )
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)

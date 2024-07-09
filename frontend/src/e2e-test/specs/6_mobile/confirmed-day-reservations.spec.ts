@@ -317,25 +317,16 @@ async function insertConfirmedDaysTestData() {
   await Fixture.daycareGroup().with(daycareGroupFixture).save()
   await Fixture.daycareGroup().with(group2).save()
 
-  await Fixture.person().with(enduserChildFixtureKaarina).save()
-  await Fixture.child(enduserChildFixtureKaarina.id).save()
-
-  await Fixture.person().with(enduserChildFixtureJari).save()
-  await Fixture.child(enduserChildFixtureJari.id).save()
-
-  await Fixture.person().with(familyWithTwoGuardians.children[0]).save()
-  await Fixture.child(familyWithTwoGuardians.children[0].id).save()
-
+  await Fixture.person().with(enduserChildFixtureKaarina).saveChild()
+  await Fixture.person().with(enduserChildFixtureJari).saveChild()
+  await Fixture.person().with(familyWithTwoGuardians.children[0]).saveChild()
   await Fixture.person()
     .with({
       ...enduserChildFixturePorriHatterRestricted,
       dateOfBirth: LocalDate.of(2021, 4, 1)
     })
-    .save()
-  await Fixture.child(enduserChildFixturePorriHatterRestricted.id).save()
-
-  await Fixture.person().with(enduserNonSsnChildFixture).save()
-  await Fixture.child(enduserNonSsnChildFixture.id).save()
+    .saveChild()
+  await Fixture.person().with(enduserNonSsnChildFixture).saveChild()
 
   await Fixture.employee()
     .with({ roles: ['ADMIN'] })

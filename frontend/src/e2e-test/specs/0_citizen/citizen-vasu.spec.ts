@@ -15,7 +15,6 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
@@ -25,6 +24,7 @@ import {
   resetServiceState,
   revokeSharingPermission
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
@@ -32,7 +32,7 @@ import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let child: PersonDetail
+let child: DevPerson
 let child2Id: UUID
 let templateId: UUID
 let vasuDocId: UUID

@@ -44,8 +44,7 @@ describe('Service time usage', () => {
       .saveAndUpdateMockVtj()
     const guardian = await Fixture.person()
       .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     await Fixture.child(enduserChildFixtureKaarina.id).save()
     await Fixture.guardian(child, guardian).save()
 
@@ -207,8 +206,7 @@ describe('Service time alert', () => {
       .saveAndUpdateMockVtj()
     const guardian = await Fixture.person()
       .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     await Fixture.child(enduserChildFixtureKaarina.id).save()
     await Fixture.guardian(child, guardian).save()
 

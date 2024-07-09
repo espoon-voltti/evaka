@@ -10,9 +10,8 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import {
@@ -25,7 +24,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let childFixture: PersonDetail
+let childFixture: DevPerson
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let page: Page

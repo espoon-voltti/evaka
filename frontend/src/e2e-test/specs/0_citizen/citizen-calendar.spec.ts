@@ -14,11 +14,11 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -29,7 +29,7 @@ const e: EnvType[] = ['desktop', 'mobile']
 let page: Page
 let header: CitizenHeader
 let calendarPage: CitizenCalendarPage
-let children: PersonDetail[]
+let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 5)
 
 const groupEventId = uuidv4()

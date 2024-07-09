@@ -11,9 +11,8 @@ import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
 import { Fixture, fullDayTimeRange } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare } from '../../generated/api-types'
+import { DevDaycare, DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileReservationsPage from '../../pages/mobile/reservations-page'
@@ -26,7 +25,7 @@ describe('when placement is ending tomorrow', () => {
   const mockedToday = LocalDate.of(2023, 11, 13)
   const mockedTomorrow = mockedToday.addDays(1)
   let unit: DevDaycare
-  let child: PersonDetailWithDependants
+  let child: DevPerson
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
@@ -39,8 +38,7 @@ describe('when placement is ending tomorrow', () => {
     const group = await Fixture.daycareGroup()
       .with({ daycareId: unit.id, startDate: mockedToday })
       .save()
-    child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    child = await Fixture.person().saveChild()
     const placement = await Fixture.placement()
       .with({
         childId: child.id,
@@ -188,7 +186,7 @@ describe('when child is in preschool only', () => {
   const mockedToday = LocalDate.of(2023, 11, 13)
   const mockedTomorrow = mockedToday.addDays(1)
   let unit: DevDaycare
-  let child: PersonDetailWithDependants
+  let child: DevPerson
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
@@ -210,8 +208,7 @@ describe('when child is in preschool only', () => {
     const group = await Fixture.daycareGroup()
       .with({ daycareId: unit.id, startDate: mockedToday })
       .save()
-    child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    child = await Fixture.person().saveChild()
     const placement = await Fixture.placement()
       .with({
         type: 'PRESCHOOL',
@@ -281,7 +278,7 @@ describe('when child is in preschool only', () => {
 describe('when unit is open every day for shift care child', () => {
   const mockedToday = LocalDate.of(2023, 11, 14) // Tue
   let unit: DevDaycare
-  let child: PersonDetailWithDependants
+  let child: DevPerson
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
@@ -312,8 +309,7 @@ describe('when unit is open every day for shift care child', () => {
     const group = await Fixture.daycareGroup()
       .with({ daycareId: unit.id, startDate: mockedToday })
       .save()
-    child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    child = await Fixture.person().saveChild()
     const placement = await Fixture.placement()
       .with({
         childId: child.id,

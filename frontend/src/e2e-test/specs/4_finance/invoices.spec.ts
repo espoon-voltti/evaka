@@ -7,13 +7,11 @@ import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertPersonFixture } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  adultFixtureWihtoutSSN,
   createDaycarePlacementFixture,
   feeDecisionsFixture,
   Fixture,
@@ -26,6 +24,7 @@ import {
   createInvoices,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -39,12 +38,23 @@ let financePage: FinancePage
 let invoicesPage: InvoicesPage
 let fixtures: AreaAndPersonFixtures
 let feeDecisionFixture: FeeDecision
-const adultWithoutSSN = adultFixtureWihtoutSSN
+let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  await insertPersonFixture(adultWithoutSSN)
+  adultWithoutSSN = await Fixture.person()
+    .with({
+      id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
+      firstName: 'Aikuinen',
+      lastName: 'Hetuton',
+      ssn: null,
+      dateOfBirth: LocalDate.of(1980, 1, 1),
+      streetAddress: 'Kamreerintie 2',
+      postalCode: '02770',
+      postOffice: 'Espoo'
+    })
+    .saveAdult()
   await Fixture.parentship()
     .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
@@ -178,7 +188,7 @@ describe('Invoices', () => {
       ]
     })
 
-    await invoicesPage.freeTextFilter(adultFixtureWihtoutSSN.firstName)
+    await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
     await invoicesPage.assertInvoiceCount(1)
     await invoicesPage.toggleAllInvoices(true)
     await invoicesPage.sendInvoices()

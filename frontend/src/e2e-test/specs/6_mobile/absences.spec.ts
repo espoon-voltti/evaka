@@ -39,9 +39,8 @@ beforeEach(async () => {
     })
     .save()
 
-  const person = await Fixture.person().save()
-  const child = await Fixture.child(person.id).save()
-  childId = child.id
+  const person = await Fixture.person().saveChild()
+  childId = person.id
 
   const daycarePlacementFixture = await Fixture.placement()
     .with({

@@ -39,7 +39,7 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   const careArea = await Fixture.careArea().with(careAreaFixture).save()
   await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
-  await Fixture.person().with(enduserChildFixtureKaarina).save()
+  await Fixture.person().with(enduserChildFixtureKaarina).saveChild()
   await Fixture.child(enduserChildFixtureKaarina.id).save()
   group = await Fixture.daycareGroup().with(daycareGroupFixture).save()
 
@@ -381,7 +381,7 @@ describe('Employee - Unit month calendar', () => {
       .withGroup(group)
       .save()
 
-    await Fixture.person().with(enduserChildFixtureJari).save()
+    await Fixture.person().with(enduserChildFixtureJari).saveChild()
     await Fixture.child(enduserChildFixtureJari.id).save()
     const jariPlacement = await Fixture.placement()
       .with({

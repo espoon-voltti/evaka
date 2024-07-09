@@ -11,18 +11,18 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let childFixture: PersonDetail
+let childFixture: DevPerson
 let page: Page
 let groupsPage: UnitGroupsPage
 

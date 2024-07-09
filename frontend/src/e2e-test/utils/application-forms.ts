@@ -10,7 +10,7 @@ import {
 import { JsonOf } from 'lib-common/json'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
-import { PersonDetail } from '../dev-api/types'
+import { DevPerson } from '../generated/api-types'
 
 function assertEquals<T>(expected: T, actual: T) {
   if (actual !== expected)
@@ -59,7 +59,7 @@ export const minimalDaycareForm = ({
   form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
-    vtjSiblingsLivingInSameAddress: PersonDetail[]
+    vtjSiblingsLivingInSameAddress: DevPerson[]
   ) => void
 } => ({
   form: {
@@ -145,7 +145,7 @@ export const fullDaycareForm = ({
   form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
-    vtjSiblingsLivingInSameAddress: PersonDetail[]
+    vtjSiblingsLivingInSameAddress: DevPerson[]
   ) => void
 } => ({
   form: {
@@ -503,7 +503,7 @@ export const fullPreschoolForm: {
   form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
-    vtjSiblingsLivingInSameAddress: PersonDetail[]
+    vtjSiblingsLivingInSameAddress: DevPerson[]
   ) => void
 } = {
   form: {

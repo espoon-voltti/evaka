@@ -19,13 +19,12 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createMessageAccounts,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup } from '../../generated/api-types'
+import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -63,8 +62,8 @@ const daycareGroup3Id = uuidv4()
 let daycareGroup: DevDaycareGroup
 let daycareGroup2: DevDaycareGroup
 let daycareGroup3: DevDaycareGroup
-let child: PersonDetail
-let child2: PersonDetail
+let child: DevPerson
+let child2: DevPerson
 
 const employeeId = uuidv4()
 const empFirstName = 'Yrjö'
@@ -336,13 +335,13 @@ describe('Messages page', () => {
   })
 
   test('Employee sends a message to a group', async () => {
-    const extraChildFixture = await Fixture.person().save()
+    const extraChildFixture = await Fixture.person().saveChild()
     const extraGuardianFixture1 = await Fixture.person()
       .with({ ssn: '240190-5442' })
-      .save()
+      .saveAdult()
     const extraGuardianFixture2 = await Fixture.person()
       .with({ ssn: '210390-383J' })
-      .save()
+      .saveAdult()
     await insertGuardians({
       body: [
         {

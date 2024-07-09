@@ -14,20 +14,20 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createIncomeStatements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let personId: UUID
-let child: PersonDetail
+let child: DevPerson
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 

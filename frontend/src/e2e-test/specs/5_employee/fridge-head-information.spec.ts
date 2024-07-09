@@ -7,7 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { insertChildFixture, runPendingAsyncJobs } from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -17,12 +17,12 @@ import {
   personFixtureChildZeroYearOld,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -33,17 +33,17 @@ let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage
 
 let fixtures: AreaAndPersonFixtures
-let regularPerson: PersonDetail
-let fridgePartner: PersonDetail
-let child: PersonDetail
+let regularPerson: DevPerson
+let fridgePartner: DevPerson
+let child: DevPerson
 
 const mockToday = LocalDate.of(2020, 1, 1)
-const childZeroYo: PersonDetail = {
+const childZeroYo = Fixture.person().with({
   ...personFixtureChildZeroYearOld,
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
   id: '023c3d55-3bd5-494b-8996-60a3643fe94b'
-}
+}).data
 
 beforeEach(async () => {
   await resetServiceState()
@@ -53,7 +53,7 @@ beforeEach(async () => {
   regularPerson = fixtures.familyWithTwoGuardians.guardian
   fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
   child = fixtures.familyWithTwoGuardians.children[0]
-  await insertChildFixture(childZeroYo)
+  await Fixture.person().with(childZeroYo).saveChild()
   await Fixture.feeThresholds()
     .with({
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),

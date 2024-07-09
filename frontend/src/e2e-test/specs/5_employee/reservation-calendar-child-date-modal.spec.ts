@@ -65,9 +65,8 @@ const setupTestData = async ({
     .save()
   daycareId = daycare.id
   const daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
-  const child = await Fixture.person().save()
+  const child = await Fixture.person().saveChild()
   childId = child.id
-  await Fixture.child(child.id).save()
   const placement = await Fixture.placement()
     .child(child)
     .daycare(daycare)

@@ -12,9 +12,12 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDailyServiceTimes, DevDaycare } from '../../generated/api-types'
+import {
+  DevDailyServiceTimes,
+  DevDaycare,
+  DevPerson
+} from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -25,7 +28,7 @@ let page: Page
 
 const child = enduserChildFixtureJari
 let daycare: DevDaycare
-let guardian: PersonDetailWithDependants
+let guardian: DevPerson
 let dailyServiceTime: DevDailyServiceTimes
 
 beforeEach(async () => {
@@ -41,8 +44,7 @@ beforeEach(async () => {
   const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
   guardian = await Fixture.person()
     .with(enduserGuardianFixture)
-    .withDependants(child1)
-    .saveAndUpdateMockVtj()
+    .saveAndUpdateMockVtj([child1])
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()

@@ -15,13 +15,13 @@ import {
   Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValueDecisions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, {
   ServiceVoucherUnitReport,
@@ -34,9 +34,9 @@ let page: Page
 let report: VoucherServiceProvidersReport
 let startDate: LocalDate
 let endDate: LocalDate
-let child: PersonDetail
-let otherChild: PersonDetail
-let guardian: PersonDetail
+let child: DevPerson
+let otherChild: DevPerson
+let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()

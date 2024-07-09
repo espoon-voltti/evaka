@@ -11,9 +11,12 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
+import {
+  DevDaycare,
+  DevDaycareGroup,
+  DevPerson
+} from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
@@ -27,7 +30,7 @@ let notePage: MobileNotePage
 
 describe('Child and group notes', () => {
   let fixtures: AreaAndPersonFixtures
-  let child: PersonDetail
+  let child: DevPerson
 
   beforeEach(async () => {
     await resetServiceState()
@@ -118,7 +121,7 @@ describe('Child and group notes', () => {
 
 describe('Child and group notes (backup care)', () => {
   let fixtures: AreaAndPersonFixtures
-  let child: PersonDetail
+  let child: DevPerson
   let backupCareDaycareGroup: DevDaycareGroup
   let backupCareDaycare: DevDaycare
 

@@ -8,13 +8,12 @@ import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -23,9 +22,9 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: PersonDetail
-let child2Fixture: PersonDetail
-let child3Fixture: PersonDetail
+let child1Fixture: DevPerson
+let child2Fixture: DevPerson
+let child3Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 

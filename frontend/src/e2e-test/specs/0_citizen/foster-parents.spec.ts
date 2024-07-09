@@ -18,7 +18,6 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createFosterParent,
   createMessageAccounts,
@@ -27,6 +26,7 @@ import {
   publishVasuDocument,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
@@ -44,8 +44,8 @@ import { employeeLogin, enduserLogin } from '../../utils/user'
 let activeRelationshipPage: Page
 let activeRelationshipHeader: CitizenHeader
 let fixtures: AreaAndPersonFixtures
-let fosterParent: PersonDetailWithDependants
-let fosterChild: PersonDetailWithDependants
+let fosterParent: DevPerson
+let fosterChild: DevPerson
 
 const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
@@ -146,7 +146,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 })
 
 test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
-  const fosterChild = await Fixture.person().with({ ssn: undefined }).save()
+  const fosterChild = await Fixture.person().with({ ssn: null }).saveChild()
 
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({

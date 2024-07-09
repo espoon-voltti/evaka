@@ -62,6 +62,7 @@ import { DevPayment } from './api-types'
 import { DevPedagogicalDocument } from './api-types'
 import { DevPerson } from './api-types'
 import { DevPersonEmail } from './api-types'
+import { DevPersonType } from './api-types'
 import { DevPersonalMobileDevice } from './api-types'
 import { DevPlacement } from './api-types'
 import { DevPreschoolAssistance } from './api-types'
@@ -1277,13 +1278,18 @@ export async function createPedagogicalDocuments(
 */
 export async function createPerson(
   request: {
+    type: DevPersonType,
     body: DevPerson
   }
 ): Promise<UUID> {
   try {
+    const params = createUrlSearchParams(
+      ['type', request.type.toString()]
+    )
     const { data: json } = await devClient.request<JsonOf<UUID>>({
       url: uri`/person/create`.toString(),
       method: 'POST',
+      params,
       data: request.body satisfies JsonCompatible<DevPerson>
     })
     return json

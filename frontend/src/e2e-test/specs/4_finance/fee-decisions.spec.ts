@@ -21,12 +21,12 @@ import {
   feeDecisionsFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createFeeDecisions,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FeeDecisionsPage,
@@ -47,10 +47,10 @@ beforeEach(async () => {
 })
 
 const insertFeeDecisionFixtureAndNavigateToIt = async (
-  headOfFamily: PersonDetail,
-  child: PersonDetail,
+  headOfFamily: DevPerson,
+  child: DevPerson,
   validDuring: DateRange,
-  partner: PersonDetail | null = null,
+  partner: DevPerson | null = null,
   childIncome: DecisionIncome | null = null
 ) => {
   const fd = feeDecisionsFixture(

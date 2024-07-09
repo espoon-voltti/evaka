@@ -14,12 +14,11 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   UnitStaffAttendancesTable,
@@ -32,7 +31,7 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 let attendancesSection: UnitWeekCalendarPage
-let child1Fixture: PersonDetail
+let child1Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee

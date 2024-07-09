@@ -69,12 +69,12 @@ describe('Employee reads applications', () => {
     await applicationReadView.assertOtherVtjGuardian(
       `${fixtures.familyWithTwoGuardians.otherGuardian.lastName} ${fixtures.familyWithTwoGuardians.otherGuardian.firstName}`,
       fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email
+      fixtures.familyWithTwoGuardians.otherGuardian.email!
     )
 
     await applicationReadView.assertGivenOtherGuardianInfo(
       fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email
+      fixtures.familyWithTwoGuardians.otherGuardian.email!
     )
   })
 

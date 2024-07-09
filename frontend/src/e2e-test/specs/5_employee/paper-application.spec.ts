@@ -9,7 +9,6 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   resetServiceState
@@ -45,15 +44,18 @@ beforeEach(async () => {
   createApplicationModal = await applications.openCreateApplicationModal()
 })
 
-const formatPersonName = (person: PersonDetail) =>
+const formatPersonName = (person: { firstName: string; lastName: string }) =>
   `${person.lastName} ${person.firstName}`
 
 const formatPersonAddress = ({
   streetAddress,
   postalCode,
   postOffice
-}: PersonDetail) =>
-  `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
+}: {
+  streetAddress?: string
+  postalCode?: string
+  postOffice?: string
+}) => `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
 describe('Employee - paper application', () => {
   test('Paper application can be created for guardian and child with ssn', async () => {
@@ -94,8 +96,7 @@ describe('Employee - paper application', () => {
         postalCode: '00370',
         postOffice: 'Espoo'
       })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 

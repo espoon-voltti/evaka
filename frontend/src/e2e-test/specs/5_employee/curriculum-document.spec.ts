@@ -7,12 +7,11 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createVasuDocument,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
@@ -27,8 +26,8 @@ describe('curriculum document with person duplicate', () => {
   let admin: DevEmployee
   let daycareSupervisor: DevEmployee
   let preschoolSupervisor: DevEmployee
-  let child: PersonDetailWithDependants
-  let duplicate: PersonDetailWithDependants
+  let child: DevPerson
+  let duplicate: DevPerson
 
   beforeEach(async () => {
     admin = await Fixture.employeeAdmin().save()
@@ -52,8 +51,7 @@ describe('curriculum document with person duplicate', () => {
       preschool.id
     ).save()
 
-    child = await Fixture.person().save()
-    await Fixture.child(child.id).save()
+    child = await Fixture.person().saveChild()
     await Fixture.placement()
       .with({
         childId: child.id,
@@ -66,10 +64,10 @@ describe('curriculum document with person duplicate', () => {
 
     duplicate = await Fixture.person()
       .with({
-        ssn: undefined,
+        ssn: null,
         duplicateOf: child.id
       })
-      .save()
+      .saveChild()
     await Fixture.child(duplicate.id).save()
     await Fixture.placement()
       .with({

@@ -158,7 +158,7 @@ async function initOtherCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
   await enduserLogin(
     citizenPage,
-    fixtures.enduserChildJariOtherGuardianFixture.ssn
+    fixtures.enduserChildJariOtherGuardianFixture.ssn ?? undefined
   )
 }
 

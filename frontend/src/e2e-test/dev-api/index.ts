@@ -13,13 +13,9 @@ import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { UUID } from 'lib-common/types'
 
 import config from '../config'
-import { MockVtjDataset } from '../generated/api-types'
-
-import { PersonBuilder } from './fixtures'
-import { PersonDetail } from './types'
+import { DevPerson, MockVtjDataset } from '../generated/api-types'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -99,28 +95,6 @@ export async function execSimpleApplicationActions(
   }
 }
 
-export async function insertPersonFixture(
-  fixture: PersonDetail
-): Promise<string> {
-  try {
-    const { data } = await devClient.post<UUID>(`/person/create`, fixture)
-    return data
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-export async function insertChildFixture(
-  fixture: PersonDetail
-): Promise<string> {
-  try {
-    const { data } = await devClient.post<UUID>(`/child`, fixture)
-    return data
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
 export async function runPendingAsyncJobs(
   mockedTime: HelsinkiDateTime
 ): Promise<void> {
@@ -134,16 +108,16 @@ export async function runPendingAsyncJobs(
 }
 
 export const vtjDependants = (
-  guardian: PersonDetail | PersonBuilder,
-  ...dependants: (PersonDetail | PersonBuilder)[]
+  guardian: DevPerson,
+  ...dependants: DevPerson[]
 ): MockVtjDataset => {
-  const guardianSsn = 'data' in guardian ? guardian.data.ssn : guardian.ssn
+  const guardianSsn = guardian.ssn
   if (!guardianSsn) throw new Error('Guardian must have SSN')
   return {
     persons: [],
     guardianDependants: {
       [guardianSsn]: dependants.map((d) => {
-        const ssn = 'data' in d ? d.data.ssn : d.ssn
+        const ssn = d.ssn
         if (!ssn) throw new Error('Dependant must have SSN')
         return ssn
       })

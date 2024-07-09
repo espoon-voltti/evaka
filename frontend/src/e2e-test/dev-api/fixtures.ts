@@ -91,6 +91,7 @@ import {
   createOtherAssistanceMeasures,
   createParentships,
   createPedagogicalDocuments,
+  createPerson,
   createPlacementPlan,
   createPreschoolAssistances,
   createPreschoolTerm,
@@ -138,6 +139,7 @@ import {
   DevParentship,
   DevPayment,
   DevPedagogicalDocument,
+  DevPerson,
   DevPlacement,
   DevPreschoolTerm,
   DevServiceNeed,
@@ -151,9 +153,8 @@ import {
   VoucherValueDecision
 } from '../generated/api-types'
 
-import { PersonDetail, PersonDetailWithDependants } from './types'
-
-import { insertPersonFixture } from './index'
+const uniqueLabel = (l = 7): string =>
+  Math.random().toString(36).substring(0, l)
 
 export const uuidv4 = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -161,1334 +162,6 @@ export const uuidv4 = (): string =>
       v = c == 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
-
-export const fullDayTimeRange: TimeRange = new TimeRange(
-  LocalTime.MIN,
-  LocalTime.parse('23:59')
-)
-
-export const nonFullDayTimeRange: TimeRange = new TimeRange(
-  LocalTime.of(1, 0),
-  LocalTime.of(23, 0)
-)
-
-export const preschoolTermFixture2020: DevPreschoolTerm = {
-  id: uuidv4(),
-  finnishPreschool: new FiniteDateRange(
-    LocalDate.of(2020, 8, 13),
-    LocalDate.of(2021, 6, 4)
-  ),
-  swedishPreschool: new FiniteDateRange(
-    LocalDate.of(2020, 8, 18),
-    LocalDate.of(2021, 6, 4)
-  ),
-  extendedTerm: new FiniteDateRange(
-    LocalDate.of(2020, 8, 1),
-    LocalDate.of(2021, 6, 4)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2020, 1, 8),
-    LocalDate.of(2020, 1, 20)
-  ),
-  termBreaks: []
-}
-
-export const preschoolTermFixture2021: DevPreschoolTerm = {
-  id: uuidv4(),
-  finnishPreschool: new FiniteDateRange(
-    LocalDate.of(2021, 8, 11),
-    LocalDate.of(2022, 6, 3)
-  ),
-  swedishPreschool: new FiniteDateRange(
-    LocalDate.of(2021, 8, 11),
-    LocalDate.of(2022, 6, 3)
-  ),
-  extendedTerm: new FiniteDateRange(
-    LocalDate.of(2021, 8, 1),
-    LocalDate.of(2022, 6, 3)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2021, 1, 8),
-    LocalDate.of(2021, 1, 20)
-  ),
-  termBreaks: []
-}
-
-export const preschoolTermFixture2022: DevPreschoolTerm = {
-  id: uuidv4(),
-  finnishPreschool: new FiniteDateRange(
-    LocalDate.of(2022, 8, 11),
-    LocalDate.of(2023, 6, 2)
-  ),
-  swedishPreschool: new FiniteDateRange(
-    LocalDate.of(2022, 8, 11),
-    LocalDate.of(2023, 6, 2)
-  ),
-  extendedTerm: new FiniteDateRange(
-    LocalDate.of(2022, 8, 1),
-    LocalDate.of(2023, 6, 2)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2022, 1, 10),
-    LocalDate.of(2022, 1, 21)
-  ),
-  termBreaks: []
-}
-
-export const preschoolTermFixture2023: DevPreschoolTerm = {
-  id: uuidv4(),
-  finnishPreschool: new FiniteDateRange(
-    LocalDate.of(2023, 8, 11),
-    LocalDate.of(2024, 6, 3)
-  ),
-  swedishPreschool: new FiniteDateRange(
-    LocalDate.of(2023, 8, 13),
-    LocalDate.of(2024, 6, 6)
-  ),
-  extendedTerm: new FiniteDateRange(
-    LocalDate.of(2023, 8, 1),
-    LocalDate.of(2024, 6, 6)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2023, 1, 8),
-    LocalDate.of(2023, 1, 20)
-  ),
-  termBreaks: [
-    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
-    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
-  ]
-}
-
-export const preschoolTermFixtures = [
-  preschoolTermFixture2020,
-  preschoolTermFixture2021,
-  preschoolTermFixture2022,
-  preschoolTermFixture2023
-]
-
-export const clubTermFixture2020: ClubTerm = {
-  id: uuidv4(),
-  term: new FiniteDateRange(
-    LocalDate.of(2020, 8, 13),
-    LocalDate.of(2021, 6, 4)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2020, 1, 8),
-    LocalDate.of(2020, 1, 20)
-  ),
-  termBreaks: []
-}
-
-export const clubTermFixture2021: ClubTerm = {
-  id: uuidv4(),
-  term: new FiniteDateRange(
-    LocalDate.of(2021, 8, 11),
-    LocalDate.of(2022, 6, 3)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2021, 1, 8),
-    LocalDate.of(2021, 1, 20)
-  ),
-  termBreaks: []
-}
-
-export const clubTermFixture2022: ClubTerm = {
-  id: uuidv4(),
-  term: new FiniteDateRange(
-    LocalDate.of(2022, 8, 10),
-    LocalDate.of(2023, 6, 3)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2022, 1, 8),
-    LocalDate.of(2022, 1, 20)
-  ),
-  termBreaks: []
-}
-
-export const clubTermFixture2023: ClubTerm = {
-  id: uuidv4(),
-  term: new FiniteDateRange(
-    LocalDate.of(2023, 8, 10),
-    LocalDate.of(2024, 6, 3)
-  ),
-  applicationPeriod: new FiniteDateRange(
-    LocalDate.of(2023, 1, 8),
-    LocalDate.of(2023, 1, 20)
-  ),
-  termBreaks: [
-    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
-    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
-    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
-  ]
-}
-
-export const clubTermFixtures = [
-  clubTermFixture2020,
-  clubTermFixture2021,
-  clubTermFixture2022,
-  clubTermFixture2023
-]
-
-export const careAreaFixture: DevCareArea = {
-  id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
-  name: 'Superkeskus',
-  shortName: 'super-keskus',
-  areaCode: 299,
-  subCostCenter: '99'
-}
-
-export const careArea2Fixture: DevCareArea = {
-  id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
-  name: 'Hyperkeskus',
-  shortName: 'hyper-keskus',
-  areaCode: 298,
-  subCostCenter: '98'
-}
-
-export const clubFixture: DevDaycare = {
-  id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
-  areaId: careAreaFixture.id,
-  name: 'Alkuräjähdyksen kerho',
-  type: ['CLUB'],
-  dailyPreschoolTime: null,
-  dailyPreparatoryTime: null,
-  openingDate: LocalDate.of(2020, 1, 1),
-  costCenter: '31500',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 1',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Päiväkoti päätöksellä',
-    preschoolName: '-',
-    handler: 'Käsittelijä',
-    handlerAddress: 'Käsittelijän osoite'
-  },
-  daycareApplyPeriod: null,
-  preschoolApplyPeriod: null,
-  clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  providerType: 'MUNICIPAL',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: null,
-  shiftCareOpenOnHolidays: false,
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  closingDate: null,
-  ghostUnit: false,
-  invoicedByMunicipality: true,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  location: null,
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
-export const daycareFixture: DevDaycare = {
-  id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
-  areaId: careAreaFixture.id,
-  name: 'Alkuräjähdyksen päiväkoti',
-  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
-  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
-  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-  costCenter: '31500',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 1',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Päiväkoti päätöksellä',
-    preschoolName: 'Päiväkoti päätöksellä',
-    handler: 'Käsittelijä',
-    handlerAddress: 'Käsittelijän osoite'
-  },
-  providerType: 'MUNICIPAL',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    nonFullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange
-  ],
-  shiftCareOpenOnHolidays: true,
-  location: {
-    lat: 60.20377343765089,
-    lon: 24.655715743526994
-  },
-  enabledPilotFeatures: [
-    'MESSAGING',
-    'MOBILE',
-    'RESERVATIONS',
-    'VASU_AND_PEDADOC',
-    'MOBILE_MESSAGING',
-    'PLACEMENT_TERMINATION'
-  ],
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  openingDate: null,
-  closingDate: null,
-  ghostUnit: false,
-  invoicedByMunicipality: true,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  clubApplyPeriod: null,
-  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
-export const daycare2Fixture: DevDaycare = {
-  id: '6f540c39-e7f6-4222-a004-c527403378ec',
-  areaId: careArea2Fixture.id,
-  name: 'Mustan aukon päiväkoti',
-  type: ['CENTRE'],
-  dailyPreschoolTime: null,
-  dailyPreparatoryTime: null,
-  costCenter: '31501',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 2',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Päiväkoti 2 päätöksellä',
-    preschoolName: 'Päiväkoti 2 päätöksellä',
-    handler: 'Käsittelijä 2',
-    handlerAddress: 'Käsittelijän 2 osoite'
-  },
-  providerType: 'MUNICIPAL',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange
-  ],
-  shiftCareOpenOnHolidays: true,
-  location: {
-    lat: 60.20350901607783,
-    lon: 24.669
-  },
-  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS'],
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  openingDate: null,
-  closingDate: null,
-  ghostUnit: false,
-  invoicedByMunicipality: true,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  clubApplyPeriod: null,
-  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
-export const daycareFixturePrivateVoucher: DevDaycare = {
-  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
-  areaId: careAreaFixture.id,
-  name: 'PS-yksikkö',
-  type: ['CENTRE'],
-  dailyPreschoolTime: null,
-  dailyPreparatoryTime: null,
-  costCenter: '31500',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 1',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Päiväkoti päätöksellä',
-    preschoolName: 'Päiväkoti päätöksellä',
-    handler: 'Käsittelijä',
-    handlerAddress: 'Käsittelijän osoite'
-  },
-  providerType: 'PRIVATE_SERVICE_VOUCHER',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: null,
-  shiftCareOpenOnHolidays: false,
-  location: {
-    lat: 60.20377343765089,
-    lon: 24.655715743526994
-  },
-  enabledPilotFeatures: [
-    'MESSAGING',
-    'MOBILE',
-    'RESERVATIONS',
-    'VASU_AND_PEDADOC',
-    'MOBILE_MESSAGING',
-    'PLACEMENT_TERMINATION'
-  ],
-  invoicedByMunicipality: false,
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  openingDate: null,
-  closingDate: null,
-  ghostUnit: false,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  clubApplyPeriod: null,
-  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
-export const preschoolFixture: DevDaycare = {
-  id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
-  areaId: careAreaFixture.id,
-  name: 'Alkuräjähdyksen eskari',
-  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
-  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
-  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-  costCenter: '31501',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 1',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Eskari päätöksellä',
-    preschoolName: 'Eskari päätöksellä',
-    handler: 'Käsittelijä',
-    handlerAddress: 'Käsittelijän osoite'
-  },
-  providerType: 'MUNICIPAL',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: null,
-  shiftCareOpenOnHolidays: false,
-  location: {
-    lat: 60.2040261560435,
-    lon: 24.65517745652623
-  },
-  enabledPilotFeatures: [
-    'MESSAGING',
-    'MOBILE',
-    'VASU_AND_PEDADOC',
-    'PLACEMENT_TERMINATION'
-  ],
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  openingDate: null,
-  closingDate: null,
-  ghostUnit: false,
-  invoicedByMunicipality: true,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  clubApplyPeriod: null,
-  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
-export const enduserGuardianFixture: PersonDetail = {
-  id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
-  ssn: '070644-937X',
-  firstName: 'Johannes Olavi Antero Tapio',
-  lastName: 'Karhula',
-  email: 'johannes.karhula@evaka.test',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1944, 7, 7),
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '00340',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserChildFixtureJari: PersonDetail = {
-  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
-  ssn: '070714A9126',
-  firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
-  lastName: 'Karhula',
-  preferredName: 'Jari',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2014, 7, 7),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserChildFixtureKaarina: PersonDetail = {
-  id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
-  ssn: '160616A978U',
-  firstName: 'Kaarina Veera Nelli',
-  lastName: 'Karhula',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2016, 6, 6),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserChildFixturePorriHatterRestricted: PersonDetail = {
-  id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
-  ssn: '160620A999J',
-  firstName: 'Porri Hatter',
-  lastName: 'Karhula',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2014, 7, 7),
-  streetAddress: '',
-  postalCode: '',
-  postOffice: '',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: true,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserChildJariOtherGuardianFixture: PersonDetail = {
-  id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
-  ssn: '311299-999E',
-  firstName: 'Ville',
-  lastName: 'Vilkas',
-  email: '',
-  phone: '555-2580',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1999, 2, 1),
-  streetAddress: 'Toistie 33',
-  postalCode: '02230',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserDeceasedChildFixture: PersonDetail = {
-  id: 'b8711722-0c1b-4044-a794-5b308207d78b',
-  ssn: '150515-999T',
-  firstName: 'Unelma',
-  lastName: 'Aapinen',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2015, 5, 15),
-  dateOfDeath: LocalDate.of(2020, 6, 1),
-  streetAddress: 'Aapiskatu 1',
-  postalCode: '00340',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const enduserNonSsnChildFixture: PersonDetail = {
-  id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
-  firstName: 'Heluna',
-  lastName: 'Hetuton',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2018, 8, 15),
-  streetAddress: 'Suosiellä 1',
-  postalCode: '00340',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-const twoGuardiansGuardian1 = {
-  id: '9d6289ba-9ffd-11ea-bb37-0242ac130002',
-  ssn: '220281-9456',
-  firstName: 'Mikael Ilmari Juhani Johannes',
-  lastName: 'Högfors',
-  email: 'mikael.hogfors@evaka.test',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1981, 2, 22),
-  streetAddress: 'Kamreerintie 4',
-  postalCode: '02100',
-  postOffice: 'Espoo',
-  residenceCode: 'twoGuardiansSameAddressResidenceCode',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-const twoGuardiansGuardian2 = {
-  id: 'd1c30734-c02f-4546-8123-856f8101565e',
-  ssn: '170590-9540',
-  firstName: 'Kaarina Marjatta Anna Liisa',
-  lastName: 'Högfors',
-  email: 'kaarina.hogfors@evaka.test',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1990, 5, 17),
-  streetAddress: 'Kamreerintie 4',
-  postalCode: '02100',
-  postOffice: 'Espoo',
-  residenceCode: 'twoGuardiansSameAddressResidenceCode',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-const twoGuardiansChildren = [
-  {
-    id: '6ec99620-9ffd-11ea-bb37-0242ac130002',
-    ssn: '071013A960W',
-    firstName: 'Antero Onni Leevi Aatu',
-    lastName: 'Högfors',
-    email: '',
-    phone: '',
-    language: 'fi',
-    dateOfBirth: LocalDate.of(2013, 10, 7),
-    streetAddress: 'Kamreerintie 4',
-    postalCode: '02100',
-    postOffice: 'Espoo',
-    nationalities: ['FI'],
-    restrictedDetailsEnabled: false,
-    restrictedDetailsEndDate: null
-  }
-]
-export const familyWithTwoGuardians = {
-  guardian: {
-    ...twoGuardiansGuardian1,
-    dependants: twoGuardiansChildren.map((child) => child.ssn)
-  },
-  otherGuardian: {
-    ...twoGuardiansGuardian2,
-    dependants: twoGuardiansChildren.map((child) => child.ssn)
-  },
-  children: twoGuardiansChildren
-}
-
-const separatedGuardiansGuardian1 = {
-  id: '1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3',
-  firstName: 'John',
-  lastName: 'Doe',
-  dateOfBirth: LocalDate.of(1980, 1, 1),
-  ssn: '010180-1232',
-  streetAddress: 'Kamreerintie 2',
-  postalCode: '02770',
-  postOffice: 'Espoo'
-}
-const separatedGuardiansGuardian2 = {
-  id: '56064714-649f-457e-893a-44832936166c',
-  firstName: 'Joan',
-  lastName: 'Doe',
-  dateOfBirth: LocalDate.of(1979, 2, 1),
-  ssn: '010279-123L',
-  streetAddress: 'Testikatu 1',
-  postalCode: '02770',
-  postOffice: 'Espoo'
-}
-const separatedGuardiansChildren = [
-  {
-    id: '5474ee62-16cf-4cfe-a297-40559e165a32',
-    firstName: 'Ricky',
-    lastName: 'Doe',
-    dateOfBirth: LocalDate.of(2017, 6, 1),
-    ssn: '010617A123U',
-    streetAddress: 'Kamreerintie 2',
-    postalCode: '02770',
-    postOffice: 'Espoo'
-  }
-]
-export const familyWithSeparatedGuardians = {
-  guardian: {
-    ...separatedGuardiansGuardian1,
-    dependants: separatedGuardiansChildren.map((child) => child.ssn)
-  },
-  otherGuardian: {
-    ...separatedGuardiansGuardian2,
-    dependants: separatedGuardiansChildren.map((child) => child.ssn)
-  },
-  children: separatedGuardiansChildren
-}
-
-const restrictedDetailsGuardian = {
-  id: '7699f488-3fdc-11eb-b378-0242ac130002',
-  ssn: '080884-999H',
-  firstName: 'Kaj Erik',
-  lastName: 'Pelimerkki',
-  email: 'kaj@example.com',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1984, 8, 8),
-  streetAddress: '',
-  postalCode: '',
-  postOffice: '',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: true,
-  restrictedDetailsEndDate: null
-}
-
-const guardian2WithNoRestrictions = {
-  id: '1fd05a42-3fdd-11eb-b378-0242ac130002',
-  ssn: '130486-9980',
-  firstName: 'Helga Helen',
-  lastName: 'Lehtokurppa',
-  email: 'helga@example.com',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1986, 4, 13),
-  streetAddress: 'Westendinkatu 3',
-  postalCode: '02100',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-const restrictedDetailsGuardiansChildren = [
-  {
-    id: '82a2586e-3fdd-11eb-b378-0242ac130002',
-    firstName: 'Vadelma',
-    lastName: 'Pelimerkki',
-    dateOfBirth: LocalDate.of(2017, 5, 15),
-    ssn: '150517A9989',
-    streetAddress: 'Kamreerintie 4',
-    postalCode: '02100',
-    postOffice: 'Espoo'
-  }
-]
-
-export const familyWithRestrictedDetailsGuardian = {
-  guardian: {
-    ...restrictedDetailsGuardian,
-    dependants: restrictedDetailsGuardiansChildren.map((child) => child.ssn)
-  },
-  otherGuardian: {
-    ...guardian2WithNoRestrictions,
-    dependants: restrictedDetailsGuardiansChildren.map((child) => child.ssn)
-  },
-  children: restrictedDetailsGuardiansChildren
-}
-
-const deadGuardian = {
-  id: 'faacfd43-878f-4a70-9e74-2051a18480e6',
-  ssn: '080581-999A',
-  firstName: 'Kuisma',
-  lastName: 'Kuollut',
-  email: 'kuisma@example.com',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1981, 5, 8),
-  dateOfDeath: LocalDate.of(2021, 5, 1),
-  streetAddress: 'Kamreerintie 4',
-  postalCode: '02100',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-const deadGuardianChild = {
-  id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
-  firstName: 'Kuopus',
-  lastName: 'Kuollut',
-  dateOfBirth: LocalDate.of(2019, 9, 9),
-  ssn: '090917A998M',
-  streetAddress: 'Kamreerintie 4',
-  postalCode: '02100',
-  postOffice: 'Espoo'
-}
-
-export const familyWithDeadGuardian = {
-  guardian: {
-    ...deadGuardian,
-    dependants: [deadGuardianChild.ssn]
-  },
-  children: [deadGuardianChild]
-}
-
-export const personFixtureChildZeroYearOld: PersonDetail = {
-  id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
-  ssn: undefined,
-  firstName: 'Vasta Syntynyt',
-  lastName: 'Korhonen-Hämäläinen',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.todayInSystemTz(), // Always a zero-year-old
-  streetAddress: 'Kamreerintie 2',
-  postalCode: '00370',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const restrictedPersonFixture: PersonDetail = {
-  id: '92d707e9-6cbc-487b-8bde-0097d90044cd',
-  ssn: '031083-910S',
-  firstName: 'Seija Anna Kaarina',
-  lastName: 'Sotka',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1983, 10, 3),
-  streetAddress: '',
-  postalCode: '',
-  postOffice: '',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: true,
-  restrictedDetailsEndDate: null
-}
-
-export const adultFixtureWihtoutSSN = {
-  id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
-  firstName: 'Aikuinen',
-  lastName: 'Hetuton',
-  dateOfBirth: LocalDate.of(1980, 1, 1),
-  streetAddress: 'Kamreerintie 2',
-  postalCode: '02770',
-  postOffice: 'Espoo'
-}
-
-const applicationForm = (
-  type: ApplicationType,
-  child: PersonDetail,
-  guardian: PersonDetail,
-  guardian2Phone: string,
-  guardian2Email: string,
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
-  preferredStartDate: LocalDate,
-  preferredUnits: string[],
-  connectedDaycare = false,
-  assistanceNeeded = false
-): ApplicationForm => {
-  const secondGuardian =
-    guardian2Phone || guardian2Email || otherGuardianAgreementStatus
-      ? {
-          phoneNumber: guardian2Phone,
-          email: guardian2Email,
-          agreementStatus: otherGuardianAgreementStatus
-        }
-      : null
-
-  const serviceNeed =
-    type === 'PRESCHOOL' && !connectedDaycare
-      ? null
-      : {
-          startTime: '08:00',
-          endTime: '16:00',
-          partTime: false,
-          shiftCare: false,
-          serviceNeedOption: null
-        }
-
-  return {
-    child: {
-      dateOfBirth: child.dateOfBirth,
-      person: {
-        ...child,
-        socialSecurityNumber: child.ssn ?? null
-      },
-      address: {
-        street: child.streetAddress ?? '',
-        postalCode: child.postalCode ?? '',
-        postOffice: child.postOffice ?? ''
-      },
-      futureAddress: null,
-      nationality: 'FI',
-      language: 'fi',
-      allergies: '',
-      diet: '',
-      assistanceNeeded,
-      assistanceDescription: ''
-    },
-    guardian: {
-      person: {
-        ...guardian,
-        socialSecurityNumber: guardian.ssn ?? null
-      },
-      phoneNumber: guardian.phone ?? '',
-      email: guardian.email ?? '',
-      address: {
-        street: guardian.streetAddress ?? '',
-        postalCode: guardian.postalCode ?? '',
-        postOffice: guardian.postOffice ?? ''
-      },
-      futureAddress: null
-    },
-    secondGuardian,
-    otherPartner: null,
-    maxFeeAccepted: false,
-    otherChildren: [],
-    preferences: {
-      preferredStartDate,
-      connectedDaycarePreferredStartDate: null,
-      preferredUnits: preferredUnits.map((id) => ({ id, name: id })),
-      preparatory: false,
-      serviceNeed,
-      siblingBasis: null,
-      urgent: false
-    },
-    clubDetails: {
-      wasOnClubCare: false,
-      wasOnDaycare: false
-    },
-    otherInfo: ''
-  }
-}
-
-export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
-export const applicationFixture = (
-  child: PersonDetail,
-  guardian: PersonDetail,
-  otherGuardian: PersonDetail | undefined = undefined,
-  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
-  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
-  preferredUnits: string[] = [daycareFixture.id],
-  connectedDaycare = false,
-  status: ApplicationStatus = 'SENT',
-  preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
-  transferApplication = false,
-  assistanceNeeded = false
-): DevApplicationWithForm => ({
-  id: applicationFixtureId,
-  type: type,
-  childId: child.id,
-  guardianId: guardian.id,
-  otherGuardians: otherGuardian ? [otherGuardian.id] : [],
-  form: applicationForm(
-    type,
-    child,
-    guardian,
-    otherGuardian?.phone ?? '',
-    otherGuardian?.email ?? '',
-    otherGuardianAgreementStatus,
-    preferredStartDate,
-    preferredUnits,
-    connectedDaycare,
-    assistanceNeeded
-  ),
-  checkedByAdmin: false,
-  hideFromGuardian: false,
-  origin: 'ELECTRONIC',
-  status,
-  transferApplication,
-  allowOtherGuardianAccess: true,
-  createdDate: null,
-  dueDate: null,
-  modifiedDate: null,
-  sentDate: null,
-  formModified: HelsinkiDateTime.now()
-})
-
-const feeThresholds = {
-  minIncomeThreshold: 210200,
-  maxIncomeThreshold: 479900,
-  incomeMultiplier: 0.107,
-  minFee: 2700,
-  maxFee: 28900
-}
-
-export const decisionFixture = (
-  applicationId: string,
-  startDate: LocalDate,
-  endDate: LocalDate
-): DecisionRequest => ({
-  id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
-  employeeId: 'SET_THIS',
-  applicationId: applicationId,
-  unitId: daycareFixture.id,
-  type: 'DAYCARE',
-  startDate: startDate,
-  endDate: endDate,
-  status: 'PENDING'
-})
-
-export const feeDecisionsFixture = (
-  status: FeeDecisionStatus,
-  adult: PersonDetail,
-  child: PersonDetail,
-  daycareId: UUID,
-  partner: PersonDetail | null,
-  validDuring: DateRange = new DateRange(
-    LocalDate.todayInSystemTz().subYears(1),
-    LocalDate.todayInSystemTz().addYears(1)
-  ),
-  sentAt: HelsinkiDateTime | null = null,
-  id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
-  documentKey?: string
-): FeeDecision => ({
-  id,
-  status,
-  decisionType: 'NORMAL',
-  validDuring,
-  validFrom: validDuring.start,
-  validTo: validDuring.end,
-  headOfFamilyId: adult.id,
-  partnerId: partner?.id ?? null,
-  headOfFamilyIncome: null,
-  partnerIncome: null,
-  familySize: 2,
-  feeThresholds: feeThresholds,
-  difference: [],
-  children: [
-    {
-      child: {
-        id: child.id,
-        dateOfBirth: child.dateOfBirth
-      },
-      placement: {
-        unitId: daycareId,
-        type: 'DAYCARE'
-      },
-      serviceNeed: {
-        optionId: null,
-        feeCoefficient: 1.0,
-        contractDaysPerMonth: null,
-        descriptionFi: 'palveluntarve',
-        descriptionSv: 'vårdbehövet',
-        missing: false
-      },
-      baseFee: 28900,
-      fee: 28900,
-      siblingDiscount: 0.0,
-      feeAlterations: [],
-      finalFee: 28900,
-      childIncome: null
-    }
-  ],
-  totalFee: 28900,
-  sentAt,
-  approvedAt: null,
-  approvedById: null,
-  decisionHandlerId: null,
-  decisionNumber: null,
-  documentKey: documentKey || null,
-  created: HelsinkiDateTime.now()
-})
-
-export const voucherValueDecisionsFixture = (
-  id: UUID,
-  adultId: UUID,
-  childId: UUID,
-  daycareId: UUID,
-  partner: PersonDetail | null = null,
-  status: 'DRAFT' | 'SENT' = 'DRAFT',
-  validFrom = LocalDate.todayInSystemTz().subYears(1),
-  validTo = LocalDate.todayInSystemTz().addYears(1),
-  sentAt: HelsinkiDateTime | null = null,
-  documentKey?: string
-): VoucherValueDecision => ({
-  id,
-  status,
-  validFrom,
-  validTo,
-  headOfFamilyId: adultId,
-  partnerId: partner?.id ?? null,
-  headOfFamilyIncome: null,
-  partnerIncome: null,
-  childIncome: null,
-  decisionType: 'NORMAL',
-  familySize: 2,
-  feeThresholds: feeThresholds,
-  child: { id: childId, dateOfBirth: LocalDate.of(2017, 6, 30) },
-  placement: {
-    unitId: daycareId,
-    type: 'DAYCARE'
-  },
-  serviceNeed: {
-    feeCoefficient: 1.0,
-    voucherValueCoefficient: 1.0,
-    feeDescriptionFi: '',
-    feeDescriptionSv: '',
-    voucherValueDescriptionFi: '',
-    voucherValueDescriptionSv: '',
-    missing: false
-  },
-  baseCoPayment: 28900,
-  coPayment: 28900,
-  siblingDiscount: 0.0,
-  feeAlterations: [],
-  finalCoPayment: 28900,
-  baseValue: 87000,
-  assistanceNeedCoefficient: 1.0,
-  voucherValue: 87000,
-  difference: [],
-  sentAt,
-  approvedAt: null,
-  approvedById: null,
-  decisionNumber: null,
-  documentKey: documentKey ?? null,
-  created: HelsinkiDateTime.now(),
-  decisionHandler: null
-})
-
-export const invoiceFixture = (
-  adultId: UUID,
-  childId: UUID,
-  areaId: UUID,
-  unitId: UUID,
-  status: Invoice['status'],
-  periodStart = LocalDate.of(2019, 1, 1),
-  periodEnd = LocalDate.of(2019, 1, 1)
-): Invoice => ({
-  id: uuidv4(),
-  status,
-  headOfFamily: adultId,
-  codebtor: null,
-  areaId,
-  periodStart,
-  periodEnd,
-  invoiceDate: periodStart,
-  dueDate: periodEnd,
-  number: null,
-  sentAt: null,
-  sentBy: null,
-  rows: [
-    {
-      id: uuidv4(),
-      child: childId,
-      amount: 1,
-      unitPrice: 10000,
-      periodStart: periodStart,
-      periodEnd: periodEnd,
-      product: 'DAYCARE',
-      unitId,
-      description: '',
-      price: 10000,
-      correctionId: null
-    }
-  ],
-  totalPrice: 10000
-})
-
-export const daycareGroupFixture: DevDaycareGroup = {
-  id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
-  daycareId: daycareFixture.id,
-  name: 'Kosmiset vakiot',
-  startDate: LocalDate.of(2000, 1, 1),
-  endDate: null,
-  jamixCustomerNumber: null
-}
-
-export function createDaycarePlacementFixture(
-  id: string,
-  childId: string,
-  unitId: string,
-  startDate = LocalDate.of(2022, 5, 1),
-  endDate = LocalDate.of(2023, 8, 31),
-  type: PlacementType = 'DAYCARE',
-  placeGuarantee = false
-): DevPlacement {
-  return {
-    id,
-    type,
-    childId,
-    unitId,
-    startDate,
-    endDate,
-    placeGuarantee,
-    terminationRequestedDate: null,
-    terminatedBy: null
-  }
-}
-
-export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
-  data: { MAIN_INCOME: total },
-  effect: 'INCOME',
-  total: total,
-  totalExpenses: 0,
-  totalIncome: total,
-  worksAtECHA: false
-})
-
-export const nullUUID = '00000000-0000-0000-0000-000000000000'
-
-export const systemInternalUser = nullUUID
-
-export const uniqueLabel = (l = 7): string =>
-  Math.random().toString(36).substring(0, l)
 
 export class Fixture {
   static daycare(): DaycareBuilder {
@@ -1610,19 +283,32 @@ export class Fixture {
     return new PersonBuilder({
       id: uuidv4(),
       dateOfBirth: LocalDate.of(2020, 5, 5),
+      dateOfDeath: null,
       ssn: '050520A999M',
       email: `email_${id}@evaka.test`,
       firstName: `firstName_${id}`,
+      preferredName: '',
       lastName: `lastName_${id}`,
       language: `fi`,
       nationalities: [],
       phone: '123456789',
+      backupPhone: '',
       postalCode: '02230',
       postOffice: 'Espoo',
       residenceCode: `residenceCode_${id}`,
       restrictedDetailsEnabled: false,
-      restrictedDetailsEndDate: undefined,
-      streetAddress: `streetAddress_${id}`
+      restrictedDetailsEndDate: null,
+      streetAddress: `streetAddress_${id}`,
+      duplicateOf: null,
+      enabledEmailTypes: null,
+      forceManualFeeDecisions: false,
+      invoiceRecipientName: '',
+      invoicingStreetAddress: '',
+      invoicingPostalCode: '',
+      invoicingPostOffice: '',
+      ssnAddingDisabled: null,
+      ophPersonOid: null,
+      updatedFromVtj: null
     })
   }
 
@@ -2232,13 +918,10 @@ export class Fixture {
     })
   }
 
-  static guardian(
-    child: PersonBuilder | PersonDetail,
-    guardian: PersonBuilder | PersonDetail
-  ) {
+  static guardian(child: DevPerson, guardian: DevPerson) {
     return new GuardianBuilder({
-      childId: 'data' in child ? child.data.id : child.id,
-      guardianId: 'data' in guardian ? guardian.data.id : guardian.id
+      childId: child.id,
+      guardianId: guardian.id
     })
   }
 
@@ -2524,8 +1207,6 @@ abstract class FixtureBuilder<T> {
   }
 
   abstract copy(): FixtureBuilder<T>
-
-  abstract save(): Promise<T>
 }
 
 export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
@@ -2613,25 +1294,24 @@ export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
   }
 }
 
-export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependants> {
-  withDependants(...dependants: (PersonDetail | PersonBuilder)[]) {
-    return this.with({
-      dependants: dependants.map((d) => {
-        const ssn = 'data' in d ? d.data.ssn : d.ssn
-        if (!ssn) throw new Error('Dependant must have SSN')
-        return ssn
-      })
-    })
-  }
-
-  async save() {
-    await insertPersonFixture(this.data)
+export class PersonBuilder extends FixtureBuilder<DevPerson> {
+  async saveAdult() {
+    await createPerson({ body: this.data, type: 'ADULT' })
     return this.data
   }
 
-  async saveAndUpdateMockVtj(): Promise<PersonDetailWithDependants> {
-    await this.save()
+  async saveChild() {
+    await createPerson({ body: this.data, type: 'CHILD' })
+    return this.data
+  }
+
+  async saveAndUpdateMockVtj(dependants?: DevPerson[]): Promise<DevPerson> {
+    await this.saveAdult()
     const person = this.data
+    const dependantSsns = dependants?.flatMap((d) => d.ssn ?? [])
+    if (dependantSsns?.length !== dependants?.length) {
+      throw new Error('All dependants must have SSNs')
+    }
     await upsertVtjDataset({
       body: {
         persons: [
@@ -2660,9 +1340,9 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependants> {
             }
           }
         ],
-        guardianDependants: person.dependants
+        guardianDependants: dependantSsns
           ? {
-              [person.ssn || '']: person.dependants
+              [person.ssn || '']: dependantSsns
             }
           : {}
       }
@@ -2780,7 +1460,7 @@ export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
     return new PlacementBuilder({ ...this.data })
   }
 
-  child(child: PersonDetailWithDependants) {
+  child(child: DevPerson) {
     this.data = {
       ...this.data,
       childId: child.id
@@ -3421,3 +2101,1300 @@ export class VasuTemplateBuilder extends FixtureBuilder<CreateVasuTemplateBody> 
     return new VasuTemplateBuilder({ ...this.data })
   }
 }
+
+export const fullDayTimeRange: TimeRange = new TimeRange(
+  LocalTime.MIN,
+  LocalTime.parse('23:59')
+)
+
+export const nonFullDayTimeRange: TimeRange = new TimeRange(
+  LocalTime.of(1, 0),
+  LocalTime.of(23, 0)
+)
+
+export const preschoolTermFixture2020: DevPreschoolTerm = {
+  id: uuidv4(),
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2020, 8, 13),
+    LocalDate.of(2021, 6, 4)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2020, 8, 18),
+    LocalDate.of(2021, 6, 4)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2020, 8, 1),
+    LocalDate.of(2021, 6, 4)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2020, 1, 8),
+    LocalDate.of(2020, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2021: DevPreschoolTerm = {
+  id: uuidv4(),
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2021, 8, 1),
+    LocalDate.of(2022, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2021, 1, 8),
+    LocalDate.of(2021, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2022: DevPreschoolTerm = {
+  id: uuidv4(),
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2022, 8, 11),
+    LocalDate.of(2023, 6, 2)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2022, 8, 11),
+    LocalDate.of(2023, 6, 2)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2022, 8, 1),
+    LocalDate.of(2023, 6, 2)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2022, 1, 10),
+    LocalDate.of(2022, 1, 21)
+  ),
+  termBreaks: []
+}
+
+export const preschoolTermFixture2023: DevPreschoolTerm = {
+  id: uuidv4(),
+  finnishPreschool: new FiniteDateRange(
+    LocalDate.of(2023, 8, 11),
+    LocalDate.of(2024, 6, 3)
+  ),
+  swedishPreschool: new FiniteDateRange(
+    LocalDate.of(2023, 8, 13),
+    LocalDate.of(2024, 6, 6)
+  ),
+  extendedTerm: new FiniteDateRange(
+    LocalDate.of(2023, 8, 1),
+    LocalDate.of(2024, 6, 6)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2023, 1, 8),
+    LocalDate.of(2023, 1, 20)
+  ),
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
+  ]
+}
+
+export const preschoolTermFixtures = [
+  preschoolTermFixture2020,
+  preschoolTermFixture2021,
+  preschoolTermFixture2022,
+  preschoolTermFixture2023
+]
+
+export const clubTermFixture2020: ClubTerm = {
+  id: uuidv4(),
+  term: new FiniteDateRange(
+    LocalDate.of(2020, 8, 13),
+    LocalDate.of(2021, 6, 4)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2020, 1, 8),
+    LocalDate.of(2020, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2021: ClubTerm = {
+  id: uuidv4(),
+  term: new FiniteDateRange(
+    LocalDate.of(2021, 8, 11),
+    LocalDate.of(2022, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2021, 1, 8),
+    LocalDate.of(2021, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2022: ClubTerm = {
+  id: uuidv4(),
+  term: new FiniteDateRange(
+    LocalDate.of(2022, 8, 10),
+    LocalDate.of(2023, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2022, 1, 8),
+    LocalDate.of(2022, 1, 20)
+  ),
+  termBreaks: []
+}
+
+export const clubTermFixture2023: ClubTerm = {
+  id: uuidv4(),
+  term: new FiniteDateRange(
+    LocalDate.of(2023, 8, 10),
+    LocalDate.of(2024, 6, 3)
+  ),
+  applicationPeriod: new FiniteDateRange(
+    LocalDate.of(2023, 1, 8),
+    LocalDate.of(2023, 1, 20)
+  ),
+  termBreaks: [
+    new FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
+    new FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
+    new FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23))
+  ]
+}
+
+export const clubTermFixtures = [
+  clubTermFixture2020,
+  clubTermFixture2021,
+  clubTermFixture2022,
+  clubTermFixture2023
+]
+
+export const careAreaFixture: DevCareArea = {
+  id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
+  name: 'Superkeskus',
+  shortName: 'super-keskus',
+  areaCode: 299,
+  subCostCenter: '99'
+}
+
+export const careArea2Fixture: DevCareArea = {
+  id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
+  name: 'Hyperkeskus',
+  shortName: 'hyper-keskus',
+  areaCode: 298,
+  subCostCenter: '98'
+}
+
+export const clubFixture: DevDaycare = {
+  id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
+  areaId: careAreaFixture.id,
+  name: 'Alkuräjähdyksen kerho',
+  type: ['CLUB'],
+  dailyPreschoolTime: null,
+  dailyPreparatoryTime: null,
+  openingDate: LocalDate.of(2020, 1, 1),
+  costCenter: '31500',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: '-',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
+  daycareApplyPeriod: null,
+  preschoolApplyPeriod: null,
+  clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  providerType: 'MUNICIPAL',
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE'],
+  businessId: '',
+  iban: '',
+  providerId: '',
+  capacity: 0,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  location: null,
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
+}
+
+export const daycareFixture: DevDaycare = {
+  id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
+  areaId: careAreaFixture.id,
+  name: 'Alkuräjähdyksen päiväkoti',
+  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
+  costCenter: '31500',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: 'Päiväkoti päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
+  providerType: 'MUNICIPAL',
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    nonFullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange
+  ],
+  shiftCareOpenOnHolidays: true,
+  location: {
+    lat: 60.20377343765089,
+    lon: 24.655715743526994
+  },
+  enabledPilotFeatures: [
+    'MESSAGING',
+    'MOBILE',
+    'RESERVATIONS',
+    'VASU_AND_PEDADOC',
+    'MOBILE_MESSAGING',
+    'PLACEMENT_TERMINATION'
+  ],
+  businessId: '',
+  iban: '',
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
+}
+
+export const daycare2Fixture: DevDaycare = {
+  id: '6f540c39-e7f6-4222-a004-c527403378ec',
+  areaId: careArea2Fixture.id,
+  name: 'Mustan aukon päiväkoti',
+  type: ['CENTRE'],
+  dailyPreschoolTime: null,
+  dailyPreparatoryTime: null,
+  costCenter: '31501',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 2',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti 2 päätöksellä',
+    preschoolName: 'Päiväkoti 2 päätöksellä',
+    handler: 'Käsittelijä 2',
+    handlerAddress: 'Käsittelijän 2 osoite'
+  },
+  providerType: 'MUNICIPAL',
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange
+  ],
+  shiftCareOpenOnHolidays: true,
+  location: {
+    lat: 60.20350901607783,
+    lon: 24.669
+  },
+  enabledPilotFeatures: ['MESSAGING', 'MOBILE', 'RESERVATIONS'],
+  businessId: '',
+  iban: '',
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
+}
+
+export const daycareFixturePrivateVoucher: DevDaycare = {
+  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
+  areaId: careAreaFixture.id,
+  name: 'PS-yksikkö',
+  type: ['CENTRE'],
+  dailyPreschoolTime: null,
+  dailyPreparatoryTime: null,
+  costCenter: '31500',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Päiväkoti päätöksellä',
+    preschoolName: 'Päiväkoti päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
+  providerType: 'PRIVATE_SERVICE_VOUCHER',
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
+  location: {
+    lat: 60.20377343765089,
+    lon: 24.655715743526994
+  },
+  enabledPilotFeatures: [
+    'MESSAGING',
+    'MOBILE',
+    'RESERVATIONS',
+    'VASU_AND_PEDADOC',
+    'MOBILE_MESSAGING',
+    'PLACEMENT_TERMINATION'
+  ],
+  invoicedByMunicipality: false,
+  businessId: '',
+  iban: '',
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
+}
+
+export const preschoolFixture: DevDaycare = {
+  id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
+  areaId: careAreaFixture.id,
+  name: 'Alkuräjähdyksen eskari',
+  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
+  costCenter: '31501',
+  visitingAddress: {
+    streetAddress: 'Kamreerintie 1',
+    postalCode: '02210',
+    postOffice: 'Espoo'
+  },
+  decisionCustomization: {
+    daycareName: 'Eskari päätöksellä',
+    preschoolName: 'Eskari päätöksellä',
+    handler: 'Käsittelijä',
+    handlerAddress: 'Käsittelijän osoite'
+  },
+  providerType: 'MUNICIPAL',
+  operationTimes: [
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    fullDayTimeRange,
+    null,
+    null
+  ],
+  shiftCareOperationTimes: null,
+  shiftCareOpenOnHolidays: false,
+  location: {
+    lat: 60.2040261560435,
+    lon: 24.65517745652623
+  },
+  enabledPilotFeatures: [
+    'MESSAGING',
+    'MOBILE',
+    'VASU_AND_PEDADOC',
+    'PLACEMENT_TERMINATION'
+  ],
+  businessId: '',
+  iban: '',
+  providerId: '',
+  capacity: 0,
+  openingDate: null,
+  closingDate: null,
+  ghostUnit: false,
+  invoicedByMunicipality: true,
+  uploadChildrenToVarda: true,
+  uploadToVarda: true,
+  uploadToKoski: true,
+  language: 'fi',
+  mailingAddress: {
+    poBox: null,
+    postOffice: null,
+    postalCode: null,
+    streetAddress: null
+  },
+  unitManager: {
+    email: '',
+    name: 'Unit Manager',
+    phone: ''
+  },
+  financeDecisionHandler: null,
+  clubApplyPeriod: null,
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  email: null,
+  phone: null,
+  url: null,
+  ophUnitOid: '1.2.3.4.5',
+  ophOrganizerOid: '1.2.3.4.5',
+  additionalInfo: null,
+  dwCostCenter: 'dw-test',
+  mealtimeBreakfast: null,
+  mealtimeLunch: null,
+  mealtimeSnack: null,
+  mealtimeSupper: null,
+  mealtimeEveningSnack: null
+}
+
+export const enduserGuardianFixture = Fixture.person().with({
+  id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
+  ssn: '070644-937X',
+  firstName: 'Johannes Olavi Antero Tapio',
+  lastName: 'Karhula',
+  email: 'johannes.karhula@evaka.test',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1944, 7, 7),
+  streetAddress: 'Kamreerintie 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserChildFixtureJari = Fixture.person().with({
+  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
+  ssn: '070714A9126',
+  firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
+  lastName: 'Karhula',
+  preferredName: 'Jari',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(2014, 7, 7),
+  streetAddress: enduserGuardianFixture.streetAddress,
+  postalCode: enduserGuardianFixture.postalCode,
+  postOffice: enduserGuardianFixture.postOffice,
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserChildFixtureKaarina = Fixture.person().with({
+  id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
+  ssn: '160616A978U',
+  firstName: 'Kaarina Veera Nelli',
+  lastName: 'Karhula',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(2016, 6, 6),
+  streetAddress: enduserGuardianFixture.streetAddress,
+  postalCode: enduserGuardianFixture.postalCode,
+  postOffice: enduserGuardianFixture.postOffice,
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserChildFixturePorriHatterRestricted = Fixture.person().with({
+  id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
+  ssn: '160620A999J',
+  firstName: 'Porri Hatter',
+  lastName: 'Karhula',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(2014, 7, 7),
+  streetAddress: '',
+  postalCode: '',
+  postOffice: '',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: true,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserChildJariOtherGuardianFixture = Fixture.person().with({
+  id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
+  ssn: '311299-999E',
+  firstName: 'Ville',
+  lastName: 'Vilkas',
+  email: '',
+  phone: '555-2580',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1999, 2, 1),
+  streetAddress: 'Toistie 33',
+  postalCode: '02230',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserDeceasedChildFixture = Fixture.person().with({
+  id: 'b8711722-0c1b-4044-a794-5b308207d78b',
+  ssn: '150515-999T',
+  firstName: 'Unelma',
+  lastName: 'Aapinen',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(2015, 5, 15),
+  dateOfDeath: LocalDate.of(2020, 6, 1),
+  streetAddress: 'Aapiskatu 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const enduserNonSsnChildFixture = Fixture.person().with({
+  id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
+  firstName: 'Heluna',
+  lastName: 'Hetuton',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(2018, 8, 15),
+  streetAddress: 'Suosiellä 1',
+  postalCode: '00340',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+const twoGuardiansGuardian1 = {
+  id: '9d6289ba-9ffd-11ea-bb37-0242ac130002',
+  ssn: '220281-9456',
+  firstName: 'Mikael Ilmari Juhani Johannes',
+  lastName: 'Högfors',
+  email: 'mikael.hogfors@evaka.test',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1981, 2, 22),
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  residenceCode: 'twoGuardiansSameAddressResidenceCode',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+const twoGuardiansGuardian2 = {
+  id: 'd1c30734-c02f-4546-8123-856f8101565e',
+  ssn: '170590-9540',
+  firstName: 'Kaarina Marjatta Anna Liisa',
+  lastName: 'Högfors',
+  email: 'kaarina.hogfors@evaka.test',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1990, 5, 17),
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  residenceCode: 'twoGuardiansSameAddressResidenceCode',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+const twoGuardiansChildren = [
+  Fixture.person().with({
+    id: '6ec99620-9ffd-11ea-bb37-0242ac130002',
+    ssn: '071013A960W',
+    firstName: 'Antero Onni Leevi Aatu',
+    lastName: 'Högfors',
+    email: '',
+    phone: '',
+    language: 'fi',
+    dateOfBirth: LocalDate.of(2013, 10, 7),
+    streetAddress: 'Kamreerintie 4',
+    postalCode: '02100',
+    postOffice: 'Espoo',
+    nationalities: ['FI'],
+    restrictedDetailsEnabled: false,
+    restrictedDetailsEndDate: null
+  }).data
+]
+export const familyWithTwoGuardians = {
+  guardian: Fixture.person().with(twoGuardiansGuardian1).data,
+  otherGuardian: Fixture.person().with(twoGuardiansGuardian2).data,
+  children: twoGuardiansChildren
+}
+
+const separatedGuardiansGuardian1 = {
+  id: '1c1b2946-fdf3-4e02-a3e4-2c2a797bafc3',
+  firstName: 'John',
+  lastName: 'Doe',
+  dateOfBirth: LocalDate.of(1980, 1, 1),
+  ssn: '010180-1232',
+  streetAddress: 'Kamreerintie 2',
+  postalCode: '02770',
+  postOffice: 'Espoo'
+}
+const separatedGuardiansGuardian2 = Fixture.person().with({
+  id: '56064714-649f-457e-893a-44832936166c',
+  firstName: 'Joan',
+  lastName: 'Doe',
+  dateOfBirth: LocalDate.of(1979, 2, 1),
+  ssn: '010279-123L',
+  streetAddress: 'Testikatu 1',
+  postalCode: '02770',
+  postOffice: 'Espoo'
+}).data
+const separatedGuardiansChildren = [
+  Fixture.person().with({
+    id: '5474ee62-16cf-4cfe-a297-40559e165a32',
+    firstName: 'Ricky',
+    lastName: 'Doe',
+    dateOfBirth: LocalDate.of(2017, 6, 1),
+    ssn: '010617A123U',
+    streetAddress: 'Kamreerintie 2',
+    postalCode: '02770',
+    postOffice: 'Espoo'
+  }).data
+]
+export const familyWithSeparatedGuardians = {
+  guardian: Fixture.person().with(separatedGuardiansGuardian1).data,
+  otherGuardian: Fixture.person().with(separatedGuardiansGuardian2).data,
+  children: separatedGuardiansChildren
+}
+
+const restrictedDetailsGuardian = {
+  id: '7699f488-3fdc-11eb-b378-0242ac130002',
+  ssn: '080884-999H',
+  firstName: 'Kaj Erik',
+  lastName: 'Pelimerkki',
+  email: 'kaj@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1984, 8, 8),
+  streetAddress: '',
+  postalCode: '',
+  postOffice: '',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: true,
+  restrictedDetailsEndDate: null
+}
+
+const guardian2WithNoRestrictions = {
+  id: '1fd05a42-3fdd-11eb-b378-0242ac130002',
+  ssn: '130486-9980',
+  firstName: 'Helga Helen',
+  lastName: 'Lehtokurppa',
+  email: 'helga@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1986, 4, 13),
+  streetAddress: 'Westendinkatu 3',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
+const restrictedDetailsGuardiansChildren = [
+  Fixture.person().with({
+    id: '82a2586e-3fdd-11eb-b378-0242ac130002',
+    firstName: 'Vadelma',
+    lastName: 'Pelimerkki',
+    dateOfBirth: LocalDate.of(2017, 5, 15),
+    ssn: '150517A9989',
+    streetAddress: 'Kamreerintie 4',
+    postalCode: '02100',
+    postOffice: 'Espoo'
+  }).data
+]
+
+export const familyWithRestrictedDetailsGuardian = {
+  guardian: Fixture.person().with(restrictedDetailsGuardian).data,
+  otherGuardian: Fixture.person().with(guardian2WithNoRestrictions).data,
+  children: restrictedDetailsGuardiansChildren
+}
+
+const deadGuardian = Fixture.person().with({
+  id: 'faacfd43-878f-4a70-9e74-2051a18480e6',
+  ssn: '080581-999A',
+  firstName: 'Kuisma',
+  lastName: 'Kuollut',
+  email: 'kuisma@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1981, 5, 8),
+  dateOfDeath: LocalDate.of(2021, 5, 1),
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+const deadGuardianChild = Fixture.person().with({
+  id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
+  firstName: 'Kuopus',
+  lastName: 'Kuollut',
+  dateOfBirth: LocalDate.of(2019, 9, 9),
+  ssn: '090917A998M',
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo'
+}).data
+
+export const familyWithDeadGuardian = {
+  guardian: {
+    ...deadGuardian,
+    dependants: [deadGuardianChild.ssn]
+  },
+  children: [deadGuardianChild]
+}
+
+export const personFixtureChildZeroYearOld = Fixture.person().with({
+  id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
+  ssn: null,
+  firstName: 'Vasta Syntynyt',
+  lastName: 'Korhonen-Hämäläinen',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.todayInSystemTz(), // Always a zero-year-old
+  streetAddress: 'Kamreerintie 2',
+  postalCode: '00370',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}).data
+
+export const restrictedPersonFixture = Fixture.person().with({
+  id: '92d707e9-6cbc-487b-8bde-0097d90044cd',
+  ssn: '031083-910S',
+  firstName: 'Seija Anna Kaarina',
+  lastName: 'Sotka',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: LocalDate.of(1983, 10, 3),
+  streetAddress: '',
+  postalCode: '',
+  postOffice: '',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: true,
+  restrictedDetailsEndDate: null
+}).data
+
+const applicationForm = (
+  type: ApplicationType,
+  child: DevPerson,
+  guardian: DevPerson,
+  guardian2Phone: string,
+  guardian2Email: string,
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
+  preferredStartDate: LocalDate,
+  preferredUnits: string[],
+  connectedDaycare = false,
+  assistanceNeeded = false
+): ApplicationForm => {
+  const secondGuardian =
+    guardian2Phone || guardian2Email || otherGuardianAgreementStatus
+      ? {
+          phoneNumber: guardian2Phone,
+          email: guardian2Email,
+          agreementStatus: otherGuardianAgreementStatus
+        }
+      : null
+
+  const serviceNeed =
+    type === 'PRESCHOOL' && !connectedDaycare
+      ? null
+      : {
+          startTime: '08:00',
+          endTime: '16:00',
+          partTime: false,
+          shiftCare: false,
+          serviceNeedOption: null
+        }
+
+  return {
+    child: {
+      dateOfBirth: child.dateOfBirth,
+      person: {
+        ...child,
+        socialSecurityNumber: child.ssn ?? null
+      },
+      address: {
+        street: child.streetAddress ?? '',
+        postalCode: child.postalCode ?? '',
+        postOffice: child.postOffice ?? ''
+      },
+      futureAddress: null,
+      nationality: 'FI',
+      language: 'fi',
+      allergies: '',
+      diet: '',
+      assistanceNeeded,
+      assistanceDescription: ''
+    },
+    guardian: {
+      person: {
+        ...guardian,
+        socialSecurityNumber: guardian.ssn ?? null
+      },
+      phoneNumber: guardian.phone ?? '',
+      email: guardian.email ?? '',
+      address: {
+        street: guardian.streetAddress ?? '',
+        postalCode: guardian.postalCode ?? '',
+        postOffice: guardian.postOffice ?? ''
+      },
+      futureAddress: null
+    },
+    secondGuardian,
+    otherPartner: null,
+    maxFeeAccepted: false,
+    otherChildren: [],
+    preferences: {
+      preferredStartDate,
+      connectedDaycarePreferredStartDate: null,
+      preferredUnits: preferredUnits.map((id) => ({ id, name: id })),
+      preparatory: false,
+      serviceNeed,
+      siblingBasis: null,
+      urgent: false
+    },
+    clubDetails: {
+      wasOnClubCare: false,
+      wasOnDaycare: false
+    },
+    otherInfo: ''
+  }
+}
+
+export const applicationFixtureId = '9dd0e1ba-9b3b-11ea-bb37-0242ac130002'
+export const applicationFixture = (
+  child: DevPerson,
+  guardian: DevPerson,
+  otherGuardian: DevPerson | undefined = undefined,
+  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
+  otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
+  preferredUnits: string[] = [daycareFixture.id],
+  connectedDaycare = false,
+  status: ApplicationStatus = 'SENT',
+  preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
+  transferApplication = false,
+  assistanceNeeded = false
+): DevApplicationWithForm => ({
+  id: applicationFixtureId,
+  type: type,
+  childId: child.id,
+  guardianId: guardian.id,
+  otherGuardians: otherGuardian ? [otherGuardian.id] : [],
+  form: applicationForm(
+    type,
+    child,
+    guardian,
+    otherGuardian?.phone ?? '',
+    otherGuardian?.email ?? '',
+    otherGuardianAgreementStatus,
+    preferredStartDate,
+    preferredUnits,
+    connectedDaycare,
+    assistanceNeeded
+  ),
+  checkedByAdmin: false,
+  hideFromGuardian: false,
+  origin: 'ELECTRONIC',
+  status,
+  transferApplication,
+  allowOtherGuardianAccess: true,
+  createdDate: null,
+  dueDate: null,
+  modifiedDate: null,
+  sentDate: null,
+  formModified: HelsinkiDateTime.now()
+})
+
+const feeThresholds = {
+  minIncomeThreshold: 210200,
+  maxIncomeThreshold: 479900,
+  incomeMultiplier: 0.107,
+  minFee: 2700,
+  maxFee: 28900
+}
+
+export const decisionFixture = (
+  applicationId: string,
+  startDate: LocalDate,
+  endDate: LocalDate
+): DecisionRequest => ({
+  id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
+  employeeId: 'SET_THIS',
+  applicationId: applicationId,
+  unitId: daycareFixture.id,
+  type: 'DAYCARE',
+  startDate: startDate,
+  endDate: endDate,
+  status: 'PENDING'
+})
+
+export const feeDecisionsFixture = (
+  status: FeeDecisionStatus,
+  adult: DevPerson,
+  child: DevPerson,
+  daycareId: UUID,
+  partner: DevPerson | null,
+  validDuring: DateRange = new DateRange(
+    LocalDate.todayInSystemTz().subYears(1),
+    LocalDate.todayInSystemTz().addYears(1)
+  ),
+  sentAt: HelsinkiDateTime | null = null,
+  id = 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
+  documentKey?: string
+): FeeDecision => ({
+  id,
+  status,
+  decisionType: 'NORMAL',
+  validDuring,
+  validFrom: validDuring.start,
+  validTo: validDuring.end,
+  headOfFamilyId: adult.id,
+  partnerId: partner?.id ?? null,
+  headOfFamilyIncome: null,
+  partnerIncome: null,
+  familySize: 2,
+  feeThresholds: feeThresholds,
+  difference: [],
+  children: [
+    {
+      child: {
+        id: child.id,
+        dateOfBirth: child.dateOfBirth
+      },
+      placement: {
+        unitId: daycareId,
+        type: 'DAYCARE'
+      },
+      serviceNeed: {
+        optionId: null,
+        feeCoefficient: 1.0,
+        contractDaysPerMonth: null,
+        descriptionFi: 'palveluntarve',
+        descriptionSv: 'vårdbehövet',
+        missing: false
+      },
+      baseFee: 28900,
+      fee: 28900,
+      siblingDiscount: 0.0,
+      feeAlterations: [],
+      finalFee: 28900,
+      childIncome: null
+    }
+  ],
+  totalFee: 28900,
+  sentAt,
+  approvedAt: null,
+  approvedById: null,
+  decisionHandlerId: null,
+  decisionNumber: null,
+  documentKey: documentKey || null,
+  created: HelsinkiDateTime.now()
+})
+
+export const voucherValueDecisionsFixture = (
+  id: UUID,
+  adultId: UUID,
+  childId: UUID,
+  daycareId: UUID,
+  partner: DevPerson | null = null,
+  status: 'DRAFT' | 'SENT' = 'DRAFT',
+  validFrom = LocalDate.todayInSystemTz().subYears(1),
+  validTo = LocalDate.todayInSystemTz().addYears(1),
+  sentAt: HelsinkiDateTime | null = null,
+  documentKey?: string
+): VoucherValueDecision => ({
+  id,
+  status,
+  validFrom,
+  validTo,
+  headOfFamilyId: adultId,
+  partnerId: partner?.id ?? null,
+  headOfFamilyIncome: null,
+  partnerIncome: null,
+  childIncome: null,
+  decisionType: 'NORMAL',
+  familySize: 2,
+  feeThresholds: feeThresholds,
+  child: { id: childId, dateOfBirth: LocalDate.of(2017, 6, 30) },
+  placement: {
+    unitId: daycareId,
+    type: 'DAYCARE'
+  },
+  serviceNeed: {
+    feeCoefficient: 1.0,
+    voucherValueCoefficient: 1.0,
+    feeDescriptionFi: '',
+    feeDescriptionSv: '',
+    voucherValueDescriptionFi: '',
+    voucherValueDescriptionSv: '',
+    missing: false
+  },
+  baseCoPayment: 28900,
+  coPayment: 28900,
+  siblingDiscount: 0.0,
+  feeAlterations: [],
+  finalCoPayment: 28900,
+  baseValue: 87000,
+  assistanceNeedCoefficient: 1.0,
+  voucherValue: 87000,
+  difference: [],
+  sentAt,
+  approvedAt: null,
+  approvedById: null,
+  decisionNumber: null,
+  documentKey: documentKey ?? null,
+  created: HelsinkiDateTime.now(),
+  decisionHandler: null
+})
+
+export const invoiceFixture = (
+  adultId: UUID,
+  childId: UUID,
+  areaId: UUID,
+  unitId: UUID,
+  status: Invoice['status'],
+  periodStart = LocalDate.of(2019, 1, 1),
+  periodEnd = LocalDate.of(2019, 1, 1)
+): Invoice => ({
+  id: uuidv4(),
+  status,
+  headOfFamily: adultId,
+  codebtor: null,
+  areaId,
+  periodStart,
+  periodEnd,
+  invoiceDate: periodStart,
+  dueDate: periodEnd,
+  number: null,
+  sentAt: null,
+  sentBy: null,
+  rows: [
+    {
+      id: uuidv4(),
+      child: childId,
+      amount: 1,
+      unitPrice: 10000,
+      periodStart: periodStart,
+      periodEnd: periodEnd,
+      product: 'DAYCARE',
+      unitId,
+      description: '',
+      price: 10000,
+      correctionId: null
+    }
+  ],
+  totalPrice: 10000
+})
+
+export const daycareGroupFixture: DevDaycareGroup = {
+  id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
+  daycareId: daycareFixture.id,
+  name: 'Kosmiset vakiot',
+  startDate: LocalDate.of(2000, 1, 1),
+  endDate: null,
+  jamixCustomerNumber: null
+}
+
+export function createDaycarePlacementFixture(
+  id: string,
+  childId: string,
+  unitId: string,
+  startDate = LocalDate.of(2022, 5, 1),
+  endDate = LocalDate.of(2023, 8, 31),
+  type: PlacementType = 'DAYCARE',
+  placeGuarantee = false
+): DevPlacement {
+  return {
+    id,
+    type,
+    childId,
+    unitId,
+    startDate,
+    endDate,
+    placeGuarantee,
+    terminationRequestedDate: null,
+    terminatedBy: null
+  }
+}
+
+export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
+  data: { MAIN_INCOME: total },
+  effect: 'INCOME',
+  total: total,
+  totalExpenses: 0,
+  totalIncome: total,
+  worksAtECHA: false
+})
+
+export const nullUUID = '00000000-0000-0000-0000-000000000000'
+
+export const systemInternalUser = nullUUID

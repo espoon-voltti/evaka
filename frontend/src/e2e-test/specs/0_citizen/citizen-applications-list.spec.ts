@@ -28,11 +28,11 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 })
 
-async function openApplicationsPage(citizen: { ssn?: string }) {
+async function openApplicationsPage(citizen: { ssn: string | null }) {
   const page = await Page.open({
     mockedTime: now
   })
-  await enduserLogin(page, citizen.ssn)
+  await enduserLogin(page, citizen.ssn ?? undefined)
   const header = new CitizenHeader(page)
   await header.selectTab('applications')
   const applicationsPage = new CitizenApplicationsPage(page)
@@ -78,12 +78,10 @@ describe('Citizen applications list', () => {
       .saveAndUpdateMockVtj()
     const guardian = await Fixture.person()
       .with({ ssn: '010106A973C' })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     const otherGuardian = await Fixture.person()
       .with({ ssn: '010106A9388' })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
 
     const application = applicationFixture(
       child,

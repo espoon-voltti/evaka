@@ -10,8 +10,8 @@ import TimeRange from 'lib-common/time-range'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { careAreaFixture, Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
   FormatterReservation,
   TwoPartReservation
@@ -194,7 +194,7 @@ describe.each(e)(
 async function openCalendarPage(
   time: HelsinkiDateTime,
   env: EnvType,
-  endUser?: PersonDetail
+  endUser: DevPerson
 ) {
   const viewport =
     env === 'mobile'
@@ -209,7 +209,7 @@ async function openCalendarPage(
       featureFlags: { intermittentShiftCare: true }
     }
   })
-  await enduserLogin(page, endUser?.ssn)
+  await enduserLogin(page, endUser?.ssn ?? undefined)
   const header = new CitizenHeader(page, env)
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, env)

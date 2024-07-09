@@ -40,11 +40,11 @@ beforeEach(async () => {
   decisionMaker = await Fixture.employeeServiceWorker().save()
 })
 
-async function openCitizenDecisionsPage(citizen: { ssn?: string }) {
+async function openCitizenDecisionsPage(citizen: { ssn: string | null }) {
   const page = await Page.open({
     mockedTime: now
   })
-  await enduserLogin(page, citizen.ssn)
+  await enduserLogin(page, citizen.ssn ?? undefined)
   const header = new CitizenHeader(page)
   await header.selectTab('decisions')
   const citizenDecisionsPage = new CitizenDecisionsPage(page)
@@ -208,12 +208,10 @@ describe('Citizen application decisions', () => {
       .saveAndUpdateMockVtj()
     const guardian = await Fixture.person()
       .with({ ssn: '010106A973C' })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
     const otherGuardian = await Fixture.person()
       .with({ ssn: '010106A9388' })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+      .saveAndUpdateMockVtj([child])
 
     const application = applicationFixture(
       child,

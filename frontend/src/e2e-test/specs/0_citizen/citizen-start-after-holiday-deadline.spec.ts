@@ -14,9 +14,8 @@ import {
   enduserGuardianFixture,
   Fixture
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevDaycare } from '../../generated/api-types'
+import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -29,7 +28,7 @@ const period = new FiniteDateRange(startDate, LocalDate.of(2024, 8, 15))
 const child = enduserChildFixtureJari
 const mockedDate = LocalDate.of(2024, 5, 25)
 let daycare: DevDaycare
-let guardian: PersonDetailWithDependants
+let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
@@ -46,8 +45,7 @@ beforeEach(async () => {
   const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
   guardian = await Fixture.person()
     .with(enduserGuardianFixture)
-    .withDependants(child1)
-    .saveAndUpdateMockVtj()
+    .saveAndUpdateMockVtj([child1])
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()
