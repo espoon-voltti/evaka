@@ -17,7 +17,7 @@ proxy_set_header X-User "";
 # this is just to prevent caching at the proxy level.
 proxy_no_cache 1;
 
-<% if ENV["DD_PROFILING_ENABLED"] == "true" %>
+{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
 opentracing_operation_name "$request_method $uri";
 opentracing_propagate_context;
-<% end %>
+{{ end }}
