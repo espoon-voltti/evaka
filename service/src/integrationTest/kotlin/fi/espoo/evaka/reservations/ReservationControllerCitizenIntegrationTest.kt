@@ -1552,29 +1552,38 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `cannot add absences to the past`() {
+    fun `absences are not created to the past`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
         val adult = DevPerson()
         val child = DevPerson()
 
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = mockToday.minusYears(1),
+                    endDate = mockToday.plusYears(1)
+                )
+            )
         }
 
-        assertThrows<BadRequest> {
-                postAbsences(
-                    adult.user(CitizenAuthLevel.WEAK),
-                    AbsenceRequest(
-                        childIds = setOf(child.id),
-                        dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday.plusDays(1)),
-                        absenceType = AbsenceType.OTHER_ABSENCE
-                    )
-                )
-            }
-            .also { exception ->
-                assertEquals("Cannot mark absences for past days", exception.message)
-            }
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            )
+        )
+
+        assertAbsenceCounts(child.id, listOf(mockToday to 1))
     }
 
     @Test
@@ -1946,6 +1955,51 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.NONBILLABLE),
                 Tuple(tuesday, AbsenceType.SICKLEAVE, AbsenceCategory.BILLABLE),
             )
+    }
+
+    @Test
+    fun `cannot add absences to not-yet-reservable holiday period days`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = mockToday.minusYears(1),
+                    endDate = mockToday.plusYears(1)
+                )
+            )
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(tuesday, wednesday),
+                    reservationsOpenOn = mockToday.plusDays(1),
+                    reservationDeadline = monday
+                )
+            )
+        }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, thursday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            )
+        )
+
+        // No absences created on tue or wed
+        assertAbsenceCounts(child.id, listOf(monday to 1, thursday to 1))
     }
 
     @Test
