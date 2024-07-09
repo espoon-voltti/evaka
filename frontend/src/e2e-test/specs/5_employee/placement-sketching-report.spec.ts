@@ -35,7 +35,7 @@ const mockToday = LocalDate.of(2021, 2, 1)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  const admin = (await Fixture.employeeAdmin().save()).data
+  const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
     mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))

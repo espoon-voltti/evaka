@@ -85,7 +85,7 @@ beforeEach(async () => {
     ]
   })
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -168,7 +168,7 @@ describe('Application details', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    await employeeLogin(page, serviceWorker.data)
+    await employeeLogin(page, serviceWorker)
     await applicationReadView.navigateToApplication(
       restrictedDetailsGuardianApplication.id
     )
@@ -213,7 +213,7 @@ describe('Application details', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    await employeeLogin(page, unitSupervisor.data)
+    await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(singleParentApplication.id)
     await applicationDetailsPage.assertApplicationStatus(
       'Vahvistettavana huoltajalla'
@@ -224,7 +224,7 @@ describe('Application details', () => {
 
   test('Service worker can create, edit and delete application notes', async () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
-    await employeeLogin(page, serviceWorker.data)
+    await employeeLogin(page, serviceWorker)
     await page.goto(config.employeeUrl)
 
     const application = await applicationWorkbench.openApplicationById(

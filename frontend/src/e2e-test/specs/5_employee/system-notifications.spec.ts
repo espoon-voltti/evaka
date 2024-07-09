@@ -5,8 +5,9 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { EmployeeBuilder, Fixture } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import TopNav from '../../pages/mobile/top-nav'
@@ -14,7 +15,7 @@ import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let admin: EmployeeBuilder
+let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
@@ -29,7 +30,7 @@ describe('System notifications', () => {
     const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
 
     const adminPage = await Page.open({ mockedTime: now })
-    await employeeLogin(adminPage, admin.data)
+    await employeeLogin(adminPage, admin)
     await adminPage.goto(config.employeeUrl)
     const nav = new EmployeeNav(adminPage)
     await nav.openAndClickDropdownMenuItem('system-notifications')
@@ -61,7 +62,7 @@ describe('System notifications', () => {
     const validTo = HelsinkiDateTime.of(2024, 6, 3, 11, 30)
 
     const adminPage = await Page.open({ mockedTime: now })
-    await employeeLogin(adminPage, admin.data)
+    await employeeLogin(adminPage, admin)
     await adminPage.goto(config.employeeUrl)
     const nav = new EmployeeNav(adminPage)
     await nav.openAndClickDropdownMenuItem('system-notifications')
@@ -76,13 +77,9 @@ describe('System notifications', () => {
     await adminPage.close()
 
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare()
-      .with({
-        areaId: area.data.id
-      })
-      .save()
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
     const mobilePage = await Page.open({ mockedTime: now })
-    await mobilePage.goto(await pairMobileDevice(unit.data.id))
+    await mobilePage.goto(await pairMobileDevice(unit.id))
     const topBar = new TopNav(mobilePage)
     await topBar.systemNotificationBtn.click()
     await topBar.systemNotificationModal.assertText((t) =>

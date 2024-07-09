@@ -63,7 +63,7 @@ beforeEach(async () => {
       })
       .withPublished(true)
       .save()
-  ).data.id
+  ).id
   documentIdHojks = (
     await Fixture.childDocument()
       .withTemplate(templateIdHojks)
@@ -79,7 +79,7 @@ beforeEach(async () => {
         ]
       })
       .save()
-  ).data.id
+  ).id
 
   templateIdPed = (
     await Fixture.documentTemplate()
@@ -89,7 +89,7 @@ beforeEach(async () => {
       })
       .withPublished(true)
       .save()
-  ).data.id
+  ).id
   documentIdPed = (
     await Fixture.childDocument()
       .withTemplate(templateIdPed)
@@ -106,7 +106,7 @@ beforeEach(async () => {
         ]
       })
       .save()
-  ).data.id
+  ).id
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')

@@ -83,7 +83,7 @@ describe('Fee decisions', () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
     page = await Page.open({ acceptDownloads: true })
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -201,7 +201,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
         }
       }
     })
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -238,7 +238,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       enduserChildFixtureKaarina,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
       .with({
         email: 'laura.laskuttaja@evaka.test',
         firstName: 'Laura',
@@ -279,7 +279,7 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       enduserChildFixtureKaarina,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
       .with({
         email: 'laura.laskuttaja@evaka.test',
         firstName: 'Laura',

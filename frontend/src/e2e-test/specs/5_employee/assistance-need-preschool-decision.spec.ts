@@ -52,7 +52,7 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeEach(async () => {
   await resetServiceState()
 
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employeeServiceWorker().save()
 
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
@@ -60,7 +60,7 @@ beforeEach(async () => {
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
-  staff = (await Fixture.employeeStaff(unitId).save()).data
+  staff = await Fixture.employeeStaff(unitId).save()
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     childId,
@@ -79,13 +79,11 @@ const openPage = async (addDays = 0) =>
 
 describe('Assistance Need Preschool Decisions - Editing', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = (
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
-        .save()
-    ).data
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(childId)
+      .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
+      .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      .save()
 
     page = await openPage()
     await employeeLogin(page, serviceWorker)
@@ -159,18 +157,16 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
 
 describe('Assistance Need Decisions - Decision process', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = (
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
-        .withRequiredFieldsFilled(
-          daycareFixture.id,
-          serviceWorker.id,
-          serviceWorker.id
-        )
-        .save()
-    ).data
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
+      .withChild(childId)
+      .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
+      .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      .withRequiredFieldsFilled(
+        daycareFixture.id,
+        serviceWorker.id,
+        serviceWorker.id
+      )
+      .save()
 
     page = await openPage()
     await employeeLogin(page, serviceWorker)
@@ -253,7 +249,7 @@ let acceptedAssistanceNeedPreschoolDecision: DevAssistanceNeedPreschoolDecision
 describe('Decision visibility for role', () => {
   describe('Staff', () => {
     beforeEach(async () => {
-      acceptedAssistanceNeedPreschoolDecision = (
+      acceptedAssistanceNeedPreschoolDecision =
         await Fixture.assistanceNeedPreschoolDecision()
           .withChild(childId)
           .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
@@ -273,7 +269,6 @@ describe('Decision visibility for role', () => {
             unreadGuardianIds: [fixtures.familyWithTwoGuardians.guardian.id]
           })
           .save()
-      ).data
 
       await Fixture.assistanceNeedPreschoolDecision()
         .withChild(childId)

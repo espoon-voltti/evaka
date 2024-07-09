@@ -20,7 +20,7 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
   page = await Page.open()
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)
@@ -46,9 +46,7 @@ describe('Employee - Document templates', () => {
     await nav.openAndClickDropdownMenuItem('document-templates')
     const templates = new DocumentTemplatesListPage(page)
 
-    const jsonPath = await templates
-      .templateRow(template.data.name)
-      .exportToPath()
+    const jsonPath = await templates.templateRow(template.name).exportToPath()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(
       await promisify(fs.readFile)(jsonPath, {
@@ -56,7 +54,7 @@ describe('Employee - Document templates', () => {
       })
     )
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(data.name).toEqual(template.data.name)
+    expect(data.name).toEqual(template.name)
 
     const name = 'Tuodun uusi nimi'
 

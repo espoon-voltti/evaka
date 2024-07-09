@@ -2525,7 +2525,7 @@ abstract class FixtureBuilder<T> {
 
   abstract copy(): FixtureBuilder<T>
 
-  abstract save(): Promise<FixtureBuilder<T>>
+  abstract save(): Promise<T>
 }
 
 export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
@@ -2539,14 +2539,14 @@ export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
     return this
   }
 
-  careArea(careArea: CareAreaBuilder): DaycareBuilder {
-    this.data.areaId = careArea.data.id
+  careArea(careArea: DevCareArea): DaycareBuilder {
+    this.data.areaId = careArea.id
     return this
   }
 
   async save() {
     await createDaycares({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2556,14 +2556,14 @@ export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
 }
 
 export class DaycareGroupBuilder extends FixtureBuilder<DevDaycareGroup> {
-  daycare(daycare: DaycareBuilder): DaycareGroupBuilder {
-    this.data.daycareId = daycare.data.id
+  daycare(daycare: DevDaycare): DaycareGroupBuilder {
+    this.data.daycareId = daycare.id
     return this
   }
 
   async save() {
     await createDaycareGroups({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2580,7 +2580,7 @@ export class CareAreaBuilder extends FixtureBuilder<DevCareArea> {
 
   async save() {
     await createCareAreas({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2592,7 +2592,7 @@ export class CareAreaBuilder extends FixtureBuilder<DevCareArea> {
 export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
   async save() {
     await createPreschoolTerm({ body: this.data })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2604,7 +2604,7 @@ export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
 export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
   async save() {
     await createClubTerm({ body: this.data })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2626,10 +2626,10 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependants> {
 
   async save() {
     await insertPersonFixture(this.data)
-    return this
+    return this.data
   }
 
-  async saveAndUpdateMockVtj(): Promise<PersonBuilder> {
+  async saveAndUpdateMockVtj(): Promise<PersonDetailWithDependants> {
     await this.save()
     const person = this.data
     await upsertVtjDataset({
@@ -2667,7 +2667,7 @@ export class PersonBuilder extends FixtureBuilder<PersonDetailWithDependants> {
           : {}
       }
     })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2708,7 +2708,7 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
         }))
       })
     }
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2720,7 +2720,7 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
 export class DecisionBuilder extends FixtureBuilder<DecisionRequest> {
   async save() {
     await createDecisions({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2732,7 +2732,7 @@ export class DecisionBuilder extends FixtureBuilder<DecisionRequest> {
 export class EmployeePinBuilder extends FixtureBuilder<DevEmployeePin> {
   async save() {
     await createEmployeePins({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2744,7 +2744,7 @@ export class EmployeePinBuilder extends FixtureBuilder<DevEmployeePin> {
 export class PedagogicalDocumentBuilder extends FixtureBuilder<DevPedagogicalDocument> {
   async save() {
     await createPedagogicalDocuments({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2756,7 +2756,7 @@ export class PedagogicalDocumentBuilder extends FixtureBuilder<DevPedagogicalDoc
 export class ServiceNeedOptionBuilder extends FixtureBuilder<ServiceNeedOption> {
   async save() {
     await createServiceNeedOption({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2772,7 +2772,7 @@ export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
 
   async save() {
     await createDaycarePlacements({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2780,45 +2780,45 @@ export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
     return new PlacementBuilder({ ...this.data })
   }
 
-  child(child: PersonBuilder) {
+  child(child: PersonDetailWithDependants) {
     this.data = {
       ...this.data,
-      childId: child.data.id
+      childId: child.id
     }
     return this
   }
 
-  daycare(daycare: DaycareBuilder) {
+  daycare(daycare: DevDaycare) {
     this.data = {
       ...this.data,
-      unitId: daycare.data.id
+      unitId: daycare.id
     }
     return this
   }
 }
 
 export class GroupPlacementBuilder extends FixtureBuilder<DevDaycareGroupPlacement> {
-  withGroup(group: DaycareGroupBuilder): this {
+  withGroup(group: DevDaycareGroup): this {
     this.data = {
       ...this.data,
-      daycareGroupId: group.data.id
+      daycareGroupId: group.id
     }
     return this
   }
 
-  withPlacement(placement: PlacementBuilder): this {
+  withPlacement(placement: DevPlacement): this {
     this.data = {
       ...this.data,
-      daycarePlacementId: placement.data.id,
-      startDate: placement.data.startDate,
-      endDate: placement.data.endDate
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
     }
     return this
   }
 
   async save() {
     await createDaycareGroupPlacement({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2836,18 +2836,18 @@ export class BackupCareBuilder extends FixtureBuilder<DevBackupCare> {
     return this
   }
 
-  withGroup(group: DaycareGroupBuilder) {
+  withGroup(group: DevDaycareGroup) {
     this.data = {
       ...this.data,
-      groupId: group.data.id,
-      unitId: group.data.daycareId
+      groupId: group.id,
+      unitId: group.daycareId
     }
     return this
   }
 
   async save() {
     await createBackupCares({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2859,7 +2859,7 @@ export class BackupCareBuilder extends FixtureBuilder<DevBackupCare> {
 export class ServiceNeedBuilder extends FixtureBuilder<DevServiceNeed> {
   async save() {
     await createServiceNeeds({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2871,7 +2871,7 @@ export class ServiceNeedBuilder extends FixtureBuilder<DevServiceNeed> {
 export class ChildBuilder extends FixtureBuilder<DevChild> {
   async save() {
     await createChildren({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2883,7 +2883,7 @@ export class ChildBuilder extends FixtureBuilder<DevChild> {
 export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
   async save() {
     await createAssistanceFactors({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2895,7 +2895,7 @@ export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
 export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> {
   async save() {
     await createDaycareAssistances({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2907,7 +2907,7 @@ export class DaycareAssistanceBuilder extends FixtureBuilder<DaycareAssistance> 
 export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistance> {
   async save() {
     await createPreschoolAssistances({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2919,7 +2919,7 @@ export class PreschoolAssistanceBuilder extends FixtureBuilder<PreschoolAssistan
 export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanceMeasure> {
   async save() {
     await createOtherAssistanceMeasures({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -2931,7 +2931,7 @@ export class OtherAssistanceMeasureBuilder extends FixtureBuilder<OtherAssistanc
 export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceNeedDecision> {
   async save() {
     await createAssistanceNeedDecisions({ body: [this.data] })
-    return this
+    return this.data
   }
 
   withChild(childId: UUID) {
@@ -2953,7 +2953,7 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceN
 export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<AssistanceNeedVoucherCoefficient> {
   async save() {
     await createAssistanceNeedVoucherCoefficients({ body: [this.data] })
-    return this
+    return this.data
   }
 
   copy() {
@@ -2964,7 +2964,7 @@ export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<Assi
 export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAssistanceNeedPreschoolDecision> {
   async save() {
     await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
-    return this
+    return this.data
   }
 
   withChild(childId: UUID) {
@@ -3031,23 +3031,23 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
 }
 
 export class DaycareCaretakersBuilder extends FixtureBuilder<Caretaker> {
-  async save(): Promise<FixtureBuilder<Caretaker>> {
+  async save() {
     await createDaycareCaretakers({ body: [this.data] })
-    return this
+    return this.data
   }
 
-  copy(): FixtureBuilder<Caretaker> {
+  copy() {
     return new DaycareCaretakersBuilder({ ...this.data })
   }
 }
 
 export class ChildAttendanceBuilder extends FixtureBuilder<DevChildAttendance> {
-  async save(): Promise<FixtureBuilder<DevChildAttendance>> {
+  async save() {
     await postAttendances({ body: [this.data] })
-    return this
+    return this.data
   }
 
-  copy(): FixtureBuilder<DevChildAttendance> {
+  copy() {
     return new ChildAttendanceBuilder({ ...this.data })
   }
 }
@@ -3055,7 +3055,7 @@ export class ChildAttendanceBuilder extends FixtureBuilder<DevChildAttendance> {
 export class IncomeBuilder extends FixtureBuilder<DevIncome> {
   async save() {
     await createIncome({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3066,7 +3066,7 @@ export class IncomeBuilder extends FixtureBuilder<DevIncome> {
 export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification> {
   async save() {
     await createIncomeNotification({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3077,7 +3077,7 @@ export class IncomeNotificationBuilder extends FixtureBuilder<IncomeNotification
 export class VardaResetBuilder extends FixtureBuilder<DevVardaReset> {
   async save() {
     await createVardaReset({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3088,7 +3088,7 @@ export class VardaResetBuilder extends FixtureBuilder<DevVardaReset> {
 export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed> {
   async save() {
     await createVardaServiceNeed({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3099,7 +3099,7 @@ export class VardaServiceNeedBuilder extends FixtureBuilder<DevVardaServiceNeed>
 export class FeeThresholdBuilder extends FixtureBuilder<FeeThresholds> {
   async save() {
     await createFeeThresholds({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3113,7 +3113,7 @@ export class PlacementPlanBuilder extends FixtureBuilder<
   async save() {
     const { applicationId, ...body } = this.data
     await createPlacementPlan({ applicationId, body })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3125,7 +3125,7 @@ export class HolidayPeriodBuilder extends FixtureBuilder<HolidayPeriod> {
   async save() {
     const { id, ...body } = this.data
     await createHolidayPeriod({ id, body })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3137,7 +3137,7 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
   async save() {
     const { id, ...body } = this.data
     await createHolidayQuestionnaire({ id, body })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3148,7 +3148,7 @@ export class HolidayQuestionnaireBuilder extends FixtureBuilder<FixedPeriodQuest
 export class HolidayBuilder extends FixtureBuilder<DevHoliday> {
   async save() {
     await createHoliday({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3162,7 +3162,7 @@ export class GuardianBuilder extends FixtureBuilder<{
 }> {
   async save() {
     await insertGuardians({ body: [this.data] })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3173,7 +3173,7 @@ export class GuardianBuilder extends FixtureBuilder<{
 export class FridgeChildBuilder extends FixtureBuilder<DevFridgeChild> {
   async save() {
     await createFridgeChild({ body: [this.data] })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3184,7 +3184,7 @@ export class FridgeChildBuilder extends FixtureBuilder<DevFridgeChild> {
 export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevUpsertStaffOccupancyCoefficient> {
   async save() {
     await upsertStaffOccupancyCoefficient({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3195,7 +3195,7 @@ export class StaffOccupancyCoefficientBuilder extends FixtureBuilder<DevUpsertSt
 export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTimes> {
   async save() {
     await addDailyServiceTime({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3206,7 +3206,7 @@ export class DailyServiceTimeBuilder extends FixtureBuilder<DevDailyServiceTimes
 export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDailyServiceTimeNotification> {
   async save() {
     await addDailyServiceTimeNotification({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3217,7 +3217,7 @@ export class DailyServiceTimeNotificationBuilder extends FixtureBuilder<DevDaily
 export class PaymentBuilder extends FixtureBuilder<DevPayment> {
   async save() {
     await addPayment({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3228,7 +3228,7 @@ export class PaymentBuilder extends FixtureBuilder<DevPayment> {
 export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
   async save() {
     await addCalendarEvent({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3239,7 +3239,7 @@ export class CalendarEventBuilder extends FixtureBuilder<DevCalendarEvent> {
 export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEventAttendee> {
   async save() {
     await addCalendarEventAttendee({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3250,7 +3250,7 @@ export class CalendarEventAttendeeBuilder extends FixtureBuilder<DevCalendarEven
 export class CalendarEventTimeBuilder extends FixtureBuilder<DevCalendarEventTime> {
   async save() {
     await addCalendarEventTime({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3261,7 +3261,7 @@ export class CalendarEventTimeBuilder extends FixtureBuilder<DevCalendarEventTim
 export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevStaffAttendance> {
   async save() {
     await addStaffAttendance({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3272,7 +3272,7 @@ export class RealtimeStaffAttendanceBuilder extends FixtureBuilder<DevStaffAtten
 export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendancePlan> {
   async save() {
     await addStaffAttendancePlan({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3283,7 +3283,7 @@ export class StaffAttendancePlanBuilder extends FixtureBuilder<DevStaffAttendanc
 export class AttendanceReservationBuilder extends FixtureBuilder<DailyReservationRequest> {
   async save() {
     await postReservations({ body: [this.data] })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3305,7 +3305,7 @@ export class AttendanceReservationRawBuilder extends FixtureBuilder<ReservationI
 export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
   async save() {
     await addAbsence({ body: this.data })
-    return this
+    return this.data
   }
 
   copy() {
@@ -3316,7 +3316,7 @@ export class AbsenceBuilder extends FixtureBuilder<DevAbsence> {
 export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate> {
   async save() {
     await createDocumentTemplate({ body: this.data })
-    return this
+    return this.data
   }
 
   withPublished(published: boolean) {
@@ -3332,7 +3332,7 @@ export class DocumentTemplateBuilder extends FixtureBuilder<DevDocumentTemplate>
 export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
   async save() {
     await createChildDocument({ body: this.data })
-    return this
+    return this.data
   }
 
   withChild(childId: UUID) {
@@ -3373,7 +3373,7 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
 export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction> {
   async save() {
     await createAssistanceAction({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -3385,7 +3385,7 @@ export class AssistanceActionBuilder extends FixtureBuilder<DevAssistanceAction>
 export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceActionOption> {
   async save() {
     await createAssistanceActionOption({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -3397,7 +3397,7 @@ export class AssistanceActionOptionBuilder extends FixtureBuilder<DevAssistanceA
 export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
   async save() {
     await createParentships({ body: [this.data] })
-    return this
+    return this.data
   }
 
   // Note: shallow copy
@@ -3409,7 +3409,7 @@ export class ParentshipBuilder extends FixtureBuilder<DevParentship> {
 export class VasuTemplateBuilder extends FixtureBuilder<CreateVasuTemplateBody> {
   async save() {
     await createVasuTemplate({ body: this.data })
-    return this
+    return this.data
   }
 
   async saveAndReturnId() {

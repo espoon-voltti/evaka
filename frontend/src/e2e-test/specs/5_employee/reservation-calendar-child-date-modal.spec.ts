@@ -45,7 +45,7 @@ const setupTestData = async ({
     await Fixture.serviceNeedOption()
       .with({ validPlacementType: 'DAYCARE' })
       .save()
-  ).data.id
+  ).id
   const careArea = await Fixture.careArea().save()
   const operationTime = new TimeRange(LocalTime.of(7, 0), LocalTime.of(18, 0))
   const daycare = await Fixture.daycare()
@@ -63,11 +63,11 @@ const setupTestData = async ({
       ]
     })
     .save()
-  daycareId = daycare.data.id
+  daycareId = daycare.id
   const daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
   const child = await Fixture.person().save()
-  childId = child.data.id
-  await Fixture.child(child.data.id).save()
+  childId = child.id
+  await Fixture.child(child.id).save()
   const placement = await Fixture.placement()
     .child(child)
     .daycare(daycare)
@@ -77,14 +77,12 @@ const setupTestData = async ({
       endDate: today.addMonths(6)
     })
     .save()
-  placementId = placement.data.id
+  placementId = placement.id
   await Fixture.groupPlacement()
     .withGroup(daycareGroup)
     .withPlacement(placement)
     .save()
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(daycare.data.id).save()
-  ).data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 }
 
 async function navigateToTestView({

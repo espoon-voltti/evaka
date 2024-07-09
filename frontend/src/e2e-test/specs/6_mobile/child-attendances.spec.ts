@@ -101,13 +101,13 @@ async function createPlacements(
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycarePlacementId: daycarePlacementFixture.id,
       daycareGroupId: groupId,
-      startDate: daycarePlacementFixture.data.startDate,
-      endDate: daycarePlacementFixture.data.endDate
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
     })
     .save()
-  return daycarePlacementFixture.data
+  return daycarePlacementFixture
 }
 
 const createPlacementAndReload = async (
@@ -449,16 +449,14 @@ describe('Child mobile attendance list', () => {
       .with({ ...daycare2Fixture, areaId: careAreaFixture.id })
       .save()
 
-    const daycareGroup2Fixture = (
-      await Fixture.daycareGroup()
-        .with({
-          id: uuidv4(),
-          name: 'testgroup',
-          daycareId: daycare2Fixture.id,
-          startDate: LocalDate.of(2022, 1, 1)
-        })
-        .save()
-    ).data
+    const daycareGroup2Fixture = await Fixture.daycareGroup()
+      .with({
+        id: uuidv4(),
+        name: 'testgroup',
+        daycareId: daycare2Fixture.id,
+        startDate: LocalDate.of(2022, 1, 1)
+      })
+      .save()
 
     const placement1StartDate = today.subMonths(5)
     const placement1EndDate = today.subMonths(1)
@@ -486,7 +484,7 @@ describe('Child mobile attendance list', () => {
 
     await Fixture.groupPlacement()
       .with({
-        daycarePlacementId: daycarePlacementFixture.data.id,
+        daycarePlacementId: daycarePlacementFixture.id,
         daycareGroupId: daycareGroupFixture.id,
         startDate: placement1StartDate,
         endDate: placement2EndDate
@@ -495,7 +493,7 @@ describe('Child mobile attendance list', () => {
 
     await Fixture.groupPlacement()
       .with({
-        daycarePlacementId: daycarePlacement2Fixture.data.id,
+        daycarePlacementId: daycarePlacement2Fixture.id,
         daycareGroupId: daycareGroup2Fixture.id,
         startDate: placement1StartDate,
         endDate: placement2EndDate

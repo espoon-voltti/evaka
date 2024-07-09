@@ -48,15 +48,15 @@ beforeEach(async () => {
     })
     .save()
   const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
+    .with({ validPlacementType: placement.type })
     .save()
   await Fixture.serviceNeed()
     .with({
-      placementId: placement.data.id,
+      placementId: placement.id,
       startDate: startDate,
       endDate: endDate,
-      optionId: serviceNeedOption.data.id,
-      confirmedBy: unitSupervisor.data.id
+      optionId: serviceNeedOption.id,
+      confirmedBy: unitSupervisor.id
     })
     .save()
   await Fixture.backupCare()
@@ -71,7 +71,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open({ mockedTime: now })
-  await employeeLogin(page, unitSupervisor.data)
+  await employeeLogin(page, unitSupervisor)
   const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(fixtures.daycareFixture.id)
   groupsPage = await unitPage.openGroupsPage()

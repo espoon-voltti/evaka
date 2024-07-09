@@ -8,11 +8,7 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
-  daycareGroupFixture,
-  Fixture,
-  ServiceNeedBuilder
-} from '../../dev-api/fixtures'
+import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
@@ -20,7 +16,7 @@ import {
   createVardaServiceNeed,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevServiceNeed } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { VardaErrorsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -29,12 +25,12 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let admin: DevEmployee
 let childId: UUID
-let serviceNeed: ServiceNeedBuilder
+let serviceNeed: DevServiceNeed
 
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
@@ -51,13 +47,13 @@ beforeAll(async () => {
     .save()
 
   const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
+    .with({ validPlacementType: placement.type })
     .save()
 
   serviceNeed = await Fixture.serviceNeed()
     .with({
-      placementId: placement.data.id,
-      optionId: serviceNeedOption.data.id,
+      placementId: placement.id,
+      optionId: serviceNeedOption.id,
       confirmedBy: admin.id
     })
     .save()
@@ -88,7 +84,7 @@ describe('Varda error report', () => {
 
     await createVardaServiceNeed({
       body: {
-        evakaServiceNeedId: serviceNeed.data.id,
+        evakaServiceNeedId: serviceNeed.id,
         evakaChildId: childId,
         evakaServiceNeedUpdated: HelsinkiDateTime.now(),
         updateFailed: true,

@@ -27,7 +27,7 @@ beforeEach(async () => {
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
   await page.goto(config.employeeUrl + '/child-information/' + personId)
 
   const childInformationPage = new ChildInformationPage(page)

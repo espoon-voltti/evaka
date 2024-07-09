@@ -39,27 +39,23 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   unitFixture = fixtures.daycareFixture
   childFixture = fixtures.familyWithTwoGuardians.children[0]
-  groupFixture = (
-    await Fixture.daycareGroup()
-      .with({
-        daycareId: unitFixture.id,
-        name: 'Kosmiset vakiot',
-        startDate: LocalDate.of(2020, 2, 1)
-      })
-      .save()
-  ).data
+  groupFixture = await Fixture.daycareGroup()
+    .with({
+      daycareId: unitFixture.id,
+      name: 'Kosmiset vakiot',
+      startDate: LocalDate.of(2020, 2, 1)
+    })
+    .save()
 
   const today = LocalDate.of(2022, 12, 1)
-  placementFixture = (
-    await Fixture.placement()
-      .with({
-        childId: childFixture.id,
-        unitId: unitFixture.id,
-        startDate: today,
-        endDate: today.addYears(1)
-      })
-      .save()
-  ).data
+  placementFixture = await Fixture.placement()
+    .with({
+      childId: childFixture.id,
+      unitId: unitFixture.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    })
+    .save()
 
   const admin = await Fixture.employeeAdmin().save()
 
@@ -68,7 +64,7 @@ beforeEach(async () => {
       LocalTime.of(12, 0)
     )
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 describe('Employee - Units', () => {
@@ -227,14 +223,14 @@ describe('Employee - Units', () => {
       .save()
 
     const unitsPage = await UnitsPage.open(page)
-    await unitsPage.filterByName(closedUnit.data.name)
+    await unitsPage.filterByName(closedUnit.name)
     await unitsPage.showClosedUnits(false)
     await unitsPage.assertRowCount(0)
 
     await unitsPage.showClosedUnits(true)
     await unitsPage.assertRowCount(1)
     await unitsPage
-      .unitRow(closedUnit.data.id)
-      .assertFields({ name: closedUnit.data.name })
+      .unitRow(closedUnit.id)
+      .assertFields({ name: closedUnit.name })
   })
 })

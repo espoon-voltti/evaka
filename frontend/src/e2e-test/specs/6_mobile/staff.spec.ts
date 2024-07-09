@@ -40,7 +40,7 @@ beforeEach(async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycarePlacementId: daycarePlacementFixture.id,
       daycareGroupId: daycareGroupFixture.id,
       startDate: today,
       endDate: today.addYears(1)

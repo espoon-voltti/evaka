@@ -35,7 +35,7 @@ beforeEach(async () => {
   personId = fixtures.enduserGuardianFixture.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  financeAdminId = financeAdmin.data.id
+  financeAdminId = financeAdmin.id
 
   await Fixture.fridgeChild()
     .with({
@@ -59,7 +59,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
   await page.goto(config.employeeUrl + '/profile/' + personId)
 
   const guardianInformationPage = new GuardianInformationPage(page)

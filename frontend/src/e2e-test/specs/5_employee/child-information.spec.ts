@@ -48,7 +48,7 @@ beforeEach(async () => {
 
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
@@ -505,9 +505,9 @@ describe('Child information - guardian information', () => {
   })
 
   test('guardian information is shown to unit supervisor', async () => {
-    const unitSupervisor: DevEmployee = (
-      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-    ).data
+    const unitSupervisor: DevEmployee = await Fixture.employeeUnitSupervisor(
+      fixtures.daycareFixture.id
+    ).save()
     page = await Page.open({
       mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
     })

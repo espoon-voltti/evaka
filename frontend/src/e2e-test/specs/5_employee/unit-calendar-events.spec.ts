@@ -49,12 +49,12 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  daycare = (
-    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  ).data
+  daycare = await Fixture.daycare()
+    .with(daycare2Fixture)
+    .careArea(careArea)
+    .save()
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 

@@ -31,7 +31,7 @@ beforeEach(async () => {
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
-  await employeeLogin(page, serviceWorker.data)
+  await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).applicationsTab.click()
 })

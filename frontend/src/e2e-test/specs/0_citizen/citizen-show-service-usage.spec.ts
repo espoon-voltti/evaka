@@ -75,11 +75,11 @@ describe('Service time usage', () => {
       .save()
     await Fixture.serviceNeed()
       .with({
-        placementId: placement.data.id,
+        placementId: placement.id,
         startDate: yesterday,
         endDate: today.addYears(1),
-        optionId: serviceNeedOption.data.id,
-        confirmedBy: daycareSupervisor.data.id
+        optionId: serviceNeedOption.id,
+        confirmedBy: daycareSupervisor.id
       })
       .save()
   })
@@ -238,11 +238,11 @@ describe('Service time alert', () => {
       .save()
     await Fixture.serviceNeed()
       .with({
-        placementId: placement.data.id,
+        placementId: placement.id,
         startDate: LocalDate.of(2022, 1, 1),
         endDate: today.addYears(1),
-        optionId: serviceNeedOption.data.id,
-        confirmedBy: daycareSupervisor.data.id
+        optionId: serviceNeedOption.id,
+        confirmedBy: daycareSupervisor.id
       })
       .save()
   })

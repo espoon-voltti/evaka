@@ -6,7 +6,8 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { Fixture, PersonBuilder } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -15,15 +16,15 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2023, 6, 12)
-let child: PersonBuilder
-let child2: PersonBuilder
-let child3: PersonBuilder
-let child4: PersonBuilder
+let child: PersonDetailWithDependants
+let child2: PersonDetailWithDependants
+let child3: PersonDetailWithDependants
+let child4: PersonDetailWithDependants
 
 beforeEach(async () => {
   await resetServiceState()
   const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
+  const unit = await Fixture.daycare().with({ areaId: area.id }).save()
   child = await Fixture.person()
     .with({
       firstName: 'Esko',
@@ -43,16 +44,16 @@ beforeEach(async () => {
   child4 = await Fixture.person()
     .with({ firstName: 'Sami', lastName: 'Ssnhaver', ssn: '050520A999M' })
     .save()
-  await Fixture.child(child.data.id).save()
-  await Fixture.child(child2.data.id).save()
-  await Fixture.child(child3.data.id).save()
-  await Fixture.child(child4.data.id).save()
+  await Fixture.child(child.id).save()
+  await Fixture.child(child2.id).save()
+  await Fixture.child(child3.id).save()
+  await Fixture.child(child4.id).save()
 
   await Fixture.placement()
     .with({
       type: 'DAYCARE',
-      childId: child.data.id,
-      unitId: unit.data.id,
+      childId: child.id,
+      unitId: unit.id,
       startDate: mockedToday,
       endDate: mockedToday.addDays(4)
     })
@@ -60,8 +61,8 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       type: 'DAYCARE',
-      childId: child2.data.id,
-      unitId: unit.data.id,
+      childId: child2.id,
+      unitId: unit.id,
       startDate: mockedToday.addDays(7),
       endDate: mockedToday.addDays(14)
     })
@@ -70,8 +71,8 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       type: 'DAYCARE',
-      childId: child3.data.id,
-      unitId: unit.data.id,
+      childId: child3.id,
+      unitId: unit.id,
       startDate: mockedToday.subMonths(6),
       endDate: mockedToday.subMonths(3)
     })
@@ -80,8 +81,8 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       type: 'DAYCARE',
-      childId: child4.data.id,
-      unitId: unit.data.id,
+      childId: child4.id,
+      unitId: unit.id,
       startDate: mockedToday.subMonths(1),
       endDate: mockedToday.addMonths(1)
     })
@@ -99,7 +100,7 @@ describe('Non SSN children report', () => {
       }
     })
 
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await assertReport(report)
   })
 
@@ -110,7 +111,7 @@ describe('Non SSN children report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const report = await navigateToReport(page, financeAdmin.data)
+    const report = await navigateToReport(page, financeAdmin)
     await assertReport(report)
   })
 
@@ -124,8 +125,8 @@ describe('Non SSN children report', () => {
       }
     })
 
-    await employeeLogin(page, serviceWorker.data)
-    const report = await navigateToReport(page, serviceWorker.data)
+    await employeeLogin(page, serviceWorker)
+    const report = await navigateToReport(page, serviceWorker)
     await assertReport(report)
   })
 })
@@ -133,15 +134,15 @@ describe('Non SSN children report', () => {
 const assertReport = async (report: NonSsnChildrenReport) => {
   const initialExpectation = [
     {
-      childName: `${child.data.lastName} ${child.data.firstName}`,
-      dateOfBirth: child.data.dateOfBirth.format(),
-      personOid: child.data.ophPersonOid ?? '',
+      childName: `${child.lastName} ${child.firstName}`,
+      dateOfBirth: child.dateOfBirth.format(),
+      personOid: child.ophPersonOid ?? '',
       vardaOid: ''
     },
     {
-      childName: `${child2.data.lastName} ${child2.data.firstName}`,
-      dateOfBirth: child2.data.dateOfBirth.format(),
-      personOid: child2.data.ophPersonOid ?? '',
+      childName: `${child2.lastName} ${child2.firstName}`,
+      dateOfBirth: child2.dateOfBirth.format(),
+      personOid: child2.ophPersonOid ?? '',
       vardaOid: ''
     }
   ]

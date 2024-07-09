@@ -72,8 +72,8 @@ describe('Citizen pedagogical documents', () => {
         .with({ roles: ['ADMIN'] })
         .save()
       const attachmentId = await insertPedagogicalDocumentAttachment(
-        pd.data.id,
-        employee.data.id,
+        pd.id,
+        employee.id,
         testFileName,
         testFilePath
       )
@@ -104,9 +104,9 @@ describe('Citizen pedagogical documents', () => {
       await childPage.openCollapsible('pedagogical-documents')
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
-        pd.data.id,
+        pd.id,
         LocalDate.todayInSystemTz().format(),
-        pd.data.description
+        pd.description
       )
     })
   })

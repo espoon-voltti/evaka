@@ -71,15 +71,13 @@ beforeEach(async () => {
     enabled: true
   })
 
-  staff = (
-    await Fixture.employeeStaff(fixtures.daycareFixture.id)
-      .withGroupAcl(daycareGroupFixture.id)
-      .save()
-  ).data
+  staff = await Fixture.employeeStaff(fixtures.daycareFixture.id)
+    .withGroupAcl(daycareGroupFixture.id)
+    .save()
 
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-  ).data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(
+    fixtures.daycareFixture.id
+  ).save()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id // born 7.7.2014
@@ -94,7 +92,7 @@ beforeEach(async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture1.data.id,
+      daycarePlacementId: daycarePlacementFixture1.id,
       daycareGroupId: daycareGroupFixture.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
@@ -111,7 +109,7 @@ beforeEach(async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture2.data.id,
+      daycarePlacementId: daycarePlacementFixture2.id,
       daycareGroupId: daycareGroupFixture.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
@@ -239,11 +237,11 @@ describe('Sending and receiving messages', () => {
 
 describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
-    staff = (
-      await Fixture.employeeSpecialEducationTeacher(fixtures.daycareFixture.id)
-        .withGroupAcl(daycareGroupFixture.id)
-        .save()
-    ).data
+    staff = await Fixture.employeeSpecialEducationTeacher(
+      fixtures.daycareFixture.id
+    )
+      .withGroupAcl(daycareGroupFixture.id)
+      .save()
     // create messaging account for newly created VEO account
     await createMessageAccounts()
 

@@ -83,7 +83,7 @@ beforeEach(async () => {
   page = await Page.open({ acceptDownloads: true })
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)

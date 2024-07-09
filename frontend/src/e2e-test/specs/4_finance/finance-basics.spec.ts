@@ -26,7 +26,7 @@ describe('Finance basics', () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
     page = await Page.open({ acceptDownloads: true })
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
 
     financeBasicsPage = new FinanceBasicsPage(page)
@@ -52,7 +52,7 @@ describe('Finance basics', () => {
   })
 
   test('Creating a new set of retroactive fee thresholds ends the previous', async () => {
-    const originalData = (await Fixture.feeThresholds().save()).data
+    const originalData = await Fixture.feeThresholds().save()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {
@@ -96,7 +96,7 @@ describe('Finance basics', () => {
   })
 
   test('Copying existing fee thresholds', async () => {
-    const originalData = (await Fixture.feeThresholds().save()).data
+    const originalData = await Fixture.feeThresholds().save()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const originalThresholdsItem = financeBasicsPage.feesSection.item(0)
@@ -133,7 +133,7 @@ describe('Finance basics', () => {
   })
 
   test('Editing existing fee thresholds', async () => {
-    const originalData = (await Fixture.feeThresholds().save()).data
+    const originalData = await Fixture.feeThresholds().save()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const thresholdsItem = financeBasicsPage.feesSection.item(0)
@@ -152,16 +152,14 @@ describe('Finance basics', () => {
   })
 
   test('Date overlap on fee thresholds with an end date prevents saving new fee thresholds', async () => {
-    const originalData = (
-      await Fixture.feeThresholds()
-        .with({
-          validDuring: new DateRange(
-            LocalDate.of(2020, 1, 1),
-            LocalDate.of(2020, 12, 31)
-          )
-        })
-        .save()
-    ).data
+    const originalData = await Fixture.feeThresholds()
+      .with({
+        validDuring: new DateRange(
+          LocalDate.of(2020, 1, 1),
+          LocalDate.of(2020, 12, 31)
+        )
+      })
+      .save()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {

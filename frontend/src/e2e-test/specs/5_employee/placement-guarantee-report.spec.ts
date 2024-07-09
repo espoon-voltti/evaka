@@ -22,13 +22,13 @@ describe('Placement guarantee report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
     const child = await Fixture.person().save()
-    await Fixture.child(child.data.id).save()
+    await Fixture.child(child.id).save()
     await Fixture.placement()
       .with({
-        childId: child.data.id,
-        unitId: unit.data.id,
+        childId: child.id,
+        unitId: unit.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: false
@@ -36,8 +36,8 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child.data.id,
-        unitId: unit.data.id,
+        childId: child.id,
+        unitId: unit.id,
         startDate: mockedToday.addDays(1),
         endDate: mockedToday.addDays(1),
         placeGuarantee: true
@@ -48,12 +48,12 @@ describe('Placement guarantee report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
-        childName: `${child.data.lastName}, ${child.data.firstName}`,
+        areaName: area.name,
+        unitName: unit.name,
+        childName: `${child.lastName}, ${child.firstName}`,
         placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
@@ -64,13 +64,13 @@ describe('Placement guarantee report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
     const child = await Fixture.person().save()
-    await Fixture.child(child.data.id).save()
+    await Fixture.child(child.id).save()
     await Fixture.placement()
       .with({
-        childId: child.data.id,
-        unitId: unit.data.id,
+        childId: child.id,
+        unitId: unit.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: false
@@ -78,8 +78,8 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child.data.id,
-        unitId: unit.data.id,
+        childId: child.id,
+        unitId: unit.id,
         startDate: mockedToday.addDays(1),
         endDate: mockedToday.addDays(1),
         placeGuarantee: false
@@ -90,7 +90,7 @@ describe('Placement guarantee report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await report.assertRows([])
   })
 
@@ -99,13 +99,13 @@ describe('Placement guarantee report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
     const child1 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child1.data.id).save()
+    await Fixture.child(child1.id).save()
     await Fixture.placement()
       .with({
-        childId: child1.data.id,
-        unitId: unit.data.id,
+        childId: child1.id,
+        unitId: unit.id,
         startDate: mockedToday.subDays(3),
         endDate: mockedToday.subDays(3),
         placeGuarantee: false
@@ -113,19 +113,19 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child1.data.id,
-        unitId: unit.data.id,
+        childId: child1.id,
+        unitId: unit.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: true
       })
       .save()
     const child2 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child2.data.id).save()
+    await Fixture.child(child2.id).save()
     await Fixture.placement()
       .with({
-        childId: child2.data.id,
-        unitId: unit.data.id,
+        childId: child2.id,
+        unitId: unit.id,
         startDate: mockedToday.subDays(3),
         endDate: mockedToday.subDays(1),
         placeGuarantee: false
@@ -133,8 +133,8 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child2.data.id,
-        unitId: unit.data.id,
+        childId: child2.id,
+        unitId: unit.id,
         startDate: mockedToday.addDays(1),
         endDate: mockedToday.addDays(1),
         placeGuarantee: true
@@ -145,22 +145,22 @@ describe('Placement guarantee report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await report.selectDate('12.09.2023')
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
-        childName: `${child1.data.lastName}, ${child1.data.firstName}`,
+        areaName: area.name,
+        unitName: unit.name,
+        childName: `${child1.lastName}, ${child1.firstName}`,
         placementPeriod: '13.09.2023 - 13.09.2023'
       }
     ])
     await report.selectDate('14.09.2023')
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit.data.name,
-        childName: `${child2.data.lastName}, ${child2.data.firstName}`,
+        areaName: area.name,
+        unitName: unit.name,
+        childName: `${child2.lastName}, ${child2.firstName}`,
         placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
@@ -171,14 +171,14 @@ describe('Placement guarantee report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit1 = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const unit2 = await Fixture.daycare().with({ areaId: area.data.id }).save()
+    const unit1 = await Fixture.daycare().with({ areaId: area.id }).save()
+    const unit2 = await Fixture.daycare().with({ areaId: area.id }).save()
     const child1 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child1.data.id).save()
+    await Fixture.child(child1.id).save()
     await Fixture.placement()
       .with({
-        childId: child1.data.id,
-        unitId: unit1.data.id,
+        childId: child1.id,
+        unitId: unit1.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: false
@@ -186,19 +186,19 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child1.data.id,
-        unitId: unit1.data.id,
+        childId: child1.id,
+        unitId: unit1.id,
         startDate: mockedToday.addDays(1),
         endDate: mockedToday.addDays(1),
         placeGuarantee: true
       })
       .save()
     const child2 = await Fixture.person().with({ ssn: undefined }).save()
-    await Fixture.child(child2.data.id).save()
+    await Fixture.child(child2.id).save()
     await Fixture.placement()
       .with({
-        childId: child2.data.id,
-        unitId: unit2.data.id,
+        childId: child2.id,
+        unitId: unit2.id,
         startDate: mockedToday.subDays(1),
         endDate: mockedToday.subDays(1),
         placeGuarantee: false
@@ -206,8 +206,8 @@ describe('Placement guarantee report', () => {
       .save()
     await Fixture.placement()
       .with({
-        childId: child2.data.id,
-        unitId: unit2.data.id,
+        childId: child2.id,
+        unitId: unit2.id,
         startDate: mockedToday.addDays(1),
         endDate: mockedToday.addDays(1),
         placeGuarantee: true
@@ -218,22 +218,22 @@ describe('Placement guarantee report', () => {
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
     })
 
-    const report = await navigateToReport(page, admin.data)
-    await report.selectUnit(unit1.data.name)
+    const report = await navigateToReport(page, admin)
+    await report.selectUnit(unit1.name)
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit1.data.name,
-        childName: `${child1.data.lastName}, ${child1.data.firstName}`,
+        areaName: area.name,
+        unitName: unit1.name,
+        childName: `${child1.lastName}, ${child1.firstName}`,
         placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])
-    await report.selectUnit(unit2.data.name)
+    await report.selectUnit(unit2.name)
     await report.assertRows([
       {
-        areaName: area.data.name,
-        unitName: unit2.data.name,
-        childName: `${child2.data.lastName}, ${child2.data.firstName}`,
+        areaName: area.name,
+        unitName: unit2.name,
+        childName: `${child2.lastName}, ${child2.firstName}`,
         placementPeriod: '15.09.2023 - 15.09.2023'
       }
     ])

@@ -41,7 +41,7 @@ beforeEach(async () => {
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
   guardianPage = new GuardianInformationPage(page)
@@ -148,7 +148,7 @@ describe('Person finance decisions', () => {
 
     const adminUser = await Fixture.employeeAdmin().save()
     page = await Page.open({ acceptDownloads: true })
-    await employeeLogin(page, adminUser.data)
+    await employeeLogin(page, adminUser)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(enduserGuardianFixture.id)

@@ -53,7 +53,7 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
@@ -63,7 +63,7 @@ beforeAll(async () => {
   firstGuardian = fixtures.familyWithTwoGuardians.guardian
   secondGuardian = fixtures.familyWithTwoGuardians.otherGuardian
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save()).data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
 
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -126,7 +126,7 @@ describe('Child Information - Vasu language', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
     const child = await Fixture.person().save()
-    await Fixture.child(child.data.id).save()
+    await Fixture.child(child.id).save()
     const swedishUnit = await Fixture.daycare()
       .careArea(await Fixture.careArea().save())
       .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })
@@ -136,9 +136,9 @@ describe('Child Information - Vasu language', () => {
       mockedTime.addMonths(5)
     )
     await Fixture.placement()
-      .daycare(swedishUnit)
       .with({
-        childId: child.data.id,
+        unitId: swedishUnit.id,
+        childId: child.id,
         startDate: placementDateRange.start,
         endDate: placementDateRange.end
       })
@@ -152,7 +152,7 @@ describe('Child Information - Vasu language', () => {
 
     page = await openPage()
     await employeeLogin(page, admin)
-    await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('childDocuments')
   })

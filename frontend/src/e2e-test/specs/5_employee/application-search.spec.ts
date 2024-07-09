@@ -30,7 +30,7 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 })
 
 async function openPage(employee: DevEmployee = admin) {
@@ -94,20 +94,20 @@ describe('Employee searches applications', () => {
       id: uuidv4()
     })
 
-    const app1 = createApplicationForUnit(daycare1.data.id)
-    const app2 = createApplicationForUnit(daycare2.data.id)
-    const app3 = createApplicationForUnit(daycare3.data.id)
+    const app1 = createApplicationForUnit(daycare1.id)
+    const app2 = createApplicationForUnit(daycare2.id)
+    const app3 = createApplicationForUnit(daycare3.id)
 
     await createApplications({ body: [app1, app2, app3] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(3)
 
-    await applicationListView.toggleArea(careArea1.data.name)
+    await applicationListView.toggleArea(careArea1.name)
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(app1.id)
 
-    await applicationListView.toggleArea(careArea2.data.name)
+    await applicationListView.toggleArea(careArea2.name)
     await applicationListView.assertApplicationCount(2)
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationIsVisible(app2.id)
@@ -130,15 +130,15 @@ describe('Employee searches applications', () => {
       id: uuidv4()
     })
 
-    const app1 = createApplicationForUnit(daycare1.data.id)
-    const app2 = createApplicationForUnit(daycare2.data.id)
+    const app1 = createApplicationForUnit(daycare1.id)
+    const app2 = createApplicationForUnit(daycare2.id)
 
     await createApplications({ body: [app1, app2] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(2)
 
-    await applicationListView.toggleUnit(daycare1.data.name)
+    await applicationListView.toggleUnit(daycare1.name)
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationCount(1)
   })
@@ -148,9 +148,8 @@ describe('Employee searches applications', () => {
     const daycare1 = await Fixture.daycare().careArea(careArea1).save()
     const daycare2 = await Fixture.daycare().careArea(careArea1).save()
 
-    const specialEducationTeacher = (
-      await Fixture.employeeSpecialEducationTeacher(daycare1.data.id).save()
-    ).data
+    const specialEducationTeacher =
+      await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
 
     const createApplicationForUnit = (
       unitId: string,
@@ -172,16 +171,13 @@ describe('Employee searches applications', () => {
       id: uuidv4()
     })
 
-    const appWithAssistanceNeeded = createApplicationForUnit(
-      daycare1.data.id,
-      true
-    )
+    const appWithAssistanceNeeded = createApplicationForUnit(daycare1.id, true)
     const appWithoutAssistanceNeeded = createApplicationForUnit(
-      daycare1.data.id,
+      daycare1.id,
       false
     )
     const appWithAssistanceNeededWrongUnit = createApplicationForUnit(
-      daycare2.data.id,
+      daycare2.id,
       true
     )
 
@@ -214,7 +210,7 @@ describe('Employee searches applications', () => {
         undefined,
         'DAYCARE',
         null,
-        [voucherUnit.data.id]
+        [voucherUnit.id]
       ),
       id: uuidv4()
     }
@@ -225,7 +221,7 @@ describe('Employee searches applications', () => {
         undefined,
         'DAYCARE',
         null,
-        [municipalUnit.data.id, voucherUnit.data.id]
+        [municipalUnit.id, voucherUnit.id]
       ),
       id: uuidv4()
     }
@@ -236,7 +232,7 @@ describe('Employee searches applications', () => {
         undefined,
         'DAYCARE',
         null,
-        [municipalUnit.data.id]
+        [municipalUnit.id]
       ),
       id: uuidv4()
     }
@@ -301,7 +297,7 @@ describe('Employee searches applications', () => {
         undefined,
         'CLUB',
         null,
-        [club.data.id]
+        [club.id]
       ),
       id: uuidv4()
     }
@@ -312,7 +308,7 @@ describe('Employee searches applications', () => {
         undefined,
         'DAYCARE',
         null,
-        [daycare.data.id]
+        [daycare.id]
       ),
       id: uuidv4()
     }
@@ -323,7 +319,7 @@ describe('Employee searches applications', () => {
         undefined,
         'PRESCHOOL',
         null,
-        [preschool.data.id]
+        [preschool.id]
       ),
       id: uuidv4()
     }

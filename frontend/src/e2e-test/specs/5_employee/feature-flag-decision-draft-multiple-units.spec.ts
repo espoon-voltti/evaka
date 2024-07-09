@@ -41,7 +41,7 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employeeServiceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 

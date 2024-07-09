@@ -8,24 +8,21 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  DaycareBuilder,
-  DaycareGroupBuilder,
-  Fixture
-} from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   postChildDailyNote,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
 let page: Page
-let daycare: DaycareBuilder
-let daycareGroup: DaycareGroupBuilder
+let daycare: DevDaycare
+let daycareGroup: DevDaycareGroup
 let unitPage: UnitPage
 
 beforeEach(async () => {
@@ -42,7 +39,7 @@ beforeEach(async () => {
   const placementFixtureJari = await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureJari.id,
-      unitId: daycare.data.id
+      unitId: daycare.id
     })
     .save()
   await Fixture.groupPlacement()
@@ -53,7 +50,7 @@ beforeEach(async () => {
   const placementFixtureKaarina = await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
-      unitId: daycare.data.id
+      unitId: daycare.id
     })
     .save()
   await Fixture.groupPlacement()
@@ -62,7 +59,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   unitPage = new UnitPage(page)
 })
@@ -90,11 +87,9 @@ describe('Mobile employee daily notes', () => {
 
     await postChildDailyNote({ childId, body: daycareDailyNote })
 
-    await unitPage.navigateToUnit(daycare.data.id)
+    await unitPage.navigateToUnit(daycare.id)
     const group = await unitPage.openGroupsPage()
-    const groupCollapsible = await group.openGroupCollapsible(
-      daycareGroup.data.id
-    )
+    const groupCollapsible = await group.openGroupCollapsible(daycareGroup.id)
 
     const childRow = groupCollapsible.childRow(childId)
     await childRow.assertDailyNoteContainsText(daycareDailyNote.note)
@@ -127,9 +122,9 @@ describe('Mobile employee daily notes', () => {
 
     await postChildDailyNote({ childId: childId1, body: daycareDailyNote })
 
-    await unitPage.navigateToUnit(daycare.data.id)
+    await unitPage.navigateToUnit(daycare.id)
     const groupsSection = await unitPage.openGroupsPage()
-    const group = await groupsSection.openGroupCollapsible(daycareGroup.data.id)
+    const group = await groupsSection.openGroupCollapsible(daycareGroup.id)
     let groupNoteModal = await group.openGroupDailyNoteModal()
     await groupNoteModal.fillNote('Ryhmälle viesti')
     await groupNoteModal.save()

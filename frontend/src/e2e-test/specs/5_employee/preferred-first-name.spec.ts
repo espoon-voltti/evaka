@@ -19,13 +19,7 @@ const firstName = 'Matti-Teppo Seppo'
 
 beforeEach(async () => {
   await resetServiceState()
-  admin = (
-    await Fixture.employeeAdmin()
-      .with({
-        firstName
-      })
-      .save()
-  ).data
+  admin = await Fixture.employeeAdmin().with({ firstName }).save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

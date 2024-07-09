@@ -37,7 +37,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  decisionMaker = (await Fixture.employeeServiceWorker().save()).data
+  decisionMaker = await Fixture.employeeServiceWorker().save()
 })
 
 async function openCitizenDecisionsPage(citizen: { ssn?: string }) {
@@ -203,21 +203,17 @@ describe('Citizen application decisions', () => {
   })
 
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
-    const child = (
-      await Fixture.person().with({ ssn: '010116A9219' }).saveAndUpdateMockVtj()
-    ).data
-    const guardian = (
-      await Fixture.person()
-        .with({ ssn: '010106A973C' })
-        .withDependants(child)
-        .saveAndUpdateMockVtj()
-    ).data
-    const otherGuardian = (
-      await Fixture.person()
-        .with({ ssn: '010106A9388' })
-        .withDependants(child)
-        .saveAndUpdateMockVtj()
-    ).data
+    const child = await Fixture.person()
+      .with({ ssn: '010116A9219' })
+      .saveAndUpdateMockVtj()
+    const guardian = await Fixture.person()
+      .with({ ssn: '010106A973C' })
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
+    const otherGuardian = await Fixture.person()
+      .with({ ssn: '010106A9388' })
+      .withDependants(child)
+      .saveAndUpdateMockVtj()
 
     const application = applicationFixture(
       child,
@@ -272,7 +268,7 @@ describe('Citizen assistance decisions', () => {
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? '',
+      decision.id ?? '',
       {
         assistanceLevel:
           'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
@@ -301,7 +297,7 @@ describe('Citizen assistance decisions', () => {
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? '',
+      decision.id ?? '',
       {
         assistanceLevel: 'Tehostettu tuki',
         selectedUnit: fixtures.daycareFixture.name,
@@ -330,7 +326,7 @@ describe('Citizen assistance decisions', () => {
 
     await citizenDecisionsPage.assertAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? '',
+      decision.id ?? '',
       {
         assistanceLevel: 'Tehostettu tuki',
         selectedUnit: fixtures.daycareFixture.name,
@@ -418,7 +414,7 @@ describe('Citizen assistance decisions', () => {
   })
 
   test('Preview shows filled information', async () => {
-    const serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+    const serviceWorker = await Fixture.employeeServiceWorker().save()
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(fixtures.enduserChildFixtureKaarina.id)
       .with({
@@ -447,10 +443,10 @@ describe('Citizen assistance decisions', () => {
     )
     await citizenDecisionsPage.openAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? ''
+      decision.id ?? ''
     )
     await page.page.waitForURL(
-      `${config.enduserUrl}/decisions/assistance/${decision.data.id ?? ''}`
+      `${config.enduserUrl}/decisions/assistance/${decision.id ?? ''}`
     )
     const assistanceNeedDecisionPage = new AssistanceNeedDecisionPage(page)
 
@@ -667,7 +663,7 @@ describe('Citizen assistance preschool decisions', () => {
 
     await citizenDecisionsPage.assertAssistancePreschoolDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? '',
+      decision.id ?? '',
       {
         type: 'Erityinen tuki alkaa',
         selectedUnit: fixtures.daycareFixture.name,
@@ -679,7 +675,7 @@ describe('Citizen assistance preschool decisions', () => {
 
     await citizenDecisionsPage.assertAssistancePreschoolDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision2.data.id ?? '',
+      decision2.id ?? '',
       {
         type: 'Erityinen tuki jatkuu',
         selectedUnit: fixtures.daycareFixture.name,
@@ -691,7 +687,7 @@ describe('Citizen assistance preschool decisions', () => {
 
     await citizenDecisionsPage.assertAssistancePreschoolDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision3.data.id ?? '',
+      decision3.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
         selectedUnit: fixtures.daycareFixture.name,
@@ -703,7 +699,7 @@ describe('Citizen assistance preschool decisions', () => {
 
     await citizenDecisionsPage.assertAssistancePreschoolDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision4.data.id ?? '',
+      decision4.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
         selectedUnit: fixtures.daycareFixture.name,
@@ -715,7 +711,7 @@ describe('Citizen assistance preschool decisions', () => {
 
     await citizenDecisionsPage.assertAssistancePreschoolDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision5.data.id ?? '',
+      decision5.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
         selectedUnit: fixtures.daycareFixture.name,
@@ -760,12 +756,10 @@ describe('Citizen assistance preschool decisions', () => {
     )
     await citizenDecisionsPage.openAssistanceDecision(
       fixtures.enduserChildFixtureKaarina.id,
-      decision.data.id ?? ''
+      decision.id ?? ''
     )
     await page.page.waitForURL(
-      `${config.enduserUrl}/decisions/assistance-preschool/${
-        decision.data.id ?? ''
-      }`
+      `${config.enduserUrl}/decisions/assistance-preschool/${decision.id ?? ''}`
     )
 
     const decisionPage = new AssistanceNeedPreschoolDecisionPage(page)

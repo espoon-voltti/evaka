@@ -26,7 +26,7 @@ beforeEach(async () => {
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare()
     .with({
-      areaId: area.data.id,
+      areaId: area.id,
 
       // MOBILE must be on
       // RESERVATIONS must be off
@@ -35,24 +35,24 @@ beforeEach(async () => {
     .save()
   const group = await Fixture.daycareGroup()
     .with({
-      daycareId: unit.data.id
+      daycareId: unit.id
     })
     .save()
 
   const person = await Fixture.person().save()
-  const child = await Fixture.child(person.data.id).save()
-  childId = child.data.id
+  const child = await Fixture.child(person.id).save()
+  childId = child.id
 
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId,
-      unitId: unit.data.id
+      unitId: unit.id
     })
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: group.data.id
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: group.id
     })
     .save()
 
@@ -61,7 +61,7 @@ beforeEach(async () => {
   childPage = new MobileChildPage(page)
   absencesPage = new MobileAbsencesPage(page)
 
-  const mobileSignupUrl = await pairMobileDevice(unit.data.id)
+  const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
 

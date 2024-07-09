@@ -18,7 +18,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import { Fixture, uuidv4 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createFosterParent,
   createMessageAccounts,
@@ -44,8 +44,8 @@ import { employeeLogin, enduserLogin } from '../../utils/user'
 let activeRelationshipPage: Page
 let activeRelationshipHeader: CitizenHeader
 let fixtures: AreaAndPersonFixtures
-let fosterParent: PersonDetail
-let fosterChild: PersonDetail
+let fosterParent: PersonDetailWithDependants
+let fosterChild: PersonDetailWithDependants
 
 const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
@@ -55,9 +55,9 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   fosterParent = fixtures.enduserGuardianFixture
-  fosterChild = (
-    await Fixture.person().with({ ssn: '120220A995L' }).saveAndUpdateMockVtj()
-  ).data
+  fosterChild = await Fixture.person()
+    .with({ ssn: '120220A995L' })
+    .saveAndUpdateMockVtj()
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [
@@ -146,8 +146,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 })
 
 test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
-  const fosterChild = (await Fixture.person().with({ ssn: undefined }).save())
-    .data
+  const fosterChild = await Fixture.person().with({ ssn: undefined }).save()
+
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [
@@ -231,8 +231,8 @@ test('Foster parent can receive and reply to messages', async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: placementFixture.data.id,
-      daycareGroupId: group.data.id,
+      daycarePlacementId: placementFixture.id,
+      daycareGroupId: group.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -243,7 +243,7 @@ test('Foster parent can receive and reply to messages', async () => {
   let unitSupervisorPage = await Page.open({
     mockedTime: mockedNow.subMinutes(1)
   })
-  await employeeLogin(unitSupervisorPage, unitSupervisor.data)
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
 
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   let messagesPage = new MessagesPage(unitSupervisorPage)
@@ -266,7 +266,7 @@ test('Foster parent can receive and reply to messages', async () => {
   unitSupervisorPage = await Page.open({
     mockedTime: mockedNow.addMinutes(1)
   })
-  await employeeLogin(unitSupervisorPage, unitSupervisor.data)
+  await employeeLogin(unitSupervisorPage, unitSupervisor)
   messagesPage = new MessagesPage(unitSupervisorPage)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
@@ -293,7 +293,7 @@ test('Foster parent can read an accepted assistance decision', async () => {
 
   await citizenDecisionsPage.assertAssistanceDecision(
     fosterChild.id,
-    decision.data.id ?? '',
+    decision.id ?? '',
     {
       assistanceLevel:
         'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
@@ -339,9 +339,9 @@ test('Foster parent can read a pedagogical document', async () => {
     activeRelationshipPage
   )
   await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
-    document.data.id,
+    document.id,
     LocalDate.todayInSystemTz().format(),
-    document.data.description
+    document.description
   )
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
@@ -465,7 +465,7 @@ test('Foster parent can create a repeating reservation', async () => {
 })
 
 test('Foster parent can see calendar events for foster children', async () => {
-  const { data: placement } = await Fixture.placement()
+  const placement = await Fixture.placement()
     .with({
       childId: fosterChild.id,
       unitId: fixtures.daycareFixture.id,
@@ -473,7 +473,7 @@ test('Foster parent can see calendar events for foster children', async () => {
       endDate: mockedDate.addYears(1)
     })
     .save()
-  const { data: daycareGroup } = await Fixture.daycareGroup()
+  const daycareGroup = await Fixture.daycareGroup()
     .with({
       daycareId: fixtures.daycareFixture.id,
       name: 'Group 1'

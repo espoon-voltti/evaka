@@ -26,7 +26,7 @@ beforeEach(async () => {
       LocalTime.of(12, 0)
     )
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)
   holidayAndTermPeriodsPage = new HolidayAndTermPeriodsPage(page)
 })

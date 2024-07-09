@@ -38,7 +38,7 @@ beforeEach(async () => {
 describe('Child information page', () => {
   test('Admin sees every tab', async () => {
     const admin = await Fixture.employeeAdmin().save()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: true,
@@ -52,7 +52,7 @@ describe('Child information page', () => {
 
   test('Service worker sees applications, units, search and reports tabs', async () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
-    await employeeLogin(page, serviceWorker.data)
+    await employeeLogin(page, serviceWorker)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: true,
@@ -66,7 +66,7 @@ describe('Child information page', () => {
 
   test('FinanceAdmin sees units, search, finance and reports tabs', async () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
@@ -80,7 +80,7 @@ describe('Child information page', () => {
 
   test('Director sees only the units and reports tabs', async () => {
     const director = await Fixture.employeeDirector().save()
-    await employeeLogin(page, director.data)
+    await employeeLogin(page, director)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
@@ -94,7 +94,7 @@ describe('Child information page', () => {
 
   test('Reports sees only the reports tab', async () => {
     const reportViewer = await Fixture.employeeReportViewer().save()
-    await employeeLogin(page, reportViewer.data)
+    await employeeLogin(page, reportViewer)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
@@ -108,7 +108,7 @@ describe('Child information page', () => {
 
   test('Staff sees only the units and messaging tabs', async () => {
     const staff = await Fixture.employeeStaff(fixtures.daycareFixture.id).save()
-    await employeeLogin(page, staff.data)
+    await employeeLogin(page, staff)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
@@ -124,7 +124,7 @@ describe('Child information page', () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
       fixtures.daycareFixture.id
     ).save()
-    await employeeLogin(page, unitSupervisor.data)
+    await employeeLogin(page, unitSupervisor)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
@@ -140,7 +140,7 @@ describe('Child information page', () => {
 describe('Child information page sections', () => {
   test('Admin sees every collapsible section', async () => {
     const admin = await Fixture.employeeAdmin().save()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -162,7 +162,7 @@ describe('Child information page sections', () => {
 
   test('Service worker sees the correct sections', async () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
-    await employeeLogin(page, serviceWorker.data)
+    await employeeLogin(page, serviceWorker)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -184,7 +184,7 @@ describe('Child information page sections', () => {
 
   test('Finance admin sees the correct sections', async () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -206,7 +206,7 @@ describe('Child information page sections', () => {
 
   test('Staff sees the correct sections', async () => {
     const staff = await Fixture.employeeStaff(fixtures.daycareFixture.id).save()
-    await employeeLogin(page, staff.data)
+    await employeeLogin(page, staff)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -230,7 +230,7 @@ describe('Child information page sections', () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
       fixtures.daycareFixture.id
     ).save()
-    await employeeLogin(page, unitSupervisor.data)
+    await employeeLogin(page, unitSupervisor)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )
@@ -255,7 +255,7 @@ describe('Child information page sections', () => {
       await Fixture.employeeSpecialEducationTeacher(
         fixtures.daycareFixture.id
       ).save()
-    await employeeLogin(page, specialEducationTeacher.data)
+    await employeeLogin(page, specialEducationTeacher)
     await page.goto(
       `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
     )

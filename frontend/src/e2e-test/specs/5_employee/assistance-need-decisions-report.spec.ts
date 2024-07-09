@@ -46,8 +46,8 @@ const mockedTime = LocalDate.of(2021, 8, 16)
 beforeEach(async () => {
   await resetServiceState()
 
-  decisionMaker = (await Fixture.employeeAdmin().save()).data
-  director = (await Fixture.employeeDirector().save()).data
+  decisionMaker = await Fixture.employeeAdmin().save()
+  director = await Fixture.employeeDirector().save()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
@@ -331,11 +331,9 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Decision-maker can be changed', async () => {
-    const admin = (
-      await Fixture.employeeAdmin()
-        .with({ id: uuidv4(), firstName: 'Sari', lastName: 'Sorsa' })
-        .save()
-    ).data
+    const admin = await Fixture.employeeAdmin()
+      .with({ id: uuidv4(), firstName: 'Sari', lastName: 'Sorsa' })
+      .save()
 
     const decisionId = uuidv4()
     await Fixture.assistanceNeedDecision()
@@ -404,7 +402,7 @@ describe('Assistance need decisions report', () => {
     const daycarePlacementFixture2 = createDaycarePlacementFixture(
       uuidv4(),
       anotherChildId,
-      anotherDaycare.data.id
+      anotherDaycare.id
     )
 
     await createDaycarePlacements({ body: [daycarePlacementFixture2] })
@@ -420,12 +418,11 @@ describe('Assistance need decisions report', () => {
           phoneNumber: null
         },
         sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: anotherDaycare.data.id
+        selectedUnit: anotherDaycare.id
       })
       .save()
 
-    const VEO = (await Fixture.employeeSpecialEducationTeacher(unitId).save())
-      .data
+    const VEO = await Fixture.employeeSpecialEducationTeacher(unitId).save()
 
     await employeeLogin(page, VEO)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)

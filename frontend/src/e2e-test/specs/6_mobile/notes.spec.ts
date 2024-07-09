@@ -10,13 +10,10 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  DaycareBuilder,
-  DaycareGroupBuilder,
-  Fixture
-} from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
@@ -122,8 +119,8 @@ describe('Child and group notes', () => {
 describe('Child and group notes (backup care)', () => {
   let fixtures: AreaAndPersonFixtures
   let child: PersonDetail
-  let backupCareDaycareGroup: DaycareGroupBuilder
-  let backupCareDaycare: DaycareBuilder
+  let backupCareDaycareGroup: DevDaycareGroup
+  let backupCareDaycare: DevDaycare
 
   beforeEach(async () => {
     await resetServiceState()
@@ -154,7 +151,7 @@ describe('Child and group notes (backup care)', () => {
 
     page = await Page.open()
 
-    const mobileSignupUrl = await pairMobileDevice(backupCareDaycare.data.id)
+    const mobileSignupUrl = await pairMobileDevice(backupCareDaycare.id)
     await page.goto(mobileSignupUrl)
 
     listPage = new MobileListPage(page)

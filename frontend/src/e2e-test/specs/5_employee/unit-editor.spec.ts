@@ -30,7 +30,7 @@ describe('Employee - unit details', () => {
     const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     await new EmployeeNav(page).openTab('units')
     unitsPage = new UnitsPage(page)
@@ -116,7 +116,7 @@ describe('Employee - unit editor validations and warnings', () => {
     const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
     unitInfoPage = await unitPage.openUnitInformation()
     unitDetailsPage = await unitInfoPage.openUnitDetails()

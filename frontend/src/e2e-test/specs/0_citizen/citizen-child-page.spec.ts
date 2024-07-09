@@ -568,11 +568,11 @@ describe.each(['desktop', 'mobile'] as const)(
         .save()
       await Fixture.serviceNeed()
         .with({
-          placementId: placement.data.id,
+          placementId: placement.id,
           startDate: mockedDate.subMonths(1),
           endDate: mockedDate,
-          optionId: serviceNeedOption.data.id,
-          confirmedBy: daycareSupervisor.data.id
+          optionId: serviceNeedOption.id,
+          confirmedBy: daycareSupervisor.id
         })
         .save()
       await Fixture.dailyServiceTime(fixtures.enduserChildFixtureJari.id)

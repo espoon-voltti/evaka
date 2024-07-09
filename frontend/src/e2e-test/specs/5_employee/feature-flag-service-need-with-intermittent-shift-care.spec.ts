@@ -2,26 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
-  EmployeeBuilder,
-  Fixture,
-  PlacementBuilder,
-  ServiceNeedOptionBuilder
-} from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeBuilder
+let admin: DevEmployee
 let childId: UUID
-let placement: PlacementBuilder
-let activeServiceNeedOption: ServiceNeedOptionBuilder
+let placement: DevPlacement
+let activeServiceNeedOption: ServiceNeedOption
 
 beforeEach(async () => {
   await resetServiceState()
@@ -38,7 +35,7 @@ beforeEach(async () => {
     })
     .save()
   activeServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
+    .with({ validPlacementType: placement.type })
     .save()
 
   admin = await Fixture.employeeAdmin().save()
@@ -48,7 +45,7 @@ beforeEach(async () => {
       featureFlags: { intermittentShiftCare: true }
     }
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 const openCollapsible = async () => {
@@ -62,8 +59,8 @@ describe('Intermittent shiftcare', () => {
   test('service need can be added with intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi,
+      placement.id,
+      activeServiceNeedOption.nameFi,
       'INTERMITTENT',
       true
     )
@@ -73,8 +70,8 @@ describe('Intermittent shiftcare', () => {
   test('service need can be edited to have intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi
+      placement.id,
+      activeServiceNeedOption.nameFi
     )
     await section.assertNthServiceNeedShiftCare(0, 'NONE')
 

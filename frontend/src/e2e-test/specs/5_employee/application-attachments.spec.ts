@@ -47,7 +47,7 @@ beforeEach(async () => {
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
-  await employeeLogin(page, serviceWorker.data)
+  await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).applicationsTab.click()
 })
@@ -101,9 +101,9 @@ describe('Employee application attachments', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    const unitSupervisor = (
-      await Fixture.employeeUnitSupervisor(daycareFixture.id).save()
-    ).data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      daycareFixture.id
+    ).save()
 
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
@@ -161,7 +161,7 @@ describe('Employee application attachments', () => {
     const page2 = await Page.open()
     await employeeLogin(
       page2,
-      (await Fixture.employeeUnitSupervisor(daycareId).save()).data
+      await Fixture.employeeUnitSupervisor(daycareId).save()
     )
     const view = new ApplicationReadView(page2)
     await view.navigateToApplication(applicationId)

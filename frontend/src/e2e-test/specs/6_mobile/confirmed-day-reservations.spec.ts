@@ -275,13 +275,13 @@ async function createPlacements(
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycarePlacementId: daycarePlacementFixture.id,
       daycareGroupId: groupId,
-      startDate: daycarePlacementFixture.data.startDate,
-      endDate: daycarePlacementFixture.data.endDate
+      startDate: daycarePlacementFixture.startDate,
+      endDate: daycarePlacementFixture.endDate
     })
     .save()
-  return daycarePlacementFixture.data
+  return daycarePlacementFixture
 }
 
 async function insertConfirmedDaysTestData() {

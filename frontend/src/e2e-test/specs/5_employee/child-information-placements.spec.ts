@@ -72,7 +72,7 @@ describe('Child Information placement info', () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
 
     page = await Page.open()
-    await employeeLogin(page, unitSupervisor.data)
+    await employeeLogin(page, unitSupervisor)
   })
 
   test('A terminated placement is indicated', async () => {
@@ -105,13 +105,13 @@ describe('Child Information placement create (feature flag place guarantee = tru
   test('place guarantee can be set with create modal', async () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const { name: unitName } = unit.data
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const { name: unitName } = unit
     const child = await Fixture.person().save()
-    const childId = child.data.id
+    const childId = child.id
 
     const page = await openPage()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
@@ -150,13 +150,13 @@ describe('Child Information placement create (feature flag place guarantee = tru
   test('place guarantee placement shows correctly active status', async () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const { name: unitName } = unit.data
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const { name: unitName } = unit
     const child = await Fixture.person().save()
-    const childId = child.data.id
+    const childId = child.id
 
     const page = await openPage()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
@@ -174,13 +174,13 @@ describe('Child Information placement create (feature flag place guarantee = tru
   test('non place guarantee placement shows correctly active status', async () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const { name: unitName } = unit.data
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const { name: unitName } = unit
     const child = await Fixture.person().save()
-    const childId = child.data.id
+    const childId = child.id
 
     const page = await openPage()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     const childPlacements = await openChildPlacements(page, childId)
 
     await childPlacements.createNewPlacement({
@@ -212,13 +212,13 @@ describe('Child Information placement create (feature flag place guarantee = fal
   test('placement create works', async () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const unitName = unit.data.name
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const unitName = unit.name
     const child = await Fixture.person().save()
-    const childId = child.data.id
+    const childId = child.id
 
     const page = await openPage()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
 
     const childPlacements = await openChildPlacements(page, childId)
     await childPlacements.createNewPlacement({
@@ -247,13 +247,13 @@ describe('Child Information placement create (feature flag place guarantee = fal
   test('placement end date is initially empty but mandatory', async () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const unitName = unit.data.name
+    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const unitName = unit.name
     const child = await Fixture.person().save()
-    const childId = child.data.id
+    const childId = child.id
 
     const page = await openPage()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
 
     await openChildPlacements(page, childId)
     await page.findByDataQa('create-new-placement-button').click()

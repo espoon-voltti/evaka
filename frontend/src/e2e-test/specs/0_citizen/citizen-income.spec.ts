@@ -8,16 +8,16 @@ import { UUID } from 'lib-common/types'
 
 import {
   careAreaFixture,
-  DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
   enduserGuardianFixture,
   Fixture,
-  PersonBuilder,
   uuidv4
 } from '../../dev-api/fixtures'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevDaycare } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -30,8 +30,8 @@ const e = ['desktop', 'mobile'] as const
 describe.each(e)('Citizen income (%s)', (env) => {
   let page: Page
   const child = enduserChildFixtureJari
-  let daycare: DaycareBuilder
-  let guardian: PersonBuilder
+  let daycare: DevDaycare
+  let guardian: PersonDetailWithDependants
   let financeAdminId: UUID
 
   const today = LocalDate.of(2022, 1, 5)
@@ -56,7 +56,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
       .with(enduserGuardianFixture)
       .withDependants(child)
       .saveAndUpdateMockVtj()
-    await Fixture.child(child1.data.id).save()
+    await Fixture.child(child1.id).save()
     await Fixture.guardian(child1, guardian).save()
     const placement = await Fixture.placement()
       .child(child1)
@@ -69,7 +69,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
 
     const daycareGroup = await Fixture.daycareGroup()
       .with({
-        daycareId: daycare.data.id,
+        daycareId: daycare.id,
         name: 'Group 1'
       })
       .save()
@@ -78,13 +78,13 @@ describe.each(e)('Citizen income (%s)', (env) => {
       .with({
         startDate: placementStart,
         endDate: placementEnd,
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: placement.data.id
+        daycareGroupId: daycareGroup.id,
+        daycarePlacementId: placement.id
       })
       .save()
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    financeAdminId = financeAdmin.data.id
+    financeAdminId = financeAdmin.id
 
     const serviceNeedOption = await Fixture.serviceNeedOption()
       .with({
@@ -95,12 +95,12 @@ describe.each(e)('Citizen income (%s)', (env) => {
     await Fixture.serviceNeed()
       .with({
         id: uuidv4(),
-        placementId: placement.data.id,
+        placementId: placement.id,
         startDate: placementStart,
         endDate: placementEnd,
-        optionId: serviceNeedOption.data.id,
+        optionId: serviceNeedOption.id,
         shiftCare: 'NONE',
-        confirmedBy: financeAdmin.data.id,
+        confirmedBy: financeAdmin.id,
         confirmedAt: placementStart.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
       .save()
@@ -121,7 +121,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     const incomeEndDate = today.addWeeks(4).subDays(1)
     await Fixture.income()
       .with({
-        personId: guardian.data.id,
+        personId: guardian.id,
         validFrom: placementStart,
         validTo: incomeEndDate,
         updatedBy: financeAdminId,
@@ -132,7 +132,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
     await Fixture.fridgeChild()
       .with({
         childId: child.id,
-        headOfChild: guardian.data.id,
+        headOfChild: guardian.id,
         startDate: placementStart,
         endDate: placementEnd
       })

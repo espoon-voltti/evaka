@@ -27,7 +27,7 @@ beforeEach(async () => {
 
   const admin = await Fixture.employeeAdmin().save()
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   guardianInformation = new GuardianInformationPage(page)
   childInformation = new ChildInformationPage(page)

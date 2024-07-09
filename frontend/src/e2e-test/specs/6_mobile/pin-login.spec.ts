@@ -62,7 +62,7 @@ beforeEach(async () => {
     })
     .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
-  await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
+  await Fixture.employeePin().with({ userId: employee.id, pin }).save()
   const daycareGroup = await Fixture.daycareGroup()
     .with({ daycareId: unit.id })
     .save()
@@ -86,16 +86,14 @@ beforeEach(async () => {
 
 describe('Mobile PIN login', () => {
   test('User can login with PIN and see child sensitive info', async () => {
-    const childAdditionalInfo = (
-      await Fixture.child(child.id)
-        .with({
-          allergies: 'Allergies',
-          diet: 'Diets',
-          medication: 'Medications',
-          additionalInfo: ''
-        })
-        .save()
-    ).data
+    const childAdditionalInfo = await Fixture.child(child.id)
+      .with({
+        allergies: 'Allergies',
+        diet: 'Diets',
+        medication: 'Medications',
+        additionalInfo: ''
+      })
+      .save()
 
     const parentshipId = uuidv4()
     await createFridgePartner({

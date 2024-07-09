@@ -28,7 +28,7 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 })
 
 async function openPage(
@@ -44,9 +44,8 @@ describe('Search person', () => {
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const specialEducationTeacher = (
-      await Fixture.employeeSpecialEducationTeacher(daycare1.data.id).save()
-    ).data
+    const specialEducationTeacher =
+      await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)
 
     const childWithAssistanceNeed = fixtures.enduserChildFixtureJari
@@ -59,7 +58,7 @@ describe('Search person', () => {
         undefined,
         'DAYCARE',
         null,
-        [daycare1.data.id],
+        [daycare1.id],
         false,
         'WAITING_PLACEMENT',
         preferredStartDate,
@@ -76,7 +75,7 @@ describe('Search person', () => {
         undefined,
         'DAYCARE',
         null,
-        [daycare1.data.id],
+        [daycare1.id],
         false,
         'WAITING_PLACEMENT',
         preferredStartDate,
@@ -93,7 +92,7 @@ describe('Search person', () => {
     await createApplicationPlacementPlan({
       applicationId: appWithAssistanceNeeded.id,
       body: {
-        unitId: daycare1.data.id,
+        unitId: daycare1.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }
@@ -102,7 +101,7 @@ describe('Search person', () => {
     await createApplicationPlacementPlan({
       applicationId: appWithoutAssistanceNeeded.id,
       body: {
-        unitId: daycare1.data.id,
+        unitId: daycare1.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }

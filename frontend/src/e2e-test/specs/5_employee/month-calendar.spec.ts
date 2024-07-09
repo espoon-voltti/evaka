@@ -10,9 +10,7 @@ import TimeRange from 'lib-common/time-range'
 import {
   careAreaFixture,
   daycareFixture,
-  DaycareGroupBuilder,
   daycareGroupFixture,
-  EmployeeBuilder,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   Fixture
@@ -23,6 +21,7 @@ import {
   postReservations,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -31,8 +30,8 @@ let page: Page
 let unitPage: UnitPage
 
 const today = LocalDate.of(2023, 3, 1)
-let group: DaycareGroupBuilder
-let unitSupervisor: EmployeeBuilder
+let group: DevDaycareGroup
+let unitSupervisor: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
@@ -51,7 +50,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))
   })
-  await employeeLogin(page, unitSupervisor.data)
+  await employeeLogin(page, unitSupervisor)
   unitPage = new UnitPage(page)
 })
 
@@ -370,11 +369,11 @@ describe('Employee - Unit month calendar', () => {
       .save()
     await Fixture.serviceNeed()
       .with({
-        placementId: kaarinaPlacement.data.id,
-        optionId: serviceNeedOption140h.data.id,
+        placementId: kaarinaPlacement.id,
+        optionId: serviceNeedOption140h.id,
         startDate: placementStart,
         endDate: placementEnd,
-        confirmedBy: unitSupervisor.data.id
+        confirmedBy: unitSupervisor.id
       })
       .save()
     await Fixture.groupPlacement()
@@ -395,11 +394,11 @@ describe('Employee - Unit month calendar', () => {
       .save()
     await Fixture.serviceNeed()
       .with({
-        placementId: jariPlacement.data.id,
-        optionId: serviceNeedOptionDaycare35.data.id,
+        placementId: jariPlacement.id,
+        optionId: serviceNeedOptionDaycare35.id,
         startDate: placementStart,
         endDate: placementEnd,
-        confirmedBy: unitSupervisor.data.id
+        confirmedBy: unitSupervisor.id
       })
       .save()
     await Fixture.groupPlacement()

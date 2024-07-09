@@ -23,7 +23,7 @@ beforeEach(async () => {
     .save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)
   nav = new EmployeeNav(page)
   employeesPage = new EmployeesPage(page)

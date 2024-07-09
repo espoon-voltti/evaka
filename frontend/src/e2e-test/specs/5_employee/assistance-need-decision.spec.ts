@@ -48,13 +48,13 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeEach(async () => {
   await resetServiceState()
 
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employeeServiceWorker().save()
 
   fixtures = await initializeAreaAndPersonData()
   await createDaycareGroups({ body: [daycareGroupFixture] })
 
   const unitId = fixtures.daycareFixture.id
-  staff = (await Fixture.employeeStaff(unitId).save()).data
+  staff = await Fixture.employeeStaff(unitId).save()
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
@@ -63,11 +63,11 @@ beforeEach(async () => {
     unitId
   )
 
-  assistanceNeedDecision = (
-    await Fixture.assistanceNeedDecision().withChild(childId).save()
-  ).data
+  assistanceNeedDecision = await Fixture.assistanceNeedDecision()
+    .withChild(childId)
+    .save()
 
-  preFilledAssistanceNeedDecision = (
+  preFilledAssistanceNeedDecision =
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
@@ -95,7 +95,6 @@ beforeEach(async () => {
         ]
       })
       .save()
-  ).data
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
@@ -315,7 +314,7 @@ describe('Assistance Need Decisions - Preview page', () => {
 
   describe('Staff', () => {
     beforeEach(async () => {
-      const acceptedAssistanceNeedDecision = (
+      const acceptedAssistanceNeedDecision =
         await Fixture.preFilledAssistanceNeedDecision()
           .withChild(childId)
           .with({
@@ -344,7 +343,6 @@ describe('Assistance Need Decisions - Preview page', () => {
             ]
           })
           .save()
-      ).data
 
       page = await openPage()
       await employeeLogin(page, staff)
@@ -440,7 +438,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       const admin = await Fixture.employeeAdmin().save()
 
       page = await openPage()
-      await employeeLogin(page, admin.data)
+      await employeeLogin(page, admin)
 
       await page.goto(
         `${

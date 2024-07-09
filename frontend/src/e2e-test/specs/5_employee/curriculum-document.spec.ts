@@ -6,11 +6,13 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
-import { EmployeeBuilder, Fixture, PersonBuilder } from '../../dev-api/fixtures'
+import { Fixture } from '../../dev-api/fixtures'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createVasuDocument,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
 import { Page } from '../../utils/page'
@@ -22,42 +24,40 @@ const mockedDate = mockedTime.toLocalDate()
 beforeEach(async (): Promise<void> => resetServiceState())
 
 describe('curriculum document with person duplicate', () => {
-  let admin: EmployeeBuilder
-  let daycareSupervisor: EmployeeBuilder
-  let preschoolSupervisor: EmployeeBuilder
-  let child: PersonBuilder
-  let duplicate: PersonBuilder
+  let admin: DevEmployee
+  let daycareSupervisor: DevEmployee
+  let preschoolSupervisor: DevEmployee
+  let child: PersonDetailWithDependants
+  let duplicate: PersonDetailWithDependants
 
   beforeEach(async () => {
     admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare()
       .with({
-        areaId: area.data.id,
+        areaId: area.id,
         type: ['CENTRE'],
         enabledPilotFeatures: ['VASU_AND_PEDADOC']
       })
       .save()
-    daycareSupervisor = await Fixture.employeeUnitSupervisor(
-      daycare.data.id
-    ).save()
+    daycareSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
     const preschool = await Fixture.daycare()
       .with({
-        areaId: area.data.id,
+        areaId: area.id,
         type: ['PRESCHOOL'],
         enabledPilotFeatures: ['VASU_AND_PEDADOC']
       })
       .save()
     preschoolSupervisor = await Fixture.employeeUnitSupervisor(
-      preschool.data.id
+      preschool.id
     ).save()
 
     child = await Fixture.person().save()
-    await Fixture.child(child.data.id).save()
+    await Fixture.child(child.id).save()
     await Fixture.placement()
       .with({
-        childId: child.data.id,
-        unitId: daycare.data.id,
+        childId: child.id,
+        unitId: daycare.id,
         type: 'DAYCARE_PART_TIME',
         startDate: mockedDate,
         endDate: mockedDate
@@ -67,14 +67,14 @@ describe('curriculum document with person duplicate', () => {
     duplicate = await Fixture.person()
       .with({
         ssn: undefined,
-        duplicateOf: child.data.id
+        duplicateOf: child.id
       })
       .save()
-    await Fixture.child(duplicate.data.id).save()
+    await Fixture.child(duplicate.id).save()
     await Fixture.placement()
       .with({
-        childId: duplicate.data.id,
-        unitId: preschool.data.id,
+        childId: duplicate.id,
+        unitId: preschool.id,
         type: 'PRESCHOOL',
         startDate: mockedDate,
         endDate: mockedDate
@@ -90,11 +90,11 @@ describe('curriculum document with person duplicate', () => {
       })
       .saveAndReturnId()
     const documentId = await createVasuDocument({
-      body: { childId: duplicate.data.id, templateId }
+      body: { childId: duplicate.id, templateId }
     })
 
     const page = await Page.open({ mockedTime })
-    await employeeLogin(page, daycareSupervisor.data)
+    await employeeLogin(page, daycareSupervisor)
     await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
     const vasuPage = new VasuPage(page)
     await vasuPage.assertDocumentVisible()
@@ -108,7 +108,7 @@ describe('curriculum document with person duplicate', () => {
       })
       .saveAndReturnId()
     await createVasuDocument({
-      body: { childId: duplicate.data.id, templateId: daycareTemplateId }
+      body: { childId: duplicate.id, templateId: daycareTemplateId }
     })
     const preschoolTemplateId = await Fixture.vasuTemplate()
       .with({
@@ -118,14 +118,14 @@ describe('curriculum document with person duplicate', () => {
       .saveAndReturnId()
     const preschoolDocumentId = await createVasuDocument({
       body: {
-        childId: duplicate.data.id,
+        childId: duplicate.id,
         templateId: preschoolTemplateId
       }
     })
 
     const page = await Page.open({ mockedTime })
-    await employeeLogin(page, daycareSupervisor.data)
-    await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
+    await employeeLogin(page, daycareSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -147,11 +147,11 @@ describe('curriculum document with person duplicate', () => {
       })
       .saveAndReturnId()
     const documentId = await createVasuDocument({
-      body: { childId: child.data.id, templateId }
+      body: { childId: child.id, templateId }
     })
 
     const page = await Page.open({ mockedTime })
-    await employeeLogin(page, preschoolSupervisor.data)
+    await employeeLogin(page, preschoolSupervisor)
     await page.goto(`${config.employeeUrl}/vasu/${documentId}`)
     const vasuPage = new VasuPage(page)
     await vasuPage.assertDocumentVisible()
@@ -166,7 +166,7 @@ describe('curriculum document with person duplicate', () => {
       .saveAndReturnId()
     const daycareDocumentId = await createVasuDocument({
       body: {
-        childId: child.data.id,
+        childId: child.id,
         templateId: daycareTemplateId
       }
     })
@@ -177,14 +177,12 @@ describe('curriculum document with person duplicate', () => {
       })
       .saveAndReturnId()
     await createVasuDocument({
-      body: { childId: child.data.id, templateId: preschoolTemplateId }
+      body: { childId: child.id, templateId: preschoolTemplateId }
     })
 
     const page = await Page.open({ mockedTime })
-    await employeeLogin(page, preschoolSupervisor.data)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${duplicate.data.id}`
-    )
+    await employeeLogin(page, preschoolSupervisor)
+    await page.goto(`${config.employeeUrl}/child-information/${duplicate.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -207,7 +205,7 @@ describe('curriculum document with person duplicate', () => {
       .saveAndReturnId()
     const daycareDocumentId = await createVasuDocument({
       body: {
-        childId: duplicate.data.id,
+        childId: duplicate.id,
         templateId: daycareTemplateId
       }
     })
@@ -219,14 +217,14 @@ describe('curriculum document with person duplicate', () => {
       .saveAndReturnId()
     const preschoolDocumentId = await createVasuDocument({
       body: {
-        childId: duplicate.data.id,
+        childId: duplicate.id,
         templateId: preschoolTemplateId
       }
     })
 
     const page = await Page.open({ mockedTime })
-    await employeeLogin(page, admin.data)
-    await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -244,9 +242,6 @@ describe('curriculum document with person duplicate', () => {
     await curriculumDocumentPage.assertDocumentVisible()
     await curriculumDocumentPage.back()
     await childInformationPage.waitUntilLoaded()
-    await childInformationPage.assertName(
-      child.data.lastName,
-      child.data.firstName
-    )
+    await childInformationPage.assertName(child.lastName, child.firstName)
   })
 })

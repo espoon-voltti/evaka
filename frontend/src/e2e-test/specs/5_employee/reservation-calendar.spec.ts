@@ -60,8 +60,7 @@ const insertTestDataAndLogin = async ({
   await daycareBuilder.save()
   daycare = daycareBuilder.data
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
@@ -96,10 +95,10 @@ const insertTestDataAndLogin = async ({
   const serviceNeedOption = await Fixture.serviceNeedOption().save()
   await Fixture.serviceNeed()
     .with({
-      placementId: placementBuilder.data.id,
+      placementId: placementBuilder.id,
       startDate: placementStartDate,
       endDate: placementEndDate,
-      optionId: serviceNeedOption.data.id,
+      optionId: serviceNeedOption.id,
       confirmedBy: unitSupervisor.id,
       shiftCare: childShiftCare
     })

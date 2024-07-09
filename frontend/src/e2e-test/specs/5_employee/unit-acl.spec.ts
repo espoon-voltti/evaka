@@ -51,7 +51,7 @@ beforeEach(async () => {
   await Fixture.employeeUnitSupervisor(daycareFixture.id).with(esko).save()
   await Fixture.employee().with(pete).save()
   await Fixture.employee().with(yrjo).save()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 })
 
 const expectedAclRows = {

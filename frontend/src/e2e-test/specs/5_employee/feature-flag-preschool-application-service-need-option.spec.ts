@@ -47,7 +47,7 @@ beforeEach(async () => {
       }
     }
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   childInformationPage = new ChildInformationPage(page)
   await childInformationPage.navigateToChild(

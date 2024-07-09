@@ -101,63 +101,51 @@ beforeEach(async () => {
   child = enduserChildFixtureJari
   child2 = enduserChildFixtureKaarina
 
-  daycareGroup = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroupId, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup = await Fixture.daycareGroup()
+    .with({ id: daycareGroupId, daycareId: daycareFixture.id })
+    .save()
 
-  daycareGroup2 = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroup2Id, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup2 = await Fixture.daycareGroup()
+    .with({ id: daycareGroup2Id, daycareId: daycareFixture.id })
+    .save()
 
-  daycareGroup3 = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroup3Id, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup3 = await Fixture.daycareGroup()
+    .with({ id: daycareGroup3Id, daycareId: daycareFixture.id })
+    .save()
 
-  const employee = (
-    await Fixture.employee()
-      .with({
-        id: employeeId,
-        firstName: empFirstName,
-        lastName: empLastName,
-        email: 'yy@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'UNIT_SUPERVISOR')
-      .save()
-  ).data
+  const employee = await Fixture.employee()
+    .with({
+      id: employeeId,
+      firstName: empFirstName,
+      lastName: empLastName,
+      email: 'yy@example.com',
+      roles: []
+    })
+    .withDaycareAcl(daycareFixture.id, 'UNIT_SUPERVISOR')
+    .save()
 
-  const staff = (
-    await Fixture.employee()
-      .with({
-        firstName: staffFirstName,
-        lastName: staffLastName,
-        email: 'zz@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'STAFF')
-      .withGroupAcl(daycareGroup.id)
-      .withGroupAcl(daycareGroup2.id)
-      .withGroupAcl(daycareGroup3.id)
-      .save()
-  ).data
+  const staff = await Fixture.employee()
+    .with({
+      firstName: staffFirstName,
+      lastName: staffLastName,
+      email: 'zz@example.com',
+      roles: []
+    })
+    .withDaycareAcl(daycareFixture.id, 'STAFF')
+    .withGroupAcl(daycareGroup.id)
+    .withGroupAcl(daycareGroup2.id)
+    .withGroupAcl(daycareGroup3.id)
+    .save()
 
-  const staff2 = (
-    await Fixture.employee()
-      .with({
-        firstName: staff2FirstName,
-        lastName: staff2LastName,
-        email: 'aa@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'STAFF')
-      .save()
-  ).data
+  const staff2 = await Fixture.employee()
+    .with({
+      firstName: staff2FirstName,
+      lastName: staff2LastName,
+      email: 'aa@example.com',
+      roles: []
+    })
+    .withDaycareAcl(daycareFixture.id, 'STAFF')
+    .save()
 
   await Fixture.employeePin().with({ userId: employee.id, pin }).save()
   await Fixture.employeePin().with({ userId: staff.id, pin }).save()
@@ -358,19 +346,19 @@ describe('Messages page', () => {
     await insertGuardians({
       body: [
         {
-          childId: extraChildFixture.data.id,
-          guardianId: extraGuardianFixture1.data.id
+          childId: extraChildFixture.id,
+          guardianId: extraGuardianFixture1.id
         },
         {
-          childId: extraChildFixture.data.id,
-          guardianId: extraGuardianFixture2.data.id
+          childId: extraChildFixture.id,
+          guardianId: extraGuardianFixture2.id
         }
       ]
     })
-    await Fixture.child(extraChildFixture.data.id).save()
+    await Fixture.child(extraChildFixture.id).save()
     const extraPlacementFixture = await Fixture.placement()
       .with({
-        childId: extraChildFixture.data.id,
+        childId: extraChildFixture.id,
         unitId: daycareFixture.id,
         startDate: mockedDate,
         endDate: mockedDate
@@ -524,7 +512,7 @@ describe('Messages page', () => {
 
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
     // Add child's guardians to block list
-    const admin = (await Fixture.employeeAdmin().save()).data
+    const admin = await Fixture.employeeAdmin().save()
     const adminPage = await Page.open({
       mockedTime: mockedDateAt10
     })

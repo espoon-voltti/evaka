@@ -78,9 +78,9 @@ beforeEach(async () => {
     enabled: true
   })
 
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-  ).data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(
+    fixtures.daycareFixture.id
+  ).save()
 
   const unitId = fixtures.daycareFixture.id
   childId = fixtures.enduserChildFixtureJari.id
@@ -95,7 +95,7 @@ beforeEach(async () => {
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
+      daycarePlacementId: daycarePlacementFixture.id,
       daycareGroupId: daycareGroupFixture.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
@@ -375,7 +375,7 @@ describe('Sending and receiving messages', () => {
         // Add child's guardian to block list
         const admin = await Fixture.employeeAdmin().save()
         const adminPage = await Page.open()
-        await employeeLogin(adminPage, admin.data)
+        await employeeLogin(adminPage, admin)
 
         await adminPage.goto(
           `${config.employeeUrl}/child-information/${childId}`
@@ -457,7 +457,7 @@ describe('Sending and receiving messages', () => {
           .save()
         await Fixture.groupPlacement()
           .with({
-            daycarePlacementId: daycarePlacementFixture.data.id,
+            daycarePlacementId: daycarePlacementFixture.id,
             daycareGroupId: daycareGroupFixture.id,
             startDate: mockedDate,
             endDate: mockedDate
@@ -514,7 +514,7 @@ describe('Sending and receiving messages', () => {
           .save()
         await Fixture.groupPlacement()
           .with({
-            daycarePlacementId: daycarePlacementFixture.data.id,
+            daycarePlacementId: daycarePlacementFixture.id,
             daycareGroupId: daycareGroupFixture.id,
             startDate: mockedDate,
             endDate: placementEndDate

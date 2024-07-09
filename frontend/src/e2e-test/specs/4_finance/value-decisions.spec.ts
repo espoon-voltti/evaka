@@ -113,7 +113,7 @@ describe('Value decisions', () => {
     })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -248,7 +248,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
     })
 
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -273,7 +273,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
       .with({
         email: 'laura.laskuttaja@evaka.test',
         firstName: 'Laura',
@@ -307,7 +307,7 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decision is sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
+    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
       .with({
         email: 'laura.laskuttaja@evaka.test',
         firstName: 'Laura',

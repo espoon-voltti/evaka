@@ -50,7 +50,7 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employeeServiceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
@@ -192,7 +192,7 @@ describe('Application transitions', () => {
       .save()
     await Fixture.daycareCaretakers()
       .with({
-        groupId: group.data.id,
+        groupId: group.id,
         startDate: preferredStartDate,
         amount: 1
       })
@@ -203,7 +203,7 @@ describe('Application transitions', () => {
       .save()
     await Fixture.daycareCaretakers()
       .with({
-        groupId: group2.data.id,
+        groupId: group2.id,
         startDate: preferredStartDate,
         amount: 2
       })
@@ -485,9 +485,9 @@ describe('Application transitions', () => {
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
 
-    const unitSupervisor = (
-      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-    ).data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      fixtures.daycareFixture.id
+    ).save()
     await employeeLogin(page2, unitSupervisor)
 
     // unit supervisor
@@ -562,8 +562,7 @@ describe('Application transitions', () => {
 
     await employeeLogin(
       page2,
-      (await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save())
-        .data
+      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
     )
 
     // unit supervisor
@@ -609,9 +608,9 @@ describe('Application transitions', () => {
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    const unitSupervisor = (
-      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-    ).data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      fixtures.daycareFixture.id
+    ).save()
     await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -712,13 +711,13 @@ describe('Application transitions', () => {
           endDate: placementStartDate
         })
         .save()
-    ).data.id
+    ).id
 
     await rejectDecisionByCitizen({ id: decisionId })
 
-    const unitSupervisor = (
-      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-    ).data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(
+      fixtures.daycareFixture.id
+    ).save()
 
     async function assertApplicationRows(
       addDays: number,

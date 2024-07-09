@@ -37,10 +37,10 @@ beforeEach(async () => {
 
   fixtures = await initializeAreaAndPersonData()
   childFixture = fixtures.enduserChildFixtureKaarina
-  admin = (await Fixture.employeeAdmin().save()).data
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-  ).data
+  admin = await Fixture.employeeAdmin().save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(
+    fixtures.daycareFixture.id
+  ).save()
 
   await Fixture.placement()
     .with({

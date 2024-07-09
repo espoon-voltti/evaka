@@ -72,13 +72,13 @@ beforeEach(async () => {
       .with({
         startDate: today,
         endDate: today.addYears(1),
-        daycareGroupId: daycareGroup.data.id,
+        daycareGroupId: daycareGroup.id,
         daycarePlacementId: placementIds.get(child.id) ?? ''
       })
       .save()
   }
 
-  const { data: groupEvent } = await Fixture.calendarEvent()
+  const groupEvent = await Fixture.calendarEvent()
     .with({
       id: groupEventId,
       title: 'Group-wide event',
@@ -92,11 +92,11 @@ beforeEach(async () => {
     .with({
       calendarEventId: groupEvent.id,
       unitId: fixtures.daycareFixture.id,
-      groupId: daycareGroup.data.id
+      groupId: daycareGroup.id
     })
     .save()
 
-  const { data: individualEvent } = await Fixture.calendarEvent()
+  const individualEvent = await Fixture.calendarEvent()
     .with({
       id: individualEventId,
       title: 'Individual event',
@@ -110,12 +110,12 @@ beforeEach(async () => {
     .with({
       calendarEventId: individualEvent.id,
       unitId: fixtures.daycareFixture.id,
-      groupId: daycareGroup.data.id,
+      groupId: daycareGroup.id,
       childId: fixtures.enduserChildFixtureJari.id
     })
     .save()
 
-  const { data: unitEvent } = await Fixture.calendarEvent()
+  const unitEvent = await Fixture.calendarEvent()
     .with({
       id: unitEventId,
       title: 'Unit event',

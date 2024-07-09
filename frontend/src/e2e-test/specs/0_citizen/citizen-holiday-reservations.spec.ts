@@ -10,19 +10,19 @@ import { UUID } from 'lib-common/types'
 import { vtjDependants } from '../../dev-api'
 import {
   careAreaFixture,
-  DaycareBuilder,
   daycareFixture,
   daycareGroupFixture,
   enduserChildFixtureJari,
   enduserChildFixtureKaarina,
   enduserGuardianFixture,
-  Fixture,
-  PersonBuilder
+  Fixture
 } from '../../dev-api/fixtures'
+import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   resetServiceState,
   upsertVtjDataset
 } from '../../generated/api-clients'
+import { DevDaycare } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -36,8 +36,8 @@ const period = new FiniteDateRange(
 )
 const child = enduserChildFixtureJari
 const today = LocalDate.of(2035, 12, 1)
-let daycare: DaycareBuilder
-let guardian: PersonBuilder
+let daycare: DevDaycare
+let guardian: PersonDetailWithDependants
 
 const holidayQuestionnaireFixture = () =>
   Fixture.holidayQuestionnaire().with({
@@ -98,7 +98,7 @@ beforeEach(async () => {
     .with(enduserGuardianFixture)
     .withDependants(child1)
     .saveAndUpdateMockVtj()
-  await Fixture.child(child1.data.id).save()
+  await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()
     .child(child1)
@@ -118,7 +118,7 @@ async function setupAnotherChild(
     .with(enduserChildFixtureKaarina)
     .saveAndUpdateMockVtj()
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
-  await Fixture.child(child2.data.id).save()
+  await Fixture.child(child2.id).save()
   await Fixture.guardian(child2, guardian).save()
   await Fixture.placement()
     .child(child2)
@@ -129,7 +129,7 @@ async function setupAnotherChild(
     })
     .save()
 
-  return child2.data
+  return child2
 }
 
 describe('Holiday periods and questionnaires', () => {

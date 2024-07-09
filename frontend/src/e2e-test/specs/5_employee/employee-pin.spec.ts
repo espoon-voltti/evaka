@@ -18,7 +18,7 @@ let pinPage: EmployeePinPage
 
 beforeEach(async () => {
   await resetServiceState()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

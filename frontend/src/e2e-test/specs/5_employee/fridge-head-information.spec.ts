@@ -89,7 +89,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   guardianInformation = new GuardianInformationPage(page)
   childInformation = new ChildInformationPage(page)
@@ -209,7 +209,7 @@ describe('Employee - Head of family details', () => {
             coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
           }
         },
-        updatedBy: employee.data.id
+        updatedBy: employee.id
       })
       .save()
 
@@ -229,7 +229,7 @@ describe('Employee - Head of family details', () => {
             coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
           }
         },
-        updatedBy: employee.data.id
+        updatedBy: employee.id
       })
       .save()
 

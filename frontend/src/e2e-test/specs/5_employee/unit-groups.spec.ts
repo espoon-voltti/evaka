@@ -41,8 +41,7 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   daycare = fixtures.daycareFixture
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
@@ -277,7 +276,7 @@ describe('Unit groups - unit supervisor', () => {
     await Fixture.serviceNeed()
       .with({
         placementId: child2DaycarePlacementId,
-        optionId: specialServiceNeed.data.id,
+        optionId: specialServiceNeed.id,
         confirmedBy: unitSupervisor.id
       })
       .save()
@@ -294,7 +293,7 @@ describe('Unit groups - staff', () => {
     const staff = await Fixture.employeeStaff(daycare.id).save()
 
     page = await Page.open()
-    await employeeLogin(page, staff.data)
+    await employeeLogin(page, staff)
   })
 
   test('Staff will not see terminated placements', async () => {

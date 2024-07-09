@@ -239,22 +239,18 @@ const addTestData = async (date: LocalDate) => {
       enabledPilotFeatures: ['RESERVATIONS']
     })
     .save()
-  const group = await Fixture.daycareGroup()
-    .with({ daycareId: unit.data.id })
-    .save()
+  const group = await Fixture.daycareGroup().with({ daycareId: unit.id }).save()
 
   const child = bulkFixtures.enduserChildFixtureJari
   const parent = bulkFixtures.enduserGuardianFixture
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    unit.data.id
-  ).save()
+  const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
 
   const placement = await Fixture.placement()
     .with({
       type: 'DAYCARE',
       childId: child.id,
-      unitId: unit.data.id,
+      unitId: unit.id,
       startDate: date,
       endDate: date.addDays(30)
     })
@@ -264,28 +260,28 @@ const addTestData = async (date: LocalDate) => {
     .save()
   await Fixture.serviceNeed()
     .with({
-      placementId: placement.data.id,
-      startDate: placement.data.startDate,
-      endDate: placement.data.endDate,
-      optionId: serviceNeedOption.data.id,
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
       shiftCare: 'INTERMITTENT',
-      confirmedBy: unitSupervisor.data.id,
+      confirmedBy: unitSupervisor.id,
       confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     .save()
   await Fixture.groupPlacement()
     .with({
-      daycareGroupId: group.data.id,
-      daycarePlacementId: placement.data.id,
-      startDate: placement.data.startDate,
-      endDate: placement.data.endDate
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
     })
     .save()
 
   return {
     areaId: careAreaFixture.id,
     parent,
-    unitId: unit.data.id,
+    unitId: unit.id,
     child
   }
 }

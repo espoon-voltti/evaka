@@ -46,14 +46,12 @@ const mockedTime = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
-  messagingAndServiceWorker = (
-    await Fixture.employeeServiceWorker()
-      .with({
-        roles: ['SERVICE_WORKER', 'MESSAGING']
-      })
-      .save()
-  ).data
+  serviceWorker = await Fixture.employeeServiceWorker().save()
+  messagingAndServiceWorker = await Fixture.employeeServiceWorker()
+    .with({
+      roles: ['SERVICE_WORKER', 'MESSAGING']
+    })
+    .save()
   await createMessageAccounts()
 })
 

@@ -36,7 +36,7 @@ let childId: UUID
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()

@@ -75,10 +75,10 @@ beforeEach(async () => {
     .then((placement) =>
       Fixture.groupPlacement()
         .with({
-          daycarePlacementId: placement.data.id,
+          daycarePlacementId: placement.id,
           daycareGroupId: daycareGroupFixture.id,
-          startDate: placement.data.startDate,
-          endDate: placement.data.endDate
+          startDate: placement.startDate,
+          endDate: placement.endDate
         })
         .save()
     )
@@ -93,17 +93,15 @@ beforeEach(async () => {
     .then((placement) =>
       Fixture.groupPlacement()
         .with({
-          daycarePlacementId: placement.data.id,
+          daycarePlacementId: placement.id,
           daycareGroupId: daycareGroup2Fixture.id,
-          startDate: placement.data.startDate,
-          endDate: placement.data.endDate
+          startDate: placement.startDate,
+          endDate: placement.endDate
         })
         .save()
     )
-  const guardian2 = Fixture.person().with({ ssn: undefined })
-  await guardian2.save()
-  const guardian3 = Fixture.person().with({ ssn: undefined })
-  await guardian3.save()
+  const guardian2 = await Fixture.person().with({ ssn: undefined }).save()
+  const guardian3 = await Fixture.person().with({ ssn: undefined }).save()
   await insertGuardians({
     body: [
       {
@@ -112,21 +110,19 @@ beforeEach(async () => {
       },
       {
         childId: childInAreaB.id,
-        guardianId: guardian2.data.id
+        guardianId: guardian2.id
       },
       {
         childId: childInAreaB.id,
-        guardianId: guardian3.data.id
+        guardianId: guardian3.id
       }
     ]
   })
   await createMessageAccounts()
-  messenger = (await Fixture.employeeMessenger().save()).data
-  staff = (
-    await Fixture.employeeStaff(fixtures.daycareFixture.id)
-      .withGroupAcl(daycareGroupFixture.id)
-      .save()
-  ).data
+  messenger = await Fixture.employeeMessenger().save()
+  staff = await Fixture.employeeStaff(fixtures.daycareFixture.id)
+    .withGroupAcl(daycareGroupFixture.id)
+    .save()
 })
 
 async function openMessagingPage(mockedTime: HelsinkiDateTime) {

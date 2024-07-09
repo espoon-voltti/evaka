@@ -41,7 +41,7 @@ beforeEach(async () => {
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ mockedTime: mockedNow })
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
 })
 
 describe('Guardian income statements', () => {

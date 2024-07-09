@@ -50,18 +50,15 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  daycare = (
-    await Fixture.daycare()
-      .with({
-        ...daycare2Fixture,
-        enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
-      })
-      .careArea(careArea)
-      .save()
-  ).data
+  daycare = await Fixture.daycare()
+    .with({
+      ...daycare2Fixture,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+    })
+    .careArea(careArea)
+    .save()
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
@@ -102,20 +99,18 @@ beforeEach(async () => {
     })
     .save()
 
-  groupStaff = (
-    await Fixture.employee()
-      .with({
-        email: 'kalle.kasvattaja@evaka.test',
-        firstName: 'Kalle',
-        lastName: 'Kasvattaja',
-        roles: []
-      })
-      .withDaycareAcl(daycare.id, 'STAFF')
-      .withGroupAcl(groupId)
-      .withGroupAcl(groupId2)
-      .save()
-  ).data
-  nonGroupStaff = (await Fixture.employeeStaff(daycare.id).save()).data
+  groupStaff = await Fixture.employee()
+    .with({
+      email: 'kalle.kasvattaja@evaka.test',
+      firstName: 'Kalle',
+      lastName: 'Kasvattaja',
+      roles: []
+    })
+    .withDaycareAcl(daycare.id, 'STAFF')
+    .withGroupAcl(groupId)
+    .withGroupAcl(groupId2)
+    .save()
+  nonGroupStaff = await Fixture.employeeStaff(daycare.id).save()
 
   await Fixture.staffOccupancyCoefficient(daycare.id, groupStaff.id).save()
 
@@ -303,19 +298,17 @@ describe('Realtime staff attendances', () => {
     test('Automatically closed attendance is indicated and cleared on edit', async () => {
       const yesterday = mockedToday.subDays(1)
 
-      const otherGroupStaff = (
-        await Fixture.employee()
-          .with({
-            email: 'raija.raivo@evaka.test',
-            firstName: 'Raija',
-            lastName: 'Raivo',
-            roles: []
-          })
-          .withDaycareAcl(daycare.id, 'STAFF')
-          .withGroupAcl(groupId)
-          .withGroupAcl(groupId2)
-          .save()
-      ).data
+      const otherGroupStaff = await Fixture.employee()
+        .with({
+          email: 'raija.raivo@evaka.test',
+          firstName: 'Raija',
+          lastName: 'Raivo',
+          roles: []
+        })
+        .withDaycareAcl(daycare.id, 'STAFF')
+        .withGroupAcl(groupId)
+        .withGroupAcl(groupId2)
+        .save()
 
       await Fixture.realtimeStaffAttendance()
         .with({

@@ -71,18 +71,18 @@ beforeEach(async () => {
     body: [
       {
         ...decisionFixture(application.id, startDate, startDate),
-        employeeId: admin.data.id
+        employeeId: admin.id
       },
       {
         ...decisionFixture(application2.id, startDate, startDate),
-        employeeId: admin.data.id,
+        employeeId: admin.id,
         id: uuidv4()
       }
     ]
   })
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 describe('Employee - Guardian Information', () => {

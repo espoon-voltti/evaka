@@ -49,7 +49,7 @@ beforeEach(async () => {
   voucherUnitId = fixtures.daycareFixturePrivateVoucher.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   page = await Page.open()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employeeAdmin().save()
 })
 
 const setupPlacement = async (type: PlacementType, voucher = false) => {
@@ -75,9 +75,7 @@ describe('Child Information assistance functionality for employees', () => {
   describe('assistance factor', () => {
     it('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.createAssistanceFactorButton.click()
       const form = assistance.assistanceFactorForm
@@ -100,9 +98,7 @@ describe('Child Information assistance functionality for employees', () => {
           capacityFactor: 1.5
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       const row = assistance.assistanceFactorRow(0)
       await row.capacityFactor.assertTextEquals('1,5')
@@ -134,9 +130,7 @@ describe('Child Information assistance functionality for employees', () => {
           capacityFactor: 2.5
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.assertAssistanceFactorCount(2)
       await assistance.assistanceFactorRow(0).delete()
@@ -151,9 +145,7 @@ describe('Child Information assistance functionality for employees', () => {
   describe('daycare assistance', () => {
     it('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.createDaycareAssistanceButton.click()
       const form = assistance.daycareAssistanceForm
@@ -175,9 +167,7 @@ describe('Child Information assistance functionality for employees', () => {
           level: 'GENERAL_SUPPORT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       const row = assistance.daycareAssistanceRow(0)
       await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
@@ -209,9 +199,7 @@ describe('Child Information assistance functionality for employees', () => {
           level: 'INTENSIFIED_SUPPORT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.assertDaycareAssistanceCount(2)
       await assistance.daycareAssistanceRow(0).delete()
@@ -226,9 +214,7 @@ describe('Child Information assistance functionality for employees', () => {
   describe('preschool assistance', () => {
     it('can be added', async () => {
       const validDuring = (await setupPlacement('PRESCHOOL')).dateRange()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.createPreschoolAssistanceButton.click()
       const form = assistance.preschoolAssistanceForm
@@ -252,9 +238,7 @@ describe('Child Information assistance functionality for employees', () => {
           level: 'SPECIAL_SUPPORT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       const row = assistance.preschoolAssistanceRow(0)
       await row.level.assertTextEquals(
@@ -288,9 +272,7 @@ describe('Child Information assistance functionality for employees', () => {
           level: 'SPECIAL_SUPPORT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.assertPreschoolAssistanceCount(2)
       await assistance.preschoolAssistanceRow(0).delete()
@@ -305,9 +287,7 @@ describe('Child Information assistance functionality for employees', () => {
   describe('other assistance measure', () => {
     it('can be added', async () => {
       const validDuring = (await setupPlacement('DAYCARE')).dateRange()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.createOtherAssistanceMeasureButton.click()
       const form = assistance.otherAssistanceMeasureForm
@@ -329,9 +309,7 @@ describe('Child Information assistance functionality for employees', () => {
           type: 'TRANSPORT_BENEFIT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       const row = assistance.otherAssistanceMeasureRow(0)
       await row.type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
@@ -363,9 +341,7 @@ describe('Child Information assistance functionality for employees', () => {
           type: 'ACCULTURATION_SUPPORT'
         })
         .save()
-      await logUserIn(
-        (await Fixture.employeeUnitSupervisor(unitId).save()).data
-      )
+      await logUserIn(await Fixture.employeeUnitSupervisor(unitId).save())
 
       await assistance.assertOtherAssistanceMeasureCount(2)
       await assistance.otherAssistanceMeasureRow(0).delete()
@@ -380,8 +356,8 @@ describe('Child Information assistance functionality for employees', () => {
 
   test('assistance factor completely before preschool for a child in preschool is not shown for unit supervisor', async () => {
     await setupPlacement('PRESCHOOL')
-    const unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save())
-      .data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+
     await Fixture.assistanceFactor()
       .with({
         capacityFactor: 0.5,
@@ -428,8 +404,8 @@ describe('Child Information assistance functionality for employees', () => {
 
   test('assistance factor for preschool for a child in preschool is shown for unit manager', async () => {
     await setupPlacement('PRESCHOOL')
-    const unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save())
-      .data
+    const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+
     await Fixture.assistanceFactor()
       .with({
         childId: childId,
@@ -464,9 +440,8 @@ describe('Child Information assistance functionality for employees', () => {
 
   test('assistance factor before preschool for a child in preschool is shown for Special Education Teacher', async () => {
     await setupPlacement('PRESCHOOL')
-    const specialEducationTeacher = (
+    const specialEducationTeacher =
       await Fixture.employeeSpecialEducationTeacher(unitId).save()
-    ).data
 
     await Fixture.assistanceFactor()
       .with({
@@ -513,7 +488,7 @@ describe('Child assistance need decisions for employees', () => {
   })
 
   test('Shows a filled in draft in the list', async () => {
-    const serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+    const serviceWorker = await Fixture.employeeServiceWorker().save()
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
@@ -610,7 +585,7 @@ describe('Child assistance need decisions for employees', () => {
       )
     )
 
-    await logUserIn(staff.data)
+    await logUserIn(staff)
     await assistance.waitUntilAssistanceNeedDecisionsLoaded()
     await assistance.assertAssistanceNeedDecisionCount(1)
 
@@ -641,7 +616,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
   test('assistance need voucher coefficient can be added', async () => {
     await setupPlacement('DAYCARE', true)
     await logUserIn(
-      (await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()).data
+      await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
     )
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
@@ -660,7 +635,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
   test('new assistance need voucher coefficient cuts off previous one', async () => {
     await setupPlacement('DAYCARE', true)
     await logUserIn(
-      (await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()).data
+      await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
     )
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
@@ -690,7 +665,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
   test('assistance need voucher coefficient can be edited', async () => {
     await setupPlacement('DAYCARE', true)
     await logUserIn(
-      (await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()).data
+      await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
     )
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
@@ -721,7 +696,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
   test('assistance need voucher coefficient editing cuts off other coefficient', async () => {
     await setupPlacement('DAYCARE', true)
     await logUserIn(
-      (await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()).data
+      await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
     )
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
@@ -773,7 +748,7 @@ describe('Child assistance need voucher coefficients for employees', () => {
   test('assistance need voucher coefficient can be deleted', async () => {
     await setupPlacement('DAYCARE', true)
     await logUserIn(
-      (await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()).data
+      await Fixture.employeeSpecialEducationTeacher(voucherUnitId).save()
     )
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
