@@ -342,7 +342,9 @@ export default {
       noReservationsText:
         'Valitussa kyselyssä ei tällä hetkellä ole vapaita aikoja',
       backButtonText: 'Palaa',
-      cancelTimeButtonText: 'Peru'
+      cancelTimeButtonText: 'Peru',
+      surveyToastMessage:
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.'
     },
 
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',

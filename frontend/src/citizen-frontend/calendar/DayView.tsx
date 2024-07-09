@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faX } from '@fortawesome/free-solid-svg-icons'
+import { faTimes } from 'Icons'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -79,13 +79,13 @@ import { Translations, useLang, useTranslation } from '../localization'
 import AttendanceInfo from './AttendanceInfo'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
-import { getStartOfDiscussionReservationWindow } from './CalendarPage'
 import {
   ChildImageData,
   getChildImages,
   RoundChildImage
 } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
+import { isEventTimeCancellable } from './discussion-reservation-modal/discussion-survey'
 import {
   deleteCalendarEventTimeReservationMutation,
   postReservationsMutation
@@ -454,17 +454,18 @@ const DayModal = React.memo(function DayModal({
                                 event.eventType === 'DISCUSSION_SURVEY'
                               ) {
                                 return (
-                                  <FixedSpaceColumn
-                                    spacing="xxs"
+                                  <SurveyContainer
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
                                     <LabelLike data-qa="event-title">
-                                      <P data-qa="title-text">{event.title}</P>
+                                      <WordBreakContainer>
+                                        <P noMargin data-qa="title-text">
+                                          {event.title}
+                                        </P>
+                                      </WordBreakContainer>
                                       {event.reservedTimes.map((rt, i) => (
-                                        <FixedSpaceColumn
-                                          alignItems="flex-start"
-                                          spacing="xs"
+                                        <DiscussionReservationContainer
                                           key={`reservation-${i}`}
                                         >
                                           <div>
@@ -473,38 +474,45 @@ const DayModal = React.memo(function DayModal({
                                               data-qa={`reservation-times-${i}`}
                                             >{`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}</P>
                                           </div>
-                                          <MutateButton
-                                            appearance="inline"
-                                            icon={faX}
-                                            text={
-                                              i18n.calendar
-                                                .discussionTimeReservation
-                                                .cancelTimeButtonText
-                                            }
-                                            disabled={getStartOfDiscussionReservationWindow().isAfter(
-                                              rt.date
-                                            )}
-                                            mutation={
-                                              deleteCalendarEventTimeReservationMutation
-                                            }
-                                            onClick={() => {
-                                              if (rt.childId !== null) {
-                                                return {
-                                                  childId: rt.childId,
-                                                  calendarEventTimeId: rt.id
-                                                }
-                                              } else {
-                                                return cancelMutation
+                                          {rt.date.isEqualOrAfter(
+                                            LocalDate.todayInHelsinkiTz()
+                                          ) && (
+                                            <MutateButton
+                                              appearance="inline"
+                                              icon={faTimes}
+                                              text={
+                                                i18n.calendar
+                                                  .discussionTimeReservation
+                                                  .cancelTimeButtonText
                                               }
-                                            }}
-                                          />
-                                        </FixedSpaceColumn>
+                                              disabled={
+                                                !isEventTimeCancellable(
+                                                  rt,
+                                                  LocalDate.todayInHelsinkiTz()
+                                                )
+                                              }
+                                              mutation={
+                                                deleteCalendarEventTimeReservationMutation
+                                              }
+                                              onClick={() => {
+                                                if (rt.childId !== null) {
+                                                  return {
+                                                    childId: rt.childId,
+                                                    calendarEventTimeId: rt.id
+                                                  }
+                                                } else {
+                                                  return cancelMutation
+                                                }
+                                              }}
+                                            />
+                                          )}
+                                        </DiscussionReservationContainer>
                                       ))}
                                     </LabelLike>
                                     <P noMargin data-qa="event-description">
                                       {event.description}
                                     </P>
-                                  </FixedSpaceColumn>
+                                  </SurveyContainer>
                                 )
                               } else return null
                             })}
@@ -936,4 +944,21 @@ export const ReservationAttendanceHeading = styled(LabelLike)`
   @media (max-width: ${tabletMin}) {
     margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
   }
+`
+const SurveyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 10px 0;
+`
+
+const DiscussionReservationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 10px 0;
+`
+
+export const WordBreakContainer = styled.div`
+  word-break: break-word;
 `

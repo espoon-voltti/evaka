@@ -44,13 +44,13 @@ import {
   CalendarEventCount,
   CalendarEventCountContainer
 } from './CalendarEventCount'
-import { showEventTime } from './CalendarPage'
 import { HistoryOverlay } from './HistoryOverlay'
 import { getSummaryForMonth, InlineWarningIcon } from './MonthElem'
 import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
+import { showModalEventTime } from './discussion-reservation-modal/discussion-survey'
 import { useSummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
@@ -170,7 +170,9 @@ export default React.memo(function CalendarGridView({
         (e) =>
           e.eventType === 'DISCUSSION_SURVEY' &&
           Object.values(e.timesByChild).some((times) =>
-            times.some((t) => showEventTime(t, LocalDate.todayInHelsinkiTz()))
+            times.some((t) =>
+              showModalEventTime(t, LocalDate.todayInHelsinkiTz())
+            )
           )
       ),
     [events]

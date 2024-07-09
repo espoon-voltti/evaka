@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faX } from '@fortawesome/free-solid-svg-icons'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -42,8 +41,9 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
-import { getStartOfDiscussionReservationWindow } from '../CalendarPage'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
+
+import { isEventTimeCancellable } from './discussion-survey'
 
 interface ChildWithSurveys {
   childId: string
@@ -236,10 +236,10 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
   return (
     <SurveyElementContainer>
       {reservations.length > 0 ? (
-        <ReservationListContainer>
-          <p>
+        <>
+          <P>
             <Strong>{survey.title}</Strong>
-          </p>
+          </P>
           <SurveyReservationElement spacing="s">
             <span>
               {i18n.calendar.discussionTimeReservation.reservationLabelText}
@@ -253,15 +253,16 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                   </Bold>
                 </div>
+
                 <MutateButton
                   appearance="inline"
-                  icon={faX}
+                  icon={faTimes}
                   text={
                     i18n.calendar.discussionTimeReservation.cancelTimeButtonText
                   }
-                  disabled={getStartOfDiscussionReservationWindow().isEqualOrAfter(
-                    r.date
-                  )}
+                  disabled={
+                    !isEventTimeCancellable(r, LocalDate.todayInHelsinkiTz())
+                  }
                   mutation={deleteCalendarEventTimeReservationMutation}
                   onClick={() => {
                     if (r.childId !== null) {
@@ -274,7 +275,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
               </FixedSpaceColumn>
             ))}
           </SurveyReservationElement>
-        </ReservationListContainer>
+        </>
       ) : (
         <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
           <SurveyTitleLabel>
@@ -310,10 +311,6 @@ const SurveyTitleLabel = styled.div`
   max-width: 350px;
 `
 
-const ReservationListContainer = styled.div`
-  word-break: break-word;
-`
-
 const InfoContainer = styled.div`
   margin-top: 16px;
 `
@@ -324,4 +321,5 @@ const ReservationButtonContainer = styled.div`
 
 const SurveyElementContainer = styled(FixedSpaceColumn)`
   margin: 0 10px;
+  word-break: break-word;
 `

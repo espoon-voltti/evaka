@@ -8,10 +8,7 @@ import styled from 'styled-components'
 
 import { combine, isLoading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  CalendarEventTime,
-  CitizenCalendarEvent
-} from 'lib-common/generated/api-types/calendarevent'
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
@@ -138,7 +135,10 @@ const CalendarPage = React.memo(function CalendarPage() {
         combine(data, events, holidayPeriods),
         ([response, events, holidayPeriods]) => (
           <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-            <CalendarNotifications calendarDays={response.days} />
+            <CalendarNotifications
+              calendarDays={response.days}
+              events={events}
+            />
             <RenderOnlyOn mobile tablet>
               <ContentArea
                 opaque
@@ -428,21 +428,6 @@ function buildQueryString(modal: URLModalState): string {
     case 'discussion-reservations':
       return `modal=discussion-reservations${modal.selectedChildId ? '&selectedChildId=' + modal.selectedChildId : ''}${modal.selectedEventId ? '&selectedEventId=' + modal.selectedEventId : ''}`
   }
-}
-
-export function getStartOfDiscussionReservationWindow(): LocalDate {
-  return LocalDate.todayInHelsinkiTz().addBusinessDays(2)
-}
-
-export function showEventTime(
-  et: CalendarEventTime,
-  comparisonDay: LocalDate
-): boolean {
-  //reserved and not in the past, or within a 2 business day reservation window
-  return (
-    (et.childId && et.date.isEqualOrAfter(comparisonDay)) ||
-    et.date.isEqualOrAfter(comparisonDay.addBusinessDays(2))
-  )
 }
 
 const DesktopOnly = styled(Desktop)`

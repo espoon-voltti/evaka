@@ -51,10 +51,11 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../CalendarModal'
-import { showEventTime } from '../CalendarPage'
+import { WordBreakContainer } from '../DayView'
 import { addCalendarEventTimeReservationMutation, queryKeys } from '../queries'
 
 import { DiscussionHeader } from './DiscussionSurveyModal'
+import { showModalEventTime } from './discussion-survey'
 
 const discussionTimeReservationForm = mapped(
   object({
@@ -101,7 +102,7 @@ export default React.memo(function DiscussionReservationModal({
       eventData && childData
         ? orderBy(
             eventData.timesByChild[childData.id].filter((et) =>
-              showEventTime(et, today)
+              showModalEventTime(et, today)
             ),
             ['date', 'startTime', 'endTime']
           )
@@ -158,14 +159,14 @@ export default React.memo(function DiscussionReservationModal({
                 />
               </div>
               <CalendarModalSection>
-                <SurveyInfoWrapper>
+                <WordBreakContainer>
                   <H2>{eventData?.title}</H2>
                   <p>{eventData?.description}</p>
                   <H3>{t.reservationChildTitle}</H3>
                   <StaticChip color={colors.main.m1}>
                     {childData ? formatFirstName(childData) : ''}
                   </StaticChip>
-                </SurveyInfoWrapper>
+                </WordBreakContainer>
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <CalendarModalSection>
@@ -288,10 +289,6 @@ export const LineContainer = styled.div`
   padding: 0;
   margin: 0;
 `
-const SurveyInfoWrapper = styled.div`
-  word-break: break-word;
-`
-
 const ReservationGrid = styled.div`
   display: grid;
   grid-template-columns: 3fr 2fr 1fr;
