@@ -329,6 +329,12 @@ const en: Translations = {
     newReservationBtn: 'Register attendance',
     reservationsOpenOn: (date: LocalDate) =>
       `Reservations will open on ${date.format()}`,
+    notYetReservable: 'Reservations cannot be made yet',
+    notYetReservableInfo: (
+      period: FiniteDateRange,
+      reservationOpensOn: LocalDate
+    ) =>
+      `Reservations for holiday period ${period.format()} will open on ${reservationOpensOn.format()}`,
     missingReservation: 'No attendance',
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
@@ -387,12 +393,6 @@ const en: Translations = {
       end: 'End',
       present: 'Present',
       absent: 'Absent',
-      notYetReservable: 'Reservations cannot be made yet',
-      notYetReservableInfo: (
-        period: FiniteDateRange,
-        reservationOpensOn: LocalDate
-      ) =>
-        `Reservations for holiday period ${period.format()} will open on ${reservationOpensOn.format()}`,
       reservationClosed: 'Reservation closed',
       reservationClosedInfo:
         'Please contact staff if you want to add an attendance for this day',

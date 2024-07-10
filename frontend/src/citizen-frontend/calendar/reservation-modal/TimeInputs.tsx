@@ -189,8 +189,8 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       return (
         <WithInfo
           label={label}
-          shortText={i18n.calendar.reservationModal.notYetReservable}
-          longText={i18n.calendar.reservationModal.notYetReservableInfo(
+          shortText={i18n.calendar.notYetReservable}
+          longText={i18n.calendar.notYetReservableInfo(
             state.period,
             state.reservationsOpenOn
           )}

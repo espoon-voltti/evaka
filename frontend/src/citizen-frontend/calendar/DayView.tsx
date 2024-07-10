@@ -711,12 +711,12 @@ const Reservations = React.memo(function Reservations({
   return holidayPeriodEffect?.type === 'NotYetReservable' ? (
     <ExpandingInfo
       width="full"
-      info={i18n.calendar.reservationModal.notYetReservableInfo(
+      info={i18n.calendar.notYetReservableInfo(
         holidayPeriodEffect.period,
         holidayPeriodEffect.reservationsOpenOn
       )}
     >
-      {i18n.calendar.reservationModal.notYetReservable}
+      {i18n.calendar.notYetReservable}
     </ExpandingInfo>
   ) : withoutTimes.length > 0 ? (
     // In theory, we could have reservations with and without times, but this shouldn't happen in practice

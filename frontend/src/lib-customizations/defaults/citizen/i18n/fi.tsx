@@ -330,6 +330,12 @@ export default {
     newReservationBtn: 'Ilmoita läsnäolo',
     reservationsOpenOn: (date: LocalDate) =>
       `Ilmoittautuminen avataan ${date.format()}`,
+    notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
+    notYetReservableInfo: (
+      period: FiniteDateRange,
+      reservationOpensOn: LocalDate
+    ) =>
+      `Ilmoittautuminen loma-ajalle ${period.format()} avataan ${reservationOpensOn.format()}`,
     missingReservation: 'Ilmoitus puuttuu',
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
@@ -388,12 +394,6 @@ export default {
       end: 'Päättyy',
       present: 'Läsnä',
       absent: 'Poissa',
-      notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
-      notYetReservableInfo: (
-        period: FiniteDateRange,
-        reservationOpensOn: LocalDate
-      ) =>
-        `Ilmoittautuminen loma-ajalle ${period.format()} avataan ${reservationOpensOn.format()}`,
       reservationClosed: 'Ilmoittautuminen päättynyt',
       reservationClosedInfo:
         'Jos haluat ilmoittaa läsnäoloajan tälle päivälle, ota yhteyttä henkilökuntaan',
