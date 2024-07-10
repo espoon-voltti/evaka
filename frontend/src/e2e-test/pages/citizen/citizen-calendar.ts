@@ -205,7 +205,12 @@ export default class CitizenCalendarPage {
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await row.findByDataQa('reservation-text').assertTextEquals(group.text)
+
+      await row.findByDataQa('reservation-text').assertText((elementText) => {
+        // Remove soft hyphens
+        const normalizedText = elementText.replace(/\u00AD/g, '')
+        return normalizedText === group.text
+      })
     }
   }
 

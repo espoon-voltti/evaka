@@ -329,7 +329,7 @@ export default {
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Ilmoita läsnäolo',
     reservationsOpenOn: (date: LocalDate) =>
-      `Ilmoittautuminen avataan ${date.format()}`,
+      `Il­moit­tau­tu­mi­nen a­va­taan ${date.format()}`,
     notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
     notYetReservableInfo: (
       period: FiniteDateRange,
