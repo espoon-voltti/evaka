@@ -15,7 +15,7 @@ ktlint = "1.3.0"
 ktlint-gradle = "12.1.0"
 mockito = "5.12.0"
 opentracing = "0.33.0"
-owasp = "10.0.1"
+owasp = "10.0.2"
 spring-boot = "3.3.0"
 versions = "0.51.0"
 
