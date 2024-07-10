@@ -985,6 +985,15 @@ export interface PostVasuDocBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.ReservationInsert
+*/
+export interface ReservationInsert {
+  childId: UUID
+  date: LocalDate
+  range: TimeRange | null
+}
+
+/**
 * Generated from fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 */
 export interface RestrictedDetails {
@@ -1505,6 +1514,15 @@ export function deserializeJsonPlacementPlan(json: JsonOf<PlacementPlan>): Place
     periodStart: LocalDate.parseIso(json.periodStart),
     preschoolDaycarePeriodEnd: (json.preschoolDaycarePeriodEnd != null) ? LocalDate.parseIso(json.preschoolDaycarePeriodEnd) : null,
     preschoolDaycarePeriodStart: (json.preschoolDaycarePeriodStart != null) ? LocalDate.parseIso(json.preschoolDaycarePeriodStart) : null
+  }
+}
+
+
+export function deserializeJsonReservationInsert(json: JsonOf<ReservationInsert>): ReservationInsert {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    range: (json.range != null) ? TimeRange.parseJson(json.range) : null
   }
 }
 

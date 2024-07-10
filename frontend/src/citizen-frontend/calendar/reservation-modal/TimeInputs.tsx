@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import {
   BoundForm,
+  useBoolean,
   useFormElem,
   useFormField,
   useFormUnion
@@ -29,7 +30,8 @@ import {
   noTimes,
   timeRanges,
   reservation,
-  LimitedLocalTimeRangeField
+  LimitedLocalTimeRangeField,
+  ReadOnlyState
 } from './form'
 
 interface DayProps {
@@ -53,7 +55,7 @@ export const Day = React.memo(function Day({
     case 'readOnly':
       return (
         <ReadOnlyDay
-          mode={form.state}
+          state={form.state}
           label={label}
           dataQaPrefix={dataQaPrefix}
         />
@@ -134,29 +136,29 @@ const ReservationTimes = React.memo(function ReservationTimes({
 })
 
 interface ReadOnlyDayProps {
-  mode:
-    | 'noChildren'
-    | 'absentNotEditable'
-    | 'termBreak'
-    | 'reservationClosed'
-    | 'holiday'
+  state: ReadOnlyState
   label: React.ReactNode
   dataQaPrefix?: string
 }
 
 const ReadOnlyDay = React.memo(function ReadOnlyDay({
-  mode,
+  state,
   label,
   dataQaPrefix
 }: ReadOnlyDayProps) {
   const i18n = useTranslation()
-  const [infoOpen, setInfoOpen] = useState(false)
-  const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
-  switch (mode) {
+  const dataQa = (suffix: string) =>
+    dataQaPrefix ? `${dataQaPrefix}-${suffix}` : undefined
+
+  switch (state.type) {
     case 'noChildren':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('noChildren')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell />
           <RightCell />
@@ -164,79 +166,53 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       )
     case 'absentNotEditable':
       return (
-        <>
-          <FixedSpaceRow fullWidth alignItems="center">
-            {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
-            <MiddleCell>{i18n.calendar.reservationModal.absent}</MiddleCell>
-            <RightCell>
-              <InfoButton
-                onClick={onInfoClick}
-                aria-label={i18n.common.openExpandingInfo}
-                data-qa="not-editable-info-button"
-              />
-            </RightCell>
-          </FixedSpaceRow>
-          {infoOpen && (
-            <FixedSpaceRow fullWidth>
-              <ExpandingInfoBox
-                data-qa={
-                  dataQaPrefix
-                    ? `${dataQaPrefix}-absence-by-employee-info-box`
-                    : undefined
-                }
-                close={onInfoClick}
-                aria-label={i18n.calendar.absenceMarkedByEmployee}
-                info={i18n.calendar.contactStaffToEditAbsence}
-                width="full"
-              />
-            </FixedSpaceRow>
-          )}
-        </>
+        <WithInfo
+          label={label}
+          shortText={i18n.calendar.reservationModal.absent}
+          longText={i18n.calendar.contactStaffToEditAbsence}
+          data-qa={dataQa('absentNotEditable')}
+        />
       )
     case 'termBreak':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('termBreak')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.termBreak}</MiddleCell>
           <RightCell />
         </FixedSpaceRow>
       )
+    case 'notYetReservable':
+      return (
+        <WithInfo
+          label={label}
+          shortText={i18n.calendar.notYetReservable}
+          longText={i18n.calendar.notYetReservableInfo(
+            state.period,
+            state.reservationsOpenOn
+          )}
+          data-qa={dataQa('notYetReservable')}
+        />
+      )
     case 'reservationClosed':
       return (
-        <>
-          <FixedSpaceRow fullWidth alignItems="center">
-            {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
-            <MiddleCell>
-              {i18n.calendar.reservationModal.reservationClosed}
-            </MiddleCell>
-            <RightCell>
-              <InfoButton
-                onClick={onInfoClick}
-                aria-label={i18n.common.openExpandingInfo}
-                data-qa="reservation-closed-info-button"
-              />
-            </RightCell>
-          </FixedSpaceRow>
-          {infoOpen && (
-            <FixedSpaceRow fullWidth>
-              <ExpandingInfoBox
-                data-qa={
-                  dataQaPrefix
-                    ? `${dataQaPrefix}-reservation-closed-info-box`
-                    : undefined
-                }
-                close={onInfoClick}
-                aria-label={i18n.calendar.reservationModal.reservationClosed}
-                info={i18n.calendar.reservationModal.reservationClosedInfo}
-                width="full"
-              />
-            </FixedSpaceRow>
-          )}
-        </>
+        <WithInfo
+          label={label}
+          shortText={i18n.calendar.reservationModal.reservationClosed}
+          longText={i18n.calendar.reservationModal.reservationClosedInfo}
+          data-qa={dataQa('reservationClosed')}
+        />
       )
     case 'holiday':
       return (
-        <FixedSpaceRow fullWidth alignItems="center">
+        <FixedSpaceRow
+          fullWidth
+          alignItems="center"
+          data-qa={dataQa('holiday')}
+        >
           {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
           <MiddleCell>{i18n.calendar.holiday}</MiddleCell>
           <RightCell />
@@ -244,6 +220,45 @@ const ReadOnlyDay = React.memo(function ReadOnlyDay({
       )
   }
 })
+
+function WithInfo({
+  label,
+  shortText,
+  longText,
+  'data-qa': dataQa
+}: {
+  label?: React.ReactNode
+  shortText: string
+  longText: string
+  'data-qa'?: string
+}) {
+  const i18n = useTranslation()
+  const [infoOpen, useInfoOpen] = useBoolean(false)
+  return (
+    <>
+      <FixedSpaceRow fullWidth alignItems="center" data-qa={dataQa}>
+        {label !== undefined ? <LeftCell>{label}</LeftCell> : null}
+        <MiddleCell>{shortText}</MiddleCell>
+        <RightCell>
+          <InfoButton
+            onClick={useInfoOpen.toggle}
+            aria-label={i18n.common.openExpandingInfo}
+          />
+        </RightCell>
+      </FixedSpaceRow>
+      {infoOpen && (
+        <FixedSpaceRow fullWidth>
+          <ExpandingInfoBox
+            close={useInfoOpen.off}
+            aria-label={shortText}
+            info={longText}
+            width="full"
+          />
+        </FixedSpaceRow>
+      )}
+    </>
+  )
+}
 
 interface LimitedLocalTimeRangeProps {
   bind: BoundForm<LimitedLocalTimeRangeField>

@@ -23,12 +23,12 @@ import { useTranslations } from '../i18n'
 import { defaultMargins, SpacingSize } from '../white-space'
 
 const InfoBoxContainer = styled(Container)<{
-  width?: 'fixed' | 'full' | 'auto'
+  $width?: 'fixed' | 'full' | 'auto'
 }>`
-  ${({ width }) =>
-    width === 'auto'
+  ${({ $width }) =>
+    $width === 'auto'
       ? 'width: auto'
-      : width === 'full'
+      : $width === 'full'
         ? 'width: 100%'
         : undefined};
 
@@ -43,8 +43,8 @@ const InfoBoxContainer = styled(Container)<{
 
   background-color: ${(p) => p.theme.colors.main.m4};
   overflow: hidden;
-  ${({ width }) =>
-    width === 'full'
+  ${({ $width }) =>
+    $width === 'full'
       ? `margin: ${defaultMargins.s} 0px;`
       : `margin: ${defaultMargins.s} -${defaultMargins.s} ${defaultMargins.xs};`};
 
@@ -52,8 +52,8 @@ const InfoBoxContainer = styled(Container)<{
     animation-name: open;
     animation-duration: 0.2s;
     animation-timing-function: ease-out;
-    ${({ width }) =>
-      width === 'full'
+    ${({ $width }) =>
+      $width === 'full'
         ? `margin: ${defaultMargins.s} 0px;`
         : `margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};`}
   }
@@ -303,7 +303,7 @@ export const ExpandingInfoBox = React.memo(function ExpandingInfoBox({
   const { colors } = useTheme()
 
   return (
-    <InfoBoxContainer className={className} width={width}>
+    <InfoBoxContainer className={className} $width={width}>
       <InfoBoxContentArea opaque={false}>
         <RoundIcon content={fasInfo} color={colors.status.info} size="s" />
 

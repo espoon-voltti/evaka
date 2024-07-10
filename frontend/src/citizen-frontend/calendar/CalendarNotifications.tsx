@@ -97,8 +97,10 @@ export default React.memo(function CalendarNotifications({
       }
     } else {
       const today = LocalDate.todayInSystemTz()
-      const activeHolidayPeriod = holidayPeriods.find((p) =>
-        p.reservationDeadline.isEqualOrAfter(today)
+      const activeHolidayPeriod = holidayPeriods.find(
+        (p) =>
+          p.reservationsOpenOn.isEqualOrBefore(today) &&
+          today.isEqualOrBefore(p.reservationDeadline)
       )
       cta =
         activeHolidayPeriod !== undefined &&

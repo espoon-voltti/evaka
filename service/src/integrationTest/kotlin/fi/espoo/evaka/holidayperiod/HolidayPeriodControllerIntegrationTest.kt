@@ -127,8 +127,9 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             MockEvakaClock(now),
             HolidayPeriodBody(
-                FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-                holidayPeriodDeadline
+                period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+                reservationsOpenOn = holidayPeriodDeadline,
+                reservationDeadline = holidayPeriodDeadline
             )
         )
 
@@ -141,9 +142,10 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertEquals(
             listOf(
                 HolidayPeriod(
-                    holidayPeriods[0].id,
-                    FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-                    holidayPeriodDeadline
+                    id = holidayPeriods[0].id,
+                    period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+                    reservationsOpenOn = holidayPeriodDeadline,
+                    reservationDeadline = holidayPeriodDeadline
                 )
             ),
             holidayPeriods

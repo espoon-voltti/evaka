@@ -69,8 +69,7 @@ export const Reservations = React.memo(function Reservations({
     <div>
       <FixedSpaceColumn spacing="xs">
         {groupedChildren.map((group) => {
-          const text = groupText(group, i18n)
-          const wordCount = text?.split(' ').length ?? 0
+          const wordCount = group.text?.split(' ').length ?? 0
           return (
             <FixedSpaceRow
               key={group.key}
@@ -84,14 +83,14 @@ export const Reservations = React.memo(function Reservations({
                 )}
               />
               {group.childIds.length === 1 && wordCount > 2 ? (
-                <Tooltip tooltip={text}>
+                <Tooltip tooltip={group.text}>
                   <GroupedElementText
                     $type={group.type}
                     $backgroundHighlight={backgroundHighlight}
                     $clamp={true}
                     data-qa="reservation-text"
                   >
-                    {text}
+                    {group.text}
                   </GroupedElementText>
                 </Tooltip>
               ) : (
@@ -100,7 +99,7 @@ export const Reservations = React.memo(function Reservations({
                   $backgroundHighlight={backgroundHighlight}
                   data-qa="reservation-text"
                 >
-                  {text}
+                  {group.text}
                 </GroupedElementText>
               )}
             </FixedSpaceRow>
@@ -133,7 +132,7 @@ const GroupedElementText = styled.div<{
     `}
 
   ${(p) =>
-    p.$type === 'missing-reservation' &&
+    p.$type === 'missingReservation' &&
     p.$backgroundHighlight !== 'holidayPeriod'
       ? `color: ${p.theme.colors.accents.a2orangeDark};`
       : undefined}
@@ -144,31 +143,30 @@ type DailyChildGroupElementType =
   | 'reservation'
   | 'present'
   | 'absent'
-  | 'missing-reservation'
-  | 'absent-free'
-  | 'absent-planned'
+  | 'notYetReservable'
+  | 'missingReservation'
+  | 'absentFree'
+  | 'absentPlanned'
 
 interface DailyChildGroupElement {
   type: DailyChildGroupElementType
-  text?: string
+  text: string
   childId: UUID
 }
 
 interface GroupedDailyChildren {
   type: DailyChildGroupElementType
-  text?: string
+  text: string
   childIds: UUID[]
   key: string
 }
 
-const absenceElementType = (
-  absence: AbsenceInfo
-): DailyChildGroupElementType =>
+const absenceElementType = (absence: AbsenceInfo) =>
   absence.type === 'FREE_ABSENCE'
-    ? 'absent-free'
+    ? 'absentFree'
     : featureFlags.citizenAttendanceSummary &&
         absence.type === 'PLANNED_ABSENCE'
-      ? 'absent-planned'
+      ? 'absentPlanned'
       : 'absent'
 
 const groupChildren = ({
@@ -183,6 +181,16 @@ const groupChildren = ({
   Object.entries(
     groupBy(
       children.map((child): DailyChildGroupElement => {
+        if (child.holidayPeriodEffect?.type === 'NotYetReservable') {
+          return {
+            childId: child.childId,
+            type: 'notYetReservable',
+            text: i18n.calendar.reservationsOpenOn(
+              child.holidayPeriodEffect.reservationsOpenOn
+            )
+          }
+        }
+
         if (child.attendances.length > 0) {
           return {
             childId: child.childId,
@@ -195,9 +203,11 @@ const groupChildren = ({
           (isPast || !featureFlags.automaticFixedScheduleAbsences) &&
           child.absence
         ) {
+          const elementType = absenceElementType(child.absence)
           return {
             childId: child.childId,
-            type: absenceElementType(child.absence)
+            type: elementType,
+            text: i18n.calendar[elementType]
           }
         }
 
@@ -211,7 +221,8 @@ const groupChildren = ({
             // In theory, we could have reservations with and without times, but in practice this shouldn't happen
             return {
               childId: child.childId,
-              type: 'present'
+              type: 'present',
+              text: i18n.calendar.present
             }
           }
 
@@ -227,19 +238,23 @@ const groupChildren = ({
         }
 
         if (child.absence) {
+          const elementType = absenceElementType(child.absence)
           return {
             childId: child.childId,
-            type: absenceElementType(child.absence)
+            type: elementType,
+            text: i18n.calendar[elementType]
           }
         }
 
+        const elementType = mapScheduleType(child.scheduleType, {
+          RESERVATION_REQUIRED: () => 'missingReservation' as const,
+          FIXED_SCHEDULE: () => 'present' as const,
+          TERM_BREAK: () => 'absent' as const
+        })
         return {
           childId: child.childId,
-          type: mapScheduleType(child.scheduleType, {
-            RESERVATION_REQUIRED: () => 'missing-reservation',
-            FIXED_SCHEDULE: () => 'present',
-            TERM_BREAK: () => 'absent'
-          })
+          type: elementType,
+          text: i18n.calendar[elementType]
         }
       }),
       ({ type, text }) => `${type},${text ?? ''}`
@@ -252,24 +267,6 @@ const groupChildren = ({
       key
     })
   )
-
-function groupText(group: GroupedDailyChildren, i18n: Translations) {
-  switch (group.type) {
-    case 'attendance':
-    case 'reservation':
-      return group.text
-    case 'present':
-      return i18n.calendar.reservationNoTimes
-    case 'absent':
-      return i18n.calendar.absent
-    case 'missing-reservation':
-      return i18n.calendar.missingReservation
-    case 'absent-free':
-      return i18n.calendar.absentFree
-    case 'absent-planned':
-      return i18n.calendar.absentPlanned
-  }
-}
 
 export const formatReservation = (
   reservation: Reservation.Times,

@@ -328,11 +328,19 @@ export default {
     newHoliday: 'Vastaa poissaolokyselyyn',
     newAbsence: 'Ilmoita poissaolo',
     newReservationBtn: 'Ilmoita läsnäolo',
+    reservationsOpenOn: (date: LocalDate) =>
+      `Il­moit­tau­tu­mi­nen a­va­taan ${date.format()}`,
+    notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
+    notYetReservableInfo: (
+      period: FiniteDateRange,
+      reservationOpensOn: LocalDate
+    ) =>
+      `Ilmoittautuminen loma-ajalle ${period.format()} avataan ${reservationOpensOn.format()}`,
     missingReservation: 'Ilmoitus puuttuu',
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
     reservation: 'Ilmoitettu läsnäolo',
-    reservationNoTimes: 'Läsnä',
+    present: 'Läsnä',
     attendance: 'Toteutunut läsnäolo',
     exceedStart: 'Saapunut ilmoitettua aikaisemmin.',
     exceedEnd: 'Lähtenyt ilmoitettua myöhemmin.',
@@ -367,7 +375,7 @@ export default {
       holidayPeriod: (period: FiniteDateRange) =>
         `Loma-aika: ${period.start.format('dd.MM.')}-${period.end.format(
           'dd.MM.'
-        )}. Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.`,
+        )} Merkitse loma-ajan läsnäolot määräaikaan mennessä. Tarkat kellonajat voi merkitä, kun kyselyn määräaika on päättynyt.`,
       dateRange: 'Läsnäoloaika',
       dateRangeLabel: 'Ilmoita läsnäolo päiville',
       dateRangeInfo: (date: LocalDate) =>

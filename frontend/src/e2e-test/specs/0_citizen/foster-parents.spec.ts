@@ -446,7 +446,7 @@ test('Foster parent can create a repeating reservation', async () => {
     activeRelationshipPage,
     'desktop'
   )
-  const reservationsModal = await calendarPage.openReservationsModal()
+  const reservationsModal = await calendarPage.openReservationModal()
   await reservationsModal.createRepeatingDailyReservation(
     new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
     '08:00',

@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -85,7 +86,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             it.insertServiceNeedOptions()
             it.insert(area)
             it.insert(daycare)
-            it.insert(employee)
+            it.insert(employee, unitRoles = mapOf(daycare.id to UserRole.STAFF))
             it.insert(adult, DevPersonType.ADULT)
             it.insert(child, DevPersonType.CHILD)
         }
@@ -1004,6 +1005,64 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun `no reservations or absences can be added to holiday period days if reservations are not yet open by citizen or employee`() {
+        val holidayPeriodStart = monday.plusMonths(1)
+        val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
+        val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+        val reservationsOpenOn = beforeThreshold.toLocalDate().plusDays(1)
+        val reservationDeadline = monday
+
+        // given
+        db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = monday.minusYears(1),
+                    endDate = monday.plusYears(1)
+                )
+            )
+            it.insertGuardian(guardianId = adult.id, childId = child.id)
+            it.insert(
+                DevHolidayPeriod(
+                    period = holidayPeriod,
+                    reservationsOpenOn = reservationsOpenOn,
+                    reservationDeadline = reservationDeadline
+                )
+            )
+        }
+
+        // when
+        listOf(adult.user(CitizenAuthLevel.STRONG), employee.user).forEach { user ->
+            db.transaction {
+                createReservationsAndAbsences(
+                    it,
+                    beforeThreshold,
+                    user,
+                    listOf(
+                        DailyReservationRequest.Present(
+                            childId = child.id,
+                            date = holidayPeriodStart
+                        ),
+                        DailyReservationRequest.Absent(
+                            childId = child.id,
+                            date = holidayPeriodStart.plusDays(1)
+                        )
+                    ),
+                    citizenReservationThresholdHours
+                )
+            }
+
+            // then
+            assertEquals(
+                0,
+                db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }.size
+            )
+            assertEquals(0, db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.size)
+        }
+    }
+
+    @Test
     fun `reservations without times can be added to open holiday period`() {
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
@@ -1020,7 +1079,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, monday)
+            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate(), monday)
         }
 
         // when
@@ -1067,7 +1126,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, monday)
+            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate(), monday)
         }
 
         // when
@@ -1126,7 +1185,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
         }
 
         // when
@@ -1184,7 +1247,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1242,6 +1309,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
         val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+        val reservationsOpenOn = beforeThreshold.toLocalDate().minusDays(1)
 
         // given
         db.transaction {
@@ -1250,12 +1318,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     type = PlacementType.PRESCHOOL, // <-- reservations not required
                     childId = child.id,
                     unitId = daycare.id,
-                    startDate = monday,
+                    startDate = monday.minusYears(1),
                     endDate = monday.plusYears(1)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, reservationsOpenOn, reservationsOpenOn)
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1298,6 +1366,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         val holidayPeriodStart = monday.plusMonths(1)
         val holidayPeriodEnd = holidayPeriodStart.plusWeeks(1).minusDays(1)
         val holidayPeriod = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd)
+        val reservationsOpenOn = beforeThreshold.toLocalDate().minusDays(1)
 
         // given
         db.transaction {
@@ -1306,12 +1375,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     type = PlacementType.DAYCARE,
                     childId = child.id,
                     unitId = daycare.id,
-                    startDate = monday,
+                    startDate = monday.minusYears(1),
                     endDate = monday.plusYears(1)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(holidayPeriod, reservationsOpenOn, reservationsOpenOn)
             it.insert(
                 DevReservation(
                     childId = child.id,
@@ -1367,7 +1436,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 HelsinkiDateTime.now(),
@@ -1428,7 +1501,11 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
-            it.insertHolidayPeriod(holidayPeriod, beforeThreshold.toLocalDate().minusDays(1))
+            it.insertHolidayPeriod(
+                holidayPeriod,
+                beforeThreshold.toLocalDate().minusDays(1),
+                beforeThreshold.toLocalDate().minusDays(1)
+            )
             it.insert(
                 // NoTimes reservation
                 DevReservation(

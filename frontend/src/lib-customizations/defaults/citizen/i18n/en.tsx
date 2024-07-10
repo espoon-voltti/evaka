@@ -327,11 +327,19 @@ const en: Translations = {
     newHoliday: 'Holiday questionnaire',
     newAbsence: 'Register absence',
     newReservationBtn: 'Register attendance',
+    reservationsOpenOn: (date: LocalDate) =>
+      `Reservations will open on ${date.format()}`,
+    notYetReservable: 'Reservations cannot be made yet',
+    notYetReservableInfo: (
+      period: FiniteDateRange,
+      reservationOpensOn: LocalDate
+    ) =>
+      `Reservations for holiday period ${period.format()} will open on ${reservationOpensOn.format()}`,
     missingReservation: 'No attendance',
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
     reservation: 'Registered attendance',
-    reservationNoTimes: 'Present',
+    present: 'Present',
     attendance: 'Actual attendance',
     exceedStart: 'Arrived earlier than reported.',
     exceedEnd: 'Departed later than reported.',

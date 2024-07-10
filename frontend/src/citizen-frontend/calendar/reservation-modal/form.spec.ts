@@ -56,6 +56,7 @@ const emptyChild: ReservationResponseDayChild = {
   childId: 'child-1',
   scheduleType: 'RESERVATION_REQUIRED',
   shiftCare: false,
+  holidayPeriodEffect: null,
   absence: null,
   reservations: [],
   attendances: [],
@@ -63,8 +64,7 @@ const emptyChild: ReservationResponseDayChild = {
   reservableTimeRange: {
     type: 'NORMAL',
     range: defaultReservableTimeRange
-  },
-  lockedByHolidayPeriod: true
+  }
 }
 
 const timeInputState = (
@@ -83,8 +83,7 @@ describe('resetTimes', () => {
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
       const dayProperties = new DayProperties(
         emptyCalendarDays,
-        reservableRange,
-        []
+        reservableRange
       )
 
       expect(
@@ -109,7 +108,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -145,7 +144,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -180,7 +179,7 @@ describe('resetTimes', () => {
           children: [emptyChild]
         }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -242,7 +241,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common reservations for child-1 and child-2
       expect(
@@ -328,7 +327,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Empty days for child-1 and child-2
       expect(
@@ -383,7 +382,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Empty days for child-1 and child-2
       expect(
@@ -398,7 +397,7 @@ describe('resetTimes', () => {
           weekDayRange: [1, 5],
           day: {
             branch: 'readOnly',
-            state: 'termBreak'
+            state: { type: 'termBreak' }
           }
         }
       })
@@ -406,23 +405,17 @@ describe('resetTimes', () => {
 
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          _H _H       | _H _H _H _H _H       | _H _H _H _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
-          children: [emptyChild]
+          children: [
+            { ...emptyChild, holidayPeriodEffect: { type: 'ReservationsOpen' } }
+          ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -444,31 +437,22 @@ describe('resetTimes', () => {
 
     it('Open holiday period covers part of the period => a normal reservation state', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H
-      const holidayPeriods = [
-        {
-          period: new FiniteDateRange(
-            selectedRange.start,
-            selectedRange.end.addDays(-1)
-          ),
-          state: 'open' as const
-        }
-      ]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          _H _H       | _H _H _H _H _H       | _H _  _  _  _
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
-          children: [emptyChild]
+          children: [
+            {
+              ...emptyChild,
+              holidayPeriodEffect: day.date.isBefore(selectedRange.end)
+                ? { type: 'ReservationsOpen' }
+                : null
+            }
+          ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -496,11 +480,7 @@ describe('resetTimes', () => {
 
     it('Open holiday period + absences for all children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -508,6 +488,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
                 editable: true
@@ -516,6 +497,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
                 editable: true
@@ -525,11 +507,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -551,12 +529,8 @@ describe('resetTimes', () => {
 
     it('Open holiday period + absences for some children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
+      //          _H _H       | _H _H _H _H _H       | _H _H _H _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -564,6 +538,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: {
                 type: 'OTHER_ABSENCE',
                 editable: true
@@ -572,17 +547,14 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: null
             }
           ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -604,12 +576,8 @@ describe('resetTimes', () => {
 
     it('Open holiday period + reservations for all children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          r  r        | r  r  r  r  r        | r  r  r  r  r
-      //          r  r        | r  r  r  r  r        | r  r  r  r  r
+      //          rH rH       | rH rH rH rH rH       | rH rH rH rH rH
+      //          rH rH       | rH rH rH rH rH       | rH rH rH rH rH
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -617,22 +585,20 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             }
           ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -654,12 +620,8 @@ describe('resetTimes', () => {
 
     it('Open holiday period + reservations for some children', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          r  r        | r  r  r  r  r        | r  r  r  r  r
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          rH rH       | rH rH rH rH rH       | rH rH rH rH rH
+      //          _H _H       | _H _H _H _H _H       | _H _H _H _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -667,22 +629,20 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: []
             }
           ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -709,8 +669,7 @@ describe('resetTimes', () => {
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
       const dayProperties = new DayProperties(
         emptyCalendarDays,
-        reservableRange,
-        []
+        reservableRange
       )
 
       expect(
@@ -735,7 +694,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -773,7 +732,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -808,7 +767,7 @@ describe('resetTimes', () => {
           children: [emptyChild]
         }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -865,7 +824,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common absence for child-1 and child-2
       expect(
@@ -1002,7 +961,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common absence for child-1 and child-2
       expect(
@@ -1015,10 +974,7 @@ describe('resetTimes', () => {
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
-          day: {
-            branch: 'readOnly',
-            state: 'absentNotEditable'
-          }
+          day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
         }))
       })
 
@@ -1063,7 +1019,7 @@ describe('resetTimes', () => {
             day: {
               // this day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'absentNotEditable'
+              state: { type: 'absentNotEditable' }
             }
           },
           {
@@ -1151,7 +1107,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common reservations for child-1 and child-2
       expect(
@@ -1342,7 +1298,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1425,7 +1381,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1438,10 +1394,7 @@ describe('resetTimes', () => {
         state: [
           {
             weekDay: 1,
-            day: {
-              branch: 'readOnly',
-              state: 'holiday'
-            }
+            day: { branch: 'readOnly', state: { type: 'holiday' } }
           },
           {
             weekDay: 2,
@@ -1472,28 +1425,23 @@ describe('resetTimes', () => {
         ]
       })
     })
-    it('Closed holiday period + lockedByHolidayPeriod = false', () => {
-      const holidayPeriods = [
-        { period: selectedRange, state: 'closed' as const }
-      ]
+
+    it('Closed holiday period for one child, no holiday period effect for another child', () => {
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
           children: [
-            { ...emptyChild, lockedByHolidayPeriod: false },
+            { ...emptyChild, childId: 'child-1', holidayPeriodEffect: null },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1521,20 +1469,17 @@ describe('resetTimes', () => {
 
     it('Open holiday period covers the whole period', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          _H _H       | _H _H _H _H _H       | _H _H _H _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
-        (day) => ({ ...day, children: [emptyChild] })
+        (day) => ({
+          ...day,
+          children: [
+            { ...emptyChild, holidayPeriodEffect: { type: 'ReservationsOpen' } }
+          ]
+        })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1554,30 +1499,24 @@ describe('resetTimes', () => {
       })
     })
 
-    it('Open holiday period covers part of the period => a normal reservation state', () => {
+    it('Open holiday period covers part of the period => a normal reservation state for non-holiday period days', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H
-      const holidayPeriods = [
-        {
-          period: new FiniteDateRange(
-            selectedRange.start,
-            selectedRange.end.addDays(-1)
-          ),
-          state: 'open' as const
-        }
-      ]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
+      //          _H _H       | _H _H _H _H _H       | _H _  _  _  _
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
-        (day) => ({ ...day, children: [emptyChild] })
+        (day) => ({
+          ...day,
+          children: [
+            {
+              ...emptyChild,
+              holidayPeriodEffect: day.date.isBefore(selectedRange.end)
+                ? { type: 'ReservationsOpen' }
+                : null
+            }
+          ]
+        })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -1587,31 +1526,57 @@ describe('resetTimes', () => {
         })
       ).toEqual({
         branch: 'weeklyTimes',
-        state: [1, 2, 3, 4, 5].map((weekDay) => ({
-          weekDay,
-          day: {
-            branch: 'reservation',
-            state: {
-              validTimeRange: defaultReservableTimeRange,
-              reservation: {
-                branch: 'timeRanges',
-                state: [timeInputState('', '')]
+        state: [
+          {
+            weekDay: 1,
+            day: {
+              branch: 'reservationNoTimes',
+              state: 'notSet'
+            }
+          },
+          {
+            weekDay: 2,
+            day: {
+              branch: 'reservation',
+              state: {
+                validTimeRange: defaultReservableTimeRange,
+                reservation: {
+                  branch: 'timeRanges',
+                  state: [timeInputState('', '')]
+                }
               }
             }
+          },
+          {
+            weekDay: 3,
+            day: {
+              branch: 'reservationNoTimes',
+              state: 'notSet'
+            }
+          },
+          {
+            weekDay: 4,
+            day: {
+              branch: 'reservationNoTimes',
+              state: 'notSet'
+            }
+          },
+          {
+            weekDay: 5,
+            day: {
+              branch: 'reservationNoTimes',
+              state: 'notSet'
+            }
           }
-        }))
+        ]
       })
     })
 
     it('Open holiday period + common absences', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
-      //          _  _        | _  _  a  _  _        | _  _  a  _  _
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
+      //          _H _H       | _H _H aH _H _H       | _H _H aH _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -1619,16 +1584,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: true }
             },
             {
               ...emptyChild,
               childId: 'child-3',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: true }
@@ -1638,11 +1606,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common absences for child-1 and child-2
       expect(
@@ -1714,13 +1678,9 @@ describe('resetTimes', () => {
 
     it('Open holiday period + common absences (marked by employee)', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
-      //          a  a        | a  a  a  a  a        | a  a  a  a  a
-      //          _  _        | _  _  a  _  _        | _  _  a  _  _
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
+      //          aH aH       | aH aH aH aH aH       | aH aH aH aH aH
+      //          _H _H       | _H _H aH _H _H       | _H _H aH _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -1728,16 +1688,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: { type: 'OTHER_ABSENCE', editable: false }
             },
             {
               ...emptyChild,
               childId: 'child-3',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence:
                 day.date.getIsoDayOfWeek() === 3
                   ? { type: 'OTHER_ABSENCE', editable: false }
@@ -1747,11 +1710,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common absences for child-1 and child-2
       expect(
@@ -1764,10 +1723,7 @@ describe('resetTimes', () => {
         branch: 'weeklyTimes',
         state: [1, 2, 3, 4, 5].map((weekDay) => ({
           weekDay,
-          day: {
-            branch: 'readOnly',
-            state: 'absentNotEditable'
-          }
+          day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
         }))
       })
 
@@ -1800,7 +1756,7 @@ describe('resetTimes', () => {
             day: {
               // This day has an employee-marked absence for all children
               branch: 'readOnly',
-              state: 'absentNotEditable'
+              state: { type: 'absentNotEditable' }
             }
           },
           {
@@ -1823,13 +1779,9 @@ describe('resetTimes', () => {
 
     it('Open holiday period + common reservations', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          r  r        | r  r  r  r  r        | r  r  r  r  r
-      //          r  r        | r  r  r  r  r        | r  r  r  r  r
-      //          _  _        | _  _  r  _  _        | _  _  r  _  _
+      //          rH rH       | rH rH rH rH rH       | rH rH rH rH rH
+      //          rH rH       | rH rH rH rH rH       | rH rH rH rH rH
+      //          _H _H       | _H _H rH _H _H       | _H _H rH _H _H
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -1837,16 +1789,19 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [{ type: 'NO_TIMES', staffCreated: false }]
             },
             {
               ...emptyChild,
               childId: 'child-3',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations:
                 day.date.getIsoDayOfWeek() === 3
                   ? [
@@ -1865,11 +1820,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       // Common reservations for child-1 and child-2
       expect(
@@ -1941,12 +1892,8 @@ describe('resetTimes', () => {
 
     it('Open holiday period + mixed requiresReservation', () => {
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          r  r        | _  _  a  r  r        | _  _  a  r  r
-      //          n  n        | _  n  a  n  n        | n  n  a  n  n
+      //          rH rH       | _H _H aH rH rH       | _H _H aH rH rH
+      //          nH nH       | _H nH aH nH nH       | nH nH aH nH nH
       const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
         (day) => ({
           ...day,
@@ -1955,6 +1902,7 @@ describe('resetTimes', () => {
               ...emptyChild,
               childId: 'child-1',
               scheduleType: 'RESERVATION_REQUIRED',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations:
                 day.date.getIsoDayOfWeek() === 4
                   ? [{ type: 'NO_TIMES', staffCreated: false }]
@@ -1978,6 +1926,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               scheduleType: 'FIXED_SCHEDULE',
               absence:
                 day.date.getIsoDayOfWeek() === 3
@@ -1988,11 +1937,7 @@ describe('resetTimes', () => {
         })
       )
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2092,7 +2037,7 @@ describe('resetTimes', () => {
         LocalTime.of(16, 0)
       )
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2129,8 +2074,7 @@ describe('resetTimes', () => {
       //          [] []       | [] [] [] [] []       | [] [] [] [] []
       const dayProperties = new DayProperties(
         emptyCalendarDays,
-        reservableRange,
-        []
+        reservableRange
       )
 
       expect(
@@ -2155,7 +2099,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2178,7 +2122,7 @@ describe('resetTimes', () => {
                   }
                 }
               }
-            : { branch: 'readOnly', state: 'noChildren' }
+            : { branch: 'readOnly', state: { type: 'noChildren' } }
         }))
       })
     })
@@ -2191,7 +2135,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2225,7 +2169,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2433,7 +2377,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2511,7 +2455,7 @@ describe('resetTimes', () => {
           },
           {
             date: rangeWeekDays[5],
-            day: { branch: 'readOnly', state: 'absentNotEditable' }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: rangeWeekDays[6],
@@ -2575,7 +2519,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2627,7 +2571,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2640,10 +2584,7 @@ describe('resetTimes', () => {
         state: [
           {
             date: monday,
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           }
         ]
       })
@@ -2676,7 +2617,7 @@ describe('resetTimes', () => {
         }
       ]
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2689,10 +2630,7 @@ describe('resetTimes', () => {
         state: [
           {
             date: monday,
-            day: {
-              branch: 'readOnly',
-              state: 'holiday'
-            }
+            day: { branch: 'readOnly', state: { type: 'holiday' } }
           },
           {
             date: tuesday,
@@ -2725,22 +2663,18 @@ describe('resetTimes', () => {
     })
 
     it('Open holiday period + all weekdays are reservable', () => {
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
       // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //          _  _        | _  _  _  _  _        | _  _  _  _  _
-      const calendarDays = emptyCalendarDays.map((day) => ({
-        ...day,
-        children: [emptyChild]
-      }))
-
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
+      //          _H _H       | _H _H _H _H _H       | _H _H _H _H _H
+      const calendarDays: ReservationResponseDay[] = emptyCalendarDays.map(
+        (day) => ({
+          ...day,
+          children: [
+            { ...emptyChild, holidayPeriodEffect: { type: 'ReservationsOpen' } }
+          ]
+        })
       )
+
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2765,13 +2699,9 @@ describe('resetTimes', () => {
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
-      //                      | H  H  H  H  H  H  H  | H  H
-      const holidayPeriods = [{ period: selectedRange, state: 'open' as const }]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | r  r  r  aa aa       | ae _
-      //                      | r  _  aa aa _        | ae ae
+      // mo tu we th fr sa su | MO TU WE  TH  FR  SA SU | MO  TU  we th fr sa su
+      //                      | rH rH rH  aaH aaH       | aeH _ H
+      //                      | rH _H aaH aaH _ H       | aeH aeH
       const calendarDays: ReservationResponseDay[] = [
         {
           date: selectedRangeWeekDays[0],
@@ -2780,11 +2710,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             }
           ]
@@ -2796,11 +2728,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' }
             }
           ]
         },
@@ -2811,11 +2745,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               reservations: [r]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             }
           ]
@@ -2827,11 +2763,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             }
           ]
@@ -2843,11 +2781,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' }
             }
           ]
         },
@@ -2858,11 +2798,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             }
           ]
@@ -2873,22 +2815,20 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1'
+              childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsOpen' }
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsOpen' },
               absence: ae
             }
           ]
         }
       ]
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -2936,10 +2876,7 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[5],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[6],
@@ -2957,15 +2894,9 @@ describe('resetTimes', () => {
       const aa: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: true }
       const ae: AbsenceInfo = { type: 'OTHER_ABSENCE', editable: false }
 
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr
-      //                      | h  h  h  h  h  h  h  | h  h
-      const holidayPeriods = [
-        { period: selectedRange, state: 'closed' as const }
-      ]
-
-      // mo tu we th fr sa su | MO TU WE TH FR SA SU | MO TU we th fr sa su
-      //                      | r  _  r  aa aa       | ae _
-      //                      | r  _  aa aa _        | ae ae
+      // mo tu we th fr sa su | MO TU WE  TH  FR  SA SU | MO  TU  we th fr sa su
+      //                      | rh _h r h aah aah       | aeh _ h
+      //                      | rh _h aah aah _ h       | aeh aeh
       const calendarDays: ReservationResponseDay[] = [
         {
           date: selectedRangeWeekDays[0],
@@ -2974,11 +2905,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             }
           ]
@@ -2989,11 +2922,13 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1'
+              childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
         },
@@ -3004,11 +2939,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               reservations: [r]
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             }
           ]
@@ -3020,11 +2957,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             }
           ]
@@ -3036,11 +2975,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             },
             {
               ...emptyChild,
-              childId: 'child-2'
+              childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
         },
@@ -3051,11 +2992,13 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             }
           ]
@@ -3066,22 +3009,20 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              childId: 'child-1'
+              childId: 'child-1',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             },
             {
               ...emptyChild,
               childId: 'child-2',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             }
           ]
         }
       ]
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -3107,10 +3048,7 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[1],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[2],
@@ -3127,31 +3065,19 @@ describe('resetTimes', () => {
           },
           {
             date: selectedRangeWeekDays[3],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[4],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[5],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[6],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           }
         ]
       })
@@ -3163,14 +3089,8 @@ describe('resetTimes', () => {
 
       const selectedRange = new FiniteDateRange(monday, wednesday)
 
-      // mo tu we th fr sa su | MO TU WE th fr sa su | mo tu we th fr
-      //                      | h  h  h              |
-      const holidayPeriods = [
-        { period: selectedRange, state: 'closed' as const }
-      ]
-
-      // mo tu we th fr sa su | MO TU WE th fr sa su | mo tu we th fr sa su
-      //                      | aa ae _              |
+      // mo tu we th fr sa su | MO  TU  WE th fr sa su | mo tu we th fr sa su
+      //                      | aah aeh _h              |
       const calendarDays: ReservationResponseDay[] = [
         {
           date: selectedRangeWeekDays[0],
@@ -3179,6 +3099,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               scheduleType: 'FIXED_SCHEDULE',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: aa
             }
           ]
@@ -3190,6 +3111,7 @@ describe('resetTimes', () => {
             {
               ...emptyChild,
               scheduleType: 'FIXED_SCHEDULE',
+              holidayPeriodEffect: { type: 'ReservationsClosed' },
               absence: ae
             }
           ]
@@ -3200,17 +3122,14 @@ describe('resetTimes', () => {
           children: [
             {
               ...emptyChild,
-              scheduleType: 'FIXED_SCHEDULE'
+              scheduleType: 'FIXED_SCHEDULE',
+              holidayPeriodEffect: { type: 'ReservationsClosed' }
             }
           ]
         }
       ]
 
-      const dayProperties = new DayProperties(
-        calendarDays,
-        reservableRange,
-        holidayPeriods
-      )
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(dayProperties, undefined, {
@@ -3223,17 +3142,11 @@ describe('resetTimes', () => {
         state: [
           {
             date: selectedRangeWeekDays[0],
-            day: {
-              branch: 'readOnly',
-              state: 'reservationClosed'
-            }
+            day: { branch: 'readOnly', state: { type: 'reservationClosed' } }
           },
           {
             date: selectedRangeWeekDays[1],
-            day: {
-              branch: 'readOnly',
-              state: 'absentNotEditable'
-            }
+            day: { branch: 'readOnly', state: { type: 'absentNotEditable' } }
           },
           {
             date: selectedRangeWeekDays[2],
@@ -3254,7 +3167,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(
@@ -3348,7 +3261,7 @@ describe('resetTimes', () => {
         children: [emptyChild]
       }))
 
-      const dayProperties = new DayProperties(calendarDays, reservableRange, [])
+      const dayProperties = new DayProperties(calendarDays, reservableRange)
 
       expect(
         resetTimes(

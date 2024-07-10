@@ -30,10 +30,12 @@ import {
   ValidationResult,
   ValidationSuccess
 } from 'lib-common/form/types'
+import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
 import {
   DailyReservationRequest,
   ReservationChild,
-  ReservationResponseDay
+  ReservationResponseDay,
+  ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -106,6 +108,18 @@ export const reservation = object({
 
 export const noTimes = value<'present' | 'absent' | 'notSet'>()
 
+export type ReadOnlyState =
+  | { type: 'noChildren' }
+  | { type: 'holiday' }
+  | { type: 'absentNotEditable' }
+  | { type: 'termBreak' }
+  | {
+      type: 'notYetReservable'
+      period: FiniteDateRange
+      reservationsOpenOn: LocalDate
+    }
+  | { type: 'reservationClosed' }
+
 type DayOutput =
   | { type: 'readOnly' }
   | { type: 'reservations'; first: TimeRange; second: TimeRange | undefined }
@@ -116,13 +130,7 @@ type DayOutput =
 
 export const day = mapped(
   union({
-    readOnly: value<
-      | 'noChildren'
-      | 'holiday'
-      | 'absentNotEditable'
-      | 'termBreak'
-      | 'reservationClosed'
-    >(),
+    readOnly: value<ReadOnlyState>(),
     reservation,
     reservationNoTimes: noTimes
   }),
@@ -291,11 +299,6 @@ function repetitionOptions(i18n: Translations) {
   ]
 }
 
-export interface HolidayPeriodInfo {
-  period: FiniteDateRange
-  state: 'open' | 'closed'
-}
-
 export function initialState(
   dayProperties: DayProperties,
   availableChildren: ReservationChild[],
@@ -361,9 +364,6 @@ export function resetTimes(
   }
 
   if (repetition === 'DAILY') {
-    const holidayPeriodState =
-      dayProperties.holidayPeriodStateForRange(selectedRange)
-
     return {
       branch: 'dailyTimes',
       state: {
@@ -371,7 +371,7 @@ export function resetTimes(
           includedWeekDays[0],
           includedWeekDays[includedWeekDays.length - 1]
         ],
-        day: resetDay(holidayPeriodState, calendarDaysInRange, selectedChildren)
+        day: resetDay(calendarDaysInRange, selectedChildren)
       }
     }
   } else if (repetition === 'WEEKLY') {
@@ -379,16 +379,13 @@ export function resetTimes(
       date.getIsoDayOfWeek()
     )
 
-    const holidayPeriodState =
-      dayProperties.holidayPeriodStateForRange(selectedRange)
-
     const weeklyTimes = includedWeekDays.map(
       (dayOfWeek): StateOf<typeof weekDay> => {
         const dayOfWeekDays = groupedDays[dayOfWeek]
         if (!dayOfWeekDays) {
           return {
             weekDay: dayOfWeek,
-            day: { branch: 'readOnly', state: 'noChildren' }
+            day: { branch: 'readOnly', state: { type: 'noChildren' } }
           }
         }
 
@@ -398,11 +395,7 @@ export function resetTimes(
 
         return {
           weekDay: dayOfWeek,
-          day: resetDay(
-            holidayPeriodState,
-            relevantCalendarDays,
-            selectedChildren
-          )
+          day: resetDay(relevantCalendarDays, selectedChildren)
         }
       }
     )
@@ -428,11 +421,7 @@ export function resetTimes(
 
         return {
           date: rangeDate,
-          day: resetDay(
-            dayProperties.holidayPeriodStateForDate(rangeDate),
-            [calendarDay],
-            selectedChildren
-          )
+          day: resetDay([calendarDay], selectedChildren)
         }
       }
     )
@@ -446,66 +435,74 @@ export function resetTimes(
 }
 
 export function resetDay(
-  holidayPeriodState: 'open' | 'closed' | undefined,
   calendarDays: ReservationResponseDay[],
   selectedChildren: UUID[]
 ): StateOf<typeof day> {
-  const reservationNotRequired = reservationNotRequiredForAnyChild(
-    calendarDays,
-    selectedChildren
-  )
-
-  const dayChildren = calendarDays.flatMap((day) =>
+  // Daily data for selected children on selected days
+  const children = calendarDays.flatMap((day) =>
     day.children.filter((dayChild) =>
       selectedChildren.includes(dayChild.childId)
     )
   )
+  const everyChild = (p: (c: ReservationResponseDayChild) => boolean) =>
+    children.every(p)
 
-  if (holidayWithNoChildrenInShiftCare(calendarDays, selectedChildren)) {
-    return { branch: 'readOnly', state: 'holiday' }
+  const isHoliday = calendarDays.every((d) => d.holiday)
+  if (isHoliday && everyChild((c) => !c.shiftCare)) {
+    return { branch: 'readOnly', state: { type: 'holiday' } }
   }
 
-  if (dayChildren.length === 0) {
+  if (children.length === 0) {
     return {
       branch: 'readOnly',
-      state: 'noChildren'
+      state: { type: 'noChildren' }
     }
   }
 
-  if (allChildrenAreAbsentNotEditable(calendarDays, selectedChildren)) {
+  if (everyChild((c) => c.absence !== null && !c.absence.editable)) {
+    return { branch: 'readOnly', state: { type: 'absentNotEditable' } }
+  }
+
+  const holidayPeriodEffect =
+    children.length > 0
+      ? children
+          .map((c) => c.holidayPeriodEffect)
+          .reduce(combineHolidayPeriodEffects)
+      : null
+  if (holidayPeriodEffect?.type === 'NotYetReservable') {
     return {
       branch: 'readOnly',
-      state: 'absentNotEditable'
+      state: {
+        type: 'notYetReservable',
+        period: holidayPeriodEffect.period,
+        reservationsOpenOn: holidayPeriodEffect.reservationsOpenOn
+      }
     }
   }
 
-  if (allChildrenOnTermBreak(calendarDays, selectedChildren)) {
-    return {
-      branch: 'readOnly',
-      state: 'termBreak'
-    }
+  if (everyChild((c) => c.scheduleType === 'TERM_BREAK')) {
+    return { branch: 'readOnly', state: { type: 'termBreak' } }
   }
 
-  const validTimeRanges = calendarDays.flatMap((d) =>
-    d.children
-      .filter((c) => selectedChildren.includes(c.childId))
-      .map((c) =>
-        // Any times can be reserved for intermittent shift care children
-        c.reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE'
-          ? MAX_TIME_RANGE
-          : c.reservableTimeRange.range
-      )
+  const reservationNotRequired = everyChild(
+    (c) => c.scheduleType !== 'RESERVATION_REQUIRED'
+  )
+  const validTimeRanges = children.map((c) =>
+    // Any times can be reserved for intermittent shift care children
+    c.reservableTimeRange.type === 'INTERMITTENT_SHIFT_CARE'
+      ? MAX_TIME_RANGE
+      : c.reservableTimeRange.range
   )
   const validTimeRange =
     TimeRange.intersection([...validTimeRanges, MAX_TIME_RANGE]) ??
     MAX_TIME_RANGE
 
-  if (allChildrenAreAbsent(calendarDays, selectedChildren)) {
-    return holidayPeriodState === 'open' ||
-      (holidayPeriodState === undefined && reservationNotRequired)
+  if (everyChild((c) => c.reservations.length === 0 && c.absence !== null)) {
+    return holidayPeriodEffect?.type === 'ReservationsOpen' ||
+      (holidayPeriodEffect === null && reservationNotRequired)
       ? { branch: 'reservationNoTimes', state: 'absent' }
-      : holidayPeriodState === 'closed'
-        ? { branch: 'readOnly', state: 'reservationClosed' }
+      : holidayPeriodEffect?.type === 'ReservationsClosed'
+        ? { branch: 'readOnly', state: { type: 'reservationClosed' } }
         : {
             branch: 'reservation',
             state: {
@@ -515,12 +512,21 @@ export function resetDay(
           }
   }
 
-  if (hasReservationsForEveryChild(calendarDays, selectedChildren)) {
-    if (holidayPeriodState === 'open' || reservationNotRequired) {
+  if (
+    everyChild(
+      (c) =>
+        c.reservations.length > 0 ||
+        (c.scheduleType !== 'RESERVATION_REQUIRED' && c.absence === null)
+    )
+  ) {
+    if (
+      holidayPeriodEffect?.type === 'ReservationsOpen' ||
+      reservationNotRequired
+    ) {
       return { branch: 'reservationNoTimes', state: 'present' }
     }
 
-    const commonTimeRanges = getCommonTimeRanges(calendarDays, selectedChildren)
+    const commonTimeRanges = getCommonTimeRanges(children)
     if (commonTimeRanges) {
       return {
         branch: 'reservation',
@@ -536,14 +542,19 @@ export function resetDay(
   }
 
   if (
-    holidayPeriodState === 'closed' &&
-    hasNoReservationsForSomeChild(calendarDays, selectedChildren) &&
-    allChildrenAreLockedDueHolidayPeriod(calendarDays, selectedChildren)
+    holidayPeriodEffect?.type === 'ReservationsClosed' &&
+    children.some(
+      (c) =>
+        c.scheduleType === 'RESERVATION_REQUIRED' &&
+        c.reservations.length === 0 &&
+        c.absence === null
+    )
   ) {
-    return { branch: 'readOnly', state: 'reservationClosed' }
+    return { branch: 'readOnly', state: { type: 'reservationClosed' } }
   }
 
-  return holidayPeriodState === 'open' || reservationNotRequired
+  return holidayPeriodEffect?.type === 'ReservationsOpen' ||
+    reservationNotRequired
     ? { branch: 'reservationNoTimes', state: 'notSet' }
     : {
         branch: 'reservation',
@@ -557,118 +568,11 @@ export function resetDay(
       }
 }
 
-const holidayWithNoChildrenInShiftCare = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every(
-    (day) =>
-      day.holiday &&
-      day.children.every(
-        (child) => !child.shiftCare || !selectedChildren.includes(child.childId)
-      )
-  )
-
-const hasReservationsForEveryChild = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId &&
-          (child.reservations.length > 0 ||
-            (child.scheduleType !== 'RESERVATION_REQUIRED' &&
-              child.absence === null))
-      )
-    )
-  )
-
-const hasNoReservationsForSomeChild = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.some((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId &&
-          child.scheduleType === 'RESERVATION_REQUIRED' &&
-          child.reservations.length === 0 &&
-          child.absence === null
-      )
-    )
-  )
-
-const allChildrenAreLockedDueHolidayPeriod = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) => child.childId === childId && child.lockedByHolidayPeriod
-      )
-    )
-  )
-
-const allChildrenAreAbsent = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId &&
-          child.reservations.length === 0 &&
-          child.absence !== null
-      )
-    )
-  )
-
-const allChildrenAreAbsentNotEditable = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId &&
-          child.absence !== null &&
-          !child.absence.editable
-      )
-    )
-  )
-
-const allChildrenOnTermBreak = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId && child.scheduleType === 'TERM_BREAK'
-      )
-    )
-  )
-
-const reservationNotRequiredForAnyChild = (
-  calendarDays: ReservationResponseDay[],
-  selectedChildren: string[]
-) =>
-  calendarDays.every((day) =>
-    selectedChildren.every((childId) =>
-      day.children.some(
-        (child) =>
-          child.childId === childId &&
-          child.scheduleType !== 'RESERVATION_REQUIRED'
-      )
-    )
-  )
+const combineHolidayPeriodEffects = (
+  e1: HolidayPeriodEffect | null,
+  e2: HolidayPeriodEffect | null
+): HolidayPeriodEffect | null =>
+  e1 === null || e2 === null ? null : e1.type === e2.type ? e1 : null
 
 const bindUnboundedTimeRanges = (
   ranges: TimeRange[],
@@ -686,19 +590,14 @@ const bindUnboundedTimeRanges = (
 }
 
 const getCommonTimeRanges = (
-  calendarDays: ReservationResponseDay[],
-  childIds: string[]
+  children: ReservationResponseDayChild[]
 ): TimeRange[] | undefined => {
   const uniqueRanges = uniqBy(
-    calendarDays
-      .flatMap((reservations) =>
-        reservations.children
-          .filter(({ childId }) => childIds.includes(childId))
-          .map((child) =>
-            child.reservations.flatMap((r): TimeRange[] =>
-              r.type === 'TIMES' ? [r.range] : []
-            )
-          )
+    children
+      .map((child) =>
+        child.reservations.flatMap((r): TimeRange[] =>
+          r.type === 'TIMES' ? [r.range] : []
+        )
       )
       .filter((ranges) => ranges.length > 0),
     (times) => JSON.stringify(times)
@@ -711,8 +610,6 @@ const getCommonTimeRanges = (
   return undefined
 }
 
-type HolidayPeriodState = 'open' | 'closed' | undefined
-
 export class DayProperties {
   private readonly reservableDaysByChild: Record<UUID, Set<string> | undefined>
   private readonly operationDaysByChild: Record<UUID, Set<number> | undefined>
@@ -722,8 +619,7 @@ export class DayProperties {
 
   constructor(
     public readonly calendarDays: ReservationResponseDay[],
-    reservableRange: FiniteDateRange,
-    private readonly holidayPeriods: HolidayPeriodInfo[]
+    reservableRange: FiniteDateRange
   ) {
     const reservableDaysByChild: Record<UUID, Set<string> | undefined> = {}
     const operationDaysByChild: Record<UUID, Set<number> | undefined> = {}
@@ -786,17 +682,5 @@ export class DayProperties {
     return [...range.dates()].filter((date) =>
       reservableDays.has(date.formatIso())
     )
-  }
-
-  holidayPeriodStateForDate(date: LocalDate): HolidayPeriodState {
-    return this.holidayPeriods.find((holidayPeriod) =>
-      holidayPeriod.period.includes(date)
-    )?.state
-  }
-
-  holidayPeriodStateForRange(dateRange: FiniteDateRange): HolidayPeriodState {
-    return this.holidayPeriods.find((holidayPeriod) =>
-      holidayPeriod.period.contains(dateRange)
-    )?.state
   }
 }

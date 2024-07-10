@@ -66,6 +66,7 @@ export interface HolidayPeriod {
   id: UUID
   period: FiniteDateRange
   reservationDeadline: LocalDate
+  reservationsOpenOn: LocalDate
 }
 
 /**
@@ -74,7 +75,40 @@ export interface HolidayPeriod {
 export interface HolidayPeriodBody {
   period: FiniteDateRange
   reservationDeadline: LocalDate
+  reservationsOpenOn: LocalDate
 }
+
+
+export namespace HolidayPeriodEffect {
+  /**
+  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.NotYetReservable
+  */
+  export interface NotYetReservable {
+    type: 'NotYetReservable'
+    period: FiniteDateRange
+    reservationsOpenOn: LocalDate
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsClosed
+  */
+  export interface ReservationsClosed {
+    type: 'ReservationsClosed'
+  }
+
+  /**
+  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsOpen
+  */
+  export interface ReservationsOpen {
+    type: 'ReservationsOpen'
+  }
+}
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
+*/
+export type HolidayPeriodEffect = HolidayPeriodEffect.NotYetReservable | HolidayPeriodEffect.ReservationsClosed | HolidayPeriodEffect.ReservationsOpen
+
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
@@ -143,7 +177,8 @@ export function deserializeJsonHolidayPeriod(json: JsonOf<HolidayPeriod>): Holid
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
-    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
   }
 }
 
@@ -152,7 +187,24 @@ export function deserializeJsonHolidayPeriodBody(json: JsonOf<HolidayPeriodBody>
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
-    reservationDeadline: LocalDate.parseIso(json.reservationDeadline)
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
+  }
+}
+
+
+
+export function deserializeJsonHolidayPeriodEffectNotYetReservable(json: JsonOf<HolidayPeriodEffect.NotYetReservable>): HolidayPeriodEffect.NotYetReservable {
+  return {
+    ...json,
+    period: FiniteDateRange.parseJson(json.period),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
+  }
+}
+export function deserializeJsonHolidayPeriodEffect(json: JsonOf<HolidayPeriodEffect>): HolidayPeriodEffect {
+  switch (json.type) {
+    case 'NotYetReservable': return deserializeJsonHolidayPeriodEffectNotYetReservable(json)
+    default: return json
   }
 }
 

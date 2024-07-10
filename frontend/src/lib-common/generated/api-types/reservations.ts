@@ -12,12 +12,14 @@ import { AbsenceCategory } from './absence'
 import { AbsenceType } from './absence'
 import { ChildServiceNeedInfo } from './absence'
 import { DailyServiceTimesValue } from './dailyservicetimes'
+import { HolidayPeriodEffect } from './holidayperiod'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { ScheduleType } from './placement'
 import { UUID } from '../../types'
 import { deserializeJsonChildServiceNeedInfo } from './absence'
 import { deserializeJsonDailyServiceTimesValue } from './dailyservicetimes'
+import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
 
 /**
 * Generated from fi.espoo.evaka.reservations.AbsenceInfo
@@ -354,7 +356,7 @@ export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
   attendances: TimeInterval[]
   childId: UUID
-  lockedByHolidayPeriod: boolean
+  holidayPeriodEffect: HolidayPeriodEffect | null
   reservableTimeRange: ReservableTimeRange
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
@@ -628,6 +630,7 @@ export function deserializeJsonReservationResponseDayChild(json: JsonOf<Reservat
   return {
     ...json,
     attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    holidayPeriodEffect: (json.holidayPeriodEffect != null) ? deserializeJsonHolidayPeriodEffect(json.holidayPeriodEffect) : null,
     reservableTimeRange: deserializeJsonReservableTimeRange(json.reservableTimeRange),
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e)),
     usedService: (json.usedService != null) ? deserializeJsonUsedServiceResult(json.usedService) : null

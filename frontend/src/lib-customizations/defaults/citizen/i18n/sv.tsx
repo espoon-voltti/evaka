@@ -324,11 +324,19 @@ const sv: Translations = {
     newHoliday: 'Besvara frånvaroenkäten',
     newAbsence: 'Anmäl frånvaro',
     newReservationBtn: 'Anmäl närvaro',
+    reservationsOpenOn: (date: LocalDate) =>
+      `Registreringen öppnas ${date.format()}`,
+    notYetReservable: 'Närvaroanmälningar kan ännu inte göras',
+    notYetReservableInfo: (
+      period: FiniteDateRange,
+      reservationOpensOn: LocalDate
+    ) =>
+      `Närvaroanmälningar för perioden ${period.format()} öppnas ${reservationOpensOn.format()}`,
     missingReservation: 'Ingen närvaro',
     reservationNotRequired: 'Närvaroanmälan krävs inte',
     termBreak: 'Ingen undervisning idag',
     reservation: 'Anmäld närvaro',
-    reservationNoTimes: 'Närvarande',
+    present: 'Närvarande',
     attendance: 'Förverkligad närvaro',
     exceedStart: 'Kommit i förtid.',
     exceedEnd: 'Blivit avhämtad senare än vad anmälts.',
@@ -382,7 +390,7 @@ const sv: Translations = {
       end: 'Slutar',
       present: 'Närvarande',
       absent: 'Frånvarande',
-      reservationClosed: 'Registreringen är stängd ',
+      reservationClosed: 'Registreringen är stängd',
       reservationClosedInfo: 'Kontakta personalen om du vill anmäla närvaro',
       saveErrors: {
         failure: 'Kunde inte spara',

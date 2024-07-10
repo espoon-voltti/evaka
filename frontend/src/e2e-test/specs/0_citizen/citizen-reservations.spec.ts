@@ -43,6 +43,8 @@ import { enduserLogin } from '../../utils/user'
 const e: EnvType[] = ['desktop', 'mobile']
 const today = LocalDate.of(2022, 1, 5)
 
+let page: Page
+
 async function openCalendarPage(
   envType: EnvType,
   options?: {
@@ -55,7 +57,7 @@ async function openCalendarPage(
       ? { width: 375, height: 812 }
       : { width: 1920, height: 1080 }
 
-  const page = await Page.open({
+  page = await Page.open({
     viewport,
     mockedTime:
       options?.mockedTime ?? today.toHelsinkiDateTime(LocalTime.of(12, 0)),
@@ -121,7 +123,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     const firstReservationDay = today.addDays(14)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       '08:00',
@@ -150,7 +152,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       childIds: children.map(({ id }) => id)
     }))
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingWeeklyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservations
@@ -187,15 +189,52 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       .addDays(35)
       .subDays(today.getIsoDayOfWeek() - 1)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.deselectAllChildren()
     await reservationsModal.selectChild(
       fixtures.enduserChildFixturePorriHatterRestricted.id
     )
-    await reservationsModal.assertUnmodifiableDayExists(
-      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
-      'WEEKLY'
+    await reservationsModal.startDate.fill(firstReservationDay)
+    await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
+    await reservationsModal.selectRepetition('WEEKLY')
+
+    await reservationsModal.assertReadOnlyWeeklyDay(2, 'absentNotEditable')
+  })
+
+  test('Citizen cannot create reservation on not-yet-open holiday period', async () => {
+    const start = today.addDays(35)
+    const end = start.addDays(6)
+    const opens = today.addDays(1)
+
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(start, end),
+        reservationsOpenOn: opens,
+        reservationDeadline: opens
+      })
+      .save()
+
+    const calendarPage = await openCalendarPage(env)
+
+    const reservationsModal = await calendarPage.openReservationModal()
+    await reservationsModal.deselectAllChildren()
+    await reservationsModal.selectChild(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
     )
+    await reservationsModal.startDate.fill(start)
+    await reservationsModal.endDate.fill(end)
+    await reservationsModal.selectRepetition('IRREGULAR')
+
+    let date = start
+    while (date.isEqualOrBefore(end)) {
+      if (!date.isWeekend()) {
+        await reservationsModal.assertReadOnlyIrregularDay(
+          date,
+          'notYetReservable'
+        )
+      }
+      date = date.addDays(1)
+    }
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
@@ -209,7 +248,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       childIds: [children[0].id]
     }
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservation.startTime,
@@ -236,7 +275,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     const firstReservationDay = today.addDays(14)
 
-    let reservationsModal = await calendarPage.openReservationsModal()
+    let reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       '08:00',
@@ -247,7 +286,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       { childIds: children.map(({ id }) => id), text: '08:00–16:00' }
     ])
 
-    reservationsModal = await calendarPage.openReservationsModal()
+    reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       '09:00',
@@ -371,7 +410,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     const firstReservationDay = today.addDays(14)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       '08:00',
@@ -380,7 +419,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
       3
     )
 
-    const reservationsModal2 = await calendarPage.openReservationsModal()
+    const reservationsModal2 = await calendarPage.openReservationModal()
     await reservationsModal2.createRepeatingDailyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       '09:00',
@@ -413,7 +452,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     }))
     reservations[1] = { absence: true }
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createRepeatingWeeklyReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
       reservations
@@ -435,7 +474,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     // This should be a friday
     const reservationDay = today.addDays(16)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.deselectAllChildren()
     await reservationsModal.selectChild(
       fixtures.enduserChildFixturePorriHatterRestricted.id
@@ -465,7 +504,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     // This should be a monday
     const reservationDay = today.addDays(19)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.deselectAllChildren()
     await reservationsModal.selectChild(
       fixtures.enduserChildFixturePorriHatterRestricted.id
@@ -502,7 +541,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     // This should be a friday
     const reservationDay = today.addDays(16)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.deselectAllChildren()
     await reservationsModal.selectChild(
       fixtures.enduserChildFixturePorriHatterRestricted.id
@@ -604,7 +643,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
 
     // Reservations should cover entire work week from monday to friday
     const reservations = [0, 1, 2, 3, 4].map(() => ({
@@ -730,23 +769,50 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Holiday period highlight', async () => {
     await init()
     await Fixture.holidayPeriod()
-      .with({ period: new FiniteDateRange(today, today) })
+      .with({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today,
+        reservationDeadline: today
+      })
       .save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'holidayPeriod')
   })
 
+  it('Holiday period not yet open', async () => {
+    await init()
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today.addDays(1),
+        reservationDeadline: today.addDays(1)
+      })
+      .save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [enduserChildFixtureKaarina.id],
+        text: `Ilmoittautuminen avataan ${today.addDays(1).format()}`
+      }
+    ])
+  })
+
   it('Reservation without times', async () => {
     await init()
     await Fixture.holidayPeriod()
-      .with({ period: new FiniteDateRange(today, today) })
+      .with({
+        period: new FiniteDateRange(today, today),
+        reservationsOpenOn: today,
+        reservationDeadline: today
+      })
       .save()
 
-    await Fixture.attendanceReservation({
-      type: 'PRESENT',
+    await Fixture.attendanceReservationRaw({
+      childId: enduserChildFixtureKaarina.id,
       date: today,
-      childId: enduserChildFixtureKaarina.id
+      range: null
     }).save()
 
     const calendarPage = await openCalendarPage(env)
@@ -1048,7 +1114,7 @@ describe('Citizen calendar child visibility', () => {
 
   test('Citizen sees only children with ongoing placements', async () => {
     const calendarPage = await openCalendarPage('desktop')
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.assertChildrenSelectable([child.id])
   })
 
@@ -1098,7 +1164,7 @@ describe('Citizen calendar child visibility', () => {
     await holidayDayModal.childName.assertCount(1)
     await holidayDayModal.closeModal.click()
 
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createIrregularReservation(
       new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(1)),
       [
@@ -1290,7 +1356,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
       startTime: '17:00',
       endTime: '18:00'
     }
-    const reservationsModal = await calendarPage.openReservationsModal()
+    const reservationsModal = await calendarPage.openReservationModal()
 
     await reservationsModal.fillDailyReservationInfo(
       new FiniteDateRange(reservationDay, reservationDay),

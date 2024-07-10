@@ -112,7 +112,9 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
+import fi.espoo.evaka.reservations.ReservationInsert
 import fi.espoo.evaka.reservations.createReservationsAndAbsences
+import fi.espoo.evaka.reservations.insertValidReservations
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -944,14 +946,19 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.insertHolidayPeriod(body.period, body.reservationDeadline).let {
-                    tx.createUpdate {
-                            sql(
-                                "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
-                            )
-                        }
-                        .execute()
-                }
+                tx.insertHolidayPeriod(
+                        body.period,
+                        body.reservationsOpenOn,
+                        body.reservationDeadline
+                    )
+                    .let {
+                        tx.createUpdate {
+                                sql(
+                                    "UPDATE holiday_period SET id = ${bind(id)} WHERE id = ${bind(it.id)}"
+                                )
+                            }
+                            .execute()
+                    }
             }
         }
     }
@@ -999,6 +1006,20 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
                     automaticFixedScheduleAbsencesEnabled = false
                 )
+            }
+        }
+    }
+
+    @PostMapping("/reservations/raw")
+    fun postReservationsRaw(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: List<ReservationInsert>
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                tx.insertValidReservations(fakeAdmin.evakaUserId, body)
             }
         }
     }
@@ -1830,6 +1851,7 @@ data class DevHolidayPeriod(
     val id: HolidayPeriodId = HolidayPeriodId(UUID.randomUUID()),
     val period: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
+    val reservationsOpenOn: LocalDate = LocalDate.of(2024, 3, 1),
     val reservationDeadline: LocalDate = LocalDate.of(2024, 3, 1)
 )
 

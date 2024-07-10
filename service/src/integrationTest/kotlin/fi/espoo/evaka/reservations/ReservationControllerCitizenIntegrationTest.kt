@@ -14,6 +14,7 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.insertPreschoolTerm
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
+import fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -34,6 +35,7 @@ import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevHoliday
+import fi.espoo.evaka.shared.dev.DevHolidayPeriod
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -733,6 +735,162 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
+    fun `get reservations returns holiday period effect correctly`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+        val employee = DevEmployee()
+
+        val adult = DevPerson()
+        val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 1, 1))
+        val child2 = DevPerson(dateOfBirth = LocalDate.of(2018, 1, 1))
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child1.id)
+            tx.insertGuardian(adult.id, child2.id)
+
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(thursday, thursday),
+                    reservationsOpenOn = tuesday,
+                    reservationDeadline = wednesday
+                )
+            )
+
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child1.id,
+                        unitId = daycare.id,
+                        startDate = wednesday,
+                        endDate = thursday
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = wednesday,
+                            endDate = thursday,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                }
+
+            // Placement starts after reservation deadline => holiday period has no effect
+            tx.insert(
+                    DevPlacement(
+                        type = PlacementType.DAYCARE,
+                        childId = child2.id,
+                        unitId = daycare.id,
+                        startDate = thursday,
+                        endDate = thursday
+                    )
+                )
+                .also { placementId ->
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = thursday,
+                            endDate = thursday,
+                            optionId = snDaycareFullDay35.id,
+                            confirmedBy = employee.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                }
+        }
+
+        val resOnMonday =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(thursday, thursday),
+                mockNow = HelsinkiDateTime.of(monday, LocalTime.of(12, 0))
+            )
+        assertEquals(
+            listOf(
+                ReservationResponseDay(
+                    date = thursday,
+                    holiday = false,
+                    children =
+                        listOf(
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect =
+                                        HolidayPeriodEffect.NotYetReservable(
+                                            period = FiniteDateRange(thursday, thursday),
+                                            reservationsOpenOn = tuesday
+                                        )
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
+                )
+            ),
+            resOnMonday.days
+        )
+
+        val resOnTuesday =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(thursday, thursday),
+                mockNow = HelsinkiDateTime.of(tuesday, LocalTime.of(12, 0))
+            )
+        assertEquals(
+            listOf(
+                ReservationResponseDay(
+                    date = thursday,
+                    holiday = false,
+                    children =
+                        listOf(
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
+                )
+            ),
+            resOnTuesday.days
+        )
+
+        val resOnThursday =
+            getReservations(
+                adult.user(CitizenAuthLevel.WEAK),
+                FiniteDateRange(thursday, thursday),
+                mockNow = HelsinkiDateTime.of(thursday, LocalTime.of(12, 0))
+            )
+        assertEquals(
+            listOf(
+                ReservationResponseDay(
+                    date = thursday,
+                    holiday = false,
+                    children =
+                        listOf(
+                                dayChild(
+                                    child1.id,
+                                    holidayPeriodEffect = HolidayPeriodEffect.ReservationsClosed
+                                ),
+                                dayChild(child2.id, holidayPeriodEffect = null),
+                            )
+                            .sortedBy { it.childId }
+                )
+            ),
+            resOnThursday.days
+        )
+    }
+
+    @Test
     fun `month summary has the service need minutes from the first day of the month`() {
         val firstOfMonth1 = LocalDate.of(2021, 11, 1)
         val lastOfMonth1 = LocalDate.of(2021, 11, 30)
@@ -1394,29 +1552,38 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
-    fun `cannot add absences to the past`() {
+    fun `absences are not created to the past`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
         val adult = DevPerson()
         val child = DevPerson()
 
         db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = mockToday.minusYears(1),
+                    endDate = mockToday.plusYears(1)
+                )
+            )
         }
 
-        assertThrows<BadRequest> {
-                postAbsences(
-                    adult.user(CitizenAuthLevel.WEAK),
-                    AbsenceRequest(
-                        childIds = setOf(child.id),
-                        dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday.plusDays(1)),
-                        absenceType = AbsenceType.OTHER_ABSENCE
-                    )
-                )
-            }
-            .also { exception ->
-                assertEquals("Cannot mark absences for past days", exception.message)
-            }
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(mockToday.minusDays(1), mockToday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            )
+        )
+
+        assertAbsenceCounts(child.id, listOf(mockToday to 1))
     }
 
     @Test
@@ -1791,6 +1958,51 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     }
 
     @Test
+    fun `cannot add absences to not-yet-reservable holiday period days`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+
+        val adult = DevPerson()
+        val child = DevPerson()
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = mockToday.minusYears(1),
+                    endDate = mockToday.plusYears(1)
+                )
+            )
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(tuesday, wednesday),
+                    reservationsOpenOn = mockToday.plusDays(1),
+                    reservationDeadline = monday
+                )
+            )
+        }
+
+        postAbsences(
+            adult.user(CitizenAuthLevel.WEAK),
+            AbsenceRequest(
+                childIds = setOf(child.id),
+                dateRange = FiniteDateRange(monday, thursday),
+                absenceType = AbsenceType.OTHER_ABSENCE
+            )
+        )
+
+        // No absences created on tue or wed
+        assertAbsenceCounts(child.id, listOf(monday to 1, thursday to 1))
+    }
+
+    @Test
     fun `cannot add absences to day which already contains attendance`() {
         val area = DevCareArea()
         val daycare =
@@ -2005,6 +2217,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         reservations: List<ReservationResponse> = emptyList(),
         attendances: List<TimeInterval> = emptyList(),
         usedService: UsedServiceResult? = null,
+        holidayPeriodEffect: HolidayPeriodEffect? = null
     ) =
         ReservationResponseDayChild(
             childId,
@@ -2015,7 +2228,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             attendances,
             usedService,
             reservableTimeRange,
-            lockedByHolidayPeriod = false
+            holidayPeriodEffect
         )
 
     private fun postReservations(

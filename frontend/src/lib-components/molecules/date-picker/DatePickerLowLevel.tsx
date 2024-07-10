@@ -87,6 +87,7 @@ export interface DatePickerLowLevelProps {
   value: string
   onChange: (value: string) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   locale: 'fi' | 'sv' | 'en'
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
@@ -105,6 +106,7 @@ export default React.memo(function DatePickerLowLevel({
   value,
   onChange,
   onFocus,
+  onBlur,
   locale,
   info,
   hideErrorsBeforeTouched,
@@ -159,8 +161,9 @@ export default React.memo(function DatePickerLowLevel({
       if (date !== null) {
         onChange(date.format())
       }
+      onBlur?.(e)
     },
-    [onChange]
+    [onBlur, onChange]
   )
 
   useLayoutEffect(() => {
@@ -227,7 +230,7 @@ export default React.memo(function DatePickerLowLevel({
         value={value}
         onChange={onChange}
         onFocus={handleFocus}
-        onBlur={!showDatePicker ? handleBlur : undefined}
+        onBlur={!showDatePicker ? handleBlur : onBlur}
         disabled={disabled}
         info={showDatePicker ? undefined : info}
         data-qa={dataQa}

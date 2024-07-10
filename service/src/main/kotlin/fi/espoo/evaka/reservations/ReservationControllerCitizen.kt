@@ -25,8 +25,9 @@ import fi.espoo.evaka.daycare.ClubTerm
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.holidayperiod.HolidayPeriod
+import fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
 import fi.espoo.evaka.holidayperiod.getHolidayPeriods
+import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.serviceneed.ShiftCareType
@@ -138,6 +139,7 @@ class ReservationControllerCitizen(
                                         // activity on the date. This excludes e.g. Christmas or
                                         // winter holidays.
                                         children
+                                            .sortedBy { it.id }
                                             .mapNotNull { child ->
                                                 placements[child.id]
                                                     ?.find { it.range.includes(date) }
@@ -153,6 +155,10 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
+                                                        val holidayPeriod =
+                                                            holidayPeriods.find {
+                                                                it.period.includes(date)
+                                                            }
                                                         val childAbsences =
                                                             absences[key] ?: listOf()
                                                         val childReservations =
@@ -200,17 +206,14 @@ class ReservationControllerCitizen(
                                                             usedService = usedServiceResult,
                                                             reservableTimeRange =
                                                                 placementDay.reservableTimeRange,
-                                                            lockedByHolidayPeriod =
-                                                                isLockedByHolidayPeriod(
-                                                                    holidayPeriods,
-                                                                    date,
+                                                            holidayPeriodEffect =
+                                                                holidayPeriod?.effect(
                                                                     today,
                                                                     childStartDates[child.id]!!
                                                                 )
                                                         )
                                                     }
                                             }
-                                            .sortedBy { it.childId }
                                 )
                             }
                             .toList()
@@ -236,18 +239,6 @@ class ReservationControllerCitizen(
             }
     }
 
-    private fun isLockedByHolidayPeriod(
-        holidayPeriods: List<HolidayPeriod>,
-        date: LocalDate,
-        today: LocalDate,
-        placementStartDate: LocalDate
-    ): Boolean {
-        val holidayPeriod = holidayPeriods.find { it.period.includes(date) }
-        return holidayPeriod != null &&
-            holidayPeriod.reservationDeadline < today &&
-            placementStartDate < holidayPeriod.reservationDeadline
-    }
-
     @PostMapping("/citizen/reservations")
     fun postReservations(
         db: Database,
@@ -258,8 +249,7 @@ class ReservationControllerCitizen(
     ) {
         val children = body.map { it.childId }.toSet()
 
-        val result =
-            db.connect { dbc ->
+        db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -280,16 +270,18 @@ class ReservationControllerCitizen(
                     )
                 }
             }
-        Audit.AttendanceReservationCitizenCreate.log(
-            targetId = AuditId(children),
-            meta =
-                mapOf(
-                    "deletedAbsences" to result.deletedAbsences,
-                    "deletedReservations" to result.deletedReservations,
-                    "upsertedAbsences" to result.upsertedAbsences,
-                    "upsertedReservations" to result.upsertedReservations
+            ?.also {
+                Audit.AttendanceReservationCitizenCreate.log(
+                    targetId = AuditId(children),
+                    meta =
+                        mapOf(
+                            "deletedAbsences" to it.deletedAbsences,
+                            "deletedReservations" to it.deletedReservations,
+                            "upsertedAbsences" to it.upsertedAbsences,
+                            "upsertedReservations" to it.upsertedReservations
+                        )
                 )
-        )
+            }
     }
 
     @PostMapping("/citizen/absences")
@@ -299,15 +291,16 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
-        if (body.dateRange.start.isBefore(clock.today())) {
-            throw BadRequest("Cannot mark absences for past days")
-        }
+        val now = clock.now()
+        val today = now.toLocalDate()
+        val reservableRange =
+            getReservableRange(now, featureConfig.citizenReservationThresholdHours)
 
+        val range =
+            body.dateRange.intersection(FiniteDateRange(today, reservableRange.end)) ?: return
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
             throw BadRequest("Invalid absence type")
         }
-
-        val now = clock.now()
 
         val (deletedAbsences, deletedReservations, insertedAbsences) =
             db.connect { dbc ->
@@ -319,20 +312,18 @@ class ReservationControllerCitizen(
                         Action.Citizen.Child.CREATE_ABSENCE,
                         body.childIds
                     )
-                    if (tx.childrenHaveAttendanceInRange(body.childIds, body.dateRange)) {
+                    if (tx.childrenHaveAttendanceInRange(body.childIds, range)) {
                         throw BadRequest(
                             "Attendance already exists for given dates",
                             "ATTENDANCE_ALREADY_EXISTS"
                         )
                     }
 
-                    val reservableRange =
-                        getReservableRange(now, featureConfig.citizenReservationThresholdHours)
                     val childPlannedAbsenceEnabled =
-                        body.dateRange.intersection(reservableRange)?.let { range ->
+                        range.intersection(reservableRange)?.let {
                             tx.getPlannedAbsenceEnabledRanges(
                                 body.childIds,
-                                range,
+                                it,
                                 env.plannedAbsenceEnabledForHourBasedServiceNeeds
                             )
                         } ?: emptyMap()
@@ -340,26 +331,31 @@ class ReservationControllerCitizen(
                     val deletedAbsences =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->
-                                body.dateRange.dates().map { childId to it }
+                                range.dates().map { childId to it }
                             },
                             reservableRange = reservableRange
                         )
                     // Delete reservations on days in the reservable range. Reservations in the
                     // closed range are kept.
                     val deletedReservations =
-                        body.dateRange.intersection(reservableRange)?.dates()?.let { dates ->
+                        range.intersection(reservableRange)?.dates()?.let { dates ->
                             tx.clearOldReservations(
                                 body.childIds.flatMap { childId ->
                                     dates.map { date -> childId to date }
                                 }
                             )
                         }
-                    val insertedAbsences =
-                        tx.upsertFullDayAbsences(
-                            user.evakaUserId,
-                            now,
-                            body.childIds.flatMap { childId ->
-                                body.dateRange.dates().map { date ->
+
+                    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+                    val absenceInserts =
+                        range
+                            .dates()
+                            .filter { date ->
+                                val holidayPeriod = holidayPeriods.find { it.period.includes(date) }
+                                holidayPeriod == null || holidayPeriod.reservationsOpenOn <= today
+                            }
+                            .flatMap { date ->
+                                body.childIds.map { childId ->
                                     FullDayAbsenseUpsert(
                                         childId,
                                         date,
@@ -381,7 +377,10 @@ class ReservationControllerCitizen(
                                     )
                                 }
                             }
-                        )
+                            .toList()
+                    val insertedAbsences =
+                        tx.upsertFullDayAbsences(user.evakaUserId, now, absenceInserts)
+
                     Triple(deletedAbsences, deletedReservations, insertedAbsences)
                 }
             }
@@ -583,7 +582,7 @@ data class ReservationResponseDayChild(
     val attendances: List<TimeInterval>,
     val usedService: UsedServiceResult?,
     val reservableTimeRange: ReservableTimeRange,
-    val lockedByHolidayPeriod: Boolean
+    val holidayPeriodEffect: HolidayPeriodEffect?
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
