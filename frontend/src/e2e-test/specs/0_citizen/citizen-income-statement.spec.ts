@@ -19,7 +19,9 @@ let incomeStatementsPage: IncomeStatementsPage
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+  await Fixture.person()
+    .with(enduserGuardianFixture)
+    .saveAdult({ updateMockVtjWithDependants: [] })
 
   page = await Page.open()
   await enduserLogin(page)

@@ -10,7 +10,9 @@ import { enduserLogin } from '../../utils/user'
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+  await Fixture.person()
+    .with(enduserGuardianFixture)
+    .saveAdult({ updateMockVtjWithDependants: [] })
 })
 
 describe('Citizen header customization', () => {

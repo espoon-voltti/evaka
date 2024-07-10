@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { createChildren } from '../generated/api-clients'
-
 import {
   careAreaFixture,
   clubFixture,
@@ -81,26 +79,32 @@ export const initializeAreaAndPersonData = async (): Promise<
     .save()
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixtureJari)
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixtureKaarina)
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted)
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserGuardianFixture)
-    .saveAndUpdateMockVtj([
-      areaAndPersonFixtures.enduserChildFixtureJari,
-      areaAndPersonFixtures.enduserChildFixtureKaarina,
-      areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted
-    ])
+    .saveAdult({
+      updateMockVtjWithDependants: [
+        areaAndPersonFixtures.enduserChildFixtureJari,
+        areaAndPersonFixtures.enduserChildFixtureKaarina,
+        areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted
+      ]
+    })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserChildJariOtherGuardianFixture)
-    .saveAndUpdateMockVtj([areaAndPersonFixtures.enduserChildFixtureJari])
+    .saveAdult({
+      updateMockVtjWithDependants: [
+        areaAndPersonFixtures.enduserChildFixtureJari
+      ]
+    })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserDeceasedChildFixture)
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.person()
     .with(areaAndPersonFixtures.enduserNonSsnChildFixture)
     .with({ ssn: null })
@@ -108,55 +112,73 @@ export const initializeAreaAndPersonData = async (): Promise<
 
   await Promise.all(
     areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
-      await Fixture.person().with(child).saveAndUpdateMockVtj()
+      await Fixture.person().with(child).saveChild({ updateMockVtj: true })
     })
   )
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithTwoGuardians.guardian)
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithTwoGuardians.children
+    })
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithTwoGuardians.otherGuardian)
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithTwoGuardians.children
+    })
 
   await Promise.all(
     areaAndPersonFixtures.familyWithSeparatedGuardians.children.map(
       async (child) => {
-        await Fixture.person().with(child).saveAndUpdateMockVtj()
+        await Fixture.person().with(child).saveChild({ updateMockVtj: true })
       }
     )
   )
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithSeparatedGuardians.guardian)
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithSeparatedGuardians.children
+    })
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithSeparatedGuardians.otherGuardian)
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithSeparatedGuardians.children
+    })
 
   await Promise.all(
     areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children.map(
       async (child) => {
-        await Fixture.person().with(child).saveAndUpdateMockVtj()
+        await Fixture.person().with(child).saveChild({ updateMockVtj: true })
       }
     )
   )
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.guardian)
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children
+    })
 
   await Fixture.person()
     .with(
       areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.otherGuardian
     )
-    .saveAndUpdateMockVtj()
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children
+    })
 
   await Fixture.person()
     .with(areaAndPersonFixtures.restrictedPersonFixture)
-    .saveAndUpdateMockVtj()
+    .saveAdult({ updateMockVtjWithDependants: [] })
 
   await Fixture.person()
     .with(areaAndPersonFixtures.personFixtureChildZeroYearOld)
@@ -164,33 +186,13 @@ export const initializeAreaAndPersonData = async (): Promise<
 
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.person()
     .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
-    .saveAndUpdateMockVtj()
-
-  await createChildren({
-    body: [
-      areaAndPersonFixtures.enduserChildFixtureJari,
-      areaAndPersonFixtures.enduserChildFixtureKaarina,
-      areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted,
-      ...areaAndPersonFixtures.familyWithTwoGuardians.children,
-      ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
-      ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,
-      ...areaAndPersonFixtures.familyWithDeadGuardian.children,
-      personFixtureChildZeroYearOld
-    ].map(({ id }) => ({
-      id,
-      additionalInfo: '',
-      allergies: '',
-      diet: '',
-      dietId: null,
-      mealTextureId: null,
-      languageAtHome: '',
-      languageAtHomeDetails: '',
-      medication: ''
-    }))
-  })
+    .saveAdult({
+      updateMockVtjWithDependants:
+        areaAndPersonFixtures.familyWithDeadGuardian.children
+    })
 
   return areaAndPersonFixtures
 }

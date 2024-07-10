@@ -1295,21 +1295,26 @@ export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
 }
 
 export class PersonBuilder extends FixtureBuilder<DevPerson> {
-  async saveAdult() {
+  async saveAdult(opts: { updateMockVtjWithDependants?: DevPerson[] } = {}) {
     await createPerson({ body: this.data, type: 'ADULT' })
+    if (opts.updateMockVtjWithDependants !== undefined) {
+      await this.updateMockVtj(opts.updateMockVtjWithDependants)
+    }
     return this.data
   }
 
-  async saveChild() {
+  async saveChild(opts: { updateMockVtj?: boolean } = {}) {
     await createPerson({ body: this.data, type: 'CHILD' })
+    if (opts.updateMockVtj) {
+      await this.updateMockVtj([])
+    }
     return this.data
   }
 
-  async saveAndUpdateMockVtj(dependants?: DevPerson[]): Promise<DevPerson> {
-    await this.saveAdult()
+  private async updateMockVtj(dependants: DevPerson[]): Promise<DevPerson> {
     const person = this.data
-    const dependantSsns = dependants?.flatMap((d) => d.ssn ?? [])
-    if (dependantSsns?.length !== dependants?.length) {
+    const dependantSsns = dependants.flatMap((d) => d.ssn ?? [])
+    if (dependantSsns.length !== dependants.length) {
       throw new Error('All dependants must have SSNs')
     }
     await upsertVtjDataset({
@@ -1340,11 +1345,12 @@ export class PersonBuilder extends FixtureBuilder<DevPerson> {
             }
           }
         ],
-        guardianDependants: dependantSsns
-          ? {
-              [person.ssn || '']: dependantSsns
-            }
-          : {}
+        guardianDependants:
+          dependantSsns.length > 0
+            ? {
+                [person.ssn || '']: dependantSsns
+              }
+            : {}
       }
     })
     return this.data

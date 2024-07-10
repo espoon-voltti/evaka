@@ -18,7 +18,9 @@ describe('Citizen authentication', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+    await Fixture.person()
+      .with(enduserGuardianFixture)
+      .saveAdult({ updateMockVtjWithDependants: [] })
     const keycloak = await KeycloakRealmClient.createCitizenClient()
     await keycloak.deleteAllUsers()
     await keycloak.createUser({

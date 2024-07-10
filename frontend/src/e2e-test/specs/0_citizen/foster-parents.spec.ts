@@ -57,7 +57,7 @@ beforeEach(async () => {
   fosterParent = fixtures.enduserGuardianFixture
   fosterChild = await Fixture.person()
     .with({ ssn: '120220A995L' })
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [

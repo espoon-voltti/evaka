@@ -55,7 +55,7 @@ test('Forgot my password', async () => {
       firstName: user.firstName,
       lastName: user.lastName
     })
-    .saveAndUpdateMockVtj()
+    .saveAdult({ updateMockVtjWithDependants: [] })
   await keycloak.createUser(user)
 
   const page = await Page.open()
@@ -125,7 +125,7 @@ test('Registration via suomi.fi', async () => {
       firstName: user.givenName,
       lastName: user.surname
     })
-    .saveAndUpdateMockVtj()
+    .saveAdult({ updateMockVtjWithDependants: [] })
   const email = 'test@example.com'
   await createSuomiFiUser(user)
 

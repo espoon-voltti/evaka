@@ -75,13 +75,13 @@ describe('Citizen applications list', () => {
   test('Guardian sees their children and applications made by the other guardian', async () => {
     const child = await Fixture.person()
       .with({ ssn: '010116A9219' })
-      .saveAndUpdateMockVtj()
+      .saveChild({ updateMockVtj: true })
     const guardian = await Fixture.person()
       .with({ ssn: '010106A973C' })
-      .saveAndUpdateMockVtj([child])
+      .saveAdult({ updateMockVtjWithDependants: [child] })
     const otherGuardian = await Fixture.person()
       .with({ ssn: '010106A9388' })
-      .saveAndUpdateMockVtj([child])
+      .saveAdult({ updateMockVtjWithDependants: [child] })
 
     const application = applicationFixture(
       child,

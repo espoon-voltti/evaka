@@ -86,7 +86,7 @@ describe('Employee - paper application', () => {
         firstName: 'Lapsi',
         lastName: 'Korhonen-Hämäläinen'
       })
-      .saveAndUpdateMockVtj()
+      .saveChild({ updateMockVtj: true })
     await Fixture.person()
       .with({
         ssn,
@@ -96,7 +96,7 @@ describe('Employee - paper application', () => {
         postalCode: '00370',
         postOffice: 'Espoo'
       })
-      .saveAndUpdateMockVtj([child])
+      .saveAdult({ updateMockVtjWithDependants: [child] })
     await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 

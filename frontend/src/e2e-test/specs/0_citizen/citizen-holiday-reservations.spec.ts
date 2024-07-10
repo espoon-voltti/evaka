@@ -92,10 +92,12 @@ beforeEach(async () => {
     .save()
   await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
 
-  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
+  const child1 = await Fixture.person()
+    .with(child)
+    .saveChild({ updateMockVtj: true })
   guardian = await Fixture.person()
     .with(enduserGuardianFixture)
-    .saveAndUpdateMockVtj([child1])
+    .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement()
@@ -114,7 +116,7 @@ async function setupAnotherChild(
 ) {
   const child2 = await Fixture.person()
     .with(enduserChildFixtureKaarina)
-    .saveAndUpdateMockVtj()
+    .saveChild({ updateMockVtj: true })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
   await Fixture.child(child2.id).save()
   await Fixture.guardian(child2, guardian).save()
