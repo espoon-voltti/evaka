@@ -37,15 +37,15 @@ beforeEach(async () => {
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
+        fixtures.testChild.id,
+        fixtures.testDaycare.id,
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
+        fixtures.testChild.id,
+        fixtures.testDaycare.id,
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(1)
       )

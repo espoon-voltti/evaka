@@ -9,7 +9,7 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
+  testDaycareGroup,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -39,9 +39,9 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(

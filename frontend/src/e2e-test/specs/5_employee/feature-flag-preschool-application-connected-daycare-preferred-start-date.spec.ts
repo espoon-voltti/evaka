@@ -8,7 +8,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -28,7 +28,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
@@ -44,9 +44,7 @@ beforeEach(async () => {
   await employeeLogin(page, admin)
 
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(
-    fixtures.enduserChildFixtureJari.id
-  )
+  await childInformationPage.navigateToChild(fixtures.testChild.id)
 
   const applications =
     await childInformationPage.openCollapsible('applications')
@@ -61,7 +59,7 @@ describe('Employee - paper application', () => {
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.checkConnectedDaycare()
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'

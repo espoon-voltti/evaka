@@ -12,9 +12,9 @@ import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -52,10 +52,8 @@ const insertTestDataAndLogin = async ({
   childShiftCare?: ShiftCareType
 } = {}) => {
   const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  const daycareBuilder = Fixture.daycare()
-    .with(daycare2Fixture)
-    .careArea(careArea)
+  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  const daycareBuilder = Fixture.daycare().with(testDaycare2).careArea(careArea)
   await daycareBuilder.save()
   daycare = daycareBuilder.data
 
@@ -75,7 +73,7 @@ const insertTestDataAndLogin = async ({
   await Fixture.daycareGroup()
     .with({
       id: groupId2,
-      daycareId: daycareFixture.id,
+      daycareId: testDaycare.id,
       name: 'Testailijat Toisessa'
     })
     .save()
@@ -106,7 +104,7 @@ const insertTestDataAndLogin = async ({
     .with({
       id: uuidv4(),
       childId: child1Fixture.id,
-      unitId: daycareFixture.id,
+      unitId: testDaycare.id,
       groupId: groupId2,
       period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
     })
@@ -477,7 +475,7 @@ describe('Unit group calendar', () => {
         await Fixture.childAttendance()
           .with({
             childId: child1Fixture.id,
-            unitId: daycare2Fixture.id,
+            unitId: testDaycare2.id,
             date: mockedToday,
             arrived: arrival,
             departed: departure
@@ -583,7 +581,7 @@ describe('Unit group calendar for shift care unit', () => {
     await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
+        unitId: testDaycare2.id,
         date: startDate,
         arrived,
         departed
@@ -593,7 +591,7 @@ describe('Unit group calendar for shift care unit', () => {
     await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
+        unitId: testDaycare2.id,
         date: startDate,
         arrived: LocalTime.of(18, 15),
         departed: LocalTime.of(23, 59)
@@ -602,7 +600,7 @@ describe('Unit group calendar for shift care unit', () => {
     await Fixture.childAttendance()
       .with({
         childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
+        unitId: testDaycare2.id,
         date: startDate.addDays(1),
         arrived: LocalTime.of(0, 0),
         departed: LocalTime.of(5, 30)

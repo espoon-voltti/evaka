@@ -16,7 +16,7 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  daycareFixture,
+  testDaycare,
   feeDecisionsFixture,
   uuidv4,
   voucherValueDecisionsFixture
@@ -53,15 +53,15 @@ const voucherValueDecisionValidDuring = new DateRange(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  headOfFamily = fixtures.enduserGuardianFixture
-  partner = fixtures.restrictedPersonFixture
-  child = fixtures.enduserChildFixtureJari
+  headOfFamily = fixtures.testAdult
+  partner = fixtures.testAdultRestricted
+  child = fixtures.testChild
 
   feeDecision = feeDecisionsFixture(
     'SENT',
     headOfFamily,
     child,
-    daycareFixture.id,
+    testDaycare.id,
     partner,
     feeDecisionValidDuring,
     now,
@@ -73,7 +73,7 @@ beforeEach(async () => {
     uuidv4(),
     headOfFamily.id,
     child.id,
-    daycareFixture.id,
+    testDaycare.id,
     null,
     'SENT',
     voucherValueDecisionValidDuring.start,

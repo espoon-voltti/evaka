@@ -10,10 +10,10 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareFixturePrivateVoucher,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  testChild2,
+  testAdult,
   feeDecisionsFixture,
   Fixture,
   uuidv4,
@@ -58,9 +58,9 @@ describe('Person finance decisions', () => {
         body: [
           feeDecisionsFixture(
             'SENT',
-            enduserGuardianFixture,
-            enduserChildFixtureKaarina,
-            daycareFixture.id,
+            testAdult,
+            testChild2,
+            testDaycare.id,
             null,
             new DateRange(sentAt, sentAt),
             sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
@@ -74,7 +74,7 @@ describe('Person finance decisions', () => {
     await createFeeDecisionFixture(sentAtThird)
     await createFeeDecisionFixture(sentAtSecond)
 
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
     const feeDecisions = await guardianPage.openCollapsible('feeDecisions')
 
     await feeDecisions.checkFeeDecisionSentAt(0, sentAtThird)
@@ -92,9 +92,9 @@ describe('Person finance decisions', () => {
         body: [
           voucherValueDecisionsFixture(
             uuidv4(),
-            enduserGuardianFixture.id,
-            enduserChildFixtureKaarina.id,
-            daycareFixture.id,
+            testAdult.id,
+            testChild2.id,
+            testDaycare.id,
             null,
             'SENT',
             sentAt,
@@ -109,7 +109,7 @@ describe('Person finance decisions', () => {
     await createVoucherValueDecisionFixture(sentAtThird)
     await createVoucherValueDecisionFixture(sentAtSecond)
 
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
     const voucherValueDecisions = await guardianPage.openCollapsible(
       'voucherValueDecisions'
     )
@@ -127,9 +127,9 @@ describe('Person finance decisions', () => {
 
     await Fixture.parentship()
       .with({
-        childId: enduserChildFixtureKaarina.id,
-        headOfChildId: enduserGuardianFixture.id,
-        startDate: enduserChildFixtureKaarina.dateOfBirth,
+        childId: testChild2.id,
+        headOfChildId: testAdult.id,
+        startDate: testChild2.dateOfBirth,
         endDate: LocalDate.of(2099, 1, 1)
       })
       .save()
@@ -138,8 +138,8 @@ describe('Person finance decisions', () => {
       body: [
         createDaycarePlacementFixture(
           uuidv4(),
-          enduserChildFixtureKaarina.id,
-          daycareFixturePrivateVoucher.id,
+          testChild2.id,
+          testDaycarePrivateVoucher.id,
           from,
           LocalDate.todayInSystemTz()
         )
@@ -151,7 +151,7 @@ describe('Person finance decisions', () => {
     await employeeLogin(page, adminUser)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const voucherValueDecisions = await guardianPage.openCollapsible(
       'voucherValueDecisions'

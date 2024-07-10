@@ -10,17 +10,17 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import {
-  careAreaFixture,
-  daycare2Fixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserChildFixturePorriHatterRestricted,
-  enduserNonSsnChildFixture,
+  testCareArea,
+  testDaycare2,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testChild2,
+  testChildRestricted,
+  testChildNoSsn,
   familyWithTwoGuardians,
   Fixture,
-  preschoolTermFixture2021,
+  preschoolTerm2021,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -40,7 +40,7 @@ const now = HelsinkiDateTime.of(2022, 5, 17, 13, 0, 0)
 const group2 = {
   id: uuidv4(),
   name: '#2',
-  daycareId: daycareFixture.id,
+  daycareId: testDaycare.id,
   startDate: LocalDate.of(2021, 1, 1)
 }
 
@@ -49,7 +49,7 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   await insertConfirmedDaysTestData()
 
-  const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+  const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
   page = await Page.open({ mockedTime: now })
 
   await page.goto(mobileSignupUrl)
@@ -147,43 +147,42 @@ describe('Child confirmed reservations', () => {
     const expectedChildItems = [
       {
         date: testDay,
-        childId: enduserNonSsnChildFixture.id,
+        childId: testChildNoSsn.id,
         reservationTexts: ['Ei toimintaa'],
         childDetails: {
-          firstName: enduserNonSsnChildFixture.firstName.split(/\s/)[0],
-          lastName: enduserNonSsnChildFixture.lastName,
-          preferredName: enduserNonSsnChildFixture.preferredName
+          firstName: testChildNoSsn.firstName.split(/\s/)[0],
+          lastName: testChildNoSsn.lastName,
+          preferredName: testChildNoSsn.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixtureKaarina.id,
+        childId: testChild2.id,
         reservationTexts: ['Poissa'],
         childDetails: {
-          firstName: enduserChildFixtureKaarina.firstName.split(/\s/)[0],
-          lastName: enduserChildFixtureKaarina.lastName,
-          preferredName: enduserChildFixtureKaarina.preferredName
+          firstName: testChild2.firstName.split(/\s/)[0],
+          lastName: testChild2.lastName,
+          preferredName: testChild2.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixtureJari.id,
+        childId: testChild.id,
         reservationTexts: ['08:12–13:45', '14:30–16:45'],
         childDetails: {
-          firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
-          lastName: enduserChildFixtureJari.lastName,
-          preferredName: enduserChildFixtureJari.preferredName
+          firstName: testChild.firstName.split(/\s/)[0],
+          lastName: testChild.lastName,
+          preferredName: testChild.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixturePorriHatterRestricted.id,
+        childId: testChildRestricted.id,
         reservationTexts: ['Ilmoitus puuttuu'],
         childDetails: {
-          firstName:
-            enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],
-          lastName: enduserChildFixturePorriHatterRestricted.lastName,
-          preferredName: enduserChildFixturePorriHatterRestricted.preferredName
+          firstName: testChildRestricted.firstName.split(/\s/)[0],
+          lastName: testChildRestricted.lastName,
+          preferredName: testChildRestricted.preferredName
         }
       }
     ]
@@ -207,43 +206,42 @@ describe('Child confirmed reservations', () => {
     const expectedChildItems = [
       {
         date: testDay,
-        childId: enduserNonSsnChildFixture.id,
+        childId: testChildNoSsn.id,
         reservationTexts: ['Ei toimintaa'],
         childDetails: {
-          firstName: enduserNonSsnChildFixture.firstName.split(/\s/)[0],
-          lastName: enduserNonSsnChildFixture.lastName,
-          preferredName: enduserNonSsnChildFixture.preferredName
+          firstName: testChildNoSsn.firstName.split(/\s/)[0],
+          lastName: testChildNoSsn.lastName,
+          preferredName: testChildNoSsn.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixtureKaarina.id,
+        childId: testChild2.id,
         reservationTexts: ['Poissa'],
         childDetails: {
-          firstName: enduserChildFixtureKaarina.firstName.split(/\s/)[0],
-          lastName: enduserChildFixtureKaarina.lastName,
-          preferredName: enduserChildFixtureKaarina.preferredName
+          firstName: testChild2.firstName.split(/\s/)[0],
+          lastName: testChild2.lastName,
+          preferredName: testChild2.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixtureJari.id,
+        childId: testChild.id,
         reservationTexts: ['08:12–13:45', '14:30–16:45'],
         childDetails: {
-          firstName: enduserChildFixtureJari.firstName.split(/\s/)[0],
-          lastName: enduserChildFixtureJari.lastName,
-          preferredName: enduserChildFixtureJari.preferredName
+          firstName: testChild.firstName.split(/\s/)[0],
+          lastName: testChild.lastName,
+          preferredName: testChild.preferredName
         }
       },
       {
         date: testDay,
-        childId: enduserChildFixturePorriHatterRestricted.id,
+        childId: testChildRestricted.id,
         reservationTexts: ['Lomavaraus puuttuu'],
         childDetails: {
-          firstName:
-            enduserChildFixturePorriHatterRestricted.firstName.split(/\s/)[0],
-          lastName: enduserChildFixturePorriHatterRestricted.lastName,
-          preferredName: enduserChildFixturePorriHatterRestricted.preferredName
+          firstName: testChildRestricted.firstName.split(/\s/)[0],
+          lastName: testChildRestricted.lastName,
+          preferredName: testChildRestricted.preferredName
         }
       }
     ]
@@ -261,13 +259,13 @@ describe('Child confirmed reservations', () => {
 
 async function createPlacements(
   childId: string,
-  groupId: string = daycareGroupFixture.id,
+  groupId: string = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE'
 ) {
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId,
-      unitId: daycareFixture.id,
+      unitId: testDaycare.id,
       type: placementType,
       startDate: LocalDate.of(2021, 5, 1),
       endDate: LocalDate.of(2022, 8, 31)
@@ -287,7 +285,7 @@ async function createPlacements(
 async function insertConfirmedDaysTestData() {
   await Fixture.preschoolTerm()
     .with({
-      ...preschoolTermFixture2021,
+      ...preschoolTerm2021,
       termBreaks: [
         new FiniteDateRange(
           LocalDate.of(2022, 5, 18),
@@ -304,55 +302,48 @@ async function insertConfirmedDaysTestData() {
     })
     .save()
 
-  const careArea = await Fixture.careArea().with(careAreaFixture).save()
+  const careArea = await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare()
-    .with(daycareFixture)
+    .with(testDaycare)
     .careArea(careArea)
     .with({
       shiftCareOperationTimes: null,
       shiftCareOpenOnHolidays: false
     })
     .save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).save()
   await Fixture.daycareGroup().with(group2).save()
 
-  await Fixture.person().with(enduserChildFixtureKaarina).saveChild()
-  await Fixture.person().with(enduserChildFixtureJari).saveChild()
+  await Fixture.person().with(testChild2).saveChild()
+  await Fixture.person().with(testChild).saveChild()
   await Fixture.person().with(familyWithTwoGuardians.children[0]).saveChild()
   await Fixture.person()
     .with({
-      ...enduserChildFixturePorriHatterRestricted,
+      ...testChildRestricted,
       dateOfBirth: LocalDate.of(2021, 4, 1)
     })
     .saveChild()
-  await Fixture.person().with(enduserNonSsnChildFixture).saveChild()
+  await Fixture.person().with(testChildNoSsn).saveChild()
 
   await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
 
-  await createPlacements(
-    enduserChildFixturePorriHatterRestricted.id,
-    daycareGroupFixture.id
-  )
-  await createPlacements(enduserChildFixtureJari.id, daycareGroupFixture.id)
-  await createPlacements(enduserChildFixtureKaarina.id, daycareGroupFixture.id)
-  await createPlacements(
-    enduserNonSsnChildFixture.id,
-    daycareGroupFixture.id,
-    'PRESCHOOL'
-  )
+  await createPlacements(testChildRestricted.id, testDaycareGroup.id)
+  await createPlacements(testChild.id, testDaycareGroup.id)
+  await createPlacements(testChild2.id, testDaycareGroup.id)
+  await createPlacements(testChildNoSsn.id, testDaycareGroup.id, 'PRESCHOOL')
 
   await Fixture.absence()
     .with({
-      childId: enduserChildFixtureKaarina.id,
+      childId: testChild2.id,
       date: LocalDate.of(2022, 5, 19)
     })
     .save()
   await Fixture.assistanceFactor()
     .with({
-      childId: enduserChildFixtureKaarina.id,
+      childId: testChild2.id,
       capacityFactor: 1.5,
       validDuring: new FiniteDateRange(
         LocalDate.of(2022, 5, 27),
@@ -363,8 +354,8 @@ async function insertConfirmedDaysTestData() {
 
   await Fixture.backupCare()
     .with({
-      childId: enduserChildFixtureJari.id,
-      unitId: daycare2Fixture.id,
+      childId: testChild.id,
+      unitId: testDaycare2.id,
       period: new FiniteDateRange(
         LocalDate.of(2022, 5, 26),
         LocalDate.of(2022, 5, 26)
@@ -375,8 +366,8 @@ async function insertConfirmedDaysTestData() {
 
   await Fixture.backupCare()
     .with({
-      childId: enduserChildFixtureJari.id,
-      unitId: daycareFixture.id,
+      childId: testChild.id,
+      unitId: testDaycare.id,
       period: new FiniteDateRange(
         LocalDate.of(2022, 5, 27),
         LocalDate.of(2022, 5, 27)
@@ -387,7 +378,7 @@ async function insertConfirmedDaysTestData() {
 
   await Fixture.attendanceReservation({
     type: 'RESERVATIONS',
-    childId: enduserChildFixtureJari.id,
+    childId: testChild.id,
     date: LocalDate.of(2022, 5, 19),
     reservation: new TimeRange(LocalTime.of(8, 12), LocalTime.of(13, 45)),
     secondReservation: new TimeRange(LocalTime.of(14, 30), LocalTime.of(16, 45))

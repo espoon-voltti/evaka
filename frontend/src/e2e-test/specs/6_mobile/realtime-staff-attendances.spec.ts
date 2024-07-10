@@ -9,8 +9,8 @@ import { FeatureFlags } from 'lib-customizations/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  daycare2Fixture,
-  daycareGroupFixture,
+  testDaycare2,
+  testDaycareGroup,
   Fixture,
   fullDayTimeRange,
   uuidv4
@@ -39,7 +39,7 @@ let employeeName: string
 const pin = '4242'
 
 const daycareGroup2Fixture: DevDaycareGroup = {
-  ...daycareGroupFixture,
+  ...testDaycareGroup,
   id: uuidv4(),
   name: 'Ryhmä 2'
 }
@@ -51,8 +51,8 @@ beforeEach(async () => {
 
   await Fixture.daycare()
     .with({
-      ...daycare2Fixture,
-      areaId: fixtures.careAreaFixture.id,
+      ...testDaycare2,
+      areaId: fixtures.testCareArea.id,
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
       operationTimes: [
         fullDayTimeRange,
@@ -70,30 +70,30 @@ beforeEach(async () => {
 
   await Fixture.daycareGroup()
     .with({
-      ...daycareGroupFixture,
-      daycareId: daycare2Fixture.id
+      ...testDaycareGroup,
+      daycareId: testDaycare2.id
     })
     .save()
   await Fixture.daycareGroup()
     .with({
       ...daycareGroup2Fixture,
-      daycareId: daycare2Fixture.id
+      daycareId: testDaycare2.id
     })
     .save()
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId: fixtures.familyWithTwoGuardians.children[0].id,
-      unitId: daycare2Fixture.id
+      unitId: testDaycare2.id
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: daycareGroupFixture.id
+      daycareGroupId: testDaycareGroup.id
     })
     .save()
-  staffFixture = await Fixture.employeeStaff(daycare2Fixture.id)
-    .withGroupAcl(daycareGroupFixture.id)
+  staffFixture = await Fixture.employeeStaff(testDaycare2.id)
+    .withGroupAcl(testDaycareGroup.id)
     .withGroupAcl(daycareGroup2Fixture.id)
     .with({
       preferredFirstName: 'Kutsumanimi'
@@ -113,7 +113,7 @@ const initPages = async (
   })
   nav = new MobileNav(page)
 
-  mobileSignupUrl = await pairMobileDevice(daycare2Fixture.id)
+  mobileSignupUrl = await pairMobileDevice(testDaycare2.id)
   await page.goto(mobileSignupUrl)
   await nav.staff.click()
   staffAttendancePage = new StaffAttendancePage(page)
@@ -133,7 +133,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: arrivalTime,
-      group: daycareGroupFixture,
+      group: testDaycareGroup,
       hasOccupancyEffect: true
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -159,7 +159,7 @@ describe('Realtime staff attendance page', () => {
   test('Occupancy effect can not be unchecked on arrival if it has been given permanently but can be edited', async () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
     await Fixture.staffOccupancyCoefficient(
-      daycare2Fixture.id,
+      testDaycare2.id,
       staffFixture.id
     ).save()
     const arrivalTime = '05:59'
@@ -172,7 +172,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.pinInput.locator.type(pin)
     await staffAttendancePage.anyArrivalPage.arrivedInput.fill(arrivalTime)
     await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     await staffAttendancePage.staffArrivalPage.occupancyEffectCheckbox.waitUntilHidden()
     await staffAttendancePage.anyArrivalPage.markArrived.click()
@@ -200,7 +200,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: arrivalTime,
-      group: daycareGroupFixture
+      group: testDaycareGroup
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -235,7 +235,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: arrivalTime,
-      group: daycareGroupFixture
+      group: testDaycareGroup
     })
     await staffAttendancePage.markStaffDeparted({
       pin,
@@ -247,7 +247,7 @@ describe('Realtime staff attendance page', () => {
 
     await staffAttendancePage.anyArrivalPage.arrivedInput.fill('07:54')
     await staffAttendancePage.staffArrivalPage.groupSelect.selectOption(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.waitUntilVisible()
     await staffAttendancePage.staffArrivalPage.arrivalIsBeforeDeparture.assertText(
@@ -268,7 +268,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: arrivalTime,
-      group: daycareGroupFixture
+      group: testDaycareGroup
     })
     await staffAttendancePage.markStaffDeparted({
       pin,
@@ -278,7 +278,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markStaffArrived({
       pin,
       time: departureTime,
-      group: daycareGroupFixture
+      group: testDaycareGroup
     })
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.assertEmployeeAttendances([
@@ -313,7 +313,7 @@ describe('Realtime staff attendance page', () => {
 
     // Within 30min from now so ok
     await staffAttendancePage.setArrivalTime('12:30')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // 1min too far in the future
@@ -350,14 +350,14 @@ describe('Realtime staff attendance page', () => {
 
     // Within 30min from planned start so ok, type required
     await staffAttendancePage.setArrivalTime('07:30')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(false)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Within 5min from planned start so ok, type not required
     await staffAttendancePage.setArrivalTime('07:55')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // Not ok because >+-30min from current time
@@ -397,12 +397,12 @@ describe('Realtime staff attendance page', () => {
 
     // Within 5min from planned start so ok, type not required
     await staffAttendancePage.setArrivalTime('08:00')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
 
     // More than 5min from planned start, type is not required but can be selected
     await staffAttendancePage.setArrivalTime('08:15')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
     await staffAttendancePage.assertDoneButtonEnabled(true)
@@ -430,7 +430,7 @@ describe('Realtime staff attendance page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
         departed: null,
         occupancyCoefficient: 0,
@@ -476,7 +476,7 @@ describe('Realtime staff attendance page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
         departed: null,
         occupancyCoefficient: 0,
@@ -531,7 +531,7 @@ describe('Realtime staff attendance page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
         departed: null,
         occupancyCoefficient: 0,
@@ -578,7 +578,7 @@ describe('Realtime staff attendance page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
         departed: null,
         occupancyCoefficient: 0,
@@ -612,7 +612,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     await staffAttendancePage.setArrivalTime('15:00')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.clickDoneButton()
     await staffAttendancePage.assertAttendanceTimeTextShown(
@@ -642,7 +642,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
 
     await staffAttendancePage.setArrivalTime('12:04')
-    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.selectGroup(testDaycareGroup.id)
     await staffAttendancePage.assertDoneButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('TRAINING')
     await staffAttendancePage.clickDoneButton()
@@ -685,7 +685,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markNewExternalStaffArrived(
       arrivalTime,
       name,
-      daycareGroupFixture
+      testDaycareGroup
     )
     await staffAttendancePage.assertPresentStaffCount(1)
 
@@ -710,7 +710,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.markNewExternalStaffArrived(
       arrivalTime,
       name,
-      daycareGroupFixture
+      testDaycareGroup
     )
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(name)
@@ -742,7 +742,7 @@ describe('Realtime staff attendance edit page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
         departed: HelsinkiDateTime.fromLocal(
           date,
@@ -778,7 +778,7 @@ describe('Realtime staff attendance edit page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
         departed: HelsinkiDateTime.fromLocal(
           date,
@@ -851,7 +851,7 @@ describe('Realtime staff attendance edit page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
         departed: HelsinkiDateTime.fromLocal(
           date,
@@ -888,7 +888,7 @@ describe('Realtime staff attendance edit page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(5, 59)),
         departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(12, 45))
       })
@@ -913,7 +913,7 @@ describe('Realtime staff attendance edit page', () => {
     await Fixture.realtimeStaffAttendance()
       .with({
         employeeId: staffFixture.id,
-        groupId: daycareGroupFixture.id,
+        groupId: testDaycareGroup.id,
         arrived: HelsinkiDateTime.fromLocal(
           date.subDays(1),
           LocalTime.parse(arrivalTime)

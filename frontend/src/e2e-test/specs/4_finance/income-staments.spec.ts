@@ -8,9 +8,9 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
+  testDaycare,
+  testChild,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -59,7 +59,7 @@ describe('Income statements', () => {
   test('Income statement can be set handled', async () => {
     await createIncomeStatements({
       body: {
-        personId: enduserGuardianFixture.id,
+        personId: testAdult.id,
         data: [
           {
             type: 'HIGHEST_FEE',
@@ -106,8 +106,8 @@ describe('Income statements', () => {
   test('Income statement can be filtered by child placement unit provider type', async () => {
     await Fixture.fridgeChild()
       .with({
-        headOfChild: enduserGuardianFixture.id,
-        childId: enduserChildFixtureJari.id,
+        headOfChild: testAdult.id,
+        childId: testChild.id,
         startDate: today.addYears(-1),
         endDate: today.addYears(1)
       })
@@ -120,8 +120,8 @@ describe('Income statements', () => {
       body: [
         createDaycarePlacementFixture(
           uuidv4(),
-          enduserChildFixtureJari.id,
-          daycareFixture.id,
+          testChild.id,
+          testDaycare.id,
           startDate,
           endDate
         )
@@ -130,7 +130,7 @@ describe('Income statements', () => {
 
     await createIncomeStatements({
       body: {
-        personId: enduserGuardianFixture.id,
+        personId: testAdult.id,
         data: [
           {
             type: 'HIGHEST_FEE',
@@ -147,12 +147,12 @@ describe('Income statements', () => {
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by the placed unit provider type -> is shown
-    await incomeStatementsPage.selectProviderType(daycareFixture.providerType)
+    await incomeStatementsPage.selectProviderType(testDaycare.providerType)
     await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by other unit provider type -> not shown
-    await incomeStatementsPage.unSelectProviderType(daycareFixture.providerType)
+    await incomeStatementsPage.unSelectProviderType(testDaycare.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
     await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(0)
@@ -161,7 +161,7 @@ describe('Income statements', () => {
   test('Child income statement is listed on finance worker unhandled income statement list', async () => {
     await createIncomeStatements({
       body: {
-        personId: enduserChildFixtureJari.id,
+        personId: testChild.id,
         data: [
           {
             type: 'CHILD_INCOME',
@@ -178,7 +178,7 @@ describe('Income statements', () => {
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,
-      `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`,
+      `${testChild.lastName} ${testChild.firstName}`,
       'lapsen tulotiedot'
     )
 

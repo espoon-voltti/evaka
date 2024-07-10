@@ -39,7 +39,7 @@ describe('Citizen club applications', () => {
   test('Sending incomplete club application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'CLUB'
     )
     await editorPage.goToVerification()
@@ -49,7 +49,7 @@ describe('Citizen club applications', () => {
   test('Minimal valid club application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'CLUB'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -64,7 +64,7 @@ describe('Citizen club applications', () => {
   test('Full valid club application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'CLUB'
     )
     const applicationId = editorPage.getNewApplicationId()

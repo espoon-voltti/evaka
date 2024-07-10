@@ -5,7 +5,7 @@
 import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { testDaycare, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -46,9 +46,9 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  daycareId = fixtures.daycareFixture.id
+  daycareId = fixtures.testDaycare.id
 
-  await Fixture.employeeUnitSupervisor(daycareFixture.id).with(esko).save()
+  await Fixture.employeeUnitSupervisor(testDaycare.id).with(esko).save()
   await Fixture.employee().with(pete).save()
   await Fixture.employee().with(yrjo).save()
   admin = await Fixture.employeeAdmin().save()

@@ -33,7 +33,7 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   employee = await Fixture.employee()
     .with({ roles: ['ADMIN'] })

@@ -9,11 +9,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  enduserChildFixtureJari,
-  Fixture,
-  uuidv4
-} from '../../dev-api/fixtures'
+import { testChild, Fixture, uuidv4 } from '../../dev-api/fixtures'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -42,16 +38,15 @@ let child: DevPerson
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
 const employeeName = `${empLastName} ${empFirstName}`
-const childName =
-  enduserChildFixtureJari.firstName + ' ' + enduserChildFixtureJari.lastName
+const childName = testChild.firstName + ' ' + testChild.lastName
 
 const pin = '2580'
 
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  child = fixtures.enduserChildFixtureJari
-  const unit = fixtures.daycareFixture
+  child = fixtures.testChild
+  const unit = fixtures.testDaycare
 
   const employee = await Fixture.employee()
     .with({
@@ -102,7 +97,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 1,
           otherIndx: 2,
-          personId: fixtures.enduserGuardianFixture.id,
+          personId: fixtures.testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -112,7 +107,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 2,
           otherIndx: 1,
-          personId: fixtures.enduserChildJariOtherGuardianFixture.id,
+          personId: fixtures.testAdult2.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -121,10 +116,7 @@ describe('Mobile PIN login', () => {
       ]
     })
 
-    const contacts = [
-      fixtures.enduserGuardianFixture,
-      fixtures.enduserChildJariOtherGuardianFixture
-    ]
+    const contacts = [fixtures.testAdult, fixtures.testAdult2]
     await createFamilyContact({
       body: contacts.map(({ id }, index) => ({
         id: uuidv4(),
@@ -159,7 +151,7 @@ describe('Mobile PIN login', () => {
         {
           id: uuidv4(),
           childId: child.id,
-          headOfChild: fixtures.enduserGuardianFixture.id,
+          headOfChild: fixtures.testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           conflict: false

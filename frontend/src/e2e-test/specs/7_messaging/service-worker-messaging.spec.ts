@@ -81,10 +81,7 @@ describe('Service Worker Messaging', () => {
   describe('Service Worker and citizen', () => {
     beforeEach(async () => {
       const applFixture = {
-        ...applicationFixture(
-          fixtures.enduserChildFixtureJari,
-          fixtures.enduserGuardianFixture
-        ),
+        ...applicationFixture(fixtures.testChild, fixtures.testAdult),
         sentDate: mockedToday
       }
       await createApplications({ body: [applFixture] })
@@ -150,10 +147,10 @@ describe('Service Worker Messaging', () => {
       ).getMessageEditor()
 
       await messageEditor.assertReceiver(
-        `${fixtures.enduserGuardianFixture.lastName} ${fixtures.enduserGuardianFixture.firstName}`
+        `${fixtures.testAdult.lastName} ${fixtures.testAdult.firstName}`
       )
       await messageEditor.assertTitle(
-        `Hakemus 08.11.2022: ${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+        `Hakemus 08.11.2022: ${fixtures.testChild.firstName} ${fixtures.testChild.lastName}`
       )
     })
 

@@ -32,15 +32,15 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserGuardianFixture.id
+  personId = fixtures.testAdult.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   financeAdminId = financeAdmin.id
 
   await Fixture.fridgeChild()
     .with({
-      headOfChild: fixtures.enduserGuardianFixture.id,
-      childId: fixtures.enduserChildFixtureJari.id,
+      headOfChild: fixtures.testAdult.id,
+      childId: fixtures.testChild.id,
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2020, 12, 31)
     })
@@ -51,8 +51,8 @@ beforeEach(async () => {
 
   await Fixture.placement()
     .with({
-      childId: fixtures.enduserChildFixtureJari.id,
-      unitId: fixtures.daycareFixture.id,
+      childId: fixtures.testChild.id,
+      unitId: fixtures.testDaycare.id,
       startDate: placementStart,
       endDate: placementEnd
     })

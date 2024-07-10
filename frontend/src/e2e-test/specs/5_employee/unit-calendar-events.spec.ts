@@ -9,8 +9,8 @@ import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
+  testCareArea2,
+  testDaycare2,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -47,11 +47,8 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  daycare = await Fixture.daycare()
-    .with(daycare2Fixture)
-    .careArea(careArea)
-    .save()
+  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  daycare = await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 

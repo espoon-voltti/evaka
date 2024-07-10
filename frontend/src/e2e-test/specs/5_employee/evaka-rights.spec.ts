@@ -36,8 +36,8 @@ beforeEach(async () => {
 })
 
 test('adding and removing evaka rights from guardians works', async () => {
-  const child = fixtures.enduserChildFixtureJari
-  const blockedGuardian = fixtures.enduserGuardianFixture
+  const child = fixtures.testChild
+  const blockedGuardian = fixtures.testAdult
   await childInformation.navigateToChild(child.id)
   const childGuardiansSection =
     await childInformation.openCollapsible('guardians')

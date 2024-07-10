@@ -8,10 +8,10 @@ import { UUID } from 'lib-common/types'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
-  daycareFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testChild,
+  testChild2,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -50,7 +50,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  daycare = fixtures.daycareFixture
+  daycare = fixtures.testDaycare
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
@@ -76,7 +76,7 @@ beforeEach(async () => {
     })
     .save()
 
-  child2Fixture = fixtures.enduserChildFixtureJari
+  child2Fixture = fixtures.testChild
   child2DaycarePlacementId = uuidv4()
   await Fixture.placement()
     .with({
@@ -108,12 +108,12 @@ describe('Unit groups - placement plans / proposals', () => {
     const today = LocalDate.todayInSystemTz()
 
     const application1: DevApplicationWithForm = {
-      ...applicationFixture(enduserChildFixtureJari, enduserGuardianFixture),
+      ...applicationFixture(testChild, testAdult),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
-      ...applicationFixture(enduserChildFixtureKaarina, enduserGuardianFixture),
+      ...applicationFixture(testChild2, testAdult),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
@@ -123,7 +123,7 @@ describe('Unit groups - placement plans / proposals', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application1.id,
-        unitId: daycareFixture.id,
+        unitId: testDaycare.id,
         periodStart: today,
         periodEnd: today
       })
@@ -132,7 +132,7 @@ describe('Unit groups - placement plans / proposals', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application2.id,
-        unitId: daycareFixture.id,
+        unitId: testDaycare.id,
         periodStart: today,
         periodEnd: today
       })
@@ -142,7 +142,7 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
-        unitId: daycareFixture.id,
+        unitId: testDaycare.id,
         startDate: today,
         endDate: today
       })
@@ -153,7 +153,7 @@ describe('Unit groups - placement plans / proposals', () => {
       .with({
         applicationId: application2.id,
         employeeId: unitSupervisor.id,
-        unitId: daycareFixture.id,
+        unitId: testDaycare.id,
         startDate: today.addDays(1),
         endDate: today.addDays(2)
       })

@@ -8,7 +8,7 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
@@ -33,10 +33,10 @@ beforeAll(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
   const placement = await Fixture.placement()

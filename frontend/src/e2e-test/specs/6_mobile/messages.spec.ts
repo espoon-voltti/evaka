@@ -13,9 +13,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  daycareFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
+  testDaycare,
+  testChild,
+  testChild2,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -97,19 +97,19 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  child = enduserChildFixtureJari
-  child2 = enduserChildFixtureKaarina
+  child = testChild
+  child2 = testChild2
 
   daycareGroup = await Fixture.daycareGroup()
-    .with({ id: daycareGroupId, daycareId: daycareFixture.id })
+    .with({ id: daycareGroupId, daycareId: testDaycare.id })
     .save()
 
   daycareGroup2 = await Fixture.daycareGroup()
-    .with({ id: daycareGroup2Id, daycareId: daycareFixture.id })
+    .with({ id: daycareGroup2Id, daycareId: testDaycare.id })
     .save()
 
   daycareGroup3 = await Fixture.daycareGroup()
-    .with({ id: daycareGroup3Id, daycareId: daycareFixture.id })
+    .with({ id: daycareGroup3Id, daycareId: testDaycare.id })
     .save()
 
   const employee = await Fixture.employee()
@@ -120,7 +120,7 @@ beforeEach(async () => {
       email: 'yy@example.com',
       roles: []
     })
-    .withDaycareAcl(daycareFixture.id, 'UNIT_SUPERVISOR')
+    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
     .save()
 
   const staff = await Fixture.employee()
@@ -130,7 +130,7 @@ beforeEach(async () => {
       email: 'zz@example.com',
       roles: []
     })
-    .withDaycareAcl(daycareFixture.id, 'STAFF')
+    .withDaycareAcl(testDaycare.id, 'STAFF')
     .withGroupAcl(daycareGroup.id)
     .withGroupAcl(daycareGroup2.id)
     .withGroupAcl(daycareGroup3.id)
@@ -143,7 +143,7 @@ beforeEach(async () => {
       email: 'aa@example.com',
       roles: []
     })
-    .withDaycareAcl(daycareFixture.id, 'STAFF')
+    .withDaycareAcl(testDaycare.id, 'STAFF')
     .save()
 
   await Fixture.employeePin().with({ userId: employee.id, pin }).save()
@@ -153,7 +153,7 @@ beforeEach(async () => {
   const placementFixture = await Fixture.placement()
     .with({
       childId: child.id,
-      unitId: daycareFixture.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate
     })
@@ -166,7 +166,7 @@ beforeEach(async () => {
   const placement2Fixture = await Fixture.placement()
     .with({
       childId: child2.id,
-      unitId: daycareFixture.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate
     })
@@ -181,11 +181,11 @@ beforeEach(async () => {
     body: [
       {
         childId: child.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: fixtures.testAdult.id
       },
       {
         childId: child2.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: fixtures.testAdult.id
       }
     ]
   })
@@ -209,7 +209,7 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
 
 describe('Message editor in child page', () => {
   beforeEach(async () => {
-    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
 
@@ -240,7 +240,7 @@ describe('Message editor in child page', () => {
 
 describe('Messages page', () => {
   beforeEach(async () => {
-    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
 
@@ -312,7 +312,7 @@ describe('Messages page', () => {
     await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
     await waitUntilEqual(
       () => threadView.getMessageSender(1),
-      `${daycareFixture.name} - ${daycareGroup.name}`
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
   })
 
@@ -358,7 +358,7 @@ describe('Messages page', () => {
     const extraPlacementFixture = await Fixture.placement()
       .with({
         childId: extraChildFixture.id,
-        unitId: daycareFixture.id,
+        unitId: testDaycare.id,
         startDate: mockedDate,
         endDate: mockedDate
       })
@@ -371,7 +371,7 @@ describe('Messages page', () => {
     await staffStartsNewMessage()
 
     await messageEditor.senderName.assertTextEquals(
-      `${daycareFixture.name} - ${daycareGroup.name}`
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
 
     // Required fields not filled -> send button is disabled
@@ -522,12 +522,8 @@ describe('Messages page', () => {
 
     const blocklistSection =
       await childInformationPage.openCollapsible('messageBlocklist')
-    await blocklistSection.addParentToBlockList(
-      fixtures.enduserGuardianFixture.id
-    )
-    await blocklistSection.addParentToBlockList(
-      fixtures.enduserChildJariOtherGuardianFixture.id
-    )
+    await blocklistSection.addParentToBlockList(fixtures.testAdult.id)
+    await blocklistSection.addParentToBlockList(fixtures.testAdult2.id)
 
     await listPage.selectChild(child.id)
     await childPage.messageEditorLink.click()

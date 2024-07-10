@@ -5,7 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import UnitListPage from '../../pages/mobile/unit-list-page'
@@ -25,13 +25,13 @@ beforeEach(async () => {
 
   unit = await Fixture.daycare()
     .with({
-      areaId: fixtures.careAreaFixture.id,
+      areaId: fixtures.testCareArea.id,
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
     })
     .save()
   group = await Fixture.daycareGroup()
     .with({
-      ...daycareGroupFixture,
+      ...testDaycareGroup,
       daycareId: unit.id
     })
     .save()
@@ -39,7 +39,7 @@ beforeEach(async () => {
   page = await Page.open({ mockedTime: mockedNow })
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id)
-    .withDaycareAcl(fixtures.preschoolFixture.id, 'UNIT_SUPERVISOR')
+    .withDaycareAcl(fixtures.testPreschool.id, 'UNIT_SUPERVISOR')
     .save()
   const mobileSignupUrl = await pairPersonalMobileDevice(unitSupervisor.id)
   await page.goto(mobileSignupUrl)
@@ -49,10 +49,10 @@ beforeEach(async () => {
 describe('Employee mobile unit list', () => {
   test('Staff count is as expected', async () => {
     const staff1Fixture = await Fixture.employeeStaff(unit.id)
-      .withGroupAcl(daycareGroupFixture.id)
+      .withGroupAcl(testDaycareGroup.id)
       .save()
     const staff2Fixture = await Fixture.employeeStaff(unit.id)
-      .withGroupAcl(daycareGroupFixture.id)
+      .withGroupAcl(testDaycareGroup.id)
       .save()
 
     await Fixture.realtimeStaffAttendance()

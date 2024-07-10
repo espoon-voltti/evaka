@@ -4,7 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
@@ -20,7 +20,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.person()
-    .with(enduserGuardianFixture)
+    .with(testAdult)
     .saveAdult({ updateMockVtjWithDependants: [] })
 
   page = await Page.open()

@@ -22,7 +22,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserChildFixtureJari.id
+  personId = fixtures.testChild.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 

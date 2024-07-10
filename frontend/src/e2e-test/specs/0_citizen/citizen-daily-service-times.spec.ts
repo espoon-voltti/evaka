@@ -5,11 +5,11 @@
 import LocalDate from 'lib-common/local-date'
 
 import {
-  careAreaFixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testAdult,
   Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
@@ -26,7 +26,7 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 
-const child = enduserChildFixtureJari
+const child = testChild
 let daycare: DevDaycare
 let guardian: DevPerson
 let dailyServiceTime: DevDailyServiceTimes
@@ -36,16 +36,16 @@ beforeEach(async () => {
   page = await Page.open()
 
   daycare = await Fixture.daycare()
-    .with(daycareFixture)
-    .careArea(await Fixture.careArea().with(careAreaFixture).save())
+    .with(testDaycare)
+    .careArea(await Fixture.careArea().with(testCareArea).save())
     .save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
 
   const child1 = await Fixture.person()
     .with(child)
     .saveChild({ updateMockVtj: true })
   guardian = await Fixture.person()
-    .with(enduserGuardianFixture)
+    .with(testAdult)
     .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()

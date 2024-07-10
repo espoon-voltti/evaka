@@ -9,13 +9,13 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  careAreaFixture,
+  testCareArea2,
+  testCareArea,
   createDaycarePlacementFixture,
-  daycare2Fixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
+  testDaycare2,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
   familyWithTwoGuardians,
   Fixture,
   uuidv4
@@ -50,9 +50,9 @@ beforeEach(async () => {
   director = await Fixture.employeeDirector().save()
 
   const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.daycareFixture.id
+  unitId = fixtures.testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
@@ -73,8 +73,8 @@ describe('Assistance need decisions report', () => {
 
   const baseReportRow = {
     childName: `${familyWithTwoGuardians.children[0].lastName} ${familyWithTwoGuardians.children[0].firstName}`,
-    careAreaName: careAreaFixture.name,
-    unitName: daycareFixture.name,
+    careAreaName: testCareArea.name,
+    unitName: testDaycare.name,
     decisionMade: '-',
     status: 'DRAFT'
   }
@@ -392,10 +392,10 @@ describe('Assistance need decisions report', () => {
       })
       .save()
 
-    const anotherChildId = enduserChildFixtureJari.id
-    const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+    const anotherChildId = testChild.id
+    const careArea = await Fixture.careArea().with(testCareArea2).save()
     const anotherDaycare = await Fixture.daycare()
-      .with(daycare2Fixture)
+      .with(testDaycare2)
       .careArea(careArea)
       .save()
 

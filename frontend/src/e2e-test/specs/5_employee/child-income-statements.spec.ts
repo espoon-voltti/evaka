@@ -9,8 +9,8 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  enduserChildFixtureJari,
+  testDaycare,
+  testChild,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -30,7 +30,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserChildFixtureJari.id
+  personId = fixtures.testChild.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
@@ -43,14 +43,14 @@ describe('Child profile income statements', () => {
   test('Shows income statements', async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
-      enduserChildFixtureJari.id,
-      daycareFixture.id
+      testChild.id,
+      testDaycare.id
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     await createIncomeStatements({
       body: {
-        personId: enduserChildFixtureJari.id,
+        personId: testChild.id,
         data: [
           {
             type: 'CHILD_INCOME',
@@ -64,7 +64,7 @@ describe('Child profile income statements', () => {
     })
 
     const profilePage = new ChildInformationPage(page)
-    await profilePage.navigateToChild(enduserChildFixtureJari.id)
+    await profilePage.navigateToChild(testChild.id)
     await profilePage.waitUntilLoaded()
 
     const incomeSection = await profilePage.openCollapsible('income')

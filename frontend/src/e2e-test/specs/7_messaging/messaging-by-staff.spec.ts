@@ -14,9 +14,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  daycareGroupFixture,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycareGroup,
+  testChild2,
+  testAdult,
   Fixture
 } from '../../dev-api/fixtures'
 import {
@@ -62,7 +62,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
@@ -71,16 +71,16 @@ beforeEach(async () => {
     enabled: true
   })
 
-  staff = await Fixture.employeeStaff(fixtures.daycareFixture.id)
-    .withGroupAcl(daycareGroupFixture.id)
+  staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
+    .withGroupAcl(testDaycareGroup.id)
     .save()
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.daycareFixture.id
+    fixtures.testDaycare.id
   ).save()
 
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.enduserChildFixtureJari.id // born 7.7.2014
+  const unitId = fixtures.testDaycare.id
+  childId = fixtures.testChild.id // born 7.7.2014
 
   const daycarePlacementFixture1 = await Fixture.placement()
     .with({
@@ -93,7 +93,7 @@ beforeEach(async () => {
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture1.id,
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -101,7 +101,7 @@ beforeEach(async () => {
 
   const daycarePlacementFixture2 = await Fixture.placement()
     .with({
-      childId: fixtures.enduserChildFixtureKaarina.id,
+      childId: fixtures.testChild2.id,
       unitId,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
@@ -110,7 +110,7 @@ beforeEach(async () => {
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture2.id,
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -120,7 +120,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childId,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: fixtures.testAdult.id
       }
     ]
   })
@@ -128,8 +128,8 @@ beforeEach(async () => {
   await insertGuardians({
     body: [
       {
-        childId: fixtures.enduserChildFixtureKaarina.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        childId: fixtures.testChild2.id,
+        guardianId: fixtures.testAdult.id
       }
     ]
   })
@@ -156,10 +156,7 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
 
 async function initOtherCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(
-    citizenPage,
-    fixtures.enduserChildJariOtherGuardianFixture.ssn ?? undefined
-  )
+  await enduserLogin(citizenPage, fixtures.testAdult2.ssn ?? undefined)
 }
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
@@ -238,9 +235,9 @@ describe('Sending and receiving messages', () => {
 describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
     staff = await Fixture.employeeSpecialEducationTeacher(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     )
-      .withGroupAcl(daycareGroupFixture.id)
+      .withGroupAcl(testDaycareGroup.id)
       .save()
     // create messaging account for newly created VEO account
     await createMessageAccounts()
@@ -248,7 +245,7 @@ describe('Sending and receiving sensitive messages', () => {
     const sensitiveMessage = {
       ...defaultMessage,
       sensitive: true,
-      receivers: [enduserChildFixtureKaarina.id]
+      receivers: [testChild2.id]
     }
 
     await initStaffPage(mockedDateAt10)
@@ -265,9 +262,7 @@ describe('Sending and receiving sensitive messages', () => {
     await citizenMessagesPage.assertThreadIsRedacted()
 
     const authPage = await citizenMessagesPage.openStrongAuthPage()
-    const strongAuthCitizenMessagePage = await authPage.login(
-      enduserGuardianFixture.ssn!
-    )
+    const strongAuthCitizenMessagePage = await authPage.login(testAdult.ssn!)
 
     await strongAuthCitizenMessagePage.assertThreadContent(sensitiveMessage)
   })
@@ -280,7 +275,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [fixtures.daycareFixture.id]
+      receivers: [fixtures.testDaycare.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -302,7 +297,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [fixtures.enduserChildFixtureKaarina.id]
+      receivers: [fixtures.testChild2.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -321,8 +316,8 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      sender: `${fixtures.daycareFixture.name} - ${daycareGroupFixture.name}`,
-      receivers: [daycareGroupFixture.id]
+      sender: `${fixtures.testDaycare.name} - ${testDaycareGroup.name}`,
+      receivers: [testDaycareGroup.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -362,7 +357,7 @@ describe('Additional filters', () => {
       body: [
         {
           childId: childId,
-          guardianId: fixtures.enduserChildJariOtherGuardianFixture.id
+          guardianId: fixtures.testAdult2.id
         }
       ]
     })
@@ -371,7 +366,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [fixtures.daycareFixture.id],
+      receivers: [fixtures.testDaycare.id],
       yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
@@ -392,7 +387,7 @@ describe('Additional filters', () => {
       body: [
         {
           childId: childId,
-          guardianId: fixtures.enduserChildJariOtherGuardianFixture.id
+          guardianId: fixtures.testAdult2.id
         }
       ]
     })
@@ -401,7 +396,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [fixtures.daycareFixture.id]
+      receivers: [fixtures.testDaycare.id]
     }
     let messageEditor = await new MessagesPage(
       unitSupervisorPage

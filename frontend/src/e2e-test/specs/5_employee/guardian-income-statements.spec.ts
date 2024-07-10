@@ -9,8 +9,8 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  enduserGuardianFixture,
+  testDaycare,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -35,8 +35,8 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserGuardianFixture.id
-  child = fixtures.enduserChildFixturePorriHatterRestricted
+  personId = fixtures.testAdult.id
+  child = fixtures.testChildRestricted
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
@@ -49,14 +49,14 @@ describe('Guardian income statements', () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
       child.id,
-      daycareFixture.id
+      testDaycare.id
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -79,7 +79,7 @@ describe('Guardian income statements', () => {
 
     await page.goto(config.employeeUrl + '/profile/' + personId)
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const incomesSection = guardianPage.getCollapsible('incomes')
     await incomesSection.assertIncomeStatementChildName(

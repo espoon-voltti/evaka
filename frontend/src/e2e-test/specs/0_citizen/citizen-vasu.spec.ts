@@ -10,8 +10,8 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
-  enduserGuardianFixture,
+  testDaycareGroup,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -44,11 +44,11 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   child = fixtures.familyWithTwoGuardians.children[0]
-  child2Id = fixtures.enduserChildFixtureJari.id
+  child2Id = fixtures.testChild.id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -89,7 +89,7 @@ describe('Citizen vasu document page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -113,7 +113,7 @@ describe('Citizen child documents listing page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -133,11 +133,11 @@ describe('Citizen child documents listing page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         },
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child2Id
         }
       ]

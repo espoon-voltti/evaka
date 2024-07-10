@@ -7,11 +7,11 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  careAreaFixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testAdult,
   Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
@@ -25,7 +25,7 @@ let page: Page
 
 const startDate = LocalDate.of(2024, 6, 3)
 const period = new FiniteDateRange(startDate, LocalDate.of(2024, 8, 15))
-const child = enduserChildFixtureJari
+const child = testChild
 const mockedDate = LocalDate.of(2024, 5, 25)
 let daycare: DevDaycare
 let guardian: DevPerson
@@ -37,16 +37,16 @@ beforeEach(async () => {
   })
 
   daycare = await Fixture.daycare()
-    .with(daycareFixture)
-    .careArea(await Fixture.careArea().with(careAreaFixture).save())
+    .with(testDaycare)
+    .careArea(await Fixture.careArea().with(testCareArea).save())
     .save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
 
   const child1 = await Fixture.person()
     .with(child)
     .saveChild({ updateMockVtj: true })
   guardian = await Fixture.person()
-    .with(enduserGuardianFixture)
+    .with(testAdult)
     .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()

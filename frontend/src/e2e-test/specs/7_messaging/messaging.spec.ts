@@ -15,9 +15,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  daycare2Fixture,
-  daycareGroupFixture,
-  enduserChildFixtureKaarina,
+  testDaycare2,
+  testDaycareGroup,
+  testChild2,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -68,8 +68,8 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  careArea = fixtures.careAreaFixture
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  careArea = fixtures.testCareArea
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
@@ -79,11 +79,11 @@ beforeEach(async () => {
   })
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.daycareFixture.id
+    fixtures.testDaycare.id
   ).save()
 
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.enduserChildFixtureJari.id
+  const unitId = fixtures.testDaycare.id
+  childId = fixtures.testChild.id
 
   const daycarePlacementFixture = await Fixture.placement()
     .with({
@@ -96,20 +96,20 @@ beforeEach(async () => {
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
     .save()
 
   await Fixture.daycare()
-    .with(daycare2Fixture)
+    .with(testDaycare2)
     .with({
       areaId: careArea.id
     })
     .save()
 
-  backupDaycareId = daycare2Fixture.id
+  backupDaycareId = testDaycare2.id
   backupGroupFixtureId = uuidv4()
   await createDaycareGroups({
     body: [
@@ -129,7 +129,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childId,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: fixtures.testAdult.id
       }
     ]
   })
@@ -201,8 +201,8 @@ describe('Sending and receiving messages', () => {
       test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
         await Fixture.placement()
           .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixturePrivateVoucher.id,
+            childId: testChild2.id,
+            unitId: fixtures.testDaycarePrivateVoucher.id,
             startDate: mockedDate,
             endDate: mockedDate
           })
@@ -211,9 +211,9 @@ describe('Sending and receiving messages', () => {
           body: [
             {
               id: uuidv4(),
-              childId: enduserChildFixtureKaarina.id,
-              unitId: fixtures.daycareFixture.id,
-              groupId: daycareGroupFixture.id,
+              childId: testChild2.id,
+              unitId: fixtures.testDaycare.id,
+              groupId: testDaycareGroup.id,
               period: new FiniteDateRange(mockedDate, mockedDate)
             }
           ]
@@ -222,8 +222,8 @@ describe('Sending and receiving messages', () => {
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: fixtures.testAdult.id
             }
           ]
         })
@@ -235,14 +235,14 @@ describe('Sending and receiving messages', () => {
         const messageEditor = await messagesPage.openMessageEditor()
         await messageEditor.sendNewMessage({
           ...defaultMessage,
-          receivers: [enduserChildFixtureKaarina.id]
+          receivers: [testChild2.id]
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         const sentMessagesPage = await messagesPage.openSentMessages()
         await sentMessagesPage.assertMessageParticipants(
           0,
-          `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`
+          `${testChild2.lastName} ${testChild2.firstName}`
         )
 
         await openCitizen(mockedDateAt11)
@@ -278,7 +278,7 @@ describe('Sending and receiving messages', () => {
           body: [
             {
               childId,
-              guardianId: fixtures.enduserGuardianFixture.id
+              guardianId: fixtures.testAdult.id
             }
           ]
         })
@@ -384,9 +384,7 @@ describe('Sending and receiving messages', () => {
         const childInformationPage = new ChildInformationPage(adminPage)
         const blocklistSection =
           await childInformationPage.openCollapsible('messageBlocklist')
-        await blocklistSection.addParentToBlockList(
-          fixtures.enduserGuardianFixture.id
-        )
+        await blocklistSection.addParentToBlockList(fixtures.testAdult.id)
 
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -449,8 +447,8 @@ describe('Sending and receiving messages', () => {
       test('The citizen must select the child that the message is in regards to', async () => {
         const daycarePlacementFixture = await Fixture.placement()
           .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixture.id,
+            childId: testChild2.id,
+            unitId: fixtures.testDaycare.id,
             startDate: mockedDate,
             endDate: mockedDate
           })
@@ -458,7 +456,7 @@ describe('Sending and receiving messages', () => {
         await Fixture.groupPlacement()
           .with({
             daycarePlacementId: daycarePlacementFixture.id,
-            daycareGroupId: daycareGroupFixture.id,
+            daycareGroupId: testDaycareGroup.id,
             startDate: mockedDate,
             endDate: mockedDate
           })
@@ -466,8 +464,8 @@ describe('Sending and receiving messages', () => {
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: fixtures.testAdult.id
             }
           ]
         })
@@ -478,14 +476,14 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         const editor = await citizenMessagesPage.createNewMessage()
         await editor.assertChildrenSelectable([
-          fixtures.enduserChildFixtureJari.id,
-          enduserChildFixtureKaarina.id
+          fixtures.testChild.id,
+          testChild2.id
         ])
 
         // No recipients available before selecting a child
         await editor.assertNoRecipients()
 
-        await editor.selectChildren([enduserChildFixtureKaarina.id])
+        await editor.selectChildren([testChild2.id])
         await editor.selectRecipients(recipients)
         await editor.fillMessage(defaultTitle, defaultContent)
         await editor.sendMessage()
@@ -506,8 +504,8 @@ describe('Sending and receiving messages', () => {
         const placementEndDate = mockedDate
         const daycarePlacementFixture = await Fixture.placement()
           .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixture.id,
+            childId: testChild2.id,
+            unitId: fixtures.testDaycare.id,
             startDate: mockedDate,
             endDate: placementEndDate
           })
@@ -515,7 +513,7 @@ describe('Sending and receiving messages', () => {
         await Fixture.groupPlacement()
           .with({
             daycarePlacementId: daycarePlacementFixture.id,
-            daycareGroupId: daycareGroupFixture.id,
+            daycareGroupId: testDaycareGroup.id,
             startDate: mockedDate,
             endDate: placementEndDate
           })
@@ -523,8 +521,8 @@ describe('Sending and receiving messages', () => {
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: fixtures.testAdult.id
             }
           ]
         })
@@ -544,7 +542,7 @@ describe('Sending and receiving messages', () => {
       })
 
       test('The guardian can select another guardian as an recipient', async () => {
-        const otherGuardian = fixtures.enduserChildJariOtherGuardianFixture
+        const otherGuardian = fixtures.testAdult2
         await insertGuardians({
           body: [
             {

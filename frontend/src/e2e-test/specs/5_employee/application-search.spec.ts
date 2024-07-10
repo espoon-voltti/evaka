@@ -42,24 +42,15 @@ async function openPage(employee: DevEmployee = admin) {
 
 describe('Employee searches applications', () => {
   test('Duplicate applications are found', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
 
     const duplicateFixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130222'
     }
 
     const nonDuplicateFixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild2, fixtures.testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130224'
     }
 
@@ -84,8 +75,8 @@ describe('Employee searches applications', () => {
 
     const createApplicationForUnit = (unitId: string) => ({
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -120,8 +111,8 @@ describe('Employee searches applications', () => {
 
     const createApplicationForUnit = (unitId: string) => ({
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -156,8 +147,8 @@ describe('Employee searches applications', () => {
       assistanceNeeded: boolean
     ) => ({
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -205,8 +196,8 @@ describe('Employee searches applications', () => {
 
     const applicationWithVoucherUnitFirst = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -216,8 +207,8 @@ describe('Employee searches applications', () => {
     }
     const applicationWithVoucherUnitSecond = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -227,8 +218,8 @@ describe('Employee searches applications', () => {
     }
     const applicationWithNoVoucherUnit = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -292,8 +283,8 @@ describe('Employee searches applications', () => {
       .save()
     const clubApplication = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'CLUB',
         null,
@@ -303,8 +294,8 @@ describe('Employee searches applications', () => {
     }
     const daycareApplication = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -314,8 +305,8 @@ describe('Employee searches applications', () => {
     }
     const preschoolApplication = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        fixtures.testChild,
+        fixtures.testAdult,
         undefined,
         'PRESCHOOL',
         null,

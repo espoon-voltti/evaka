@@ -24,8 +24,8 @@ beforeAll(async () => {
   fixtures = await initializeAreaAndPersonData()
   await Fixture.placement()
     .with({
-      childId: fixtures.enduserChildFixtureJari.id,
-      unitId: fixtures.daycareFixture.id
+      childId: fixtures.testChild.id,
+      unitId: fixtures.testDaycare.id
     })
     .save()
 })
@@ -107,7 +107,7 @@ describe('Child information page', () => {
   })
 
   test('Staff sees only the units and messaging tabs', async () => {
-    const staff = await Fixture.employeeStaff(fixtures.daycareFixture.id).save()
+    const staff = await Fixture.employeeStaff(fixtures.testDaycare.id).save()
     await employeeLogin(page, staff)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
@@ -122,7 +122,7 @@ describe('Child information page', () => {
 
   test('Unit supervisor sees units, search, reports and messaging tabs', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await page.goto(config.employeeUrl)
@@ -142,7 +142,7 @@ describe('Child information page sections', () => {
     const admin = await Fixture.employeeAdmin().save()
     await employeeLogin(page, admin)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
@@ -164,7 +164,7 @@ describe('Child information page sections', () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
     await employeeLogin(page, serviceWorker)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
@@ -186,7 +186,7 @@ describe('Child information page sections', () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
     await employeeLogin(page, financeAdmin)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
@@ -205,10 +205,10 @@ describe('Child information page sections', () => {
   })
 
   test('Staff sees the correct sections', async () => {
-    const staff = await Fixture.employeeStaff(fixtures.daycareFixture.id).save()
+    const staff = await Fixture.employeeStaff(fixtures.testDaycare.id).save()
     await employeeLogin(page, staff)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
@@ -228,11 +228,11 @@ describe('Child information page sections', () => {
 
   test('Unit supervisor sees the correct sections', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
@@ -253,11 +253,11 @@ describe('Child information page sections', () => {
   test('Special education teacher sees the correct sections', async () => {
     const specialEducationTeacher =
       await Fixture.employeeSpecialEducationTeacher(
-        fixtures.daycareFixture.id
+        fixtures.testDaycare.id
       ).save()
     await employeeLogin(page, specialEducationTeacher)
     await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.enduserChildFixtureJari.id}`
+      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
     )
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,

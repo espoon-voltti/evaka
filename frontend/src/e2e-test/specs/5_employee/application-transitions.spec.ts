@@ -13,10 +13,10 @@ import {
 } from '../../dev-api/data-init'
 import {
   applicationFixture,
-  daycareFixture,
+  testDaycare,
   decisionFixture,
   Fixture,
-  preschoolFixture,
+  testPreschool,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -64,10 +64,7 @@ beforeEach(async () => {
 describe('Application transitions', () => {
   test('Service worker accepts decision on behalf of the enduser', async () => {
     const fixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -93,10 +90,7 @@ describe('Application transitions', () => {
 
   test('Service worker accepts decision on behalf of the enduser and forwards start date 2 weeks', async () => {
     const fixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -126,10 +120,7 @@ describe('Application transitions', () => {
 
   test('Sending decision sets application to waiting confirmation state', async () => {
     const fixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -158,7 +149,7 @@ describe('Application transitions', () => {
   test('Accepting decision for non vtj guardian sets application to waiting for mailing state', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
@@ -188,7 +179,7 @@ describe('Application transitions', () => {
     const preferredStartDate = mockedTime
 
     const group = await Fixture.daycareGroup()
-      .with({ daycareId: fixtures.daycareFixture.id })
+      .with({ daycareId: fixtures.testDaycare.id })
       .save()
     await Fixture.daycareCaretakers()
       .with({
@@ -199,7 +190,7 @@ describe('Application transitions', () => {
       .save()
 
     const group2 = await Fixture.daycareGroup()
-      .with({ daycareId: fixtures.preschoolFixture.id })
+      .with({ daycareId: fixtures.testPreschool.id })
       .save()
     await Fixture.daycareCaretakers()
       .with({
@@ -212,27 +203,27 @@ describe('Application transitions', () => {
     // Create existing placements to show meaningful occupancy values
     await Fixture.placement()
       .with({
-        unitId: fixtures.daycareFixture.id,
-        childId: fixtures.enduserChildFixturePorriHatterRestricted.id,
+        unitId: fixtures.testDaycare.id,
+        childId: fixtures.testChildRestricted.id,
         startDate: preferredStartDate
       })
       .save()
     await Fixture.placement()
       .with({
-        unitId: fixtures.preschoolFixture.id,
-        childId: fixtures.enduserChildFixtureJari.id,
+        unitId: fixtures.testPreschool.id,
+        childId: fixtures.testChild.id,
         startDate: preferredStartDate
       })
       .save()
 
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian,
         undefined,
         'DAYCARE',
         null,
-        [daycareFixture.id],
+        [testDaycare.id],
         true,
         'SENT',
         preferredStartDate
@@ -261,22 +252,22 @@ describe('Application transitions', () => {
     const planStartDate = preferredStartDate.addDays(1)
     await placementDraftPage.startDate.fill(planStartDate)
 
-    await placementDraftPage.assertOccupancies(fixtures.daycareFixture.id, {
+    await placementDraftPage.assertOccupancies(fixtures.testDaycare.id, {
       max3Months: '14,3 %',
       max6Months: '14,3 %',
       max3MonthsSpeculated: '28,6 %',
       max6MonthsSpeculated: '28,6 %'
     })
 
-    await placementDraftPage.addOtherUnit(fixtures.preschoolFixture.name)
-    await placementDraftPage.assertOccupancies(fixtures.preschoolFixture.id, {
+    await placementDraftPage.addOtherUnit(fixtures.testPreschool.name)
+    await placementDraftPage.assertOccupancies(fixtures.testPreschool.id, {
       max3Months: '7,1 %',
       max6Months: '7,1 %',
       max3MonthsSpeculated: '14,3 %',
       max6MonthsSpeculated: '14,3 %'
     })
 
-    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
     await placementDraftPage.submit()
 
     await applicationWorkbench.waitUntilLoaded()
@@ -320,12 +311,12 @@ describe('Application transitions', () => {
   test('Decision draft page works without unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
-        [preschoolFixture.id],
+        [testPreschool.id],
         true,
         'SENT',
         mockedTime
@@ -350,7 +341,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -374,20 +365,20 @@ describe('Application transitions', () => {
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
         .sort((a, b) => a.type.localeCompare(b.type))
     ).toEqual([
-      { type: 'PRESCHOOL', unitId: preschoolFixture.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: preschoolFixture.id }
+      { type: 'PRESCHOOL', unitId: testPreschool.id },
+      { type: 'PRESCHOOL_DAYCARE', unitId: testPreschool.id }
     ])
   })
 
   test('Decision draft page works with unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
-        [preschoolFixture.id],
+        [testPreschool.id],
         true,
         'SENT',
         mockedTime
@@ -412,7 +403,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -421,7 +412,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDecisionEditorById(applicationId)
     await decisionEditorPage.waitUntilLoaded()
 
-    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', daycareFixture.id)
+    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
     await decisionEditorPage.save()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -437,15 +428,15 @@ describe('Application transitions', () => {
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
         .sort((a, b) => a.type.localeCompare(b.type))
     ).toStrictEqual([
-      { type: 'PRESCHOOL', unitId: daycareFixture.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: daycareFixture.id }
+      { type: 'PRESCHOOL', unitId: testDaycare.id },
+      { type: 'PRESCHOOL_DAYCARE', unitId: testDaycare.id }
     ])
   })
 
   test('Placement proposal flow', async () => {
     const fixture1 = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
+        fixtures.testChild,
         fixtures.familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
@@ -455,7 +446,7 @@ describe('Application transitions', () => {
     const applicationId2 = 'dd54782e-231c-4014-abaf-a63eed4e2627'
     const fixture2 = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithSeparatedGuardians.guardian
       ),
       status: 'SENT' as const,
@@ -486,12 +477,12 @@ describe('Application transitions', () => {
     const unitPage = new UnitPage(page2)
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
     await employeeLogin(page2, unitSupervisor)
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    await unitPage.navigateToUnit(fixtures.testDaycare.id)
     let placementProposals = (await unitPage.openApplicationProcessTab())
       .placementProposals
 
@@ -514,7 +505,7 @@ describe('Application transitions', () => {
     await applicationWorkbench.assertWithdrawPlacementProposalsButtonDisabled()
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    await unitPage.navigateToUnit(fixtures.testDaycare.id)
     const applicationProcessPage = await unitPage.openApplicationProcessTab()
     placementProposals = applicationProcessPage.placementProposals
     await placementProposals.assertAcceptButtonEnabled()
@@ -528,7 +519,7 @@ describe('Application transitions', () => {
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    await unitPage.navigateToUnit(fixtures.testDaycare.id)
     const waitingConfirmation = (await unitPage.openApplicationProcessTab())
       .waitingConfirmation
     await waitingConfirmation.assertRowCount(1)
@@ -537,7 +528,7 @@ describe('Application transitions', () => {
   test('Placement proposal rejection status', async () => {
     const fixture1 = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
+        fixtures.testChild,
         fixtures.familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
@@ -562,11 +553,11 @@ describe('Application transitions', () => {
 
     await employeeLogin(
       page2,
-      await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
+      await Fixture.employeeUnitSupervisor(fixtures.testDaycare.id).save()
     )
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+    await unitPage.navigateToUnit(fixtures.testDaycare.id)
     const placementProposals = (await unitPage.openApplicationProcessTab())
       .placementProposals
 
@@ -590,7 +581,7 @@ describe('Application transitions', () => {
   test('Decision cannot be accepted on behalf of guardian if application is in placement proposal state', async () => {
     const fixture1 = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
+        fixtures.testChild,
         fixtures.familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
@@ -609,7 +600,7 @@ describe('Application transitions', () => {
     )
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(applicationId)
@@ -619,10 +610,7 @@ describe('Application transitions', () => {
 
   test('Supervisor can download decision PDF only after it has been generated', async () => {
     const application = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       status: 'SENT' as const
     }
     applicationId = application.id
@@ -664,18 +652,12 @@ describe('Application transitions', () => {
 
   test('Application rejected by citizen is shown for 2 weeks', async () => {
     const application1: DevApplicationWithForm = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(fixtures.testChild2, fixtures.testAdult),
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
@@ -686,7 +668,7 @@ describe('Application transitions', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application1.id,
-        unitId: fixtures.daycareFixture.id,
+        unitId: fixtures.testDaycare.id,
         periodStart: placementStartDate,
         periodEnd: placementStartDate
       })
@@ -695,7 +677,7 @@ describe('Application transitions', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application2.id,
-        unitId: fixtures.daycareFixture.id,
+        unitId: fixtures.testDaycare.id,
         periodStart: placementStartDate,
         periodEnd: placementStartDate
       })
@@ -706,7 +688,7 @@ describe('Application transitions', () => {
         .with({
           applicationId: application2.id,
           employeeId: serviceWorker.id,
-          unitId: fixtures.daycareFixture.id,
+          unitId: fixtures.testDaycare.id,
           startDate: placementStartDate,
           endDate: placementStartDate
         })
@@ -716,7 +698,7 @@ describe('Application transitions', () => {
     await rejectDecisionByCitizen({ id: decisionId })
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
 
     async function assertApplicationRows(
@@ -734,7 +716,7 @@ describe('Application transitions', () => {
 
       await employeeLogin(page, unitSupervisor)
       const unitPage = new UnitPage(page)
-      await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+      await unitPage.navigateToUnit(fixtures.testDaycare.id)
       const waitingConfirmation = (await unitPage.openApplicationProcessTab())
         .waitingConfirmation
 

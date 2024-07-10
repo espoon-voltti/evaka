@@ -46,7 +46,7 @@ beforeEach(async () => {
 
 describe('Reporting - applications', () => {
   test('application report is generated correctly, respecting care area filter', async () => {
-    await report.assertContainsArea(fixtures.careAreaFixture.name)
+    await report.assertContainsArea(fixtures.testCareArea.name)
     await report.assertContainsArea('Toinen alue')
     await report.assertContainsServiceProviders([
       'Kunnallinen',
@@ -59,6 +59,6 @@ describe('Reporting - applications', () => {
       LocalDate.todayInSystemTz()
     )
     await report.assertContainsArea('Toinen alue')
-    await report.assertDoesntContainArea(fixtures.careAreaFixture.name)
+    await report.assertDoesntContainArea(fixtures.testCareArea.name)
   })
 })

@@ -9,12 +9,12 @@ import { UUID } from 'lib-common/types'
 
 import { vtjDependants } from '../../dev-api'
 import {
-  careAreaFixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testChild2,
+  testAdult,
   Fixture
 } from '../../dev-api/fixtures'
 import {
@@ -33,7 +33,7 @@ const period = new FiniteDateRange(
   LocalDate.of(2035, 12, 18),
   LocalDate.of(2036, 1, 8)
 )
-const child = enduserChildFixtureJari
+const child = testChild
 const today = LocalDate.of(2035, 12, 1)
 let daycare: DevDaycare
 let guardian: DevPerson
@@ -87,16 +87,16 @@ beforeEach(async () => {
   })
 
   daycare = await Fixture.daycare()
-    .with(daycareFixture)
-    .careArea(await Fixture.careArea().with(careAreaFixture).save())
+    .with(testDaycare)
+    .careArea(await Fixture.careArea().with(testCareArea).save())
     .save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
 
   const child1 = await Fixture.person()
     .with(child)
     .saveChild({ updateMockVtj: true })
   guardian = await Fixture.person()
-    .with(enduserGuardianFixture)
+    .with(testAdult)
     .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
@@ -115,7 +115,7 @@ async function setupAnotherChild(
   endDate = LocalDate.of(2036, 6, 30)
 ) {
   const child2 = await Fixture.person()
-    .with(enduserChildFixtureKaarina)
+    .with(testChild2)
     .saveChild({ updateMockVtj: true })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
   await Fixture.child(child2.id).save()

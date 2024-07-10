@@ -3,46 +3,46 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  careAreaFixture,
-  clubFixture,
-  clubTermFixtures,
-  daycareFixture,
-  daycareFixturePrivateVoucher,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserChildFixturePorriHatterRestricted,
-  enduserChildJariOtherGuardianFixture,
-  enduserDeceasedChildFixture,
-  enduserGuardianFixture,
-  enduserNonSsnChildFixture,
+  testCareArea,
+  testClub,
+  clubTerms,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  testAdult,
+  testAdult2,
+  testAdultRestricted,
+  testChild,
+  testChild2,
+  testChildDeceased,
+  testChildNoSsn,
+  testChildRestricted,
+  testChildZeroYearOld,
   familyWithDeadGuardian,
   familyWithRestrictedDetailsGuardian,
   familyWithSeparatedGuardians,
   familyWithTwoGuardians,
   Fixture,
-  personFixtureChildZeroYearOld,
-  preschoolFixture,
-  preschoolTermFixtures,
-  restrictedPersonFixture
+  testPreschool,
+  preschoolTerms
 } from './fixtures'
 
 const areaAndPersonFixtures = {
-  careAreaFixture,
-  clubFixture,
-  daycareFixture,
-  daycareFixturePrivateVoucher,
-  preschoolFixture,
-  enduserGuardianFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserChildFixturePorriHatterRestricted,
-  enduserChildJariOtherGuardianFixture,
-  enduserDeceasedChildFixture,
-  enduserNonSsnChildFixture,
+  testCareArea,
+  testClub,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  testPreschool,
+  testAdult,
+  testAdult2,
+  testAdultRestricted,
+  testChild,
+  testChild2,
+  testChildDeceased,
+  testChildNoSsn,
+  testChildRestricted,
+  testChildZeroYearOld,
   familyWithTwoGuardians,
   familyWithSeparatedGuardians,
-  restrictedPersonFixture,
-  personFixtureChildZeroYearOld,
   familyWithRestrictedDetailsGuardian,
   familyWithDeadGuardian
 }
@@ -52,61 +52,59 @@ export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
 export const initializeAreaAndPersonData = async (): Promise<
   typeof areaAndPersonFixtures
 > => {
-  for (const preschoolTermFixture of preschoolTermFixtures) {
+  for (const preschoolTermFixture of preschoolTerms) {
     await Fixture.preschoolTerm().with(preschoolTermFixture).save()
   }
-  for (const clubTermFixture of clubTermFixtures) {
+  for (const clubTermFixture of clubTerms) {
     await Fixture.clubTerm().with(clubTermFixture).save()
   }
   const careArea = await Fixture.careArea()
-    .with(areaAndPersonFixtures.careAreaFixture)
+    .with(areaAndPersonFixtures.testCareArea)
     .save()
   await Fixture.daycare()
-    .with(areaAndPersonFixtures.clubFixture)
+    .with(areaAndPersonFixtures.testClub)
     .careArea(careArea)
     .save()
   await Fixture.daycare()
-    .with(areaAndPersonFixtures.daycareFixture)
+    .with(areaAndPersonFixtures.testDaycare)
     .careArea(careArea)
     .save()
   await Fixture.daycare()
-    .with(areaAndPersonFixtures.daycareFixturePrivateVoucher)
+    .with(areaAndPersonFixtures.testDaycarePrivateVoucher)
     .careArea(careArea)
     .save()
   await Fixture.daycare()
-    .with(areaAndPersonFixtures.preschoolFixture)
+    .with(areaAndPersonFixtures.testPreschool)
     .careArea(careArea)
     .save()
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserChildFixtureJari)
+    .with(areaAndPersonFixtures.testChild)
     .saveChild({ updateMockVtj: true })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserChildFixtureKaarina)
+    .with(areaAndPersonFixtures.testChild2)
     .saveChild({ updateMockVtj: true })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted)
+    .with(areaAndPersonFixtures.testChildRestricted)
     .saveChild({ updateMockVtj: true })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserGuardianFixture)
+    .with(areaAndPersonFixtures.testAdult)
     .saveAdult({
       updateMockVtjWithDependants: [
-        areaAndPersonFixtures.enduserChildFixtureJari,
-        areaAndPersonFixtures.enduserChildFixtureKaarina,
-        areaAndPersonFixtures.enduserChildFixturePorriHatterRestricted
+        areaAndPersonFixtures.testChild,
+        areaAndPersonFixtures.testChild2,
+        areaAndPersonFixtures.testChildRestricted
       ]
     })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserChildJariOtherGuardianFixture)
+    .with(areaAndPersonFixtures.testAdult2)
     .saveAdult({
-      updateMockVtjWithDependants: [
-        areaAndPersonFixtures.enduserChildFixtureJari
-      ]
+      updateMockVtjWithDependants: [areaAndPersonFixtures.testChild]
     })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserDeceasedChildFixture)
+    .with(areaAndPersonFixtures.testChildDeceased)
     .saveChild({ updateMockVtj: true })
   await Fixture.person()
-    .with(areaAndPersonFixtures.enduserNonSsnChildFixture)
+    .with(areaAndPersonFixtures.testChildNoSsn)
     .with({ ssn: null })
     .saveChild()
 
@@ -177,11 +175,11 @@ export const initializeAreaAndPersonData = async (): Promise<
     })
 
   await Fixture.person()
-    .with(areaAndPersonFixtures.restrictedPersonFixture)
+    .with(areaAndPersonFixtures.testAdultRestricted)
     .saveAdult({ updateMockVtjWithDependants: [] })
 
   await Fixture.person()
-    .with(areaAndPersonFixtures.personFixtureChildZeroYearOld)
+    .with(areaAndPersonFixtures.testChildZeroYearOld)
     .saveChild()
 
   await Fixture.person()

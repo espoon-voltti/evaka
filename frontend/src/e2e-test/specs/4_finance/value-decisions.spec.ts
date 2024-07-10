@@ -9,13 +9,13 @@ import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   DecisionIncomeFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testChild,
+  testChild2,
+  testAdult,
   familyWithTwoGuardians,
   Fixture,
   voucherValueDecisionsFixture
@@ -46,8 +46,8 @@ const decision2DateTo = now.toLocalDate().addWeeks(5)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
 })
 
 const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
@@ -55,9 +55,9 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
     body: [
       voucherValueDecisionsFixture(
         'e2d75fa4-7359-406b-81b8-1703785ca649',
-        enduserGuardianFixture.id,
-        enduserChildFixtureKaarina.id,
-        daycareFixture.id,
+        testAdult.id,
+        testChild2.id,
+        testDaycare.id,
         null,
         'DRAFT',
         decision1DateFrom,
@@ -65,9 +65,9 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
       ),
       voucherValueDecisionsFixture(
         'ed462aca-f74e-4384-910f-628823201023',
-        enduserGuardianFixture.id,
-        enduserChildFixtureJari.id,
-        daycare2Fixture.id,
+        testAdult.id,
+        testChild.id,
+        testDaycare2.id,
         null,
         'DRAFT',
         decision2DateFrom,
@@ -86,7 +86,7 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
     'e2d75fa4-7359-406b-81b8-1703785ca649',
     familyWithTwoGuardians.guardian.id,
     familyWithTwoGuardians.children[0].id,
-    daycareFixture.id,
+    testDaycare.id,
     familyWithTwoGuardians.otherGuardian,
     'DRAFT',
     decision1DateFrom,

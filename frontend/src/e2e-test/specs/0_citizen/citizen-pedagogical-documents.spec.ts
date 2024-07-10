@@ -43,8 +43,8 @@ beforeEach(async () => {
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id
+        fixtures.testChild.id,
+        fixtures.testDaycare.id
       )
     ]
   })
@@ -63,7 +63,7 @@ describe('Citizen pedagogical documents', () => {
 
       const pd = await Fixture.pedagogicalDocument()
         .with({
-          childId: fixtures.enduserChildFixtureJari.id,
+          childId: fixtures.testChild.id,
           description: 'e2e test description'
         })
         .save()
@@ -81,7 +81,7 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(1)
 
-      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await header.openChildPage(fixtures.testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 
@@ -94,12 +94,12 @@ describe('Citizen pedagogical documents', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument()
         .with({
-          childId: fixtures.enduserChildFixtureJari.id,
+          childId: fixtures.testChild.id,
           description: 'e2e test description'
         })
         .save()
 
-      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await header.openChildPage(fixtures.testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 

@@ -15,8 +15,8 @@ import { runPendingAsyncJobs } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -55,9 +55,9 @@ beforeAll(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   child = fixtures.familyWithTwoGuardians.children[0]
   firstGuardian = fixtures.familyWithTwoGuardians.guardian
   secondGuardian = fixtures.familyWithTwoGuardians.otherGuardian
@@ -74,7 +74,7 @@ beforeAll(async () => {
 
   await Fixture.groupPlacement()
     .with({
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       daycarePlacementId: daycarePlacementFixture.id,
       startDate: daycarePlacementFixture.startDate,
       endDate: daycarePlacementFixture.endDate
@@ -209,8 +209,8 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(
         () => basicInfo.placement(0),
-        `${daycareFixture.name} (${
-          daycareGroupFixture.name
+        `${testDaycare.name} (${
+          testDaycareGroup.name
         }) ${daycarePlacementFixture.startDate.format()} - ${daycarePlacementFixture.endDate.format()}`
       )
       await waitUntilTrue(async () => {

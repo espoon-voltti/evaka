@@ -9,7 +9,7 @@ import {
 } from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'
 
-import { clubFixture, daycareFixture } from '../dev-api/fixtures'
+import { testClub, testDaycare } from '../dev-api/fixtures'
 import { DevPerson } from '../generated/api-types'
 
 function assertEquals<T>(expected: T, actual: T) {
@@ -71,8 +71,8 @@ export const minimalDaycareForm = ({
     unitPreference: {
       preferredUnits: [
         {
-          id: daycareFixture.id,
-          name: daycareFixture.name
+          id: testDaycare.id,
+          name: testDaycare.name
         }
       ]
     },
@@ -118,7 +118,7 @@ export const minimalDaycareForm = ({
     }
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
@@ -165,8 +165,8 @@ export const fullDaycareForm = ({
       siblingSsn: '110814A812B',
       preferredUnits: [
         {
-          id: daycareFixture.id,
-          name: daycareFixture.name
+          id: testDaycare.id,
+          name: testDaycare.name
         }
       ]
     },
@@ -271,7 +271,7 @@ export const fullDaycareForm = ({
     )
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
@@ -302,8 +302,8 @@ export const minimalClubForm: {
     unitPreference: {
       preferredUnits: [
         {
-          id: clubFixture.id,
-          name: clubFixture.name
+          id: testClub.id,
+          name: testClub.name
         }
       ]
     },
@@ -332,7 +332,7 @@ export const minimalClubForm: {
     assertEmpty(res.form.otherChildren)
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testClub.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
@@ -367,8 +367,8 @@ export const fullClubForm: {
       siblingSsn: '110814A812B',
       preferredUnits: [
         {
-          id: clubFixture.id,
-          name: clubFixture.name
+          id: testClub.id,
+          name: testClub.name
         }
       ]
     },
@@ -421,7 +421,7 @@ export const fullClubForm: {
     assertEmpty(res.form.otherChildren)
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(clubFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testClub.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
@@ -450,8 +450,8 @@ export const minimalPreschoolForm: {
     unitPreference: {
       preferredUnits: [
         {
-          id: daycareFixture.id,
-          name: daycareFixture.name
+          id: testDaycare.id,
+          name: testDaycare.name
         }
       ]
     },
@@ -483,7 +483,7 @@ export const minimalPreschoolForm: {
     assertEmpty(res.form.otherChildren)
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()
@@ -524,8 +524,8 @@ export const fullPreschoolForm: {
       siblingSsn: '110814A812B',
       preferredUnits: [
         {
-          id: daycareFixture.id,
-          name: daycareFixture.name
+          id: testDaycare.id,
+          name: testDaycare.name
         }
       ]
     },
@@ -615,7 +615,7 @@ export const fullPreschoolForm: {
     )
 
     assertEquals(1, res.form.preferences.preferredUnits.length)
-    assertEquals(daycareFixture.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
     assertEquals(
       '16.08.2021',
       res.form.preferences.preferredStartDate?.format()

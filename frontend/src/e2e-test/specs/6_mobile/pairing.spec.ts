@@ -34,7 +34,7 @@ describe('Mobile pairing', () => {
 
     await pairingFlow.startPairing()
     const res = await postPairing({
-      body: { unitId: fixtures.daycareFixture.id }
+      body: { unitId: fixtures.testDaycare.id }
     })
 
     await pairingFlow.submitChallengeKey(res.challengeKey)

@@ -9,7 +9,7 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
@@ -32,9 +32,9 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.daycareFixture.id
+  unitId = fixtures.testDaycare.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   const placementBuilder = await Fixture.placement()
     .with({
@@ -47,7 +47,7 @@ beforeEach(async () => {
 
   await Fixture.groupPlacement()
     .with({
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       daycarePlacementId: placementBuilder.id,
       startDate: mockedTime,
       endDate: mockedTime

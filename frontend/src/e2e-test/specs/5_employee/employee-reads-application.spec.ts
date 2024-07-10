@@ -32,10 +32,7 @@ beforeEach(async () => {
 
 describe('Employee reads applications', () => {
   test('Daycare application opens by link', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
@@ -44,8 +41,8 @@ describe('Employee reads applications', () => {
 
   test('Preschool application opens by link', async () => {
     const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      fixtures.testChild,
+      fixtures.testAdult,
       undefined,
       'PRESCHOOL'
     )
@@ -79,10 +76,7 @@ describe('Employee reads applications', () => {
   })
 
   test('If there is no other VTJ guardian it is mentioned', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureKaarina,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(fixtures.testChild2, fixtures.testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)

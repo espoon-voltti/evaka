@@ -36,78 +36,46 @@ beforeEach(async () => {
 describe('Foster parents', () => {
   test('adding, editing and deleting foster children works', async () => {
     await guardianInformation.navigateToGuardian(
-      fixtures.restrictedPersonFixture.id
+      fixtures.testAdultRestricted.id
     )
     const section = await guardianInformation.openCollapsible('fosterChildren')
 
     const startDate = LocalDate.of(2020, 5, 14)
-    await section.addFosterChild(
-      fixtures.enduserChildFixtureJari.firstName,
-      startDate,
-      null
-    )
-    await section.addFosterChild(
-      fixtures.enduserChildFixtureKaarina.firstName,
-      startDate,
-      null
-    )
-    await section.assertRowExists(
-      fixtures.enduserChildFixtureJari.id,
-      startDate,
-      null
-    )
-    await section.assertRowExists(
-      fixtures.enduserChildFixtureKaarina.id,
-      startDate,
-      null
-    )
+    await section.addFosterChild(fixtures.testChild.firstName, startDate, null)
+    await section.addFosterChild(fixtures.testChild2.firstName, startDate, null)
+    await section.assertRowExists(fixtures.testChild.id, startDate, null)
+    await section.assertRowExists(fixtures.testChild2.id, startDate, null)
 
     const newEndDate = LocalDate.of(2022, 10, 4)
-    await section.editFosterChild(
-      fixtures.enduserChildFixtureJari.id,
-      startDate,
-      newEndDate
-    )
-    await section.assertRowExists(
-      fixtures.enduserChildFixtureJari.id,
-      startDate,
-      newEndDate
-    )
-    await section.assertRowExists(
-      fixtures.enduserChildFixtureKaarina.id,
-      startDate,
-      null
-    )
+    await section.editFosterChild(fixtures.testChild.id, startDate, newEndDate)
+    await section.assertRowExists(fixtures.testChild.id, startDate, newEndDate)
+    await section.assertRowExists(fixtures.testChild2.id, startDate, null)
 
-    await section.deleteFosterChild(fixtures.enduserChildFixtureKaarina.id)
-    await section.assertRowExists(
-      fixtures.enduserChildFixtureJari.id,
-      startDate,
-      newEndDate
-    )
-    await section.assertRowDoesNotExist(fixtures.enduserChildFixtureKaarina.id)
+    await section.deleteFosterChild(fixtures.testChild2.id)
+    await section.assertRowExists(fixtures.testChild.id, startDate, newEndDate)
+    await section.assertRowDoesNotExist(fixtures.testChild2.id)
   })
 
   test('added foster child is shown in child information', async () => {
     await guardianInformation.navigateToGuardian(
-      fixtures.restrictedPersonFixture.id
+      fixtures.testAdultRestricted.id
     )
     await guardianInformation
       .openCollapsible('fosterChildren')
       .then((section) =>
         section.addFosterChild(
-          fixtures.enduserChildFixtureJari.firstName,
+          fixtures.testChild.firstName,
           LocalDate.todayInSystemTz(),
           null
         )
       )
 
-    await childInformation.navigateToChild(fixtures.enduserChildFixtureJari.id)
+    await childInformation.navigateToChild(fixtures.testChild.id)
     await childInformation
       .openCollapsible('guardians')
       .then((section) =>
         section.assertFosterParentExists(
-          fixtures.restrictedPersonFixture.id,
+          fixtures.testAdultRestricted.id,
           LocalDate.todayInSystemTz(),
           null
         )

@@ -35,16 +35,16 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
-  childFixture = fixtures.enduserChildFixtureKaarina
+  childFixture = fixtures.testChild2
   admin = await Fixture.employeeAdmin().save()
   unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.daycareFixture.id
+    fixtures.testDaycare.id
   ).save()
 
   await Fixture.placement()
     .with({
       childId: childFixture.id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       startDate: now.toLocalDate().subYears(1),
       endDate: now.toLocalDate().addYears(1)
     })

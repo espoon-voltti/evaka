@@ -4,11 +4,11 @@
 
 import config from '../../config'
 import {
-  careAreaFixture,
-  clubFixture,
-  daycare2Fixture,
+  testCareArea,
+  testClub,
+  testDaycare2,
   Fixture,
-  preschoolFixture
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   putDigitransitAutocomplete,
@@ -23,7 +23,7 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
 const swedishDaycare: DevDaycare = {
-  ...daycare2Fixture,
+  ...testDaycare2,
   name: 'Svart hål svenska daghem',
   id: '9db9e8f7-2091-4be1-b091-fe107906e1b9',
   language: 'sv',
@@ -46,7 +46,7 @@ const testStreet: DigitransitFeature = {
 }
 
 const privateDaycareWithoutPeriods: DevDaycare = {
-  ...daycare2Fixture,
+  ...testDaycare2,
   name: 'Private daycare',
   id: '9db9e8f7-2091-4be1-b091-fe10790e107a',
   location: { lat: 60.1601417, lon: 24.7830233 },
@@ -60,10 +60,10 @@ let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
   await resetServiceState()
-  const careArea = await Fixture.careArea().with(careAreaFixture).save()
-  await Fixture.daycare().with(clubFixture).careArea(careArea).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  await Fixture.daycare().with(preschoolFixture).careArea(careArea).save()
+  const careArea = await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testClub).careArea(careArea).save()
+  await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
+  await Fixture.daycare().with(testPreschool).careArea(careArea).save()
   await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
   await Fixture.daycare()
     .with(privateDaycareWithoutPeriods)
@@ -80,42 +80,39 @@ describe('Citizen map page', () => {
   test('Unit type filter affects the unit list', async () => {
     await mapPage.daycareFilter.waitUntilVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
-    await mapPage.listItemFor(clubFixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
+    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
+    await mapPage.listItemFor(testClub).waitUntilHidden()
+    await mapPage.listItemFor(testPreschool).waitUntilVisible()
 
     await mapPage.clubFilter.check()
-    await mapPage.listItemFor(clubFixture).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilHidden()
+    await mapPage.listItemFor(testClub).waitUntilVisible()
+    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
+    await mapPage.listItemFor(testPreschool).waitUntilHidden()
 
     await mapPage.preschoolFilter.check()
-    await mapPage.listItemFor(clubFixture).waitUntilHidden()
-    await mapPage.listItemFor(preschoolFixture).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
+    await mapPage.listItemFor(testClub).waitUntilHidden()
+    await mapPage.listItemFor(testPreschool).waitUntilVisible()
+    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
   })
   test('Unit language filter affects the unit list', async () => {
     await mapPage.daycareFilter.waitUntilVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
+    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
     await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
 
     await mapPage.setLanguageFilter('fi', true)
     await mapPage.listItemFor(swedishDaycare).waitUntilHidden()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilVisible()
+    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
 
     await mapPage.setLanguageFilter('sv', true)
     await mapPage.setLanguageFilter('fi', false)
     await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
-    await mapPage.listItemFor(daycare2Fixture).waitUntilHidden()
+    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
   })
   test('Unit details can be viewed by clicking a list item', async () => {
-    await mapPage.listItemFor(daycare2Fixture).click()
+    await mapPage.listItemFor(testDaycare2).click()
     await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
-      daycare2Fixture.name
-    )
+    await waitUntilEqual(() => mapPage.unitDetailsPanel.name, testDaycare2.name)
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
@@ -146,7 +143,7 @@ describe('Citizen map page', () => {
     await mapPage.map.addressMarker.waitUntilVisible()
   })
   test('Unit markers can be clicked to open a popup', async () => {
-    await mapPage.testMapPopup(daycare2Fixture)
+    await mapPage.testMapPopup(testDaycare2)
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.testMapPopup(swedishDaycare)
   })

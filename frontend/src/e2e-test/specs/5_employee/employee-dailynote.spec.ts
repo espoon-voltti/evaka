@@ -38,7 +38,7 @@ beforeEach(async () => {
 
   const placementFixtureJari = await Fixture.placement()
     .with({
-      childId: fixtures.enduserChildFixtureJari.id,
+      childId: fixtures.testChild.id,
       unitId: daycare.id
     })
     .save()
@@ -49,7 +49,7 @@ beforeEach(async () => {
 
   const placementFixtureKaarina = await Fixture.placement()
     .with({
-      childId: fixtures.enduserChildFixtureKaarina.id,
+      childId: fixtures.testChild2.id,
       unitId: daycare.id
     })
     .save()
@@ -66,7 +66,7 @@ beforeEach(async () => {
 
 describe('Mobile employee daily notes', () => {
   test('Child daycare daily note indicators are shown on group view and can be edited', async () => {
-    const childId = fixtures.enduserChildFixtureJari.id
+    const childId = fixtures.testChild.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Testi viesti',
       feedingNote: 'MEDIUM',
@@ -109,8 +109,8 @@ describe('Mobile employee daily notes', () => {
   })
 
   test('Group daycare daily notes can be written and are shown on group notes tab', async () => {
-    const childId1 = fixtures.enduserChildFixtureJari.id
-    const childId2 = fixtures.enduserChildFixtureKaarina.id
+    const childId1 = fixtures.testChild.id
+    const childId2 = fixtures.testChild2.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Toinen viesti',
       feedingNote: 'NONE',

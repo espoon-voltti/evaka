@@ -12,9 +12,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  daycareGroupFixture,
-  enduserDeceasedChildFixture,
-  enduserNonSsnChildFixture,
+  testDaycareGroup,
+  testChildDeceased,
+  testChildNoSsn,
   Fixture
 } from '../../dev-api/fixtures'
 import {
@@ -47,10 +47,10 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
   admin = await Fixture.employeeAdmin().save()
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   await Fixture.placement()
     .with({
@@ -85,7 +85,7 @@ beforeEach(async () => {
 describe('Child Information - edit child information', () => {
   test('Oph person oid can be edited', async () => {
     await page.goto(
-      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+      config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.clickEdit()
@@ -123,7 +123,7 @@ describe('Child Information - edit additional information', () => {
     const details = 'Puhuu modernia kreikkaa, ei antiikin'
 
     await page.goto(
-      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+      config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
     await section.languageAtHome.assertTextEquals('')
@@ -156,7 +156,7 @@ describe('Child Information - edit additional information', () => {
     const dietId = 79
 
     await page.goto(
-      config.employeeUrl + '/child-information/' + enduserNonSsnChildFixture.id
+      config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
     await section.specialDiet.assertTextEquals('-')
@@ -173,9 +173,7 @@ describe('Child Information - edit additional information', () => {
 describe('Child Information - deceased child', () => {
   test('Deceased child indicator is shown', async () => {
     await page.goto(
-      config.employeeUrl +
-        '/child-information/' +
-        enduserDeceasedChildFixture.id
+      config.employeeUrl + '/child-information/' + testChildDeceased.id
     )
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.deceasedIconIsShown()
@@ -380,7 +378,7 @@ describe('Child information - backup care', () => {
 
   test('backup care for a child can be added and removed', async () => {
     await section.createBackupCare(
-      fixtures.daycareFixture.name,
+      fixtures.testDaycare.name,
       LocalDate.of(2020, 2, 1),
       LocalDate.of(2020, 2, 3)
     )
@@ -388,7 +386,7 @@ describe('Child information - backup care', () => {
       () => section.getBackupCares(),
       [
         {
-          unit: fixtures.daycareFixture.name,
+          unit: fixtures.testDaycare.name,
           period: '01.02.2020 - 03.02.2020'
         }
       ]
@@ -399,7 +397,7 @@ describe('Child information - backup care', () => {
 
   test('error is shown if no placement is during the requested range', async () => {
     await section.fillNewBackupCareFields(
-      fixtures.daycareFixture.name,
+      fixtures.testDaycare.name,
       LocalDate.of(2020, 1, 5),
       LocalDate.of(2020, 9, 5)
     )
@@ -410,7 +408,7 @@ describe('Child information - backup care', () => {
 
   test('error is shown if no placement is during the modified range', async () => {
     await section.createBackupCare(
-      fixtures.daycareFixture.name,
+      fixtures.testDaycare.name,
       LocalDate.of(2020, 1, 2),
       LocalDate.of(2020, 2, 3)
     )
@@ -506,7 +504,7 @@ describe('Child information - guardian information', () => {
 
   test('guardian information is shown to unit supervisor', async () => {
     const unitSupervisor: DevEmployee = await Fixture.employeeUnitSupervisor(
-      fixtures.daycareFixture.id
+      fixtures.testDaycare.id
     ).save()
     page = await Page.open({
       mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))

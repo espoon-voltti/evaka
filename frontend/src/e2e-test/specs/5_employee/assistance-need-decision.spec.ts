@@ -13,8 +13,8 @@ import {
 } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
   uuidv4
@@ -51,9 +51,9 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
   fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
+  const unitId = fixtures.testDaycare.id
   staff = await Fixture.employeeStaff(unitId).save()
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
@@ -71,7 +71,7 @@ beforeEach(async () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
-        selectedUnit: fixtures.daycareFixture.id,
+        selectedUnit: fixtures.testDaycare.id,
         decisionMaker: {
           employeeId: serviceWorker.id,
           title: 'head teacher',
@@ -140,7 +140,7 @@ describe('Assistance Need Decisions - Edit page', () => {
 
   test('Clicking the preview button opens the decision in preview mode', async () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
-    await assistanceNeedDecisionEditPage.selectUnit(daycareFixture.name)
+    await assistanceNeedDecisionEditPage.selectUnit(testDaycare.name)
     await assistanceNeedDecisionEditPage.pedagogicalMotivationInput.fill(
       'Pedagogical motivation text'
     )
@@ -284,7 +284,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
@@ -319,7 +319,7 @@ describe('Assistance Need Decisions - Preview page', () => {
           .withChild(childId)
           .with({
             status: 'ACCEPTED',
-            selectedUnit: fixtures.daycareFixture.id,
+            selectedUnit: fixtures.testDaycare.id,
             decisionMaker: {
               employeeId: serviceWorker.id,
               title: 'head teacher',
@@ -412,7 +412,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,

@@ -13,9 +13,9 @@ import {
 } from '../../dev-api/data-init'
 import {
   applicationFixture,
-  daycareFixture,
+  testDaycare,
   Fixture,
-  preschoolFixture
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -58,12 +58,12 @@ describe('Application transitions', () => {
   test('Decision draft page works without unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
-        [preschoolFixture.id],
+        [testPreschool.id],
         true,
         'SENT',
         mockedTime
@@ -88,7 +88,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -112,20 +112,20 @@ describe('Application transitions', () => {
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
         .sort((a, b) => a.type.localeCompare(b.type))
     ).toEqual([
-      { type: 'PRESCHOOL', unitId: preschoolFixture.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: preschoolFixture.id }
+      { type: 'PRESCHOOL', unitId: testPreschool.id },
+      { type: 'PRESCHOOL_DAYCARE', unitId: testPreschool.id }
     ])
   })
 
   test('Decision draft page works with unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
+        fixtures.testChild2,
         fixtures.familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
-        [preschoolFixture.id],
+        [testPreschool.id],
         true,
         'SENT',
         mockedTime
@@ -150,7 +150,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.preschoolFixture.id)
+    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -159,7 +159,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDecisionEditorById(applicationId)
     await decisionEditorPage.waitUntilLoaded()
 
-    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', daycareFixture.id)
+    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
     await decisionEditorPage.save()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -175,8 +175,8 @@ describe('Application transitions', () => {
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
         .sort((a, b) => a.type.localeCompare(b.type))
     ).toStrictEqual([
-      { type: 'PRESCHOOL', unitId: preschoolFixture.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: daycareFixture.id }
+      { type: 'PRESCHOOL', unitId: testPreschool.id },
+      { type: 'PRESCHOOL_DAYCARE', unitId: testDaycare.id }
     ])
   })
 })

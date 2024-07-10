@@ -12,7 +12,7 @@ import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
+  testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
   uuidv4
@@ -65,9 +65,9 @@ describe('Child Information placement info', () => {
   beforeEach(async () => {
     const fixtures = await initializeAreaAndPersonData()
     await createDefaultServiceNeedOptions()
-    await createDaycareGroups({ body: [daycareGroupFixture] })
+    await createDaycareGroups({ body: [testDaycareGroup] })
 
-    unitId = fixtures.daycareFixture.id
+    unitId = fixtures.testDaycare.id
     childId = fixtures.familyWithTwoGuardians.children[0].id
     const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
 

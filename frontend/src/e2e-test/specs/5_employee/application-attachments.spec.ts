@@ -10,9 +10,9 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
-  daycareFixture,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testChild2,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -37,10 +37,7 @@ beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
 
-  const fixture = applicationFixture(
-    fixtures.enduserChildFixtureJari,
-    fixtures.enduserGuardianFixture
-  )
+  const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
   await createApplications({ body: [fixture] })
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 
@@ -102,13 +99,13 @@ describe('Employee application attachments', () => {
     )
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      daycareFixture.id
+      testDaycare.id
     ).save()
 
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
     await employeeLogin(page2, unitSupervisor)
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
 
     const view = new ApplicationReadView(page2)
     await view.navigateToApplication(applicationFixtureId)
@@ -120,7 +117,7 @@ describe('Employee application attachments', () => {
     const daycareId = uuidv4()
     await Fixture.daycare()
       .with({
-        ...daycareFixture,
+        ...testDaycare,
         shiftCareOperationTimes: null,
         shiftCareOpenOnHolidays: false,
         id: daycareId
@@ -132,8 +129,8 @@ describe('Employee application attachments', () => {
       body: [
         {
           ...applicationFixture(
-            enduserChildFixtureKaarina,
-            enduserGuardianFixture,
+            testChild2,
+            testAdult,
             undefined,
             'DAYCARE',
             null,

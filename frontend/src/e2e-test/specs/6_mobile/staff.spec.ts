@@ -5,7 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -29,11 +29,11 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).save()
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId: fixtures.familyWithTwoGuardians.children[0].id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       startDate: today,
       endDate: today.addYears(1)
     })
@@ -41,7 +41,7 @@ beforeEach(async () => {
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: daycareGroupFixture.id,
+      daycareGroupId: testDaycareGroup.id,
       startDate: today,
       endDate: today.addYears(1)
     })
@@ -50,7 +50,7 @@ beforeEach(async () => {
   page = await Page.open({ mockedTime: now })
   nav = new MobileNav(page)
 
-  mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+  mobileSignupUrl = await pairMobileDevice(fixtures.testDaycare.id)
   await page.goto(mobileSignupUrl)
   await nav.staff.click()
   staffPage = new StaffPage(page)
@@ -69,7 +69,7 @@ describe('Staff page', () => {
   })
 
   test('Set group staff', async () => {
-    await nav.selectGroup(daycareGroupFixture.id)
+    await nav.selectGroup(testDaycareGroup.id)
     await waitUntilEqual(() => staffPage.staffCount, '0')
     await waitUntilEqual(() => staffPage.staffOtherCount, '0')
     await waitUntilEqual(() => staffPage.updated, 'Tietoja ei ole päivitetty')
@@ -92,7 +92,7 @@ describe('Staff page', () => {
   })
 
   test('Cancel resets the form', async () => {
-    await nav.selectGroup(daycareGroupFixture.id)
+    await nav.selectGroup(testDaycareGroup.id)
     await staffPage.incStaffCount()
     await staffPage.confirm()
 
@@ -105,7 +105,7 @@ describe('Staff page', () => {
   })
 
   test('Button state', async () => {
-    await nav.selectGroup(daycareGroupFixture.id)
+    await nav.selectGroup(testDaycareGroup.id)
     await waitUntilTrue(() => staffPage.buttonsDisabled)
 
     await staffPage.incStaffCount()

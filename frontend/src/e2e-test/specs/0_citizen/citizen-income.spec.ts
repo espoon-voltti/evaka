@@ -7,11 +7,11 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import {
-  careAreaFixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testAdult,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -28,7 +28,7 @@ const e = ['desktop', 'mobile'] as const
 
 describe.each(e)('Citizen income (%s)', (env) => {
   let page: Page
-  const child = enduserChildFixtureJari
+  const child = testChild
   let daycare: DevDaycare
   let guardian: DevPerson
   let financeAdminId: UUID
@@ -41,20 +41,17 @@ describe.each(e)('Citizen income (%s)', (env) => {
     await resetServiceState()
 
     daycare = await Fixture.daycare()
-      .with(daycareFixture)
+      .with(testDaycare)
       .with({ openingDate: placementStart.subYears(1) })
-      .careArea(await Fixture.careArea().with(careAreaFixture).save())
+      .careArea(await Fixture.careArea().with(testCareArea).save())
       .save()
-    await Fixture.daycareGroup()
-      .with(daycareGroupFixture)
-      .daycare(daycare)
-      .save()
+    await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
 
     const child1 = await Fixture.person()
       .with(child)
       .saveChild({ updateMockVtj: true })
     guardian = await Fixture.person()
-      .with(enduserGuardianFixture)
+      .with(testAdult)
       .saveAdult({ updateMockVtjWithDependants: [child] })
     await Fixture.child(child1.id).save()
     await Fixture.guardian(child1, guardian).save()

@@ -13,9 +13,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareGroupFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycareGroup,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -52,21 +52,21 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  childInAreaA = fixtures.enduserChildFixtureJari
-  childInAreaB = fixtures.enduserChildFixtureKaarina
-  await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  childInAreaA = fixtures.testChild
+  childInAreaB = fixtures.testChild2
+  await Fixture.careArea().with(testCareArea2).save()
+  await Fixture.daycare().with(testDaycare2).save()
+  await Fixture.daycareGroup().with(testDaycareGroup).save()
   const daycareGroup2Fixture = {
-    ...daycareGroupFixture,
+    ...testDaycareGroup,
     id: uuidv4(),
-    daycareId: daycare2Fixture.id
+    daycareId: testDaycare2.id
   }
   await Fixture.daycareGroup().with(daycareGroup2Fixture).save()
   await Fixture.placement()
     .with({
       childId: childInAreaA.id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate
     })
@@ -75,7 +75,7 @@ beforeEach(async () => {
       Fixture.groupPlacement()
         .with({
           daycarePlacementId: placement.id,
-          daycareGroupId: daycareGroupFixture.id,
+          daycareGroupId: testDaycareGroup.id,
           startDate: placement.startDate,
           endDate: placement.endDate
         })
@@ -84,7 +84,7 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       childId: childInAreaB.id,
-      unitId: daycare2Fixture.id,
+      unitId: testDaycare2.id,
       startDate: mockedDate,
       endDate: mockedDate
     })
@@ -105,7 +105,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childInAreaA.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: fixtures.testAdult.id
       },
       {
         childId: childInAreaB.id,
@@ -119,8 +119,8 @@ beforeEach(async () => {
   })
   await createMessageAccounts()
   messenger = await Fixture.employeeMessenger().save()
-  staff = await Fixture.employeeStaff(fixtures.daycareFixture.id)
-    .withGroupAcl(daycareGroupFixture.id)
+  staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
+    .withGroupAcl(testDaycareGroup.id)
     .save()
 })
 
@@ -152,7 +152,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id, careArea2Fixture.id],
+      receivers: [fixtures.testCareArea.id, testCareArea2.id],
       confirmManyRecipients: true
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
@@ -170,17 +170,17 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id]
+      receivers: [fixtures.testCareArea.id]
     })
 
     const sentMessagesPage = await messagesPage.openSentMessages()
     await sentMessagesPage.assertMessageParticipants(
       0,
-      fixtures.careAreaFixture.name
+      fixtures.testCareArea.name
     )
 
     const messagePage = await sentMessagesPage.openMessage(0)
-    await messagePage.assertMessageRecipients(fixtures.careAreaFixture.name)
+    await messagePage.assertMessageRecipients(fixtures.testCareArea.name)
   })
 
   test('Messages sent by messaging role creates a copy for the staff', async () => {
@@ -190,7 +190,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id]
+      receivers: [fixtures.testCareArea.id]
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 

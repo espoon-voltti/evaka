@@ -12,11 +12,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import {
-  Fixture,
-  personFixtureChildZeroYearOld,
-  uuidv4
-} from '../../dev-api/fixtures'
+import { Fixture, testChildZeroYearOld, uuidv4 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
@@ -39,7 +35,7 @@ let child: DevPerson
 
 const mockToday = LocalDate.of(2020, 1, 1)
 const childZeroYo = Fixture.person().with({
-  ...personFixtureChildZeroYearOld,
+  ...testChildZeroYearOld,
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
   id: '023c3d55-3bd5-494b-8996-60a3643fe94b'
@@ -98,7 +94,7 @@ beforeEach(async () => {
 describe('Employee - Head of family details', () => {
   test('guardian has restriction details enabled', async () => {
     await guardianInformation.navigateToGuardian(
-      fixtures.restrictedPersonFixture.id
+      fixtures.testAdultRestricted.id
     )
     await guardianInformation.assertRestrictedDetails(true)
   })
@@ -132,7 +128,7 @@ describe('Employee - Head of family details', () => {
     await childInformation.navigateToChild(child.id)
     const placements = await childInformation.openCollapsible('placements')
     await placements.createNewPlacement({
-      unitName: fixtures.daycareFixture.name,
+      unitName: fixtures.testDaycare.name,
       startDate: '01.01.2020',
       endDate: '31.07.2020'
     })

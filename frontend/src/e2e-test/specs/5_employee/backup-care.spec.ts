@@ -10,7 +10,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -29,12 +29,12 @@ let groupsPage: UnitGroupsPage
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  childFixture = fixtures.enduserChildFixtureKaarina
+  childFixture = fixtures.testChild2
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.daycareFixture.id
+    fixtures.testDaycare.id
   ).save()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
   const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
   const startDate = LocalDate.of(2023, 2, 1).subYears(1)
@@ -42,7 +42,7 @@ beforeEach(async () => {
   const placement = await Fixture.placement()
     .with({
       childId: childFixture.id,
-      unitId: fixtures.daycareFixturePrivateVoucher.id,
+      unitId: fixtures.testDaycarePrivateVoucher.id,
       startDate: startDate,
       endDate: endDate
     })
@@ -62,7 +62,7 @@ beforeEach(async () => {
   await Fixture.backupCare()
     .with({
       childId: childFixture.id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       period: new FiniteDateRange(
         LocalDate.of(2023, 2, 1),
         LocalDate.of(2023, 2, 3)
@@ -73,7 +73,7 @@ beforeEach(async () => {
   page = await Page.open({ mockedTime: now })
   await employeeLogin(page, unitSupervisor)
   const unitPage = new UnitPage(page)
-  await unitPage.navigateToUnit(fixtures.daycareFixture.id)
+  await unitPage.navigateToUnit(fixtures.testDaycare.id)
   groupsPage = await unitPage.openGroupsPage()
 })
 
@@ -102,7 +102,7 @@ describe('Employee - Backup care', () => {
     await groupsPage.missingPlacementsSection.assertRowCount(0)
 
     // check child is listed in group
-    let group = await groupsPage.openGroupCollapsible(daycareGroupFixture.id)
+    let group = await groupsPage.openGroupCollapsible(testDaycareGroup.id)
     await group.assertChildCount(1)
 
     const childRow = group.childRow(childFixture.id)
@@ -122,7 +122,7 @@ describe('Employee - Backup care', () => {
       groupMissingDuration: '01.02.2023 - 03.02.2023'
     })
 
-    group = await groupsPage.openGroupCollapsible(daycareGroupFixture.id)
+    group = await groupsPage.openGroupCollapsible(testDaycareGroup.id)
     await group.assertChildCount(0)
   })
 })

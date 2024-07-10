@@ -12,8 +12,8 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   familyWithTwoGuardians,
   Fixture
 } from '../../dev-api/fixtures'
@@ -43,10 +43,10 @@ beforeEach(async () => {
 
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.daycareFixture.id
-  voucherUnitId = fixtures.daycareFixturePrivateVoucher.id
+  unitId = fixtures.testDaycare.id
+  voucherUnitId = fixtures.testDaycarePrivateVoucher.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
   page = await Page.open()
   admin = await Fixture.employeeAdmin().save()
@@ -492,7 +492,7 @@ describe('Child assistance need decisions for employees', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
-        selectedUnit: daycareFixture.id,
+        selectedUnit: testDaycare.id,
         decisionMaker: {
           employeeId: serviceWorker.id,
           title: 'head teacher',
@@ -530,7 +530,7 @@ describe('Child assistance need decisions for employees', () => {
     const decision = await assistance.assistanceNeedDecisions(0)
 
     expect(decision.date).toEqual('01.07.2020 – 11.12.2020')
-    expect(decision.unitName).toEqual(daycareFixture.name)
+    expect(decision.unitName).toEqual(testDaycare.name)
     expect(decision.sentDate).toEqual('11.05.2020')
     expect(decision.decisionMadeDate).toEqual('02.06.2020')
     expect(decision.status).toEqual('DRAFT')

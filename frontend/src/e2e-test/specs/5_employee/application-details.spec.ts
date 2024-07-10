@@ -43,8 +43,8 @@ beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   singleParentApplication = applicationFixture(
-    fixtures.enduserChildFixtureKaarina,
-    fixtures.enduserGuardianFixture
+    fixtures.testChild2,
+    fixtures.testAdult
   )
   familyWithTwoGuardiansApplication = {
     ...applicationFixture(
@@ -102,7 +102,7 @@ describe('Application details', () => {
       singleParentApplication.id
     )
     await application.assertGuardianName(
-      `${fixtures.enduserGuardianFixture.lastName} ${fixtures.enduserGuardianFixture.firstName}`
+      `${fixtures.testAdult.lastName} ${fixtures.testAdult.firstName}`
     )
   })
 
@@ -157,7 +157,7 @@ describe('Application details', () => {
     await createApplicationPlacementPlan({
       applicationId: restrictedDetailsGuardianApplication.id,
       body: {
-        unitId: fixtures.preschoolFixture.id,
+        unitId: fixtures.testPreschool.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }
@@ -188,7 +188,7 @@ describe('Application details', () => {
 
   test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.preschoolFixture.id
+      fixtures.testPreschool.id
     ).save()
 
     await execSimpleApplicationAction(
@@ -202,7 +202,7 @@ describe('Application details', () => {
     await createApplicationPlacementPlan({
       applicationId: singleParentApplication.id,
       body: {
-        unitId: fixtures.preschoolFixture.id,
+        unitId: fixtures.testPreschool.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }

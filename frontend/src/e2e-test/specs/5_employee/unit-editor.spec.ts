@@ -26,7 +26,7 @@ describe('Employee - unit details', () => {
   beforeEach(async () => {
     await resetServiceState()
     const fixtures = await initializeAreaAndPersonData()
-    daycare1 = fixtures.daycareFixture
+    daycare1 = fixtures.testDaycare
     const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
@@ -117,7 +117,7 @@ describe('Employee - unit editor validations and warnings', () => {
 
     page = await Page.open()
     await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
+    const unitPage = await UnitPage.openUnit(page, fixtures.testDaycare.id)
     unitInfoPage = await unitPage.openUnitInformation()
     unitDetailsPage = await unitInfoPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()

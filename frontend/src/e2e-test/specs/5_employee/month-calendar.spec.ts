@@ -8,11 +8,11 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import {
-  careAreaFixture,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testChild2,
   Fixture
 } from '../../dev-api/fixtures'
 import {
@@ -37,15 +37,13 @@ beforeEach(async () => {
   await resetServiceState()
 
   await createDefaultServiceNeedOptions()
-  const careArea = await Fixture.careArea().with(careAreaFixture).save()
-  await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
-  await Fixture.person().with(enduserChildFixtureKaarina).saveChild()
-  await Fixture.child(enduserChildFixtureKaarina.id).save()
-  group = await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  const careArea = await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).careArea(careArea).save()
+  await Fixture.person().with(testChild2).saveChild()
+  await Fixture.child(testChild2.id).save()
+  group = await Fixture.daycareGroup().with(testDaycareGroup).save()
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(
-    daycareFixture.id
-  ).save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))
@@ -71,8 +69,8 @@ describe('Employee - Unit month calendar', () => {
 
     const placement = await Fixture.placement()
       .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
+        childId: testChild2.id,
+        unitId: testDaycare.id,
         type: 'PRESCHOOL',
         startDate: today,
         endDate: today.addYears(1)
@@ -83,37 +81,35 @@ describe('Employee - Unit month calendar', () => {
       .withGroup(group)
       .save()
 
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
 
     const groupSection = await groupsPage.openGroupCollapsible(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Monday is visible
     await monthCalendarPage
-      .absenceCell(enduserChildFixtureKaarina.id, monday)
+      .absenceCell(testChild2.id, monday)
       .waitUntilVisible()
 
     // Tue-Thu are term break days
     for (const date of termBreak.dates()) {
-      await monthCalendarPage
-        .absenceCell(enduserChildFixtureKaarina.id, date)
-        .waitUntilHidden()
+      await monthCalendarPage.absenceCell(testChild2.id, date).waitUntilHidden()
     }
 
     // Fri is visible
     await monthCalendarPage
-      .absenceCell(enduserChildFixtureKaarina.id, monday.addDays(4))
+      .absenceCell(testChild2.id, monday.addDays(4))
       .waitUntilVisible()
   })
 
   test('User can open the month calendar and add an absence for a child with only one absence category', async () => {
     const placement = await Fixture.placement()
       .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
+        childId: testChild2.id,
+        unitId: testDaycare.id,
         startDate: today,
         endDate: today.addYears(1)
       })
@@ -123,22 +119,18 @@ describe('Employee - Unit month calendar', () => {
       .withGroup(group)
       .save()
 
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
 
     const groupSection = await groupsPage.openGroupCollapsible(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Can add an absence
-    await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
-      today,
-      'SICKLEAVE'
-    )
+    await monthCalendarPage.addAbsenceToChild(testChild2.id, today, 'SICKLEAVE')
     await monthCalendarPage.childHasAbsence(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'SICKLEAVE',
       'BILLABLE'
@@ -146,45 +138,37 @@ describe('Employee - Unit month calendar', () => {
 
     // Can change the absence type
     await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'UNKNOWN_ABSENCE'
     )
     await monthCalendarPage.childHasAbsence(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'UNKNOWN_ABSENCE',
       'BILLABLE'
     )
 
     // Hover shows type and who is the absence maker
-    await monthCalendarPage.assertTooltipContains(
-      enduserChildFixtureKaarina.id,
-      today,
-      [
-        'Varhaiskasvatus: Ilmoittamaton poissaolo',
-        `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
-      ]
-    )
+    await monthCalendarPage.assertTooltipContains(testChild2.id, today, [
+      'Varhaiskasvatus: Ilmoittamaton poissaolo',
+      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+    ])
 
     // Can clear an absence
     await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'NO_ABSENCE'
     )
-    await monthCalendarPage.childHasNoAbsence(
-      enduserChildFixtureKaarina.id,
-      today,
-      'BILLABLE'
-    )
+    await monthCalendarPage.childHasNoAbsence(testChild2.id, today, 'BILLABLE')
   })
 
   test('User can open the month calendar and add an absence for a child with two absence categories', async () => {
     const placement = await Fixture.placement()
       .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
+        childId: testChild2.id,
+        unitId: testDaycare.id,
         type: 'PRESCHOOL_DAYCARE',
         startDate: today,
         endDate: today.addYears(1)
@@ -195,22 +179,22 @@ describe('Employee - Unit month calendar', () => {
       .withGroup(group)
       .save()
 
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
     const groupSection = await groupsPage.openGroupCollapsible(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Can add an absence
     await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'SICKLEAVE',
       ['BILLABLE']
     )
     await monthCalendarPage.childHasAbsence(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'SICKLEAVE',
       'BILLABLE'
@@ -218,53 +202,45 @@ describe('Employee - Unit month calendar', () => {
 
     // Can change the absence type
     await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'UNKNOWN_ABSENCE',
       ['NONBILLABLE']
     )
     await monthCalendarPage.childHasAbsence(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'UNKNOWN_ABSENCE',
       'NONBILLABLE'
     )
 
     // Hover shows type and who is the absence maker
-    await monthCalendarPage.assertTooltipContains(
-      enduserChildFixtureKaarina.id,
-      today,
-      [
-        'Varhaiskasvatus: Ilmoittamaton poissaolo',
-        `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
-      ]
-    )
+    await monthCalendarPage.assertTooltipContains(testChild2.id, today, [
+      'Varhaiskasvatus: Ilmoittamaton poissaolo',
+      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+    ])
 
     // Can clear an absence
     await monthCalendarPage.addAbsenceToChild(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'NO_ABSENCE',
       ['BILLABLE', 'NONBILLABLE']
     )
+    await monthCalendarPage.childHasNoAbsence(testChild2.id, today, 'BILLABLE')
     await monthCalendarPage.childHasNoAbsence(
-      enduserChildFixtureKaarina.id,
-      today,
-      'BILLABLE'
-    )
-    await monthCalendarPage.childHasNoAbsence(
-      enduserChildFixtureKaarina.id,
+      testChild2.id,
       today,
       'NONBILLABLE'
     )
   })
 
   test('User can add a staff attendance', async () => {
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
 
     const groupSection = await groupsPage.openGroupCollapsible(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
@@ -285,8 +261,8 @@ describe('Employee - Unit month calendar', () => {
     beforeEach(async () => {
       const kaarinaPlacement = await Fixture.placement()
         .with({
-          childId: enduserChildFixtureKaarina.id,
-          unitId: daycareFixture.id,
+          childId: testChild2.id,
+          unitId: testDaycare.id,
           type: 'PRESCHOOL_DAYCARE',
           startDate: today,
           endDate: today.addYears(1)
@@ -306,19 +282,19 @@ describe('Employee - Unit month calendar', () => {
         })
         .save()
 
-      await unitPage.navigateToUnit(daycareFixture.id)
+      await unitPage.navigateToUnit(testDaycare.id)
       const groupsPage = await unitPage.openGroupsPage()
       const groupSection = await groupsPage.openGroupCollapsible(
-        daycareGroupFixture.id
+        testDaycareGroup.id
       )
       const monthCalendarPage = await groupSection.openMonthCalendar()
 
       // Today is not in a holiday period
       await monthCalendarPage
-        .absenceCell(enduserChildFixtureKaarina.id, today)
+        .absenceCell(testChild2.id, today)
         .waitUntilVisible()
       await monthCalendarPage
-        .absenceCell(enduserChildFixtureKaarina.id, today)
+        .absenceCell(testChild2.id, today)
         .missingHolidayReservation.waitUntilHidden()
 
       // Missing holiday reservation is shown for holiday period dates
@@ -326,23 +302,23 @@ describe('Employee - Unit month calendar', () => {
       let date = holidayStart
       while (date <= holidayEnd) {
         await monthCalendarPage
-          .absenceCell(enduserChildFixtureKaarina.id, date)
+          .absenceCell(testChild2.id, date)
           .missingHolidayReservation.waitUntilVisible()
         date = date.addDays(1)
       }
 
       // Adding an absence hides the missing holiday reservation marker
       await monthCalendarPage.addAbsenceToChild(
-        enduserChildFixtureKaarina.id,
+        testChild2.id,
         holidayStart,
         'UNKNOWN_ABSENCE',
         ['NONBILLABLE']
       )
       await monthCalendarPage
-        .absenceCell(enduserChildFixtureKaarina.id, holidayStart)
+        .absenceCell(testChild2.id, holidayStart)
         .waitUntilVisible()
       await monthCalendarPage
-        .absenceCell(enduserChildFixtureKaarina.id, holidayStart)
+        .absenceCell(testChild2.id, holidayStart)
         .missingHolidayReservation.waitUntilHidden()
     })
   })
@@ -360,8 +336,8 @@ describe('Employee - Unit month calendar', () => {
 
     const kaarinaPlacement = await Fixture.placement()
       .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
+        childId: testChild2.id,
+        unitId: testDaycare.id,
         type: 'DAYCARE',
         startDate: placementStart,
         endDate: placementEnd
@@ -381,12 +357,12 @@ describe('Employee - Unit month calendar', () => {
       .withGroup(group)
       .save()
 
-    await Fixture.person().with(enduserChildFixtureJari).saveChild()
-    await Fixture.child(enduserChildFixtureJari.id).save()
+    await Fixture.person().with(testChild).saveChild()
+    await Fixture.child(testChild.id).save()
     const jariPlacement = await Fixture.placement()
       .with({
-        childId: enduserChildFixtureJari.id,
-        unitId: daycareFixture.id,
+        childId: testChild.id,
+        unitId: testDaycare.id,
         type: 'DAYCARE',
         startDate: placementStart,
         endDate: placementEnd
@@ -411,50 +387,43 @@ describe('Employee - Unit month calendar', () => {
     ].filter((date) => !date.isWeekend())
     await postReservations({
       body: lastMonthWeekdays.flatMap((date) =>
-        [enduserChildFixtureKaarina.id, enduserChildFixtureJari.id].map(
-          (childId) => ({
-            childId,
-            date,
-            type: 'RESERVATIONS',
-            reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            secondReservation: null
-          })
-        )
+        [testChild2.id, testChild.id].map((childId) => ({
+          childId,
+          date,
+          type: 'RESERVATIONS',
+          reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+          secondReservation: null
+        }))
       )
     })
     await postAttendances({
       body: lastMonthWeekdays.flatMap((date) =>
         date.isWeekend()
           ? []
-          : [enduserChildFixtureKaarina.id, enduserChildFixtureJari.id].map(
-              (childId) => ({
-                childId,
-                unitId: daycareFixture.id,
-                date,
-                arrived: LocalTime.of(8, 15),
-                departed: LocalTime.of(16, 30)
-              })
-            )
+          : [testChild2.id, testChild.id].map((childId) => ({
+              childId,
+              unitId: testDaycare.id,
+              date,
+              arrived: LocalTime.of(8, 15),
+              departed: LocalTime.of(16, 30)
+            }))
       )
     })
 
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
     const groupSection = await groupsPage.openGroupCollapsible(
-      daycareGroupFixture.id
+      testDaycareGroup.id
     )
     const monthCalendarPage = await groupSection.openMonthCalendar()
     await monthCalendarPage.previousWeekButton.click()
-    await monthCalendarPage.assertChildTotalHours(
-      enduserChildFixtureKaarina.id,
-      {
-        reservedHours: 160,
-        reservedHoursWarning: true,
-        usedHours: 170,
-        usedHoursWarning: true
-      }
-    )
-    await monthCalendarPage.assertChildTotalHours(enduserChildFixtureJari.id, {
+    await monthCalendarPage.assertChildTotalHours(testChild2.id, {
+      reservedHours: 160,
+      reservedHoursWarning: true,
+      usedHours: 170,
+      usedHoursWarning: true
+    })
+    await monthCalendarPage.assertChildTotalHours(testChild.id, {
       reservedHours: 160,
       reservedHoursWarning: false,
       usedHours: 165,

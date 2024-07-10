@@ -46,20 +46,18 @@ async function openApplicationsPage(citizen: { ssn: string | null }) {
 describe('Citizen applications list', () => {
   test('Citizen sees their children and applications', async () => {
     const application = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      fixtures.testChild,
+      fixtures.testAdult,
       undefined,
       'PRESCHOOL',
       null,
-      [fixtures.daycareFixture.id],
+      [fixtures.testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(
-      fixtures.enduserGuardianFixture
-    )
+    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
 
-    const child = fixtures.enduserChildFixtureJari
+    const child = fixtures.testChild
     await applicationsPage.assertChildIsShown(
       child.id,
       `${child.firstName} ${child.lastName}`
@@ -89,7 +87,7 @@ describe('Citizen applications list', () => {
       otherGuardian,
       'PRESCHOOL',
       null,
-      [fixtures.daycareFixture.id],
+      [fixtures.testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -109,12 +107,12 @@ describe('Citizen applications list', () => {
 
   test('Citizen sees application that is waiting for decision acceptance', async () => {
     const application = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      fixtures.testChild,
+      fixtures.testAdult,
       undefined,
       'DAYCARE',
       null,
-      [fixtures.daycareFixture.id],
+      [fixtures.testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -128,7 +126,7 @@ describe('Citizen applications list', () => {
       now
     )
     const { page, applicationsPage } = await openApplicationsPage(
-      fixtures.enduserGuardianFixture
+      fixtures.testAdult
     )
 
     await page.reload()
@@ -142,19 +140,17 @@ describe('Citizen applications list', () => {
 
   test('Citizen can cancel a draft application', async () => {
     const application = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      fixtures.testChild,
+      fixtures.testAdult,
       undefined,
       'DAYCARE',
       null,
-      [fixtures.daycareFixture.id],
+      [fixtures.testDaycare.id],
       true,
       'CREATED'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(
-      fixtures.enduserGuardianFixture
-    )
+    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
@@ -162,19 +158,17 @@ describe('Citizen applications list', () => {
 
   test('Citizen can cancel a sent application', async () => {
     const application = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      fixtures.testChild,
+      fixtures.testAdult,
       undefined,
       'DAYCARE',
       null,
-      [fixtures.daycareFixture.id],
+      [fixtures.testDaycare.id],
       true,
       'SENT'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(
-      fixtures.enduserGuardianFixture
-    )
+    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)

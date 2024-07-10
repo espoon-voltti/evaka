@@ -48,13 +48,13 @@ describe('Search person', () => {
       await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)
 
-    const childWithAssistanceNeed = fixtures.enduserChildFixtureJari
-    const childWithoutAssistanceNeed = fixtures.enduserChildFixtureKaarina
+    const childWithAssistanceNeed = fixtures.testChild
+    const childWithoutAssistanceNeed = fixtures.testChild2
 
     const appWithAssistanceNeeded = {
       ...applicationFixture(
         childWithAssistanceNeed,
-        fixtures.enduserGuardianFixture,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -71,7 +71,7 @@ describe('Search person', () => {
     const appWithoutAssistanceNeeded = {
       ...applicationFixture(
         childWithoutAssistanceNeed,
-        fixtures.enduserGuardianFixture,
+        fixtures.testAdult,
         undefined,
         'DAYCARE',
         null,

@@ -38,7 +38,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
-  daycare = fixtures.daycareFixture
+  daycare = fixtures.testDaycare
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
@@ -64,7 +64,7 @@ beforeEach(async () => {
     })
     .save()
 
-  child2Fixture = fixtures.personFixtureChildZeroYearOld
+  child2Fixture = fixtures.testChildZeroYearOld
   child2DaycarePlacementId = uuidv4()
   await Fixture.placement()
     .with({
@@ -76,8 +76,8 @@ beforeEach(async () => {
     })
     .save()
 
-  child3Fixture = fixtures.enduserChildFixtureKaarina
-  daycare2 = fixtures.daycareFixturePrivateVoucher
+  child3Fixture = fixtures.testChild2
+  daycare2 = fixtures.testDaycarePrivateVoucher
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {

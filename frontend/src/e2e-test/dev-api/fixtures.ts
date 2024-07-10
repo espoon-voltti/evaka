@@ -271,11 +271,11 @@ export class Fixture {
   }
 
   static preschoolTerm(): PreschoolTermBuilder {
-    return new PreschoolTermBuilder(preschoolTermFixture2023)
+    return new PreschoolTermBuilder(preschoolTerm2023)
   }
 
   static clubTerm(): ClubTermBuilder {
-    return new ClubTermBuilder(clubTermFixture2023)
+    return new ClubTermBuilder(clubTerm2023)
   }
 
   static person(): PersonBuilder {
@@ -2118,7 +2118,7 @@ export const nonFullDayTimeRange: TimeRange = new TimeRange(
   LocalTime.of(23, 0)
 )
 
-export const preschoolTermFixture2020: DevPreschoolTerm = {
+export const preschoolTerm2020: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
@@ -2139,7 +2139,7 @@ export const preschoolTermFixture2020: DevPreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2021: DevPreschoolTerm = {
+export const preschoolTerm2021: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
@@ -2160,7 +2160,7 @@ export const preschoolTermFixture2021: DevPreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2022: DevPreschoolTerm = {
+export const preschoolTerm2022: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2022, 8, 11),
@@ -2181,7 +2181,7 @@ export const preschoolTermFixture2022: DevPreschoolTerm = {
   termBreaks: []
 }
 
-export const preschoolTermFixture2023: DevPreschoolTerm = {
+export const preschoolTerm2023: DevPreschoolTerm = {
   id: uuidv4(),
   finnishPreschool: new FiniteDateRange(
     LocalDate.of(2023, 8, 11),
@@ -2206,14 +2206,14 @@ export const preschoolTermFixture2023: DevPreschoolTerm = {
   ]
 }
 
-export const preschoolTermFixtures = [
-  preschoolTermFixture2020,
-  preschoolTermFixture2021,
-  preschoolTermFixture2022,
-  preschoolTermFixture2023
+export const preschoolTerms = [
+  preschoolTerm2020,
+  preschoolTerm2021,
+  preschoolTerm2022,
+  preschoolTerm2023
 ]
 
-export const clubTermFixture2020: ClubTerm = {
+export const clubTerm2020: ClubTerm = {
   id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2020, 8, 13),
@@ -2226,7 +2226,7 @@ export const clubTermFixture2020: ClubTerm = {
   termBreaks: []
 }
 
-export const clubTermFixture2021: ClubTerm = {
+export const clubTerm2021: ClubTerm = {
   id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2021, 8, 11),
@@ -2239,7 +2239,7 @@ export const clubTermFixture2021: ClubTerm = {
   termBreaks: []
 }
 
-export const clubTermFixture2022: ClubTerm = {
+export const clubTerm2022: ClubTerm = {
   id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2022, 8, 10),
@@ -2252,7 +2252,7 @@ export const clubTermFixture2022: ClubTerm = {
   termBreaks: []
 }
 
-export const clubTermFixture2023: ClubTerm = {
+export const clubTerm2023: ClubTerm = {
   id: uuidv4(),
   term: new FiniteDateRange(
     LocalDate.of(2023, 8, 10),
@@ -2269,14 +2269,14 @@ export const clubTermFixture2023: ClubTerm = {
   ]
 }
 
-export const clubTermFixtures = [
-  clubTermFixture2020,
-  clubTermFixture2021,
-  clubTermFixture2022,
-  clubTermFixture2023
+export const clubTerms = [
+  clubTerm2020,
+  clubTerm2021,
+  clubTerm2022,
+  clubTerm2023
 ]
 
-export const careAreaFixture: DevCareArea = {
+export const testCareArea: DevCareArea = {
   id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
   name: 'Superkeskus',
   shortName: 'super-keskus',
@@ -2284,7 +2284,7 @@ export const careAreaFixture: DevCareArea = {
   subCostCenter: '99'
 }
 
-export const careArea2Fixture: DevCareArea = {
+export const testCareArea2: DevCareArea = {
   id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
   name: 'Hyperkeskus',
   shortName: 'hyper-keskus',
@@ -2292,9 +2292,9 @@ export const careArea2Fixture: DevCareArea = {
   subCostCenter: '98'
 }
 
-export const clubFixture: DevDaycare = {
+export const testClub: DevDaycare = {
   id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
-  areaId: careAreaFixture.id,
+  areaId: testCareArea.id,
   name: 'Alkuräjähdyksen kerho',
   type: ['CLUB'],
   dailyPreschoolTime: null,
@@ -2366,9 +2366,9 @@ export const clubFixture: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const daycareFixture: DevDaycare = {
+export const testDaycare: DevDaycare = {
   id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
-  areaId: careAreaFixture.id,
+  areaId: testCareArea.id,
   name: 'Alkuräjähdyksen päiväkoti',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
   dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
@@ -2458,9 +2458,9 @@ export const daycareFixture: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const daycare2Fixture: DevDaycare = {
+export const testDaycare2: DevDaycare = {
   id: '6f540c39-e7f6-4222-a004-c527403378ec',
-  areaId: careArea2Fixture.id,
+  areaId: testCareArea2.id,
   name: 'Mustan aukon päiväkoti',
   type: ['CENTRE'],
   dailyPreschoolTime: null,
@@ -2543,9 +2543,9 @@ export const daycare2Fixture: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const daycareFixturePrivateVoucher: DevDaycare = {
+export const testDaycarePrivateVoucher: DevDaycare = {
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
-  areaId: careAreaFixture.id,
+  areaId: testCareArea.id,
   name: 'PS-yksikkö',
   type: ['CENTRE'],
   dailyPreschoolTime: null,
@@ -2627,9 +2627,9 @@ export const daycareFixturePrivateVoucher: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const preschoolFixture: DevDaycare = {
+export const testPreschool: DevDaycare = {
   id: 'b53d80e0-319b-4d2b-950c-f5c3c9f834bc',
-  areaId: careAreaFixture.id,
+  areaId: testCareArea.id,
   name: 'Alkuräjähdyksen eskari',
   type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
   dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
@@ -2709,7 +2709,7 @@ export const preschoolFixture: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const enduserGuardianFixture = Fixture.person().with({
+export const testAdult = Fixture.person().with({
   id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
@@ -2726,7 +2726,7 @@ export const enduserGuardianFixture = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserChildFixtureJari = Fixture.person().with({
+export const testChild = Fixture.person().with({
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
   ssn: '070714A9126',
   firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
@@ -2736,15 +2736,15 @@ export const enduserChildFixtureJari = Fixture.person().with({
   phone: '',
   language: 'fi',
   dateOfBirth: LocalDate.of(2014, 7, 7),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
+  streetAddress: testAdult.streetAddress,
+  postalCode: testAdult.postalCode,
+  postOffice: testAdult.postOffice,
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserChildFixtureKaarina = Fixture.person().with({
+export const testChild2 = Fixture.person().with({
   id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
   ssn: '160616A978U',
   firstName: 'Kaarina Veera Nelli',
@@ -2753,15 +2753,15 @@ export const enduserChildFixtureKaarina = Fixture.person().with({
   phone: '',
   language: 'fi',
   dateOfBirth: LocalDate.of(2016, 6, 6),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
+  streetAddress: testAdult.streetAddress,
+  postalCode: testAdult.postalCode,
+  postOffice: testAdult.postOffice,
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserChildFixturePorriHatterRestricted = Fixture.person().with({
+export const testChildRestricted = Fixture.person().with({
   id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
   ssn: '160620A999J',
   firstName: 'Porri Hatter',
@@ -2778,7 +2778,7 @@ export const enduserChildFixturePorriHatterRestricted = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserChildJariOtherGuardianFixture = Fixture.person().with({
+export const testAdult2 = Fixture.person().with({
   id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
   ssn: '311299-999E',
   firstName: 'Ville',
@@ -2795,7 +2795,7 @@ export const enduserChildJariOtherGuardianFixture = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserDeceasedChildFixture = Fixture.person().with({
+export const testChildDeceased = Fixture.person().with({
   id: 'b8711722-0c1b-4044-a794-5b308207d78b',
   ssn: '150515-999T',
   firstName: 'Unelma',
@@ -2813,7 +2813,7 @@ export const enduserDeceasedChildFixture = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const enduserNonSsnChildFixture = Fixture.person().with({
+export const testChildNoSsn = Fixture.person().with({
   id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
   firstName: 'Heluna',
   lastName: 'Hetuton',
@@ -3015,7 +3015,7 @@ export const familyWithDeadGuardian = {
   children: [deadGuardianChild]
 }
 
-export const personFixtureChildZeroYearOld = Fixture.person().with({
+export const testChildZeroYearOld = Fixture.person().with({
   id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
   ssn: null,
   firstName: 'Vasta Syntynyt',
@@ -3032,7 +3032,7 @@ export const personFixtureChildZeroYearOld = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const restrictedPersonFixture = Fixture.person().with({
+export const testAdultRestricted = Fixture.person().with({
   id: '92d707e9-6cbc-487b-8bde-0097d90044cd',
   ssn: '031083-910S',
   firstName: 'Seija Anna Kaarina',
@@ -3143,7 +3143,7 @@ export const applicationFixture = (
   otherGuardian: DevPerson | undefined = undefined,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
-  preferredUnits: string[] = [daycareFixture.id],
+  preferredUnits: string[] = [testDaycare.id],
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',
   preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
@@ -3196,7 +3196,7 @@ export const decisionFixture = (
   id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
   employeeId: 'SET_THIS',
   applicationId: applicationId,
-  unitId: daycareFixture.id,
+  unitId: testDaycare.id,
   type: 'DAYCARE',
   startDate: startDate,
   endDate: endDate,
@@ -3361,9 +3361,9 @@ export const invoiceFixture = (
   totalPrice: 10000
 })
 
-export const daycareGroupFixture: DevDaycareGroup = {
+export const testDaycareGroup: DevDaycareGroup = {
   id: '2f998c23-0f90-4afd-829b-d09ecf2f6188',
-  daycareId: daycareFixture.id,
+  daycareId: testDaycare.id,
   name: 'Kosmiset vakiot',
   startDate: LocalDate.of(2000, 1, 1),
   endDate: null,

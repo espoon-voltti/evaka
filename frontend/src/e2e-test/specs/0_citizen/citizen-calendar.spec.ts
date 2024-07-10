@@ -42,18 +42,18 @@ beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   children = [
-    fixtures.enduserChildFixtureJari,
-    fixtures.enduserChildFixtureKaarina,
-    fixtures.enduserChildFixturePorriHatterRestricted
+    fixtures.testChild,
+    fixtures.testChild2,
+    fixtures.testChildRestricted
   ]
-  jariId = fixtures.enduserChildFixtureJari.id
+  jariId = fixtures.testChild.id
   const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
   await createDaycarePlacements({
     body: children.map((child) =>
       createDaycarePlacementFixture(
         placementIds.get(child.id) ?? '',
         child.id,
-        fixtures.daycareFixture.id,
+        fixtures.testDaycare.id,
         today,
         today.addYears(1)
       )
@@ -62,7 +62,7 @@ beforeEach(async () => {
 
   const daycareGroup = await Fixture.daycareGroup()
     .with({
-      daycareId: fixtures.daycareFixture.id,
+      daycareId: fixtures.testDaycare.id,
       name: 'Group 1'
     })
     .save()
@@ -91,7 +91,7 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: groupEvent.id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       groupId: daycareGroup.id
     })
     .save()
@@ -109,9 +109,9 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: individualEvent.id,
-      unitId: fixtures.daycareFixture.id,
+      unitId: fixtures.testDaycare.id,
       groupId: daycareGroup.id,
-      childId: fixtures.enduserChildFixtureJari.id
+      childId: fixtures.testChild.id
     })
     .save()
 
@@ -128,7 +128,7 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: unitEvent.id,
-      unitId: fixtures.daycareFixture.id
+      unitId: fixtures.testDaycare.id
     })
     .save()
 })

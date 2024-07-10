@@ -9,7 +9,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { careAreaFixture, Fixture } from '../../dev-api/fixtures'
+import { testCareArea, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
@@ -222,7 +222,7 @@ const addTestData = async (date: LocalDate) => {
   const unit = await Fixture.daycare()
     .with({
       name: '10h/5d',
-      areaId: bulkFixtures.careAreaFixture.id,
+      areaId: bulkFixtures.testCareArea.id,
       type: ['CENTRE'],
       providerType: 'MUNICIPAL',
       operationTimes: [
@@ -241,8 +241,8 @@ const addTestData = async (date: LocalDate) => {
     .save()
   const group = await Fixture.daycareGroup().with({ daycareId: unit.id }).save()
 
-  const child = bulkFixtures.enduserChildFixtureJari
-  const parent = bulkFixtures.enduserGuardianFixture
+  const child = bulkFixtures.testChild
+  const parent = bulkFixtures.testAdult
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
 
@@ -279,7 +279,7 @@ const addTestData = async (date: LocalDate) => {
     .save()
 
   return {
-    areaId: careAreaFixture.id,
+    areaId: testCareArea.id,
     parent,
     unitId: unit.id,
     child

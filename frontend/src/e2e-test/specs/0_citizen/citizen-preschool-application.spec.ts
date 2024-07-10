@@ -9,7 +9,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { enduserGuardianFixture } from '../../dev-api/fixtures'
+import { testAdult } from '../../dev-api/fixtures'
 import {
   getApplication,
   resetServiceState,
@@ -48,7 +48,7 @@ describe('Citizen preschool applications', () => {
   test('Sending incomplete preschool application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()
@@ -58,7 +58,7 @@ describe('Citizen preschool applications', () => {
   test('Minimal valid preschool application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'PRESCHOOL'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -73,7 +73,7 @@ describe('Citizen preschool applications', () => {
   test('Full valid preschool application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'PRESCHOOL'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -82,9 +82,7 @@ describe('Citizen preschool applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication({ applicationId })
-    fullPreschoolForm.validateResult(application, [
-      fixtures.enduserChildFixtureKaarina
-    ])
+    fullPreschoolForm.validateResult(application, [fixtures.testChild2])
   })
 
   test('If user has no email selected in settings the application assumes user has no email', async () => {
@@ -93,7 +91,7 @@ describe('Citizen preschool applications', () => {
     const section = personalDetailsPage.personalDetailsSection
     await section.editPersonalData(
       {
-        preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+        preferredName: testAdult.firstName.split(' ')[1],
         phone: '123123123',
         backupPhone: '456456',
         email: null // This sets the no email flag and email to ''
@@ -103,7 +101,7 @@ describe('Citizen preschool applications', () => {
 
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()
@@ -114,11 +112,11 @@ describe('Citizen preschool applications', () => {
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
     await setPersonEmail({
-      body: { personId: enduserGuardianFixture.id, email: null }
+      body: { personId: testAdult.id, email: null }
     })
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      fixtures.testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()

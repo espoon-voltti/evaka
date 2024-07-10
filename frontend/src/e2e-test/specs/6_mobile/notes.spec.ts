@@ -35,8 +35,8 @@ describe('Child and group notes', () => {
   beforeEach(async () => {
     await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
-    child = fixtures.enduserChildFixtureJari
-    const unit = fixtures.daycareFixture
+    child = fixtures.testChild
+    const unit = fixtures.testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()
       .with({ daycareId: unit.id })
@@ -128,8 +128,8 @@ describe('Child and group notes (backup care)', () => {
   beforeEach(async () => {
     await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
-    child = fixtures.enduserChildFixtureJari
-    const unit = fixtures.daycareFixture
+    child = fixtures.testChild
+    const unit = fixtures.testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()
       .with({ daycareId: unit.id })

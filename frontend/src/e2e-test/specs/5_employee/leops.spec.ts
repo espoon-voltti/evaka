@@ -41,7 +41,7 @@ beforeAll(async () => {
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.preschoolFixture.id
+  const unitId = fixtures.testPreschool.id
   childId = fixtures.familyWithTwoGuardians.children[0].id
 
   await Fixture.placement()

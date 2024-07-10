@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { KeycloakRealmClient } from '../../utils/keycloak'
@@ -19,7 +19,7 @@ describe('Citizen authentication', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.person()
-      .with(enduserGuardianFixture)
+      .with(testAdult)
       .saveAdult({ updateMockVtjWithDependants: [] })
     const keycloak = await KeycloakRealmClient.createCitizenClient()
     await keycloak.deleteAllUsers()

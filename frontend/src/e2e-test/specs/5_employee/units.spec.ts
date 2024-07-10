@@ -37,7 +37,7 @@ beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
   await createDefaultServiceNeedOptions()
-  unitFixture = fixtures.daycareFixture
+  unitFixture = fixtures.testDaycare
   childFixture = fixtures.familyWithTwoGuardians.children[0]
   groupFixture = await Fixture.daycareGroup()
     .with({
