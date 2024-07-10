@@ -58,13 +58,15 @@ function createDigitransitProxy(path: string) {
       }
 
       if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
-        logWarn('Digitransit API error', undefined, {
-          statusCode: proxyRes.statusCode,
-          headers: {
-            'content-type': proxyRes.headers['content-type']
-          },
-          body: parseBody()
-        })
+        logWarn(
+          `Digitransit API error: ${JSON.stringify({
+            statusCode: proxyRes.statusCode,
+            headers: {
+              'content-type': proxyRes.headers['content-type']
+            },
+            body: parseBody()
+          })}`
+        )
       }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return proxyResData
