@@ -63,6 +63,7 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
@@ -119,7 +120,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             listOf(testAdult_1, testAdult_2, testAdult_3).forEach {
                 tx.insert(it, DevPersonType.ADULT)
             }
-            listOf(testChild_1, testChild_2, testChild_3).forEach {
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
@@ -2355,6 +2356,132 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertEmails(expectedRecipients, cancellationEmailContent, expectedFromAddress)
+    }
+
+    @Test
+    fun `guardian and foster parent get event times relevant to their children`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_2.id, testChild_3.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = testChild_4.id,
+                    parentId = testAdult_3.id,
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                )
+            )
+            val placementId4 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_4.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId4,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+
+            val placementId3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+        }
+
+        val guardianUser = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        val fosterParentUser = AuthenticatedUser.Citizen(testAdult_3.id, CitizenAuthLevel.STRONG)
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = testDaycare.id,
+                    tree = mapOf(groupId to setOf(testChild_3.id, testChild_4.id)),
+                    title = "Child-specific event",
+                    description = "cse",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                            ),
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(9, 20), LocalTime.of(9, 40))
+                            ),
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(10, 20), LocalTime.of(10, 40))
+                            )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                )
+            )
+
+        val child4EventTime = event.times.last()
+        val child3EventTime = event.times.first()
+
+        reserveEventTime(child4EventTime.id, testChild_4.id)
+        reserveEventTime(child3EventTime.id, testChild_3.id)
+
+        val updatedEvent =
+            calendarEventController.getCalendarEvent(dbInstance(), admin, clock, event.id)
+
+        val expectedGuardianEventTimes = updatedEvent.times.filter { it.id != child4EventTime.id }
+        val expectedFosterParentEventTimes =
+            updatedEvent.times.filter { it.id != child3EventTime.id }
+
+        val guardianEventResult =
+            calendarEventController.getCitizenCalendarEvents(
+                dbInstance(),
+                guardianUser,
+                clock,
+                placementStart,
+                placementEnd
+            )
+
+        assertEquals(1, guardianEventResult.size)
+        assertThat(guardianEventResult[0].timesByChild[testChild_3.id])
+            .containsExactlyInAnyOrderElementsOf(expectedGuardianEventTimes)
+
+        val fosterParentEventResult =
+            calendarEventController.getCitizenCalendarEvents(
+                dbInstance(),
+                fosterParentUser,
+                clock,
+                placementStart,
+                placementEnd
+            )
+
+        assertEquals(1, fosterParentEventResult.size)
+        assertThat(fosterParentEventResult[0].timesByChild[testChild_4.id])
+            .containsExactlyInAnyOrderElementsOf(expectedFosterParentEventTimes)
+    }
+
+    private fun reserveEventTime(id: CalendarEventTimeId, childId: ChildId) {
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(calendarEventTimeId = id, childId = childId)
+        )
     }
 
     private fun getDiscussionSurveyReservationDays(
