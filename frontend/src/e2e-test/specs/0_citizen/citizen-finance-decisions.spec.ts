@@ -96,7 +96,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')
@@ -120,7 +120,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, partner.ssn!)
+    await enduserLogin(page, partner)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')

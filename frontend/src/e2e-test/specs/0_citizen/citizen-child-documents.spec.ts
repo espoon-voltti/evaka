@@ -110,7 +110,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page, fixtures.testAdult.ssn!)
+  await enduserLogin(page, fixtures.testAdult)
 })
 
 describe('Citizen child documents listing page', () => {

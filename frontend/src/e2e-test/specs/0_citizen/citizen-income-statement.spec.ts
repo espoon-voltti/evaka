@@ -24,7 +24,7 @@ beforeEach(async () => {
     .saveAdult({ updateMockVtjWithDependants: [] })
 
   page = await Page.open()
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   incomeStatementsPage = new IncomeStatementsPage(page)
 })

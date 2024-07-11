@@ -22,7 +22,7 @@ describe('Citizen header customization', () => {
         langs: ['fi', 'sv']
       }
     })
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     const header = new CitizenHeader(page)
     expect(await header.listLanguages()).toStrictEqual({
       fi: true,

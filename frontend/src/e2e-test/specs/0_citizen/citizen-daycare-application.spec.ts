@@ -54,7 +54,7 @@ beforeEach(async () => {
     })
 
   page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -307,7 +307,7 @@ describe('Citizen daycare applications', () => {
     const otherGuardianPage = await Page.open({
       mockedTime: mockedNow
     })
-    await enduserLogin(otherGuardianPage, testAdult2.ssn!)
+    await enduserLogin(otherGuardianPage, testAdult2)
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)
     await applications.assertApplicationExists(applicationId)

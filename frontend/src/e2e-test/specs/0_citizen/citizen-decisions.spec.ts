@@ -21,7 +21,7 @@ import {
   getApplicationDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
 import AssistanceNeedPreschoolDecisionPage from '../../pages/citizen/citizen-assistance-need-preschool-decision'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
@@ -40,11 +40,11 @@ beforeEach(async () => {
   decisionMaker = await Fixture.employeeServiceWorker().save()
 })
 
-async function openCitizenDecisionsPage(citizen: { ssn: string | null }) {
+async function openCitizenDecisionsPage(citizen: DevPerson) {
   const page = await Page.open({
     mockedTime: now
   })
-  await enduserLogin(page, citizen.ssn ?? undefined)
+  await enduserLogin(page, citizen)
   const header = new CitizenHeader(page)
   await header.selectTab('decisions')
   const citizenDecisionsPage = new CitizenDecisionsPage(page)

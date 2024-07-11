@@ -45,6 +45,8 @@ const today = LocalDate.of(2022, 1, 5)
 
 let page: Page
 
+let fixtures: AreaAndPersonFixtures
+
 async function openCalendarPage(
   envType: EnvType,
   options?: {
@@ -65,7 +67,7 @@ async function openCalendarPage(
       featureFlags: options?.featureFlags
     }
   })
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   const header = new CitizenHeader(page, envType)
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, envType)
@@ -73,7 +75,6 @@ async function openCalendarPage(
 
 describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let children: DevPerson[]
-  let fixtures: AreaAndPersonFixtures
 
   beforeEach(async () => {
     await resetServiceState()
@@ -1026,7 +1027,7 @@ describe('Citizen calendar child visibility', () => {
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
     header = new CitizenHeader(page, 'desktop')
     calendarPage = new CitizenCalendarPage(page, 'desktop')
   })
@@ -1201,7 +1202,7 @@ describe('Citizen calendar visibility', () => {
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
 
     await page.findByDataQa('nav-calendar-desktop').waitUntilVisible()
   })
@@ -1223,7 +1224,7 @@ describe('Citizen calendar visibility', () => {
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
 
     // Ensure page has loaded
     await page.findByDataQa('nav-children-desktop').waitUntilVisible()
@@ -1247,7 +1248,7 @@ describe('Citizen calendar visibility', () => {
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
 
     // Ensure page has loaded
     await page.findByDataQa('applications-list').waitUntilVisible()
@@ -1282,7 +1283,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     page = await Page.open({
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
   })
 
   test(`Citizen creates 2 reservations from day view: ${env}`, async () => {

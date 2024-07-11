@@ -136,7 +136,7 @@ async function openStaffPage(mockedTime: HelsinkiDateTime) {
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, fixtures.testAdult)
 }
 
 const defaultMessage = {

@@ -34,7 +34,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })

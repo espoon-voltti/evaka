@@ -53,7 +53,7 @@ beforeEach(async () => {
   })
 
   page = await Page.open()
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   header = new CitizenHeader(page)
   child1ISList = new CitizenChildIncomeStatementListPage(page, 0)
 })

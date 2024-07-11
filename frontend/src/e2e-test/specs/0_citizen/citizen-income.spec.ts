@@ -135,7 +135,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
       })
       .save()
 
-    await enduserLogin(page)
+    await enduserLogin(page, guardian)
     const header = new CitizenHeader(page, env)
     await header.selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')

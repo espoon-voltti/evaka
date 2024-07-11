@@ -153,7 +153,7 @@ async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
     mockedTime: mockedTime
   })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, fixtures.testAdult)
 }
 
 async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {

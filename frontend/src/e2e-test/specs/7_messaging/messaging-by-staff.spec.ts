@@ -26,7 +26,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
@@ -152,15 +152,15 @@ async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, fixtures.testAdult)
 }
 
 async function initOtherCitizenPage(
   mockedTime: HelsinkiDateTime,
-  ssn: string | null
+  citizen: DevPerson
 ) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, ssn ?? undefined)
+  await enduserLogin(citizenPage, citizen)
 }
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
@@ -384,7 +384,7 @@ describe('Additional filters', () => {
     await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11, testAdult2.ssn)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(message)
@@ -428,7 +428,7 @@ describe('Additional filters', () => {
     })
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11, testAdult2.ssn)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertInboxIsEmpty()

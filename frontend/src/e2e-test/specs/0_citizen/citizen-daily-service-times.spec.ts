@@ -76,7 +76,7 @@ describe('Daily service times', () => {
       })
       .save()
 
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
@@ -98,7 +98,7 @@ describe('Daily service times', () => {
       })
       .save()
 
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 

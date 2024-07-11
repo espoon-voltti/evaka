@@ -209,7 +209,7 @@ async function openCalendarPage(
       featureFlags: { intermittentShiftCare: true }
     }
   })
-  await enduserLogin(page, endUser?.ssn ?? undefined)
+  await enduserLogin(page, endUser)
   const header = new CitizenHeader(page, env)
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, env)

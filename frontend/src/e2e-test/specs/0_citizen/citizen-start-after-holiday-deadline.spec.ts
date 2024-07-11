@@ -68,7 +68,7 @@ beforeEach(async () => {
 
 describe('Placement start after deadline end', () => {
   test('citizen can mark repeating attendances', async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, guardian)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
@@ -96,7 +96,7 @@ describe('Placement start after deadline end', () => {
     }
   })
   test('citizen can mark single day attendances', async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, guardian)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 

@@ -41,7 +41,7 @@ describe('Citizen personal details', () => {
   let section: CitizenPersonalDetailsSection
 
   beforeEach(async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
@@ -120,7 +120,7 @@ describe('Citizen notification settings', () => {
   let section: CitizenNotificationSettingsSection
 
   beforeEach(async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 
     await header.selectTab('personal-details')

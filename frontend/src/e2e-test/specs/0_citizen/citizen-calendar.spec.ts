@@ -12,6 +12,7 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
+  testAdult,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -145,7 +146,7 @@ describe.each(e)('Citizen calendar (%s)', (env) => {
       screen: viewport,
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     header = new CitizenHeader(page, env)
     calendarPage = new CitizenCalendarPage(page, env)
     await header.selectTab('calendar')

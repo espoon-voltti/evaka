@@ -27,7 +27,7 @@ async function openCalendarPage() {
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   const header = new CitizenHeader(page, 'desktop')
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, 'desktop')

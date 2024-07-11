@@ -14,6 +14,7 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -28,11 +29,11 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 })
 
-async function openApplicationsPage(citizen: { ssn: string | null }) {
+async function openApplicationsPage(citizen: DevPerson) {
   const page = await Page.open({
     mockedTime: now
   })
-  await enduserLogin(page, citizen.ssn ?? undefined)
+  await enduserLogin(page, citizen)
   const header = new CitizenHeader(page)
   await header.selectTab('applications')
   const applicationsPage = new CitizenApplicationsPage(page)

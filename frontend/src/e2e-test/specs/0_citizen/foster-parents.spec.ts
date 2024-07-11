@@ -73,7 +73,7 @@ beforeEach(async () => {
   activeRelationshipPage = await Page.open({
     mockedTime: mockedNow
   })
-  await enduserLogin(activeRelationshipPage)
+  await enduserLogin(activeRelationshipPage, fixtures.testAdult)
   activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
 })
 
@@ -81,7 +81,7 @@ async function openEndedRelationshipPage() {
   const endedRelationshipPage = await Page.open({
     mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(endedRelationshipPage)
+  await enduserLogin(endedRelationshipPage, fixtures.testAdult)
   const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
   return { endedRelationshipPage, endedRelationshipHeader }
 }

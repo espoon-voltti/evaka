@@ -205,7 +205,7 @@ beforeEach(async () => {
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, fixtures.testAdult)
 }
 
 describe('Message editor in child page', () => {

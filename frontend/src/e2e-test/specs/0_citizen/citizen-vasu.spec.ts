@@ -67,7 +67,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
 })
 
 const insertVasu = async (childId: string): Promise<string> => {

@@ -31,7 +31,10 @@ describe('Citizen authentication', () => {
   })
 
   const initConfigurations = [
-    ['direct login', async (page: Page) => enduserLogin(page)] as const,
+    [
+      'direct login',
+      async (page: Page) => enduserLogin(page, testAdult)
+    ] as const,
     ['weak login', async (page: Page) => enduserLoginWeak(page)] as const
   ]
 

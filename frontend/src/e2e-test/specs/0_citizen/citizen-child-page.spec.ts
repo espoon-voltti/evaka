@@ -66,7 +66,7 @@ describe('Citizen children page', () => {
       }))
     })
 
-    await enduserLogin(page)
+    await enduserLogin(page, fixtures.testAdult)
     const header = new CitizenHeader(page)
     const childPage = new CitizenChildPage(page)
 
@@ -120,7 +120,7 @@ describe('Citizen children page', () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate)
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -146,7 +146,7 @@ describe('Citizen children page', () => {
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, fixtures.testClub.id, 'CLUB')
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -170,7 +170,7 @@ describe('Citizen children page', () => {
         startDate
       )
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -202,7 +202,7 @@ describe('Citizen children page', () => {
       )
       await createApplications({ body: [application] })
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -295,7 +295,7 @@ describe('Citizen children page', () => {
       ]
       await createDaycarePlacements({ body: placements })
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -350,7 +350,7 @@ describe('Citizen children page', () => {
       ]
       await createDaycarePlacements({ body: placements })
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -422,7 +422,7 @@ describe('Citizen children page', () => {
       ]
       await createDaycarePlacements({ body: placements })
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 
@@ -483,7 +483,7 @@ describe('Citizen children page', () => {
         'PRESCHOOL_DAYCARE'
       )
 
-      await enduserLogin(page)
+      await enduserLogin(page, fixtures.testAdult)
       const header = new CitizenHeader(page)
       childPage = new CitizenChildPage(page)
 

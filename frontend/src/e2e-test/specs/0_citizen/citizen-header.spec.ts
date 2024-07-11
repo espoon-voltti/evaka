@@ -13,10 +13,10 @@ let header: CitizenHeader
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
+  const fixtures = await initializeAreaAndPersonData()
 
   page = await Page.open()
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   header = new CitizenHeader(page)
 })
 

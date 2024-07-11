@@ -50,7 +50,7 @@ beforeEach(async () => {
   })
 
   page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page)
+  await enduserLogin(page, fixtures.testAdult)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
 })
