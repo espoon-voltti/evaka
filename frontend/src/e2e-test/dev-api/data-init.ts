@@ -9,14 +9,9 @@ import {
   testDaycare,
   testDaycarePrivateVoucher,
   testAdult,
-  testAdult2,
-  testAdultRestricted,
   testChild,
   testChild2,
-  testChildDeceased,
-  testChildNoSsn,
   testChildRestricted,
-  testChildZeroYearOld,
   Fixture,
   testPreschool,
   preschoolTerms
@@ -29,14 +24,9 @@ const areaAndPersonFixtures = {
   testDaycarePrivateVoucher,
   testPreschool,
   testAdult,
-  testAdult2,
-  testAdultRestricted,
   testChild,
   testChild2,
-  testChildDeceased,
-  testChildNoSsn,
-  testChildRestricted,
-  testChildZeroYearOld
+  testChildRestricted
 }
 
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
@@ -87,26 +77,6 @@ export const initializeAreaAndPersonData = async (): Promise<
         areaAndPersonFixtures.testChildRestricted
       ]
     })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testAdult2)
-    .saveAdult({
-      updateMockVtjWithDependants: [areaAndPersonFixtures.testChild]
-    })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChildDeceased)
-    .saveChild({ updateMockVtj: true })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChildNoSsn)
-    .with({ ssn: null })
-    .saveChild()
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testAdultRestricted)
-    .saveAdult({ updateMockVtjWithDependants: [] })
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChildZeroYearOld)
-    .saveChild()
 
   return areaAndPersonFixtures
 }

@@ -13,7 +13,9 @@ import {
   applicationFixture,
   testDaycare,
   testAdult,
-  uuidv4
+  uuidv4,
+  Fixture,
+  testAdult2
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -45,6 +47,11 @@ const mockedDate = mockedNow.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person()
+    .with(testAdult2)
+    .saveAdult({
+      updateMockVtjWithDependants: [fixtures.testChild]
+    })
 
   page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page)
@@ -300,7 +307,7 @@ describe('Citizen daycare applications', () => {
     const otherGuardianPage = await Page.open({
       mockedTime: mockedNow
     })
-    await enduserLogin(otherGuardianPage, fixtures.testAdult2.ssn!)
+    await enduserLogin(otherGuardianPage, testAdult2.ssn!)
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)
     await applications.assertApplicationExists(applicationId)

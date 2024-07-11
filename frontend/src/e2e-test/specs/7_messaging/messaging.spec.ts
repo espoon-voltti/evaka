@@ -19,7 +19,8 @@ import {
   testDaycareGroup,
   testChild2,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult2
 } from '../../dev-api/fixtures'
 import {
   createBackupCares,
@@ -68,6 +69,12 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person()
+    .with(testAdult2)
+    .saveAdult({
+      updateMockVtjWithDependants: [fixtures.testChild]
+    })
+
   careArea = fixtures.testCareArea
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -542,14 +549,9 @@ describe('Sending and receiving messages', () => {
       })
 
       test('The guardian can select another guardian as an recipient', async () => {
-        const otherGuardian = fixtures.testAdult2
+        const otherGuardian = testAdult2
         await insertGuardians({
-          body: [
-            {
-              childId,
-              guardianId: otherGuardian.id
-            }
-          ]
+          body: [{ childId, guardianId: otherGuardian.id }]
         })
 
         const recipients = ['Esimies Essi']

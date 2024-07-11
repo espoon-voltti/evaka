@@ -2851,6 +2851,7 @@ export const testChildNoSsn = Fixture.person().with({
   phone: '',
   language: 'fi',
   dateOfBirth: LocalDate.of(2018, 8, 15),
+  ssn: null,
   streetAddress: 'Suosiellä 1',
   postalCode: '00340',
   postOffice: 'Espoo',

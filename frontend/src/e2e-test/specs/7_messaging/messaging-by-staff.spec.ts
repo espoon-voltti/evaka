@@ -17,7 +17,8 @@ import {
   testDaycareGroup,
   testChild2,
   testAdult,
-  Fixture
+  Fixture,
+  testAdult2
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -154,9 +155,12 @@ async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   await enduserLogin(citizenPage)
 }
 
-async function initOtherCitizenPage(mockedTime: HelsinkiDateTime) {
+async function initOtherCitizenPage(
+  mockedTime: HelsinkiDateTime,
+  ssn: string | null
+) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, fixtures.testAdult2.ssn ?? undefined)
+  await enduserLogin(citizenPage, ssn ?? undefined)
 }
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
@@ -353,11 +357,16 @@ describe('Additional filters', () => {
   })
 
   test('Citizen receives a message when recipient filter matches', async () => {
+    await Fixture.person()
+      .with(testAdult2)
+      .saveAdult({
+        updateMockVtjWithDependants: [fixtures.testChild]
+      })
     await insertGuardians({
       body: [
         {
           childId: childId,
-          guardianId: fixtures.testAdult2.id
+          guardianId: testAdult2.id
         }
       ]
     })
@@ -375,7 +384,7 @@ describe('Additional filters', () => {
     await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2.ssn)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(message)
@@ -383,11 +392,16 @@ describe('Additional filters', () => {
   })
 
   test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {
+    await Fixture.person()
+      .with(testAdult2)
+      .saveAdult({
+        updateMockVtjWithDependants: [fixtures.testChild]
+      })
     await insertGuardians({
       body: [
         {
           childId: childId,
-          guardianId: fixtures.testAdult2.id
+          guardianId: testAdult2.id
         }
       ]
     })
@@ -414,7 +428,7 @@ describe('Additional filters', () => {
     })
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2.ssn)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertInboxIsEmpty()

@@ -9,7 +9,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { testChild, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { testChild, Fixture, uuidv4, testAdult2 } from '../../dev-api/fixtures'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -89,6 +89,7 @@ describe('Mobile PIN login', () => {
         additionalInfo: ''
       })
       .save()
+    await Fixture.person().with(testAdult2).saveAdult()
 
     const parentshipId = uuidv4()
     await createFridgePartner({
@@ -107,7 +108,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 2,
           otherIndx: 1,
-          personId: fixtures.testAdult2.id,
+          personId: testAdult2.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -116,7 +117,7 @@ describe('Mobile PIN login', () => {
       ]
     })
 
-    const contacts = [fixtures.testAdult, fixtures.testAdult2]
+    const contacts = [fixtures.testAdult, testAdult2]
     await createFamilyContact({
       body: contacts.map(({ id }, index) => ({
         id: uuidv4(),

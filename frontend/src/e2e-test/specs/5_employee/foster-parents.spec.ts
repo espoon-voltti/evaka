@@ -8,7 +8,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testAdultRestricted } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -24,6 +24,9 @@ let fixtures: AreaAndPersonFixtures
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person()
+    .with(testAdultRestricted)
+    .saveAdult({ updateMockVtjWithDependants: [] })
 
   const admin = await Fixture.employeeAdmin().save()
   page = await Page.open()
@@ -35,9 +38,7 @@ beforeEach(async () => {
 
 describe('Foster parents', () => {
   test('adding, editing and deleting foster children works', async () => {
-    await guardianInformation.navigateToGuardian(
-      fixtures.testAdultRestricted.id
-    )
+    await guardianInformation.navigateToGuardian(testAdultRestricted.id)
     const section = await guardianInformation.openCollapsible('fosterChildren')
 
     const startDate = LocalDate.of(2020, 5, 14)
@@ -57,9 +58,7 @@ describe('Foster parents', () => {
   })
 
   test('added foster child is shown in child information', async () => {
-    await guardianInformation.navigateToGuardian(
-      fixtures.testAdultRestricted.id
-    )
+    await guardianInformation.navigateToGuardian(testAdultRestricted.id)
     await guardianInformation
       .openCollapsible('fosterChildren')
       .then((section) =>
@@ -75,7 +74,7 @@ describe('Foster parents', () => {
       .openCollapsible('guardians')
       .then((section) =>
         section.assertFosterParentExists(
-          fixtures.testAdultRestricted.id,
+          testAdultRestricted.id,
           LocalDate.todayInSystemTz(),
           null
         )

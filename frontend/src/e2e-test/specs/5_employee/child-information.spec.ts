@@ -49,6 +49,8 @@ beforeEach(async () => {
 
   fixtures = await initializeAreaAndPersonData()
   await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.person().with(testChildDeceased).saveChild()
+  await Fixture.person().with(testChildNoSsn).saveChild()
   await createDaycareGroups({ body: [testDaycareGroup] })
   admin = await Fixture.employeeAdmin().save()
 

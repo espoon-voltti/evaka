@@ -17,7 +17,8 @@ import {
   testChild,
   testChild2,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult2
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
@@ -510,6 +511,12 @@ describe('Messages page', () => {
   })
 
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
+    await Fixture.person()
+      .with(testAdult2)
+      .saveAdult({
+        updateMockVtjWithDependants: [fixtures.testChild]
+      })
+
     // Add child's guardians to block list
     const admin = await Fixture.employeeAdmin().save()
     const adminPage = await Page.open({
@@ -523,7 +530,7 @@ describe('Messages page', () => {
     const blocklistSection =
       await childInformationPage.openCollapsible('messageBlocklist')
     await blocklistSection.addParentToBlockList(fixtures.testAdult.id)
-    await blocklistSection.addParentToBlockList(fixtures.testAdult2.id)
+    await blocklistSection.addParentToBlockList(testAdult2.id)
 
     await listPage.selectChild(child.id)
     await childPage.messageEditorLink.click()

@@ -9,6 +9,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
+import { Fixture, testAdult2 } from '../../dev-api/fixtures'
 import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -26,6 +27,9 @@ const mockedDate = LocalDate.of(2021, 3, 1)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person()
+    .with(testAdult2)
+    .saveAdult({ updateMockVtjWithDependants: [fixtures.testChild] })
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))

@@ -8,7 +8,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture, testAdult2 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -28,6 +28,11 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person()
+    .with(testAdult2)
+    .saveAdult({
+      updateMockVtjWithDependants: [fixtures.testChild]
+    })
   await createDaycareGroups({ body: [testDaycareGroup] })
   const admin = await Fixture.employeeAdmin().save()
 
@@ -66,13 +71,15 @@ describe('Employee - paper application', () => {
   })
 
   test('Paper application can be created for other guardian and child with ssn', async () => {
-    await createApplicationModal.selectGuardian('Ville Vilkas')
+    await createApplicationModal.selectGuardian(
+      `${testAdult2.firstName} ${testAdult2.lastName}`
+    )
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(
-      formatPersonName(fixtures.testAdult2),
-      fixtures.testAdult2.ssn ?? '',
-      formatPersonAddress(fixtures.testAdult2)
+      formatPersonName(testAdult2),
+      testAdult2.ssn ?? '',
+      formatPersonAddress(testAdult2)
     )
   })
 

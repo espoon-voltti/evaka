@@ -19,7 +19,9 @@ import {
   testDaycare,
   feeDecisionsFixture,
   uuidv4,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  Fixture,
+  testAdultRestricted
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
@@ -54,7 +56,9 @@ beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   headOfFamily = fixtures.testAdult
-  partner = fixtures.testAdultRestricted
+  partner = await Fixture.person()
+    .with(testAdultRestricted)
+    .saveAdult({ updateMockVtjWithDependants: [] })
   child = fixtures.testChild
 
   feeDecision = feeDecisionsFixture(

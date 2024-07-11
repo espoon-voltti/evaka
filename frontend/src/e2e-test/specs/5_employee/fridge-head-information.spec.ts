@@ -15,6 +15,7 @@ import {
 import {
   familyWithTwoGuardians,
   Fixture,
+  testAdultRestricted,
   testChildZeroYearOld,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -50,6 +51,9 @@ beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
   await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.person()
+    .with(testAdultRestricted)
+    .saveAdult({ updateMockVtjWithDependants: [] })
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
   regularPerson = familyWithTwoGuardians.guardian
@@ -99,9 +103,7 @@ beforeEach(async () => {
 
 describe('Employee - Head of family details', () => {
   test('guardian has restriction details enabled', async () => {
-    await guardianInformation.navigateToGuardian(
-      fixtures.testAdultRestricted.id
-    )
+    await guardianInformation.navigateToGuardian(testAdultRestricted.id)
     await guardianInformation.assertRestrictedDetails(true)
   })
 
