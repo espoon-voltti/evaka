@@ -15,7 +15,8 @@ import {
   applicationFixture,
   testDaycare,
   Fixture,
-  testPreschool
+  testPreschool,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -41,6 +42,7 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
@@ -59,7 +61,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
@@ -121,7 +123,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,

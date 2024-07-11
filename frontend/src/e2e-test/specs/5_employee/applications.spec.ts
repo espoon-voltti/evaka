@@ -7,8 +7,11 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Family } from '../../dev-api/types'
+import {
+  applicationFixture,
+  familyWithDeadGuardian,
+  Fixture
+} from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -20,12 +23,11 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let applicationsPage: ApplicationsPage
-let familyWithDeadGuardian: Family
 
 beforeEach(async () => {
   await resetServiceState()
-  familyWithDeadGuardian = (await initializeAreaAndPersonData())
-    .familyWithDeadGuardian
+  await initializeAreaAndPersonData()
+  await Fixture.family(familyWithDeadGuardian).save()
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 
   page = await Page.open()

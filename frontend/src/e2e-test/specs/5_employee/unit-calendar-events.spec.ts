@@ -7,12 +7,13 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testCareArea2,
   testDaycare2,
+  familyWithRestrictedDetailsGuardian,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -46,7 +47,8 @@ const eventTimeId = uuidv4()
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   daycare = await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
 
@@ -70,8 +72,8 @@ beforeEach(async () => {
     })
     .save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
-  child2Fixture = fixtures.familyWithRestrictedDetailsGuardian.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
+  child2Fixture = familyWithRestrictedDetailsGuardian.children[0]
 
   child1DaycarePlacementId = uuidv4()
   await Fixture.placement()

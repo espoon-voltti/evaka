@@ -16,7 +16,8 @@ import {
   testDaycare2,
   testDaycare,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -51,7 +52,8 @@ const insertTestDataAndLogin = async ({
 }: {
   childShiftCare?: ShiftCareType
 } = {}) => {
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   const daycareBuilder = Fixture.daycare().with(testDaycare2).careArea(careArea)
   await daycareBuilder.save()
@@ -78,7 +80,7 @@ const insertTestDataAndLogin = async ({
     })
     .save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
   const placementBuilder = await Fixture.placement()
     .with({

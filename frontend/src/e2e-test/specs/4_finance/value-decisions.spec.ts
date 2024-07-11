@@ -46,6 +46,7 @@ const decision2DateTo = now.toLocalDate().addWeeks(5)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
 })

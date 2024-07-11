@@ -16,7 +16,8 @@ import {
   testDaycare,
   testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -55,10 +56,11 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const unitId = fixtures.testDaycare.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  childId = familyWithTwoGuardians.children[0].id
 
   staff = await Fixture.employeeStaff(unitId).save()
   const daycarePlacementFixture = createDaycarePlacementFixture(
@@ -81,8 +83,8 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
   beforeEach(async () => {
     assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
       .withChild(childId)
-      .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-      .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      .withGuardian(familyWithTwoGuardians.guardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
       .save()
 
     page = await openPage()
@@ -159,8 +161,8 @@ describe('Assistance Need Decisions - Decision process', () => {
   beforeEach(async () => {
     assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
       .withChild(childId)
-      .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-      .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      .withGuardian(familyWithTwoGuardians.guardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
         serviceWorker.id,
@@ -252,8 +254,8 @@ describe('Decision visibility for role', () => {
       acceptedAssistanceNeedPreschoolDecision =
         await Fixture.assistanceNeedPreschoolDecision()
           .withChild(childId)
-          .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-          .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+          .withGuardian(familyWithTwoGuardians.guardian.id)
+          .withGuardian(familyWithTwoGuardians.otherGuardian.id)
           .withForm({
             validFrom: LocalDate.of(2022, 7, 1),
             guardiansHeardOn: LocalDate.of(2022, 7, 1)
@@ -266,14 +268,14 @@ describe('Decision visibility for role', () => {
           .with({
             decisionMade: LocalDate.of(2022, 7, 1),
             status: 'ACCEPTED',
-            unreadGuardianIds: [fixtures.familyWithTwoGuardians.guardian.id]
+            unreadGuardianIds: [familyWithTwoGuardians.guardian.id]
           })
           .save()
 
       await Fixture.assistanceNeedPreschoolDecision()
         .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+        .withGuardian(familyWithTwoGuardians.guardian.id)
+        .withGuardian(familyWithTwoGuardians.otherGuardian.id)
         .withRequiredFieldsFilled(
           testDaycare.id,
           serviceWorker.id,

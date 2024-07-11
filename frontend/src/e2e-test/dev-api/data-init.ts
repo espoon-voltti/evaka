@@ -17,10 +17,6 @@ import {
   testChildNoSsn,
   testChildRestricted,
   testChildZeroYearOld,
-  familyWithDeadGuardian,
-  familyWithRestrictedDetailsGuardian,
-  familyWithSeparatedGuardians,
-  familyWithTwoGuardians,
   Fixture,
   testPreschool,
   preschoolTerms
@@ -40,11 +36,7 @@ const areaAndPersonFixtures = {
   testChildDeceased,
   testChildNoSsn,
   testChildRestricted,
-  testChildZeroYearOld,
-  familyWithTwoGuardians,
-  familyWithSeparatedGuardians,
-  familyWithRestrictedDetailsGuardian,
-  familyWithDeadGuardian
+  testChildZeroYearOld
 }
 
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
@@ -108,72 +100,6 @@ export const initializeAreaAndPersonData = async (): Promise<
     .with({ ssn: null })
     .saveChild()
 
-  await Promise.all(
-    areaAndPersonFixtures.familyWithTwoGuardians.children.map(async (child) => {
-      await Fixture.person().with(child).saveChild({ updateMockVtj: true })
-    })
-  )
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithTwoGuardians.guardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithTwoGuardians.children
-    })
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithTwoGuardians.otherGuardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithTwoGuardians.children
-    })
-
-  await Promise.all(
-    areaAndPersonFixtures.familyWithSeparatedGuardians.children.map(
-      async (child) => {
-        await Fixture.person().with(child).saveChild({ updateMockVtj: true })
-      }
-    )
-  )
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithSeparatedGuardians.guardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithSeparatedGuardians.children
-    })
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithSeparatedGuardians.otherGuardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithSeparatedGuardians.children
-    })
-
-  await Promise.all(
-    areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children.map(
-      async (child) => {
-        await Fixture.person().with(child).saveChild({ updateMockVtj: true })
-      }
-    )
-  )
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.guardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children
-    })
-
-  await Fixture.person()
-    .with(
-      areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.otherGuardian
-    )
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children
-    })
-
   await Fixture.person()
     .with(areaAndPersonFixtures.testAdultRestricted)
     .saveAdult({ updateMockVtjWithDependants: [] })
@@ -181,16 +107,6 @@ export const initializeAreaAndPersonData = async (): Promise<
   await Fixture.person()
     .with(areaAndPersonFixtures.testChildZeroYearOld)
     .saveChild()
-
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithDeadGuardian.children[0])
-    .saveChild({ updateMockVtj: true })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.familyWithDeadGuardian.guardian)
-    .saveAdult({
-      updateMockVtjWithDependants:
-        areaAndPersonFixtures.familyWithDeadGuardian.children
-    })
 
   return areaAndPersonFixtures
 }

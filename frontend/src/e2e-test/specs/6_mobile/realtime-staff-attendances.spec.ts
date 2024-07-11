@@ -13,7 +13,8 @@ import {
   testDaycareGroup,
   Fixture,
   fullDayTimeRange,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -47,6 +48,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
   await Fixture.daycare()
@@ -82,7 +84,7 @@ beforeEach(async () => {
     .save()
   const daycarePlacementFixture = await Fixture.placement()
     .with({
-      childId: fixtures.familyWithTwoGuardians.children[0].id,
+      childId: familyWithTwoGuardians.children[0].id,
       unitId: testDaycare2.id
     })
     .save()

@@ -6,7 +6,11 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  applicationFixture,
+  familyWithTwoGuardians,
+  Fixture
+} from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -22,6 +26,7 @@ let applicationReadView: ApplicationReadView
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open()
@@ -54,9 +59,9 @@ describe('Employee reads applications', () => {
 
   test('Other VTJ guardian information is shown', async () => {
     const fixture = applicationFixture(
-      fixtures.familyWithTwoGuardians.children[0],
-      fixtures.familyWithTwoGuardians.guardian,
-      fixtures.familyWithTwoGuardians.otherGuardian
+      familyWithTwoGuardians.children[0],
+      familyWithTwoGuardians.guardian,
+      familyWithTwoGuardians.otherGuardian
     )
     await createApplications({ body: [fixture] })
 
@@ -64,14 +69,14 @@ describe('Employee reads applications', () => {
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
 
     await applicationReadView.assertOtherVtjGuardian(
-      `${fixtures.familyWithTwoGuardians.otherGuardian.lastName} ${fixtures.familyWithTwoGuardians.otherGuardian.firstName}`,
-      fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email!
+      `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`,
+      familyWithTwoGuardians.otherGuardian.phone,
+      familyWithTwoGuardians.otherGuardian.email!
     )
 
     await applicationReadView.assertGivenOtherGuardianInfo(
-      fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email!
+      familyWithTwoGuardians.otherGuardian.phone,
+      familyWithTwoGuardians.otherGuardian.email!
     )
   })
 

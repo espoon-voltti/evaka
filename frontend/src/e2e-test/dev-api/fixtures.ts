@@ -312,6 +312,10 @@ export class Fixture {
     })
   }
 
+  static family(initial: Family): FamilyBuilder {
+    return new FamilyBuilder(initial)
+  }
+
   static employee(): EmployeeBuilder {
     const id = uniqueLabel()
     return new EmployeeBuilder({
@@ -1359,6 +1363,32 @@ export class PersonBuilder extends FixtureBuilder<DevPerson> {
   // Note: shallow copy
   copy() {
     return new PersonBuilder({ ...this.data })
+  }
+}
+
+export interface Family {
+  guardian: DevPerson
+  otherGuardian?: DevPerson
+  children: DevPerson[]
+}
+
+export class FamilyBuilder extends FixtureBuilder<Family> {
+  async save() {
+    for (const child of this.data.children) {
+      await Fixture.person().with(child).saveChild({ updateMockVtj: true })
+    }
+    await Fixture.person()
+      .with(this.data.guardian)
+      .saveAdult({ updateMockVtjWithDependants: this.data.children })
+    if (this.data.otherGuardian) {
+      await Fixture.person()
+        .with(this.data.otherGuardian)
+        .saveAdult({ updateMockVtjWithDependants: this.data.children })
+    }
+  }
+
+  copy() {
+    return new FamilyBuilder({ ...this.data })
   }
 }
 
@@ -3007,11 +3037,8 @@ const deadGuardianChild = Fixture.person().with({
   postOffice: 'Espoo'
 }).data
 
-export const familyWithDeadGuardian = {
-  guardian: {
-    ...deadGuardian,
-    dependants: [deadGuardianChild.ssn]
-  },
+export const familyWithDeadGuardian: Family = {
+  guardian: deadGuardian,
   children: [deadGuardianChild]
 }
 

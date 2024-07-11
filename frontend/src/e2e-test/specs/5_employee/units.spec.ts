@@ -6,7 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { familyWithTwoGuardians, Fixture } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -36,9 +36,10 @@ const placementDates = () => ({
 beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
   unitFixture = fixtures.testDaycare
-  childFixture = fixtures.familyWithTwoGuardians.children[0]
+  childFixture = familyWithTwoGuardians.children[0]
   groupFixture = await Fixture.daycareGroup()
     .with({
       daycareId: unitFixture.id,

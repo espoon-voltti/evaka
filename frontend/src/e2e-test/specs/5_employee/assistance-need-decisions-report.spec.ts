@@ -50,6 +50,7 @@ beforeEach(async () => {
   director = await Fixture.employeeDirector().save()
 
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   unitId = fixtures.testDaycare.id

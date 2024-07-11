@@ -17,7 +17,10 @@ import {
   decisionFixture,
   Fixture,
   testPreschool,
-  uuidv4
+  uuidv4,
+  familyWithRestrictedDetailsGuardian,
+  familyWithSeparatedGuardians,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -50,6 +53,9 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.family(familyWithSeparatedGuardians).save()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
@@ -150,7 +156,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian
+        familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
     }
@@ -219,7 +225,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.guardian,
         undefined,
         'DAYCARE',
         null,
@@ -278,9 +284,9 @@ describe('Application transitions', () => {
   test('Placement dialog shows warning if guardian has restricted details', async () => {
     const restrictedDetailsGuardianApplication = {
       ...applicationFixture(
-        fixtures.familyWithRestrictedDetailsGuardian.children[0],
-        fixtures.familyWithRestrictedDetailsGuardian.guardian,
-        fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
+        familyWithRestrictedDetailsGuardian.children[0],
+        familyWithRestrictedDetailsGuardian.guardian,
+        familyWithRestrictedDetailsGuardian.otherGuardian,
         'DAYCARE',
         'NOT_AGREED'
       ),
@@ -312,7 +318,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
@@ -374,7 +380,7 @@ describe('Application transitions', () => {
     const fixture = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithTwoGuardians.guardian,
+        familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
         null,
@@ -437,7 +443,7 @@ describe('Application transitions', () => {
     const fixture1 = {
       ...applicationFixture(
         fixtures.testChild,
-        fixtures.familyWithTwoGuardians.guardian
+        familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
     }
@@ -447,7 +453,7 @@ describe('Application transitions', () => {
     const fixture2 = {
       ...applicationFixture(
         fixtures.testChild2,
-        fixtures.familyWithSeparatedGuardians.guardian
+        familyWithSeparatedGuardians.guardian
       ),
       status: 'SENT' as const,
       id: applicationId2
@@ -529,7 +535,7 @@ describe('Application transitions', () => {
     const fixture1 = {
       ...applicationFixture(
         fixtures.testChild,
-        fixtures.familyWithTwoGuardians.guardian
+        familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
     }
@@ -582,7 +588,7 @@ describe('Application transitions', () => {
     const fixture1 = {
       ...applicationFixture(
         fixtures.testChild,
-        fixtures.familyWithTwoGuardians.guardian
+        familyWithTwoGuardians.guardian
       ),
       status: 'SENT' as const
     }

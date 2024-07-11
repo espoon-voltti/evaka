@@ -51,11 +51,12 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const unitId = fixtures.testDaycare.id
   staff = await Fixture.employeeStaff(unitId).save()
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -87,7 +88,7 @@ beforeEach(async () => {
         guardianInfo: [
           {
             id: null,
-            personId: fixtures.familyWithTwoGuardians.guardian.id,
+            personId: familyWithTwoGuardians.guardian.id,
             isHeard: true,
             name: '',
             details: 'Guardian 1 details'
@@ -335,7 +336,7 @@ describe('Assistance Need Decisions - Preview page', () => {
             guardianInfo: [
               {
                 id: null,
-                personId: fixtures.familyWithTwoGuardians.guardian.id,
+                personId: familyWithTwoGuardians.guardian.id,
                 isHeard: true,
                 name: '',
                 details: 'Guardian 1 details'

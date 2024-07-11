@@ -11,7 +11,13 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  applicationFixture,
+  familyWithRestrictedDetailsGuardian,
+  familyWithSeparatedGuardians,
+  familyWithTwoGuardians,
+  Fixture
+} from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
   createApplicationPlacementPlan,
@@ -42,23 +48,26 @@ let restrictedDetailsGuardianApplication: DevApplicationWithForm
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.family(familyWithSeparatedGuardians).save()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
   singleParentApplication = applicationFixture(
     fixtures.testChild2,
     fixtures.testAdult
   )
   familyWithTwoGuardiansApplication = {
     ...applicationFixture(
-      fixtures.familyWithTwoGuardians.children[0],
-      fixtures.familyWithTwoGuardians.guardian,
-      fixtures.familyWithTwoGuardians.otherGuardian
+      familyWithTwoGuardians.children[0],
+      familyWithTwoGuardians.guardian,
+      familyWithTwoGuardians.otherGuardian
     ),
     id: '8634e2b9-200b-4a68-b956-66c5126f86a0'
   }
   separatedFamilyApplication = {
     ...applicationFixture(
-      fixtures.familyWithSeparatedGuardians.children[0],
-      fixtures.familyWithSeparatedGuardians.guardian,
-      fixtures.familyWithSeparatedGuardians.otherGuardian,
+      familyWithSeparatedGuardians.children[0],
+      familyWithSeparatedGuardians.guardian,
+      familyWithSeparatedGuardians.otherGuardian,
       'DAYCARE',
       'NOT_AGREED'
     ),
@@ -66,9 +75,9 @@ beforeEach(async () => {
   }
   restrictedDetailsGuardianApplication = {
     ...applicationFixture(
-      fixtures.familyWithRestrictedDetailsGuardian.children[0],
-      fixtures.familyWithRestrictedDetailsGuardian.guardian,
-      fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
+      familyWithRestrictedDetailsGuardian.children[0],
+      familyWithRestrictedDetailsGuardian.guardian,
+      familyWithRestrictedDetailsGuardian.otherGuardian,
       'DAYCARE',
       'NOT_AGREED'
     ),
@@ -124,7 +133,7 @@ describe('Application details', () => {
       familyWithTwoGuardiansApplication.id
     )
     await application.assertVtjGuardianName(
-      `${fixtures.familyWithTwoGuardians.otherGuardian.lastName} ${fixtures.familyWithTwoGuardians.otherGuardian.firstName}`
+      `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`
     )
     await application.assertOtherGuardianSameAddress(true)
   })
@@ -137,7 +146,7 @@ describe('Application details', () => {
       separatedFamilyApplication.id
     )
     await application.assertVtjGuardianName(
-      `${fixtures.familyWithSeparatedGuardians.otherGuardian.lastName} ${fixtures.familyWithSeparatedGuardians.otherGuardian.firstName}`
+      `${familyWithSeparatedGuardians.otherGuardian.lastName} ${familyWithSeparatedGuardians.otherGuardian.firstName}`
     )
     await application.assertOtherGuardianSameAddress(false)
     await application.assertOtherGuardianAgreementStatus(false)
@@ -182,7 +191,7 @@ describe('Application details', () => {
     const messages = await getMessages()
     expect(messages.length).toEqual(1)
     expect(messages[0].ssn).toEqual(
-      fixtures.familyWithRestrictedDetailsGuardian.guardian.ssn
+      familyWithRestrictedDetailsGuardian.guardian.ssn
     )
   })
 

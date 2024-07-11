@@ -42,12 +42,13 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   unitId = fixtures.testDaycare.id
   voucherUnitId = fixtures.testDaycarePrivateVoucher.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  childId = familyWithTwoGuardians.children[0].id
   page = await Page.open()
   admin = await Fixture.employeeAdmin().save()
 })

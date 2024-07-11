@@ -5,7 +5,11 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
+import {
+  testDaycareGroup,
+  Fixture,
+  familyWithTwoGuardians
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -27,12 +31,13 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
   await Fixture.daycareGroup().with(testDaycareGroup).save()
   const daycarePlacementFixture = await Fixture.placement()
     .with({
-      childId: fixtures.familyWithTwoGuardians.children[0].id,
+      childId: familyWithTwoGuardians.children[0].id,
       unitId: fixtures.testDaycare.id,
       startDate: today,
       endDate: today.addYears(1)

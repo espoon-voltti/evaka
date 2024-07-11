@@ -15,7 +15,8 @@ import {
   testDaycareGroup,
   testChildDeceased,
   testChildNoSsn,
-  Fixture
+  Fixture,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -47,11 +48,12 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
   admin = await Fixture.employeeAdmin().save()
 
   const unitId = fixtures.testDaycare.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  childId = familyWithTwoGuardians.children[0].id
   await Fixture.placement()
     .with({
       childId,
@@ -452,7 +454,7 @@ describe('Child information - family contacts', () => {
   })
 
   test('email, phone and backup phone can be edited', async () => {
-    const id = fixtures.familyWithTwoGuardians.guardian.id
+    const id = familyWithTwoGuardians.guardian.id
     await section.modifyFamilyContactDetails(id, {
       email: 'foo@example.com',
       phone: '31459265',
@@ -466,7 +468,7 @@ describe('Child information - family contacts', () => {
   })
 
   test('email, phone and backup phone can be edited after unsetting them', async () => {
-    const id = fixtures.familyWithTwoGuardians.guardian.id
+    const id = familyWithTwoGuardians.guardian.id
     await section.modifyFamilyContactDetails(id, {
       email: '',
       phone: '',
@@ -497,9 +499,7 @@ describe('Child information - guardian information', () => {
   })
 
   test('guardian information is shown', async () => {
-    await section.assertGuardianExists(
-      fixtures.familyWithTwoGuardians.guardian.id
-    )
+    await section.assertGuardianExists(familyWithTwoGuardians.guardian.id)
   })
 
   test('guardian information is shown to unit supervisor', async () => {
@@ -514,8 +514,6 @@ describe('Child information - guardian information', () => {
     childInformationPage = new ChildInformationPage(page)
     await childInformationPage.waitUntilLoaded()
     await childInformationPage.openCollapsible('guardians')
-    await section.assertGuardianExists(
-      fixtures.familyWithTwoGuardians.guardian.id
-    )
+    await section.assertGuardianExists(familyWithTwoGuardians.guardian.id)
   })
 })

@@ -7,7 +7,12 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  systemInternalUser,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState,
@@ -38,6 +43,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   daycare = fixtures.testDaycare
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
@@ -52,7 +58,7 @@ beforeEach(async () => {
     })
     .save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
   await Fixture.placement()
     .with({

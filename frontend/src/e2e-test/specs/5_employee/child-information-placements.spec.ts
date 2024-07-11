@@ -64,11 +64,12 @@ describe('Child Information placement info', () => {
 
   beforeEach(async () => {
     const fixtures = await initializeAreaAndPersonData()
+    await Fixture.family(familyWithTwoGuardians).save()
     await createDefaultServiceNeedOptions()
     await createDaycareGroups({ body: [testDaycareGroup] })
 
     unitId = fixtures.testDaycare.id
-    childId = fixtures.familyWithTwoGuardians.children[0].id
+    childId = familyWithTwoGuardians.children[0].id
     const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
 
     page = await Page.open()

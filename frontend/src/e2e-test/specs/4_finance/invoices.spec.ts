@@ -13,6 +13,7 @@ import {
 } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
+  familyWithRestrictedDetailsGuardian,
   feeDecisionsFixture,
   Fixture,
   invoiceFixture,
@@ -43,6 +44,7 @@ let adultWithoutSSN: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
   adultWithoutSSN = await Fixture.person()
     .with({
       id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
@@ -155,8 +157,8 @@ describe('Invoices', () => {
           'DRAFT'
         ),
         invoiceFixture(
-          fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
-          fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
+          familyWithRestrictedDetailsGuardian.guardian.id,
+          familyWithRestrictedDetailsGuardian.children[0].id,
           fixtures.testCareArea.id,
           fixtures.testDaycare.id,
           'DRAFT'

@@ -12,7 +12,12 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture, testChildZeroYearOld, uuidv4 } from '../../dev-api/fixtures'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  testChildZeroYearOld,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
@@ -44,11 +49,12 @@ const childZeroYo = Fixture.person().with({
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
-  regularPerson = fixtures.familyWithTwoGuardians.guardian
-  fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
-  child = fixtures.familyWithTwoGuardians.children[0]
+  regularPerson = familyWithTwoGuardians.guardian
+  fridgePartner = familyWithTwoGuardians.otherGuardian
+  child = familyWithTwoGuardians.children[0]
   await Fixture.person().with(childZeroYo).saveChild()
   await Fixture.feeThresholds()
     .with({
