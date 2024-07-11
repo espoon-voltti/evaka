@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.async
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.koski.KoskiStudyRightKey
@@ -333,6 +334,26 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendDiscussionSurveyReservationEmail(
+        val childId: ChildId,
+        val language: Language,
+        val calendarEventTime: CalendarEventTime,
+        val eventTitle: String,
+        val unitName: String
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendDiscussionSurveyReservationCancellationEmail(
+        val childId: ChildId,
+        val language: Language,
+        val calendarEventTime: CalendarEventTime,
+        val eventTitle: String,
+        val unitName: String
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     class SyncJamixDiets : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -386,7 +407,9 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendVasuNotificationEmail::class,
                     SendNewCustomerIncomeNotificationEmail::class,
                     SendNewFeeDecisionEmail::class,
-                    SendNewVoucherValueDecisionEmail::class
+                    SendNewVoucherValueDecisionEmail::class,
+                    SendDiscussionSurveyReservationEmail::class,
+                    SendDiscussionSurveyReservationCancellationEmail::class
                 )
             )
         val urgent =

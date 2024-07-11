@@ -7,6 +7,7 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.placement.getDaycarePlacements
@@ -16,6 +17,8 @@ import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -39,7 +42,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CalendarEventController(private val accessControl: AccessControl) {
+class CalendarEventController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @GetMapping(
         "/units/{unitId}/calendar-events", // deprecated
         "/employee/units/{unitId}/calendar-events"
@@ -430,6 +436,11 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEventTime.DELETE,
                         id
                     )
+
+                    val preUpdateEventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(id)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     val calendarEventId =
                         tx.getCalendarEventIdByTimeId(id)
                             ?: throw NotFound("No corresponding discussion survey found")
@@ -445,6 +456,22 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         modifiedAt = clock.now(),
                         period = getPeriodOfTimes(associatedEvent.times, clock.today())
                     )
+
+                    if (preUpdateEventTimeDetails.eventTime.childId != null) {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                    eventTitle = associatedEvent.title,
+                                    childId = preUpdateEventTimeDetails.eventTime.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                    unitName = preUpdateEventTimeDetails.unitName
+                                )
+                            ),
+                            runAt = clock.now()
+                        )
+                    }
                 }
             }
             .also { Audit.CalendarEventTimeDelete.log(targetId = AuditId(id)) }
@@ -474,6 +501,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         eventTimeId = body.calendarEventTimeId,
                         childId = body.childId
                     )
+                    val preUpdateEventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
                     if (body.childId != null) {
                         tx.insertCalendarEventTimeReservation(
@@ -481,6 +512,40 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             childId = body.childId,
                             modifiedAt = clock.now(),
                             modifiedBy = user.evakaUserId
+                        )
+
+                        if (body.childId != preUpdateEventTimeDetails.eventTime.childId) {
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.SendDiscussionSurveyReservationEmail(
+                                        eventTitle = preUpdateEventTimeDetails.title,
+                                        childId = body.childId,
+                                        language = Language.fi,
+                                        calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                        unitName = preUpdateEventTimeDetails.unitName
+                                    )
+                                ),
+                                runAt = clock.now()
+                            )
+                        }
+                    }
+                    if (
+                        preUpdateEventTimeDetails.eventTime.childId != null &&
+                            preUpdateEventTimeDetails.eventTime.childId != body.childId
+                    ) {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                    eventTitle = preUpdateEventTimeDetails.title,
+                                    childId = preUpdateEventTimeDetails.eventTime.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                    unitName = preUpdateEventTimeDetails.unitName
+                                )
+                            ),
+                            runAt = clock.now()
                         )
                     }
                 }
@@ -661,6 +726,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         eventTimeId = body.calendarEventTimeId,
                         childId = body.childId
                     )
+                    val eventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     val count =
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
@@ -672,6 +741,24 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         throw Conflict(
                             "Calendar event time already reserved",
                             errorCode = "TIME_ALREADY_RESERVED"
+                        )
+                    }
+
+                    // send reservation email if reservation changes
+                    if (eventTimeDetails.eventTime.childId != body.childId) {
+                        val finalEventTime = eventTimeDetails.eventTime.copy(childId = body.childId)
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.SendDiscussionSurveyReservationEmail(
+                                    eventTitle = eventTimeDetails.title,
+                                    childId = body.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = finalEventTime,
+                                    unitName = eventTimeDetails.unitName
+                                )
+                            ),
+                            runAt = clock.now()
                         )
                     }
                 }
@@ -702,7 +789,24 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
                         body.childId
                     )
+                    val eventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                eventTitle = eventTimeDetails.title,
+                                childId = body.childId,
+                                language = Language.fi,
+                                calendarEventTime = eventTimeDetails.eventTime,
+                                unitName = eventTimeDetails.unitName
+                            )
+                        ),
+                        runAt = clock.now()
+                    )
                 }
             }
             .also {

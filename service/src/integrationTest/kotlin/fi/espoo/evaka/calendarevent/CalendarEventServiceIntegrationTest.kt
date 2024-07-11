@@ -4,11 +4,17 @@
 
 package fi.espoo.evaka.calendarevent
 
+import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.backupcare.BackupCareController
 import fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 import fi.espoo.evaka.backupcare.NewBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
+import fi.espoo.evaka.emailclient.Email
+import fi.espoo.evaka.emailclient.EmailContent
+import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -26,25 +32,32 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevFosterParent
 import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
@@ -71,6 +84,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var backupCareController: BackupCareController
     @Autowired lateinit var placementControllerCitizen: PlacementControllerCitizen
     @Autowired lateinit var calendarEventNotificationService: CalendarEventNotificationService
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var emailMessageProvider: IEmailMessageProvider
+    @Autowired private lateinit var emailEnv: EmailEnv
 
     private final val adminId = EmployeeId(UUID.randomUUID())
     private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
@@ -1988,6 +2004,357 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
     }
 
+    @Test
+    fun `guardian and foster parent receive email for citizen reserving and cancelling discussion times`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_2.id, testChild_3.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = testChild_3.id,
+                    parentId = testAdult_3.id,
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                )
+            )
+            val placementId3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+        }
+        val expectedRecipients = listOf(testAdult_2, testAdult_3)
+        val guardian2 = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = testDaycare.id,
+                    tree = mapOf(groupId to setOf(testChild_3.id)),
+                    title = "Child-specific event",
+                    description = "cse",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                            )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                )
+            )
+        val calendarEventTimeForm = event.times.first()
+
+        val reservationForm =
+            CalendarEventTimeCitizenReservationForm(
+                calendarEventTimeId = calendarEventTimeForm.id,
+                childId = testChild_3.id
+            )
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            guardian2,
+            clock,
+            reservationForm
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val emailDetails =
+            DiscussionSurveyReservationNotificationData(
+                unitName = testDaycare.name,
+                title = event.title,
+                calendarEventTime =
+                    CalendarEventTime(
+                        id = calendarEventTimeForm.id,
+                        date = calendarEventTimeForm.date,
+                        startTime = calendarEventTimeForm.startTime,
+                        endTime = calendarEventTimeForm.endTime,
+                        childId = reservationForm.childId
+                    )
+            )
+
+        val reservationEmailContent =
+            emailMessageProvider.discussionSurveyReservationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails
+            )
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, reservationEmailContent, expectedFromAddress)
+
+        MockEmailClient.clear()
+
+        // adding same reservation again should not result in another mail
+        calendarEventController.addCalendarEventTimeReservation(
+            dbInstance(),
+            guardian2,
+            clock,
+            reservationForm
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(emptySet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+
+        // cancelling reservation should lead to a message
+        calendarEventController.deleteCalendarEventTimeReservation(
+            dbInstance(),
+            guardian2,
+            clock,
+            reservationForm.calendarEventTimeId,
+            reservationForm.childId
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(
+            expectedRecipients.mapNotNull { it.email }.toSet(),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+
+        val cancellationEmailContent =
+            emailMessageProvider.discussionSurveyReservationCancellationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails
+            )
+
+        assertEquals(
+            expectedRecipients.mapNotNull { it.email }.toSet(),
+            MockEmailClient.emails.map { it.toAddress }.toSet()
+        )
+        assertEquals(cancellationEmailContent.subject, getEmailFor(testAdult_2).content.subject)
+        assertEquals(
+            "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
+            getEmailFor(testAdult_2).fromAddress
+        )
+    }
+
+    @Test
+    fun `guardian and foster parent receive email for employee reserving and cancelling discussion times`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_2.id, testChild_3.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = testChild_3.id,
+                    parentId = testAdult_3.id,
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                )
+            )
+            val placementId3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+        }
+        val expectedRecipients = listOf(testAdult_2, testAdult_3)
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = testDaycare.id,
+                    tree = mapOf(groupId to setOf(testChild_3.id)),
+                    title = "Child-specific event",
+                    description = "cse",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                            )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                )
+            )
+        val calendarEventTimeForm = event.times.first()
+
+        val reservationForm =
+            CalendarEventTimeEmployeeReservationForm(
+                calendarEventTimeId = calendarEventTimeForm.id,
+                childId = testChild_3.id
+            )
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val emailDetails =
+            DiscussionSurveyReservationNotificationData(
+                unitName = testDaycare.name,
+                title = event.title,
+                calendarEventTime =
+                    CalendarEventTime(
+                        id = calendarEventTimeForm.id,
+                        date = calendarEventTimeForm.date,
+                        startTime = calendarEventTimeForm.startTime,
+                        endTime = calendarEventTimeForm.endTime,
+                        childId = reservationForm.childId
+                    )
+            )
+
+        val reservationEmailContent =
+            emailMessageProvider.discussionSurveyReservationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails
+            )
+
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, reservationEmailContent, expectedFromAddress)
+
+        MockEmailClient.clear()
+
+        // adding same reservation again should not result in another mail
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEmails(emptyList(), reservationEmailContent, expectedFromAddress)
+
+        // cancelling reservation should lead to a message
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm.copy(childId = null)
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val cancellationEmailContent =
+            emailMessageProvider.discussionSurveyReservationCancellationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails
+            )
+
+        assertEmails(expectedRecipients, cancellationEmailContent, expectedFromAddress)
+    }
+
+    @Test
+    fun `guardian and foster parent receive cancellation email for employee deleting discussion times`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_2.id, testChild_3.id)
+            tx.insert(
+                DevFosterParent(
+                    childId = testChild_3.id,
+                    parentId = testAdult_3.id,
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                )
+            )
+            val placementId3 =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId3,
+                    daycareGroupId = groupId,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
+            )
+        }
+        val expectedRecipients = listOf(testAdult_2, testAdult_3)
+        val event =
+            createCalendarEvent(
+                CalendarEventForm(
+                    unitId = testDaycare.id,
+                    tree = mapOf(groupId to setOf(testChild_3.id)),
+                    title = "Child-specific event",
+                    description = "cse",
+                    period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                    times =
+                        listOf(
+                            CalendarEventTimeForm(
+                                date = today.plusDays(3),
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                            )
+                        ),
+                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                )
+            )
+        val calendarEventTimeForm = event.times.first()
+
+        val reservationForm =
+            CalendarEventTimeEmployeeReservationForm(
+                calendarEventTimeId = calendarEventTimeForm.id,
+                childId = testChild_3.id
+            )
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm
+        )
+
+        // clear the reservation emails
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        val emailDetails =
+            DiscussionSurveyReservationNotificationData(
+                unitName = testDaycare.name,
+                title = event.title,
+                calendarEventTime =
+                    CalendarEventTime(
+                        id = calendarEventTimeForm.id,
+                        date = calendarEventTimeForm.date,
+                        startTime = calendarEventTimeForm.startTime,
+                        endTime = calendarEventTimeForm.endTime,
+                        childId = reservationForm.childId
+                    )
+            )
+
+        val cancellationEmailContent =
+            emailMessageProvider.discussionSurveyReservationCancellationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails
+            )
+
+        // deleting the reserved time should lead to a cancellation message
+        calendarEventController.deleteCalendarEventTime(
+            dbInstance(),
+            admin,
+            clock,
+            calendarEventTimeForm.id
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, cancellationEmailContent, expectedFromAddress)
+    }
+
     private fun getDiscussionSurveyReservationDays(
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock,
@@ -2120,4 +2487,24 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         clock: EvakaClock = this.clock,
         form: CalendarEventTimeEmployeeReservationForm
     ) = calendarEventController.setCalendarEventTimeReservation(dbInstance(), user, clock, form)
+}
+
+private fun getEmailFor(person: DevPerson): Email {
+    val address = person.email ?: throw Error("$person has no email")
+    return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+}
+
+private fun assertEmails(
+    recipients: List<DevPerson>,
+    expectedContent: EmailContent,
+    expectedFromAddress: String
+) {
+    assertEquals(
+        recipients.mapNotNull { it.email }.toSet(),
+        MockEmailClient.emails.map { it.toAddress }.toSet()
+    )
+    recipients.forEach {
+        assertEquals(expectedContent.subject, getEmailFor(it).content.subject)
+        assertEquals(expectedFromAddress, getEmailFor(it).fromAddress)
+    }
 }

@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
@@ -573,3 +574,26 @@ WHERE id = ${bind(eventId)}
             )
         }
         .updateExactlyOne()
+
+data class DiscussionTimeDetailsRow(
+    @Nested("et") val eventTime: CalendarEventTime,
+    val title: String,
+    val unitName: String
+)
+
+fun Database.Read.getDiscussionTimeDetailsByEventTimeId(id: CalendarEventTimeId) =
+    createQuery {
+            sql(
+                """
+SELECT distinct cet.id as et_id, cet.date as et_date, cet.start_time as et_start_time, cet.end_time as et_end_time, cet.child_id as et_child_id, ce.title, d.name as unit_name
+FROM calendar_event_time cet
+JOIN calendar_event ce ON cet.calendar_event_id = ce.id 
+JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+JOIN daycare d ON d.id = cea.unit_id
+WHERE cet.id = ${bind(id)}
+        
+        """
+                    .trimIndent()
+            )
+        }
+        .exactlyOneOrNull<DiscussionTimeDetailsRow>()

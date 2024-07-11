@@ -33,6 +33,7 @@ import fi.espoo.evaka.attachment.insertAttachment
 import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.getRealtimeStaffAttendances
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
+import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.daycare.CareType
@@ -53,6 +54,7 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
+import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -1534,7 +1536,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
         pedagogicalDocumentNotification,
         outdatedIncomeNotification,
         calendarEventNotification,
-        financeDecisionNotification
+        financeDecisionNotification,
+        discussionTimeReservation,
+        discussionTimeCancellation
     }
 
     @GetMapping("/email-content")
@@ -1605,6 +1609,38 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTime
                 EmailMessageType.financeDecisionNotification ->
                     emailMessageProvider.financeDecisionNotification(
                         FinanceDecisionType.FEE_DECISION
+                    )
+                EmailMessageType.discussionTimeReservation ->
+                    emailMessageProvider.discussionSurveyReservationNotification(
+                        Language.fi,
+                        DiscussionSurveyReservationNotificationData(
+                            unitName = "Testiyksikkö A",
+                            title = "Testikeskustelun otsikko",
+                            calendarEventTime =
+                                CalendarEventTime(
+                                    id = CalendarEventTimeId(UUID.randomUUID()),
+                                    date = LocalDate.now(),
+                                    startTime = LocalTime.of(12, 20),
+                                    endTime = LocalTime.of(12, 50),
+                                    childId = null
+                                )
+                        )
+                    )
+                EmailMessageType.discussionTimeCancellation ->
+                    emailMessageProvider.discussionSurveyReservationCancellationNotification(
+                        Language.fi,
+                        DiscussionSurveyReservationNotificationData(
+                            unitName = "Testiyksikkö A",
+                            title = "Testikeskustelun otsikko",
+                            calendarEventTime =
+                                CalendarEventTime(
+                                    id = CalendarEventTimeId(UUID.randomUUID()),
+                                    date = LocalDate.now(),
+                                    startTime = LocalTime.of(12, 20),
+                                    endTime = LocalTime.of(12, 50),
+                                    childId = null
+                                )
+                        )
                     )
             }
         val content =

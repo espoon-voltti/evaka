@@ -52,7 +52,13 @@ enum class EmailMessageType {
     MISSING_ATTENDANCE_RESERVATION_NOTIFICATION,
 
     /** Reminders about missing holiday attendance reservations */
-    MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION
+    MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION,
+
+    /** Confirmation email for discussion time reservation */
+    DISCUSSION_TIME_RESERVATION,
+
+    /** Confirmation email for discussion time reservation cancellation */
+    DISCUSSION_TIME_RESERVATION_CANCELLATION
 }
 
 data class EmailNotificationSettings(
