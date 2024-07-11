@@ -48,18 +48,18 @@ export type CitizenWeakAccount = {
   lastName: string
 }
 
-export const defaultCitizenWeakAccount: CitizenWeakAccount = {
+export const citizenWeakAccount = (person: DevPerson): CitizenWeakAccount => ({
   username: 'test@example.com',
   password: 'test123',
   email: 'test@example.com',
-  socialSecurityNumber: '070644-937X',
+  socialSecurityNumber: person.ssn!,
   firstName: 'Seppo',
   lastName: 'Sorsa'
-}
+})
 
 export async function enduserLoginWeak(
   page: Page,
-  account = defaultCitizenWeakAccount
+  account: CitizenWeakAccount
 ) {
   await page.goto(config.enduserLoginUrl)
   await page.findByDataQa('weak-login').click()

@@ -33,7 +33,8 @@ import { waitUntilEqual } from '../../utils'
 import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
-  defaultCitizenWeakAccount,
+  CitizenWeakAccount,
+  citizenWeakAccount,
   employeeLogin,
   enduserLogin,
   enduserLoginWeak
@@ -46,6 +47,7 @@ let childId: UUID
 let staff: DevEmployee
 let unitSupervisor: DevEmployee
 let fixtures: AreaAndPersonFixtures
+let account: CitizenWeakAccount
 
 const mockedDate = LocalDate.of(2020, 5, 21)
 const mockedDateAt10 = HelsinkiDateTime.fromLocal(
@@ -67,10 +69,8 @@ beforeEach(async () => {
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
-  await keycloak.createUser({
-    ...defaultCitizenWeakAccount,
-    enabled: true
-  })
+  account = citizenWeakAccount(fixtures.testAdult)
+  await keycloak.createUser({ ...account, enabled: true })
 
   staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
     .withGroupAcl(testDaycareGroup.id)
@@ -165,7 +165,7 @@ async function initOtherCitizenPage(
 
 async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLoginWeak(citizenPage)
+  await enduserLoginWeak(citizenPage, account)
 }
 
 const defaultReply = 'Testivastaus testiviestiin'

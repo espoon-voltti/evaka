@@ -31,7 +31,7 @@ import { waitUntilEqual } from '../../utils'
 import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
-  defaultCitizenWeakAccount,
+  citizenWeakAccount,
   enduserLogin,
   enduserLoginWeak
 } from '../../utils/user'
@@ -616,11 +616,9 @@ describe.each(['desktop', 'mobile'] as const)(
 
       const keycloak = await KeycloakRealmClient.createCitizenClient()
       await keycloak.deleteAllUsers()
-      await keycloak.createUser({
-        ...defaultCitizenWeakAccount,
-        enabled: true
-      })
-      await enduserLoginWeak(page)
+      const account = citizenWeakAccount(fixtures.testAdult)
+      await keycloak.createUser({ ...account, enabled: true })
+      await enduserLoginWeak(page, account)
       const header = new CitizenHeader(page, env)
       const childPage = new CitizenChildPage(page, env)
 
