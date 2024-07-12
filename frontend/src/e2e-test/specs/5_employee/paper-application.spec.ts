@@ -12,7 +12,8 @@ import {
   testAdult,
   testChild,
   testDaycare,
-  testCareArea
+  testCareArea,
+  preschoolTerm2022
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -32,6 +33,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.preschoolTerm().with(preschoolTerm2022).save()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({

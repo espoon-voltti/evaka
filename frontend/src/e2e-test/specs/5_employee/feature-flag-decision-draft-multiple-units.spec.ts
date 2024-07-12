@@ -16,7 +16,8 @@ import {
   familyWithTwoGuardians,
   testAdult,
   testChild2,
-  testCareArea
+  testCareArea,
+  preschoolTerm2021
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -41,6 +42,7 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   await initializeAreaAndPersonData()
+  await Fixture.preschoolTerm().with(preschoolTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.daycare().with(testPreschool).save()

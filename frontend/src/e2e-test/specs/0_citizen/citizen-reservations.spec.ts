@@ -25,7 +25,8 @@ import {
   systemInternalUser,
   uuidv4,
   testChild,
-  testChildRestricted
+  testChildRestricted,
+  preschoolTerm2021
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -76,6 +77,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   beforeEach(async () => {
     await resetServiceState()
     await initializeAreaAndPersonData()
+    await Fixture.preschoolTerm().with(preschoolTerm2021).save()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
 
