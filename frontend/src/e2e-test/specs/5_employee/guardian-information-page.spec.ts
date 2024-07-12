@@ -41,6 +41,10 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -48,7 +52,7 @@ beforeEach(async () => {
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
-    fixtures.testChild.id,
+    testChild.id,
     testDaycare.id
   )
   const application = applicationFixture(testChild, testAdult)
@@ -86,7 +90,7 @@ beforeEach(async () => {
 describe('Employee - Guardian Information', () => {
   test('guardian information is shown', async () => {
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.testAdult.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const personInfoSection = guardianPage.getCollapsible('personInfo')
     await personInfoSection.assertPersonInfo(
@@ -129,8 +133,8 @@ describe('Employee - Guardian Information', () => {
     await createInvoices({
       body: [
         invoiceFixture(
-          fixtures.testAdult.id,
-          fixtures.testChild.id,
+          testAdult.id,
+          testChild.id,
           fixtures.testCareArea.id,
           fixtures.testDaycare.id,
           'DRAFT',
@@ -141,7 +145,7 @@ describe('Employee - Guardian Information', () => {
     })
 
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.testAdult.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)
@@ -151,14 +155,14 @@ describe('Employee - Guardian Information', () => {
   test('Invoice correction can be created and deleted', async () => {
     await Fixture.fridgeChild()
       .with({
-        headOfChild: fixtures.testAdult.id,
-        childId: fixtures.testChild.id,
+        headOfChild: testAdult.id,
+        childId: testChild.id,
         startDate: LocalDate.of(2020, 1, 1),
         endDate: LocalDate.of(2020, 12, 31)
       })
       .save()
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.testAdult.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
@@ -196,15 +200,15 @@ describe('Employee - Guardian Information', () => {
   test('Invoice corrections show only units with cost center', async () => {
     await Fixture.fridgeChild()
       .with({
-        headOfChild: fixtures.testAdult.id,
-        childId: fixtures.testChild.id,
+        headOfChild: testAdult.id,
+        childId: testChild.id,
         startDate: LocalDate.of(2020, 1, 1),
         endDate: LocalDate.of(2020, 12, 31)
       })
       .save()
 
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.testAdult.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
@@ -213,7 +217,7 @@ describe('Employee - Guardian Information', () => {
     await row.clickAndAssertUnitVisibility(testDaycare.name, true)
 
     await deleteDaycareCostCenter({ daycareId: testDaycare.id })
-    await guardianPage.navigateToGuardian(fixtures.testAdult.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
     await guardianPage.openCollapsible('invoiceCorrections')
     await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
     row = await invoiceCorrectionsSection.addNewInvoiceCorrection()

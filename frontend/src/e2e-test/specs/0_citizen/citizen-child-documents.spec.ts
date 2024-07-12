@@ -10,7 +10,9 @@ import {
   createDaycarePlacementFixture,
   testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult,
+  testChild
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -38,14 +40,15 @@ beforeEach(async () => {
   await resetServiceState()
 
   const fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const unitId = fixtures.testDaycare.id
-  child = fixtures.testChild
+  child = testChild
   await insertGuardians({
     body: [
       {
-        guardianId: fixtures.testAdult.id,
+        guardianId: testAdult.id,
         childId: child.id
       }
     ]
@@ -110,7 +113,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page, fixtures.testAdult)
+  await enduserLogin(page, testAdult)
 })
 
 describe('Citizen child documents listing page', () => {

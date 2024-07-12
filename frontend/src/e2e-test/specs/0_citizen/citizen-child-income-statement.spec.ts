@@ -8,7 +8,13 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  createDaycarePlacementFixture,
+  Fixture,
+  testAdult,
+  testChild,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
   resetServiceState
@@ -32,19 +38,20 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.testChild.id,
+        testChild.id,
         fixtures.testDaycare.id,
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.testChild.id,
+        testChild.id,
         fixtures.testDaycare.id,
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(1)
@@ -53,7 +60,7 @@ beforeEach(async () => {
   })
 
   page = await Page.open()
-  await enduserLogin(page, fixtures.testAdult)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   child1ISList = new CitizenChildIncomeStatementListPage(page, 0)
 })

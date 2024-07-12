@@ -36,6 +36,7 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open({
     acceptDownloads: true,

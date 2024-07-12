@@ -17,7 +17,10 @@ import {
   testDaycare2,
   testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult,
+  testChild,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
@@ -52,8 +55,12 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  childInAreaA = fixtures.testChild
-  childInAreaB = fixtures.testChild2
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  childInAreaA = testChild
+  childInAreaB = testChild2
   await Fixture.careArea().with(testCareArea2).save()
   await Fixture.daycare().with(testDaycare2).save()
   await Fixture.daycareGroup().with(testDaycareGroup).save()
@@ -105,7 +112,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childInAreaA.id,
-        guardianId: fixtures.testAdult.id
+        guardianId: testAdult.id
       },
       {
         childId: childInAreaB.id,
@@ -136,7 +143,7 @@ async function openStaffPage(mockedTime: HelsinkiDateTime) {
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, fixtures.testAdult)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 const defaultMessage = {

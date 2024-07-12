@@ -10,26 +10,24 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { testDaycareGroup, Fixture } from '../../dev-api/fixtures'
+import { testDaycareGroup, Fixture, testChild2 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let childFixture: DevPerson
 let page: Page
 let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  childFixture = fixtures.testChild2
+  await Fixture.person().with(testChild2).saveChild()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
     fixtures.testDaycare.id
@@ -41,7 +39,7 @@ beforeEach(async () => {
   const endDate = LocalDate.of(2023, 2, 3).addYears(1)
   const placement = await Fixture.placement()
     .with({
-      childId: childFixture.id,
+      childId: testChild2.id,
       unitId: fixtures.testDaycarePrivateVoucher.id,
       startDate: startDate,
       endDate: endDate
@@ -61,7 +59,7 @@ beforeEach(async () => {
     .save()
   await Fixture.backupCare()
     .with({
-      childId: childFixture.id,
+      childId: testChild2.id,
       unitId: fixtures.testDaycare.id,
       period: new FiniteDateRange(
         LocalDate.of(2023, 2, 1),
@@ -83,8 +81,8 @@ describe('Employee - Backup care', () => {
 
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
-      childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: childFixture.dateOfBirth.format(),
+      childName: `${testChild2.lastName} ${testChild2.firstName}`,
+      dateOfBirth: testChild2.dateOfBirth.format(),
       placementDuration: '01.02.2023 - 03.02.2023',
       groupMissingDuration: '01.02.2023 - 03.02.2023'
     })
@@ -105,9 +103,9 @@ describe('Employee - Backup care', () => {
     let group = await groupsPage.openGroupCollapsible(testDaycareGroup.id)
     await group.assertChildCount(1)
 
-    const childRow = group.childRow(childFixture.id)
+    const childRow = group.childRow(testChild2.id)
     await childRow.assertFields({
-      childName: `${childFixture.lastName} ${childFixture.firstName}`,
+      childName: `${testChild2.lastName} ${testChild2.firstName}`,
       placementDuration: '01.02.2023- 03.02.2023'
     })
 
@@ -116,8 +114,8 @@ describe('Employee - Backup care', () => {
 
     await groupsPage.missingPlacementsSection.assertRowCount(1)
     await groupsPage.missingPlacementsSection.assertRowFields(0, {
-      childName: `${childFixture.lastName} ${childFixture.firstName}`,
-      dateOfBirth: childFixture.dateOfBirth.format(),
+      childName: `${testChild2.lastName} ${testChild2.firstName}`,
+      dateOfBirth: testChild2.dateOfBirth.format(),
       placementDuration: '01.02.2023 - 03.02.2023',
       groupMissingDuration: '01.02.2023 - 03.02.2023'
     })

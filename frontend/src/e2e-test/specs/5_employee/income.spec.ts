@@ -11,7 +11,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
@@ -32,15 +32,16 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.testAdult.id
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  personId = testAdult.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   financeAdminId = financeAdmin.id
 
   await Fixture.fridgeChild()
     .with({
-      headOfChild: fixtures.testAdult.id,
-      childId: fixtures.testChild.id,
+      headOfChild: testAdult.id,
+      childId: testChild.id,
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2020, 12, 31)
     })
@@ -51,7 +52,7 @@ beforeEach(async () => {
 
   await Fixture.placement()
     .with({
-      childId: fixtures.testChild.id,
+      childId: testChild.id,
       unitId: fixtures.testDaycare.id,
       startDate: placementStart,
       endDate: placementEnd

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   familyWithTwoGuardians,
-  Fixture
+  Fixture,
+  testAdult,
+  testChild,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -19,13 +19,16 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const admin = await Fixture.employeeAdmin().save()
 
@@ -37,7 +40,7 @@ beforeEach(async () => {
 
 describe('Employee reads applications', () => {
   test('Daycare application opens by link', async () => {
-    const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
+    const fixture = applicationFixture(testChild, testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
@@ -46,8 +49,8 @@ describe('Employee reads applications', () => {
 
   test('Preschool application opens by link', async () => {
     const fixture = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL'
     )
@@ -81,7 +84,7 @@ describe('Employee reads applications', () => {
   })
 
   test('If there is no other VTJ guardian it is mentioned', async () => {
-    const fixture = applicationFixture(fixtures.testChild2, fixtures.testAdult)
+    const fixture = applicationFixture(testChild2, testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)

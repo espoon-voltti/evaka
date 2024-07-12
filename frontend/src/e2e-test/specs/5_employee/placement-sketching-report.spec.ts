@@ -6,16 +6,17 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
   testDaycare,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult,
+  testChild,
+  testChild2,
+  testChildRestricted
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -27,14 +28,17 @@ import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 
 const mockToday = LocalDate.of(2021, 2, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2, testChildRestricted]
+  }).save()
   const admin = await Fixture.employeeAdmin().save()
 
   page = await Page.open({
@@ -52,8 +56,8 @@ async function openPlacementSketchingReport() {
 describe('Placement sketching report', () => {
   test('Not placed child shows on report', async () => {
     const fixture = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL',
       'AGREED'
@@ -85,14 +89,14 @@ describe('Placement sketching report', () => {
     await report.assertRow(
       createdApplication.id,
       preferredUnit.name,
-      `${fixtures.testChild.lastName} ${fixtures.testChild.firstName}`
+      `${testChild.lastName} ${testChild.firstName}`
     )
   })
 
   test('Placed child shows on report', async () => {
     const fixture = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL',
       'AGREED'
@@ -134,7 +138,7 @@ describe('Placement sketching report', () => {
     await report.assertRow(
       createdApplication.id,
       preferredUnit.name,
-      `${fixtures.testChild.lastName} ${fixtures.testChild.firstName}`,
+      `${testChild.lastName} ${testChild.firstName}`,
       currentUnit.name
     )
   })
@@ -144,8 +148,8 @@ describe('Placement sketching report', () => {
     const sentDate = preferredStartDate.subMonths(4)
 
     const fixtureForStatusSent = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL',
       'AGREED'
@@ -165,8 +169,8 @@ describe('Placement sketching report', () => {
     }
 
     const fixtureForStatusWaitingPlacement = applicationFixture(
-      fixtures.testChild2,
-      fixtures.testAdult,
+      testChild2,
+      testAdult,
       undefined,
       'PRESCHOOL',
       'AGREED'
@@ -186,8 +190,8 @@ describe('Placement sketching report', () => {
     }
 
     const fixtureForStatusActive = applicationFixture(
-      fixtures.testChildRestricted,
-      fixtures.testAdult,
+      testChildRestricted,
+      testAdult,
       undefined,
       'PRESCHOOL',
       'AGREED'
@@ -218,24 +222,24 @@ describe('Placement sketching report', () => {
     await report.assertRow(
       applicationWithStatusSent.id,
       testDaycare.name,
-      `${fixtures.testChild.lastName} ${fixtures.testChild.firstName}`
+      `${testChild.lastName} ${testChild.firstName}`
     )
     await report.assertRow(
       applicationWithStatusWaitingPlacement.id,
       testDaycare.name,
-      `${fixtures.testChild2.lastName} ${fixtures.testChild2.firstName}`
+      `${testChild2.lastName} ${testChild2.firstName}`
     )
     await report.assertRow(
       applicationWithStatusActive.id,
       testDaycare.name,
-      `${fixtures.testChildRestricted.lastName} ${fixtures.testChildRestricted.firstName}`
+      `${testChildRestricted.lastName} ${testChildRestricted.firstName}`
     )
 
     await report.toggleApplicationStatus('SENT')
     await report.assertRow(
       applicationWithStatusSent.id,
       testDaycare.name,
-      `${fixtures.testChild.lastName} ${fixtures.testChild.firstName}`
+      `${testChild.lastName} ${testChild.firstName}`
     )
     await report.assertNotRow(applicationWithStatusWaitingPlacement.id)
     await report.assertNotRow(applicationWithStatusActive.id)
@@ -244,12 +248,12 @@ describe('Placement sketching report', () => {
     await report.assertRow(
       applicationWithStatusSent.id,
       testDaycare.name,
-      `${fixtures.testChild.lastName} ${fixtures.testChild.firstName}`
+      `${testChild.lastName} ${testChild.firstName}`
     )
     await report.assertRow(
       applicationWithStatusWaitingPlacement.id,
       testDaycare.name,
-      `${fixtures.testChild2.lastName} ${fixtures.testChild2.firstName}`
+      `${testChild2.lastName} ${testChild2.firstName}`
     )
     await report.assertNotRow(applicationWithStatusActive.id)
 
@@ -258,7 +262,7 @@ describe('Placement sketching report', () => {
     await report.assertRow(
       applicationWithStatusWaitingPlacement.id,
       testDaycare.name,
-      `${fixtures.testChild2.lastName} ${fixtures.testChild2.firstName}`
+      `${testChild2.lastName} ${testChild2.firstName}`
     )
     await report.assertNotRow(applicationWithStatusActive.id)
   })

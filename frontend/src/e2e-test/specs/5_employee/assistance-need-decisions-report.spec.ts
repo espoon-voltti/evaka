@@ -393,6 +393,7 @@ describe('Assistance need decisions report', () => {
       })
       .save()
 
+    await Fixture.person().with(testChild).saveChild()
     const anotherChildId = testChild.id
     const careArea = await Fixture.careArea().with(testCareArea2).save()
     const anotherDaycare = await Fixture.daycare()

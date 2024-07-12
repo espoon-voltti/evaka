@@ -20,7 +20,11 @@ import {
   uuidv4,
   familyWithRestrictedDetailsGuardian,
   familyWithSeparatedGuardians,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testAdult,
+  testChild,
+  testChildRestricted,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -53,6 +57,10 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2, testChildRestricted]
+  }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithSeparatedGuardians).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
@@ -70,7 +78,7 @@ beforeEach(async () => {
 describe('Application transitions', () => {
   test('Service worker accepts decision on behalf of the enduser', async () => {
     const fixture = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -96,7 +104,7 @@ describe('Application transitions', () => {
 
   test('Service worker accepts decision on behalf of the enduser and forwards start date 2 weeks', async () => {
     const fixture = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -126,7 +134,7 @@ describe('Application transitions', () => {
 
   test('Sending decision sets application to waiting confirmation state', async () => {
     const fixture = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -154,10 +162,7 @@ describe('Application transitions', () => {
 
   test('Accepting decision for non vtj guardian sets application to waiting for mailing state', async () => {
     const fixture = {
-      ...applicationFixture(
-        fixtures.testChild2,
-        familyWithTwoGuardians.guardian
-      ),
+      ...applicationFixture(testChild2, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
     }
     applicationId = fixture.id
@@ -210,21 +215,21 @@ describe('Application transitions', () => {
     await Fixture.placement()
       .with({
         unitId: fixtures.testDaycare.id,
-        childId: fixtures.testChildRestricted.id,
+        childId: testChildRestricted.id,
         startDate: preferredStartDate
       })
       .save()
     await Fixture.placement()
       .with({
         unitId: fixtures.testPreschool.id,
-        childId: fixtures.testChild.id,
+        childId: testChild.id,
         startDate: preferredStartDate
       })
       .save()
 
     const fixture = {
       ...applicationFixture(
-        fixtures.testChild2,
+        testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
         'DAYCARE',
@@ -317,7 +322,7 @@ describe('Application transitions', () => {
   test('Decision draft page works without unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.testChild2,
+        testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
@@ -379,7 +384,7 @@ describe('Application transitions', () => {
   test('Decision draft page works with unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.testChild2,
+        testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
@@ -441,20 +446,14 @@ describe('Application transitions', () => {
 
   test('Placement proposal flow', async () => {
     const fixture1 = {
-      ...applicationFixture(
-        fixtures.testChild,
-        familyWithTwoGuardians.guardian
-      ),
+      ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
     }
     applicationId = fixture1.id
 
     const applicationId2 = 'dd54782e-231c-4014-abaf-a63eed4e2627'
     const fixture2 = {
-      ...applicationFixture(
-        fixtures.testChild2,
-        familyWithSeparatedGuardians.guardian
-      ),
+      ...applicationFixture(testChild2, familyWithSeparatedGuardians.guardian),
       status: 'SENT' as const,
       id: applicationId2
     }
@@ -533,10 +532,7 @@ describe('Application transitions', () => {
 
   test('Placement proposal rejection status', async () => {
     const fixture1 = {
-      ...applicationFixture(
-        fixtures.testChild,
-        familyWithTwoGuardians.guardian
-      ),
+      ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
     }
     applicationId = fixture1.id
@@ -586,10 +582,7 @@ describe('Application transitions', () => {
 
   test('Decision cannot be accepted on behalf of guardian if application is in placement proposal state', async () => {
     const fixture1 = {
-      ...applicationFixture(
-        fixtures.testChild,
-        familyWithTwoGuardians.guardian
-      ),
+      ...applicationFixture(testChild, familyWithTwoGuardians.guardian),
       status: 'SENT' as const
     }
     applicationId = fixture1.id
@@ -616,7 +609,7 @@ describe('Application transitions', () => {
 
   test('Supervisor can download decision PDF only after it has been generated', async () => {
     const application = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       status: 'SENT' as const
     }
     applicationId = application.id
@@ -658,12 +651,12 @@ describe('Application transitions', () => {
 
   test('Application rejected by citizen is shown for 2 weeks', async () => {
     const application1: DevApplicationWithForm = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
-      ...applicationFixture(fixtures.testChild2, fixtures.testAdult),
+      ...applicationFixture(testChild2, testAdult),
       id: uuidv4(),
       status: 'WAITING_CONFIRMATION'
     }

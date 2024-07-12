@@ -16,7 +16,9 @@ import {
   familyWithRestrictedDetailsGuardian,
   familyWithSeparatedGuardians,
   familyWithTwoGuardians,
-  Fixture
+  Fixture,
+  testAdult,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -48,13 +50,11 @@ let restrictedDetailsGuardianApplication: DevApplicationWithForm
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithSeparatedGuardians).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
-  singleParentApplication = applicationFixture(
-    fixtures.testChild2,
-    fixtures.testAdult
-  )
+  singleParentApplication = applicationFixture(testChild2, testAdult)
   familyWithTwoGuardiansApplication = {
     ...applicationFixture(
       familyWithTwoGuardians.children[0],
@@ -111,7 +111,7 @@ describe('Application details', () => {
       singleParentApplication.id
     )
     await application.assertGuardianName(
-      `${fixtures.testAdult.lastName} ${fixtures.testAdult.firstName}`
+      `${testAdult.lastName} ${testAdult.firstName}`
     )
   })
 

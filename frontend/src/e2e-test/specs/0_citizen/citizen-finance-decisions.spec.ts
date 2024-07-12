@@ -11,17 +11,16 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycare,
   feeDecisionsFixture,
   uuidv4,
   voucherValueDecisionsFixture,
   Fixture,
-  testAdultRestricted
+  testAdultRestricted,
+  testAdult,
+  testChild
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
@@ -37,7 +36,6 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let citizenDecisionsPage: CitizenDecisionsPage
-let fixtures: AreaAndPersonFixtures
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 let feeDecision: FeeDecision
@@ -54,12 +52,13 @@ const voucherValueDecisionValidDuring = new DateRange(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  headOfFamily = fixtures.testAdult
+  await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  headOfFamily = testAdult
   partner = await Fixture.person()
     .with(testAdultRestricted)
     .saveAdult({ updateMockVtjWithDependants: [] })
-  child = fixtures.testChild
+  child = testChild
 
   feeDecision = feeDecisionsFixture(
     'SENT',
@@ -96,7 +95,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, fixtures.testAdult)
+    await enduserLogin(page, testAdult)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')

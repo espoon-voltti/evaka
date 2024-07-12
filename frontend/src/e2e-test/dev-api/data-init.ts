@@ -8,10 +8,6 @@ import {
   clubTerms,
   testDaycare,
   testDaycarePrivateVoucher,
-  testAdult,
-  testChild,
-  testChild2,
-  testChildRestricted,
   Fixture,
   testPreschool,
   preschoolTerms
@@ -22,11 +18,7 @@ const areaAndPersonFixtures = {
   testClub,
   testDaycare,
   testDaycarePrivateVoucher,
-  testPreschool,
-  testAdult,
-  testChild,
-  testChild2,
-  testChildRestricted
+  testPreschool
 }
 
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
@@ -59,24 +51,6 @@ export const initializeAreaAndPersonData = async (): Promise<
     .with(areaAndPersonFixtures.testPreschool)
     .careArea(careArea)
     .save()
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChild)
-    .saveChild({ updateMockVtj: true })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChild2)
-    .saveChild({ updateMockVtj: true })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testChildRestricted)
-    .saveChild({ updateMockVtj: true })
-  await Fixture.person()
-    .with(areaAndPersonFixtures.testAdult)
-    .saveAdult({
-      updateMockVtjWithDependants: [
-        areaAndPersonFixtures.testChild,
-        areaAndPersonFixtures.testChild2,
-        areaAndPersonFixtures.testChildRestricted
-      ]
-    })
 
   return areaAndPersonFixtures
 }

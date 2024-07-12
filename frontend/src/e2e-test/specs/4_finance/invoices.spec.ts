@@ -17,6 +17,9 @@ import {
   feeDecisionsFixture,
   Fixture,
   invoiceFixture,
+  testAdult,
+  testChild,
+  testChild2,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -44,6 +47,10 @@ let adultWithoutSSN: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
   adultWithoutSSN = await Fixture.person()
     .with({
@@ -59,17 +66,17 @@ beforeEach(async () => {
     .saveAdult()
   await Fixture.parentship()
     .with({
-      childId: fixtures.testChild2.id,
-      headOfChildId: fixtures.testAdult.id,
-      startDate: fixtures.testChild2.dateOfBirth,
+      childId: testChild2.id,
+      headOfChildId: testAdult.id,
+      startDate: testChild2.dateOfBirth,
       endDate: LocalDate.of(2099, 1, 1)
     })
     .save()
 
   feeDecisionFixture = feeDecisionsFixture(
     'SENT',
-    fixtures.testAdult,
-    fixtures.testChild2,
+    testAdult,
+    testChild2,
     fixtures.testDaycare.id,
     null,
     new DateRange(
@@ -82,7 +89,7 @@ beforeEach(async () => {
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.testChild2.id,
+        testChild2.id,
         fixtures.testDaycare.id,
         feeDecisionFixture.validDuring.start,
         feeDecisionFixture.validDuring.end ?? undefined
@@ -115,7 +122,7 @@ describe('Invoices', () => {
     await invoicesPage.createInvoiceDrafts()
     await invoicesPage.openFirstInvoice()
     await invoicesPage.assertInvoiceHeadOfFamily(
-      `${fixtures.testAdult.firstName} ${fixtures.testAdult.lastName}`
+      `${testAdult.firstName} ${testAdult.lastName}`
     )
     await invoicesPage.navigateBackToInvoices()
   })
@@ -150,8 +157,8 @@ describe('Invoices', () => {
     await createInvoices({
       body: [
         invoiceFixture(
-          fixtures.testAdult.id,
-          fixtures.testChild.id,
+          testAdult.id,
+          testChild.id,
           fixtures.testCareArea.id,
           fixtures.testDaycare.id,
           'DRAFT'
@@ -182,7 +189,7 @@ describe('Invoices', () => {
       body: [
         invoiceFixture(
           adultWithoutSSN.id,
-          fixtures.testChild.id,
+          testChild.id,
           fixtures.testCareArea.id,
           fixtures.testDaycare.id,
           'DRAFT'

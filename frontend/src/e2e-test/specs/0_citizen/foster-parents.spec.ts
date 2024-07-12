@@ -17,7 +17,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import { Fixture, testAdult, uuidv4 } from '../../dev-api/fixtures'
 import {
   createFosterParent,
   createMessageAccounts,
@@ -54,7 +54,9 @@ beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
 
-  fosterParent = fixtures.testAdult
+  fosterParent = await Fixture.person()
+    .with(testAdult)
+    .saveAdult({ updateMockVtjWithDependants: [] })
   fosterChild = await Fixture.person()
     .with({ ssn: '120220A995L' })
     .saveChild({ updateMockVtj: true })
@@ -73,7 +75,7 @@ beforeEach(async () => {
   activeRelationshipPage = await Page.open({
     mockedTime: mockedNow
   })
-  await enduserLogin(activeRelationshipPage, fixtures.testAdult)
+  await enduserLogin(activeRelationshipPage, testAdult)
   activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
 })
 
@@ -81,7 +83,7 @@ async function openEndedRelationshipPage() {
   const endedRelationshipPage = await Page.open({
     mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(endedRelationshipPage, fixtures.testAdult)
+  await enduserLogin(endedRelationshipPage, testAdult)
   const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
   return { endedRelationshipPage, endedRelationshipHeader }
 }

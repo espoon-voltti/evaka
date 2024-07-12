@@ -9,9 +9,9 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testChild2 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee, DevPerson } from '../../generated/api-types'
+import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import {
@@ -24,7 +24,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let fixtures: AreaAndPersonFixtures
-let childFixture: DevPerson
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let page: Page
@@ -35,7 +34,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   fixtures = await initializeAreaAndPersonData()
-  childFixture = fixtures.testChild2
+  await Fixture.person().with(testChild2).saveChild()
   admin = await Fixture.employeeAdmin().save()
   unitSupervisor = await Fixture.employeeUnitSupervisor(
     fixtures.testDaycare.id
@@ -43,7 +42,7 @@ beforeEach(async () => {
 
   await Fixture.placement()
     .with({
-      childId: childFixture.id,
+      childId: testChild2.id,
       unitId: fixtures.testDaycare.id,
       startDate: now.toLocalDate().subYears(1),
       endDate: now.toLocalDate().addYears(1)
@@ -92,9 +91,7 @@ describe('Employee - Child documents', () => {
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -177,9 +174,7 @@ describe('Employee - Child documents', () => {
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -204,9 +199,7 @@ describe('Employee - Child documents', () => {
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -221,9 +214,7 @@ describe('Employee - Child documents', () => {
     // Admin tries to open the document in edit mode too soon
     page = await Page.open({ mockedTime: now.addMinutes(3) })
     await employeeLogin(page, admin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -238,9 +229,7 @@ describe('Employee - Child documents', () => {
     // Admin opens the document in edit mode after lock expires
     page = await Page.open({ mockedTime: now.addMinutes(6) })
     await employeeLogin(page, admin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')

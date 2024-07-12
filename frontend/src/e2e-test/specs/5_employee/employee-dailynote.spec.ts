@@ -4,11 +4,13 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+  Fixture,
+  testAdult,
+  testChild,
+  testChild2
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   postChildDailyNote,
@@ -19,7 +21,6 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let daycare: DevDaycare
 let daycareGroup: DevDaycareGroup
@@ -27,7 +28,11 @@ let unitPage: UnitPage
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   const admin = await Fixture.employeeAdmin().save()
 
   await createDefaultServiceNeedOptions()
@@ -38,7 +43,7 @@ beforeEach(async () => {
 
   const placementFixtureJari = await Fixture.placement()
     .with({
-      childId: fixtures.testChild.id,
+      childId: testChild.id,
       unitId: daycare.id
     })
     .save()
@@ -49,7 +54,7 @@ beforeEach(async () => {
 
   const placementFixtureKaarina = await Fixture.placement()
     .with({
-      childId: fixtures.testChild2.id,
+      childId: testChild2.id,
       unitId: daycare.id
     })
     .save()
@@ -66,7 +71,7 @@ beforeEach(async () => {
 
 describe('Mobile employee daily notes', () => {
   test('Child daycare daily note indicators are shown on group view and can be edited', async () => {
-    const childId = fixtures.testChild.id
+    const childId = testChild.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Testi viesti',
       feedingNote: 'MEDIUM',
@@ -109,8 +114,8 @@ describe('Mobile employee daily notes', () => {
   })
 
   test('Group daycare daily notes can be written and are shown on group notes tab', async () => {
-    const childId1 = fixtures.testChild.id
-    const childId2 = fixtures.testChild2.id
+    const childId1 = testChild.id
+    const childId2 = testChild2.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Toinen viesti',
       feedingNote: 'NONE',

@@ -8,17 +8,15 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycare,
   testChild,
   testChild2,
   Fixture,
   uuidv4,
-  testAdult2
+  testAdult2,
+  testAdult
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
@@ -44,7 +42,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let citizenPage: Page
@@ -97,7 +94,11 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   child = testChild
   child2 = testChild2
 
@@ -182,11 +183,11 @@ beforeEach(async () => {
     body: [
       {
         childId: child.id,
-        guardianId: fixtures.testAdult.id
+        guardianId: testAdult.id
       },
       {
         childId: child2.id,
-        guardianId: fixtures.testAdult.id
+        guardianId: testAdult.id
       }
     ]
   })
@@ -205,7 +206,7 @@ beforeEach(async () => {
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, fixtures.testAdult)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 describe('Message editor in child page', () => {
@@ -514,7 +515,7 @@ describe('Messages page', () => {
     await Fixture.person()
       .with(testAdult2)
       .saveAdult({
-        updateMockVtjWithDependants: [fixtures.testChild]
+        updateMockVtjWithDependants: [testChild]
       })
 
     // Add child's guardians to block list
@@ -529,7 +530,7 @@ describe('Messages page', () => {
 
     const blocklistSection =
       await childInformationPage.openCollapsible('messageBlocklist')
-    await blocklistSection.addParentToBlockList(fixtures.testAdult.id)
+    await blocklistSection.addParentToBlockList(testAdult.id)
     await blocklistSection.addParentToBlockList(testAdult2.id)
 
     await listPage.selectChild(child.id)

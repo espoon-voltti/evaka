@@ -14,7 +14,8 @@ import {
   testChild2,
   testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  testChild
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,9 +36,13 @@ const testFilePath = `src/e2e-test/assets/${testFileName}`
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
 
-  const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
+  const fixture = applicationFixture(testChild, testAdult)
   await createApplications({ body: [fixture] })
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 

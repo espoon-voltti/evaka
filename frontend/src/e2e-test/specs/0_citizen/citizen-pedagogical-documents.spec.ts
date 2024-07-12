@@ -13,6 +13,8 @@ import {
 import {
   createDaycarePlacementFixture,
   Fixture,
+  testAdult,
+  testChild,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -38,19 +40,20 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.testChild.id,
+        testChild.id,
         fixtures.testDaycare.id
       )
     ]
   })
 
   page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page, fixtures.testAdult)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
 })
@@ -63,7 +66,7 @@ describe('Citizen pedagogical documents', () => {
 
       const pd = await Fixture.pedagogicalDocument()
         .with({
-          childId: fixtures.testChild.id,
+          childId: testChild.id,
           description: 'e2e test description'
         })
         .save()
@@ -81,7 +84,7 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(1)
 
-      await header.openChildPage(fixtures.testChild.id)
+      await header.openChildPage(testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 
@@ -94,12 +97,12 @@ describe('Citizen pedagogical documents', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
       const pd = await Fixture.pedagogicalDocument()
         .with({
-          childId: fixtures.testChild.id,
+          childId: testChild.id,
           description: 'e2e test description'
         })
         .save()
 
-      await header.openChildPage(fixtures.testChild.id)
+      await header.openChildPage(testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 

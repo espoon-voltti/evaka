@@ -8,7 +8,13 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { testDaycareGroup, Fixture, testAdult2 } from '../../dev-api/fixtures'
+import {
+  testDaycareGroup,
+  Fixture,
+  testAdult2,
+  testAdult,
+  testChild
+} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -28,11 +34,11 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  await Fixture.person()
-    .with(testAdult2)
-    .saveAdult({
-      updateMockVtjWithDependants: [fixtures.testChild]
-    })
+  await Fixture.family({
+    guardian: testAdult,
+    otherGuardian: testAdult2,
+    children: [testChild]
+  }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
   const admin = await Fixture.employeeAdmin().save()
 
@@ -40,7 +46,7 @@ beforeEach(async () => {
   await employeeLogin(page, admin)
 
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(fixtures.testChild.id)
+  await childInformationPage.navigateToChild(testChild.id)
 
   const applications =
     await childInformationPage.openCollapsible('applications')
@@ -64,9 +70,9 @@ describe('Employee - paper application', () => {
   test('Paper application can be created for guardian and child with ssn', async () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.assertGuardian(
-      formatPersonName(fixtures.testAdult),
-      fixtures.testAdult.ssn ?? '',
-      formatPersonAddress(fixtures.testAdult)
+      formatPersonName(testAdult),
+      testAdult.ssn ?? '',
+      formatPersonAddress(testAdult)
     )
   })
 

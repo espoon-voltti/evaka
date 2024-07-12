@@ -78,7 +78,11 @@ beforeEach(async () => {
     })
     .save()
 
-  child2Fixture = fixtures.testChild
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  child2Fixture = testChild2
   child2DaycarePlacementId = uuidv4()
   await Fixture.placement()
     .with({

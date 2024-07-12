@@ -4,11 +4,14 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testAdultRestricted } from '../../dev-api/fixtures'
+  Fixture,
+  testAdult,
+  testAdultRestricted,
+  testChild,
+  testChild2
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -19,11 +22,13 @@ let page: Page
 let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
-
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await Fixture.person()
     .with(testAdultRestricted)
     .saveAdult({ updateMockVtjWithDependants: [] })
@@ -42,19 +47,19 @@ describe('Foster parents', () => {
     const section = await guardianInformation.openCollapsible('fosterChildren')
 
     const startDate = LocalDate.of(2020, 5, 14)
-    await section.addFosterChild(fixtures.testChild.firstName, startDate, null)
-    await section.addFosterChild(fixtures.testChild2.firstName, startDate, null)
-    await section.assertRowExists(fixtures.testChild.id, startDate, null)
-    await section.assertRowExists(fixtures.testChild2.id, startDate, null)
+    await section.addFosterChild(testChild.firstName, startDate, null)
+    await section.addFosterChild(testChild2.firstName, startDate, null)
+    await section.assertRowExists(testChild.id, startDate, null)
+    await section.assertRowExists(testChild2.id, startDate, null)
 
     const newEndDate = LocalDate.of(2022, 10, 4)
-    await section.editFosterChild(fixtures.testChild.id, startDate, newEndDate)
-    await section.assertRowExists(fixtures.testChild.id, startDate, newEndDate)
-    await section.assertRowExists(fixtures.testChild2.id, startDate, null)
+    await section.editFosterChild(testChild.id, startDate, newEndDate)
+    await section.assertRowExists(testChild.id, startDate, newEndDate)
+    await section.assertRowExists(testChild2.id, startDate, null)
 
-    await section.deleteFosterChild(fixtures.testChild2.id)
-    await section.assertRowExists(fixtures.testChild.id, startDate, newEndDate)
-    await section.assertRowDoesNotExist(fixtures.testChild2.id)
+    await section.deleteFosterChild(testChild2.id)
+    await section.assertRowExists(testChild.id, startDate, newEndDate)
+    await section.assertRowDoesNotExist(testChild2.id)
   })
 
   test('added foster child is shown in child information', async () => {
@@ -63,13 +68,13 @@ describe('Foster parents', () => {
       .openCollapsible('fosterChildren')
       .then((section) =>
         section.addFosterChild(
-          fixtures.testChild.firstName,
+          testChild.firstName,
           LocalDate.todayInSystemTz(),
           null
         )
       )
 
-    await childInformation.navigateToChild(fixtures.testChild.id)
+    await childInformation.navigateToChild(testChild.id)
     await childInformation
       .openCollapsible('guardians')
       .then((section) =>

@@ -49,6 +49,8 @@ beforeEach(async () => {
 
 describe('Person finance decisions', () => {
   test('Fee decisions are sorted by sent date', async () => {
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
@@ -83,6 +85,8 @@ describe('Person finance decisions', () => {
   })
 
   test('Voucher value decisions are sorted by sent date', async () => {
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
@@ -125,6 +129,7 @@ describe('Person finance decisions', () => {
     await Fixture.feeThresholds().save()
     await createVoucherValues()
 
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
     await Fixture.parentship()
       .with({
         childId: testChild2.id,

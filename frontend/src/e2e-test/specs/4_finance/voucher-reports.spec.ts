@@ -13,7 +13,10 @@ import {
   testDaycare2,
   testDaycare,
   Fixture,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testAdult,
+  testChild,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -43,14 +46,18 @@ beforeEach(async () => {
   const fixtures = await initializeAreaAndPersonData()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
 
   startDate = LocalDate.of(2020, 1, 1)
   endDate = LocalDate.of(2020, 12, 31)
-  child = fixtures.testChild2
-  otherChild = fixtures.testChild
-  guardian = fixtures.testAdult
+  child = testChild2
+  otherChild = testChild
+  guardian = testAdult
 
   await createVoucherValueDecisions({
     body: [

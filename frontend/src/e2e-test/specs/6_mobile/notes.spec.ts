@@ -10,7 +10,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
@@ -35,7 +35,8 @@ describe('Child and group notes', () => {
   beforeEach(async () => {
     await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
-    child = fixtures.testChild
+    await Fixture.person().with(testChild).saveChild()
+    child = testChild
     const unit = fixtures.testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()
@@ -128,7 +129,8 @@ describe('Child and group notes (backup care)', () => {
   beforeEach(async () => {
     await resetServiceState()
     fixtures = await initializeAreaAndPersonData()
-    child = fixtures.testChild
+    await Fixture.person().with(testChild).saveChild()
+    child = testChild
     const unit = fixtures.testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()

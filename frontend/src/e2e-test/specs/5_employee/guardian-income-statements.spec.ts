@@ -12,7 +12,8 @@ import {
   testDaycare,
   testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  testChildRestricted
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -34,9 +35,13 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.testAdult.id
-  child = fixtures.testChildRestricted
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChildRestricted]
+  }).save()
+  personId = testAdult.id
+  child = testChildRestricted
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 

@@ -5,11 +5,8 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
@@ -17,14 +14,14 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let childInformation: ChildInformationPage
 let guardianInformation: GuardianInformationPage
 const mockedDate = LocalDate.of(2021, 4, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -36,8 +33,8 @@ beforeEach(async () => {
 })
 
 test('adding and removing evaka rights from guardians works', async () => {
-  const child = fixtures.testChild
-  const blockedGuardian = fixtures.testAdult
+  const child = testChild
+  const blockedGuardian = testAdult
   await childInformation.navigateToChild(child.id)
   const childGuardiansSection =
     await childInformation.openCollapsible('guardians')

@@ -42,6 +42,7 @@ let feeDecisionsPage: FeeDecisionsPage
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   await Fixture.daycare().with(testDaycare2).careArea(careArea).save()

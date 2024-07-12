@@ -9,7 +9,13 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { testChild, Fixture, uuidv4, testAdult2 } from '../../dev-api/fixtures'
+import {
+  testChild,
+  Fixture,
+  uuidv4,
+  testAdult2,
+  testAdult
+} from '../../dev-api/fixtures'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -45,7 +51,8 @@ const pin = '2580'
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
-  child = fixtures.testChild
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  child = testChild
   const unit = fixtures.testDaycare
 
   const employee = await Fixture.employee()
@@ -98,7 +105,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 1,
           otherIndx: 2,
-          personId: fixtures.testAdult.id,
+          personId: testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -117,7 +124,7 @@ describe('Mobile PIN login', () => {
       ]
     })
 
-    const contacts = [fixtures.testAdult, testAdult2]
+    const contacts = [testAdult, testAdult2]
     await createFamilyContact({
       body: contacts.map(({ id }, index) => ({
         id: uuidv4(),
@@ -152,7 +159,7 @@ describe('Mobile PIN login', () => {
         {
           id: uuidv4(),
           childId: child.id,
-          headOfChild: fixtures.testAdult.id,
+          headOfChild: testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           conflict: false

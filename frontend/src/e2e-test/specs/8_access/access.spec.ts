@@ -7,7 +7,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -22,9 +22,10 @@ let childInfo: ChildInformationPage
 beforeAll(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.person().with(testChild).saveChild()
   await Fixture.placement()
     .with({
-      childId: fixtures.testChild.id,
+      childId: testChild.id,
       unitId: fixtures.testDaycare.id
     })
     .save()
@@ -141,9 +142,7 @@ describe('Child information page sections', () => {
   test('Admin sees every collapsible section', async () => {
     const admin = await Fixture.employeeAdmin().save()
     await employeeLogin(page, admin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
       guardians: true,
@@ -163,9 +162,7 @@ describe('Child information page sections', () => {
   test('Service worker sees the correct sections', async () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
     await employeeLogin(page, serviceWorker)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
       guardians: true,
@@ -185,9 +182,7 @@ describe('Child information page sections', () => {
   test('Finance admin sees the correct sections', async () => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
     await employeeLogin(page, financeAdmin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: true,
       guardians: true,
@@ -207,9 +202,7 @@ describe('Child information page sections', () => {
   test('Staff sees the correct sections', async () => {
     const staff = await Fixture.employeeStaff(fixtures.testDaycare.id).save()
     await employeeLogin(page, staff)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
       guardians: false,
@@ -231,9 +224,7 @@ describe('Child information page sections', () => {
       fixtures.testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
       guardians: true,
@@ -256,9 +247,7 @@ describe('Child information page sections', () => {
         fixtures.testDaycare.id
       ).save()
     await employeeLogin(page, specialEducationTeacher)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${fixtures.testChild.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
       feeAlterations: false,
       guardians: false,

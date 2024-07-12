@@ -6,11 +6,15 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+  applicationFixture,
+  Fixture,
+  testAdult,
+  testChild,
+  testChild2,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
   createApplications,
@@ -21,13 +25,16 @@ import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   admin = await Fixture.employeeAdmin().save()
 })
 
@@ -48,13 +55,13 @@ describe('Search person', () => {
       await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)
 
-    const childWithAssistanceNeed = fixtures.testChild
-    const childWithoutAssistanceNeed = fixtures.testChild2
+    const childWithAssistanceNeed = testChild
+    const childWithoutAssistanceNeed = testChild2
 
     const appWithAssistanceNeeded = {
       ...applicationFixture(
         childWithAssistanceNeed,
-        fixtures.testAdult,
+        testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -71,7 +78,7 @@ describe('Search person', () => {
     const appWithoutAssistanceNeeded = {
       ...applicationFixture(
         childWithoutAssistanceNeed,
-        fixtures.testAdult,
+        testAdult,
         undefined,
         'DAYCARE',
         null,

@@ -18,7 +18,8 @@ import {
   testChild2,
   testAdult,
   Fixture,
-  testAdult2
+  testAdult2,
+  testChild
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -65,11 +66,15 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
-  account = citizenWeakAccount(fixtures.testAdult)
+  account = citizenWeakAccount(testAdult)
   await keycloak.createUser({ ...account, enabled: true })
 
   staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
@@ -81,7 +86,7 @@ beforeEach(async () => {
   ).save()
 
   const unitId = fixtures.testDaycare.id
-  childId = fixtures.testChild.id // born 7.7.2014
+  childId = testChild.id // born 7.7.2014
 
   const daycarePlacementFixture1 = await Fixture.placement()
     .with({
@@ -102,7 +107,7 @@ beforeEach(async () => {
 
   const daycarePlacementFixture2 = await Fixture.placement()
     .with({
-      childId: fixtures.testChild2.id,
+      childId: testChild2.id,
       unitId,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
@@ -121,7 +126,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childId,
-        guardianId: fixtures.testAdult.id
+        guardianId: testAdult.id
       }
     ]
   })
@@ -129,8 +134,8 @@ beforeEach(async () => {
   await insertGuardians({
     body: [
       {
-        childId: fixtures.testChild2.id,
-        guardianId: fixtures.testAdult.id
+        childId: testChild2.id,
+        guardianId: testAdult.id
       }
     ]
   })
@@ -152,7 +157,7 @@ async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage, fixtures.testAdult)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 async function initOtherCitizenPage(
@@ -301,7 +306,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [fixtures.testChild2.id]
+      receivers: [testChild2.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -360,7 +365,7 @@ describe('Additional filters', () => {
     await Fixture.person()
       .with(testAdult2)
       .saveAdult({
-        updateMockVtjWithDependants: [fixtures.testChild]
+        updateMockVtjWithDependants: [testChild]
       })
     await insertGuardians({
       body: [
@@ -395,7 +400,7 @@ describe('Additional filters', () => {
     await Fixture.person()
       .with(testAdult2)
       .saveAdult({
-        updateMockVtjWithDependants: [fixtures.testChild]
+        updateMockVtjWithDependants: [testChild]
       })
     await insertGuardians({
       body: [

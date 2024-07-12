@@ -5,14 +5,14 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
   Fixture,
+  testAdult,
+  testChild,
+  testChild2,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -24,12 +24,15 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   admin = await Fixture.employeeAdmin().save()
 })
 
@@ -42,15 +45,15 @@ async function openPage(employee: DevEmployee = admin) {
 
 describe('Employee searches applications', () => {
   test('Duplicate applications are found', async () => {
-    const fixture = applicationFixture(fixtures.testChild, fixtures.testAdult)
+    const fixture = applicationFixture(testChild, testAdult)
 
     const duplicateFixture = {
-      ...applicationFixture(fixtures.testChild, fixtures.testAdult),
+      ...applicationFixture(testChild, testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130222'
     }
 
     const nonDuplicateFixture = {
-      ...applicationFixture(fixtures.testChild2, fixtures.testAdult),
+      ...applicationFixture(testChild2, testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130224'
     }
 
@@ -74,14 +77,9 @@ describe('Employee searches applications', () => {
     const daycare3 = await Fixture.daycare().careArea(careArea3).save()
 
     const createApplicationForUnit = (unitId: string) => ({
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [unitId]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        unitId
+      ]),
       id: uuidv4()
     })
 
@@ -110,14 +108,9 @@ describe('Employee searches applications', () => {
     const daycare2 = await Fixture.daycare().careArea(careArea1).save()
 
     const createApplicationForUnit = (unitId: string) => ({
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [unitId]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        unitId
+      ]),
       id: uuidv4()
     })
 
@@ -147,8 +140,8 @@ describe('Employee searches applications', () => {
       assistanceNeeded: boolean
     ) => ({
       ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
+        testChild,
+        testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -195,36 +188,22 @@ describe('Employee searches applications', () => {
       .save()
 
     const applicationWithVoucherUnitFirst = {
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [voucherUnit.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        voucherUnit.id
+      ]),
       id: uuidv4()
     }
     const applicationWithVoucherUnitSecond = {
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [municipalUnit.id, voucherUnit.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        municipalUnit.id,
+        voucherUnit.id
+      ]),
       id: uuidv4()
     }
     const applicationWithNoVoucherUnit = {
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [municipalUnit.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        municipalUnit.id
+      ]),
       id: uuidv4()
     }
 
@@ -282,31 +261,21 @@ describe('Employee searches applications', () => {
       .careArea(careArea)
       .save()
     const clubApplication = {
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'CLUB',
-        null,
-        [club.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'CLUB', null, [
+        club.id
+      ]),
       id: uuidv4()
     }
     const daycareApplication = {
-      ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
-        undefined,
-        'DAYCARE',
-        null,
-        [daycare.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        daycare.id
+      ]),
       id: uuidv4()
     }
     const preschoolApplication = {
       ...applicationFixture(
-        fixtures.testChild,
-        fixtures.testAdult,
+        testChild,
+        testAdult,
         undefined,
         'PRESCHOOL',
         null,

@@ -16,7 +16,9 @@ import {
   testDaycare,
   Fixture,
   testPreschool,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testAdult,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -42,6 +44,7 @@ beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
   await createDefaultServiceNeedOptions()
@@ -60,7 +63,7 @@ describe('Application transitions', () => {
   test('Decision draft page works without unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.testChild2,
+        testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',
@@ -122,7 +125,7 @@ describe('Application transitions', () => {
   test('Decision draft page works with unit selection', async () => {
     const fixture = {
       ...applicationFixture(
-        fixtures.testChild2,
+        testChild2,
         familyWithTwoGuardians.guardian,
         undefined,
         'PRESCHOOL',

@@ -13,6 +13,9 @@ import {
   createDaycarePlacementFixture,
   Fixture,
   testAdult,
+  testChild,
+  testChild2,
+  testChildRestricted,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -42,12 +45,9 @@ let jariId: UUID
 beforeEach(async () => {
   await resetServiceState()
   const fixtures = await initializeAreaAndPersonData()
-  children = [
-    fixtures.testChild,
-    fixtures.testChild2,
-    fixtures.testChildRestricted
-  ]
-  jariId = fixtures.testChild.id
+  children = [testChild, testChild2, testChildRestricted]
+  jariId = testChild.id
+  await Fixture.family({ guardian: testAdult, children }).save()
   const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
   await createDaycarePlacements({
     body: children.map((child) =>
@@ -112,7 +112,7 @@ beforeEach(async () => {
       calendarEventId: individualEvent.id,
       unitId: fixtures.testDaycare.id,
       groupId: daycareGroup.id,
-      childId: fixtures.testChild.id
+      childId: testChild.id
     })
     .save()
 

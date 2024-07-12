@@ -11,6 +11,7 @@ import {
   familyWithTwoGuardians,
   Fixture,
   systemInternalUser,
+  testChild2,
   testChildZeroYearOld,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -83,7 +84,7 @@ beforeEach(async () => {
     })
     .save()
 
-  child3Fixture = fixtures.testChild2
+  child3Fixture = await Fixture.person().with(testChild2).saveChild()
   daycare2 = fixtures.testDaycarePrivateVoucher
 })
 

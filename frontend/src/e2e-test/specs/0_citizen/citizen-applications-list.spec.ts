@@ -9,7 +9,12 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+import {
+  applicationFixture,
+  Fixture,
+  testAdult,
+  testChild
+} from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -27,6 +32,7 @@ const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 beforeEach(async () => {
   await resetServiceState()
   fixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 })
 
 async function openApplicationsPage(citizen: DevPerson) {
@@ -47,8 +53,8 @@ async function openApplicationsPage(citizen: DevPerson) {
 describe('Citizen applications list', () => {
   test('Citizen sees their children and applications', async () => {
     const application = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL',
       null,
@@ -56,9 +62,9 @@ describe('Citizen applications list', () => {
       true
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
+    const { applicationsPage } = await openApplicationsPage(testAdult)
 
-    const child = fixtures.testChild
+    const child = testChild
     await applicationsPage.assertChildIsShown(
       child.id,
       `${child.firstName} ${child.lastName}`
@@ -108,8 +114,8 @@ describe('Citizen applications list', () => {
 
   test('Citizen sees application that is waiting for decision acceptance', async () => {
     const application = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'DAYCARE',
       null,
@@ -126,9 +132,7 @@ describe('Citizen applications list', () => {
       ],
       now
     )
-    const { page, applicationsPage } = await openApplicationsPage(
-      fixtures.testAdult
-    )
+    const { page, applicationsPage } = await openApplicationsPage(testAdult)
 
     await page.reload()
     await applicationsPage.assertApplicationIsListed(
@@ -141,8 +145,8 @@ describe('Citizen applications list', () => {
 
   test('Citizen can cancel a draft application', async () => {
     const application = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'DAYCARE',
       null,
@@ -151,7 +155,7 @@ describe('Citizen applications list', () => {
       'CREATED'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
+    const { applicationsPage } = await openApplicationsPage(testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
@@ -159,8 +163,8 @@ describe('Citizen applications list', () => {
 
   test('Citizen can cancel a sent application', async () => {
     const application = applicationFixture(
-      fixtures.testChild,
-      fixtures.testAdult,
+      testChild,
+      testAdult,
       undefined,
       'DAYCARE',
       null,
@@ -169,7 +173,7 @@ describe('Citizen applications list', () => {
       'SENT'
     )
     await createApplications({ body: [application] })
-    const { applicationsPage } = await openApplicationsPage(fixtures.testAdult)
+    const { applicationsPage } = await openApplicationsPage(testAdult)
 
     await applicationsPage.cancelApplication(application.id)
     await applicationsPage.assertApplicationDoesNotExist(application.id)
