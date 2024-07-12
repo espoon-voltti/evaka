@@ -13,7 +13,6 @@ import {
   execSimpleApplicationActions,
   runPendingAsyncJobs
 } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   Fixture,
   testAdult,
@@ -54,7 +53,6 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
 

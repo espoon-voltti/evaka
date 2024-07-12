@@ -7,7 +7,6 @@ import assert from 'assert'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testCareArea2,
   testDaycare2,
@@ -44,7 +43,6 @@ let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()

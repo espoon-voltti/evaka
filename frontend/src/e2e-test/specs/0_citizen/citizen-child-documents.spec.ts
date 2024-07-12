@@ -5,7 +5,6 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   testDaycareGroup,
@@ -41,7 +40,6 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

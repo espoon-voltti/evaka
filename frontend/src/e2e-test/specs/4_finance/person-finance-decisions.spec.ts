@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   testDaycare,
@@ -38,7 +37,6 @@ let guardianPage: GuardianInformationPage
 beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.daycare().with(testDaycarePrivateVoucher).save()

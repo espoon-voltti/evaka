@@ -9,7 +9,6 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   familyWithTwoGuardians,
   Fixture,
@@ -37,7 +36,6 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

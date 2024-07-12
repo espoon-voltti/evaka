@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   familyWithTwoGuardians,
@@ -26,7 +25,6 @@ let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({

@@ -7,7 +7,6 @@ import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   familyWithRestrictedDetailsGuardian,
@@ -44,7 +43,6 @@ let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({

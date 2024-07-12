@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycare2,
   testDaycareGroup,
@@ -47,7 +46,6 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 

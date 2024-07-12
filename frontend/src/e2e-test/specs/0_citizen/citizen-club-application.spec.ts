@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   clubTerm2021,
   Fixture,
@@ -31,7 +30,6 @@ const mockedDate = LocalDate.of(2021, 3, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.clubTerm().with(clubTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testClub).save()

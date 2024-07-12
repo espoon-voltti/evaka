@@ -7,7 +7,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   testDaycare,
@@ -54,7 +53,6 @@ let applicationId: string
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  await initializeAreaAndPersonData()
   await Fixture.preschoolTerm().with(preschoolTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()

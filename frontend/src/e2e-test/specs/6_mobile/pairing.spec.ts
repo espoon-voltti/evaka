@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import {
   postPairing,
@@ -19,7 +18,6 @@ let pairingFlow: PairingFlow
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
 

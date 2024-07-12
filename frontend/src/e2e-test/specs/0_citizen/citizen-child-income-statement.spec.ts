@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
@@ -35,7 +34,6 @@ const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
 beforeEach(async () => {
   await resetServiceState()
 
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

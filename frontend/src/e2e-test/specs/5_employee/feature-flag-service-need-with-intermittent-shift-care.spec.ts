@@ -6,7 +6,6 @@ import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   familyWithTwoGuardians,
   Fixture,
@@ -27,7 +26,6 @@ let activeServiceNeedOption: ServiceNeedOption
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

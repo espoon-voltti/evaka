@@ -8,7 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
@@ -47,7 +46,6 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 describe('Citizen children page', () => {
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     await Fixture.daycare().with(testPreschool).save()
@@ -531,7 +529,6 @@ describe.each(['desktop', 'mobile'] as const)(
   (env) => {
     beforeEach(async () => {
       await resetServiceState()
-      await initializeAreaAndPersonData()
       await Fixture.careArea().with(testCareArea).save()
       await Fixture.daycare().with(testDaycare).save()
       await Fixture.daycare().with(testPreschool).save()

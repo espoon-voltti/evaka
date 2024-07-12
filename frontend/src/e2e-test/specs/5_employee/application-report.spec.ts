@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -18,7 +17,6 @@ let report: ApplicationsReport
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
 
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()

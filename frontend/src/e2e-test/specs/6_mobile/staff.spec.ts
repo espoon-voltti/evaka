@@ -4,7 +4,6 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
@@ -32,7 +31,6 @@ const today = now.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

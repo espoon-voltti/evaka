@@ -4,7 +4,6 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   Fixture,
   testAdult,
@@ -28,7 +27,6 @@ let unitPage: UnitPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare } from '../../generated/api-types'
@@ -25,7 +24,6 @@ describe('Employee - unit details', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     daycare1 = testDaycare
@@ -114,7 +112,6 @@ describe('Employee - unit editor validations and warnings', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     const admin = await Fixture.employeeAdmin().save()

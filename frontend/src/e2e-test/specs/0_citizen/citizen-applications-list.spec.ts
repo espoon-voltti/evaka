@@ -5,7 +5,6 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   Fixture,
@@ -28,7 +27,6 @@ const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

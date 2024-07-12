@@ -4,7 +4,6 @@
 
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycare,
   Fixture,
@@ -50,7 +49,6 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
 
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   daycareId = testDaycare.id

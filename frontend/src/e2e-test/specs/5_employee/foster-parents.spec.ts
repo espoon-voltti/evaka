@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   Fixture,
   testAdult,
@@ -24,7 +23,6 @@ let childInformation: ChildInformationPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

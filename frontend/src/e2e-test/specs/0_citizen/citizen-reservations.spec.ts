@@ -12,7 +12,6 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testCareArea2,
   testCareArea,
@@ -76,7 +75,6 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.preschoolTerm().with(preschoolTerm2021).save()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
@@ -987,7 +985,6 @@ describe('Citizen calendar child visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     await Fixture.family({
@@ -1180,7 +1177,6 @@ describe('Citizen calendar visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
@@ -1266,7 +1262,6 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
     const careArea = await Fixture.careArea().with(testCareArea2).save()
     await Fixture.daycare().with(testDaycare2).careArea(careArea).save()

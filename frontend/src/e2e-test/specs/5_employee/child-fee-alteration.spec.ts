@@ -5,7 +5,6 @@
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage, {
@@ -21,7 +20,6 @@ let feeAlterationSection: FeeAlterationsSection
 beforeEach(async () => {
   await resetServiceState()
 
-  await initializeAreaAndPersonData()
   await Fixture.person().with(testChild).saveChild()
   personId = testChild.id
 

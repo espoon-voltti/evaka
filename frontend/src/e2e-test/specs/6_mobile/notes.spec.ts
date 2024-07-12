@@ -6,7 +6,6 @@ import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   Fixture,
   testCareArea,
@@ -35,7 +34,6 @@ describe('Child and group notes', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()
@@ -130,7 +128,6 @@ describe('Child and group notes (backup care)', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await initializeAreaAndPersonData()
     await Fixture.careArea().with(testCareArea).save()
     await Fixture.daycare().with(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()

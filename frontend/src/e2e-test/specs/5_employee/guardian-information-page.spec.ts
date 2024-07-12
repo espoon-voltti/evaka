@@ -4,7 +4,6 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -37,7 +36,6 @@ let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({

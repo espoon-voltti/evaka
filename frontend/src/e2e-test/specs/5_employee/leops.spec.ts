@@ -6,7 +6,6 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   familyWithTwoGuardians,
   Fixture,
@@ -44,7 +43,6 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testPreschool).save()
   await Fixture.family(familyWithTwoGuardians).save()

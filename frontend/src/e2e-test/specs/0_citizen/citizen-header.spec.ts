@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -14,7 +13,6 @@ let header: CitizenHeader
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open()

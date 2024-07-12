@@ -10,7 +10,6 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testCareArea2,
   testDaycare2,
@@ -53,7 +52,6 @@ const insertTestDataAndLogin = async ({
 }: {
   childShiftCare?: ShiftCareType
 } = {}) => {
-  await initializeAreaAndPersonData()
   await Fixture.careArea().with(testCareArea).save()
   await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

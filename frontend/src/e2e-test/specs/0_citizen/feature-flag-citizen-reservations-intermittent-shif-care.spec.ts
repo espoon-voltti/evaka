@@ -8,7 +8,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
@@ -216,7 +215,6 @@ async function openCalendarPage(
 }
 
 const addTestData = async (date: LocalDate) => {
-  await initializeAreaAndPersonData()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   const operationTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 

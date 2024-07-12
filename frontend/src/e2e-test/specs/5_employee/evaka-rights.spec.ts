@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -20,7 +19,6 @@ const mockedDate = LocalDate.of(2021, 4, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open({
