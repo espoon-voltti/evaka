@@ -54,6 +54,7 @@ const browserUrl = baseUrl ?? 'http://localhost:9099'
 
 const config = {
   playwright: {
+    ci: env('CI', parseBoolean) ?? false,
     headless: env('HEADLESS', parseBoolean) ?? false,
     browser:
       env('BROWSER', parseEnum(['chromium', 'firefox', 'webkit'] as const)) ??
