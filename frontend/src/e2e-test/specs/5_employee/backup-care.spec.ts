@@ -6,11 +6,15 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { testDaycareGroup, Fixture, testChild2 } from '../../dev-api/fixtures'
+  testDaycareGroup,
+  Fixture,
+  testChild2,
+  testCareArea,
+  testDaycare,
+  testDaycarePrivateVoucher
+} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -20,17 +24,19 @@ import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
   await Fixture.person().with(testChild2).saveChild()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.testDaycare.id
+    testDaycare.id
   ).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -40,7 +46,7 @@ beforeEach(async () => {
   const placement = await Fixture.placement()
     .with({
       childId: testChild2.id,
-      unitId: fixtures.testDaycarePrivateVoucher.id,
+      unitId: testDaycarePrivateVoucher.id,
       startDate: startDate,
       endDate: endDate
     })
@@ -60,7 +66,7 @@ beforeEach(async () => {
   await Fixture.backupCare()
     .with({
       childId: testChild2.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       period: new FiniteDateRange(
         LocalDate.of(2023, 2, 1),
         LocalDate.of(2023, 2, 3)
@@ -71,7 +77,7 @@ beforeEach(async () => {
   page = await Page.open({ mockedTime: now })
   await employeeLogin(page, unitSupervisor)
   const unitPage = new UnitPage(page)
-  await unitPage.navigateToUnit(fixtures.testDaycare.id)
+  await unitPage.navigateToUnit(testDaycare.id)
   groupsPage = await unitPage.openGroupsPage()
 })
 

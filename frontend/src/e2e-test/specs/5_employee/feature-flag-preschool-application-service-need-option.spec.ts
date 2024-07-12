@@ -4,15 +4,14 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
   testAdult,
-  testChild
+  testChild,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -25,14 +24,15 @@ import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
   await Fixture.serviceNeedOption()
@@ -75,7 +75,7 @@ describe('Employee - paper application', () => {
     )
     await applicationEditPage.selectPreschoolPlacementType('PRESCHOOL_DAYCARE')
     await applicationEditPage.selectPreschoolServiceNeedOption('vaka')
-    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'

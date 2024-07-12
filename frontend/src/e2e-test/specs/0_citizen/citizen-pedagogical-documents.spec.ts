@@ -6,15 +6,14 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
   testAdult,
+  testCareArea,
   testChild,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -27,7 +26,6 @@ import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagog
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let header: CitizenHeader
 let pedagogicalDocumentsPage: CitizenPedagogicalDocumentsPage
@@ -39,16 +37,14 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
     body: [
-      createDaycarePlacementFixture(
-        uuidv4(),
-        testChild.id,
-        fixtures.testDaycare.id
-      )
+      createDaycarePlacementFixture(uuidv4(), testChild.id, testDaycare.id)
     ]
   })
 

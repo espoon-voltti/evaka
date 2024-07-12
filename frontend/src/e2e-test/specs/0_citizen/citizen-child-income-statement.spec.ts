@@ -4,15 +4,14 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   Fixture,
   testAdult,
+  testCareArea,
   testChild,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -32,12 +31,13 @@ const testFileName1 = 'test_file.png'
 const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
 const testFileName2 = 'test_file.jpg'
 const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
-let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
@@ -45,14 +45,14 @@ beforeEach(async () => {
       createDaycarePlacementFixture(
         uuidv4(),
         testChild.id,
-        fixtures.testDaycare.id,
+        testDaycare.id,
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       createDaycarePlacementFixture(
         uuidv4(),
         testChild.id,
-        fixtures.testDaycare.id,
+        testDaycare.id,
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(1)
       )

@@ -17,7 +17,8 @@ import {
   testDaycare,
   Fixture,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -53,6 +54,8 @@ const insertTestDataAndLogin = async ({
   childShiftCare?: ShiftCareType
 } = {}) => {
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   const daycareBuilder = Fixture.daycare().with(testDaycare2).careArea(careArea)

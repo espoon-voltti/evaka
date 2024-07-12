@@ -4,7 +4,7 @@
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -25,8 +25,10 @@ describe('Employee - unit details', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    const fixtures = await initializeAreaAndPersonData()
-    daycare1 = fixtures.testDaycare
+    await initializeAreaAndPersonData()
+    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.daycare().with(testDaycare).save()
+    daycare1 = testDaycare
     const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
@@ -112,12 +114,14 @@ describe('Employee - unit editor validations and warnings', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    const fixtures = await initializeAreaAndPersonData()
+    await initializeAreaAndPersonData()
+    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.daycare().with(testDaycare).save()
     const admin = await Fixture.employeeAdmin().save()
 
     page = await Page.open()
     await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, fixtures.testDaycare.id)
+    const unitPage = await UnitPage.openUnit(page, testDaycare.id)
     unitInfoPage = await unitPage.openUnitInformation()
     unitDetailsPage = await unitInfoPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()

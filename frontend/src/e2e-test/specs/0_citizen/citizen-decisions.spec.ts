@@ -11,17 +11,16 @@ import {
   execSimpleApplicationActions,
   runPendingAsyncJobs
 } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   Fixture,
   testAdult,
+  testCareArea,
   testChild,
   testChild2,
-  testChildRestricted
+  testChildRestricted,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -37,13 +36,14 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
@@ -74,7 +74,7 @@ describe('Citizen application decisions', () => {
       undefined,
       'PRESCHOOL',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     const applicationId = application.id
@@ -133,7 +133,7 @@ describe('Citizen application decisions', () => {
     await responsePage.assertDecisionData(
       preschoolDecisionId,
       'Päätös esiopetuksesta',
-      fixtures.testDaycare.decisionCustomization.preschoolName,
+      testDaycare.decisionCustomization.preschoolName,
       'Vahvistettavana huoltajalla'
     )
 
@@ -144,7 +144,7 @@ describe('Citizen application decisions', () => {
     await responsePage.assertDecisionData(
       preschoolDaycareDecisionId,
       'Päätös liittyvästä varhaiskasvatuksesta',
-      fixtures.testDaycare.decisionCustomization.daycareName,
+      testDaycare.decisionCustomization.daycareName,
       'Vahvistettavana huoltajalla'
     )
 
@@ -163,7 +163,7 @@ describe('Citizen application decisions', () => {
       undefined,
       'PRESCHOOL',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     const applicationId = application.id
@@ -226,7 +226,7 @@ describe('Citizen application decisions', () => {
       otherGuardian,
       'PRESCHOOL',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -254,7 +254,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'ACCEPTED',
         assistanceLevels: [
           'ASSISTANCE_SERVICES_FOR_TIME',
@@ -275,7 +275,7 @@ describe('Citizen assistance decisions', () => {
       {
         assistanceLevel:
           'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: '05.02.2020 - 11.05.2021',
         decisionMade: '17.01.2020',
         status: 'Hyväksytty'
@@ -287,7 +287,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'REJECTED',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
@@ -301,7 +301,7 @@ describe('Citizen assistance decisions', () => {
       decision.id ?? '',
       {
         assistanceLevel: 'Tehostettu tuki',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: '10.02.2022 -',
         decisionMade: '17.01.2021',
         status: 'Hylätty'
@@ -313,7 +313,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'ANNULLED',
         annulmentReason: 'Well because',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
@@ -328,7 +328,7 @@ describe('Citizen assistance decisions', () => {
       decision.id ?? '',
       {
         assistanceLevel: 'Tehostettu tuki',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: '10.02.2022 -',
         decisionMade: '17.01.2021',
         status: 'Mitätöity'
@@ -340,7 +340,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'NEEDS_WORK',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         decisionMade: LocalDate.of(2021, 1, 17)
@@ -350,7 +350,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'DRAFT',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         decisionMade: LocalDate.of(2021, 1, 17)
@@ -365,7 +365,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'ACCEPTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2020, 1, 17),
@@ -376,7 +376,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'REJECTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2018, 1, 17),
@@ -387,7 +387,7 @@ describe('Citizen assistance decisions', () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChildRestricted.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'ACCEPTED',
         assistanceLevels: ['SPECIAL_ASSISTANCE'],
         decisionMade: LocalDate.of(2020, 1, 17),
@@ -411,7 +411,7 @@ describe('Citizen assistance decisions', () => {
     const decision = await Fixture.preFilledAssistanceNeedDecision()
       .withChild(testChild2.id)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         status: 'ACCEPTED',
         assistanceLevels: ['ENHANCED_ASSISTANCE'],
         validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
@@ -484,7 +484,7 @@ describe('Citizen assistance decisions', () => {
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.selectedUnit(),
-      `${fixtures.testDaycare.name}\n${fixtures.testDaycare.visitingAddress.streetAddress}\n${fixtures.testDaycare.visitingAddress.postalCode} ${fixtures.testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+      `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
     )
     await waitUntilEqual(
       () => assistanceNeedDecisionPage.motivationForDecision(),
@@ -507,7 +507,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -528,7 +528,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -549,7 +549,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -569,7 +569,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -589,7 +589,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -611,7 +611,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -630,7 +630,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -653,7 +653,7 @@ describe('Citizen assistance preschool decisions', () => {
       decision.id ?? '',
       {
         type: 'Erityinen tuki alkaa',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: `03.01.2020 - 02.02.2020`,
         decisionMade: '02.01.2020',
         status: 'Hyväksytty'
@@ -665,7 +665,7 @@ describe('Citizen assistance preschool decisions', () => {
       decision2.id ?? '',
       {
         type: 'Erityinen tuki jatkuu',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: `03.02.2020 - 02.04.2020`,
         decisionMade: '02.02.2020',
         status: 'Hyväksytty'
@@ -677,7 +677,7 @@ describe('Citizen assistance preschool decisions', () => {
       decision3.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: `03.03.2020 -`,
         decisionMade: '02.03.2020',
         status: 'Hylätty'
@@ -689,7 +689,7 @@ describe('Citizen assistance preschool decisions', () => {
       decision4.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: `03.04.2020 -`,
         decisionMade: '02.04.2020',
         status: 'Hyväksytty'
@@ -701,7 +701,7 @@ describe('Citizen assistance preschool decisions', () => {
       decision5.id ?? '',
       {
         type: 'Erityinen tuki päättyy',
-        selectedUnit: fixtures.testDaycare.name,
+        selectedUnit: testDaycare.name,
         validityPeriod: `03.05.2020 -`,
         decisionMade: '02.05.2020',
         status: 'Mitätöity',
@@ -715,7 +715,7 @@ describe('Citizen assistance preschool decisions', () => {
       .withChild(testChild2.id)
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
-        fixtures.testDaycare.id,
+        testDaycare.id,
         decisionMaker.id,
         decisionMaker.id
       )
@@ -759,7 +759,7 @@ describe('Citizen assistance preschool decisions', () => {
     await decisionPage.grantedServicesBasis.assertText(
       (s) => s.trim() === 'Tarvitsee avustajan'
     )
-    await decisionPage.selectedUnit.assertTextEquals(fixtures.testDaycare.name)
+    await decisionPage.selectedUnit.assertTextEquals(testDaycare.name)
     await decisionPage.primaryGroup.assertTextEquals('ryhmä')
     await decisionPage.decisionBasis.assertText(
       (s) => s.trim() === 'perustelut'

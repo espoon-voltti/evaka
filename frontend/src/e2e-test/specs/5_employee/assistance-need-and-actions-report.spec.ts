@@ -12,7 +12,9 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -34,12 +36,14 @@ const mockedTime = LocalDate.of(2024, 2, 19)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.testDaycare.id
+  unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
   const placementBuilder = await Fixture.placement()
     .with({

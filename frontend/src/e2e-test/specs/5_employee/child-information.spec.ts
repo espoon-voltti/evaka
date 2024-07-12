@@ -7,16 +7,15 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   testChildDeceased,
   testChildNoSsn,
   Fixture,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -38,7 +37,6 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let childInformationPage: ChildInformationPage
-let fixtures: AreaAndPersonFixtures
 let childId: UUID
 let admin: DevEmployee
 
@@ -47,14 +45,16 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.person().with(testChildDeceased).saveChild()
   await Fixture.person().with(testChildNoSsn).saveChild()
   await createDaycareGroups({ body: [testDaycareGroup] })
   admin = await Fixture.employeeAdmin().save()
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
   await Fixture.placement()
     .with({
@@ -382,7 +382,7 @@ describe('Child information - backup care', () => {
 
   test('backup care for a child can be added and removed', async () => {
     await section.createBackupCare(
-      fixtures.testDaycare.name,
+      testDaycare.name,
       LocalDate.of(2020, 2, 1),
       LocalDate.of(2020, 2, 3)
     )
@@ -390,7 +390,7 @@ describe('Child information - backup care', () => {
       () => section.getBackupCares(),
       [
         {
-          unit: fixtures.testDaycare.name,
+          unit: testDaycare.name,
           period: '01.02.2020 - 03.02.2020'
         }
       ]
@@ -401,7 +401,7 @@ describe('Child information - backup care', () => {
 
   test('error is shown if no placement is during the requested range', async () => {
     await section.fillNewBackupCareFields(
-      fixtures.testDaycare.name,
+      testDaycare.name,
       LocalDate.of(2020, 1, 5),
       LocalDate.of(2020, 9, 5)
     )
@@ -412,7 +412,7 @@ describe('Child information - backup care', () => {
 
   test('error is shown if no placement is during the modified range', async () => {
     await section.createBackupCare(
-      fixtures.testDaycare.name,
+      testDaycare.name,
       LocalDate.of(2020, 1, 2),
       LocalDate.of(2020, 2, 3)
     )
@@ -506,7 +506,7 @@ describe('Child information - guardian information', () => {
 
   test('guardian information is shown to unit supervisor', async () => {
     const unitSupervisor: DevEmployee = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
     page = await Page.open({
       mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))

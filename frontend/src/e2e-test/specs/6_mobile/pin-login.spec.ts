@@ -5,16 +5,15 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testChild,
   Fixture,
   uuidv4,
   testAdult2,
-  testAdult
+  testAdult,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createBackupPickup,
@@ -33,7 +32,6 @@ import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let pinLoginPage: PinLoginPage
@@ -50,10 +48,12 @@ const pin = '2580'
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   child = testChild
-  const unit = fixtures.testDaycare
+  const unit = testDaycare
 
   const employee = await Fixture.employee()
     .with({

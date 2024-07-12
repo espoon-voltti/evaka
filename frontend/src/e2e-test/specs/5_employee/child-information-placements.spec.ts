@@ -15,7 +15,9 @@ import {
   testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -63,12 +65,14 @@ describe('Child Information placement info', () => {
   let unitId: UUID
 
   beforeEach(async () => {
-    const fixtures = await initializeAreaAndPersonData()
+    await initializeAreaAndPersonData()
+    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.daycare().with(testDaycare).save()
     await Fixture.family(familyWithTwoGuardians).save()
     await createDefaultServiceNeedOptions()
     await createDaycareGroups({ body: [testDaycareGroup] })
 
-    unitId = fixtures.testDaycare.id
+    unitId = testDaycare.id
     childId = familyWithTwoGuardians.children[0].id
     const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
 

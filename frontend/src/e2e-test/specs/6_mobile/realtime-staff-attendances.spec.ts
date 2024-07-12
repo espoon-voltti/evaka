@@ -47,14 +47,15 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
+  const area = await Fixture.careArea().save()
   await Fixture.daycare()
     .with({
       ...testDaycare2,
-      areaId: fixtures.testCareArea.id,
+      areaId: area.id,
       enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
       operationTimes: [
         fullDayTimeRange,

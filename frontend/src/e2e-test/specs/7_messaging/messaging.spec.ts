@@ -10,10 +10,7 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycare2,
   testDaycareGroup,
@@ -22,7 +19,10 @@ import {
   uuidv4,
   testAdult2,
   testAdult,
-  testChild
+  testChild,
+  testDaycarePrivateVoucher,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createBackupCares,
@@ -50,7 +50,6 @@ let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
 let unitSupervisor: DevEmployee
-let fixtures: AreaAndPersonFixtures
 let account: CitizenWeakAccount
 let careArea: DevCareArea
 let backupDaycareId: UUID
@@ -72,7 +71,10 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -83,7 +85,7 @@ beforeEach(async () => {
       updateMockVtjWithDependants: [testChild]
     })
 
-  careArea = fixtures.testCareArea
+  careArea = testCareArea
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
@@ -91,11 +93,9 @@ beforeEach(async () => {
   account = citizenWeakAccount(testAdult)
   await keycloak.createUser({ ...account, enabled: true })
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.testDaycare.id
-  ).save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = testChild.id
 
   const daycarePlacementFixture = await Fixture.placement()
@@ -215,7 +215,7 @@ describe('Sending and receiving messages', () => {
         await Fixture.placement()
           .with({
             childId: testChild2.id,
-            unitId: fixtures.testDaycarePrivateVoucher.id,
+            unitId: testDaycarePrivateVoucher.id,
             startDate: mockedDate,
             endDate: mockedDate
           })
@@ -225,7 +225,7 @@ describe('Sending and receiving messages', () => {
             {
               id: uuidv4(),
               childId: testChild2.id,
-              unitId: fixtures.testDaycare.id,
+              unitId: testDaycare.id,
               groupId: testDaycareGroup.id,
               period: new FiniteDateRange(mockedDate, mockedDate)
             }
@@ -461,7 +461,7 @@ describe('Sending and receiving messages', () => {
         const daycarePlacementFixture = await Fixture.placement()
           .with({
             childId: testChild2.id,
-            unitId: fixtures.testDaycare.id,
+            unitId: testDaycare.id,
             startDate: mockedDate,
             endDate: mockedDate
           })
@@ -515,7 +515,7 @@ describe('Sending and receiving messages', () => {
         const daycarePlacementFixture = await Fixture.placement()
           .with({
             childId: testChild2.id,
-            unitId: fixtures.testDaycare.id,
+            unitId: testDaycare.id,
             startDate: mockedDate,
             endDate: placementEndDate
           })

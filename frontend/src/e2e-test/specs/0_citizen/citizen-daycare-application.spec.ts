@@ -5,10 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   testDaycare,
@@ -18,7 +15,8 @@ import {
   testAdult2,
   testChild,
   testChild2,
-  testChildRestricted
+  testChildRestricted,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -40,7 +38,6 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
-let fixtures: AreaAndPersonFixtures
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
@@ -49,7 +46,9 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
@@ -162,7 +161,7 @@ describe('Citizen daycare applications', () => {
       undefined,
       'DAYCARE',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -186,7 +185,7 @@ describe('Citizen daycare applications', () => {
           id: uuidv4(),
           type: 'DAYCARE',
           childId: testChild.id,
-          unitId: fixtures.testDaycare.id,
+          unitId: testDaycare.id,
           startDate: mockedDate.subYears(1),
           endDate: mockedDate.addYears(1),
           placeGuarantee: false,

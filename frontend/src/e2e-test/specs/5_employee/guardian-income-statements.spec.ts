@@ -13,7 +13,8 @@ import {
   testAdult,
   Fixture,
   uuidv4,
-  testChildRestricted
+  testChildRestricted,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -36,6 +37,8 @@ beforeEach(async () => {
   await resetServiceState()
 
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChildRestricted]

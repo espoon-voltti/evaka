@@ -19,7 +19,8 @@ import {
   testDaycareGroup,
   Fixture,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -55,11 +56,13 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   child = familyWithTwoGuardians.children[0]
   firstGuardian = familyWithTwoGuardians.guardian
   secondGuardian = familyWithTwoGuardians.otherGuardian

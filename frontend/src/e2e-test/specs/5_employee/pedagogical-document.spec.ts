@@ -12,7 +12,9 @@ import {
   testDaycareGroup,
   Fixture,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -39,11 +41,13 @@ const testfile2Path = `src/e2e-test/assets/${testfile2Name}`
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(

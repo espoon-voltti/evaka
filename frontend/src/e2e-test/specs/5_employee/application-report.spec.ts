@@ -5,33 +5,33 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let report: ApplicationsReport
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
 
-  const careArea = await Fixture.careArea().with({ name: 'Toinen alue' }).save()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
 
+  const careArea2 = await Fixture.careArea()
+    .with({ name: 'Toinen alue' })
+    .save()
   await Fixture.daycare()
     .with({
       name: 'Palvelusetelikoti',
       providerType: 'PRIVATE_SERVICE_VOUCHER'
     })
-    .careArea(careArea)
+    .careArea(careArea2)
     .save()
 
   const admin = await Fixture.employeeAdmin().save()
@@ -46,7 +46,7 @@ beforeEach(async () => {
 
 describe('Reporting - applications', () => {
   test('application report is generated correctly, respecting care area filter', async () => {
-    await report.assertContainsArea(fixtures.testCareArea.name)
+    await report.assertContainsArea(testCareArea.name)
     await report.assertContainsArea('Toinen alue')
     await report.assertContainsServiceProviders([
       'Kunnallinen',
@@ -59,6 +59,6 @@ describe('Reporting - applications', () => {
       LocalDate.todayInSystemTz()
     )
     await report.assertContainsArea('Toinen alue')
-    await report.assertDoesntContainArea(fixtures.testCareArea.name)
+    await report.assertDoesntContainArea(testCareArea.name)
   })
 })

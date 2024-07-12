@@ -16,7 +16,8 @@ import {
   voucherValueDecisionsFixture,
   testAdult,
   testChild,
-  testChild2
+  testChild2,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -43,7 +44,9 @@ let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
   await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
   await Fixture.family({
@@ -65,7 +68,7 @@ beforeEach(async () => {
         'e2d75fa4-7359-406b-81b8-1703785ca649',
         guardian.id,
         child.id,
-        fixtures.testDaycare.id,
+        testDaycare.id,
         null,
         'SENT',
         startDate,

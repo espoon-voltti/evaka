@@ -7,10 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   testDaycare,
@@ -18,7 +15,8 @@ import {
   testPreschool,
   familyWithTwoGuardians,
   testAdult,
-  testChild2
+  testChild2,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -37,13 +35,15 @@ const mockedTime = LocalDate.of(2021, 8, 16)
 let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
 
-let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testPreschool).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
@@ -93,7 +93,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
+    await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -155,7 +155,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
+    await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 

@@ -13,11 +13,14 @@ import {
   execSimpleApplicationActions,
   runPendingAsyncJobs
 } from '../../dev-api'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testAdult, uuidv4 } from '../../dev-api/fixtures'
+  Fixture,
+  testAdult,
+  testCareArea,
+  testDaycare,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createFosterParent,
   createMessageAccounts,
@@ -43,7 +46,6 @@ import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let activeRelationshipPage: Page
 let activeRelationshipHeader: CitizenHeader
-let fixtures: AreaAndPersonFixtures
 let fosterParent: DevPerson
 let fosterChild: DevPerson
 
@@ -52,7 +54,9 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
 
   fosterParent = await Fixture.person()
     .with(testAdult)
@@ -221,7 +225,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 })
 
 test('Foster parent can receive and reply to messages', async () => {
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   const group = await Fixture.daycareGroup().with({ daycareId: unitId }).save()
   const placementFixture = await Fixture.placement()
     .with({
@@ -284,7 +288,7 @@ test('Foster parent can read an accepted assistance decision', async () => {
   const decision = await Fixture.preFilledAssistanceNeedDecision()
     .withChild(fosterChild.id)
     .with({
-      selectedUnit: fixtures.testDaycare.id,
+      selectedUnit: testDaycare.id,
       status: 'ACCEPTED',
       assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
       validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
@@ -299,7 +303,7 @@ test('Foster parent can read an accepted assistance decision', async () => {
     {
       assistanceLevel:
         'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
-      selectedUnit: fixtures.testDaycare.name,
+      selectedUnit: testDaycare.name,
       validityPeriod: `${mockedDate.format()} - ${mockedDate
         .addYears(1)
         .format()}`,
@@ -321,7 +325,7 @@ test('Foster parent can read a pedagogical document', async () => {
   await Fixture.placement()
     .with({
       childId: fosterChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -354,7 +358,7 @@ test('Foster parent can read a daycare curriculum and give permission to share i
   await Fixture.placement()
     .with({
       childId: fosterChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -395,7 +399,7 @@ test('Foster parent can terminate a daycare placement', async () => {
   await Fixture.placement()
     .with({
       childId: fosterChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: endDate
     })
@@ -409,9 +413,7 @@ test('Foster parent can terminate a daycare placement', async () => {
   await childPage.assertTerminatedPlacementCount(0)
   await childPage.assertTerminatablePlacementCount(1)
   await childPage.togglePlacement(
-    `Varhaiskasvatus, ${
-      fixtures.testDaycare.name
-    }, voimassa ${endDate.format()}`
+    `Varhaiskasvatus, ${testDaycare.name}, voimassa ${endDate.format()}`
   )
   await childPage.fillTerminationDate(mockedDate)
   await childPage.submitTermination()
@@ -422,7 +424,7 @@ test('Foster parent can terminate a daycare placement', async () => {
     () => childPage.getTerminatedPlacements(),
     [
       `Varhaiskasvatus, ${
-        fixtures.testDaycare.name
+        testDaycare.name
       }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
     ]
   )
@@ -435,7 +437,7 @@ test('Foster parent can create a repeating reservation', async () => {
   await Fixture.placement()
     .with({
       childId: fosterChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
@@ -470,14 +472,14 @@ test('Foster parent can see calendar events for foster children', async () => {
   const placement = await Fixture.placement()
     .with({
       childId: fosterChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate.addYears(1)
     })
     .save()
   const daycareGroup = await Fixture.daycareGroup()
     .with({
-      daycareId: fixtures.testDaycare.id,
+      daycareId: testDaycare.id,
       name: 'Group 1'
     })
     .save()
@@ -502,7 +504,7 @@ test('Foster parent can see calendar events for foster children', async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: groupEventId,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       groupId: daycareGroup.id
     })
     .save()

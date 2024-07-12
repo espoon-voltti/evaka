@@ -8,10 +8,7 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testCareArea2,
   testDaycare2,
@@ -20,7 +17,9 @@ import {
   uuidv4,
   testAdult,
   testChild,
-  testChild2
+  testChild2,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
@@ -37,7 +36,6 @@ let messagingPage: Page
 let messenger: DevEmployee
 let staffPage: Page
 let staff: DevEmployee
-let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
 let childInAreaA: DevPerson
 let childInAreaB: DevPerson
@@ -54,7 +52,9 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -73,7 +73,7 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       childId: childInAreaA.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: mockedDate,
       endDate: mockedDate
     })
@@ -126,7 +126,7 @@ beforeEach(async () => {
   })
   await createMessageAccounts()
   messenger = await Fixture.employeeMessenger().save()
-  staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
+  staff = await Fixture.employeeStaff(testDaycare.id)
     .withGroupAcl(testDaycareGroup.id)
     .save()
 })
@@ -159,7 +159,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.testCareArea.id, testCareArea2.id],
+      receivers: [testCareArea.id, testCareArea2.id],
       confirmManyRecipients: true
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
@@ -177,17 +177,14 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.testCareArea.id]
+      receivers: [testCareArea.id]
     })
 
     const sentMessagesPage = await messagesPage.openSentMessages()
-    await sentMessagesPage.assertMessageParticipants(
-      0,
-      fixtures.testCareArea.name
-    )
+    await sentMessagesPage.assertMessageParticipants(0, testCareArea.name)
 
     const messagePage = await sentMessagesPage.openMessage(0)
-    await messagePage.assertMessageRecipients(fixtures.testCareArea.name)
+    await messagePage.assertMessageRecipients(testCareArea.name)
   })
 
   test('Messages sent by messaging role creates a copy for the staff', async () => {
@@ -197,7 +194,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.testCareArea.id]
+      receivers: [testCareArea.id]
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 

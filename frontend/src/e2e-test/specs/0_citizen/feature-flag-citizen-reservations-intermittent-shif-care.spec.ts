@@ -9,12 +9,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import {
-  testCareArea,
-  Fixture,
-  testChild,
-  testAdult
-} from '../../dev-api/fixtures'
+import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
@@ -221,14 +216,15 @@ async function openCalendarPage(
 }
 
 const addTestData = async (date: LocalDate) => {
-  const bulkFixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   const operationTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 
+  const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare()
     .with({
       name: '10h/5d',
-      areaId: bulkFixtures.testCareArea.id,
+      areaId: area.id,
       type: ['CENTRE'],
       providerType: 'MUNICIPAL',
       operationTimes: [
@@ -284,12 +280,7 @@ const addTestData = async (date: LocalDate) => {
     })
     .save()
 
-  return {
-    areaId: testCareArea.id,
-    parent,
-    unitId: unit.id,
-    child
-  }
+  return { parent, child }
 }
 
 const getFormatterReservationOutput = (res: FormatterReservation) =>

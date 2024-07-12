@@ -7,11 +7,14 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
@@ -24,14 +27,15 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let personId: UUID
 let incomesSection: IncomeSection
-let fixtures: AreaAndPersonFixtures
 let placementStart: LocalDate
 let placementEnd: LocalDate
 let financeAdminId: UUID
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   personId = testAdult.id
 
@@ -53,7 +57,7 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       childId: testChild.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: placementStart,
       endDate: placementEnd
     })

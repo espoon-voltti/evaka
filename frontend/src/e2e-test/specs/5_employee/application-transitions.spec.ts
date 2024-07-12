@@ -7,10 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   testDaycare,
@@ -24,7 +21,8 @@ import {
   testAdult,
   testChild,
   testChildRestricted,
-  testChild2
+  testChild2,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -49,14 +47,16 @@ let page: Page
 let applicationWorkbench: ApplicationWorkbenchPage
 let applicationReadView: ApplicationReadView
 
-let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 let applicationId: string
 
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testPreschool).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
@@ -190,7 +190,7 @@ describe('Application transitions', () => {
     const preferredStartDate = mockedTime
 
     const group = await Fixture.daycareGroup()
-      .with({ daycareId: fixtures.testDaycare.id })
+      .with({ daycareId: testDaycare.id })
       .save()
     await Fixture.daycareCaretakers()
       .with({
@@ -201,7 +201,7 @@ describe('Application transitions', () => {
       .save()
 
     const group2 = await Fixture.daycareGroup()
-      .with({ daycareId: fixtures.testPreschool.id })
+      .with({ daycareId: testPreschool.id })
       .save()
     await Fixture.daycareCaretakers()
       .with({
@@ -214,14 +214,14 @@ describe('Application transitions', () => {
     // Create existing placements to show meaningful occupancy values
     await Fixture.placement()
       .with({
-        unitId: fixtures.testDaycare.id,
+        unitId: testDaycare.id,
         childId: testChildRestricted.id,
         startDate: preferredStartDate
       })
       .save()
     await Fixture.placement()
       .with({
-        unitId: fixtures.testPreschool.id,
+        unitId: testPreschool.id,
         childId: testChild.id,
         startDate: preferredStartDate
       })
@@ -263,22 +263,22 @@ describe('Application transitions', () => {
     const planStartDate = preferredStartDate.addDays(1)
     await placementDraftPage.startDate.fill(planStartDate)
 
-    await placementDraftPage.assertOccupancies(fixtures.testDaycare.id, {
+    await placementDraftPage.assertOccupancies(testDaycare.id, {
       max3Months: '14,3 %',
       max6Months: '14,3 %',
       max3MonthsSpeculated: '28,6 %',
       max6MonthsSpeculated: '28,6 %'
     })
 
-    await placementDraftPage.addOtherUnit(fixtures.testPreschool.name)
-    await placementDraftPage.assertOccupancies(fixtures.testPreschool.id, {
+    await placementDraftPage.addOtherUnit(testPreschool.name)
+    await placementDraftPage.assertOccupancies(testPreschool.id, {
       max3Months: '7,1 %',
       max6Months: '7,1 %',
       max3MonthsSpeculated: '14,3 %',
       max6MonthsSpeculated: '14,3 %'
     })
 
-    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
+    await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
 
     await applicationWorkbench.waitUntilLoaded()
@@ -352,7 +352,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
+    await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -414,7 +414,7 @@ describe('Application transitions', () => {
       await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
     await placementDraftPage.waitUntilLoaded()
 
-    await placementDraftPage.placeToUnit(fixtures.testPreschool.id)
+    await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
     await applicationWorkbench.waitUntilLoaded()
 
@@ -482,12 +482,12 @@ describe('Application transitions', () => {
     const unitPage = new UnitPage(page2)
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
     await employeeLogin(page2, unitSupervisor)
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.testDaycare.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     let placementProposals = (await unitPage.openApplicationProcessTab())
       .placementProposals
 
@@ -510,7 +510,7 @@ describe('Application transitions', () => {
     await applicationWorkbench.assertWithdrawPlacementProposalsButtonDisabled()
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.testDaycare.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const applicationProcessPage = await unitPage.openApplicationProcessTab()
     placementProposals = applicationProcessPage.placementProposals
     await placementProposals.assertAcceptButtonEnabled()
@@ -524,7 +524,7 @@ describe('Application transitions', () => {
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    await unitPage.navigateToUnit(fixtures.testDaycare.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const waitingConfirmation = (await unitPage.openApplicationProcessTab())
       .waitingConfirmation
     await waitingConfirmation.assertRowCount(1)
@@ -555,11 +555,11 @@ describe('Application transitions', () => {
 
     await employeeLogin(
       page2,
-      await Fixture.employeeUnitSupervisor(fixtures.testDaycare.id).save()
+      await Fixture.employeeUnitSupervisor(testDaycare.id).save()
     )
 
     // unit supervisor
-    await unitPage.navigateToUnit(fixtures.testDaycare.id)
+    await unitPage.navigateToUnit(testDaycare.id)
     const placementProposals = (await unitPage.openApplicationProcessTab())
       .placementProposals
 
@@ -599,7 +599,7 @@ describe('Application transitions', () => {
     )
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(applicationId)
@@ -667,7 +667,7 @@ describe('Application transitions', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application1.id,
-        unitId: fixtures.testDaycare.id,
+        unitId: testDaycare.id,
         periodStart: placementStartDate,
         periodEnd: placementStartDate
       })
@@ -676,7 +676,7 @@ describe('Application transitions', () => {
     await Fixture.placementPlan()
       .with({
         applicationId: application2.id,
-        unitId: fixtures.testDaycare.id,
+        unitId: testDaycare.id,
         periodStart: placementStartDate,
         periodEnd: placementStartDate
       })
@@ -687,7 +687,7 @@ describe('Application transitions', () => {
         .with({
           applicationId: application2.id,
           employeeId: serviceWorker.id,
-          unitId: fixtures.testDaycare.id,
+          unitId: testDaycare.id,
           startDate: placementStartDate,
           endDate: placementStartDate
         })
@@ -697,7 +697,7 @@ describe('Application transitions', () => {
     await rejectDecisionByCitizen({ id: decisionId })
 
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
 
     async function assertApplicationRows(
@@ -715,7 +715,7 @@ describe('Application transitions', () => {
 
       await employeeLogin(page, unitSupervisor)
       const unitPage = new UnitPage(page)
-      await unitPage.navigateToUnit(fixtures.testDaycare.id)
+      await unitPage.navigateToUnit(testDaycare.id)
       const waitingConfirmation = (await unitPage.openApplicationProcessTab())
         .waitingConfirmation
 

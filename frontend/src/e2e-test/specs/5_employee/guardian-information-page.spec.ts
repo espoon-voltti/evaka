@@ -4,10 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -20,7 +17,8 @@ import {
   familyWithTwoGuardians,
   Fixture,
   invoiceFixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,12 +33,13 @@ import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -135,8 +134,8 @@ describe('Employee - Guardian Information', () => {
         invoiceFixture(
           testAdult.id,
           testChild.id,
-          fixtures.testCareArea.id,
-          fixtures.testDaycare.id,
+          testCareArea.id,
+          testDaycare.id,
           'DRAFT',
           LocalDate.of(2020, 1, 1),
           LocalDate.of(2020, 1, 31)

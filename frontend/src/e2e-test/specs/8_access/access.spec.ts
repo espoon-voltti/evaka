@@ -3,30 +3,35 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testChild } from '../../dev-api/fixtures'
+  Fixture,
+  testCareArea,
+  testChild,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
 beforeAll(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare()
+    .with({ ...testDaycare, areaId: testCareArea.id })
+    .save()
   await Fixture.person().with(testChild).saveChild()
   await Fixture.placement()
     .with({
       childId: testChild.id,
-      unitId: fixtures.testDaycare.id
+      unitId: testDaycare.id
     })
     .save()
 })
@@ -108,7 +113,7 @@ describe('Child information page', () => {
   })
 
   test('Staff sees only the units and messaging tabs', async () => {
-    const staff = await Fixture.employeeStaff(fixtures.testDaycare.id).save()
+    const staff = await Fixture.employeeStaff(testDaycare.id).save()
     await employeeLogin(page, staff)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
@@ -123,7 +128,7 @@ describe('Child information page', () => {
 
   test('Unit supervisor sees units, search, reports and messaging tabs', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await page.goto(config.employeeUrl)
@@ -200,7 +205,7 @@ describe('Child information page sections', () => {
   })
 
   test('Staff sees the correct sections', async () => {
-    const staff = await Fixture.employeeStaff(fixtures.testDaycare.id).save()
+    const staff = await Fixture.employeeStaff(testDaycare.id).save()
     await employeeLogin(page, staff)
     await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({
@@ -221,7 +226,7 @@ describe('Child information page sections', () => {
 
   test('Unit supervisor sees the correct sections', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testDaycare.id
+      testDaycare.id
     ).save()
     await employeeLogin(page, unitSupervisor)
     await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
@@ -243,9 +248,7 @@ describe('Child information page sections', () => {
 
   test('Special education teacher sees the correct sections', async () => {
     const specialEducationTeacher =
-      await Fixture.employeeSpecialEducationTeacher(
-        fixtures.testDaycare.id
-      ).save()
+      await Fixture.employeeSpecialEducationTeacher(testDaycare.id).save()
     await employeeLogin(page, specialEducationTeacher)
     await page.goto(`${config.employeeUrl}/child-information/${testChild.id}`)
     await childInfo.assertCollapsiblesVisible({

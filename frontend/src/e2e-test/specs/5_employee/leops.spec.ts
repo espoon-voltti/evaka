@@ -7,7 +7,13 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { familyWithTwoGuardians, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  testCareArea,
+  testPreschool,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   deleteVasuTemplates,
@@ -38,11 +44,13 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testPreschool).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.testPreschool.id
+  const unitId = testPreschool.id
   childId = familyWithTwoGuardians.children[0].id
 
   await Fixture.placement()

@@ -13,9 +13,11 @@ import {
   createDaycarePlacementFixture,
   Fixture,
   testAdult,
+  testCareArea,
   testChild,
   testChild2,
   testChildRestricted,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -44,7 +46,9 @@ let jariId: UUID
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   children = [testChild, testChild2, testChildRestricted]
   jariId = testChild.id
   await Fixture.family({ guardian: testAdult, children }).save()
@@ -54,7 +58,7 @@ beforeEach(async () => {
       createDaycarePlacementFixture(
         placementIds.get(child.id) ?? '',
         child.id,
-        fixtures.testDaycare.id,
+        testDaycare.id,
         today,
         today.addYears(1)
       )
@@ -63,7 +67,7 @@ beforeEach(async () => {
 
   const daycareGroup = await Fixture.daycareGroup()
     .with({
-      daycareId: fixtures.testDaycare.id,
+      daycareId: testDaycare.id,
       name: 'Group 1'
     })
     .save()
@@ -92,7 +96,7 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: groupEvent.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       groupId: daycareGroup.id
     })
     .save()
@@ -110,7 +114,7 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: individualEvent.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       groupId: daycareGroup.id,
       childId: testChild.id
     })
@@ -129,7 +133,7 @@ beforeEach(async () => {
   await Fixture.calendarEventAttendee()
     .with({
       calendarEventId: unitEvent.id,
-      unitId: fixtures.testDaycare.id
+      unitId: testDaycare.id
     })
     .save()
 })

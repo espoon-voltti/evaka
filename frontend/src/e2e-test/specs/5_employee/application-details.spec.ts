@@ -7,10 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { execSimpleApplicationAction, runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   familyWithRestrictedDetailsGuardian,
@@ -18,7 +15,10 @@ import {
   familyWithTwoGuardians,
   Fixture,
   testAdult,
-  testChild2
+  testCareArea,
+  testChild2,
+  testDaycare,
+  testPreschool
 } from '../../dev-api/fixtures'
 import {
   cleanUpMessages,
@@ -39,7 +39,6 @@ let applicationWorkbench: ApplicationWorkbenchPage
 let applicationDetailsPage: ApplicationDetailsPage
 let applicationReadView: ApplicationReadView
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 
 let singleParentApplication: DevApplicationWithForm
@@ -49,7 +48,10 @@ let restrictedDetailsGuardianApplication: DevApplicationWithForm
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testPreschool).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithSeparatedGuardians).save()
@@ -166,7 +168,7 @@ describe('Application details', () => {
     await createApplicationPlacementPlan({
       applicationId: restrictedDetailsGuardianApplication.id,
       body: {
-        unitId: fixtures.testPreschool.id,
+        unitId: testPreschool.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }
@@ -197,7 +199,7 @@ describe('Application details', () => {
 
   test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      fixtures.testPreschool.id
+      testPreschool.id
     ).save()
 
     await execSimpleApplicationAction(
@@ -211,7 +213,7 @@ describe('Application details', () => {
     await createApplicationPlacementPlan({
       applicationId: singleParentApplication.id,
       body: {
-        unitId: fixtures.testPreschool.id,
+        unitId: testPreschool.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }

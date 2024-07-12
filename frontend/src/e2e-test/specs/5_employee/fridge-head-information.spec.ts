@@ -8,15 +8,14 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import { runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   familyWithTwoGuardians,
   Fixture,
   testAdultRestricted,
+  testCareArea,
   testChildZeroYearOld,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -34,7 +33,6 @@ let page: Page
 let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
 let regularPerson: DevPerson
 let fridgePartner: DevPerson
 let child: DevPerson
@@ -49,7 +47,9 @@ const childZeroYo = Fixture.person().with({
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.person()
     .with(testAdultRestricted)
@@ -136,7 +136,7 @@ describe('Employee - Head of family details', () => {
     await childInformation.navigateToChild(child.id)
     const placements = await childInformation.openCollapsible('placements')
     await placements.createNewPlacement({
-      unitName: fixtures.testDaycare.name,
+      unitName: testDaycare.name,
       startDate: '01.01.2020',
       endDate: '31.07.2020'
     })

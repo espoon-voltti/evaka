@@ -12,7 +12,8 @@ import {
   testChild,
   testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -36,6 +37,8 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open({

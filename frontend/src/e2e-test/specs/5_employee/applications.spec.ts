@@ -10,7 +10,9 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   familyWithDeadGuardian,
-  Fixture
+  Fixture,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -27,6 +29,8 @@ let applicationsPage: ApplicationsPage
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithDeadGuardian).save()
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 

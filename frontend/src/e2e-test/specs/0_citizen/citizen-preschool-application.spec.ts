@@ -10,8 +10,10 @@ import {
   Fixture,
   testAdult,
   testAdult2,
+  testCareArea,
   testChild,
-  testChild2
+  testChild2,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   getApplication,
@@ -37,6 +39,8 @@ const mockedDate = LocalDate.of(2021, 1, 15)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

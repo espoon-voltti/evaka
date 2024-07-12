@@ -6,11 +6,13 @@ import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testChild } from '../../dev-api/fixtures'
+  Fixture,
+  testCareArea,
+  testChild,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
@@ -29,15 +31,16 @@ let childPage: MobileChildPage
 let notePage: MobileNotePage
 
 describe('Child and group notes', () => {
-  let fixtures: AreaAndPersonFixtures
   let child: DevPerson
 
   beforeEach(async () => {
     await resetServiceState()
-    fixtures = await initializeAreaAndPersonData()
+    await initializeAreaAndPersonData()
+    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.daycare().with(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()
     child = testChild
-    const unit = fixtures.testDaycare
+    const unit = testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()
       .with({ daycareId: unit.id })
@@ -121,17 +124,18 @@ describe('Child and group notes', () => {
 })
 
 describe('Child and group notes (backup care)', () => {
-  let fixtures: AreaAndPersonFixtures
   let child: DevPerson
   let backupCareDaycareGroup: DevDaycareGroup
   let backupCareDaycare: DevDaycare
 
   beforeEach(async () => {
     await resetServiceState()
-    fixtures = await initializeAreaAndPersonData()
+    await initializeAreaAndPersonData()
+    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.daycare().with(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()
     child = testChild
-    const unit = fixtures.testDaycare
+    const unit = testDaycare
 
     const daycareGroup = await Fixture.daycareGroup()
       .with({ daycareId: unit.id })

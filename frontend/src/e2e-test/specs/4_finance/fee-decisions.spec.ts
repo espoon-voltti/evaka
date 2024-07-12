@@ -19,7 +19,8 @@ import {
   testAdult,
   familyWithTwoGuardians,
   feeDecisionsFixture,
-  Fixture
+  Fixture,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
@@ -42,6 +43,8 @@ let feeDecisionsPage: FeeDecisionsPage
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()

@@ -11,7 +11,9 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -36,12 +38,14 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
   const placement = await Fixture.placement()

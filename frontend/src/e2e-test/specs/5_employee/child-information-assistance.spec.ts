@@ -15,7 +15,9 @@ import {
   testDaycare,
   testDaycareGroup,
   familyWithTwoGuardians,
-  Fixture
+  Fixture,
+  testCareArea,
+  testDaycarePrivateVoucher
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -41,13 +43,16 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.testDaycare.id
-  voucherUnitId = fixtures.testDaycarePrivateVoucher.id
+  unitId = testDaycare.id
+  voucherUnitId = testDaycarePrivateVoucher.id
   childId = familyWithTwoGuardians.children[0].id
   page = await Page.open()
   admin = await Fixture.employeeAdmin().save()

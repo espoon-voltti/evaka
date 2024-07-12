@@ -20,7 +20,8 @@ import {
   Fixture,
   testAdultRestricted,
   testAdult,
-  testChild
+  testChild,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
@@ -53,6 +54,8 @@ const voucherValueDecisionValidDuring = new DateRange(
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   headOfFamily = testAdult
   partner = await Fixture.person()

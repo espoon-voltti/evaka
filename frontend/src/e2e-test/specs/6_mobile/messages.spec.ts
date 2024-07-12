@@ -16,7 +16,8 @@ import {
   Fixture,
   uuidv4,
   testAdult2,
-  testAdult
+  testAdult,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
@@ -95,6 +96,8 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

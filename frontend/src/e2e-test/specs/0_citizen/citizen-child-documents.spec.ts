@@ -12,7 +12,9 @@ import {
   Fixture,
   uuidv4,
   testAdult,
-  testChild
+  testChild,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -39,11 +41,13 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   child = testChild
   await insertGuardians({
     body: [

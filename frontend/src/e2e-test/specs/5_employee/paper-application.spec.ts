@@ -4,16 +4,15 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
   testAdult2,
   testAdult,
-  testChild
+  testChild,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -26,14 +25,15 @@ import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     otherGuardian: testAdult2,
@@ -143,7 +143,7 @@ describe('Employee - paper application', () => {
 
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -157,7 +157,7 @@ describe('Employee - paper application', () => {
 
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -177,7 +177,7 @@ describe('Employee - paper application', () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -199,7 +199,7 @@ describe('Employee - paper application', () => {
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(
       now.toLocalDate().format()
     )
-    await applicationEditPage.pickUnit(fixtures.testDaycare.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'

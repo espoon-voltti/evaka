@@ -14,7 +14,8 @@ import {
   testAdult,
   Fixture,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -50,9 +51,11 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  daycare = fixtures.testDaycare
+  daycare = testDaycare
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 

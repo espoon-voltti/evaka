@@ -8,7 +8,9 @@ import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   Fixture,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -30,7 +32,9 @@ const today = now.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
@@ -38,7 +42,7 @@ beforeEach(async () => {
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId: familyWithTwoGuardians.children[0].id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: today,
       endDate: today.addYears(1)
     })
@@ -55,7 +59,7 @@ beforeEach(async () => {
   page = await Page.open({ mockedTime: now })
   nav = new MobileNav(page)
 
-  mobileSignupUrl = await pairMobileDevice(fixtures.testDaycare.id)
+  mobileSignupUrl = await pairMobileDevice(testDaycare.id)
   await page.goto(mobileSignupUrl)
   await nav.staff.click()
   staffPage = new StaffPage(page)

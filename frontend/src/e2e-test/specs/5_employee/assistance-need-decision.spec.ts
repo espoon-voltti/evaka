@@ -7,17 +7,15 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
   testDaycare,
   testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -35,7 +33,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 let staff: DevEmployee
 let assistanceNeedDecisionEditPage: AssistanceNeedDecisionEditPage
@@ -50,11 +47,13 @@ beforeEach(async () => {
 
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   staff = await Fixture.employeeStaff(unitId).save()
   childId = familyWithTwoGuardians.children[0].id
 
@@ -72,7 +71,7 @@ beforeEach(async () => {
     await Fixture.preFilledAssistanceNeedDecision()
       .withChild(childId)
       .with({
-        selectedUnit: fixtures.testDaycare.id,
+        selectedUnit: testDaycare.id,
         decisionMaker: {
           employeeId: serviceWorker.id,
           title: 'head teacher',
@@ -320,7 +319,7 @@ describe('Assistance Need Decisions - Preview page', () => {
           .withChild(childId)
           .with({
             status: 'ACCEPTED',
-            selectedUnit: fixtures.testDaycare.id,
+            selectedUnit: testDaycare.id,
             decisionMaker: {
               employeeId: serviceWorker.id,
               title: 'head teacher',

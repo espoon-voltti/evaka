@@ -18,7 +18,8 @@ import {
   testAdult,
   familyWithTwoGuardians,
   Fixture,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createVoucherValueDecisions,
@@ -46,6 +47,8 @@ const decision2DateTo = now.toLocalDate().addWeeks(5)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

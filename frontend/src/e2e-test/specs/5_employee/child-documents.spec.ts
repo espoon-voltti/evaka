@@ -5,11 +5,13 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture, testChild2 } from '../../dev-api/fixtures'
+  Fixture,
+  testCareArea,
+  testChild2,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -23,7 +25,6 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let page: Page
@@ -33,17 +34,17 @@ const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.person().with(testChild2).saveChild()
   admin = await Fixture.employeeAdmin().save()
-  unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.testDaycare.id
-  ).save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
   await Fixture.placement()
     .with({
       childId: testChild2.id,
-      unitId: fixtures.testDaycare.id,
+      unitId: testDaycare.id,
       startDate: now.toLocalDate().subYears(1),
       endDate: now.toLocalDate().addYears(1)
     })

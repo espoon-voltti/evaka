@@ -49,11 +49,13 @@ beforeEach(async () => {
   decisionMaker = await Fixture.employeeAdmin().save()
   director = await Fixture.employeeDirector().save()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.testDaycare.id
+  unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(

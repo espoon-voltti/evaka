@@ -5,15 +5,14 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   Fixture,
   testAdult,
-  testChild
+  testCareArea,
+  testChild,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -25,13 +24,13 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
-
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 })
 
@@ -58,7 +57,7 @@ describe('Citizen applications list', () => {
       undefined,
       'PRESCHOOL',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -94,7 +93,7 @@ describe('Citizen applications list', () => {
       otherGuardian,
       'PRESCHOOL',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -119,7 +118,7 @@ describe('Citizen applications list', () => {
       undefined,
       'DAYCARE',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -150,7 +149,7 @@ describe('Citizen applications list', () => {
       undefined,
       'DAYCARE',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true,
       'CREATED'
     )
@@ -168,7 +167,7 @@ describe('Citizen applications list', () => {
       undefined,
       'DAYCARE',
       null,
-      [fixtures.testDaycare.id],
+      [testDaycare.id],
       true,
       'SENT'
     )

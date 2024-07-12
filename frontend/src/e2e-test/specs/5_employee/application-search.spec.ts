@@ -11,8 +11,10 @@ import {
   applicationFixtureId,
   Fixture,
   testAdult,
+  testCareArea,
   testChild,
   testChild2,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -29,6 +31,8 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

@@ -16,7 +16,8 @@ import {
   testAdult,
   testChild,
   testChild2,
-  testChildRestricted
+  testChildRestricted,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,6 +36,8 @@ const mockToday = LocalDate.of(2021, 2, 1)
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]

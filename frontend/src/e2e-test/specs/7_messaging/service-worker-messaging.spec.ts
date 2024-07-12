@@ -14,7 +14,9 @@ import {
   applicationFixtureId,
   Fixture,
   testAdult,
-  testChild
+  testCareArea,
+  testChild,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -44,6 +46,8 @@ const mockedTime = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
   messagingAndServiceWorker = await Fixture.employeeServiceWorker()

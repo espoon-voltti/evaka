@@ -15,7 +15,8 @@ import {
   testAdult,
   Fixture,
   uuidv4,
-  testChild
+  testChild,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -37,6 +38,8 @@ const testFilePath = `src/e2e-test/assets/${testFileName}`
 beforeEach(async () => {
   await resetServiceState()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

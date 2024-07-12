@@ -9,17 +9,16 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   testDaycareGroup,
   testChild2,
   testAdult,
   Fixture,
   testAdult2,
-  testChild
+  testChild,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -47,7 +46,6 @@ let citizenPage: Page
 let childId: UUID
 let staff: DevEmployee
 let unitSupervisor: DevEmployee
-let fixtures: AreaAndPersonFixtures
 let account: CitizenWeakAccount
 
 const mockedDate = LocalDate.of(2020, 5, 21)
@@ -65,7 +63,9 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 )
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -77,15 +77,13 @@ beforeEach(async () => {
   account = citizenWeakAccount(testAdult)
   await keycloak.createUser({ ...account, enabled: true })
 
-  staff = await Fixture.employeeStaff(fixtures.testDaycare.id)
+  staff = await Fixture.employeeStaff(testDaycare.id)
     .withGroupAcl(testDaycareGroup.id)
     .save()
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(
-    fixtures.testDaycare.id
-  ).save()
+  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = testChild.id // born 7.7.2014
 
   const daycarePlacementFixture1 = await Fixture.placement()
@@ -243,9 +241,7 @@ describe('Sending and receiving messages', () => {
 
 describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
-    staff = await Fixture.employeeSpecialEducationTeacher(
-      fixtures.testDaycare.id
-    )
+    staff = await Fixture.employeeSpecialEducationTeacher(testDaycare.id)
       .withGroupAcl(testDaycareGroup.id)
       .save()
     // create messaging account for newly created VEO account
@@ -284,7 +280,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receivers: [fixtures.testDaycare.id]
+      receivers: [testDaycare.id]
     }
     const messageEditor = await new MessagesPage(
       unitSupervisorPage
@@ -325,7 +321,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      sender: `${fixtures.testDaycare.name} - ${testDaycareGroup.name}`,
+      sender: `${testDaycare.name} - ${testDaycareGroup.name}`,
       receivers: [testDaycareGroup.id]
     }
     const messageEditor = await new MessagesPage(
@@ -380,7 +376,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [fixtures.testDaycare.id],
+      receivers: [testDaycare.id],
       yearsOfBirth: [2014]
     }
     const messageEditor = await new MessagesPage(
@@ -415,7 +411,7 @@ describe('Additional filters', () => {
     const message = {
       title: 'Ilmoitus rajatulle joukolle',
       content: 'Ilmoituksen sisältö rajatulle joukolle',
-      receivers: [fixtures.testDaycare.id]
+      receivers: [testDaycare.id]
     }
     let messageEditor = await new MessagesPage(
       unitSupervisorPage

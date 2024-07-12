@@ -12,7 +12,8 @@ import {
   testDaycare,
   testChild,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -30,6 +31,8 @@ beforeEach(async () => {
   await resetServiceState()
 
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.person().with(testChild).saveChild()
   personId = testChild.id
 

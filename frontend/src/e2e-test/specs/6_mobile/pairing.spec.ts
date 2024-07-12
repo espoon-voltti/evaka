@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
+import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import {
   postPairing,
   postPairingResponse,
@@ -18,11 +16,12 @@ import { Page } from '../../utils/page'
 
 let page: Page
 let pairingFlow: PairingFlow
-let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
 
   page = await Page.open({ acceptDownloads: true })
   pairingFlow = new PairingFlow(page)
@@ -34,7 +33,7 @@ describe('Mobile pairing', () => {
 
     await pairingFlow.startPairing()
     const res = await postPairing({
-      body: { unitId: fixtures.testDaycare.id }
+      body: { unitId: testDaycare.id }
     })
 
     await pairingFlow.submitChallengeKey(res.challengeKey)

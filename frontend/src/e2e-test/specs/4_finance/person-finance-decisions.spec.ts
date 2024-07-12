@@ -17,7 +17,8 @@ import {
   feeDecisionsFixture,
   Fixture,
   uuidv4,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -38,6 +39,9 @@ beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
   await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })

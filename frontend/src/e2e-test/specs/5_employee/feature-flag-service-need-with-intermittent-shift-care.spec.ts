@@ -7,7 +7,12 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { familyWithTwoGuardians, Fixture } from '../../dev-api/fixtures'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  testCareArea,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -22,9 +27,11 @@ let activeServiceNeedOption: ServiceNeedOption
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  const unitId = fixtures.testDaycare.id
+  const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
   await Fixture.employee()
     .with({ roles: ['ADMIN'] })

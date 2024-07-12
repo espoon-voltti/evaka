@@ -11,8 +11,11 @@ import {
   familyWithTwoGuardians,
   Fixture,
   systemInternalUser,
+  testCareArea,
   testChild2,
   testChildZeroYearOld,
+  testDaycare,
+  testDaycarePrivateVoucher,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -44,9 +47,12 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await initializeAreaAndPersonData()
+  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  daycare = fixtures.testDaycare
+  daycare = testDaycare
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
@@ -85,7 +91,7 @@ beforeEach(async () => {
     .save()
 
   child3Fixture = await Fixture.person().with(testChild2).saveChild()
-  daycare2 = fixtures.testDaycarePrivateVoucher
+  daycare2 = testDaycarePrivateVoucher
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
