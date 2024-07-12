@@ -458,7 +458,7 @@ const DayModal = React.memo(function DayModal({
                                     key={event.id}
                                     data-qa={`event-${event.id}`}
                                   >
-                                    <LabelLike data-qa="event-title">
+                                    <LabelLike>
                                       <WordBreakContainer>
                                         <P noMargin data-qa="title-text">
                                           {event.title}
@@ -471,7 +471,7 @@ const DayModal = React.memo(function DayModal({
                                           <div>
                                             <P
                                               noMargin
-                                              data-qa={`reservation-times-${i}`}
+                                              data-qa={`reservation-time-${rt.id}`}
                                             >{`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}</P>
                                           </div>
                                           {rt.date.isEqualOrAfter(
@@ -479,6 +479,7 @@ const DayModal = React.memo(function DayModal({
                                           ) && (
                                             <MutateButton
                                               appearance="inline"
+                                              data-qa={`reservation-cancel-button-${rt.id}`}
                                               icon={faTimes}
                                               text={
                                                 i18n.calendar

@@ -19,6 +19,11 @@ import {
   DatePicker
 } from '../../utils/page'
 
+import {
+  DiscussionReservationModal,
+  DiscussionSurveyModal
+} from './citizen-discussion-surveys'
+
 export type FormatterReservation = {
   startTime: string
   endTime: string
@@ -33,6 +38,9 @@ export default class CitizenCalendarPage {
   #expiringIncomeCta: Element
   #dailyServiceTimeNotifications: ElementCollection
   #dailyServiceTimeNotificationModal: Element
+  #discussionSurveyModal: Element
+  #discussionReservationModal: Element
+  #discussionsCta: Element
 
   constructor(
     private readonly page: Page,
@@ -50,6 +58,11 @@ export default class CitizenCalendarPage {
     this.#dailyServiceTimeNotificationModal = page.findByDataQa(
       'daily-service-time-notification-modal'
     )
+    this.#discussionSurveyModal = page.findByDataQa('discussion-survey-modal')
+    this.#discussionReservationModal = page.findByDataQa(
+      'discussion-reservation-modal'
+    )
+    this.#discussionsCta = page.findByDataQa('active-discussions-cta')
   }
 
   dayCell = (date: LocalDate) =>
@@ -104,6 +117,36 @@ export default class CitizenCalendarPage {
     return new HolidayModal(
       this.page.findByDataQa('fixed-period-selection-modal')
     )
+  }
+
+  async openDiscussionSurveyModal() {
+    if (this.type === 'mobile') {
+      await this.#openCalendarActionsModal.click()
+      await this.page.findByDataQa('calendar-action-discussions').click()
+    } else {
+      await this.page.findByDataQa('open-discussions-modal').click()
+    }
+    return new DiscussionSurveyModal(
+      this.page.findByDataQa('discussions-modal')
+    )
+  }
+
+  async openDiscussionReservationModal(surveyId: string, childId: string) {
+    const childElement = this.#discussionSurveyModal.findByDataQa(
+      `child-element-${childId}`
+    )
+    await childElement.waitUntilVisible()
+
+    const surveyElement = childElement.findByDataQa(
+      `survey-element-${surveyId}`
+    )
+    await surveyElement.waitUntilVisible()
+
+    const surveyReservationButton =
+      surveyElement.findByDataQa(`reservation-button`)
+    await surveyReservationButton.click()
+
+    return new DiscussionReservationModal(this.#discussionReservationModal)
   }
 
   async assertHolidayModalVisible(): Promise<void> {
@@ -236,6 +279,14 @@ export default class CitizenCalendarPage {
       .assertTextEquals(formatter(twoPartReservation))
   }
 
+  async closeToasts(): Promise<void> {
+    const toastCloseButtons = this.page.findAllByDataQa('toast-close-button')
+    const count = await toastCloseButtons.count()
+    for (let i = 0; i < count; i++) {
+      await toastCloseButtons.nth(i).click()
+    }
+  }
+
   async assertHolidayCtaContent(content: string): Promise<void> {
     await this.#holidayCtas.nth(0).assertTextEquals(content)
   }
@@ -250,6 +301,14 @@ export default class CitizenCalendarPage {
 
   async clickExpiringIncomeCta(): Promise<void> {
     return await this.#expiringIncomeCta.click()
+  }
+
+  async getActiveDiscussionsCtaContent(): Promise<string> {
+    return this.#discussionsCta.text
+  }
+
+  async clickActiveDiscussionsCta(): Promise<void> {
+    return await this.#discussionsCta.click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
@@ -682,8 +741,32 @@ class DayView extends Element {
     { title, description }: { title: string; description: string }
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    await event.waitUntilVisible()
     await event.findByDataQa('event-title').assertTextEquals(title)
     await event.findByDataQa('event-description').assertTextEquals(description)
+  }
+
+  async assertDiscussionReservation(
+    childId: UUID,
+    eventId: UUID,
+    eventTimeId: UUID,
+    cancellable: boolean,
+    {
+      title,
+      description,
+      reservationText
+    }: { title: string; description: string; reservationText: string }
+  ) {
+    const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    await event.findByDataQa('title-text').assertTextEquals(title)
+    await event.findByDataQa('event-description').assertTextEquals(description)
+    await event
+      .findByDataQa(`reservation-time-${eventTimeId}`)
+      .assertTextEquals(reservationText)
+    const cancelButton = new TextInput(
+      event.findByDataQa(`reservation-cancel-button-${eventTimeId}`)
+    )
+    await cancelButton.assertDisabled(!cancellable)
   }
 }
 
