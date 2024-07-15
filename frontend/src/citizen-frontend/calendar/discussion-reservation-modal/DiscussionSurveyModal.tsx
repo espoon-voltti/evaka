@@ -108,7 +108,7 @@ export default React.memo(function DiscussionSurveyModal({
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto">
+      <PlainModal mobileFullScreen margin="auto" data-qa="discussions-modal">
         <CalendarModalBackground>
           <div>
             <DiscussionHeader>
@@ -135,7 +135,6 @@ export default React.memo(function DiscussionSurveyModal({
                     childWithSurveys={cs}
                     openDiscussionReservations={openDiscussionReservations}
                     key={`child-${cs.childId}`}
-                    data-qa={`discussion-child-${cs.childId}`}
                   />
                 ))}
               </FixedSpaceColumn>
@@ -190,7 +189,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 }: DiscussionChildElementProps) {
   const today = LocalDate.todayInHelsinkiTz()
   return (
-    <div>
+    <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
       <StaticChip color={colors.main.m1}>
         {formatFirstName(childWithSurveys)}
       </StaticChip>
@@ -209,6 +208,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
           <ChildSurveyElement
             survey={s}
             reservations={sortedReservations}
+            childId={childWithSurveys.childId}
             openDiscussionReservations={() =>
               openDiscussionReservations(childWithSurveys.childId, s.id)
             }
@@ -223,21 +223,23 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 interface ChildSurveyElementProps {
   survey: CitizenCalendarEvent
   reservations: CalendarEventTime[]
+  childId: UUID
   openDiscussionReservations: () => void
 }
 const ChildSurveyElement = React.memo(function ChildSurveyElement({
   survey,
   reservations,
+  childId,
   openDiscussionReservations
 }: ChildSurveyElementProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
   return (
-    <SurveyElementContainer>
+    <SurveyElementContainer data-qa={`child-survey-${childId}-${survey.id}`}>
       {reservations.length > 0 ? (
         <>
-          <P>
+          <P data-qa={`survey-title-${survey.id}`}>
             <Strong>{survey.title}</Strong>
           </P>
           <SurveyReservationElement spacing="s">
@@ -246,7 +248,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
             </span>
             {reservations.map((r) => (
               <FixedSpaceColumn key={r.id} alignItems="flex-start">
-                <div>
+                <div data-qa={`reservation-${r.id}`}>
                   <Bold>
                     {`${r.date.format('EEEEEE d.M.', lang)} 
                     ${i18n.calendar.discussionTimeReservation.timePreDescriptor} 
@@ -271,6 +273,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                       return cancelMutation
                     }
                   }}
+                  data-qa="reservation-cancel-button"
                 />
               </FixedSpaceColumn>
             ))}
@@ -279,7 +282,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
       ) : (
         <FixedSpaceRow alignItems="baseline" justifyContent="space-between">
           <SurveyTitleLabel>
-            <p>
+            <p data-qa={`survey-title-${survey.id}`}>
               <Strong>{survey.title}</Strong>
             </p>
           </SurveyTitleLabel>
@@ -291,7 +294,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                 i18n.calendar.discussionTimeReservation
                   .reservationModalButtonText
               }
-              data-qa="open-discussion-reservations-modal"
+              data-qa="open-survey-reservations-button"
             />
           </ReservationButtonContainer>
         </FixedSpaceRow>

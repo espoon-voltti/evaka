@@ -26,6 +26,7 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
+import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -43,6 +44,10 @@ const groupEventId = uuidv4()
 const unitEventId = uuidv4()
 const individualEventId = uuidv4()
 const reservationId = uuidv4()
+const groupReservationId = uuidv4()
+const restrictedEventId = uuidv4()
+const restrictedEventTimeId = uuidv4()
+const noncancellableEventTimeId = uuidv4()
 
 export const enduserGuardianFixture: PersonDetail = {
   id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
@@ -250,7 +255,7 @@ beforeEach(async () => {
       id: groupEventId,
       title: 'Group-wide survey',
       description: 'Whole group',
-      period: new FiniteDateRange(today.addDays(3), today.addDays(3)),
+      period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
       modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
       eventType: 'DISCUSSION_SURVEY'
     })
@@ -273,8 +278,20 @@ beforeEach(async () => {
       childId: null
     })
     .save()
+
   await Fixture.calendarEventTime()
     .with({
+      id: restrictedEventTimeId,
+      calendarEventId: groupEvent.id,
+      date: today.addDays(1),
+      start: LocalTime.of(9, 0),
+      end: LocalTime.of(9, 30),
+      childId: null
+    })
+    .save()
+  await Fixture.calendarEventTime()
+    .with({
+      id: groupReservationId,
       calendarEventId: groupEvent.id,
       date: today.addDays(3),
       start: LocalTime.of(9, 0),
@@ -332,6 +349,45 @@ beforeEach(async () => {
       unitId: daycareFixture.id
     })
     .save()
+
+  const { data: restrictedEvent } = await Fixture.calendarEvent()
+    .with({
+      id: restrictedEventId,
+      title: 'Restricted survey',
+      description: 'Too late',
+      period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
+      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+      eventType: 'DISCUSSION_SURVEY'
+    })
+    .save()
+
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: restrictedEvent.id,
+      unitId: daycareFixture.id,
+      groupId: daycareGroup.data.id
+    })
+    .save()
+
+  await Fixture.calendarEventTime()
+    .with({
+      calendarEventId: restrictedEvent.id,
+      date: today.addDays(3),
+      start: LocalTime.of(8, 0),
+      end: LocalTime.of(8, 30),
+      childId: null
+    })
+    .save()
+  await Fixture.calendarEventTime()
+    .with({
+      id: noncancellableEventTimeId,
+      calendarEventId: restrictedEvent.id,
+      date: today.addDays(1),
+      start: LocalTime.of(10, 0),
+      end: LocalTime.of(10, 30),
+      childId: enduserChildFixtureJari.id
+    })
+    .save()
 })
 
 describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
@@ -354,6 +410,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
 
   test('Citizen sees correct amount of event counts', async () => {
     await calendarPage.assertEventCount(today, 1) // unit event (1 attendee)
+    await calendarPage.assertEventCount(today.addDays(1), 2) // unit event + restricted event
     await calendarPage.assertEventCount(today.addDays(3), 2) // unit event + reservation for individual survey
     await calendarPage.assertEventCount(today.addDays(4), 1) // unit event
   })
@@ -366,20 +423,34 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   })
 
   test('Day modals have correct events', async () => {
-    await calendarPage.closeToasts()
     let dayView = await calendarPage.openDayView(today)
 
-    for (const child of children) {
-      await dayView.assertEvent(child.id, unitEventId, {
-        title: 'Unit event / Alkuräjähdyksen päiväkoti',
-        description: 'For everyone in the unit'
-      })
-    }
+    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+      title: 'Unit event / Alkuräjähdyksen päiväkoti',
+      description: 'For everyone in the unit'
+    })
+    await calendarPage.closeToasts()
+    await dayView.close()
 
+    dayView = await calendarPage.openDayView(today.addDays(1))
+    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+      title: 'Unit event / Alkuräjähdyksen päiväkoti',
+      description: 'For everyone in the unit'
+    })
+    await dayView.assertDiscussionReservation(
+      enduserChildFixtureJari.id,
+      restrictedEventId,
+      noncancellableEventTimeId,
+      false,
+      {
+        title: 'Restricted survey',
+        description: 'Too late',
+        reservationText: `klo 10:00 - 10:30`
+      }
+    )
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(3))
-
     await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
@@ -395,18 +466,122 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
         reservationText: `klo ${reservationData.start.format()} - ${reservationData.end.format()}`
       }
     )
-
+    await dayView.assertEventNotShown(
+      enduserChildFixtureJari.id,
+      restrictedEventId
+    )
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(4))
+    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+      title: 'Unit event / Alkuräjähdyksen päiväkoti',
+      description: 'For everyone in the unit'
+    })
+  })
 
-    for (const child of children) {
-      await dayView.assertEvent(child.id, unitEventId, {
-        title: 'Unit event / Alkuräjähdyksen päiväkoti',
-        description: 'For everyone in the unit'
-      })
+  test('Citizen can see open discussion survey details', async () => {
+    const surveyModal = await calendarPage.openDiscussionSurveyModal()
+    await calendarPage.closeToasts()
+    await surveyModal.assertChildSurvey(
+      groupEventId,
+      enduserChildFixtureJari.id,
+      'Group-wide survey'
+    )
+
+    await surveyModal.assertChildReservation(
+      individualEventId,
+      enduserChildFixtureJari.id,
+      'Individual survey',
+      reservationId,
+      `to 6.1. klo 12:00 - 12:30`,
+      true
+    )
+
+    await surveyModal.assertChildReservation(
+      restrictedEventId,
+      enduserChildFixtureJari.id,
+      'Restricted survey',
+      noncancellableEventTimeId,
+      `ti 4.1. klo 10:00 - 10:30`,
+      false
+    )
+  })
+
+  test('Citizen can reserve a discussion time', async () => {
+    const reservationModal = await calendarPage.openDiscussionReservationModal(
+      groupEventId,
+      enduserChildFixtureJari.id
+    )
+    await reservationModal.reserveEventTime(groupReservationId)
+
+    const surveyModal = new DiscussionSurveyModal(
+      calendarPage.discussionSurveyModal
+    )
+    await surveyModal.assertChildReservation(
+      groupEventId,
+      enduserChildFixtureJari.id,
+      'Group-wide survey',
+      groupReservationId,
+      `to 6.1. klo 09:00 - 09:30`,
+      true
+    )
+  })
+
+  test('Citizen can cancel reservation from day view', async () => {
+    const dayView = await calendarPage.openDayView(today.addDays(3))
+    const assertionStrings = {
+      title: 'Individual survey',
+      description: 'Just Jari',
+      reservationText: `klo ${reservationData.start.format()} - ${reservationData.end.format()}`
     }
 
-    await dayView.close()
+    await dayView.assertDiscussionReservation(
+      enduserChildFixtureJari.id,
+      individualEventId,
+      reservationId,
+      true,
+      assertionStrings
+    )
+
+    await dayView.cancelDiscussionReservation(
+      enduserChildFixtureJari.id,
+      individualEventId,
+      reservationId
+    )
+    await dayView.assertEventNotShown(
+      enduserChildFixtureJari.id,
+      individualEventId
+    )
+  })
+
+  test('Citizen can cancel a discussion time from survey modal', async () => {
+    const surveyModal = await calendarPage.openDiscussionSurveyModal()
+    await surveyModal.assertChildReservation(
+      individualEventId,
+      enduserChildFixtureJari.id,
+      'Individual survey',
+      reservationId,
+      `to 6.1. klo 12:00 - 12:30`,
+      true
+    )
+
+    await surveyModal.cancelReservation(
+      individualEventId,
+      enduserChildFixtureJari.id
+    )
+
+    await surveyModal.assertChildSurvey(
+      individualEventId,
+      enduserChildFixtureJari.id,
+      'Individual survey'
+    )
+  })
+
+  test('Citizen is not offered times for the next day', async () => {
+    const reservationModal = await calendarPage.openDiscussionReservationModal(
+      groupEventId,
+      enduserChildFixtureJari.id
+    )
+    await reservationModal.assertEventTimeNotShown(restrictedEventTimeId)
   })
 })

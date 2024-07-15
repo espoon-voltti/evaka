@@ -68,7 +68,7 @@ export default React.memo(function ActionPickerModal({
           )}
           <Action
             onClick={onOpenDiscussionReservation}
-            data-qa="calendar-action-discussion"
+            data-qa="calendar-action-discussions"
           >
             {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
             <IconBackground>

@@ -137,7 +137,11 @@ export default React.memo(function DiscussionReservationModal({
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto">
+      <PlainModal
+        mobileFullScreen
+        margin="auto"
+        data-qa="discussion-reservations-modal"
+      >
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
@@ -280,6 +284,7 @@ export const ReservationGridItem = React.memo(function ReservationGridItem({
         onChange={() => bind.set(itemData.id)}
         label=""
         ariaLabel={durationString}
+        data-qa={`radio-${itemData.id}`}
       />
     </>
   )
