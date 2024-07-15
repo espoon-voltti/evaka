@@ -20,7 +20,7 @@ let holidayAndTermPeriodsPage: HolidayAndTermPeriodsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
   page = await Page.open({
     mockedTime: LocalDate.of(2021, 11, 1).toHelsinkiDateTime(
       LocalTime.of(12, 0)

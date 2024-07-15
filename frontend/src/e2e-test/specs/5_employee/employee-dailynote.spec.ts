@@ -31,7 +31,7 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   await createDefaultServiceNeedOptions()
 

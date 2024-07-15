@@ -23,7 +23,7 @@ beforeEach(async () => {
   await Fixture.person(testChild).saveChild()
   personId = testChild.id
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open()
   await employeeLogin(page, financeAdmin)

@@ -20,7 +20,7 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
   page = await Page.open()
   await employeeLogin(page, admin)
   await page.goto(config.employeeUrl)

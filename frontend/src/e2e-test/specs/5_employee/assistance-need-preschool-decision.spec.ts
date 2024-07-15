@@ -49,7 +49,7 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeEach(async () => {
   await resetServiceState()
 
-  serviceWorker = await Fixture.employeeServiceWorker().save()
+  serviceWorker = await Fixture.employee().serviceWorker().save()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
@@ -59,7 +59,7 @@ beforeEach(async () => {
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
-  staff = await Fixture.employeeStaff(unitId).save()
+  staff = await Fixture.employee().staff(unitId).save()
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     childId,

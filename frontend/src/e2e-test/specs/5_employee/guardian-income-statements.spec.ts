@@ -44,7 +44,7 @@ beforeEach(async () => {
   personId = testAdult.id
   child = testChildRestricted
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open({ mockedTime: mockedNow })
   await employeeLogin(page, financeAdmin)

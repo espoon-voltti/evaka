@@ -20,7 +20,7 @@ describe('Missing head of family report', () => {
   test('showIntentionalDuplicates filter works', async () => {
     const mockedToday = LocalDate.of(2023, 6, 12)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const child = await Fixture.person({ lastName: '1' }).saveChild()

@@ -549,9 +549,9 @@ describe.each(['desktop', 'mobile'] as const)(
     })
 
     test('Citizen can see its children and their service needs and daily service times', async () => {
-      const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-        testDaycare.id
-      ).save()
+      const daycareSupervisor = await Fixture.employee()
+        .unitSupervisor(testDaycare.id)
+        .save()
       const serviceNeedOption = await Fixture.serviceNeedOption({
         validPlacementType: 'DAYCARE',
         defaultOption: false,

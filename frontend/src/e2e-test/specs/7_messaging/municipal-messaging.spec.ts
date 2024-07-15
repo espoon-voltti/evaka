@@ -117,8 +117,9 @@ beforeEach(async () => {
     ]
   })
   await createMessageAccounts()
-  messenger = await Fixture.employeeMessenger().save()
-  staff = await Fixture.employeeStaff(testDaycare.id)
+  messenger = await Fixture.employee().messenger().save()
+  staff = await Fixture.employee()
+    .staff(testDaycare.id)
     .withGroupAcl(testDaycareGroup.id)
     .save()
 })

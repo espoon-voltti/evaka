@@ -46,7 +46,7 @@ beforeEach(async () => {
   await Fixture.daycare(testPreschool).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  serviceWorker = await Fixture.employeeServiceWorker().save()
+  serviceWorker = await Fixture.employee().serviceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 

@@ -24,7 +24,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
   await employeeLogin(page, admin)
   childInformation = new ChildInformationPage(page)
   guardianInformation = new GuardianInformationPage(page)

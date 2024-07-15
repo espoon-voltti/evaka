@@ -33,9 +33,9 @@ beforeEach(async () => {
   await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.person(testChild2).saveChild()
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    testDaycare.id
-  ).save()
+  const unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
+    .save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)

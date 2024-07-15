@@ -64,7 +64,7 @@ beforeEach(async () => {
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithSeparatedGuardians).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
-  serviceWorker = await Fixture.employeeServiceWorker().save()
+  serviceWorker = await Fixture.employee().serviceWorker().save()
   await createDefaultServiceNeedOptions()
   await Fixture.feeThresholds().save()
 
@@ -473,9 +473,9 @@ describe('Application transitions', () => {
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
 
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      testDaycare.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
     await employeeLogin(page2, unitSupervisor)
 
     // unit supervisor
@@ -547,7 +547,7 @@ describe('Application transitions', () => {
 
     await employeeLogin(
       page2,
-      await Fixture.employeeUnitSupervisor(testDaycare.id).save()
+      await Fixture.employee().unitSupervisor(testDaycare.id).save()
     )
 
     // unit supervisor
@@ -590,9 +590,9 @@ describe('Application transitions', () => {
       mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
     )
 
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      testDaycare.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
     await employeeLogin(page, unitSupervisor)
     await applicationReadView.navigateToApplication(applicationId)
     await applicationReadView.waitUntilLoaded()
@@ -682,9 +682,9 @@ describe('Application transitions', () => {
 
     await rejectDecisionByCitizen({ id: decisionId })
 
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      testDaycare.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
 
     async function assertApplicationRows(
       addDays: number,

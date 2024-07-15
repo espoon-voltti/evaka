@@ -30,22 +30,24 @@ describe('curriculum document with person duplicate', () => {
   let duplicate: DevPerson
 
   beforeEach(async () => {
-    admin = await Fixture.employeeAdmin().save()
+    admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const daycare = await Fixture.daycare({
       areaId: area.id,
       type: ['CENTRE'],
       enabledPilotFeatures: ['VASU_AND_PEDADOC']
     }).save()
-    daycareSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
+    daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(daycare.id)
+      .save()
     const preschool = await Fixture.daycare({
       areaId: area.id,
       type: ['PRESCHOOL'],
       enabledPilotFeatures: ['VASU_AND_PEDADOC']
     }).save()
-    preschoolSupervisor = await Fixture.employeeUnitSupervisor(
-      preschool.id
-    ).save()
+    preschoolSupervisor = await Fixture.employee()
+      .unitSupervisor(preschool.id)
+      .save()
 
     child = await Fixture.person().saveChild()
     await Fixture.placement({

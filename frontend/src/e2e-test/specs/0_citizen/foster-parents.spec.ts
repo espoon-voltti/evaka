@@ -238,7 +238,7 @@ test('Foster parent can receive and reply to messages', async () => {
     endDate: mockedDate.addYears(1)
   }).save()
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+  const unitSupervisor = await Fixture.employee().unitSupervisor(unitId).save()
   await createMessageAccounts()
   let unitSupervisorPage = await Page.open({
     mockedTime: mockedNow.subMinutes(1)

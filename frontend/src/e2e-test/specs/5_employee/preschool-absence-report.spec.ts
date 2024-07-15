@@ -67,7 +67,7 @@ beforeEach(async () => {
 
 describe('Preschool absence report', () => {
   test('report data is shown', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),

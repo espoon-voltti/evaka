@@ -35,7 +35,7 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 })
 
 async function openPage(employee: DevEmployee = admin) {
@@ -134,8 +134,9 @@ describe('Employee searches applications', () => {
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
-    const specialEducationTeacher =
-      await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
+    const specialEducationTeacher = await Fixture.employee()
+      .specialEducationTeacher(daycare1.id)
+      .save()
 
     const createApplicationForUnit = (
       unitId: string,

@@ -64,7 +64,7 @@ beforeEach(async () => {
     partWeek: null
   }).save()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 
   page = await Page.open({ mockedTime })
   await employeeLogin(page, admin)

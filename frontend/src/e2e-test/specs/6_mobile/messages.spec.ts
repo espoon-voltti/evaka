@@ -518,7 +518,7 @@ describe('Messages page', () => {
     })
 
     // Add child's guardians to block list
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const adminPage = await Page.open({
       mockedTime: mockedDateAt10
     })

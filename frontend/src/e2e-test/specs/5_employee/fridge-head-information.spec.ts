@@ -86,7 +86,12 @@ beforeEach(async () => {
     temporaryFeeSiblingPartDay: 800
   }).save()
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee({
+    firstName: 'Seppo',
+    lastName: 'Sorsa'
+  })
+    .admin()
+    .save()
 
   page = await Page.open({
     mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))

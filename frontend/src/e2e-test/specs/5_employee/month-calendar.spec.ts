@@ -43,7 +43,9 @@ beforeEach(async () => {
   await Fixture.child(testChild2.id).save()
   group = await Fixture.daycareGroup(testDaycareGroup).save()
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
+  unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
+    .save()
 
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(8, 0))

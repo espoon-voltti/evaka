@@ -40,7 +40,7 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
   }).save()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))

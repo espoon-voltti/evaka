@@ -48,7 +48,12 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
   }).save()
-  decisionMaker = await Fixture.employeeServiceWorker().save()
+  decisionMaker = await Fixture.employee({
+    firstName: 'Paula',
+    lastName: 'Palveluohjaaja'
+  })
+    .serviceWorker()
+    .save()
 })
 
 async function openCitizenDecisionsPage(citizen: DevPerson) {
@@ -387,7 +392,7 @@ describe('Citizen assistance decisions', () => {
   })
 
   test('Preview shows filled information', async () => {
-    const serviceWorker = await Fixture.employeeServiceWorker().save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
     const decision = await Fixture.preFilledAssistanceNeedDecision({
       childId: testChild2.id,
       selectedUnit: testDaycare.id,

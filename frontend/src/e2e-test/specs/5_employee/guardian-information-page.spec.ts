@@ -45,7 +45,7 @@ beforeEach(async () => {
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),

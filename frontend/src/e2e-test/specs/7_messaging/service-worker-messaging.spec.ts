@@ -47,10 +47,10 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
-  serviceWorker = await Fixture.employeeServiceWorker().save()
-  messagingAndServiceWorker = await Fixture.employeeServiceWorker()
-    .with({ roles: ['SERVICE_WORKER', 'MESSAGING'] })
-    .save()
+  serviceWorker = await Fixture.employee().serviceWorker().save()
+  messagingAndServiceWorker = await Fixture.employee({
+    roles: ['SERVICE_WORKER', 'MESSAGING']
+  }).save()
   await createMessageAccounts()
 })
 

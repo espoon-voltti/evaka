@@ -32,7 +32,7 @@ beforeEach(async () => {
     children: [testChild, testChild2]
   }).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

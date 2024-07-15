@@ -79,7 +79,7 @@ const setupTestData = async ({
     startDate: placement.startDate,
     endDate: placement.endDate
   }).save()
-  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 }
 
 async function navigateToTestView({

@@ -35,7 +35,7 @@ beforeEach(async () => {
 
   page = await Page.open({})
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
   await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)

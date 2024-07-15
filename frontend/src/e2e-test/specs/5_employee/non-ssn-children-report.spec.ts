@@ -80,7 +80,7 @@ beforeEach(async () => {
 
 describe('Non SSN children report', () => {
   test('report data is shown to admin', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
@@ -94,7 +94,7 @@ describe('Non SSN children report', () => {
   })
 
   test('report data is shown to finance admin', async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
@@ -105,7 +105,7 @@ describe('Non SSN children report', () => {
   })
 
   test('report data is shown to service worker', async () => {
-    const serviceWorker = await Fixture.employeeServiceWorker().save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),

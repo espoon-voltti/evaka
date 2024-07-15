@@ -52,7 +52,7 @@ beforeEach(async () => {
   await Fixture.family(familyWithTwoGuardians).save()
   daycare = testDaycare
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
@@ -277,7 +277,7 @@ describe('Unit groups - unit supervisor', () => {
 
 describe('Unit groups - staff', () => {
   beforeEach(async () => {
-    const staff = await Fixture.employeeStaff(daycare.id).save()
+    const staff = await Fixture.employee().staff(daycare.id).save()
 
     page = await Page.open()
     await employeeLogin(page, staff)

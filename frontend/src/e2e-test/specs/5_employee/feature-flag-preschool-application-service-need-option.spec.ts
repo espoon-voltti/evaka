@@ -43,7 +43,7 @@ beforeEach(async () => {
     validPlacementType: 'PRESCHOOL_CLUB',
     nameFi: 'kerho'
   }).save()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     mockedTime: now,

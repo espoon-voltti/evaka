@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { initial } from 'lodash'
-
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -343,88 +341,6 @@ export class Fixture {
       lastLogin: HelsinkiDateTime.now(),
       preferredFirstName: null,
       ...initial
-    })
-  }
-
-  static employeeAdmin(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'seppo.sorsa@evaka.test',
-      firstName: 'Seppo',
-      lastName: 'Sorsa',
-      roles: ['ADMIN']
-    })
-  }
-
-  static employeeFinanceAdmin(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'lasse.laskuttaja@evaka.test',
-      firstName: 'Lasse',
-      lastName: 'Laskuttaja',
-      roles: ['FINANCE_ADMIN'],
-      ...initial
-    })
-  }
-
-  static employeeDirector(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'hemmo.hallinto@evaka.test',
-      firstName: 'Hemmo',
-      lastName: 'Hallinto',
-      roles: ['DIRECTOR']
-    })
-  }
-
-  static employeeReportViewer(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'raisa.raportoija@evaka.test',
-      firstName: 'Raisa',
-      lastName: 'Raportoija',
-      roles: ['REPORT_VIEWER']
-    })
-  }
-
-  static employeeServiceWorker(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'paula.palveluohjaaja@evaka.test',
-      firstName: 'Paula',
-      lastName: 'Palveluohjaaja',
-      roles: ['SERVICE_WORKER']
-    })
-  }
-
-  static employeeUnitSupervisor(unitId: string): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'essi.esimies@evaka.test',
-      firstName: 'Essi',
-      lastName: 'Esimies',
-      roles: []
-    }).withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
-  }
-
-  static employeeSpecialEducationTeacher(unitId: string): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'erkki.erityisopettaja@evaka.test',
-      firstName: 'Erkki',
-      lastName: 'Erityisopettaja',
-      roles: []
-    }).withDaycareAcl(unitId, 'SPECIAL_EDUCATION_TEACHER')
-  }
-
-  static employeeStaff(unitId: string): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'kaisa.kasvattaja@evaka.test',
-      firstName: 'Kaisa',
-      lastName: 'Kasvattaja',
-      roles: []
-    }).withDaycareAcl(unitId, 'STAFF')
-  }
-
-  static employeeMessenger(): EmployeeBuilder {
-    return Fixture.employee({
-      email: 'viena.viestittaja@evaka.test',
-      firstName: 'Viena',
-      lastName: 'Viestittäjä',
-      roles: ['MESSAGING']
     })
   }
 
@@ -1401,9 +1317,46 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
     this.groupAcl = []
   }
 
-  with(data: Partial<DevEmployee>): this {
-    this.data = { ...this.data, ...data }
-    return this
+  admin(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['ADMIN'] })
+  }
+
+  financeAdmin(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['FINANCE_ADMIN'] })
+  }
+
+  director(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['DIRECTOR'] })
+  }
+
+  reportViewer(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['REPORT_VIEWER'] })
+  }
+
+  serviceWorker(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['SERVICE_WORKER'] })
+  }
+
+  messenger(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data, roles: ['MESSAGING'] })
+  }
+
+  unitSupervisor(unitId: string): EmployeeBuilder {
+    return new EmployeeBuilder(this.data).withDaycareAcl(
+      unitId,
+      'UNIT_SUPERVISOR'
+    )
+  }
+
+  specialEducationTeacher(unitId: string): EmployeeBuilder {
+    return new EmployeeBuilder(this.data).withDaycareAcl(
+      unitId,
+      'SPECIAL_EDUCATION_TEACHER'
+    )
+  }
+
+  staff(unitId: string): EmployeeBuilder {
+    return new EmployeeBuilder(this.data).withDaycareAcl(unitId, 'STAFF')
   }
 
   withDaycareAcl(unitId: string, role: ScopedRole): this {

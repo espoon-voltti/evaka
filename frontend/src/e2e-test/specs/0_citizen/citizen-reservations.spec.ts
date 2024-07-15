@@ -164,7 +164,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   })
 
   test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
-    const employee = await Fixture.employeeStaff(testDaycare.id).save()
+    const employee = await Fixture.employee().staff(testDaycare.id).save()
     await Fixture.absence({
       childId: testChildRestricted.id,
       absenceType: 'UNKNOWN_ABSENCE',
@@ -1047,9 +1047,9 @@ describe('Citizen calendar child visibility', () => {
       body: [placement]
     })
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      daycare.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(daycare.id)
+      .save()
     await Fixture.serviceNeed({
       placementId: placement.id,
       startDate: placement.startDate,
@@ -1090,9 +1090,9 @@ describe('Citizen calendar child visibility', () => {
       body: [placement]
     })
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      daycare.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(daycare.id)
+      .save()
     await Fixture.serviceNeed({
       placementId: placement.id,
       startDate: placement.startDate,

@@ -118,7 +118,7 @@ describe('Value decisions', () => {
       mockedTime: now
     })
 
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
@@ -253,7 +253,12 @@ describe('Value decisions with finance decision handler select enabled', () => {
       mockedTime: now
     })
 
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee({
+      firstName: 'Lasse',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
+      .save()
     await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
@@ -279,12 +284,12 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
@@ -313,12 +318,12 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decision is sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     const valueDecisionDetailsPageDraft =
       await valueDecisionsPage.openFirstValueDecision()

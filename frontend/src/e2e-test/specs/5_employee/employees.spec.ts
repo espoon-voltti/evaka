@@ -17,9 +17,14 @@ let employeesPage: EmployeesPage
 
 beforeEach(async () => {
   await resetServiceState()
-  const admin = await Fixture.employeeAdmin().save()
-  await Fixture.employeeServiceWorker()
-    .with({ firstName: 'Teppo', lastName: 'Testaaja' })
+  const admin = await Fixture.employee({
+    firstName: 'Seppo',
+    lastName: 'Sorsa'
+  })
+    .admin()
+    .save()
+  await Fixture.employee({ firstName: 'Teppo', lastName: 'Testaaja' })
+    .serviceWorker()
     .save()
 
   page = await Page.open()

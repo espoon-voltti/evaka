@@ -39,7 +39,8 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id)
+  const unitSupervisor = await Fixture.employee()
+    .unitSupervisor(unit.id)
     .withDaycareAcl(testPreschool.id, 'UNIT_SUPERVISOR')
     .save()
   const mobileSignupUrl = await pairPersonalMobileDevice(unitSupervisor.id)
@@ -49,10 +50,12 @@ beforeEach(async () => {
 
 describe('Employee mobile unit list', () => {
   test('Staff count is as expected', async () => {
-    const staff1Fixture = await Fixture.employeeStaff(unit.id)
+    const staff1Fixture = await Fixture.employee()
+      .staff(unit.id)
       .withGroupAcl(testDaycareGroup.id)
       .save()
-    const staff2Fixture = await Fixture.employeeStaff(unit.id)
+    const staff2Fixture = await Fixture.employee()
+      .staff(unit.id)
       .withGroupAcl(testDaycareGroup.id)
       .save()
 

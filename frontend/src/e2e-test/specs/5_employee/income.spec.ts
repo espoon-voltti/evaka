@@ -37,7 +37,7 @@ beforeEach(async () => {
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   personId = testAdult.id
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
   financeAdminId = financeAdmin.id
 
   await Fixture.fridgeChild({

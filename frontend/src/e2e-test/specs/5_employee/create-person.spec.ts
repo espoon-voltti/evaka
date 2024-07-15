@@ -19,7 +19,7 @@ let personSearchPage: PersonSearchPage
 
 beforeEach(async () => {
   await resetServiceState()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

@@ -72,7 +72,9 @@ describe('Child Information placement info', () => {
 
     unitId = testDaycare.id
     childId = familyWithTwoGuardians.children[0].id
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unitId)
+      .save()
 
     page = await Page.open()
     await employeeLogin(page, unitSupervisor)
@@ -106,7 +108,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
   )
 
   test('place guarantee can be set with create modal', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
@@ -151,7 +153,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
   })
 
   test('place guarantee placement shows correctly active status', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
@@ -175,7 +177,7 @@ describe('Child Information placement create (feature flag place guarantee = tru
   })
 
   test('non place guarantee placement shows correctly active status', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const { name: unitName } = unit
@@ -213,7 +215,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
   )
 
   test('placement create works', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitName = unit.name
@@ -248,7 +250,7 @@ describe('Child Information placement create (feature flag place guarantee = fal
   })
 
   test('placement end date is initially empty but mandatory', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const unitName = unit.name

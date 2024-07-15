@@ -55,7 +55,13 @@ beforeEach(async () => {
     enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
   }).save()
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
+  unitSupervisor = await Fixture.employee({
+    email: 'essi.esimies@evaka.test',
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(daycare.id)
+    .save()
 
   await createDefaultServiceNeedOptions()
 
@@ -91,14 +97,19 @@ beforeEach(async () => {
   groupStaff = await Fixture.employee({
     email: 'kalle.kasvattaja@evaka.test',
     firstName: 'Kalle',
-    lastName: 'Kasvattaja',
-    roles: []
+    lastName: 'Kasvattaja'
   })
     .withDaycareAcl(daycare.id, 'STAFF')
     .withGroupAcl(groupId)
     .withGroupAcl(groupId2)
     .save()
-  nonGroupStaff = await Fixture.employeeStaff(daycare.id).save()
+  nonGroupStaff = await Fixture.employee({
+    email: 'kaisa.kasvattaja@evaka.test',
+    firstName: 'Kaisa',
+    lastName: 'Kasvattaja'
+  })
+    .staff(daycare.id)
+    .save()
 
   await Fixture.staffOccupancyCoefficient(daycare.id, groupStaff.id).save()
 

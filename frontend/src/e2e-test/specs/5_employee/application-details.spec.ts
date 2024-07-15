@@ -94,7 +94,7 @@ beforeEach(async () => {
     ]
   })
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
   applicationWorkbench = new ApplicationWorkbenchPage(page)
@@ -153,7 +153,7 @@ describe('Application details', () => {
   })
 
   test('Decision is not sent automatically to the other guardian if the first guardian has restricted details enabled', async () => {
-    const serviceWorker = await Fixture.employeeServiceWorker().save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
 
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
@@ -196,9 +196,9 @@ describe('Application details', () => {
   })
 
   test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async () => {
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(
-      testPreschool.id
-    ).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testPreschool.id)
+      .save()
 
     await execSimpleApplicationAction(
       singleParentApplication.id,
@@ -232,7 +232,7 @@ describe('Application details', () => {
   })
 
   test('Service worker can create, edit and delete application notes', async () => {
-    const serviceWorker = await Fixture.employeeServiceWorker().save()
+    const serviceWorker = await Fixture.employee().serviceWorker().save()
     await employeeLogin(page, serviceWorker)
     await page.goto(config.employeeUrl)
 

@@ -45,8 +45,8 @@ const mockedTime = LocalDate.of(2021, 8, 16)
 beforeEach(async () => {
   await resetServiceState()
 
-  decisionMaker = await Fixture.employeeAdmin().save()
-  director = await Fixture.employeeDirector().save()
+  decisionMaker = await Fixture.employee().admin().save()
+  director = await Fixture.employee().director().save()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
@@ -312,8 +312,11 @@ describe('Assistance need decisions report', () => {
   })
 
   test('Decision-maker can be changed', async () => {
-    const admin = await Fixture.employeeAdmin()
-      .with({ id: uuidv4(), firstName: 'Sari', lastName: 'Sorsa' })
+    const admin = await Fixture.employee({
+      firstName: 'Sari',
+      lastName: 'Sorsa'
+    })
+      .admin()
       .save()
 
     const decisionId = uuidv4()
@@ -398,7 +401,7 @@ describe('Assistance need decisions report', () => {
       selectedUnit: anotherDaycare.id
     }).save()
 
-    const VEO = await Fixture.employeeSpecialEducationTeacher(unitId).save()
+    const VEO = await Fixture.employee().specialEducationTeacher(unitId).save()
 
     await employeeLogin(page, VEO)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)

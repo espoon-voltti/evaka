@@ -23,7 +23,7 @@ beforeEach(async () => {
 
 describe('Finance basics', () => {
   beforeEach(async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
     page = await Page.open({ acceptDownloads: true })
     await employeeLogin(page, financeAdmin)

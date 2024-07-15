@@ -37,7 +37,7 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 })
 
 async function openPage(
@@ -53,8 +53,9 @@ describe('Search person', () => {
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
     const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
-    const specialEducationTeacher =
-      await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
+    const specialEducationTeacher = await Fixture.employee()
+      .specialEducationTeacher(daycare1.id)
+      .save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)
 
     const childWithAssistanceNeed = testChild

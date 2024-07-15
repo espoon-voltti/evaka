@@ -83,7 +83,7 @@ const insertFeeDecisionFixtureAndNavigateToIt = async (
 
 describe('Fee decisions', () => {
   beforeEach(async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
     page = await Page.open({ acceptDownloads: true })
     await employeeLogin(page, financeAdmin)
@@ -194,7 +194,12 @@ describe('Fee decisions', () => {
 
 describe('Fee decisions with finance decision handler select enabled', () => {
   beforeEach(async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee({
+      firstName: 'Lasse',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
+      .save()
 
     page = await Page.open({
       acceptDownloads: true,
@@ -241,12 +246,12 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
@@ -282,12 +287,12 @@ describe('Fee decisions with finance decision handler select enabled', () => {
       testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const otherFinanceAdmin = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     const feeDecisionDetailsPageDraft =
       await feeDecisionsPage.openFirstFeeDecision()

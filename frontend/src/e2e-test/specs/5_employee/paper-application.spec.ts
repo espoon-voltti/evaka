@@ -40,7 +40,7 @@ beforeEach(async () => {
     children: [testChild]
   }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({ mockedTime: now })
   await employeeLogin(page, admin)

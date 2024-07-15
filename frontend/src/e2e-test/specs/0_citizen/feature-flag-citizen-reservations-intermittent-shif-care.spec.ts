@@ -243,7 +243,7 @@ const addTestData = async (date: LocalDate) => {
   const child = testChild
   const parent = testAdult
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
+  const unitSupervisor = await Fixture.employee().unitSupervisor(unit.id).save()
 
   const placement = await Fixture.placement({
     type: 'DAYCARE',

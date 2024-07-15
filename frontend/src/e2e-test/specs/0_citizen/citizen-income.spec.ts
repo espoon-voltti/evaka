@@ -78,7 +78,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
       daycarePlacementId: placement.id
     }).save()
 
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
     financeAdminId = financeAdmin.id
 
     const serviceNeedOption = await Fixture.serviceNeedOption({

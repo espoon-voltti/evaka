@@ -53,7 +53,9 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee({ firstName: 'Seppo', lastName: 'Sorsa' })
+    .admin()
+    .save()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
@@ -65,7 +67,12 @@ beforeAll(async () => {
   firstGuardian = familyWithTwoGuardians.guardian
   secondGuardian = familyWithTwoGuardians.otherGuardian
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
+  unitSupervisor = await Fixture.employee({
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(unitId)
+    .save()
 
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),

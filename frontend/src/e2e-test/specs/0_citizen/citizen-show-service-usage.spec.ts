@@ -48,9 +48,9 @@ describe('Service time usage', () => {
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
-    const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-      testDaycare.id
-    ).save()
+    const daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
 
     const serviceNeedOption = await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',
@@ -198,9 +198,9 @@ describe('Service time alert', () => {
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
-    const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-      testDaycare.id
-    ).save()
+    const daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
 
     const serviceNeedOption = await Fixture.serviceNeedOption({
       validPlacementType: 'DAYCARE',

@@ -20,7 +20,7 @@ describe('Placement guarantee report', () => {
   test('child with placement guarantee is in the report', async () => {
     const mockedToday = LocalDate.of(2023, 9, 14)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const child = await Fixture.person().saveChild()
@@ -57,7 +57,7 @@ describe('Placement guarantee report', () => {
   test('child without placement guarantee is not in the report', async () => {
     const mockedToday = LocalDate.of(2023, 9, 14)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const child = await Fixture.person().saveChild()
@@ -87,7 +87,7 @@ describe('Placement guarantee report', () => {
   test('date picker works', async () => {
     const mockedToday = LocalDate.of(2023, 9, 14)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
     const child1 = await Fixture.person({ ssn: null }).saveChild()
@@ -150,7 +150,7 @@ describe('Placement guarantee report', () => {
   test('unit selector works', async () => {
     const mockedToday = LocalDate.of(2023, 9, 14)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare({ areaId: area.id }).save()
     const unit2 = await Fixture.daycare({ areaId: area.id }).save()

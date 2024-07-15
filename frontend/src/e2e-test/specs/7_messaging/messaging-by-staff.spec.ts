@@ -75,11 +75,14 @@ beforeEach(async () => {
   account = citizenWeakAccount(testAdult)
   await keycloak.createUser({ ...account, enabled: true })
 
-  staff = await Fixture.employeeStaff(testDaycare.id)
+  staff = await Fixture.employee()
+    .staff(testDaycare.id)
     .withGroupAcl(testDaycareGroup.id)
     .save()
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
+  unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
+    .save()
 
   const unitId = testDaycare.id
   childId = testChild.id // born 7.7.2014
@@ -231,7 +234,8 @@ describe('Sending and receiving messages', () => {
 
 describe('Sending and receiving sensitive messages', () => {
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
-    staff = await Fixture.employeeSpecialEducationTeacher(testDaycare.id)
+    staff = await Fixture.employee()
+      .specialEducationTeacher(testDaycare.id)
       .withGroupAcl(testDaycareGroup.id)
       .save()
     // create messaging account for newly created VEO account

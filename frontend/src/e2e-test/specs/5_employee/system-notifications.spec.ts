@@ -19,7 +19,7 @@ let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 })
 
 describe('System notifications', () => {

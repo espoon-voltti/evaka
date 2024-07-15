@@ -27,7 +27,7 @@ describe('Employee - unit details', () => {
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     daycare1 = testDaycare
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
 
     page = await Page.open()
     await employeeLogin(page, admin)
@@ -114,7 +114,7 @@ describe('Employee - unit editor validations and warnings', () => {
 
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
 
     page = await Page.open()
     await employeeLogin(page, admin)

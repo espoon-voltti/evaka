@@ -304,7 +304,9 @@ describe('when unit is open every day for shift care child', () => {
       endDate: mockedToday.addYears(1)
     }).save()
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
-    const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(unit.id)
+      .save()
     await Fixture.serviceNeed({
       placementId: placement.id,
       startDate: placement.startDate,

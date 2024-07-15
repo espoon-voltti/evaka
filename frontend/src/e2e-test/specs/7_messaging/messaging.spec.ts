@@ -89,7 +89,12 @@ beforeEach(async () => {
   account = citizenWeakAccount(testAdult)
   await keycloak.createUser({ ...account, enabled: true })
 
-  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
+  unitSupervisor = await Fixture.employee({
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(testDaycare.id)
+    .save()
 
   const unitId = testDaycare.id
   childId = testChild.id
@@ -374,7 +379,7 @@ describe('Sending and receiving messages', () => {
         const content = 'Tämän ei pitäisi mennä perille'
 
         // Add child's guardian to block list
-        const admin = await Fixture.employeeAdmin().save()
+        const admin = await Fixture.employee().admin().save()
         const adminPage = await Page.open()
         await employeeLogin(adminPage, admin)
 

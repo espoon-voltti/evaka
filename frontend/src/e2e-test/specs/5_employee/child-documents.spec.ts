@@ -36,8 +36,10 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.person(testChild2).saveChild()
-  admin = await Fixture.employeeAdmin().save()
-  unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
+  admin = await Fixture.employee().admin().save()
+  unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
+    .save()
 
   await Fixture.placement({
     childId: testChild2.id,

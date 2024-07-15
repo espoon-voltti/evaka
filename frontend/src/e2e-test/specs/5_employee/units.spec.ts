@@ -65,7 +65,7 @@ beforeEach(async () => {
     endDate: today.addYears(1)
   }).save()
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     mockedTime: LocalDate.of(2022, 12, 1).toHelsinkiDateTime(

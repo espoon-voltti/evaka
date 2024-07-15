@@ -40,7 +40,7 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
   await employeeLogin(page, financeAdmin)
@@ -151,7 +151,7 @@ describe('Person finance decisions', () => {
       ]
     })
 
-    const adminUser = await Fixture.employeeAdmin().save()
+    const adminUser = await Fixture.employee().admin().save()
     page = await Page.open({ acceptDownloads: true })
     await employeeLogin(page, adminUser)
     await page.goto(config.employeeUrl)

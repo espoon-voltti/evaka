@@ -35,7 +35,7 @@ let serviceNeed: DevServiceNeed
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

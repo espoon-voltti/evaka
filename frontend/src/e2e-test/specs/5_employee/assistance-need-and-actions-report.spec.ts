@@ -60,7 +60,7 @@ beforeEach(async () => {
   page = await Page.open({
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
   await employeeLogin(page, admin)
 })
 

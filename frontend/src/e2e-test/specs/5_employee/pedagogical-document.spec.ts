@@ -55,7 +55,7 @@ beforeEach(async () => {
   )
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

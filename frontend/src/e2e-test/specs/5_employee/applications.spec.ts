@@ -30,7 +30,7 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithDeadGuardian).save()
-  const serviceWorker = await Fixture.employeeServiceWorker().save()
+  const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)

@@ -23,7 +23,7 @@ describe('Manual duplication report', () => {
   test('works', async () => {
     const mockedToday = LocalDate.of(2023, 6, 19)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
     const preschool = await Fixture.daycare({
       areaId: area.id,

@@ -16,10 +16,11 @@ let page: Page
 let nav: EmployeeNav
 let employeePreferredFirstNamePage: EmployeePreferredFirstNamePage
 const firstName = 'Matti-Teppo Seppo'
+const lastName = 'Sorsa'
 
 beforeEach(async () => {
   await resetServiceState()
-  admin = await Fixture.employeeAdmin().with({ firstName }).save()
+  admin = await Fixture.employee({ firstName, lastName }).admin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)
