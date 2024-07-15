@@ -454,13 +454,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@datadog/native-iast-taint-tracking@npm:2.1.0"
+"@datadog/native-iast-taint-tracking@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@datadog/native-iast-taint-tracking@npm:3.0.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/825f363561b09b7ee890b76b5aced2aab0a0a624d773acded0dc4afeb4aec1594afd6eec375ace1ca6298598f982b0fd5d50c08f69dc5e4ffb8cad01fcdf4894
+  checksum: 10/efcfc11a4deb4a188c243945f907e115f5cbb5c9114aae419303bf590e2fb6ed5f1d1a5b8ad9f6d2907fd4a9b6d8fce7dffffe1b20583049d859527befe285b0
   languageName: node
   linkType: hard
 
@@ -2710,13 +2710,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.17.0":
-  version: 5.17.0
-  resolution: "dd-trace@npm:5.17.0"
+"dd-trace@npm:^5.18.0":
+  version: 5.18.0
+  resolution: "dd-trace@npm:5.18.0"
   dependencies:
     "@datadog/native-appsec": "npm:8.0.1"
     "@datadog/native-iast-rewriter": "npm:2.3.1"
-    "@datadog/native-iast-taint-tracking": "npm:2.1.0"
+    "@datadog/native-iast-taint-tracking": "npm:3.0.0"
     "@datadog/native-metrics": "npm:^2.0.0"
     "@datadog/pprof": "npm:5.3.0"
     "@datadog/sketches-js": "npm:^2.1.0"
@@ -2725,7 +2725,7 @@ __metadata:
     crypto-randomuuid: "npm:^1.0.0"
     dc-polyfill: "npm:^0.1.4"
     ignore: "npm:^5.2.4"
-    import-in-the-middle: "npm:^1.7.4"
+    import-in-the-middle: "npm:^1.8.1"
     int64-buffer: "npm:^0.1.9"
     istanbul-lib-coverage: "npm:3.2.0"
     jest-docblock: "npm:^29.7.0"
@@ -2743,7 +2743,7 @@ __metadata:
     semver: "npm:^7.5.4"
     shell-quote: "npm:^1.8.1"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 10/c3827c7cccdf6acd6ff60cfa2d21a46a820805d760391285f27184d70ddb5963687b3c60af86edd7635d7846bca963613ab69cd67e09b1987c85eb66b529ca48
+  checksum: 10/13d2172f2bc84ef892d8402819fc35807b97a4439da51b9f833af7cf505a333a212bcb10663cf29dd500877a94358429d4cea5395a48cf29efd10417b7f1984e
   languageName: node
   linkType: hard
 
@@ -3438,7 +3438,7 @@ __metadata:
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^3.6.0"
-    dd-trace: "npm:^5.17.0"
+    dd-trace: "npm:^5.18.0"
     eslint: "npm:^9.7.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:^2.29.1"
@@ -4284,15 +4284,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.7.4":
-  version: 1.7.4
-  resolution: "import-in-the-middle@npm:1.7.4"
+"import-in-the-middle@npm:^1.8.1":
+  version: 1.9.0
+  resolution: "import-in-the-middle@npm:1.9.0"
   dependencies:
     acorn: "npm:^8.8.2"
     acorn-import-attributes: "npm:^1.9.5"
     cjs-module-lexer: "npm:^1.2.2"
     module-details-from-path: "npm:^1.0.3"
-  checksum: 10/f1aeff5f3f4108be7c51b22d19a3528e527157c6c8671cef0aa8365c1cfa1d2f18342b7cba7a9478364ea564c483d33b9fcb34b5770d97db0a71e3ef0bd861eb
+  checksum: 10/669812e605d0d7def5290ec8d4786772f770b55bad7dde0af7e3a75dca54b4c574617c5aaefce610b00581c71984bd2d9b200557d88b805f418f7c0e1aa104b3
   languageName: node
   linkType: hard
 
