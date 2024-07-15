@@ -62,7 +62,6 @@ beforeEach(async () => {
   fosterChild = await Fixture.person({ ssn: '120220A995L' }).saveChild({
     updateMockVtj: true
   })
-  await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [
       {
@@ -152,7 +151,6 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
   const fosterChild = await Fixture.person({ ssn: null }).saveChild()
 
-  await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [
       {

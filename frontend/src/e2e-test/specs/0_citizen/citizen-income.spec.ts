@@ -57,7 +57,6 @@ describe.each(e)('Citizen income (%s)', (env) => {
     guardian = await Fixture.person(testAdult).saveAdult({
       updateMockVtjWithDependants: [child]
     })
-    await Fixture.child(child1.id).save()
     await Fixture.guardian(child1, guardian).save()
     const placement = await Fixture.placement({
       childId: child1.id,

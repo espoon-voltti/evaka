@@ -46,7 +46,6 @@ beforeEach(async () => {
   guardian = await Fixture.person(testAdult).saveAdult({
     updateMockVtjWithDependants: [child1]
   })
-  await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement({
     childId: child1.id,

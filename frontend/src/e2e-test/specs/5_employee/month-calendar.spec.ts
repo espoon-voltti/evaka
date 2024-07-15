@@ -40,7 +40,6 @@ beforeEach(async () => {
   const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
   await Fixture.person(testChild2).saveChild()
-  await Fixture.child(testChild2.id).save()
   group = await Fixture.daycareGroup(testDaycareGroup).save()
 
   unitSupervisor = await Fixture.employee()
@@ -354,7 +353,6 @@ describe('Employee - Unit month calendar', () => {
     }).save()
 
     await Fixture.person(testChild).saveChild()
-    await Fixture.child(testChild.id).save()
     const jariPlacement = await Fixture.placement({
       childId: testChild.id,
       unitId: testDaycare.id,

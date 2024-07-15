@@ -41,8 +41,6 @@ beforeEach(async () => {
     lastName: 'Beck'
   }).saveChild()
 
-  await Fixture.child(child.id).save()
-
   await Fixture.placement({
     type: 'PRESCHOOL',
     childId: child.id,

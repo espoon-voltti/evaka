@@ -36,7 +36,6 @@ describe('Missing head of family report', () => {
       duplicateOf: child.id,
       lastName: '2'
     }).saveChild()
-    await Fixture.child(duplicate.id).save()
     await Fixture.placement({
       type: 'DAYCARE',
       childId: duplicate.id,

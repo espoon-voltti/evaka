@@ -62,7 +62,6 @@ describe('curriculum document with person duplicate', () => {
       ssn: null,
       duplicateOf: child.id
     }).saveChild()
-    await Fixture.child(duplicate.id).save()
     await Fixture.placement({
       childId: duplicate.id,
       unitId: preschool.id,

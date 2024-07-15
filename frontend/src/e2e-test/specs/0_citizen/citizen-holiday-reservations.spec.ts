@@ -101,7 +101,6 @@ beforeEach(async () => {
   guardian = await Fixture.person(testAdult).saveAdult({
     updateMockVtjWithDependants: [child1]
   })
-  await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement({
     childId: child1.id,
@@ -119,7 +118,6 @@ async function setupAnotherChild(
     updateMockVtj: true
   })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
-  await Fixture.child(child2.id).save()
   await Fixture.guardian(child2, guardian).save()
   await Fixture.placement({
     childId: child2.id,

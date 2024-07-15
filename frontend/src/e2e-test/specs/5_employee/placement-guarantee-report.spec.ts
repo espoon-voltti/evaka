@@ -106,7 +106,6 @@ describe('Placement guarantee report', () => {
       placeGuarantee: true
     }).save()
     const child2 = await Fixture.person({ ssn: null }).saveChild()
-    await Fixture.child(child2.id).save()
     await Fixture.placement({
       childId: child2.id,
       unitId: unit.id,

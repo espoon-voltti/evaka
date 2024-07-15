@@ -472,9 +472,10 @@ export class Fixture {
     })
   }
 
-  static child(id: string): ChildBuilder {
+  static childAdditionalInfo(
+    initial: SemiPartial<DevChild, 'id'>
+  ): ChildBuilder {
     return new ChildBuilder({
-      id,
       additionalInfo: '',
       allergies: '',
       diet: '',
@@ -482,7 +483,8 @@ export class Fixture {
       mealTextureId: null,
       languageAtHome: '',
       languageAtHomeDetails: '',
-      medication: ''
+      medication: '',
+      ...initial
     })
   }
 

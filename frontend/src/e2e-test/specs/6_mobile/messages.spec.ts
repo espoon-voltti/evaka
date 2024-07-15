@@ -357,7 +357,6 @@ describe('Messages page', () => {
         }
       ]
     })
-    await Fixture.child(extraChildFixture.id).save()
     const extraPlacementFixture = await Fixture.placement({
       childId: extraChildFixture.id,
       unitId: testDaycare.id,

@@ -86,14 +86,13 @@ beforeEach(async () => {
 
 describe('Mobile PIN login', () => {
   test('User can login with PIN and see child sensitive info', async () => {
-    const childAdditionalInfo = await Fixture.child(child.id)
-      .with({
-        allergies: 'Allergies',
-        diet: 'Diets',
-        medication: 'Medications',
-        additionalInfo: ''
-      })
-      .save()
+    const childAdditionalInfo = await Fixture.childAdditionalInfo({
+      id: child.id,
+      allergies: 'Allergies',
+      diet: 'Diets',
+      medication: 'Medications',
+      additionalInfo: ''
+    }).save()
     await Fixture.person(testAdult2).saveAdult()
 
     const parentshipId = uuidv4()

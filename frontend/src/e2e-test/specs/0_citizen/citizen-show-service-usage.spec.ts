@@ -45,7 +45,6 @@ describe('Service time usage', () => {
     const guardian = await Fixture.person(testAdult).saveAdult({
       updateMockVtjWithDependants: [child]
     })
-    await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
     const daycareSupervisor = await Fixture.employee()
@@ -195,7 +194,6 @@ describe('Service time alert', () => {
     const guardian = await Fixture.person(testAdult).saveAdult({
       updateMockVtjWithDependants: [child]
     })
-    await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
     const daycareSupervisor = await Fixture.employee()

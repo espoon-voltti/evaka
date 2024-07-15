@@ -660,7 +660,6 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     const guardian = await Fixture.person(testAdult).saveAdult({
       updateMockVtjWithDependants: [child]
     })
-    await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
     await Fixture.placement({
