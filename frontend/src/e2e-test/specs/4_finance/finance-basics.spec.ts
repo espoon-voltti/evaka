@@ -82,7 +82,7 @@ describe('Finance basics', () => {
 
   test('Creating fee thresholds shows a validation error when max fees do not match', async () => {
     // Family size 2 has a different max fee
-    const { data } = Fixture.feeThresholds().with({
+    const { data } = Fixture.feeThresholds({
       maxIncomeThreshold2: 300000
     })
     await nav.openAndClickDropdownMenuItem('finance-basics')

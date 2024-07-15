@@ -28,7 +28,7 @@ let applicationsPage: ApplicationsPage
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithDeadGuardian).save()
   const serviceWorker = await Fixture.employeeServiceWorker().save()
 

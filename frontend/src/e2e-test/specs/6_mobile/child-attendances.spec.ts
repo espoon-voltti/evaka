@@ -19,7 +19,8 @@ import {
   testChildRestricted,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4
+  uuidv4,
+  preschoolTerm2023
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
@@ -61,12 +62,12 @@ const openPage = async (
 beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
-  await Fixture.preschoolTerm().save()
+  await Fixture.preschoolTerm(preschoolTerm2023).save()
 
   const careArea = await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).careArea(careArea).save()
-  await Fixture.daycareGroup().with(testDaycareGroup).save()
-  await Fixture.daycareGroup().with(group2).save()
+  await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
+  await Fixture.daycareGroup(testDaycareGroup).save()
+  await Fixture.daycareGroup(group2).save()
 
   await Fixture.person().with(testChild2).saveChild()
   await Fixture.person().with(testChild).saveChild()
@@ -74,9 +75,7 @@ beforeEach(async () => {
 
   await Fixture.person().with(testChildRestricted).saveChild()
 
-  await Fixture.employee()
-    .with({ roles: ['ADMIN'] })
-    .save()
+  await Fixture.employee({ roles: ['ADMIN'] }).save()
 })
 
 async function createPlacements(
@@ -84,23 +83,19 @@ async function createPlacements(
   groupId: string = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE'
 ) {
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId: testDaycare.id,
-      type: placementType,
-      startDate: today.subMonths(3),
-      endDate: today.addMonths(3)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: groupId,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    })
-    .save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId: testDaycare.id,
+    type: placementType,
+    startDate: today.subMonths(3),
+    endDate: today.addMonths(3)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: groupId,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
   return daycarePlacementFixture
 }
 
@@ -439,18 +434,14 @@ describe('Child mobile attendance list', () => {
     await openPage()
     const childId = testChild2.id
 
-    await Fixture.daycare()
-      .with({ ...testDaycare2, areaId: testCareArea.id })
-      .save()
+    await Fixture.daycare({ ...testDaycare2, areaId: testCareArea.id }).save()
 
-    const daycareGroup2Fixture = await Fixture.daycareGroup()
-      .with({
-        id: uuidv4(),
-        name: 'testgroup',
-        daycareId: testDaycare2.id,
-        startDate: LocalDate.of(2022, 1, 1)
-      })
-      .save()
+    const daycareGroup2Fixture = await Fixture.daycareGroup({
+      id: uuidv4(),
+      name: 'testgroup',
+      daycareId: testDaycare2.id,
+      startDate: LocalDate.of(2022, 1, 1)
+    }).save()
 
     const placement1StartDate = today.subMonths(5)
     const placement1EndDate = today.subMonths(1)
@@ -458,41 +449,33 @@ describe('Child mobile attendance list', () => {
     const placement2StartDate = placement1EndDate.addDays(1)
     const placement2EndDate = today.addMonths(3)
 
-    const daycarePlacementFixture = await Fixture.placement()
-      .with({
-        childId,
-        unitId: testDaycare.id,
-        startDate: placement1StartDate,
-        endDate: placement1EndDate
-      })
-      .save()
+    const daycarePlacementFixture = await Fixture.placement({
+      childId,
+      unitId: testDaycare.id,
+      startDate: placement1StartDate,
+      endDate: placement1EndDate
+    }).save()
 
-    const daycarePlacement2Fixture = await Fixture.placement()
-      .with({
-        childId,
-        unitId: testDaycare2.id,
-        startDate: placement2StartDate,
-        endDate: placement2EndDate
-      })
-      .save()
+    const daycarePlacement2Fixture = await Fixture.placement({
+      childId,
+      unitId: testDaycare2.id,
+      startDate: placement2StartDate,
+      endDate: placement2EndDate
+    }).save()
 
-    await Fixture.groupPlacement()
-      .with({
-        daycarePlacementId: daycarePlacementFixture.id,
-        daycareGroupId: testDaycareGroup.id,
-        startDate: placement1StartDate,
-        endDate: placement2EndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacementFixture.id,
+      daycareGroupId: testDaycareGroup.id,
+      startDate: placement1StartDate,
+      endDate: placement2EndDate
+    }).save()
 
-    await Fixture.groupPlacement()
-      .with({
-        daycarePlacementId: daycarePlacement2Fixture.id,
-        daycareGroupId: daycareGroup2Fixture.id,
-        startDate: placement1StartDate,
-        endDate: placement2EndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: daycarePlacement2Fixture.id,
+      daycareGroupId: daycareGroup2Fixture.id,
+      startDate: placement1StartDate,
+      endDate: placement2EndDate
+    }).save()
 
     await page.goto(await pairMobileDevice(testDaycare.id))
     await assertAttendanceCounts(0, 0, 0, 0, 0)

@@ -71,8 +71,8 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
-  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -96,25 +96,20 @@ beforeEach(async () => {
   const unitId = testDaycare.id
   childId = testChild.id
 
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: testDaycareGroup.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
 
-  await Fixture.daycare()
-    .with(testDaycare2)
+  await Fixture.daycare(testDaycare2)
     .with({
       areaId: careArea.id
     })
@@ -210,14 +205,12 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
-        await Fixture.placement()
-          .with({
-            childId: testChild2.id,
-            unitId: testDaycarePrivateVoucher.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
+        await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycarePrivateVoucher.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
         await createBackupCares({
           body: [
             {
@@ -456,22 +449,18 @@ describe('Sending and receiving messages', () => {
         )
       })
       test('The citizen must select the child that the message is in regards to', async () => {
-        const daycarePlacementFixture = await Fixture.placement()
-          .with({
-            childId: testChild2.id,
-            unitId: testDaycare.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
-        await Fixture.groupPlacement()
-          .with({
-            daycarePlacementId: daycarePlacementFixture.id,
-            daycareGroupId: testDaycareGroup.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
+        const daycarePlacementFixture = await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacementFixture.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
         await insertGuardians({
           body: [
             {
@@ -510,22 +499,18 @@ describe('Sending and receiving messages', () => {
 
       test('Messages cannot be sent after placement(s) end', async () => {
         const placementEndDate = mockedDate
-        const daycarePlacementFixture = await Fixture.placement()
-          .with({
-            childId: testChild2.id,
-            unitId: testDaycare.id,
-            startDate: mockedDate,
-            endDate: placementEndDate
-          })
-          .save()
-        await Fixture.groupPlacement()
-          .with({
-            daycarePlacementId: daycarePlacementFixture.id,
-            daycareGroupId: testDaycareGroup.id,
-            startDate: mockedDate,
-            endDate: placementEndDate
-          })
-          .save()
+        const daycarePlacementFixture = await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate,
+          endDate: placementEndDate
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacementFixture.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: mockedDate,
+          endDate: placementEndDate
+        }).save()
         await insertGuardians({
           body: [
             {

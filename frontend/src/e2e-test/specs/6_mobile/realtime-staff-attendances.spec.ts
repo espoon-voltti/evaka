@@ -50,49 +50,41 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
 
   const area = await Fixture.careArea().save()
-  await Fixture.daycare()
-    .with({
-      ...testDaycare2,
-      areaId: area.id,
-      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
-      operationTimes: [
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        fullDayTimeRange,
-        null,
-        null
-      ],
-      shiftCareOperationTimes: null,
-      shiftCareOpenOnHolidays: false
-    })
-    .save()
+  await Fixture.daycare({
+    ...testDaycare2,
+    areaId: area.id,
+    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
+    operationTimes: [
+      fullDayTimeRange,
+      fullDayTimeRange,
+      fullDayTimeRange,
+      fullDayTimeRange,
+      fullDayTimeRange,
+      null,
+      null
+    ],
+    shiftCareOperationTimes: null,
+    shiftCareOpenOnHolidays: false
+  }).save()
 
-  await Fixture.daycareGroup()
-    .with({
-      ...testDaycareGroup,
-      daycareId: testDaycare2.id
-    })
-    .save()
-  await Fixture.daycareGroup()
-    .with({
-      ...daycareGroup2Fixture,
-      daycareId: testDaycare2.id
-    })
-    .save()
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId: familyWithTwoGuardians.children[0].id,
-      unitId: testDaycare2.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: testDaycareGroup.id
-    })
-    .save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: testDaycare2.id
+  }).save()
+  await Fixture.daycareGroup({
+    ...daycareGroup2Fixture,
+    daycareId: testDaycare2.id
+  }).save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId: familyWithTwoGuardians.children[0].id,
+    unitId: testDaycare2.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
   staffFixture = await Fixture.employeeStaff(testDaycare2.id)
     .withGroupAcl(testDaycareGroup.id)
     .withGroupAcl(daycareGroup2Fixture.id)
@@ -100,7 +92,7 @@ beforeEach(async () => {
       preferredFirstName: 'Kutsumanimi'
     })
     .save()
-  await Fixture.employeePin().with({ userId: staffFixture.id, pin }).save()
+  await Fixture.employeePin({ userId: staffFixture.id, pin }).save()
   employeeName = `${staffFixture.lastName} Kutsumanimi`
 })
 
@@ -330,14 +322,12 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
     // Now it is 7:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30))
@@ -377,14 +367,12 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
     // Now it is 8:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30))
@@ -419,25 +407,21 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
-        departed: null,
-        occupancyCoefficient: 0,
-        type: 'PRESENT'
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
+      departed: null,
+      occupancyCoefficient: 0,
+      type: 'PRESENT'
+    }).save()
 
     // Now it is 15:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30))
@@ -465,25 +449,21 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
-        departed: null,
-        occupancyCoefficient: 0,
-        type: 'PRESENT'
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
+      departed: null,
+      occupancyCoefficient: 0,
+      type: 'PRESENT'
+    }).save()
 
     // Now it is 16:30
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30))
@@ -520,25 +500,21 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
-        departed: null,
-        occupancyCoefficient: 0,
-        type: 'PRESENT'
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
+      departed: null,
+      occupancyCoefficient: 0,
+      type: 'PRESENT'
+    }).save()
 
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
@@ -567,25 +543,21 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
-        departed: null,
-        occupancyCoefficient: 0,
-        type: 'PRESENT'
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
+      departed: null,
+      occupancyCoefficient: 0,
+      type: 'PRESENT'
+    }).save()
 
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
@@ -625,14 +597,12 @@ describe('Realtime staff attendance page', () => {
     // Planned attendance 08:00 - 16:00
     const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
     const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
-    await Fixture.staffAttendancePlan()
-      .with({
-        id: uuidv4(),
-        employeeId: staffFixture.id,
-        startTime: planStart,
-        endTime: planEnd
-      })
-      .save()
+    await Fixture.staffAttendancePlan({
+      id: uuidv4(),
+      employeeId: staffFixture.id,
+      startTime: planStart,
+      endTime: planEnd
+    }).save()
 
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4))
     await staffAttendancePage.assertPresentStaffCount(0)
@@ -740,17 +710,12 @@ describe('Realtime staff attendance edit page', () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
     const departureTime = '12:45'
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
-        departed: HelsinkiDateTime.fromLocal(
-          date,
-          LocalTime.parse(departureTime)
-        )
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)), {
       staffAttendanceTypes: false
@@ -776,17 +741,12 @@ describe('Realtime staff attendance edit page', () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
     const departureTime = '12:45'
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
-        departed: HelsinkiDateTime.fromLocal(
-          date,
-          LocalTime.parse(departureTime)
-        )
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
@@ -812,18 +772,13 @@ describe('Realtime staff attendance edit page', () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
     const departureTime = '12:45'
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        type: 'TRAINING',
-        groupId: null,
-        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
-        departed: HelsinkiDateTime.fromLocal(
-          date,
-          LocalTime.parse(departureTime)
-        )
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      type: 'TRAINING',
+      groupId: null,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
@@ -849,17 +804,12 @@ describe('Realtime staff attendance edit page', () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
     const departureTime = '12:45'
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
-        departed: HelsinkiDateTime.fromLocal(
-          date,
-          LocalTime.parse(departureTime)
-        )
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
@@ -886,14 +836,12 @@ describe('Realtime staff attendance edit page', () => {
 
   test('Staff member can remove existing attendance', async () => {
     const date = LocalDate.of(2022, 5, 5)
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(5, 59)),
-        departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(12, 45))
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.of(5, 59)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.of(12, 45))
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(16, 0)))
     await staffAttendancePage.assertPresentStaffCount(0)
@@ -911,17 +859,15 @@ describe('Realtime staff attendance edit page', () => {
   test('Staff member can edit ongoing attendance from yesterday', async () => {
     const date = LocalDate.of(2023, 1, 24)
     const arrivalTime = '22:00'
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staffFixture.id,
-        groupId: testDaycareGroup.id,
-        arrived: HelsinkiDateTime.fromLocal(
-          date.subDays(1),
-          LocalTime.parse(arrivalTime)
-        ),
-        departed: null
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: testDaycareGroup.id,
+      arrived: HelsinkiDateTime.fromLocal(
+        date.subDays(1),
+        LocalTime.parse(arrivalTime)
+      ),
+      departed: null
+    }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(2, 0)))
     await staffAttendancePage.assertPresentStaffCount(1)

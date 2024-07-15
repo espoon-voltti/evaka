@@ -30,9 +30,9 @@ const mockedDate = LocalDate.of(2021, 3, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.clubTerm().with(clubTerm2021).save()
+  await Fixture.clubTerm(clubTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testClub).save()
+  await Fixture.daycare(testClub).save()
   await Fixture.family({
     guardian: testAdult,
     otherGuardian: testAdult2,

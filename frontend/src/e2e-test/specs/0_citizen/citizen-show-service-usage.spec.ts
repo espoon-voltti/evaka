@@ -38,7 +38,7 @@ describe('Service time usage', () => {
     await resetServiceState()
 
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     const child = await Fixture.person()
       .with(testChild2)
       .saveChild({ updateMockVtj: true })
@@ -63,24 +63,20 @@ describe('Service time usage', () => {
       })
       .save()
 
-    const placement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        type: 'DAYCARE',
-        startDate: yesterday,
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        startDate: yesterday,
-        endDate: today.addYears(1),
-        optionId: serviceNeedOption.id,
-        confirmedBy: daycareSupervisor.id
-      })
-      .save()
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: yesterday,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: yesterday,
+      endDate: today.addYears(1),
+      optionId: serviceNeedOption.id,
+      confirmedBy: daycareSupervisor.id
+    }).save()
   })
 
   it('Reservation time shown in monthly summary', async () => {
@@ -104,15 +100,13 @@ describe('Service time usage', () => {
   })
 
   it('Attendance time shown in monthly summary', async () => {
-    await Fixture.childAttendance()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        date: yesterday,
-        arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: yesterday,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(15, 30)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const summary = await calendarPage.openMonthlySummary(
@@ -145,15 +139,13 @@ describe('Service time usage', () => {
   })
 
   it('Service time usage based on attendance shown in day view', async () => {
-    await Fixture.childAttendance()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        date: today,
-        arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(15, 30)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const dayView = await calendarPage.openDayView(today)
@@ -173,15 +165,13 @@ describe('Service time usage', () => {
       reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30)),
       secondReservation: null
     }).save()
-    await Fixture.childAttendance()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        date: today,
-        arrived: LocalTime.of(7, 55),
-        departed: LocalTime.of(16, 0)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(7, 55),
+      departed: LocalTime.of(16, 0)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const dayView = await calendarPage.openDayView(today)
@@ -200,7 +190,7 @@ describe('Service time alert', () => {
     await resetServiceState()
 
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     const child = await Fixture.person()
       .with(testChild2)
       .saveChild({ updateMockVtj: true })
@@ -225,24 +215,20 @@ describe('Service time alert', () => {
       })
       .save()
 
-    const placement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        type: 'DAYCARE',
-        startDate: LocalDate.of(2022, 1, 1),
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        startDate: LocalDate.of(2022, 1, 1),
-        endDate: today.addYears(1),
-        optionId: serviceNeedOption.id,
-        confirmedBy: daycareSupervisor.id
-      })
-      .save()
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: LocalDate.of(2022, 1, 1),
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: LocalDate.of(2022, 1, 1),
+      endDate: today.addYears(1),
+      optionId: serviceNeedOption.id,
+      confirmedBy: daycareSupervisor.id
+    }).save()
   })
 
   it('Service time alert shown in month heading', async () => {
@@ -258,15 +244,13 @@ describe('Service time alert', () => {
         reservation: new TimeRange(LocalTime.of(12, 0), LocalTime.of(15, 0)),
         secondReservation: null
       }).save()
-      await Fixture.childAttendance()
-        .with({
-          childId: testChild2.id,
-          unitId: testDaycare.id,
-          date: date,
-          arrived: LocalTime.of(8, 0),
-          departed: LocalTime.of(15, 32)
-        })
-        .save()
+      await Fixture.childAttendance({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        date: date,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 32)
+      }).save()
     }
 
     const calendarPage = await openCalendarPage()

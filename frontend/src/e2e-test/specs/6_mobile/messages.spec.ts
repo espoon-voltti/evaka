@@ -95,7 +95,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -103,17 +103,20 @@ beforeEach(async () => {
   child = testChild
   child2 = testChild2
 
-  daycareGroup = await Fixture.daycareGroup()
-    .with({ id: daycareGroupId, daycareId: testDaycare.id })
-    .save()
+  daycareGroup = await Fixture.daycareGroup({
+    id: daycareGroupId,
+    daycareId: testDaycare.id
+  }).save()
 
-  daycareGroup2 = await Fixture.daycareGroup()
-    .with({ id: daycareGroup2Id, daycareId: testDaycare.id })
-    .save()
+  daycareGroup2 = await Fixture.daycareGroup({
+    id: daycareGroup2Id,
+    daycareId: testDaycare.id
+  }).save()
 
-  daycareGroup3 = await Fixture.daycareGroup()
-    .with({ id: daycareGroup3Id, daycareId: testDaycare.id })
-    .save()
+  daycareGroup3 = await Fixture.daycareGroup({
+    id: daycareGroup3Id,
+    daycareId: testDaycare.id
+  }).save()
 
   const employee = await Fixture.employee()
     .with({
@@ -149,35 +152,35 @@ beforeEach(async () => {
     .withDaycareAcl(testDaycare.id, 'STAFF')
     .save()
 
-  await Fixture.employeePin().with({ userId: employee.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff2.id, pin }).save()
+  await Fixture.employeePin({ userId: employee.id, pin }).save()
+  await Fixture.employeePin({ userId: staff.id, pin }).save()
+  await Fixture.employeePin({ userId: staff2.id, pin }).save()
 
-  const placementFixture = await Fixture.placement()
-    .with({
-      childId: child.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({ daycareGroupId: daycareGroup.id })
-    .withPlacement(placementFixture)
-    .save()
+  const placementFixture = await Fixture.placement({
+    childId: child.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixture.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
 
-  const placement2Fixture = await Fixture.placement()
-    .with({
-      childId: child2.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({ daycareGroupId: daycareGroup2.id })
-    .withPlacement(placement2Fixture)
-    .save()
+  const placement2Fixture = await Fixture.placement({
+    childId: child2.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup2.id,
+    daycarePlacementId: placement2Fixture.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
 
   await createMessageAccounts()
   await insertGuardians({
@@ -358,18 +361,18 @@ describe('Messages page', () => {
       ]
     })
     await Fixture.child(extraChildFixture.id).save()
-    const extraPlacementFixture = await Fixture.placement()
-      .with({
-        childId: extraChildFixture.id,
-        unitId: testDaycare.id,
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .with({ daycareGroupId: daycareGroup.id })
-      .withPlacement(extraPlacementFixture)
-      .save()
+    const extraPlacementFixture = await Fixture.placement({
+      childId: extraChildFixture.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: extraPlacementFixture.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
 
     await staffStartsNewMessage()
 

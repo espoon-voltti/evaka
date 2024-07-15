@@ -38,7 +38,7 @@ beforeAll(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
   await createDefaultServiceNeedOptions()
@@ -46,24 +46,20 @@ beforeAll(async () => {
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
 
-  const placement = await Fixture.placement()
-    .with({
-      childId,
-      unitId
-    })
-    .save()
+  const placement = await Fixture.placement({
+    childId,
+    unitId
+  }).save()
 
   const serviceNeedOption = await Fixture.serviceNeedOption()
     .with({ validPlacementType: placement.type })
     .save()
 
-  serviceNeed = await Fixture.serviceNeed()
-    .with({
-      placementId: placement.id,
-      optionId: serviceNeedOption.id,
-      confirmedBy: admin.id
-    })
-    .save()
+  serviceNeed = await Fixture.serviceNeed({
+    placementId: placement.id,
+    optionId: serviceNeedOption.id,
+    confirmedBy: admin.id
+  }).save()
 })
 
 describe('Varda error report', () => {

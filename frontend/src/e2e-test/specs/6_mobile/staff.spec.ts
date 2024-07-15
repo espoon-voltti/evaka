@@ -32,27 +32,23 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup().with(testDaycareGroup).save()
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId: familyWithTwoGuardians.children[0].id,
-      unitId: testDaycare.id,
-      startDate: today,
-      endDate: today.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: testDaycareGroup.id,
-      startDate: today,
-      endDate: today.addYears(1)
-    })
-    .save()
+  await Fixture.daycareGroup(testDaycareGroup).save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId: familyWithTwoGuardians.children[0].id,
+    unitId: testDaycare.id,
+    startDate: today,
+    endDate: today.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: today,
+    endDate: today.addYears(1)
+  }).save()
 
   page = await Page.open({ mockedTime: now })
   nav = new MobileNav(page)

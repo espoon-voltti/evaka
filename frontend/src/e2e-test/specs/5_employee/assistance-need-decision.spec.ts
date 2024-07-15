@@ -47,7 +47,7 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -61,38 +61,36 @@ beforeEach(async () => {
     unitId
   )
 
-  assistanceNeedDecision = await Fixture.assistanceNeedDecision()
-    .withChild(childId)
-    .save()
+  assistanceNeedDecision = await Fixture.assistanceNeedDecision({
+    childId
+  }).save()
 
   preFilledAssistanceNeedDecision =
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(childId)
-      .with({
-        selectedUnit: testDaycare.id,
-        decisionMaker: {
-          employeeId: serviceWorker.id,
-          title: 'head teacher',
-          name: null,
-          phoneNumber: null
-        },
-        preparedBy1: {
-          employeeId: serviceWorker.id,
-          title: 'teacher',
-          phoneNumber: '010202020202',
-          name: null
-        },
-        guardianInfo: [
-          {
-            id: null,
-            personId: familyWithTwoGuardians.guardian.id,
-            isHeard: true,
-            name: '',
-            details: 'Guardian 1 details'
-          }
-        ]
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId,
+      selectedUnit: testDaycare.id,
+      decisionMaker: {
+        employeeId: serviceWorker.id,
+        title: 'head teacher',
+        name: null,
+        phoneNumber: null
+      },
+      preparedBy1: {
+        employeeId: serviceWorker.id,
+        title: 'teacher',
+        phoneNumber: '010202020202',
+        name: null
+      },
+      guardianInfo: [
+        {
+          id: null,
+          personId: familyWithTwoGuardians.guardian.id,
+          isHeard: true,
+          name: '',
+          details: 'Guardian 1 details'
+        }
+      ]
+    }).save()
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
@@ -313,34 +311,32 @@ describe('Assistance Need Decisions - Preview page', () => {
   describe('Staff', () => {
     beforeEach(async () => {
       const acceptedAssistanceNeedDecision =
-        await Fixture.preFilledAssistanceNeedDecision()
-          .withChild(childId)
-          .with({
-            status: 'ACCEPTED',
-            selectedUnit: testDaycare.id,
-            decisionMaker: {
-              employeeId: serviceWorker.id,
-              title: 'head teacher',
-              name: null,
-              phoneNumber: null
-            },
-            preparedBy1: {
-              employeeId: serviceWorker.id,
-              title: 'teacher',
-              phoneNumber: '010202020202',
-              name: null
-            },
-            guardianInfo: [
-              {
-                id: null,
-                personId: familyWithTwoGuardians.guardian.id,
-                isHeard: true,
-                name: '',
-                details: 'Guardian 1 details'
-              }
-            ]
-          })
-          .save()
+        await Fixture.preFilledAssistanceNeedDecision({
+          childId,
+          status: 'ACCEPTED',
+          selectedUnit: testDaycare.id,
+          decisionMaker: {
+            employeeId: serviceWorker.id,
+            title: 'head teacher',
+            name: null,
+            phoneNumber: null
+          },
+          preparedBy1: {
+            employeeId: serviceWorker.id,
+            title: 'teacher',
+            phoneNumber: '010202020202',
+            name: null
+          },
+          guardianInfo: [
+            {
+              id: null,
+              personId: familyWithTwoGuardians.guardian.id,
+              isHeard: true,
+              name: '',
+              details: 'Guardian 1 details'
+            }
+          ]
+        }).save()
 
       page = await openPage()
       await employeeLogin(page, staff)

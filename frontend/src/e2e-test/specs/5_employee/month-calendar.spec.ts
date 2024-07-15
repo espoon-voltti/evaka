@@ -38,10 +38,10 @@ beforeEach(async () => {
 
   await createDefaultServiceNeedOptions()
   const careArea = await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).careArea(careArea).save()
+  await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
   await Fixture.person().with(testChild2).saveChild()
   await Fixture.child(testChild2.id).save()
-  group = await Fixture.daycareGroup().with(testDaycareGroup).save()
+  group = await Fixture.daycareGroup(testDaycareGroup).save()
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
@@ -57,29 +57,27 @@ describe('Employee - Unit month calendar', () => {
     const term = new FiniteDateRange(today, today.addYears(1))
     const monday = LocalDate.of(2023, 3, 6)
     const termBreak = new FiniteDateRange(monday.addDays(1), monday.addDays(3))
-    await Fixture.preschoolTerm()
-      .with({
-        finnishPreschool: term,
-        swedishPreschool: term,
-        applicationPeriod: term,
-        extendedTerm: term,
-        termBreaks: [termBreak]
-      })
-      .save()
+    await Fixture.preschoolTerm({
+      finnishPreschool: term,
+      swedishPreschool: term,
+      applicationPeriod: term,
+      extendedTerm: term,
+      termBreaks: [termBreak]
+    }).save()
 
-    const placement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        type: 'PRESCHOOL',
-        startDate: today,
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .withPlacement(placement)
-      .withGroup(group)
-      .save()
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'PRESCHOOL',
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      daycareGroupId: group.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
 
     await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
@@ -106,18 +104,18 @@ describe('Employee - Unit month calendar', () => {
   })
 
   test('User can open the month calendar and add an absence for a child with only one absence category', async () => {
-    const placement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        startDate: today,
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .withPlacement(placement)
-      .withGroup(group)
-      .save()
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      daycareGroupId: group.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
 
     await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
@@ -165,19 +163,19 @@ describe('Employee - Unit month calendar', () => {
   })
 
   test('User can open the month calendar and add an absence for a child with two absence categories', async () => {
-    const placement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        type: 'PRESCHOOL_DAYCARE',
-        startDate: today,
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .withPlacement(placement)
-      .withGroup(group)
-      .save()
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      daycareGroupId: group.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
 
     await unitPage.navigateToUnit(testDaycare.id)
     const groupsPage = await unitPage.openGroupsPage()
@@ -259,19 +257,19 @@ describe('Employee - Unit month calendar', () => {
     const holidayRange = new FiniteDateRange(holidayStart, holidayEnd)
 
     beforeEach(async () => {
-      const kaarinaPlacement = await Fixture.placement()
-        .with({
-          childId: testChild2.id,
-          unitId: testDaycare.id,
-          type: 'PRESCHOOL_DAYCARE',
-          startDate: today,
-          endDate: today.addYears(1)
-        })
-        .save()
-      await Fixture.groupPlacement()
-        .withPlacement(kaarinaPlacement)
-        .withGroup(group)
-        .save()
+      const kaarinaPlacement = await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        type: 'PRESCHOOL_DAYCARE',
+        startDate: today,
+        endDate: today.addYears(1)
+      }).save()
+      await Fixture.groupPlacement({
+        daycarePlacementId: kaarinaPlacement.id,
+        daycareGroupId: group.id,
+        startDate: kaarinaPlacement.startDate,
+        endDate: kaarinaPlacement.endDate
+      }).save()
     })
 
     test('Missing holiday reservations are shown for holiday period dates that have no reservation or absence', async () => {
@@ -334,53 +332,49 @@ describe('Employee - Unit month calendar', () => {
     const placementStart = today.addMonths(-1)
     const placementEnd = today.addMonths(1)
 
-    const kaarinaPlacement = await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        type: 'DAYCARE',
-        startDate: placementStart,
-        endDate: placementEnd
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: kaarinaPlacement.id,
-        optionId: serviceNeedOption140h.id,
-        startDate: placementStart,
-        endDate: placementEnd,
-        confirmedBy: unitSupervisor.id
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .withPlacement(kaarinaPlacement)
-      .withGroup(group)
-      .save()
+    const kaarinaPlacement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: placementStart,
+      endDate: placementEnd
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: kaarinaPlacement.id,
+      optionId: serviceNeedOption140h.id,
+      startDate: placementStart,
+      endDate: placementEnd,
+      confirmedBy: unitSupervisor.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: kaarinaPlacement.id,
+      daycareGroupId: group.id,
+      startDate: kaarinaPlacement.startDate,
+      endDate: kaarinaPlacement.endDate
+    }).save()
 
     await Fixture.person().with(testChild).saveChild()
     await Fixture.child(testChild.id).save()
-    const jariPlacement = await Fixture.placement()
-      .with({
-        childId: testChild.id,
-        unitId: testDaycare.id,
-        type: 'DAYCARE',
-        startDate: placementStart,
-        endDate: placementEnd
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: jariPlacement.id,
-        optionId: serviceNeedOptionDaycare35.id,
-        startDate: placementStart,
-        endDate: placementEnd,
-        confirmedBy: unitSupervisor.id
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .withPlacement(jariPlacement)
-      .withGroup(group)
-      .save()
+    const jariPlacement = await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: placementStart,
+      endDate: placementEnd
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: jariPlacement.id,
+      optionId: serviceNeedOptionDaycare35.id,
+      startDate: placementStart,
+      endDate: placementEnd,
+      confirmedBy: unitSupervisor.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: jariPlacement.id,
+      daycareGroupId: group.id,
+      startDate: jariPlacement.startDate,
+      endDate: jariPlacement.endDate
+    }).save()
 
     const lastMonthWeekdays = [
       ...new FiniteDateRange(today.addMonths(-1), today.addDays(-1)).dates()

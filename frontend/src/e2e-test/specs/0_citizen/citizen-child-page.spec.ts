@@ -47,8 +47,8 @@ describe('Citizen children page', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
-    await Fixture.daycare().with(testPreschool).save()
+    await Fixture.daycare(testDaycare).save()
+    await Fixture.daycare(testPreschool).save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2]
@@ -151,7 +151,7 @@ describe('Citizen children page', () => {
     })
 
     test('Daycare placement cannot be terminated if termination is not enabled for unit', async () => {
-      await Fixture.daycare().with(testClub).save()
+      await Fixture.daycare(testClub).save()
 
       const endDate = mockedDate.addYears(2)
       await createDaycarePlacement(endDate, testClub.id, 'CLUB')
@@ -530,8 +530,8 @@ describe.each(['desktop', 'mobile'] as const)(
     beforeEach(async () => {
       await resetServiceState()
       await Fixture.careArea().with(testCareArea).save()
-      await Fixture.daycare().with(testDaycare).save()
-      await Fixture.daycare().with(testPreschool).save()
+      await Fixture.daycare(testDaycare).save()
+      await Fixture.daycare(testPreschool).save()
       await Fixture.family({
         guardian: testAdult,
         children: [testChild, testChild2]
@@ -570,24 +570,20 @@ describe.each(['desktop', 'mobile'] as const)(
           nameEn: 'Esiopetus (en)'
         })
         .save()
-      const placement = await Fixture.placement()
-        .with({
-          childId: testChild.id,
-          unitId: testDaycare.id,
-          type: 'DAYCARE',
-          startDate: mockedDate.subMonths(2),
-          endDate: mockedDate
-        })
-        .save()
-      await Fixture.serviceNeed()
-        .with({
-          placementId: placement.id,
-          startDate: mockedDate.subMonths(1),
-          endDate: mockedDate,
-          optionId: serviceNeedOption.id,
-          confirmedBy: daycareSupervisor.id
-        })
-        .save()
+      const placement = await Fixture.placement({
+        childId: testChild.id,
+        unitId: testDaycare.id,
+        type: 'DAYCARE',
+        startDate: mockedDate.subMonths(2),
+        endDate: mockedDate
+      }).save()
+      await Fixture.serviceNeed({
+        placementId: placement.id,
+        startDate: mockedDate.subMonths(1),
+        endDate: mockedDate,
+        optionId: serviceNeedOption.id,
+        confirmedBy: daycareSupervisor.id
+      }).save()
       await Fixture.dailyServiceTime(testChild.id)
         .with({
           validityPeriod: new DateRange(
@@ -620,15 +616,13 @@ describe.each(['desktop', 'mobile'] as const)(
           regularTimes: null
         })
         .save()
-      await Fixture.placement()
-        .with({
-          childId: testChild2.id,
-          unitId: testPreschool.id,
-          type: 'PRESCHOOL',
-          startDate: mockedDate.subMonths(1),
-          endDate: mockedDate
-        })
-        .save()
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testPreschool.id,
+        type: 'PRESCHOOL',
+        startDate: mockedDate.subMonths(1),
+        endDate: mockedDate
+      }).save()
 
       const keycloak = await KeycloakRealmClient.createCitizenClient()
       await keycloak.deleteAllUsers()

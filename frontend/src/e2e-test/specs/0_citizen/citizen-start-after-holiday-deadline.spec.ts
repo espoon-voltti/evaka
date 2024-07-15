@@ -36,11 +36,12 @@ beforeEach(async () => {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  daycare = await Fixture.daycare()
-    .with(testDaycare)
-    .careArea(await Fixture.careArea().with(testCareArea).save())
-    .save()
-  await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
+  const area = await Fixture.careArea().with(testCareArea).save()
+  daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: daycare.id
+  }).save()
 
   const child1 = await Fixture.person()
     .with(child)
@@ -50,14 +51,12 @@ beforeEach(async () => {
     .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
-  await Fixture.placement()
-    .child(child1)
-    .daycare(daycare)
-    .with({
-      startDate: startDate,
-      endDate: LocalDate.of(2026, 6, 30)
-    })
-    .save()
+  await Fixture.placement({
+    childId: child1.id,
+    unitId: daycare.id,
+    startDate: startDate,
+    endDate: LocalDate.of(2026, 6, 30)
+  }).save()
   await Fixture.holidayPeriod()
     .with({
       period,

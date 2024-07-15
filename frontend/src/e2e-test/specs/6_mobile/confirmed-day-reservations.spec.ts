@@ -262,38 +262,29 @@ async function createPlacements(
   groupId: string = testDaycareGroup.id,
   placementType: PlacementType = 'DAYCARE'
 ) {
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId: testDaycare.id,
-      type: placementType,
-      startDate: LocalDate.of(2021, 5, 1),
-      endDate: LocalDate.of(2022, 8, 31)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: groupId,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    })
-    .save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId: testDaycare.id,
+    type: placementType,
+    startDate: LocalDate.of(2021, 5, 1),
+    endDate: LocalDate.of(2022, 8, 31)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: groupId,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
   return daycarePlacementFixture
 }
 
 async function insertConfirmedDaysTestData() {
-  await Fixture.preschoolTerm()
-    .with({
-      ...preschoolTerm2021,
-      termBreaks: [
-        new FiniteDateRange(
-          LocalDate.of(2022, 5, 18),
-          LocalDate.of(2022, 5, 20)
-        )
-      ]
-    })
-    .save()
+  await Fixture.preschoolTerm({
+    ...preschoolTerm2021,
+    termBreaks: [
+      new FiniteDateRange(LocalDate.of(2022, 5, 18), LocalDate.of(2022, 5, 20))
+    ]
+  }).save()
 
   await Fixture.holiday()
     .with({
@@ -303,17 +294,15 @@ async function insertConfirmedDaysTestData() {
     .save()
 
   const careArea = await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare()
-    .with(testDaycare)
-    .careArea(careArea)
-    .with({
-      shiftCareOperationTimes: null,
-      shiftCareOpenOnHolidays: false
-    })
-    .save()
-  await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
-  await Fixture.daycareGroup().with(testDaycareGroup).save()
-  await Fixture.daycareGroup().with(group2).save()
+  await Fixture.daycare({
+    ...testDaycare,
+    areaId: careArea.id,
+    shiftCareOperationTimes: null,
+    shiftCareOpenOnHolidays: false
+  }).save()
+  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
+  await Fixture.daycareGroup(testDaycareGroup).save()
+  await Fixture.daycareGroup(group2).save()
 
   await Fixture.person().with(testChild2).saveChild()
   await Fixture.person().with(testChild).saveChild()
@@ -326,55 +315,45 @@ async function insertConfirmedDaysTestData() {
     .saveChild()
   await Fixture.person().with(testChildNoSsn).saveChild()
 
-  await Fixture.employee()
-    .with({ roles: ['ADMIN'] })
-    .save()
+  await Fixture.employee({ roles: ['ADMIN'] }).save()
 
   await createPlacements(testChildRestricted.id, testDaycareGroup.id)
   await createPlacements(testChild.id, testDaycareGroup.id)
   await createPlacements(testChild2.id, testDaycareGroup.id)
   await createPlacements(testChildNoSsn.id, testDaycareGroup.id, 'PRESCHOOL')
 
-  await Fixture.absence()
-    .with({
-      childId: testChild2.id,
-      date: LocalDate.of(2022, 5, 19)
-    })
-    .save()
-  await Fixture.assistanceFactor()
-    .with({
-      childId: testChild2.id,
-      capacityFactor: 1.5,
-      validDuring: new FiniteDateRange(
-        LocalDate.of(2022, 5, 27),
-        LocalDate.of(2022, 5, 27)
-      )
-    })
-    .save()
+  await Fixture.absence({
+    childId: testChild2.id,
+    date: LocalDate.of(2022, 5, 19)
+  }).save()
+  await Fixture.assistanceFactor({
+    childId: testChild2.id,
+    capacityFactor: 1.5,
+    validDuring: new FiniteDateRange(
+      LocalDate.of(2022, 5, 27),
+      LocalDate.of(2022, 5, 27)
+    )
+  }).save()
 
-  await Fixture.backupCare()
-    .with({
-      childId: testChild.id,
-      unitId: testDaycare2.id,
-      period: new FiniteDateRange(
-        LocalDate.of(2022, 5, 26),
-        LocalDate.of(2022, 5, 26)
-      ),
-      groupId: null
-    })
-    .save()
+  await Fixture.backupCare({
+    childId: testChild.id,
+    unitId: testDaycare2.id,
+    period: new FiniteDateRange(
+      LocalDate.of(2022, 5, 26),
+      LocalDate.of(2022, 5, 26)
+    ),
+    groupId: null
+  }).save()
 
-  await Fixture.backupCare()
-    .with({
-      childId: testChild.id,
-      unitId: testDaycare.id,
-      period: new FiniteDateRange(
-        LocalDate.of(2022, 5, 27),
-        LocalDate.of(2022, 5, 27)
-      ),
-      groupId: group2.id
-    })
-    .save()
+  await Fixture.backupCare({
+    childId: testChild.id,
+    unitId: testDaycare.id,
+    period: new FiniteDateRange(
+      LocalDate.of(2022, 5, 27),
+      LocalDate.of(2022, 5, 27)
+    ),
+    groupId: group2.id
+  }).save()
 
   await Fixture.attendanceReservation({
     type: 'RESERVATIONS',

@@ -32,7 +32,7 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -52,7 +52,7 @@ async function openPage(
 describe('Search person', () => {
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const specialEducationTeacher =
       await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)

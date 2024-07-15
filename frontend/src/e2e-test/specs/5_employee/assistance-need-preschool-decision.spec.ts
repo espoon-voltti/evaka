@@ -52,7 +52,7 @@ beforeEach(async () => {
   serviceWorker = await Fixture.employeeServiceWorker().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -78,8 +78,9 @@ const openPage = async (addDays = 0) =>
 
 describe('Assistance Need Preschool Decisions - Editing', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(childId)
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision({
+      childId
+    })
       .withGuardian(familyWithTwoGuardians.guardian.id)
       .withGuardian(familyWithTwoGuardians.otherGuardian.id)
       .save()
@@ -156,8 +157,9 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
 
 describe('Assistance Need Decisions - Decision process', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(childId)
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision({
+      childId
+    })
       .withGuardian(familyWithTwoGuardians.guardian.id)
       .withGuardian(familyWithTwoGuardians.otherGuardian.id)
       .withRequiredFieldsFilled(
@@ -249,8 +251,7 @@ describe('Decision visibility for role', () => {
   describe('Staff', () => {
     beforeEach(async () => {
       acceptedAssistanceNeedPreschoolDecision =
-        await Fixture.assistanceNeedPreschoolDecision()
-          .withChild(childId)
+        await Fixture.assistanceNeedPreschoolDecision({ childId })
           .withGuardian(familyWithTwoGuardians.guardian.id)
           .withGuardian(familyWithTwoGuardians.otherGuardian.id)
           .withForm({
@@ -269,8 +270,7 @@ describe('Decision visibility for role', () => {
           })
           .save()
 
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
+      await Fixture.assistanceNeedPreschoolDecision({ childId })
         .withGuardian(familyWithTwoGuardians.guardian.id)
         .withGuardian(familyWithTwoGuardians.otherGuardian.id)
         .withRequiredFieldsFilled(

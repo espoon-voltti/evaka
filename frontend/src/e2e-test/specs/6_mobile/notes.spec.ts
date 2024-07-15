@@ -35,21 +35,24 @@ describe('Child and group notes', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()
     child = testChild
     const unit = testDaycare
 
-    const daycareGroup = await Fixture.daycareGroup()
-      .with({ daycareId: unit.id })
-      .save()
-    const placementFixture = await Fixture.placement()
-      .with({ childId: child.id, unitId: unit.id })
-      .save()
-    await Fixture.groupPlacement()
-      .withGroup(daycareGroup)
-      .withPlacement(placementFixture)
-      .save()
+    const daycareGroup = await Fixture.daycareGroup({
+      daycareId: unit.id
+    }).save()
+    const placementFixture = await Fixture.placement({
+      childId: child.id,
+      unitId: unit.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementFixture.id,
+      startDate: placementFixture.startDate,
+      endDate: placementFixture.endDate
+    }).save()
 
     page = await Page.open()
 
@@ -129,31 +132,35 @@ describe('Child and group notes (backup care)', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     await Fixture.person().with(testChild).saveChild()
     child = testChild
     const unit = testDaycare
 
-    const daycareGroup = await Fixture.daycareGroup()
-      .with({ daycareId: unit.id })
-      .save()
-    const placementFixture = await Fixture.placement()
-      .with({ childId: child.id, unitId: unit.id })
-      .save()
-    await Fixture.groupPlacement()
-      .withGroup(daycareGroup)
-      .withPlacement(placementFixture)
-      .save()
+    const daycareGroup = await Fixture.daycareGroup({
+      daycareId: unit.id
+    }).save()
+    const placementFixture = await Fixture.placement({
+      childId: child.id,
+      unitId: unit.id
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementFixture.id,
+      startDate: placementFixture.startDate,
+      endDate: placementFixture.endDate
+    }).save()
 
     const careArea = await Fixture.careArea().save()
-    backupCareDaycare = await Fixture.daycare().careArea(careArea).save()
-    backupCareDaycareGroup = await Fixture.daycareGroup()
-      .daycare(backupCareDaycare)
-      .save()
-    await Fixture.backupCare()
-      .with({ childId: child.id })
-      .withGroup(backupCareDaycareGroup)
-      .save()
+    backupCareDaycare = await Fixture.daycare({ areaId: careArea.id }).save()
+    backupCareDaycareGroup = await Fixture.daycareGroup({
+      daycareId: backupCareDaycare.id
+    }).save()
+    await Fixture.backupCare({
+      unitId: backupCareDaycareGroup.daycareId,
+      groupId: backupCareDaycareGroup.id,
+      childId: child.id
+    }).save()
 
     page = await Page.open()
 

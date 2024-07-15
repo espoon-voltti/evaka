@@ -44,7 +44,7 @@ let adultWithoutSSN: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -62,14 +62,12 @@ beforeEach(async () => {
       postOffice: 'Espoo'
     })
     .saveAdult()
-  await Fixture.parentship()
-    .with({
-      childId: testChild2.id,
-      headOfChildId: testAdult.id,
-      startDate: testChild2.dateOfBirth,
-      endDate: LocalDate.of(2099, 1, 1)
-    })
-    .save()
+  await Fixture.parentship({
+    childId: testChild2.id,
+    headOfChildId: testAdult.id,
+    startDate: testChild2.dateOfBirth,
+    endDate: LocalDate.of(2099, 1, 1)
+  }).save()
 
   feeDecisionFixture = feeDecisionsFixture(
     'SENT',

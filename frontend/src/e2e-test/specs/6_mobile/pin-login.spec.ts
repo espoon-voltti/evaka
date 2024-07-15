@@ -48,7 +48,7 @@ const pin = '2580'
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   child = testChild
   const unit = testDaycare
@@ -62,17 +62,18 @@ beforeEach(async () => {
     })
     .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
-  await Fixture.employeePin().with({ userId: employee.id, pin }).save()
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({ daycareId: unit.id })
-    .save()
-  const placementFixture = await Fixture.placement()
-    .with({ childId: child.id, unitId: unit.id })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixture)
-    .save()
+  await Fixture.employeePin({ userId: employee.id, pin }).save()
+  const daycareGroup = await Fixture.daycareGroup({ daycareId: unit.id }).save()
+  const placementFixture = await Fixture.placement({
+    childId: child.id,
+    unitId: unit.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixture.id,
+    startDate: placementFixture.startDate,
+    endDate: placementFixture.endDate
+  }).save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)

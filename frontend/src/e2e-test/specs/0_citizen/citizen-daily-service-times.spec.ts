@@ -35,11 +35,12 @@ beforeEach(async () => {
   await resetServiceState()
   page = await Page.open()
 
-  daycare = await Fixture.daycare()
-    .with(testDaycare)
-    .careArea(await Fixture.careArea().with(testCareArea).save())
-    .save()
-  await Fixture.daycareGroup().with(testDaycareGroup).daycare(daycare).save()
+  const area = await Fixture.careArea().with(testCareArea).save()
+  daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: daycare.id
+  }).save()
 
   const child1 = await Fixture.person()
     .with(child)
@@ -49,14 +50,12 @@ beforeEach(async () => {
     .saveAdult({ updateMockVtjWithDependants: [child1] })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
-  await Fixture.placement()
-    .child(child1)
-    .daycare(daycare)
-    .with({
-      startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2036, 6, 30)
-    })
-    .save()
+  await Fixture.placement({
+    childId: child1.id,
+    unitId: daycare.id,
+    startDate: LocalDate.of(2020, 1, 1),
+    endDate: LocalDate.of(2036, 6, 30)
+  }).save()
   dailyServiceTime = await Fixture.dailyServiceTime(child1.id).save()
 })
 

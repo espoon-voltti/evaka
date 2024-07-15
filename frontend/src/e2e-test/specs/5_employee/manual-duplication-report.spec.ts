@@ -25,12 +25,14 @@ describe('Manual duplication report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const preschool = await Fixture.daycare()
-      .with({ areaId: area.id, type: ['PRESCHOOL'] })
-      .save()
-    const daycare = await Fixture.daycare()
-      .with({ areaId: area.id, type: ['CENTRE'] })
-      .save()
+    const preschool = await Fixture.daycare({
+      areaId: area.id,
+      type: ['PRESCHOOL']
+    }).save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      type: ['CENTRE']
+    }).save()
     const guardian = await Fixture.person().with({ ssn: null }).saveAdult()
     const child = await Fixture.person().with({ ssn: null }).saveChild()
 
@@ -57,28 +59,24 @@ describe('Manual duplication report', () => {
         }
       ]
     })
-    await Fixture.decision()
-      .with({
-        applicationId: application1Id,
-        employeeId: admin.id,
-        unitId: preschool.id,
-        type: 'PRESCHOOL',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
-    await Fixture.decision()
-      .with({
-        applicationId: application1Id,
-        employeeId: admin.id,
-        unitId: daycare.id,
-        type: 'PRESCHOOL_DAYCARE',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application1Id,
+      employeeId: admin.id,
+      unitId: preschool.id,
+      type: 'PRESCHOOL',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
+    await Fixture.decision({
+      applicationId: application1Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
 
     const application2Id = uuidv4()
     await createApplications({
@@ -99,28 +97,24 @@ describe('Manual duplication report', () => {
         }
       ]
     })
-    await Fixture.decision()
-      .with({
-        applicationId: application2Id,
-        employeeId: admin.id,
-        unitId: daycare.id,
-        type: 'PRESCHOOL',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
-    await Fixture.decision()
-      .with({
-        applicationId: application2Id,
-        employeeId: admin.id,
-        unitId: daycare.id,
-        type: 'PRESCHOOL_DAYCARE',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
+    await Fixture.decision({
+      applicationId: application2Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
 
     const report = await navigateToReport(page, admin)
     await report.assertRows([

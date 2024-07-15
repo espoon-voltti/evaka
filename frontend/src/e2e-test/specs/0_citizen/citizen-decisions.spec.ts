@@ -41,9 +41,9 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.preschoolTerm().with(preschoolTerm2022).save()
+  await Fixture.preschoolTerm(preschoolTerm2022).save()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
@@ -251,22 +251,17 @@ describe('Citizen application decisions', () => {
 
 describe('Citizen assistance decisions', () => {
   test('Accepted decision', async () => {
-    const decision = await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'ACCEPTED',
-        assistanceLevels: [
-          'ASSISTANCE_SERVICES_FOR_TIME',
-          'ENHANCED_ASSISTANCE'
-        ],
-        validityPeriod: new DateRange(
-          LocalDate.of(2020, 2, 5),
-          LocalDate.of(2021, 5, 11)
-        ),
-        decisionMade: LocalDate.of(2020, 1, 17)
-      })
-      .save()
+    const decision = await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'ACCEPTED',
+      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
+      validityPeriod: new DateRange(
+        LocalDate.of(2020, 2, 5),
+        LocalDate.of(2021, 5, 11)
+      ),
+      decisionMade: LocalDate.of(2020, 1, 17)
+    }).save()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertAssistanceDecision(
@@ -284,16 +279,14 @@ describe('Citizen assistance decisions', () => {
   })
 
   test('Rejected decision', async () => {
-    const decision = await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'REJECTED',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
-        decisionMade: LocalDate.of(2021, 1, 17)
-      })
-      .save()
+    const decision = await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'REJECTED',
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
+      validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
+      decisionMade: LocalDate.of(2021, 1, 17)
+    }).save()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertAssistanceDecision(
@@ -310,17 +303,15 @@ describe('Citizen assistance decisions', () => {
   })
 
   test('Annulled decision', async () => {
-    const decision = await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'ANNULLED',
-        annulmentReason: 'Well because',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
-        decisionMade: LocalDate.of(2021, 1, 17)
-      })
-      .save()
+    const decision = await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'ANNULLED',
+      annulmentReason: 'Well because',
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
+      validityPeriod: new DateRange(LocalDate.of(2022, 2, 10), null),
+      decisionMade: LocalDate.of(2021, 1, 17)
+    }).save()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertAssistanceDecision(
@@ -337,63 +328,52 @@ describe('Citizen assistance decisions', () => {
   })
 
   test('Drafts or decisions that need work are not shown', async () => {
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'NEEDS_WORK',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        decisionMade: LocalDate.of(2021, 1, 17)
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'NEEDS_WORK',
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
+      decisionMade: LocalDate.of(2021, 1, 17)
+    }).save()
 
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'DRAFT',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        decisionMade: LocalDate.of(2021, 1, 17)
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'DRAFT',
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
+      decisionMade: LocalDate.of(2021, 1, 17)
+    }).save()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertNoChildDecisions(testChild2.id)
   })
-
   test('Unread assistance decisions are indicated', async () => {
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'ACCEPTED',
-        assistanceLevels: ['SPECIAL_ASSISTANCE'],
-        decisionMade: LocalDate.of(2020, 1, 17),
-        unreadGuardianIds: [testAdult.id]
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'ACCEPTED',
+      assistanceLevels: ['SPECIAL_ASSISTANCE'],
+      decisionMade: LocalDate.of(2020, 1, 17),
+      unreadGuardianIds: [testAdult.id]
+    }).save()
 
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'REJECTED',
-        assistanceLevels: ['SPECIAL_ASSISTANCE'],
-        decisionMade: LocalDate.of(2018, 1, 17),
-        unreadGuardianIds: [testAdult.id]
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'REJECTED',
+      assistanceLevels: ['SPECIAL_ASSISTANCE'],
+      decisionMade: LocalDate.of(2018, 1, 17),
+      unreadGuardianIds: [testAdult.id]
+    }).save()
 
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChildRestricted.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'ACCEPTED',
-        assistanceLevels: ['SPECIAL_ASSISTANCE'],
-        decisionMade: LocalDate.of(2020, 1, 17),
-        unreadGuardianIds: [testAdult.id]
-      })
-      .save()
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChildRestricted.id,
+      selectedUnit: testDaycare.id,
+      status: 'ACCEPTED',
+      assistanceLevels: ['SPECIAL_ASSISTANCE'],
+      decisionMade: LocalDate.of(2020, 1, 17),
+      unreadGuardianIds: [testAdult.id]
+    }).save()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(testAdult)
 
     await citizenDecisionsPage.assertUnreadAssistanceNeedDecisions(
@@ -408,28 +388,26 @@ describe('Citizen assistance decisions', () => {
 
   test('Preview shows filled information', async () => {
     const serviceWorker = await Fixture.employeeServiceWorker().save()
-    const decision = await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(testChild2.id)
-      .with({
-        selectedUnit: testDaycare.id,
-        status: 'ACCEPTED',
-        assistanceLevels: ['ENHANCED_ASSISTANCE'],
-        validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
-        decisionMade: LocalDate.of(2021, 1, 17),
-        decisionMaker: {
-          employeeId: serviceWorker.id,
-          title: 'head teacher',
-          name: null,
-          phoneNumber: null
-        },
-        preparedBy1: {
-          employeeId: serviceWorker.id,
-          title: 'teacher',
-          phoneNumber: '010202020202',
-          name: null
-        }
-      })
-      .save()
+    const decision = await Fixture.preFilledAssistanceNeedDecision({
+      childId: testChild2.id,
+      selectedUnit: testDaycare.id,
+      status: 'ACCEPTED',
+      assistanceLevels: ['ENHANCED_ASSISTANCE'],
+      validityPeriod: new DateRange(LocalDate.of(2020, 2, 5), null),
+      decisionMade: LocalDate.of(2021, 1, 17),
+      decisionMaker: {
+        employeeId: serviceWorker.id,
+        title: 'head teacher',
+        name: null,
+        phoneNumber: null
+      },
+      preparedBy1: {
+        employeeId: serviceWorker.id,
+        title: 'teacher',
+        phoneNumber: '010202020202',
+        name: null
+      }
+    }).save()
 
     const { page, citizenDecisionsPage } =
       await openCitizenDecisionsPage(testAdult)
@@ -503,8 +481,9 @@ describe('Citizen assistance decisions', () => {
 
 describe('Citizen assistance preschool decisions', () => {
   test('Decisions are properly listed', async () => {
-    const decision = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -524,8 +503,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    const decision2 = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision2 = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -545,8 +525,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    const decision3 = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision3 = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -565,8 +546,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    const decision4 = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision4 = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -585,8 +567,9 @@ describe('Citizen assistance preschool decisions', () => {
       })
       .save()
 
-    const decision5 = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision5 = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -607,8 +590,7 @@ describe('Citizen assistance preschool decisions', () => {
       .save()
 
     // should not be shown
-    await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    await Fixture.assistanceNeedPreschoolDecision({ childId: testChild2.id })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -626,8 +608,7 @@ describe('Citizen assistance preschool decisions', () => {
       .save()
 
     // should not be shown
-    await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    await Fixture.assistanceNeedPreschoolDecision({ childId: testChild2.id })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,
@@ -711,8 +692,9 @@ describe('Citizen assistance preschool decisions', () => {
   })
 
   test('Preview shows filled information', async () => {
-    const decision = await Fixture.assistanceNeedPreschoolDecision()
-      .withChild(testChild2.id)
+    const decision = await Fixture.assistanceNeedPreschoolDecision({
+      childId: testChild2.id
+    })
       .withGuardian(testAdult.id)
       .withRequiredFieldsFilled(
         testDaycare.id,

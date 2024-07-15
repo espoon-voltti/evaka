@@ -36,7 +36,7 @@ const today = now.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open({
@@ -106,14 +106,12 @@ describe('Income statements', () => {
   })
 
   test('Income statement can be filtered by child placement unit provider type', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        headOfChild: testAdult.id,
-        childId: testChild.id,
-        startDate: today.addYears(-1),
-        endDate: today.addYears(1)
-      })
-      .save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: today.addYears(-1),
+      endDate: today.addYears(1)
+    }).save()
 
     const startDate = today.addYears(-1)
     const endDate = today

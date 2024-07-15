@@ -10,7 +10,11 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { Fixture, fullDayTimeRange } from '../../dev-api/fixtures'
+import {
+  Fixture,
+  fullDayTimeRange,
+  preschoolTerm2023
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -29,32 +33,27 @@ describe('when placement is ending tomorrow', () => {
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
-    unit = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        enabledPilotFeatures: ['RESERVATIONS']
-      })
-      .save()
-    const group = await Fixture.daycareGroup()
-      .with({ daycareId: unit.id, startDate: mockedToday })
-      .save()
+    unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS']
+    }).save()
+    const group = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      startDate: mockedToday
+    }).save()
     child = await Fixture.person().saveChild()
-    const placement = await Fixture.placement()
-      .with({
-        childId: child.id,
-        unitId: unit.id,
-        startDate: mockedToday,
-        endDate: mockedTomorrow
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: group.id,
-        daycarePlacementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate
-      })
-      .save()
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedTomorrow
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
   })
 
   test('reservation times can be added', async () => {
@@ -141,9 +140,7 @@ describe('when placement is ending tomorrow', () => {
   })
 
   test('absence can be overridden', async () => {
-    await Fixture.absence()
-      .with({ childId: child.id, date: mockedTomorrow })
-      .save()
+    await Fixture.absence({ childId: child.id, date: mockedTomorrow }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)
     const reservationsPage = await navigateToReservations(page, child.id)
@@ -190,42 +187,37 @@ describe('when child is in preschool only', () => {
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
-    unit = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        enabledPilotFeatures: ['RESERVATIONS'],
-        operationTimes: [
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          null,
-          null
-        ]
-      })
-      .save()
-    const group = await Fixture.daycareGroup()
-      .with({ daycareId: unit.id, startDate: mockedToday })
-      .save()
+    unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS'],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ]
+    }).save()
+    const group = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      startDate: mockedToday
+    }).save()
     child = await Fixture.person().saveChild()
-    const placement = await Fixture.placement()
-      .with({
-        type: 'PRESCHOOL',
-        childId: child.id,
-        unitId: unit.id,
-        startDate: mockedToday,
-        endDate: mockedTomorrow
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: group.id,
-        daycarePlacementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate
-      })
-      .save()
+    const placement = await Fixture.placement({
+      type: 'PRESCHOOL',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedTomorrow
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
   })
 
   test('fixed schedule day', async () => {
@@ -239,9 +231,7 @@ describe('when child is in preschool only', () => {
   })
 
   test('absence can be removed from fixed schedule day', async () => {
-    await Fixture.absence()
-      .with({ childId: child.id, date: mockedTomorrow })
-      .save()
+    await Fixture.absence({ childId: child.id, date: mockedTomorrow }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)
     const reservationsPage = await navigateToReservations(page, child.id)
@@ -258,12 +248,11 @@ describe('when child is in preschool only', () => {
   })
 
   test('term break day', async () => {
-    await Fixture.preschoolTerm()
-      .with({
-        finnishPreschool: new FiniteDateRange(mockedTomorrow, mockedTomorrow),
-        termBreaks: [new FiniteDateRange(mockedTomorrow, mockedTomorrow)]
-      })
-      .save()
+    await Fixture.preschoolTerm({
+      ...preschoolTerm2023,
+      finnishPreschool: new FiniteDateRange(mockedTomorrow, mockedTomorrow),
+      termBreaks: [new FiniteDateRange(mockedTomorrow, mockedTomorrow)]
+    }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)
     const reservationsPage = await navigateToReservations(page, child.id)
@@ -282,62 +271,55 @@ describe('when unit is open every day for shift care child', () => {
 
   beforeEach(async () => {
     const area = await Fixture.careArea().save()
-    unit = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        enabledPilotFeatures: ['RESERVATIONS'],
-        operationTimes: [
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          null,
-          null
-        ],
-        shiftCareOperationTimes: [
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange,
-          fullDayTimeRange
-        ]
-      })
-      .save()
-    const group = await Fixture.daycareGroup()
-      .with({ daycareId: unit.id, startDate: mockedToday })
-      .save()
+    unit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures: ['RESERVATIONS'],
+      operationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        null,
+        null
+      ],
+      shiftCareOperationTimes: [
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange,
+        fullDayTimeRange
+      ]
+    }).save()
+    const group = await Fixture.daycareGroup({
+      daycareId: unit.id,
+      startDate: mockedToday
+    }).save()
     child = await Fixture.person().saveChild()
-    const placement = await Fixture.placement()
-      .with({
-        childId: child.id,
-        unitId: unit.id,
-        startDate: mockedToday,
-        endDate: mockedToday.addYears(1)
-      })
-      .save()
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addYears(1)
+    }).save()
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
     const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate,
-        optionId: serviceNeedOption.id,
-        confirmedBy: unitSupervisor.id,
-        shiftCare: 'FULL'
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: group.id,
-        daycarePlacementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: unitSupervisor.id,
+      shiftCare: 'FULL'
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: group.id,
+      daycarePlacementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
   })
 
   test('reservation can be added to every non-reservable day', async () => {

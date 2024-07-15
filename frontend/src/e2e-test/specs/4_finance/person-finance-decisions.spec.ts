@@ -38,8 +38,8 @@ beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
-  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
@@ -132,14 +132,12 @@ describe('Person finance decisions', () => {
     await createVoucherValues()
 
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-    await Fixture.parentship()
-      .with({
-        childId: testChild2.id,
-        headOfChildId: testAdult.id,
-        startDate: testChild2.dateOfBirth,
-        endDate: LocalDate.of(2099, 1, 1)
-      })
-      .save()
+    await Fixture.parentship({
+      childId: testChild2.id,
+      headOfChildId: testAdult.id,
+      startDate: testChild2.dateOfBirth,
+      endDate: LocalDate.of(2099, 1, 1)
+    }).save()
 
     await createDaycarePlacements({
       body: [

@@ -47,7 +47,7 @@ const childZeroYo = Fixture.person().with({
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.person()
     .with(testAdultRestricted)
@@ -58,35 +58,33 @@ beforeEach(async () => {
   fridgePartner = familyWithTwoGuardians.otherGuardian
   child = familyWithTwoGuardians.children[0]
   await Fixture.person().with(childZeroYo).saveChild()
-  await Fixture.feeThresholds()
-    .with({
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      minIncomeThreshold2: 210200,
-      minIncomeThreshold3: 271300,
-      minIncomeThreshold4: 308000,
-      minIncomeThreshold5: 344700,
-      minIncomeThreshold6: 381300,
-      maxIncomeThreshold2: 479900,
-      maxIncomeThreshold3: 541000,
-      maxIncomeThreshold4: 577700,
-      maxIncomeThreshold5: 614400,
-      maxIncomeThreshold6: 651000,
-      incomeMultiplier2: 0.107,
-      incomeMultiplier3: 0.107,
-      incomeMultiplier4: 0.107,
-      incomeMultiplier5: 0.107,
-      incomeMultiplier6: 0.107,
-      incomeThresholdIncrease6Plus: 14200,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8,
-      minFee: 2700,
-      maxFee: 28900,
-      temporaryFee: 2800,
-      temporaryFeePartDay: 1500,
-      temporaryFeeSibling: 1500,
-      temporaryFeeSiblingPartDay: 800
-    })
-    .save()
+  await Fixture.feeThresholds({
+    validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
+    minIncomeThreshold2: 210200,
+    minIncomeThreshold3: 271300,
+    minIncomeThreshold4: 308000,
+    minIncomeThreshold5: 344700,
+    minIncomeThreshold6: 381300,
+    maxIncomeThreshold2: 479900,
+    maxIncomeThreshold3: 541000,
+    maxIncomeThreshold4: 577700,
+    maxIncomeThreshold5: 614400,
+    maxIncomeThreshold6: 651000,
+    incomeMultiplier2: 0.107,
+    incomeMultiplier3: 0.107,
+    incomeMultiplier4: 0.107,
+    incomeMultiplier5: 0.107,
+    incomeMultiplier6: 0.107,
+    incomeThresholdIncrease6Plus: 14200,
+    siblingDiscount2: 0.5,
+    siblingDiscount2Plus: 0.8,
+    minFee: 2700,
+    maxFee: 28900,
+    temporaryFee: 2800,
+    temporaryFeePartDay: 1500,
+    temporaryFeeSibling: 1500,
+    temporaryFeeSiblingPartDay: 800
+  }).save()
 
   const admin = await Fixture.employeeAdmin().save()
 
@@ -185,55 +183,49 @@ describe('Employee - Head of family details', () => {
   })
 
   test('Manually added income is shown in family overview', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        id: uuidv4(),
-        childId: child.id,
-        headOfChild: regularPerson.id,
-        startDate: mockToday,
-        endDate: mockToday
-      })
-      .save()
+    await Fixture.fridgeChild({
+      id: uuidv4(),
+      childId: child.id,
+      headOfChild: regularPerson.id,
+      startDate: mockToday,
+      endDate: mockToday
+    }).save()
 
     const totalIncome = 100000
     const employee = await Fixture.employee().save()
-    await Fixture.income()
-      .with({
-        personId: regularPerson.id,
-        effect: 'INCOME',
-        validFrom: mockToday,
-        validTo: mockToday.addYears(1),
-        data: {
-          MAIN_INCOME: {
-            multiplier: 1,
-            amount: totalIncome,
-            monthlyAmount: totalIncome,
-            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
-          }
-        },
-        updatedBy: employee.id
-      })
-      .save()
+    await Fixture.income({
+      personId: regularPerson.id,
+      effect: 'INCOME',
+      validFrom: mockToday,
+      validTo: mockToday.addYears(1),
+      data: {
+        MAIN_INCOME: {
+          multiplier: 1,
+          amount: totalIncome,
+          monthlyAmount: totalIncome,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      updatedBy: employee.id
+    }).save()
 
     const totalChildIncome = 1234
 
-    await Fixture.income()
-      .with({
-        personId: child.id,
-        effect: 'INCOME',
-        validFrom: mockToday,
-        validTo: mockToday.addYears(1),
-        data: {
-          MAIN_INCOME: {
-            multiplier: 1,
-            amount: totalChildIncome,
-            monthlyAmount: totalChildIncome,
-            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
-          }
-        },
-        updatedBy: employee.id
-      })
-      .save()
+    await Fixture.income({
+      personId: child.id,
+      effect: 'INCOME',
+      validFrom: mockToday,
+      validTo: mockToday.addYears(1),
+      data: {
+        MAIN_INCOME: {
+          multiplier: 1,
+          amount: totalChildIncome,
+          monthlyAmount: totalChildIncome,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      updatedBy: employee.id
+    }).save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const familyOverview =

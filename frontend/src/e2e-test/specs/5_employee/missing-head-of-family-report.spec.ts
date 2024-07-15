@@ -22,30 +22,26 @@ describe('Missing head of family report', () => {
 
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
     const child = await Fixture.person().with({ lastName: '1' }).saveChild()
-    await Fixture.placement()
-      .with({
-        type: 'DAYCARE',
-        childId: child.id,
-        unitId: unit.id,
-        startDate: mockedToday,
-        endDate: mockedToday.addDays(4)
-      })
-      .save()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addDays(4)
+    }).save()
     const duplicate = await Fixture.person()
       .with({ ssn: null, duplicateOf: child.id, lastName: '2' })
       .saveChild()
     await Fixture.child(duplicate.id).save()
-    await Fixture.placement()
-      .with({
-        type: 'DAYCARE',
-        childId: duplicate.id,
-        unitId: unit.id,
-        startDate: mockedToday,
-        endDate: mockedToday.addDays(2)
-      })
-      .save()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: duplicate.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addDays(2)
+    }).save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),

@@ -22,16 +22,12 @@ let childInfo: ChildInformationPage
 beforeAll(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare()
-    .with({ ...testDaycare, areaId: testCareArea.id })
-    .save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.person().with(testChild).saveChild()
-  await Fixture.placement()
-    .with({
-      childId: testChild.id,
-      unitId: testDaycare.id
-    })
-    .save()
+  await Fixture.placement({
+    childId: testChild.id,
+    unitId: testDaycare.id
+  }).save()
 })
 beforeEach(async () => {
   page = await Page.open()

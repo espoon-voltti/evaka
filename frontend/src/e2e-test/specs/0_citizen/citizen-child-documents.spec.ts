@@ -41,7 +41,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -70,9 +70,10 @@ beforeEach(async () => {
       .save()
   ).id
   documentIdHojks = (
-    await Fixture.childDocument()
-      .withTemplate(templateIdHojks)
-      .withChild(child.id)
+    await Fixture.childDocument({
+      childId: child.id,
+      templateId: templateIdHojks
+    })
       .withPublishedAt(mockedNow)
       .withPublishedContent({
         answers: [
@@ -96,9 +97,10 @@ beforeEach(async () => {
       .save()
   ).id
   documentIdPed = (
-    await Fixture.childDocument()
-      .withTemplate(templateIdPed)
-      .withChild(child.id)
+    await Fixture.childDocument({
+      templateId: templateIdPed,
+      childId: child.id
+    })
       .withModifiedAt(mockedNow)
       .withPublishedAt(mockedNow)
       .withPublishedContent({

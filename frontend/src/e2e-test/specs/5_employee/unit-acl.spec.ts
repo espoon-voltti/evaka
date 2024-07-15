@@ -50,7 +50,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   daycareId = testDaycare.id
 
   await Fixture.employeeUnitSupervisor(testDaycare.id).with(esko).save()
@@ -153,9 +153,11 @@ describe('Employee - unit ACL', () => {
       await editModal.saveButton.click()
     }
 
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
@@ -296,9 +298,11 @@ describe('Employee - unit ACL - temporary employee', () => {
   })
 
   test('Temporary staff can be added and assigned/removed to/from groups', async () => {
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
@@ -448,9 +452,11 @@ describe('Employee - unit ACL - temporary employee', () => {
   })
 
   test('Temporary staff member can be deleted', async () => {
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)

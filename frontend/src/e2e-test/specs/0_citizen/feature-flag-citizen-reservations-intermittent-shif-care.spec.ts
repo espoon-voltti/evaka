@@ -219,64 +219,56 @@ const addTestData = async (date: LocalDate) => {
   const operationTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 
   const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare()
-    .with({
-      name: '10h/5d',
-      areaId: area.id,
-      type: ['CENTRE'],
-      providerType: 'MUNICIPAL',
-      operationTimes: [
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        null,
-        null
-      ],
-      shiftCareOperationTimes: null,
-      shiftCareOpenOnHolidays: false,
-      enabledPilotFeatures: ['RESERVATIONS']
-    })
-    .save()
-  const group = await Fixture.daycareGroup().with({ daycareId: unit.id }).save()
+  const unit = await Fixture.daycare({
+    name: '10h/5d',
+    areaId: area.id,
+    type: ['CENTRE'],
+    providerType: 'MUNICIPAL',
+    operationTimes: [
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      null,
+      null
+    ],
+    shiftCareOperationTimes: null,
+    shiftCareOpenOnHolidays: false,
+    enabledPilotFeatures: ['RESERVATIONS']
+  }).save()
+  const group = await Fixture.daycareGroup({ daycareId: unit.id }).save()
 
   const child = testChild
   const parent = testAdult
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unit.id).save()
 
-  const placement = await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child.id,
-      unitId: unit.id,
-      startDate: date,
-      endDate: date.addDays(30)
-    })
-    .save()
+  const placement = await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child.id,
+    unitId: unit.id,
+    startDate: date,
+    endDate: date.addDays(30)
+  }).save()
   const serviceNeedOption = await Fixture.serviceNeedOption()
     .with({ validPlacementType: 'DAYCARE' })
     .save()
-  await Fixture.serviceNeed()
-    .with({
-      placementId: placement.id,
-      startDate: placement.startDate,
-      endDate: placement.endDate,
-      optionId: serviceNeedOption.id,
-      shiftCare: 'INTERMITTENT',
-      confirmedBy: unitSupervisor.id,
-      confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: group.id,
-      daycarePlacementId: placement.id,
-      startDate: placement.startDate,
-      endDate: placement.endDate
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate,
+    optionId: serviceNeedOption.id,
+    shiftCare: 'INTERMITTENT',
+    confirmedBy: unitSupervisor.id,
+    confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: group.id,
+    daycarePlacementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate
+  }).save()
 
   return { parent, child }
 }

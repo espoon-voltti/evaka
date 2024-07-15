@@ -53,10 +53,10 @@ let applicationId: string
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  await Fixture.preschoolTerm().with(preschoolTerm2021).save()
+  await Fixture.preschoolTerm(preschoolTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
-  await Fixture.daycare().with(testPreschool).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testPreschool).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
@@ -189,43 +189,35 @@ describe('Application transitions', () => {
   test('Placement dialog works', async () => {
     const preferredStartDate = mockedTime
 
-    const group = await Fixture.daycareGroup()
-      .with({ daycareId: testDaycare.id })
-      .save()
-    await Fixture.daycareCaretakers()
-      .with({
-        groupId: group.id,
-        startDate: preferredStartDate,
-        amount: 1
-      })
-      .save()
+    const group = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
+    await Fixture.daycareCaretakers({
+      groupId: group.id,
+      startDate: preferredStartDate,
+      amount: 1
+    }).save()
 
-    const group2 = await Fixture.daycareGroup()
-      .with({ daycareId: testPreschool.id })
-      .save()
-    await Fixture.daycareCaretakers()
-      .with({
-        groupId: group2.id,
-        startDate: preferredStartDate,
-        amount: 2
-      })
-      .save()
+    const group2 = await Fixture.daycareGroup({
+      daycareId: testPreschool.id
+    }).save()
+    await Fixture.daycareCaretakers({
+      groupId: group2.id,
+      startDate: preferredStartDate,
+      amount: 2
+    }).save()
 
     // Create existing placements to show meaningful occupancy values
-    await Fixture.placement()
-      .with({
-        unitId: testDaycare.id,
-        childId: testChildRestricted.id,
-        startDate: preferredStartDate
-      })
-      .save()
-    await Fixture.placement()
-      .with({
-        unitId: testPreschool.id,
-        childId: testChild.id,
-        startDate: preferredStartDate
-      })
-      .save()
+    await Fixture.placement({
+      unitId: testDaycare.id,
+      childId: testChildRestricted.id,
+      startDate: preferredStartDate
+    }).save()
+    await Fixture.placement({
+      unitId: testPreschool.id,
+      childId: testChild.id,
+      startDate: preferredStartDate
+    }).save()
 
     const fixture = {
       ...applicationFixture(
@@ -664,34 +656,28 @@ describe('Application transitions', () => {
 
     await createApplications({ body: [application1, application2] })
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application1.id,
-        unitId: testDaycare.id,
-        periodStart: placementStartDate,
-        periodEnd: placementStartDate
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application1.id,
+      unitId: testDaycare.id,
+      periodStart: placementStartDate,
+      periodEnd: placementStartDate
+    }).save()
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application2.id,
-        unitId: testDaycare.id,
-        periodStart: placementStartDate,
-        periodEnd: placementStartDate
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application2.id,
+      unitId: testDaycare.id,
+      periodStart: placementStartDate,
+      periodEnd: placementStartDate
+    }).save()
 
     const decisionId = (
-      await Fixture.decision()
-        .with({
-          applicationId: application2.id,
-          employeeId: serviceWorker.id,
-          unitId: testDaycare.id,
-          startDate: placementStartDate,
-          endDate: placementStartDate
-        })
-        .save()
+      await Fixture.decision({
+        applicationId: application2.id,
+        employeeId: serviceWorker.id,
+        unitId: testDaycare.id,
+        startDate: placementStartDate,
+        endDate: placementStartDate
+      }).save()
     ).id
 
     await rejectDecisionByCitizen({ id: decisionId })

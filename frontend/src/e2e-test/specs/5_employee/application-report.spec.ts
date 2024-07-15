@@ -19,18 +19,16 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
 
   const careArea2 = await Fixture.careArea()
     .with({ name: 'Toinen alue' })
     .save()
-  await Fixture.daycare()
-    .with({
-      name: 'Palvelusetelikoti',
-      providerType: 'PRIVATE_SERVICE_VOUCHER'
-    })
-    .careArea(careArea2)
-    .save()
+  await Fixture.daycare({
+    areaId: careArea2.id,
+    name: 'Palvelusetelikoti',
+    providerType: 'PRIVATE_SERVICE_VOUCHER'
+  }).save()
 
   const admin = await Fixture.employeeAdmin().save()
 

@@ -23,7 +23,7 @@ let child4: DevPerson
 beforeEach(async () => {
   await resetServiceState()
   const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+  const unit = await Fixture.daycare({ areaId: area.id }).save()
   child = await Fixture.person()
     .with({
       firstName: 'Esko',
@@ -42,44 +42,36 @@ beforeEach(async () => {
     .with({ firstName: 'Sami', lastName: 'Ssnhaver', ssn: '050520A999M' })
     .saveChild()
 
-  await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child.id,
-      unitId: unit.id,
-      startDate: mockedToday,
-      endDate: mockedToday.addDays(4)
-    })
-    .save()
-  await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child2.id,
-      unitId: unit.id,
-      startDate: mockedToday.addDays(7),
-      endDate: mockedToday.addDays(14)
-    })
-    .save()
+  await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child.id,
+    unitId: unit.id,
+    startDate: mockedToday,
+    endDate: mockedToday.addDays(4)
+  }).save()
+  await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child2.id,
+    unitId: unit.id,
+    startDate: mockedToday.addDays(7),
+    endDate: mockedToday.addDays(14)
+  }).save()
 
-  await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child3.id,
-      unitId: unit.id,
-      startDate: mockedToday.subMonths(6),
-      endDate: mockedToday.subMonths(3)
-    })
-    .save()
+  await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child3.id,
+    unitId: unit.id,
+    startDate: mockedToday.subMonths(6),
+    endDate: mockedToday.subMonths(3)
+  }).save()
 
-  await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child4.id,
-      unitId: unit.id,
-      startDate: mockedToday.subMonths(1),
-      endDate: mockedToday.addMonths(1)
-    })
-    .save()
+  await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child4.id,
+    unitId: unit.id,
+    startDate: mockedToday.subMonths(1),
+    endDate: mockedToday.addMonths(1)
+  }).save()
 })
 
 describe('Non SSN children report', () => {

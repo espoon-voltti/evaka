@@ -40,10 +40,10 @@ let serviceWorker: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
   await cleanUpMessages()
-  await Fixture.preschoolTerm().with(preschoolTerm2021).save()
+  await Fixture.preschoolTerm(preschoolTerm2021).save()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
-  await Fixture.daycare().with(testPreschool).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testPreschool).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
   await Fixture.family(familyWithTwoGuardians).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()

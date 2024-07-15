@@ -53,74 +53,63 @@ const insertTestDataAndLogin = async ({
   childShiftCare?: ShiftCareType
 } = {}) => {
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const careArea = await Fixture.careArea().with(testCareArea2).save()
-  const daycareBuilder = Fixture.daycare().with(testDaycare2).careArea(careArea)
-  await daycareBuilder.save()
-  daycare = daycareBuilder.data
+  daycare = await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id
+  }).save()
 
   unitSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
   const groupId2 = uuidv4()
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId2,
-      daycareId: testDaycare.id,
-      name: 'Testailijat Toisessa'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId2,
+    daycareId: testDaycare.id,
+    name: 'Testailijat Toisessa'
+  }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  const placementBuilder = await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  const placementBuilder = await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
   const serviceNeedOption = await Fixture.serviceNeedOption().save()
-  await Fixture.serviceNeed()
-    .with({
-      placementId: placementBuilder.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate,
-      optionId: serviceNeedOption.id,
-      confirmedBy: unitSupervisor.id,
-      shiftCare: childShiftCare
-    })
-    .save()
-  await Fixture.backupCare()
-    .with({
-      id: uuidv4(),
-      childId: child1Fixture.id,
-      unitId: testDaycare.id,
-      groupId: groupId2,
-      period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId: placementBuilder.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate,
+    optionId: serviceNeedOption.id,
+    confirmedBy: unitSupervisor.id,
+    shiftCare: childShiftCare
+  }).save()
+  await Fixture.backupCare({
+    id: uuidv4(),
+    childId: child1Fixture.id,
+    unitId: testDaycare.id,
+    groupId: groupId2,
+    period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: groupId,
-      daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child1DaycarePlacementId,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
   page = await Page.open({
     mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -149,25 +138,21 @@ describe('Unit group calendar', () => {
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
-    await Fixture.daycareGroup()
-      .with({
-        id: groupId3,
-        daycareId: daycare.id,
-        name: 'Varasijoitusryhmä samassa'
-      })
-      .save()
-    await Fixture.backupCare()
-      .with({
-        id: uuidv4(),
-        childId: child1Fixture.id,
-        unitId: daycare.id,
-        groupId: groupId3,
-        period: new FiniteDateRange(
-          backupCareSameUnitStartDate,
-          backupCareSameUnitEndDate
-        )
-      })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId3,
+      daycareId: daycare.id,
+      name: 'Varasijoitusryhmä samassa'
+    }).save()
+    await Fixture.backupCare({
+      id: uuidv4(),
+      childId: child1Fixture.id,
+      unitId: daycare.id,
+      groupId: groupId3,
+      period: new FiniteDateRange(
+        backupCareSameUnitStartDate,
+        backupCareSameUnitEndDate
+      )
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -183,25 +168,21 @@ describe('Unit group calendar', () => {
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
-    await Fixture.daycareGroup()
-      .with({
-        id: groupId3,
-        daycareId: daycare.id,
-        name: 'Varasijoitusryhmä samassa'
-      })
-      .save()
-    await Fixture.backupCare()
-      .with({
-        id: uuidv4(),
-        childId: child1Fixture.id,
-        unitId: daycare.id,
-        groupId: groupId3,
-        period: new FiniteDateRange(
-          backupCareSameUnitStartDate,
-          backupCareSameUnitEndDate
-        )
-      })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId3,
+      daycareId: daycare.id,
+      name: 'Varasijoitusryhmä samassa'
+    }).save()
+    await Fixture.backupCare({
+      id: uuidv4(),
+      childId: child1Fixture.id,
+      unitId: daycare.id,
+      groupId: groupId3,
+      period: new FiniteDateRange(
+        backupCareSameUnitStartDate,
+        backupCareSameUnitEndDate
+      )
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -475,15 +456,13 @@ describe('Unit group calendar', () => {
     ]
     await Promise.all(
       attendances.map(async ([arrival, departure]) => {
-        await Fixture.childAttendance()
-          .with({
-            childId: child1Fixture.id,
-            unitId: testDaycare2.id,
-            date: mockedToday,
-            arrived: arrival,
-            departed: departure
-          })
-          .save()
+        await Fixture.childAttendance({
+          childId: child1Fixture.id,
+          unitId: testDaycare2.id,
+          date: mockedToday,
+          arrived: arrival,
+          departed: departure
+        }).save()
       })
     )
 
@@ -581,34 +560,28 @@ describe('Unit group calendar for shift care unit', () => {
     const arrived = LocalTime.of(8, 30)
     const departed = LocalTime.of(13, 30)
 
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: testDaycare2.id,
-        date: startDate,
-        arrived,
-        departed
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate,
+      arrived,
+      departed
+    }).save()
 
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: testDaycare2.id,
-        date: startDate,
-        arrived: LocalTime.of(18, 15),
-        departed: LocalTime.of(23, 59)
-      })
-      .save()
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: testDaycare2.id,
-        date: startDate.addDays(1),
-        arrived: LocalTime.of(0, 0),
-        departed: LocalTime.of(5, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate,
+      arrived: LocalTime.of(18, 15),
+      departed: LocalTime.of(23, 59)
+    }).save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate.addDays(1),
+      arrived: LocalTime.of(0, 0),
+      departed: LocalTime.of(5, 30)
+    }).save()
 
     await reservationModal.startDate.fill(startDate.format())
     await reservationModal.endDate.fill(startDate.format())

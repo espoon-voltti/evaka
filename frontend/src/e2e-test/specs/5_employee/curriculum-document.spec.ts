@@ -32,35 +32,29 @@ describe('curriculum document with person duplicate', () => {
   beforeEach(async () => {
     admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const daycare = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        type: ['CENTRE'],
-        enabledPilotFeatures: ['VASU_AND_PEDADOC']
-      })
-      .save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      type: ['CENTRE'],
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
     daycareSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
-    const preschool = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        type: ['PRESCHOOL'],
-        enabledPilotFeatures: ['VASU_AND_PEDADOC']
-      })
-      .save()
+    const preschool = await Fixture.daycare({
+      areaId: area.id,
+      type: ['PRESCHOOL'],
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
     preschoolSupervisor = await Fixture.employeeUnitSupervisor(
       preschool.id
     ).save()
 
     child = await Fixture.person().saveChild()
-    await Fixture.placement()
-      .with({
-        childId: child.id,
-        unitId: daycare.id,
-        type: 'DAYCARE_PART_TIME',
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      type: 'DAYCARE_PART_TIME',
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
 
     duplicate = await Fixture.person()
       .with({
@@ -69,15 +63,13 @@ describe('curriculum document with person duplicate', () => {
       })
       .saveChild()
     await Fixture.child(duplicate.id).save()
-    await Fixture.placement()
-      .with({
-        childId: duplicate.id,
-        unitId: preschool.id,
-        type: 'PRESCHOOL',
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
+    await Fixture.placement({
+      childId: duplicate.id,
+      unitId: preschool.id,
+      type: 'PRESCHOOL',
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
   })
 
   it('unit supervisor sees preschool document from duplicate', async () => {

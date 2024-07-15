@@ -44,23 +44,21 @@ beforeAll(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testPreschool).save()
+  await Fixture.daycare(testPreschool).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
   const unitId = testPreschool.id
   childId = familyWithTwoGuardians.children[0].id
 
-  await Fixture.placement()
-    .with({
-      id: uuidv4(),
-      childId,
-      unitId,
-      startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz().addYears(1),
-      type: 'PRESCHOOL'
-    })
-    .save()
+  await Fixture.placement({
+    id: uuidv4(),
+    childId,
+    unitId,
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: LocalDate.todayInSystemTz().addYears(1),
+    type: 'PRESCHOOL'
+  }).save()
 })
 
 describe('Child Information - Leops documents section', () => {

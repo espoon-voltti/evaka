@@ -63,7 +63,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -84,39 +84,31 @@ beforeEach(async () => {
   const unitId = testDaycare.id
   childId = testChild.id // born 7.7.2014
 
-  const daycarePlacementFixture1 = await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture1.id,
-      daycareGroupId: testDaycareGroup.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  const daycarePlacementFixture1 = await Fixture.placement({
+    childId,
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture1.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
 
-  const daycarePlacementFixture2 = await Fixture.placement()
-    .with({
-      childId: testChild2.id,
-      unitId,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture2.id,
-      daycareGroupId: testDaycareGroup.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  const daycarePlacementFixture2 = await Fixture.placement({
+    childId: testChild2.id,
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture2.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
 
   await insertGuardians({
     body: [

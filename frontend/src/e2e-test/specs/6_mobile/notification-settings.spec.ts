@@ -26,18 +26,16 @@ const enabledPilotFeatures: PilotFeature[] = [
 beforeEach(async () => {
   await resetServiceState()
   area = await Fixture.careArea().save()
-  unit = await Fixture.daycare()
-    .with({
-      enabledPilotFeatures
-    })
-    .careArea(area)
-    .save()
+  unit = await Fixture.daycare({
+    enabledPilotFeatures,
+    areaId: area.id
+  }).save()
   page = await Page.open()
 })
 
 describe('Settings page push permission section', () => {
   it('should show prompt/granted states correctly', async () => {
-    await Fixture.daycareGroup().daycare(unit).save()
+    await Fixture.daycareGroup({ daycareId: unit.id }).save()
 
     const mobileSignupUrl = await pairMobileDevice(unit.id)
     await page.goto(mobileSignupUrl)
@@ -61,8 +59,8 @@ describe('Settings page push permission section', () => {
 describe('Settings page category/group sections', () => {
   it('should show settings and allow editing them for a normal unit-level mobile device', async () => {
     const groups = [
-      await Fixture.daycareGroup().daycare(unit).save(),
-      await Fixture.daycareGroup().daycare(unit).save()
+      await Fixture.daycareGroup({ daycareId: unit.id }).save(),
+      await Fixture.daycareGroup({ daycareId: unit.id }).save()
     ] as const
     const mobileSignupUrl = await pairMobileDevice(unit.id)
     await page.page.context().grantPermissions(['notifications'])
@@ -95,12 +93,14 @@ describe('Settings page category/group sections', () => {
   it('should show settings and allow editing them for a personal mobile device', async () => {
     // personal mobile devices may have multiple units with multiple groups, and the settings page
     // only shows groups for the currently selected units, but internally retains state for the other units
-    const group = await Fixture.daycareGroup().daycare(unit).save()
-    const otherUnit = await Fixture.daycare()
-      .careArea(area)
-      .with({ enabledPilotFeatures })
-      .save()
-    const otherGroup = await Fixture.daycareGroup().daycare(otherUnit).save()
+    const group = await Fixture.daycareGroup({ daycareId: unit.id }).save()
+    const otherUnit = await Fixture.daycare({
+      areaId: area.id,
+      enabledPilotFeatures
+    }).save()
+    const otherGroup = await Fixture.daycareGroup({
+      daycareId: otherUnit.id
+    }).save()
     const employee = await Fixture.employeeUnitSupervisor(unit.id)
       .withDaycareAcl(otherUnit.id, 'UNIT_SUPERVISOR')
       .save()

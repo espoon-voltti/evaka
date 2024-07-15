@@ -35,7 +35,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({

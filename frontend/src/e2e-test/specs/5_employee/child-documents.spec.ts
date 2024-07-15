@@ -34,19 +34,17 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.person().with(testChild2).saveChild()
   admin = await Fixture.employeeAdmin().save()
   unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
-  await Fixture.placement()
-    .with({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      startDate: now.toLocalDate().subYears(1),
-      endDate: now.toLocalDate().addYears(1)
-    })
-    .save()
+  await Fixture.placement({
+    childId: testChild2.id,
+    unitId: testDaycare.id,
+    startDate: now.toLocalDate().subYears(1),
+    endDate: now.toLocalDate().addYears(1)
+  }).save()
 })
 
 describe('Employee - Child documents', () => {

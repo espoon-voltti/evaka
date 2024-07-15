@@ -37,21 +37,19 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
   employee = await Fixture.employee()
     .with({ roles: ['ADMIN'] })
     .save()
-  placement = await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: mockToday,
-      endDate: mockToday.addDays(10)
-    })
-    .save()
+  placement = await Fixture.placement({
+    childId,
+    unitId,
+    startDate: mockToday,
+    endDate: mockToday.addDays(10)
+  }).save()
   activeServiceNeedOption = await Fixture.serviceNeedOption()
     .with({ validPlacementType: placement.type })
     .save()
@@ -126,13 +124,11 @@ describe('Service need', () => {
   })
 
   test('inactive service need name is shown on placement', async () => {
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        optionId: inactiveServiceNeedOption.id,
-        confirmedBy: employee.id
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      optionId: inactiveServiceNeedOption.id,
+      confirmedBy: employee.id
+    }).save()
     const section = await openCollapsible()
 
     await section.assertNthServiceNeedName(0, inactiveServiceNeedOption.nameFi)

@@ -119,6 +119,7 @@ import {
   DevChild,
   DevChildAttendance,
   DevChildDocument,
+  DevClubTerm,
   DevDailyServiceTimeNotification,
   DevDailyServiceTimes,
   DevDaycare,
@@ -155,12 +156,13 @@ export const uuidv4 = (): string =>
     return v.toString(16)
   })
 
+type SemiPartial<T, K extends keyof T> = Partial<T> & Pick<T, K>
+
 export class Fixture {
-  static daycare(): DaycareBuilder {
+  static daycare(initial: SemiPartial<DevDaycare, 'areaId'>): DaycareBuilder {
     const id = uniqueLabel()
     return new DaycareBuilder({
       id: uuidv4(),
-      areaId: '',
       name: `daycare_${id}`,
       type: ['CENTRE'],
       dailyPreschoolTime: new TimeRange(
@@ -235,42 +237,58 @@ export class Fixture {
       mealtimeLunch: null,
       mealtimeSnack: null,
       mealtimeSupper: null,
-      mealtimeEveningSnack: null
+      mealtimeEveningSnack: null,
+      ...initial
     })
   }
 
-  static daycareGroup(): DaycareGroupBuilder {
+  static daycareGroup(
+    initial: SemiPartial<DevDaycareGroup, 'daycareId'>
+  ): DaycareGroupBuilder {
     const id = uniqueLabel()
     return new DaycareGroupBuilder({
       id: uuidv4(),
-      daycareId: '',
       name: `daycareGroup_${id}`,
       startDate: LocalDate.of(2020, 1, 1),
       endDate: null,
-      jamixCustomerNumber: null
+      jamixCustomerNumber: null,
+      ...initial
     })
   }
 
-  static careArea(): CareAreaBuilder {
+  static careArea(initial?: Partial<DevCareArea>): CareAreaBuilder {
     const id = uniqueLabel()
     return new CareAreaBuilder({
       id: uuidv4(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
       areaCode: 2230,
-      subCostCenter: `subCostCenter_${id}`
+      subCostCenter: `subCostCenter_${id}`,
+      ...initial
     })
   }
 
-  static preschoolTerm(): PreschoolTermBuilder {
-    return new PreschoolTermBuilder(preschoolTerm2023)
+  static preschoolTerm(
+    initial: SemiPartial<
+      DevPreschoolTerm,
+      | 'applicationPeriod'
+      | 'extendedTerm'
+      | 'finnishPreschool'
+      | 'swedishPreschool'
+      | 'termBreaks'
+    >
+  ): PreschoolTermBuilder {
+    return new PreschoolTermBuilder({
+      id: uuidv4(),
+      ...initial
+    })
   }
 
-  static clubTerm(): ClubTermBuilder {
-    return new ClubTermBuilder(clubTerm2023)
+  static clubTerm(initial: DevClubTerm): ClubTermBuilder {
+    return new ClubTermBuilder(initial)
   }
 
-  static person(): PersonBuilder {
+  static person(initial?: Partial<DevPerson>): PersonBuilder {
     const id = uniqueLabel()
     return new PersonBuilder({
       id: uuidv4(),
@@ -300,7 +318,8 @@ export class Fixture {
       invoicingPostOffice: '',
       ssnAddingDisabled: null,
       ophPersonOid: null,
-      updatedFromVtj: null
+      updatedFromVtj: null,
+      ...initial
     })
   }
 
@@ -308,7 +327,7 @@ export class Fixture {
     return new FamilyBuilder(initial)
   }
 
-  static employee(): EmployeeBuilder {
+  static employee(initial?: Partial<DevEmployee>): EmployeeBuilder {
     const id = uniqueLabel()
     return new EmployeeBuilder({
       id: uuidv4(),
@@ -320,12 +339,13 @@ export class Fixture {
       active: true,
       employeeNumber: null,
       lastLogin: HelsinkiDateTime.now(),
-      preferredFirstName: null
+      preferredFirstName: null,
+      ...initial
     })
   }
 
   static employeeAdmin(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'seppo.sorsa@evaka.test',
       firstName: 'Seppo',
       lastName: 'Sorsa',
@@ -334,7 +354,7 @@ export class Fixture {
   }
 
   static employeeFinanceAdmin(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'lasse.laskuttaja@evaka.test',
       firstName: 'Lasse',
       lastName: 'Laskuttaja',
@@ -343,7 +363,7 @@ export class Fixture {
   }
 
   static employeeDirector(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'hemmo.hallinto@evaka.test',
       firstName: 'Hemmo',
       lastName: 'Hallinto',
@@ -352,7 +372,7 @@ export class Fixture {
   }
 
   static employeeReportViewer(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'raisa.raportoija@evaka.test',
       firstName: 'Raisa',
       lastName: 'Raportoija',
@@ -361,7 +381,7 @@ export class Fixture {
   }
 
   static employeeServiceWorker(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'paula.palveluohjaaja@evaka.test',
       firstName: 'Paula',
       lastName: 'Palveluohjaaja',
@@ -370,40 +390,34 @@ export class Fixture {
   }
 
   static employeeUnitSupervisor(unitId: string): EmployeeBuilder {
-    return Fixture.employee()
-      .with({
-        email: 'essi.esimies@evaka.test',
-        firstName: 'Essi',
-        lastName: 'Esimies',
-        roles: []
-      })
-      .withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
+    return Fixture.employee({
+      email: 'essi.esimies@evaka.test',
+      firstName: 'Essi',
+      lastName: 'Esimies',
+      roles: []
+    }).withDaycareAcl(unitId, 'UNIT_SUPERVISOR')
   }
 
   static employeeSpecialEducationTeacher(unitId: string): EmployeeBuilder {
-    return Fixture.employee()
-      .with({
-        email: 'erkki.erityisopettaja@evaka.test',
-        firstName: 'Erkki',
-        lastName: 'Erityisopettaja',
-        roles: []
-      })
-      .withDaycareAcl(unitId, 'SPECIAL_EDUCATION_TEACHER')
+    return Fixture.employee({
+      email: 'erkki.erityisopettaja@evaka.test',
+      firstName: 'Erkki',
+      lastName: 'Erityisopettaja',
+      roles: []
+    }).withDaycareAcl(unitId, 'SPECIAL_EDUCATION_TEACHER')
   }
 
   static employeeStaff(unitId: string): EmployeeBuilder {
-    return Fixture.employee()
-      .with({
-        email: 'kaisa.kasvattaja@evaka.test',
-        firstName: 'Kaisa',
-        lastName: 'Kasvattaja',
-        roles: []
-      })
-      .withDaycareAcl(unitId, 'STAFF')
+    return Fixture.employee({
+      email: 'kaisa.kasvattaja@evaka.test',
+      firstName: 'Kaisa',
+      lastName: 'Kasvattaja',
+      roles: []
+    }).withDaycareAcl(unitId, 'STAFF')
   }
 
   static employeeMessenger(): EmployeeBuilder {
-    return Fixture.employee().with({
+    return Fixture.employee({
       email: 'viena.viestittaja@evaka.test',
       firstName: 'Viena',
       lastName: 'Viestittäjä',
@@ -411,89 +425,104 @@ export class Fixture {
     })
   }
 
-  static decision(): DecisionBuilder {
+  static decision(
+    initial: SemiPartial<
+      DecisionRequest,
+      'employeeId' | 'applicationId' | 'unitId'
+    >
+  ): DecisionBuilder {
     return new DecisionBuilder({
       id: uuidv4(),
-      applicationId: nullUUID,
-      employeeId: 'not set',
-      unitId: nullUUID,
       type: 'DAYCARE',
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2021, 1, 1),
-      status: 'PENDING'
+      status: 'PENDING',
+      ...initial
     })
   }
 
-  static employeePin(): EmployeePinBuilder {
+  static employeePin(initial: Partial<DevEmployeePin>): EmployeePinBuilder {
     return new EmployeePinBuilder({
       id: uuidv4(),
       userId: null,
       pin: uniqueLabel(4),
       employeeExternalId: null,
-      locked: false
+      locked: false,
+      ...initial
     })
   }
 
-  static pedagogicalDocument(): PedagogicalDocumentBuilder {
+  static pedagogicalDocument(
+    initial: SemiPartial<DevPedagogicalDocument, 'childId'>
+  ): PedagogicalDocumentBuilder {
     return new PedagogicalDocumentBuilder({
       id: uuidv4(),
-      childId: 'not set',
-      description: 'not set'
+      description: 'Test description',
+      ...initial
     })
   }
 
-  static placement(): PlacementBuilder {
+  static placement(
+    initial: SemiPartial<DevPlacement, 'childId' | 'unitId'>
+  ): PlacementBuilder {
     return new PlacementBuilder({
       id: uuidv4(),
-      childId: 'not set',
-      unitId: 'not set',
       type: 'DAYCARE',
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz().addYears(1),
       placeGuarantee: false,
       terminatedBy: null,
-      terminationRequestedDate: null
+      terminationRequestedDate: null,
+      ...initial
     })
   }
 
-  static groupPlacement(): GroupPlacementBuilder {
+  static groupPlacement(
+    initial: SemiPartial<
+      DevDaycareGroupPlacement,
+      'daycareGroupId' | 'daycarePlacementId' | 'startDate' | 'endDate'
+    >
+  ): GroupPlacementBuilder {
     return new GroupPlacementBuilder({
       id: uuidv4(),
-      daycareGroupId: 'not set',
-      daycarePlacementId: 'not set',
-      startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz().addYears(1)
+      ...initial
     })
   }
 
-  static backupCare(): BackupCareBuilder {
+  static backupCare(
+    initial: SemiPartial<DevBackupCare, 'childId' | 'unitId'>
+  ): BackupCareBuilder {
     return new BackupCareBuilder({
       id: uuidv4(),
-      childId: 'not set',
-      unitId: 'not set',
       groupId: null,
       period: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
-      )
+      ),
+      ...initial
     })
   }
 
-  static serviceNeed(): ServiceNeedBuilder {
+  static serviceNeed(
+    initial: SemiPartial<
+      DevServiceNeed,
+      'placementId' | 'optionId' | 'confirmedBy'
+    >
+  ): ServiceNeedBuilder {
     return new ServiceNeedBuilder({
       id: uuidv4(),
-      placementId: 'not set',
       startDate: LocalDate.todayInSystemTz(),
       endDate: LocalDate.todayInSystemTz(),
-      optionId: 'not set',
       shiftCare: 'NONE',
       partWeek: false,
-      confirmedBy: 'not set',
-      confirmedAt: HelsinkiDateTime.now()
+      confirmedAt: HelsinkiDateTime.now(),
+      ...initial
     })
   }
 
-  static serviceNeedOption(): ServiceNeedOptionBuilder {
+  static serviceNeedOption(
+    initial?: Partial<ServiceNeedOption>
+  ): ServiceNeedOptionBuilder {
     const id = uniqueLabel()
 
     return new ServiceNeedOptionBuilder({
@@ -519,7 +548,8 @@ export class Fixture {
       voucherValueDescriptionFi: `Test service need option ${id}`,
       voucherValueDescriptionSv: `Test service need option ${id}`,
       validFrom: LocalDate.of(2000, 1, 1),
-      validTo: null
+      validTo: null,
+      ...initial
     })
   }
 
@@ -537,68 +567,77 @@ export class Fixture {
     })
   }
 
-  static assistanceFactor(): AssistanceFactorBuilder {
+  static assistanceFactor(
+    initial: SemiPartial<AssistanceFactor, 'childId'>
+  ): AssistanceFactorBuilder {
     return new AssistanceFactorBuilder({
       id: uuidv4(),
       capacityFactor: 1.0,
-      childId: 'not_set',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       modified: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser
+      modifiedBy: systemInternalUser,
+      ...initial
     })
   }
 
-  static daycareAssistance(): DaycareAssistanceBuilder {
+  static daycareAssistance(
+    initial: SemiPartial<DaycareAssistance, 'childId'>
+  ): DaycareAssistanceBuilder {
     return new DaycareAssistanceBuilder({
       id: uuidv4(),
       level: 'GENERAL_SUPPORT',
-      childId: 'not_set',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       modified: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser
+      modifiedBy: systemInternalUser,
+      ...initial
     })
   }
 
-  static preschoolAssistance(): PreschoolAssistanceBuilder {
+  static preschoolAssistance(
+    initial: SemiPartial<PreschoolAssistance, 'childId'>
+  ): PreschoolAssistanceBuilder {
     return new PreschoolAssistanceBuilder({
       id: uuidv4(),
       level: 'SPECIAL_SUPPORT',
-      childId: 'not_set',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       modified: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser
+      modifiedBy: systemInternalUser,
+      ...initial
     })
   }
 
-  static otherAssistanceMeasure(): OtherAssistanceMeasureBuilder {
+  static otherAssistanceMeasure(
+    initial: SemiPartial<OtherAssistanceMeasure, 'childId'>
+  ): OtherAssistanceMeasureBuilder {
     return new OtherAssistanceMeasureBuilder({
       id: uuidv4(),
       type: 'TRANSPORT_BENEFIT',
-      childId: 'not_set',
       validDuring: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       modified: HelsinkiDateTime.now(),
-      modifiedBy: systemInternalUser
+      modifiedBy: systemInternalUser,
+      ...initial
     })
   }
 
-  static assistanceNeedDecision(): AssistanceNeedDecisionBuilder {
+  static assistanceNeedDecision(
+    initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
+  ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
       assistanceLevels: ['SPECIAL_ASSISTANCE'],
       careMotivation: null,
-      childId: 'not_set',
       decisionMade: null,
       decisionMaker: {
         employeeId: null,
@@ -650,16 +689,18 @@ export class Fixture {
       },
       viewOfGuardians: null,
       unreadGuardianIds: null,
-      annulmentReason: ''
+      annulmentReason: '',
+      ...initial
     })
   }
 
-  static preFilledAssistanceNeedDecision(): AssistanceNeedDecisionBuilder {
+  static preFilledAssistanceNeedDecision(
+    initial: SemiPartial<DevAssistanceNeedDecision, 'childId'>
+  ): AssistanceNeedDecisionBuilder {
     return new AssistanceNeedDecisionBuilder({
       id: uuidv4(),
       assistanceLevels: ['ENHANCED_ASSISTANCE'],
       careMotivation: 'Care motivation text',
-      childId: 'not_set',
       decisionMade: null,
       decisionMaker: {
         employeeId: null,
@@ -711,15 +752,17 @@ export class Fixture {
       },
       viewOfGuardians: 'VOG text',
       unreadGuardianIds: null,
-      annulmentReason: ''
+      annulmentReason: '',
+      ...initial
     })
   }
 
-  static assistanceNeedPreschoolDecision(): AssistanceNeedPreschoolDecisionBuilder {
+  static assistanceNeedPreschoolDecision(
+    initial: SemiPartial<DevAssistanceNeedPreschoolDecision, 'childId'>
+  ): AssistanceNeedPreschoolDecisionBuilder {
     return new AssistanceNeedPreschoolDecisionBuilder({
       id: uuidv4(),
       decisionNumber: 1000,
-      childId: 'not_set',
       status: 'DRAFT',
       annulmentReason: '',
       sentForDecision: null,
@@ -763,30 +806,34 @@ export class Fixture {
         preparer2PhoneNumber: '',
         decisionMakerEmployeeId: null,
         decisionMakerTitle: ''
-      }
+      },
+      ...initial
     })
   }
 
-  static daycareCaretakers(): DaycareCaretakersBuilder {
+  static daycareCaretakers(
+    initial: SemiPartial<Caretaker, 'groupId'>
+  ): DaycareCaretakersBuilder {
     return new DaycareCaretakersBuilder({
-      groupId: 'not_set',
       amount: 1,
       startDate: LocalDate.todayInSystemTz(),
-      endDate: null
+      endDate: null,
+      ...initial
     })
   }
 
-  static childAttendance(): ChildAttendanceBuilder {
+  static childAttendance(
+    initial: SemiPartial<DevChildAttendance, 'childId' | 'unitId'>
+  ): ChildAttendanceBuilder {
     return new ChildAttendanceBuilder({
-      childId: 'not set',
-      unitId: 'not set',
       date: LocalDate.todayInHelsinkiTz(),
       arrived: LocalTime.nowInHelsinkiTz(),
-      departed: LocalTime.nowInHelsinkiTz()
+      departed: LocalTime.nowInHelsinkiTz(),
+      ...initial
     })
   }
 
-  static feeThresholds(): FeeThresholdBuilder {
+  static feeThresholds(initial?: Partial<FeeThresholds>): FeeThresholdBuilder {
     return new FeeThresholdBuilder({
       validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
       maxFee: 10000,
@@ -812,14 +859,16 @@ export class Fixture {
       temporaryFee: 2800,
       temporaryFeePartDay: 1500,
       temporaryFeeSibling: 1500,
-      temporaryFeeSiblingPartDay: 800
+      temporaryFeeSiblingPartDay: 800,
+      ...initial
     })
   }
 
-  static income(): IncomeBuilder {
+  static income(
+    initial: SemiPartial<DevIncome, 'personId' | 'updatedBy'>
+  ): IncomeBuilder {
     return new IncomeBuilder({
       id: uuidv4(),
-      personId: 'not_set',
       validFrom: LocalDate.todayInSystemTz(),
       validTo: LocalDate.todayInSystemTz().addYears(1),
       data: {
@@ -832,32 +881,35 @@ export class Fixture {
       },
       effect: 'INCOME',
       updatedAt: HelsinkiDateTime.now(),
-      updatedBy: 'not_set',
       isEntrepreneur: false,
-      worksAtEcha: false
+      worksAtEcha: false,
+      ...initial
     })
   }
 
-  static incomeNotification(): IncomeNotificationBuilder {
+  static incomeNotification(
+    initial: SemiPartial<IncomeNotification, 'receiverId'>
+  ): IncomeNotificationBuilder {
     return new IncomeNotificationBuilder({
-      receiverId: 'not_set',
       notificationType: 'INITIAL_EMAIL',
-      created: HelsinkiDateTime.now()
+      created: HelsinkiDateTime.now(),
+      ...initial
     })
   }
 
-  static placementPlan(): PlacementPlanBuilder {
+  static placementPlan(
+    initial: SemiPartial<PlacementPlan, 'unitId'> & { applicationId: UUID }
+  ): PlacementPlanBuilder {
     return new PlacementPlanBuilder({
-      applicationId: uuidv4(),
-      unitId: uuidv4(),
       periodStart: LocalDate.todayInSystemTz(),
       periodEnd: LocalDate.todayInSystemTz(),
       preschoolDaycarePeriodStart: null,
-      preschoolDaycarePeriodEnd: null
+      preschoolDaycarePeriodEnd: null,
+      ...initial
     })
   }
 
-  static holidayPeriod(): HolidayPeriodBuilder {
+  static holidayPeriod(initial?: Partial<HolidayPeriod>): HolidayPeriodBuilder {
     return new HolidayPeriodBuilder({
       id: uuidv4(),
       period: new FiniteDateRange(
@@ -865,11 +917,14 @@ export class Fixture {
         LocalDate.todayInSystemTz()
       ),
       reservationsOpenOn: LocalDate.todayInSystemTz(),
-      reservationDeadline: LocalDate.todayInSystemTz()
+      reservationDeadline: LocalDate.todayInSystemTz(),
+      ...initial
     })
   }
 
-  static holidayQuestionnaire(): HolidayQuestionnaireBuilder {
+  static holidayQuestionnaire(
+    initial?: Partial<FixedPeriodQuestionnaire>
+  ): HolidayQuestionnaireBuilder {
     return new HolidayQuestionnaireBuilder({
       id: uuidv4(),
       type: 'FIXED_PERIOD',
@@ -886,14 +941,16 @@ export class Fixture {
       },
       periodOptions: [],
       periodOptionLabel: { fi: '', sv: '', en: '' },
-      requiresStrongAuth: false
+      requiresStrongAuth: false,
+      ...initial
     })
   }
 
-  static holiday(): HolidayBuilder {
+  static holiday(initial?: Partial<DevHoliday>): HolidayBuilder {
     return new HolidayBuilder({
       date: LocalDate.todayInHelsinkiTz(),
-      description: 'Holiday description'
+      description: 'Holiday description',
+      ...initial
     })
   }
 
@@ -904,14 +961,15 @@ export class Fixture {
     })
   }
 
-  static fridgeChild() {
+  static fridgeChild(
+    initial: SemiPartial<DevFridgeChild, 'headOfChild' | 'childId'>
+  ) {
     return new FridgeChildBuilder({
       id: uuidv4(),
-      headOfChild: 'not set',
-      childId: 'not set',
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2020, 12, 31),
-      conflict: false
+      conflict: false,
+      ...initial
     })
   }
 
@@ -953,7 +1011,9 @@ export class Fixture {
     })
   }
 
-  static payment(): PaymentBuilder {
+  static payment(
+    initial: SemiPartial<DevPayment, 'unitId' | 'unitName'>
+  ): PaymentBuilder {
     return new PaymentBuilder({
       id: uuidv4(),
       period: new FiniteDateRange(
@@ -963,43 +1023,47 @@ export class Fixture {
       status: 'DRAFT',
       number: 1,
       amount: 0,
-      unitId: 'not set',
-      unitName: 'not set',
       unitBusinessId: null,
       unitIban: null,
       unitProviderId: null,
       paymentDate: null,
       dueDate: null,
       sentAt: null,
-      sentBy: null
+      sentBy: null,
+      ...initial
     })
   }
 
-  static realtimeStaffAttendance(): RealtimeStaffAttendanceBuilder {
+  static realtimeStaffAttendance(
+    initial: SemiPartial<DevStaffAttendance, 'employeeId' | 'groupId'>
+  ): RealtimeStaffAttendanceBuilder {
     return new RealtimeStaffAttendanceBuilder({
       id: uuidv4(),
-      employeeId: 'not set',
-      groupId: 'not set',
       arrived: HelsinkiDateTime.now(),
       departed: null,
       occupancyCoefficient: 7,
       type: 'PRESENT',
-      departedAutomatically: false
+      departedAutomatically: false,
+      ...initial
     })
   }
 
-  static staffAttendancePlan(): StaffAttendancePlanBuilder {
+  static staffAttendancePlan(
+    initial: SemiPartial<DevStaffAttendancePlan, 'employeeId'>
+  ): StaffAttendancePlanBuilder {
     return new StaffAttendancePlanBuilder({
       id: uuidv4(),
-      employeeId: 'not set',
       type: 'PRESENT',
       startTime: HelsinkiDateTime.now(),
       endTime: HelsinkiDateTime.now(),
-      description: null
+      description: null,
+      ...initial
     })
   }
 
-  static calendarEvent(): CalendarEventBuilder {
+  static calendarEvent(
+    initial?: Partial<DevCalendarEvent>
+  ): CalendarEventBuilder {
     return new CalendarEventBuilder({
       id: uuidv4(),
       title: '',
@@ -1009,30 +1073,34 @@ export class Fixture {
         LocalDate.of(2020, 1, 1)
       ),
       modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
-      eventType: 'DAYCARE_EVENT'
+      eventType: 'DAYCARE_EVENT',
+      ...initial
     })
   }
 
-  static calendarEventAttendee(): CalendarEventAttendeeBuilder {
+  static calendarEventAttendee(
+    initial: SemiPartial<DevCalendarEventAttendee, 'calendarEventId' | 'unitId'>
+  ): CalendarEventAttendeeBuilder {
     return new CalendarEventAttendeeBuilder({
       id: uuidv4(),
-      calendarEventId: '',
-      unitId: '',
       groupId: null,
-      childId: null
+      childId: null,
+      ...initial
     })
   }
 
-  static calendarEventTime(): CalendarEventTimeBuilder {
+  static calendarEventTime(
+    initial: SemiPartial<DevCalendarEventTime, 'calendarEventId'>
+  ): CalendarEventTimeBuilder {
     return new CalendarEventTimeBuilder({
       id: uuidv4(),
       date: LocalDate.of(2020, 1, 1),
-      calendarEventId: 'not set',
       childId: null,
       modifiedBy: systemInternalUser,
       modifiedAt: LocalDate.of(2020, 1, 1).toHelsinkiDateTime(LocalTime.MIN),
       start: LocalTime.of(8, 0),
-      end: LocalTime.of(8, 30)
+      end: LocalTime.of(8, 30),
+      ...initial
     })
   }
 
@@ -1048,20 +1116,22 @@ export class Fixture {
     return new AttendanceReservationRawBuilder(data)
   }
 
-  static absence(): AbsenceBuilder {
+  static absence(initial: SemiPartial<DevAbsence, 'childId'>): AbsenceBuilder {
     return new AbsenceBuilder({
       id: uuidv4(),
-      childId: 'not set',
       date: LocalDate.todayInHelsinkiTz(),
       absenceType: 'OTHER_ABSENCE',
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser,
       absenceCategory: 'BILLABLE',
-      questionnaireId: null
+      questionnaireId: null,
+      ...initial
     })
   }
 
-  static documentTemplate(): DocumentTemplateBuilder {
+  static documentTemplate(
+    initial?: Partial<DevDocumentTemplate>
+  ): DocumentTemplateBuilder {
     return new DocumentTemplateBuilder({
       id: uuidv4(),
       type: 'PEDAGOGICAL_REPORT',
@@ -1090,36 +1160,41 @@ export class Fixture {
             ]
           }
         ]
-      }
+      },
+      ...initial
     })
   }
 
-  static assistanceAction(): AssistanceActionBuilder {
+  static assistanceAction(
+    initial: SemiPartial<DevAssistanceAction, 'childId' | 'updatedBy'>
+  ): AssistanceActionBuilder {
     return new AssistanceActionBuilder({
       id: uuidv4(),
-      childId: 'not_set',
-      updatedBy: 'not_set',
       actions: ['ASSISTANCE_SERVICE_CHILD'],
       endDate: LocalDate.todayInSystemTz(),
       startDate: LocalDate.todayInSystemTz(),
-      otherAction: ''
+      otherAction: '',
+      ...initial
     })
   }
 
-  static assistanceActionOption(): AssistanceActionOptionBuilder {
+  static assistanceActionOption(
+    initial?: Partial<DevAssistanceActionOption>
+  ): AssistanceActionOptionBuilder {
     return new AssistanceActionOptionBuilder({
       id: uuidv4(),
       descriptionFi: 'a description',
       nameFi: 'a test assistance action option',
-      value: 'TEST_ASSISTANCE_ACTION_OPTION'
+      value: 'TEST_ASSISTANCE_ACTION_OPTION',
+      ...initial
     })
   }
 
-  static childDocument(): ChildDocumentBuilder {
+  static childDocument(
+    initial: SemiPartial<DevChildDocument, 'childId' | 'templateId'>
+  ): ChildDocumentBuilder {
     return new ChildDocumentBuilder({
       id: uuidv4(),
-      childId: 'not_set',
-      templateId: 'not_set',
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
       contentModifiedAt: HelsinkiDateTime.now(),
@@ -1134,34 +1209,40 @@ export class Fixture {
           }
         ]
       },
-      publishedContent: null
+      publishedContent: null,
+      ...initial
     })
   }
 
-  static assistanceNeedVoucherCoefficient(): AssistanceNeedVoucherCoefficientBuilder {
+  static assistanceNeedVoucherCoefficient(
+    initial: SemiPartial<AssistanceNeedVoucherCoefficient, 'childId'>
+  ): AssistanceNeedVoucherCoefficientBuilder {
     return new AssistanceNeedVoucherCoefficientBuilder({
       id: uuidv4(),
-      childId: 'not_set',
       validityPeriod: new FiniteDateRange(
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
-      coefficient: 1.0
+      coefficient: 1.0,
+      ...initial
     })
   }
 
-  static parentship(): ParentshipBuilder {
+  static parentship(
+    initial: SemiPartial<DevParentship, 'childId' | 'headOfChildId'>
+  ): ParentshipBuilder {
     return new ParentshipBuilder({
       id: uuidv4(),
       createdAt: HelsinkiDateTime.now(),
-      childId: 'not_set',
-      headOfChildId: 'not_set',
       startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz()
+      endDate: LocalDate.todayInSystemTz(),
+      ...initial
     })
   }
 
-  static vasuTemplate(): VasuTemplateBuilder {
+  static vasuTemplate(
+    initial?: Partial<CreateVasuTemplateBody>
+  ): VasuTemplateBuilder {
     return new VasuTemplateBuilder({
       name: 'testipohja',
       valid: new FiniteDateRange(
@@ -1169,7 +1250,8 @@ export class Fixture {
         LocalDate.of(2200, 1, 1)
       ),
       type: 'DAYCARE',
-      language: 'FI'
+      language: 'FI',
+      ...initial
     })
   }
 }
@@ -1192,11 +1274,6 @@ export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
     return this
   }
 
-  careArea(careArea: DevCareArea): DaycareBuilder {
-    this.data.areaId = careArea.id
-    return this
-  }
-
   async save() {
     await createDaycares({ body: [this.data] })
     return this.data
@@ -1204,11 +1281,6 @@ export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
 }
 
 export class DaycareGroupBuilder extends FixtureBuilder<DevDaycareGroup> {
-  daycare(daycare: DevDaycare): DaycareGroupBuilder {
-    this.data.daycareId = daycare.id
-    return this
-  }
-
   async save() {
     await createDaycareGroups({ body: [this.data] })
     return this.data
@@ -1216,11 +1288,6 @@ export class DaycareGroupBuilder extends FixtureBuilder<DevDaycareGroup> {
 }
 
 export class CareAreaBuilder extends FixtureBuilder<DevCareArea> {
-  id(id: string): CareAreaBuilder {
-    this.data.id = id
-    return this
-  }
-
   async save() {
     await createCareAreas({ body: [this.data] })
     return this.data
@@ -1234,7 +1301,7 @@ export class PreschoolTermBuilder extends FixtureBuilder<DevPreschoolTerm> {
   }
 }
 
-export class ClubTermBuilder extends FixtureBuilder<ClubTerm> {
+export class ClubTermBuilder extends FixtureBuilder<DevClubTerm> {
   async save() {
     await createClubTerm({ body: this.data })
     return this.data
@@ -1327,8 +1394,14 @@ export class FamilyBuilder extends FixtureBuilder<Family> {
 }
 
 export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
-  daycareAcl: { unitId: string; role: ScopedRole }[] = []
-  groupAcl: string[] = []
+  daycareAcl: { unitId: string; role: ScopedRole }[]
+  groupAcl: string[]
+
+  constructor(data: DevEmployee) {
+    super(data)
+    this.daycareAcl = []
+    this.groupAcl = []
+  }
 
   withDaycareAcl(unitId: string, role: ScopedRole): this {
     this.daycareAcl.push({ unitId, role })
@@ -1399,43 +1472,9 @@ export class PlacementBuilder extends FixtureBuilder<DevPlacement> {
     await createDaycarePlacements({ body: [this.data] })
     return this.data
   }
-
-  child(child: DevPerson) {
-    this.data = {
-      ...this.data,
-      childId: child.id
-    }
-    return this
-  }
-
-  daycare(daycare: DevDaycare) {
-    this.data = {
-      ...this.data,
-      unitId: daycare.id
-    }
-    return this
-  }
 }
 
 export class GroupPlacementBuilder extends FixtureBuilder<DevDaycareGroupPlacement> {
-  withGroup(group: DevDaycareGroup): this {
-    this.data = {
-      ...this.data,
-      daycareGroupId: group.id
-    }
-    return this
-  }
-
-  withPlacement(placement: DevPlacement): this {
-    this.data = {
-      ...this.data,
-      daycarePlacementId: placement.id,
-      startDate: placement.startDate,
-      endDate: placement.endDate
-    }
-    return this
-  }
-
   async save() {
     await createDaycareGroupPlacement({ body: [this.data] })
     return this.data
@@ -1443,15 +1482,6 @@ export class GroupPlacementBuilder extends FixtureBuilder<DevDaycareGroupPlaceme
 }
 
 export class BackupCareBuilder extends FixtureBuilder<DevBackupCare> {
-  withGroup(group: DevDaycareGroup) {
-    this.data = {
-      ...this.data,
-      groupId: group.id,
-      unitId: group.daycareId
-    }
-    return this
-  }
-
   async save() {
     await createBackupCares({ body: [this.data] })
     return this.data
@@ -1505,11 +1535,6 @@ export class AssistanceNeedDecisionBuilder extends FixtureBuilder<DevAssistanceN
     await createAssistanceNeedDecisions({ body: [this.data] })
     return this.data
   }
-
-  withChild(childId: UUID) {
-    this.data.childId = childId
-    return this
-  }
 }
 
 export class AssistanceNeedVoucherCoefficientBuilder extends FixtureBuilder<AssistanceNeedVoucherCoefficient> {
@@ -1523,11 +1548,6 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
   async save() {
     await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
     return this.data
-  }
-
-  withChild(childId: UUID) {
-    this.data.childId = childId
-    return this
   }
 
   withGuardian(guardianId: UUID) {
@@ -1763,16 +1783,6 @@ export class ChildDocumentBuilder extends FixtureBuilder<DevChildDocument> {
   async save() {
     await createChildDocument({ body: this.data })
     return this.data
-  }
-
-  withChild(childId: UUID) {
-    this.data.childId = childId
-    return this
-  }
-
-  withTemplate(templateId: UUID) {
-    this.data.templateId = templateId
-    return this
   }
 
   withModifiedAt(modifiedAt: HelsinkiDateTime) {

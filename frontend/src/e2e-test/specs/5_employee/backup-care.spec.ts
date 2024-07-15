@@ -29,8 +29,8 @@ let groupsPage: UnitGroupsPage
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
-  await Fixture.daycare().with(testDaycarePrivateVoucher).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.person().with(testChild2).saveChild()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
@@ -41,36 +41,30 @@ beforeEach(async () => {
   const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
   const startDate = LocalDate.of(2023, 2, 1).subYears(1)
   const endDate = LocalDate.of(2023, 2, 3).addYears(1)
-  const placement = await Fixture.placement()
-    .with({
-      childId: testChild2.id,
-      unitId: testDaycarePrivateVoucher.id,
-      startDate: startDate,
-      endDate: endDate
-    })
-    .save()
+  const placement = await Fixture.placement({
+    childId: testChild2.id,
+    unitId: testDaycarePrivateVoucher.id,
+    startDate: startDate,
+    endDate: endDate
+  }).save()
   const serviceNeedOption = await Fixture.serviceNeedOption()
     .with({ validPlacementType: placement.type })
     .save()
-  await Fixture.serviceNeed()
-    .with({
-      placementId: placement.id,
-      startDate: startDate,
-      endDate: endDate,
-      optionId: serviceNeedOption.id,
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
-  await Fixture.backupCare()
-    .with({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      period: new FiniteDateRange(
-        LocalDate.of(2023, 2, 1),
-        LocalDate.of(2023, 2, 3)
-      )
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId: placement.id,
+    startDate: startDate,
+    endDate: endDate,
+    optionId: serviceNeedOption.id,
+    confirmedBy: unitSupervisor.id
+  }).save()
+  await Fixture.backupCare({
+    childId: testChild2.id,
+    unitId: testDaycare.id,
+    period: new FiniteDateRange(
+      LocalDate.of(2023, 2, 1),
+      LocalDate.of(2023, 2, 3)
+    )
+  }).save()
 
   page = await Page.open({ mockedTime: now })
   await employeeLogin(page, unitSupervisor)

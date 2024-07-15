@@ -36,30 +36,30 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
 
   const careArea = await Fixture.careArea().save()
-  daycare = await Fixture.daycare().careArea(careArea).save()
-  daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
+  daycare = await Fixture.daycare({ areaId: careArea.id }).save()
+  daycareGroup = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
 
-  const placementFixtureJari = await Fixture.placement()
-    .with({
-      childId: testChild.id,
-      unitId: daycare.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixtureJari)
-    .save()
+  const placementFixtureJari = await Fixture.placement({
+    childId: testChild.id,
+    unitId: daycare.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixtureJari.id,
+    startDate: placementFixtureJari.startDate,
+    endDate: placementFixtureJari.endDate
+  }).save()
 
-  const placementFixtureKaarina = await Fixture.placement()
-    .with({
-      childId: testChild2.id,
-      unitId: daycare.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixtureKaarina)
-    .save()
+  const placementFixtureKaarina = await Fixture.placement({
+    childId: testChild2.id,
+    unitId: daycare.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixtureKaarina.id,
+    startDate: placementFixtureKaarina.startDate,
+    endDate: placementFixtureKaarina.endDate
+  }).save()
 
   page = await Page.open()
   await employeeLogin(page, admin)

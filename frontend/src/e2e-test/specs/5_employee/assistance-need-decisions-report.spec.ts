@@ -49,7 +49,7 @@ beforeEach(async () => {
   director = await Fixture.employeeDirector().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -81,63 +81,54 @@ describe('Assistance need decisions report', () => {
   }
 
   test('Lists correct decisions', async () => {
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: uuidv4(),
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: unitId
-      })
-      .save()
-    await Fixture.assistanceNeedDecision()
-      .withChild(childId)
-      .with({
-        id: uuidv4(),
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2020, 6, 8),
-        selectedUnit: unitId
-      })
-      .save()
-    await Fixture.assistanceNeedDecision()
-      .withChild(childId)
-      .with({
-        decisionMaker: {
-          employeeId: director.id,
-          title: 'director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2020, 1, 1),
-        selectedUnit: unitId
-      })
-      .save()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: uuidv4(),
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: unitId,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: uuidv4(),
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: unitId
+    }).save()
+    await Fixture.assistanceNeedDecision({
+      id: uuidv4(),
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2020, 6, 8),
+      selectedUnit: unitId
+    }).save()
+    await Fixture.assistanceNeedDecision({
+      childId,
+      decisionMaker: {
+        employeeId: director.id,
+        title: 'director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2020, 1, 1),
+      selectedUnit: unitId
+    }).save()
+    await Fixture.assistanceNeedDecision({
+      id: uuidv4(),
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2019, 9, 6),
+      selectedUnit: unitId,
+      status: 'ACCEPTED'
+    }).save()
 
     await employeeLogin(page, decisionMaker)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
@@ -169,20 +160,18 @@ describe('Assistance need decisions report', () => {
 
   test('Removes unopened indicator from decision after opening decision', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: unitId
+    }).save()
 
     await employeeLogin(page, decisionMaker)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
@@ -212,20 +201,18 @@ describe('Assistance need decisions report', () => {
 
   test('Returns decision for editing', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: unitId
+    }).save()
 
     await employeeLogin(page, decisionMaker)
     await page.goto(
@@ -242,21 +229,18 @@ describe('Assistance need decisions report', () => {
 
   test('Decision can be rejected', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .withChild(childId)
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2020, 6, 8),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2020, 6, 8),
+      selectedUnit: unitId
+    }).save()
     await employeeLogin(page, decisionMaker)
     await page.goto(
       `${config.employeeUrl}/reports/assistance-need-decisions/${decisionId}`
@@ -272,20 +256,18 @@ describe('Assistance need decisions report', () => {
 
   test('Decision can be accepted', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: unitId
+    }).save()
     await employeeLogin(page, decisionMaker)
     await page.goto(
       `${config.employeeUrl}/reports/assistance-need-decisions/${decisionId}`
@@ -301,21 +283,19 @@ describe('Assistance need decisions report', () => {
 
   test('Accepted decision can be annulled', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: unitId,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2019, 9, 6),
+      selectedUnit: unitId,
+      status: 'ACCEPTED'
+    }).save()
     await employeeLogin(page, decisionMaker)
     await page.goto(
       `${config.employeeUrl}/reports/assistance-need-decisions/${decisionId}`
@@ -337,20 +317,18 @@ describe('Assistance need decisions report', () => {
       .save()
 
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2019, 9, 6),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2019, 9, 6),
+      selectedUnit: unitId
+    }).save()
 
     await employeeLogin(page, admin)
     await page.goto(
@@ -378,28 +356,26 @@ describe('Assistance need decisions report', () => {
 
   test('Special education teacher on child s unit can open the decision', async () => {
     const decisionId = uuidv4()
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: decisionId,
-        childId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: unitId
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: decisionId,
+      childId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: unitId
+    }).save()
 
     await Fixture.person().with(testChild).saveChild()
     const anotherChildId = testChild.id
     const careArea = await Fixture.careArea().with(testCareArea2).save()
-    const anotherDaycare = await Fixture.daycare()
-      .with(testDaycare2)
-      .careArea(careArea)
-      .save()
+    const anotherDaycare = await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id
+    }).save()
 
     const daycarePlacementFixture2 = createDaycarePlacementFixture(
       uuidv4(),
@@ -409,20 +385,18 @@ describe('Assistance need decisions report', () => {
 
     await createDaycarePlacements({ body: [daycarePlacementFixture2] })
 
-    await Fixture.assistanceNeedDecision()
-      .with({
-        id: uuidv4(),
-        childId: anotherChildId,
-        decisionMaker: {
-          employeeId: decisionMaker.id,
-          title: 'regional director',
-          name: null,
-          phoneNumber: null
-        },
-        sentForDecision: LocalDate.of(2021, 1, 6),
-        selectedUnit: anotherDaycare.id
-      })
-      .save()
+    await Fixture.assistanceNeedDecision({
+      id: uuidv4(),
+      childId: anotherChildId,
+      decisionMaker: {
+        employeeId: decisionMaker.id,
+        title: 'regional director',
+        name: null,
+        phoneNumber: null
+      },
+      sentForDecision: LocalDate.of(2021, 1, 6),
+      selectedUnit: anotherDaycare.id
+    }).save()
 
     const VEO = await Fixture.employeeSpecialEducationTeacher(unitId).save()
 

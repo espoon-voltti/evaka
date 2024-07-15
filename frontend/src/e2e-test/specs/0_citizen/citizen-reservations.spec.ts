@@ -75,9 +75,9 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.preschoolTerm().with(preschoolTerm2021).save()
+    await Fixture.preschoolTerm(preschoolTerm2021).save()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
 
     children = [testChild, testChild2, testChildRestricted]
     await Fixture.family({ guardian: testAdult, children }).save()
@@ -97,20 +97,18 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await createDaycarePlacements({ body: placementFixtures })
     await createDefaultServiceNeedOptions()
 
-    const group = await Fixture.daycareGroup()
-      .with({ daycareId: testDaycare.id })
-      .save()
+    const group = await Fixture.daycareGroup({
+      daycareId: testDaycare.id
+    }).save()
 
     await Promise.all(
       placementFixtures.map((placement) =>
-        Fixture.groupPlacement()
-          .withGroup(group)
-          .with({
-            daycarePlacementId: placement.id,
-            startDate: placement.startDate,
-            endDate: placement.endDate
-          })
-          .save()
+        Fixture.groupPlacement({
+          daycareGroupId: group.id,
+          daycarePlacementId: placement.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
       )
     )
   })
@@ -167,15 +165,13 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
   test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
     const employee = await Fixture.employeeStaff(testDaycare.id).save()
-    await Fixture.absence()
-      .with({
-        childId: testChildRestricted.id,
-        absenceType: 'UNKNOWN_ABSENCE',
-        date: today.addDays(35),
-        absenceCategory: 'BILLABLE',
-        modifiedBy: employee.id
-      })
-      .save()
+    await Fixture.absence({
+      childId: testChildRestricted.id,
+      absenceType: 'UNKNOWN_ABSENCE',
+      date: today.addDays(35),
+      absenceCategory: 'BILLABLE',
+      modifiedBy: employee.id
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
 
@@ -659,25 +655,23 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await resetServiceState()
 
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
-    const child = await Fixture.person()
-      .with(testChild2)
-      .saveChild({ updateMockVtj: true })
+    await Fixture.daycare(testDaycare).save()
+    const child = await Fixture.person(testChild2).saveChild({
+      updateMockVtj: true
+    })
     const guardian = await Fixture.person()
       .with(testAdult)
       .saveAdult({ updateMockVtjWithDependants: [child] })
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
-    await Fixture.placement()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        startDate: today,
-        endDate: today.addYears(1),
-        type: options?.placementType ?? 'DAYCARE'
-      })
-      .save()
+    await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today.addYears(1),
+      type: options?.placementType ?? 'DAYCARE'
+    }).save()
   }
 
   it('No placements', async () => {
@@ -811,15 +805,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Ongoing attendance', async () => {
     await init()
 
-    await Fixture.childAttendance()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        date: today,
-        arrived: LocalTime.of(8, 0),
-        departed: null
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(8, 0),
+      departed: null
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDay(today, [
@@ -833,15 +825,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Attendance', async () => {
     await init()
 
-    await Fixture.childAttendance()
-      .with({
-        childId: testChild2.id,
-        unitId: testDaycare.id,
-        date: today,
-        arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(15, 30)
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDay(today, [
@@ -861,15 +851,13 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       [20, 23]
     ]
     for (const [start, end] of attendanceHours) {
-      await Fixture.childAttendance()
-        .with({
-          childId: testChild2.id,
-          unitId: testDaycare.id,
-          date: today,
-          arrived: LocalTime.of(start, 0),
-          departed: LocalTime.of(end, 0)
-        })
-        .save()
+      await Fixture.childAttendance({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        date: today,
+        arrived: LocalTime.of(start, 0),
+        departed: LocalTime.of(end, 0)
+      }).save()
     }
 
     const calendarPage = await openCalendarPage(env)
@@ -884,13 +872,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Absent', async () => {
     await init()
 
-    await Fixture.absence()
-      .with({
-        childId: testChild2.id,
-        date: today,
-        modifiedBy: testAdult.id
-      })
-      .save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'none')
@@ -905,13 +891,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Absent (marked by staff)', async () => {
     await init()
 
-    await Fixture.absence()
-      .with({
-        childId: testChild2.id,
-        date: today,
-        modifiedBy: systemInternalUser
-      })
-      .save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: systemInternalUser
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
@@ -926,14 +910,12 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Free absence', async () => {
     await init()
 
-    await Fixture.absence()
-      .with({
-        childId: testChild2.id,
-        date: today,
-        modifiedBy: systemInternalUser,
-        absenceType: 'FREE_ABSENCE'
-      })
-      .save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: systemInternalUser,
+      absenceType: 'FREE_ABSENCE'
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'nonEditableAbsence')
@@ -948,14 +930,12 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   it('Planned absence', async () => {
     await init()
 
-    await Fixture.absence()
-      .with({
-        childId: testChild2.id,
-        date: today,
-        modifiedBy: testAdult.id,
-        absenceType: 'PLANNED_ABSENCE'
-      })
-      .save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
 
     const calendarPage = await openCalendarPage(env, {
       featureFlags: {
@@ -986,7 +966,7 @@ describe('Citizen calendar child visibility', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2]
@@ -1058,10 +1038,10 @@ describe('Citizen calendar child visibility', () => {
 
   test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
     const careArea = await Fixture.careArea().with(testCareArea2).save()
-    const daycare = await Fixture.daycare()
-      .with(testDaycare2)
-      .careArea(careArea)
-      .save()
+    const daycare = await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id
+    }).save()
 
     // Sibling is in 24/7 daycare with shift care
     const placement = createDaycarePlacementFixture(
@@ -1078,16 +1058,14 @@ describe('Citizen calendar child visibility', () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
       daycare.id
     ).save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate,
-        optionId: serviceNeedOption.id,
-        confirmedBy: unitSupervisor.id,
-        shiftCare: 'FULL'
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: unitSupervisor.id,
+      shiftCare: 'FULL'
+    }).save()
 
     await header.selectTab('calendar')
     // Saturday
@@ -1102,10 +1080,10 @@ describe('Citizen calendar child visibility', () => {
 
   test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
     const careArea = await Fixture.careArea().with(testCareArea2).save()
-    const daycare = await Fixture.daycare()
-      .with(testDaycare2)
-      .careArea(careArea)
-      .save()
+    const daycare = await Fixture.daycare({
+      ...testDaycare2,
+      areaId: careArea.id
+    }).save()
     const child = testChild2
 
     // Child is in 24/7 daycare with shift care
@@ -1123,16 +1101,14 @@ describe('Citizen calendar child visibility', () => {
     const unitSupervisor = await Fixture.employeeUnitSupervisor(
       daycare.id
     ).save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.id,
-        startDate: placement.startDate,
-        endDate: placement.endDate,
-        optionId: serviceNeedOption.id,
-        confirmedBy: unitSupervisor.id,
-        shiftCare: 'FULL'
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate,
+      optionId: serviceNeedOption.id,
+      confirmedBy: unitSupervisor.id,
+      shiftCare: 'FULL'
+    }).save()
 
     const firstReservationDay = today.addDays(14)
     await Fixture.holiday()
@@ -1178,7 +1154,7 @@ describe('Citizen calendar visibility', () => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.careArea().with(testCareArea).save()
-    await Fixture.daycare().with(testDaycare).save()
+    await Fixture.daycare(testDaycare).save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
     child = testChild
     daycareId = testDaycare.id
@@ -1264,7 +1240,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await resetServiceState()
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
     const careArea = await Fixture.careArea().with(testCareArea2).save()
-    await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
+    await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 
     await createDaycarePlacements({
       body: [

@@ -7,7 +7,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import config from '../../config'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
@@ -27,17 +27,15 @@ let unit: DevDaycare
 
 beforeEach(async () => {
   await resetServiceState()
-  term = await Fixture.preschoolTerm().save()
+  term = await Fixture.preschoolTerm(preschoolTerm2023).save()
   const area = await Fixture.careArea().save()
-  unit = await Fixture.daycare()
-    .with({
-      areaId: area.id,
-      name: 'TestiEO',
-      type: ['PRESCHOOL'],
-      language: 'fi',
-      dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
-    })
-    .save()
+  unit = await Fixture.daycare({
+    areaId: area.id,
+    name: 'TestiEO',
+    type: ['PRESCHOOL'],
+    language: 'fi',
+    dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
+  }).save()
   child = await Fixture.person()
     .with({
       firstName: 'Esko',
@@ -47,32 +45,26 @@ beforeEach(async () => {
 
   await Fixture.child(child.id).save()
 
-  await Fixture.placement()
-    .with({
-      type: 'PRESCHOOL',
-      childId: child.id,
-      unitId: unit.id,
-      startDate: mockedToday.subDays(4),
-      endDate: mockedToday.addDays(4)
-    })
-    .save()
+  await Fixture.placement({
+    type: 'PRESCHOOL',
+    childId: child.id,
+    unitId: unit.id,
+    startDate: mockedToday.subDays(4),
+    endDate: mockedToday.addDays(4)
+  }).save()
 
-  await Fixture.absence()
-    .with({
-      absenceType: 'SICKLEAVE',
-      date: mockedToday,
-      childId: child.id
-    })
-    .save()
-  await Fixture.childAttendance()
-    .with({
-      childId: child.id,
-      date: mockedToday.subDays(1),
-      arrived: LocalTime.of(8, 0),
-      departed: LocalTime.of(12, 30),
-      unitId: unit.id
-    })
-    .save()
+  await Fixture.absence({
+    absenceType: 'SICKLEAVE',
+    date: mockedToday,
+    childId: child.id
+  }).save()
+  await Fixture.childAttendance({
+    childId: child.id,
+    date: mockedToday.subDays(1),
+    arrived: LocalTime.of(8, 0),
+    departed: LocalTime.of(12, 30),
+    unitId: unit.id
+  }).save()
 })
 
 describe('Preschool absence report', () => {

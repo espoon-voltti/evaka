@@ -30,7 +30,7 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -72,11 +72,11 @@ describe('Employee searches applications', () => {
 
   test('Care area filters work', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const careArea2 = await Fixture.careArea().save()
-    const daycare2 = await Fixture.daycare().careArea(careArea2).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea2.id }).save()
     const careArea3 = await Fixture.careArea().save()
-    const daycare3 = await Fixture.daycare().careArea(careArea3).save()
+    const daycare3 = await Fixture.daycare({ areaId: careArea3.id }).save()
 
     const createApplicationForUnit = (unitId: string) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
@@ -106,8 +106,8 @@ describe('Employee searches applications', () => {
 
   test('Unit filter works', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
     const createApplicationForUnit = (unitId: string) => ({
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
@@ -131,8 +131,8 @@ describe('Employee searches applications', () => {
 
   test('Special education teacher (VEO) sees only allowed applications', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
     const specialEducationTeacher =
       await Fixture.employeeSpecialEducationTeacher(daycare1.id).save()
@@ -180,14 +180,14 @@ describe('Employee searches applications', () => {
 
   test('Voucher application filter works', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const voucherUnit = await Fixture.daycare()
-      .with({ providerType: 'PRIVATE_SERVICE_VOUCHER' })
-      .careArea(careArea1)
-      .save()
-    const municipalUnit = await Fixture.daycare()
-      .with({ providerType: 'MUNICIPAL' })
-      .careArea(careArea1)
-      .save()
+    const voucherUnit = await Fixture.daycare({
+      areaId: careArea1.id,
+      providerType: 'PRIVATE_SERVICE_VOUCHER'
+    }).save()
+    const municipalUnit = await Fixture.daycare({
+      areaId: careArea1.id,
+      providerType: 'MUNICIPAL'
+    }).save()
 
     const applicationWithVoucherUnitFirst = {
       ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
@@ -244,24 +244,18 @@ describe('Employee searches applications', () => {
   })
   test('Application type filters work', async () => {
     const careArea = await Fixture.careArea().save()
-    const club = await Fixture.daycare()
-      .with({
-        type: ['CLUB']
-      })
-      .careArea(careArea)
-      .save()
-    const daycare = await Fixture.daycare()
-      .with({
-        type: ['CENTRE']
-      })
-      .careArea(careArea)
-      .save()
-    const preschool = await Fixture.daycare()
-      .with({
-        type: ['PRESCHOOL']
-      })
-      .careArea(careArea)
-      .save()
+    const club = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['CLUB']
+    }).save()
+    const daycare = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['CENTRE']
+    }).save()
+    const preschool = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['PRESCHOOL']
+    }).save()
     const clubApplication = {
       ...applicationFixture(testChild, testAdult, undefined, 'CLUB', null, [
         club.id

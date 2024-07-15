@@ -26,20 +26,16 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testPreschool).save()
+  await Fixture.daycare(testPreschool).save()
 
-  unit = await Fixture.daycare()
-    .with({
-      areaId: testCareArea.id,
-      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
-    })
-    .save()
-  group = await Fixture.daycareGroup()
-    .with({
-      ...testDaycareGroup,
-      daycareId: unit.id
-    })
-    .save()
+  unit = await Fixture.daycare({
+    areaId: testCareArea.id,
+    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+  }).save()
+  group = await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: unit.id
+  }).save()
 
   page = await Page.open({ mockedTime: mockedNow })
 
@@ -60,23 +56,19 @@ describe('Employee mobile unit list', () => {
       .withGroupAcl(testDaycareGroup.id)
       .save()
 
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staff1Fixture.id,
-        groupId: group.id,
-        arrived: mockedNow.subHours(5),
-        occupancyCoefficient: 7
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staff1Fixture.id,
+      groupId: group.id,
+      arrived: mockedNow.subHours(5),
+      occupancyCoefficient: 7
+    }).save()
     // Not included in staff count because occupancyCoefficient is 0
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: staff2Fixture.id,
-        groupId: group.id,
-        arrived: mockedNow.subHours(5),
-        occupancyCoefficient: 0
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staff2Fixture.id,
+      groupId: group.id,
+      arrived: mockedNow.subHours(5),
+      occupancyCoefficient: 0
+    }).save()
 
     await page.reload()
     await unitListPage.assertStaffCount(unit.id, 1, 0)

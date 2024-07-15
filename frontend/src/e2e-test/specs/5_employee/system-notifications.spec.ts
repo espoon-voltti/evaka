@@ -77,7 +77,7 @@ describe('System notifications', () => {
     await adminPage.close()
 
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.id }).save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
     const mobilePage = await Page.open({ mockedTime: now })
     await mobilePage.goto(await pairMobileDevice(unit.id))
     const topBar = new TopNav(mobilePage)

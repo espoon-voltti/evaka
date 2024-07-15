@@ -54,7 +54,7 @@ const mockedDate = mockedNow.toLocalDate()
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
 
   fosterParent = await Fixture.person()
     .with(testAdult)
@@ -224,23 +224,19 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 
 test('Foster parent can receive and reply to messages', async () => {
   const unitId = testDaycare.id
-  const group = await Fixture.daycareGroup().with({ daycareId: unitId }).save()
-  const placementFixture = await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: placementFixture.id,
-      daycareGroupId: group.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  const group = await Fixture.daycareGroup({ daycareId: unitId }).save()
+  const placementFixture = await Fixture.placement({
+    childId: fosterChild.id,
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: placementFixture.id,
+    daycareGroupId: group.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
   await createMessageAccounts()
@@ -283,16 +279,14 @@ test('Foster parent can receive and reply to messages', async () => {
 
 test('Foster parent can read an accepted assistance decision', async () => {
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
-  const decision = await Fixture.preFilledAssistanceNeedDecision()
-    .withChild(fosterChild.id)
-    .with({
-      selectedUnit: testDaycare.id,
-      status: 'ACCEPTED',
-      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
-      validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
-      decisionMade: mockedDate
-    })
-    .save()
+  const decision = await Fixture.preFilledAssistanceNeedDecision({
+    childId: fosterChild.id,
+    selectedUnit: testDaycare.id,
+    status: 'ACCEPTED',
+    assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
+    validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
+    decisionMade: mockedDate
+  }).save()
   await activeRelationshipHeader.selectTab('decisions')
 
   await citizenDecisionsPage.assertAssistanceDecision(
@@ -320,20 +314,16 @@ test('Foster parent can read an accepted assistance decision', async () => {
 })
 
 test('Foster parent can read a pedagogical document', async () => {
-  await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  const document = await Fixture.pedagogicalDocument()
-    .with({
-      childId: fosterChild.id,
-      description: 'e2e test description'
-    })
-    .save()
+  await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  const document = await Fixture.pedagogicalDocument({
+    childId: fosterChild.id,
+    description: 'e2e test description'
+  }).save()
   await activeRelationshipPage.reload()
 
   await activeRelationshipHeader.openChildPage(fosterChild.id)
@@ -353,14 +343,12 @@ test('Foster parent can read a pedagogical document', async () => {
 })
 
 test('Foster parent can read a daycare curriculum and give permission to share it', async () => {
-  await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
   const vasuDocId = await createVasuDocument({
     body: {
       childId: fosterChild.id,
@@ -394,14 +382,12 @@ test('Foster parent can read a daycare curriculum and give permission to share i
 
 test('Foster parent can terminate a daycare placement', async () => {
   const endDate = mockedDate.addYears(1)
-  await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: endDate
-    })
-    .save()
+  await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: endDate
+  }).save()
   await activeRelationshipPage.reload()
 
   await activeRelationshipHeader.openChildPage(fosterChild.id)
@@ -432,14 +418,12 @@ test('Foster parent can terminate a daycare placement', async () => {
 })
 
 test('Foster parent can create a repeating reservation', async () => {
-  await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
+  await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
   await activeRelationshipPage.reload()
   const firstReservationDay = mockedDate.addDays(14)
 
@@ -467,28 +451,22 @@ test('Foster parent can create a repeating reservation', async () => {
 })
 
 test('Foster parent can see calendar events for foster children', async () => {
-  const placement = await Fixture.placement()
-    .with({
-      childId: fosterChild.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({
-      daycareId: testDaycare.id,
-      name: 'Group 1'
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1),
-      daycareGroupId: daycareGroup.id,
-      daycarePlacementId: placement.id
-    })
-    .save()
+  const placement = await Fixture.placement({
+    childId: fosterChild.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  const daycareGroup = await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Group 1'
+  }).save()
+  await Fixture.groupPlacement({
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1),
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placement.id
+  }).save()
   const groupEventId = uuidv4()
   await Fixture.calendarEvent()
     .with({
@@ -499,13 +477,11 @@ test('Foster parent can see calendar events for foster children', async () => {
       modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
     })
     .save()
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: groupEventId,
-      unitId: testDaycare.id,
-      groupId: daycareGroup.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: groupEventId,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id
+  }).save()
   await activeRelationshipPage.reload()
   await activeRelationshipHeader.selectTab('calendar')
   const calendarPage = new CitizenCalendarPage(

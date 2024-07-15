@@ -52,7 +52,7 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -60,49 +60,43 @@ beforeEach(async () => {
   childInAreaA = testChild
   childInAreaB = testChild2
   await Fixture.careArea().with(testCareArea2).save()
-  await Fixture.daycare().with(testDaycare2).save()
-  await Fixture.daycareGroup().with(testDaycareGroup).save()
+  await Fixture.daycare(testDaycare2).save()
+  await Fixture.daycareGroup(testDaycareGroup).save()
   const daycareGroup2Fixture = {
     ...testDaycareGroup,
     id: uuidv4(),
     daycareId: testDaycare2.id
   }
-  await Fixture.daycareGroup().with(daycareGroup2Fixture).save()
-  await Fixture.placement()
-    .with({
-      childId: childInAreaA.id,
-      unitId: testDaycare.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
+  await Fixture.daycareGroup(daycareGroup2Fixture).save()
+  await Fixture.placement({
+    childId: childInAreaA.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  })
     .save()
     .then((placement) =>
-      Fixture.groupPlacement()
-        .with({
-          daycarePlacementId: placement.id,
-          daycareGroupId: testDaycareGroup.id,
-          startDate: placement.startDate,
-          endDate: placement.endDate
-        })
-        .save()
+      Fixture.groupPlacement({
+        daycarePlacementId: placement.id,
+        daycareGroupId: testDaycareGroup.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate
+      }).save()
     )
-  await Fixture.placement()
-    .with({
-      childId: childInAreaB.id,
-      unitId: testDaycare2.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
+  await Fixture.placement({
+    childId: childInAreaB.id,
+    unitId: testDaycare2.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  })
     .save()
     .then((placement) =>
-      Fixture.groupPlacement()
-        .with({
-          daycarePlacementId: placement.id,
-          daycareGroupId: daycareGroup2Fixture.id,
-          startDate: placement.startDate,
-          endDate: placement.endDate
-        })
-        .save()
+      Fixture.groupPlacement({
+        daycarePlacementId: placement.id,
+        daycareGroupId: daycareGroup2Fixture.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate
+      }).save()
     )
   const guardian2 = await Fixture.person().with({ ssn: null }).saveAdult()
   const guardian3 = await Fixture.person().with({ ssn: null }).saveAdult()

@@ -33,33 +33,29 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   personId = testAdult.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()
   financeAdminId = financeAdmin.id
 
-  await Fixture.fridgeChild()
-    .with({
-      headOfChild: testAdult.id,
-      childId: testChild.id,
-      startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2020, 12, 31)
-    })
-    .save()
+  await Fixture.fridgeChild({
+    headOfChild: testAdult.id,
+    childId: testChild.id,
+    startDate: LocalDate.of(2020, 1, 1),
+    endDate: LocalDate.of(2020, 12, 31)
+  }).save()
 
   placementStart = LocalDate.of(2020, 1, 1)
   placementEnd = LocalDate.of(2020, 3, 31)
 
-  await Fixture.placement()
-    .with({
-      childId: testChild.id,
-      unitId: testDaycare.id,
-      startDate: placementStart,
-      endDate: placementEnd
-    })
-    .save()
+  await Fixture.placement({
+    childId: testChild.id,
+    unitId: testDaycare.id,
+    startDate: placementStart,
+    endDate: placementEnd
+  }).save()
 
   page = await Page.open()
   await employeeLogin(page, financeAdmin)
@@ -246,43 +242,31 @@ describe('Income', () => {
 
   it('Income notifications are shown', async () => {
     const incomeEndDate = placementEnd.subMonths(1)
-    await Fixture.income()
-      .with({
-        personId: personId,
-        validFrom: placementStart,
-        validTo: incomeEndDate,
-        updatedBy: financeAdminId,
-        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
-      })
-      .save()
+    await Fixture.income({
+      personId: personId,
+      validFrom: placementStart,
+      validTo: incomeEndDate,
+      updatedBy: financeAdminId,
+      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'INITIAL_EMAIL',
-        created: incomeEndDate
-          .subWeeks(2)
-          .toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'INITIAL_EMAIL',
+      created: incomeEndDate.subWeeks(2).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'REMINDER_EMAIL',
-        created: incomeEndDate
-          .subWeeks(1)
-          .toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'REMINDER_EMAIL',
+      created: incomeEndDate.subWeeks(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'NEW_CUSTOMER',
-        created: incomeEndDate.subDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'NEW_CUSTOMER',
+      created: incomeEndDate.subDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
     await page.reload()
     await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 3)
@@ -300,15 +284,13 @@ describe('Income', () => {
 
   it('Income notification sent title is not shown if none has been sent', async () => {
     const incomeEndDate = placementEnd.subMonths(1)
-    await Fixture.income()
-      .with({
-        personId: personId,
-        validFrom: placementStart,
-        validTo: incomeEndDate,
-        updatedBy: financeAdminId,
-        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
-      })
-      .save()
+    await Fixture.income({
+      personId: personId,
+      validFrom: placementStart,
+      validTo: incomeEndDate,
+      updatedBy: financeAdminId,
+      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+    }).save()
 
     await page.reload()
     await waitUntilEqual(() => incomesSection.incomeListItems.count(), 1)

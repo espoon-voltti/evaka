@@ -37,7 +37,7 @@ let page: Page
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -150,14 +150,12 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoice correction can be created and deleted', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        headOfChild: testAdult.id,
-        childId: testChild.id,
-        startDate: LocalDate.of(2020, 1, 1),
-        endDate: LocalDate.of(2020, 12, 31)
-      })
-      .save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    }).save()
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)
 
@@ -195,14 +193,12 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoice corrections show only units with cost center', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        headOfChild: testAdult.id,
-        childId: testChild.id,
-        startDate: LocalDate.of(2020, 1, 1),
-        endDate: LocalDate.of(2020, 12, 31)
-      })
-      .save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    }).save()
 
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)

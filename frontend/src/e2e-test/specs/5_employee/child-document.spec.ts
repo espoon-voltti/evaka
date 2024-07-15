@@ -28,32 +28,26 @@ describe('child document with person duplicate', () => {
   beforeEach(async () => {
     admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
-    const daycare = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        type: ['CENTRE'],
-        enabledPilotFeatures: ['VASU_AND_PEDADOC']
-      })
-      .save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      type: ['CENTRE'],
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
     daycareSupervisor = await Fixture.employeeUnitSupervisor(daycare.id).save()
-    const preschool = await Fixture.daycare()
-      .with({
-        areaId: area.id,
-        type: ['PRESCHOOL'],
-        enabledPilotFeatures: ['VASU_AND_PEDADOC']
-      })
-      .save()
+    const preschool = await Fixture.daycare({
+      areaId: area.id,
+      type: ['PRESCHOOL'],
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
 
     child = await Fixture.person().saveChild()
-    await Fixture.placement()
-      .with({
-        childId: child.id,
-        unitId: daycare.id,
-        type: 'DAYCARE_PART_TIME',
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycare.id,
+      type: 'DAYCARE_PART_TIME',
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
 
     duplicate = await Fixture.person()
       .with({
@@ -61,15 +55,13 @@ describe('child document with person duplicate', () => {
         duplicateOf: child.id
       })
       .saveChild()
-    await Fixture.placement()
-      .with({
-        childId: duplicate.id,
-        unitId: preschool.id,
-        type: 'PRESCHOOL',
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
+    await Fixture.placement({
+      childId: duplicate.id,
+      unitId: preschool.id,
+      type: 'PRESCHOOL',
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
   })
 
   it('unit supervisor sees hojks document from duplicate', async () => {
@@ -79,12 +71,10 @@ describe('child document with person duplicate', () => {
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    const document = await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: template.id
-      })
-      .save()
+    const document = await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: template.id
+    }).save()
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor)
@@ -100,36 +90,30 @@ describe('child document with person duplicate', () => {
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: pedagogicalAssessmentTemplate.id
-      })
-      .save()
+    await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: pedagogicalAssessmentTemplate.id
+    }).save()
     const pedagogicalReportTemplate = await Fixture.documentTemplate()
       .with({
         type: 'PEDAGOGICAL_REPORT',
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: pedagogicalReportTemplate.id
-      })
-      .save()
+    await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: pedagogicalReportTemplate.id
+    }).save()
     const hojksTemplate = await Fixture.documentTemplate()
       .with({
         type: 'HOJKS',
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    const hojksDocument = await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: hojksTemplate.id
-      })
-      .save()
+    const hojksDocument = await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: hojksTemplate.id
+    }).save()
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, daycareSupervisor)
@@ -148,12 +132,10 @@ describe('child document with person duplicate', () => {
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    const pedagogicalAssessmentDocument = await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: pedagogicalAssessmentTemplate.id
-      })
-      .save()
+    const pedagogicalAssessmentDocument = await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: pedagogicalAssessmentTemplate.id
+    }).save()
     const pedagogicalReportTemplate = await Fixture.documentTemplate()
       .with({
         type: 'PEDAGOGICAL_REPORT',
@@ -161,12 +143,10 @@ describe('child document with person duplicate', () => {
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    const pedagogicalReportDocument = await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: pedagogicalReportTemplate.id
-      })
-      .save()
+    const pedagogicalReportDocument = await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: pedagogicalReportTemplate.id
+    }).save()
     const hojksTemplate = await Fixture.documentTemplate()
       .with({
         type: 'HOJKS',
@@ -174,12 +154,10 @@ describe('child document with person duplicate', () => {
         validity: new DateRange(mockedDate, mockedDate)
       })
       .save()
-    const hojksDocument = await Fixture.childDocument()
-      .with({
-        childId: duplicate.id,
-        templateId: hojksTemplate.id
-      })
-      .save()
+    const hojksDocument = await Fixture.childDocument({
+      childId: duplicate.id,
+      templateId: hojksTemplate.id
+    }).save()
 
     const page = await Page.open({ mockedTime })
     await employeeLogin(page, admin)

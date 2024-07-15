@@ -37,7 +37,7 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
@@ -58,16 +58,12 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(0)
 
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: testChild.id,
-          description: 'e2e test description'
-        })
-        .save()
+      const pd = await Fixture.pedagogicalDocument({
+        childId: testChild.id,
+        description: 'e2e test description'
+      }).save()
 
-      const employee = await Fixture.employee()
-        .with({ roles: ['ADMIN'] })
-        .save()
+      const employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
       const attachmentId = await insertPedagogicalDocumentAttachment(
         pd.id,
         employee.id,
@@ -89,12 +85,10 @@ describe('Citizen pedagogical documents', () => {
 
   describe('Pedagogical documents view', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: testChild.id,
-          description: 'e2e test description'
-        })
-        .save()
+      const pd = await Fixture.pedagogicalDocument({
+        childId: testChild.id,
+        description: 'e2e test description'
+      }).save()
 
       await header.openChildPage(testChild.id)
       const childPage = new CitizenChildPage(page)

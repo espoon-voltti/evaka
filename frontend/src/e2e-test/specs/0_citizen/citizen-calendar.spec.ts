@@ -46,7 +46,7 @@ let jariId: UUID
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   children = [testChild, testChild2, testChildRestricted]
   jariId = testChild.id
   await Fixture.family({ guardian: testAdult, children }).save()
@@ -63,22 +63,18 @@ beforeEach(async () => {
     )
   })
 
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({
-      daycareId: testDaycare.id,
-      name: 'Group 1'
-    })
-    .save()
+  const daycareGroup = await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Group 1'
+  }).save()
 
   for (const child of children) {
-    await Fixture.groupPlacement()
-      .with({
-        startDate: today,
-        endDate: today.addYears(1),
-        daycareGroupId: daycareGroup.id,
-        daycarePlacementId: placementIds.get(child.id) ?? ''
-      })
-      .save()
+    await Fixture.groupPlacement({
+      startDate: today,
+      endDate: today.addYears(1),
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementIds.get(child.id) ?? ''
+    }).save()
   }
 
   const groupEvent = await Fixture.calendarEvent()
@@ -91,13 +87,11 @@ beforeEach(async () => {
     })
     .save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: groupEvent.id,
-      unitId: testDaycare.id,
-      groupId: daycareGroup.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: groupEvent.id,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id
+  }).save()
 
   const individualEvent = await Fixture.calendarEvent()
     .with({
@@ -109,14 +103,12 @@ beforeEach(async () => {
     })
     .save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: individualEvent.id,
-      unitId: testDaycare.id,
-      groupId: daycareGroup.id,
-      childId: testChild.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: individualEvent.id,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id,
+    childId: testChild.id
+  }).save()
 
   const unitEvent = await Fixture.calendarEvent()
     .with({
@@ -128,12 +120,10 @@ beforeEach(async () => {
     })
     .save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: unitEvent.id,
-      unitId: testDaycare.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: unitEvent.id,
+    unitId: testDaycare.id
+  }).save()
 })
 
 describe.each(e)('Citizen calendar (%s)', (env) => {

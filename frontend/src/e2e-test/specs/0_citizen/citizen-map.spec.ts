@@ -61,14 +61,14 @@ let mapPage: CitizenMapPage
 beforeAll(async () => {
   await resetServiceState()
   const careArea = await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testClub).careArea(careArea).save()
-  await Fixture.daycare().with(testDaycare2).careArea(careArea).save()
-  await Fixture.daycare().with(testPreschool).careArea(careArea).save()
-  await Fixture.daycare().with(swedishDaycare).careArea(careArea).save()
-  await Fixture.daycare()
-    .with(privateDaycareWithoutPeriods)
-    .careArea(careArea)
-    .save()
+  await Fixture.daycare({ ...testClub, areaId: careArea.id }).save()
+  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
+  await Fixture.daycare({ ...testPreschool, areaId: careArea.id }).save()
+  await Fixture.daycare({ ...swedishDaycare, areaId: careArea.id }).save()
+  await Fixture.daycare({
+    ...privateDaycareWithoutPeriods,
+    areaId: careArea.id
+  }).save()
 })
 beforeEach(async () => {
   page = await Page.open()

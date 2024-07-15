@@ -37,7 +37,7 @@ const testFilePath = `src/e2e-test/assets/${testFileName}`
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
@@ -121,14 +121,12 @@ describe('Employee application attachments', () => {
 
   test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async () => {
     const daycareId = uuidv4()
-    await Fixture.daycare()
-      .with({
-        ...testDaycare,
-        shiftCareOperationTimes: null,
-        shiftCareOpenOnHolidays: false,
-        id: daycareId
-      })
-      .save()
+    await Fixture.daycare({
+      ...testDaycare,
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false,
+      id: daycareId
+    }).save()
 
     const applicationId = uuidv4()
     await createApplications({

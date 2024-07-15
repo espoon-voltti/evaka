@@ -56,7 +56,7 @@ beforeAll(async () => {
   admin = await Fixture.employeeAdmin().save()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
@@ -75,14 +75,12 @@ beforeAll(async () => {
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: testDaycareGroup.id,
-      daycarePlacementId: daycarePlacementFixture.id,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: testDaycareGroup.id,
+    daycarePlacementId: daycarePlacementFixture.id,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
 
   templateId = await Fixture.vasuTemplate()
     .with({ ...{} })
@@ -128,22 +126,22 @@ describe('Child Information - Vasu language', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
     const child = await Fixture.person().saveChild()
-    const swedishUnit = await Fixture.daycare()
-      .careArea(await Fixture.careArea().save())
-      .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })
-      .save()
+    const area = await Fixture.careArea().save()
+    const swedishUnit = await Fixture.daycare({
+      areaId: area.id,
+      language: 'sv',
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
     const placementDateRange = new FiniteDateRange(
       mockedTime.subMonths(1),
       mockedTime.addMonths(5)
     )
-    await Fixture.placement()
-      .with({
-        unitId: swedishUnit.id,
-        childId: child.id,
-        startDate: placementDateRange.start,
-        endDate: placementDateRange.end
-      })
-      .save()
+    await Fixture.placement({
+      unitId: swedishUnit.id,
+      childId: child.id,
+      startDate: placementDateRange.start,
+      endDate: placementDateRange.end
+    }).save()
     await Fixture.vasuTemplate()
       .with({
         language: 'SV',

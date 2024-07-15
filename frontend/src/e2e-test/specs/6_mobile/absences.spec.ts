@@ -24,36 +24,30 @@ let absencesPage: MobileAbsencesPage
 beforeEach(async () => {
   await resetServiceState()
   const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare()
-    .with({
-      areaId: area.id,
+  const unit = await Fixture.daycare({
+    areaId: area.id,
 
-      // MOBILE must be on
-      // RESERVATIONS must be off
-      enabledPilotFeatures: ['MOBILE']
-    })
-    .save()
-  const group = await Fixture.daycareGroup()
-    .with({
-      daycareId: unit.id
-    })
-    .save()
+    // MOBILE must be on
+    // RESERVATIONS must be off
+    enabledPilotFeatures: ['MOBILE']
+  }).save()
+  const group = await Fixture.daycareGroup({
+    daycareId: unit.id
+  }).save()
 
   const person = await Fixture.person().saveChild()
   childId = person.id
 
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId: unit.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.id,
-      daycareGroupId: group.id
-    })
-    .save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId: unit.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: group.id,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)

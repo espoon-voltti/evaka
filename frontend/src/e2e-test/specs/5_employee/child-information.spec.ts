@@ -45,7 +45,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.person().with(testChildDeceased).saveChild()
   await Fixture.person().with(testChildNoSsn).saveChild()
@@ -54,21 +54,17 @@ beforeEach(async () => {
 
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
-  await Fixture.placement()
-    .with({
-      childId,
-      unitId
-    })
-    .save()
+  await Fixture.placement({
+    childId,
+    unitId
+  }).save()
 
-  await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2020, 6, 1)
-    })
-    .save()
+  await Fixture.placement({
+    childId,
+    unitId,
+    startDate: LocalDate.of(2020, 1, 1),
+    endDate: LocalDate.of(2020, 6, 1)
+  }).save()
 
   // HACK: make sure VTJ guardians are synced between mock VTJ and database,
   // because some parts of the child information page assumes guardian info

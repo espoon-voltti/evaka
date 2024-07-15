@@ -51,7 +51,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.careArea().with(testCareArea).save()
-  await Fixture.daycare().with(testDaycare).save()
+  await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   daycare = testDaycare
 
@@ -59,25 +59,21 @@ beforeEach(async () => {
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
   child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
   await Fixture.family({
     guardian: testAdult,
@@ -85,15 +81,13 @@ beforeEach(async () => {
   }).save()
   child2Fixture = testChild2
   child2DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child2DaycarePlacementId,
-      childId: child2Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child2DaycarePlacementId,
+    childId: child2Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 })
 
 const loadUnitApplicationProcessPage =
@@ -127,44 +121,36 @@ describe('Unit groups - placement plans / proposals', () => {
 
     await createApplications({ body: [application1, application2] })
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application1.id,
-        unitId: testDaycare.id,
-        periodStart: today,
-        periodEnd: today
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application1.id,
+      unitId: testDaycare.id,
+      periodStart: today,
+      periodEnd: today
+    }).save()
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application2.id,
-        unitId: testDaycare.id,
-        periodStart: today,
-        periodEnd: today
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application2.id,
+      unitId: testDaycare.id,
+      periodStart: today,
+      periodEnd: today
+    }).save()
 
-    await Fixture.decision()
-      .with({
-        applicationId: application2.id,
-        employeeId: unitSupervisor.id,
-        unitId: testDaycare.id,
-        startDate: today,
-        endDate: today
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2.id,
+      employeeId: unitSupervisor.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today
+    }).save()
 
     // The second decision is used to ensure that multiple decisions do not create multiple identical proposals (a bug)
-    await Fixture.decision()
-      .with({
-        applicationId: application2.id,
-        employeeId: unitSupervisor.id,
-        unitId: testDaycare.id,
-        startDate: today.addDays(1),
-        endDate: today.addDays(2)
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2.id,
+      employeeId: unitSupervisor.id,
+      unitId: testDaycare.id,
+      startDate: today.addDays(1),
+      endDate: today.addDays(2)
+    }).save()
 
     const applicationProcessPage = await loadUnitApplicationProcessPage()
     await applicationProcessPage.placementProposals.assertPlacementProposalRowCount(
