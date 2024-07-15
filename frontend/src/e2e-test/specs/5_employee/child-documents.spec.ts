@@ -33,9 +33,9 @@ const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
-  await Fixture.person().with(testChild2).saveChild()
+  await Fixture.person(testChild2).saveChild()
   admin = await Fixture.employeeAdmin().save()
   unitSupervisor = await Fixture.employeeUnitSupervisor(testDaycare.id).save()
 
@@ -161,12 +161,10 @@ describe('Employee - Child documents', () => {
   })
 
   test('Pedagogical report only has two states', async () => {
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        published: true
-      })
-      .save()
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
 
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
@@ -186,12 +184,10 @@ describe('Employee - Child documents', () => {
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        published: true
-      })
-      .save()
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
 
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })

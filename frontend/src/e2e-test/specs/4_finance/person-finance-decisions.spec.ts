@@ -37,7 +37,7 @@ let guardianPage: GuardianInformationPage
 beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()

@@ -45,17 +45,15 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2, testChildRestricted]
   }).save()
-  await Fixture.person()
-    .with(testAdult2)
-    .saveAdult({
-      updateMockVtjWithDependants: [testChild]
-    })
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
   page = await Page.open({ mockedTime: mockedNow })
   await enduserLogin(page, testAdult)

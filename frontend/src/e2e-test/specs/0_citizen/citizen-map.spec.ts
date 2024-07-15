@@ -60,7 +60,7 @@ let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
   await resetServiceState()
-  const careArea = await Fixture.careArea().with(testCareArea).save()
+  const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testClub, areaId: careArea.id }).save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
   await Fixture.daycare({ ...testPreschool, areaId: careArea.id }).save()

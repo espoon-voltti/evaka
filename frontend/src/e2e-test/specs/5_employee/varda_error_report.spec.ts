@@ -37,7 +37,7 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
@@ -51,9 +51,9 @@ beforeAll(async () => {
     unitId
   }).save()
 
-  const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.type })
-    .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
 
   serviceNeed = await Fixture.serviceNeed({
     placementId: placement.id,

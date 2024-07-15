@@ -28,20 +28,18 @@ beforeEach(async () => {
 
 describe('Employee - Document templates', () => {
   test('A document template can be exported and imported', async () => {
-    const template = await Fixture.documentTemplate()
-      .with({
-        content: {
-          sections: [
-            {
-              id: 's1',
-              label: 'osio 1',
-              infoText: '',
-              questions: []
-            }
-          ]
-        }
-      })
-      .save()
+    const template = await Fixture.documentTemplate({
+      content: {
+        sections: [
+          {
+            id: 's1',
+            label: 'osio 1',
+            infoText: '',
+            questions: []
+          }
+        ]
+      }
+    }).save()
     const nav = new EmployeeNav(page)
     await nav.openAndClickDropdownMenuItem('document-templates')
     const templates = new DocumentTemplatesListPage(page)

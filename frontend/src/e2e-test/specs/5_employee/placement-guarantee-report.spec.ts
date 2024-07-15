@@ -90,7 +90,7 @@ describe('Placement guarantee report', () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const child1 = await Fixture.person().with({ ssn: null }).saveChild()
+    const child1 = await Fixture.person({ ssn: null }).saveChild()
     await Fixture.placement({
       childId: child1.id,
       unitId: unit.id,
@@ -105,7 +105,7 @@ describe('Placement guarantee report', () => {
       endDate: mockedToday.subDays(1),
       placeGuarantee: true
     }).save()
-    const child2 = await Fixture.person().with({ ssn: null }).saveChild()
+    const child2 = await Fixture.person({ ssn: null }).saveChild()
     await Fixture.child(child2.id).save()
     await Fixture.placement({
       childId: child2.id,
@@ -154,7 +154,7 @@ describe('Placement guarantee report', () => {
     const area = await Fixture.careArea().save()
     const unit1 = await Fixture.daycare({ areaId: area.id }).save()
     const unit2 = await Fixture.daycare({ areaId: area.id }).save()
-    const child1 = await Fixture.person().with({ ssn: null }).saveChild()
+    const child1 = await Fixture.person({ ssn: null }).saveChild()
     await Fixture.placement({
       childId: child1.id,
       unitId: unit1.id,
@@ -169,7 +169,7 @@ describe('Placement guarantee report', () => {
       endDate: mockedToday.addDays(1),
       placeGuarantee: true
     }).save()
-    const child2 = await Fixture.person().with({ ssn: null }).saveChild()
+    const child2 = await Fixture.person({ ssn: null }).saveChild()
     await Fixture.placement({
       childId: child2.id,
       unitId: unit2.id,

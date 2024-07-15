@@ -35,7 +35,7 @@ const mockedTime = LocalDate.of(2024, 2, 19)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
@@ -78,11 +78,9 @@ describe('Assistance need and actions report', () => {
       validDuring
     }).save()
 
-    await Fixture.assistanceActionOption()
-      .with({
-        value: 'ASSISTANCE_SERVICE_CHILD'
-      })
-      .save()
+    await Fixture.assistanceActionOption({
+      value: 'ASSISTANCE_SERVICE_CHILD'
+    }).save()
 
     await Fixture.assistanceAction({
       childId,

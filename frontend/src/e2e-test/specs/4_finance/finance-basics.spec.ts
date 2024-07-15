@@ -152,14 +152,12 @@ describe('Finance basics', () => {
   })
 
   test('Date overlap on fee thresholds with an end date prevents saving new fee thresholds', async () => {
-    const originalData = await Fixture.feeThresholds()
-      .with({
-        validDuring: new DateRange(
-          LocalDate.of(2020, 1, 1),
-          LocalDate.of(2020, 12, 31)
-        )
-      })
-      .save()
+    const originalData = await Fixture.feeThresholds({
+      validDuring: new DateRange(
+        LocalDate.of(2020, 1, 1),
+        LocalDate.of(2020, 12, 31)
+      )
+    }).save()
     await nav.openAndClickDropdownMenuItem('finance-basics')
 
     const newData = {

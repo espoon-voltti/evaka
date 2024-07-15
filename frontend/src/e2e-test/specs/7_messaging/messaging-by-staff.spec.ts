@@ -62,7 +62,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 )
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
@@ -348,11 +348,9 @@ describe('Additional filters', () => {
   })
 
   test('Citizen receives a message when recipient filter matches', async () => {
-    await Fixture.person()
-      .with(testAdult2)
-      .saveAdult({
-        updateMockVtjWithDependants: [testChild]
-      })
+    await Fixture.person(testAdult2).saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
     await insertGuardians({
       body: [
         {
@@ -383,11 +381,9 @@ describe('Additional filters', () => {
   })
 
   test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {
-    await Fixture.person()
-      .with(testAdult2)
-      .saveAdult({
-        updateMockVtjWithDependants: [testChild]
-      })
+    await Fixture.person(testAdult2).saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
     await insertGuardians({
       body: [
         {

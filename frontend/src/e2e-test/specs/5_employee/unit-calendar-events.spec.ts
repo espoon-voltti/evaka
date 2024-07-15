@@ -49,7 +49,7 @@ beforeEach(async () => {
 
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
-  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id
@@ -106,15 +106,13 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  await Fixture.calendarEvent()
-    .with({
-      id: testSurveyId,
-      title: 'Survey title',
-      description: 'Survey description',
-      period: new FiniteDateRange(mockedToday, mockedToday),
-      eventType: 'DISCUSSION_SURVEY'
-    })
-    .save()
+  await Fixture.calendarEvent({
+    id: testSurveyId,
+    title: 'Survey title',
+    description: 'Survey description',
+    period: new FiniteDateRange(mockedToday, mockedToday),
+    eventType: 'DISCUSSION_SURVEY'
+  }).save()
 
   await Fixture.calendarEventAttendee({
     calendarEventId: testSurveyId,

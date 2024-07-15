@@ -42,7 +42,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.preschoolTerm(preschoolTerm2022).save()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
@@ -210,15 +210,15 @@ describe('Citizen application decisions', () => {
   })
 
   test('Guardian sees decisions related to applications made by the other guardian', async () => {
-    const child = await Fixture.person()
-      .with({ ssn: '010116A9219' })
-      .saveChild({ updateMockVtj: true })
-    const guardian = await Fixture.person()
-      .with({ ssn: '010106A973C' })
-      .saveAdult({ updateMockVtjWithDependants: [child] })
-    const otherGuardian = await Fixture.person()
-      .with({ ssn: '010106A9388' })
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const child = await Fixture.person({ ssn: '010116A9219' }).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person({ ssn: '010106A973C' }).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
+    const otherGuardian = await Fixture.person({
+      ssn: '010106A9388'
+    }).saveAdult({ updateMockVtjWithDependants: [child] })
 
     const application = applicationFixture(
       child,

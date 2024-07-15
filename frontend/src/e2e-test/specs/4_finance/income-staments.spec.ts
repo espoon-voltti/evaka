@@ -35,7 +35,7 @@ const today = now.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 

@@ -35,19 +35,17 @@ beforeEach(async () => {
   await resetServiceState()
   page = await Page.open()
 
-  const area = await Fixture.careArea().with(testCareArea).save()
+  const area = await Fixture.careArea(testCareArea).save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
   }).save()
 
-  const child1 = await Fixture.person()
-    .with(child)
-    .saveChild({ updateMockVtj: true })
-  guardian = await Fixture.person()
-    .with(testAdult)
-    .saveAdult({ updateMockVtjWithDependants: [child1] })
+  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
+  guardian = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [child1]
+  })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement({
@@ -56,24 +54,26 @@ beforeEach(async () => {
     startDate: LocalDate.of(2020, 1, 1),
     endDate: LocalDate.of(2036, 6, 30)
   }).save()
-  dailyServiceTime = await Fixture.dailyServiceTime(child1.id).save()
+  dailyServiceTime = await Fixture.dailyServiceTime({
+    childId: child1.id
+  }).save()
 })
 
 describe('Daily service times', () => {
   test('toast notifications are shown when non-destructive notifications exist', async () => {
-    await Fixture.dailyServiceTimeNotification(guardian.id, dailyServiceTime.id)
-      .with({
-        dateFrom: LocalDate.of(2021, 3, 5),
-        hasDeletedReservations: false
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 3, 5),
+      hasDeletedReservations: false
+    }).save()
 
-    await Fixture.dailyServiceTimeNotification(guardian.id, dailyServiceTime.id)
-      .with({
-        dateFrom: LocalDate.of(2021, 8, 11),
-        hasDeletedReservations: false
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 8, 11),
+      hasDeletedReservations: false
+    }).save()
 
     await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')
@@ -90,12 +90,12 @@ describe('Daily service times', () => {
   })
 
   test('modal notification is shown when destructive notification exists', async () => {
-    await Fixture.dailyServiceTimeNotification(guardian.id, dailyServiceTime.id)
-      .with({
-        dateFrom: LocalDate.of(2021, 3, 5),
-        hasDeletedReservations: true
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 3, 5),
+      hasDeletedReservations: true
+    }).save()
 
     await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')

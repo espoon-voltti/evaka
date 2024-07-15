@@ -36,19 +36,17 @@ beforeEach(async () => {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  const area = await Fixture.careArea().with(testCareArea).save()
+  const area = await Fixture.careArea(testCareArea).save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
   }).save()
 
-  const child1 = await Fixture.person()
-    .with(child)
-    .saveChild({ updateMockVtj: true })
-  guardian = await Fixture.person()
-    .with(testAdult)
-    .saveAdult({ updateMockVtjWithDependants: [child1] })
+  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
+  guardian = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [child1]
+  })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement({
@@ -57,12 +55,10 @@ beforeEach(async () => {
     startDate: startDate,
     endDate: LocalDate.of(2026, 6, 30)
   }).save()
-  await Fixture.holidayPeriod()
-    .with({
-      period,
-      reservationDeadline: LocalDate.of(2024, 5, 10)
-    })
-    .save()
+  await Fixture.holidayPeriod({
+    period,
+    reservationDeadline: LocalDate.of(2024, 5, 10)
+  }).save()
 })
 
 describe('Placement start after deadline end', () => {

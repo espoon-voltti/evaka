@@ -27,9 +27,9 @@ beforeEach(async () => {
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.person()
-    .with(testAdultRestricted)
-    .saveAdult({ updateMockVtjWithDependants: [] })
+  await Fixture.person(testAdultRestricted).saveAdult({
+    updateMockVtjWithDependants: []
+  })
 
   const admin = await Fixture.employeeAdmin().save()
   page = await Page.open()

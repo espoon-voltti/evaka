@@ -55,9 +55,10 @@ describe.each(e)(
     test('Citizen creates a repeating reservation on a bank holiday', async () => {
       const firstReservationDay = june7th2023.addDays(14).addDays(2) //Friday, holiday
 
-      await Fixture.holiday()
-        .with({ date: firstReservationDay, description: 'Test holiday 1' })
-        .save()
+      await Fixture.holiday({
+        date: firstReservationDay,
+        description: 'Test holiday 1'
+      }).save()
 
       const { child, parent } = await addTestData(june7th2023)
       const calendarPage = await openCalendarPage(
@@ -251,9 +252,9 @@ const addTestData = async (date: LocalDate) => {
     startDate: date,
     endDate: date.addDays(30)
   }).save()
-  const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: 'DAYCARE' })
-    .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: 'DAYCARE'
+  }).save()
   await Fixture.serviceNeed({
     placementId: placement.id,
     startDate: placement.startDate,

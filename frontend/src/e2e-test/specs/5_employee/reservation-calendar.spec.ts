@@ -52,10 +52,10 @@ const insertTestDataAndLogin = async ({
 }: {
   childShiftCare?: ShiftCareType
 } = {}) => {
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id
@@ -235,20 +235,17 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: LocalDate.of(2023, 3, 1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: LocalDate.of(2023, 3, 1)
+    }).save()
 
-    await Fixture.dailyServiceTime(child1Fixture.id)
-      .with({
-        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-      })
-      .save()
+    await Fixture.dailyServiceTime({
+      childId: child1Fixture.id,
+      validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
 
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
@@ -288,12 +285,10 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: mockedToday.subDays(1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: mockedToday.subDays(1)
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -310,21 +305,18 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin()
     const holidayPeriodStart = LocalDate.of(2023, 3, 14) // Tuesday
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: LocalDate.of(2023, 3, 1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: LocalDate.of(2023, 3, 1)
+    }).save()
 
     const dailyServiceTimeStart = holidayPeriodStart.subDays(5)
-    await Fixture.dailyServiceTime(child1Fixture.id)
-      .with({
-        validityPeriod: new DateRange(dailyServiceTimeStart, null),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-      })
-      .save()
+    await Fixture.dailyServiceTime({
+      childId: child1Fixture.id,
+      validityPeriod: new DateRange(dailyServiceTimeStart, null),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
 
     const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1) // Monday
     await Fixture.attendanceReservation({

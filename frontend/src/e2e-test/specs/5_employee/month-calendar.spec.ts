@@ -37,9 +37,9 @@ beforeEach(async () => {
   await resetServiceState()
 
   await createDefaultServiceNeedOptions()
-  const careArea = await Fixture.careArea().with(testCareArea).save()
+  const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
-  await Fixture.person().with(testChild2).saveChild()
+  await Fixture.person(testChild2).saveChild()
   await Fixture.child(testChild2.id).save()
   group = await Fixture.daycareGroup(testDaycareGroup).save()
 
@@ -273,12 +273,10 @@ describe('Employee - Unit month calendar', () => {
     })
 
     test('Missing holiday reservations are shown for holiday period dates that have no reservation or absence', async () => {
-      await Fixture.holidayPeriod()
-        .with({
-          period: holidayRange,
-          reservationDeadline: today.addWeeks(2)
-        })
-        .save()
+      await Fixture.holidayPeriod({
+        period: holidayRange,
+        reservationDeadline: today.addWeeks(2)
+      }).save()
 
       await unitPage.navigateToUnit(testDaycare.id)
       const groupsPage = await unitPage.openGroupsPage()
@@ -322,12 +320,12 @@ describe('Employee - Unit month calendar', () => {
   })
 
   test('Total reservations and attendances/used service', async () => {
-    const serviceNeedOption140h = await Fixture.serviceNeedOption()
-      .with({ daycareHoursPerMonth: 140 })
-      .save()
-    const serviceNeedOptionDaycare35 = await Fixture.serviceNeedOption()
-      .with({ daycareHoursPerWeek: 35 })
-      .save()
+    const serviceNeedOption140h = await Fixture.serviceNeedOption({
+      daycareHoursPerMonth: 140
+    }).save()
+    const serviceNeedOptionDaycare35 = await Fixture.serviceNeedOption({
+      daycareHoursPerWeek: 35
+    }).save()
 
     const placementStart = today.addMonths(-1)
     const placementEnd = today.addMonths(1)
@@ -353,7 +351,7 @@ describe('Employee - Unit month calendar', () => {
       endDate: kaarinaPlacement.endDate
     }).save()
 
-    await Fixture.person().with(testChild).saveChild()
+    await Fixture.person(testChild).saveChild()
     await Fixture.child(testChild.id).save()
     const jariPlacement = await Fixture.placement({
       childId: testChild.id,

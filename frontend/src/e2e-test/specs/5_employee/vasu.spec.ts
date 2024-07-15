@@ -55,7 +55,7 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
@@ -82,9 +82,7 @@ beforeAll(async () => {
     endDate: daycarePlacementFixture.endDate
   }).save()
 
-  templateId = await Fixture.vasuTemplate()
-    .with({ ...{} })
-    .saveAndReturnId()
+  templateId = await Fixture.vasuTemplate({ ...{} }).saveAndReturnId()
 
   await insertGuardians({
     body: [
@@ -142,12 +140,10 @@ describe('Child Information - Vasu language', () => {
       startDate: placementDateRange.start,
       endDate: placementDateRange.end
     }).save()
-    await Fixture.vasuTemplate()
-      .with({
-        language: 'SV',
-        valid: placementDateRange
-      })
-      .saveAndReturnId()
+    await Fixture.vasuTemplate({
+      language: 'SV',
+      valid: placementDateRange
+    }).saveAndReturnId()
 
     page = await openPage()
     await employeeLogin(page, admin)

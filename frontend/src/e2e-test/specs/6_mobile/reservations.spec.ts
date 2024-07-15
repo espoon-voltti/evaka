@@ -117,9 +117,9 @@ describe('when placement is ending tomorrow', () => {
   })
 
   test('reservation without time can be overridden', async () => {
-    await Fixture.holidayPeriod()
-      .with({ period: new FiniteDateRange(mockedTomorrow, mockedTomorrow) })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(mockedTomorrow, mockedTomorrow)
+    }).save()
     await Fixture.attendanceReservation({
       type: 'PRESENT',
       childId: child.id,
@@ -157,13 +157,12 @@ describe('when placement is ending tomorrow', () => {
   })
 
   test('daily service time can be overridden', async () => {
-    await Fixture.dailyServiceTime(child.id)
-      .with({
-        validityPeriod: new DateRange(mockedTomorrow, mockedTomorrow),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-      })
-      .save()
+    await Fixture.dailyServiceTime({
+      childId: child.id,
+      validityPeriod: new DateRange(mockedTomorrow, mockedTomorrow),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)
     const reservationsPage = await navigateToReservations(page, child.id)

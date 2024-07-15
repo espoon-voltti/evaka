@@ -42,9 +42,7 @@ const setupTestData = async ({
   await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm(preschoolTerm2023).save()
   daycareServiceNeedOptionId = (
-    await Fixture.serviceNeedOption()
-      .with({ validPlacementType: 'DAYCARE' })
-      .save()
+    await Fixture.serviceNeedOption({ validPlacementType: 'DAYCARE' }).save()
   ).id
   const careArea = await Fixture.careArea().save()
   const operationTime = new TimeRange(LocalTime.of(7, 0), LocalTime.of(18, 0))
@@ -395,8 +393,8 @@ test('Intermittent shift care on a holiday', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
   const date1 = today.addDays(1)
   const date2 = today.addDays(2)
-  await Fixture.holiday().with({ date: date1 }).save()
-  await Fixture.holiday().with({ date: date2 }).save()
+  await Fixture.holiday({ date: date1 }).save()
+  await Fixture.holiday({ date: date2 }).save()
   // Intermittent shift care for date 1
   await Fixture.serviceNeed({
     placementId,

@@ -49,13 +49,11 @@ test('Forgot my password', async () => {
     socialSecurityNumber: '070644-937X',
     password: 'test123'
   }
-  await Fixture.person()
-    .with({
-      ssn: user.socialSecurityNumber,
-      firstName: user.firstName,
-      lastName: user.lastName
-    })
-    .saveAdult({ updateMockVtjWithDependants: [] })
+  await Fixture.person({
+    ssn: user.socialSecurityNumber,
+    firstName: user.firstName,
+    lastName: user.lastName
+  }).saveAdult({ updateMockVtjWithDependants: [] })
   await keycloak.createUser(user)
 
   const page = await Page.open()
@@ -119,13 +117,11 @@ test('Registration via suomi.fi', async () => {
     givenName: 'Eemeli',
     surname: 'Esimerkki'
   }
-  await Fixture.person()
-    .with({
-      ssn: user.ssn,
-      firstName: user.givenName,
-      lastName: user.surname
-    })
-    .saveAdult({ updateMockVtjWithDependants: [] })
+  await Fixture.person({
+    ssn: user.ssn,
+    firstName: user.givenName,
+    lastName: user.surname
+  }).saveAdult({ updateMockVtjWithDependants: [] })
   const email = 'test@example.com'
   await createSuomiFiUser(user)
 

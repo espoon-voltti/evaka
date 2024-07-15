@@ -49,13 +49,13 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   daycareId = testDaycare.id
 
   await Fixture.employeeUnitSupervisor(testDaycare.id).with(esko).save()
-  await Fixture.employee().with(pete).save()
-  await Fixture.employee().with(yrjo).save()
+  await Fixture.employee(pete).save()
+  await Fixture.employee(yrjo).save()
   admin = await Fixture.employeeAdmin().save()
 })
 

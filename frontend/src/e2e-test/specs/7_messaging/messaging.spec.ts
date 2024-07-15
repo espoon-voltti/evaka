@@ -70,18 +70,16 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.person()
-    .with(testAdult2)
-    .saveAdult({
-      updateMockVtjWithDependants: [testChild]
-    })
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
   careArea = testCareArea
   await createDaycareGroups({ body: [testDaycareGroup] })
@@ -109,11 +107,10 @@ beforeEach(async () => {
     endDate: mockedDate.addYears(1)
   }).save()
 
-  await Fixture.daycare(testDaycare2)
-    .with({
-      areaId: careArea.id
-    })
-    .save()
+  await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id
+  }).save()
 
   backupDaycareId = testDaycare2.id
   backupGroupFixtureId = uuidv4()

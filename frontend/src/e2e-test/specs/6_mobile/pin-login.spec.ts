@@ -47,19 +47,18 @@ const pin = '2580'
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   child = testChild
   const unit = testDaycare
 
-  const employee = await Fixture.employee()
-    .with({
-      firstName: empFirstName,
-      lastName: empLastName,
-      email: 'yy@example.com',
-      roles: []
-    })
+  const employee = await Fixture.employee({
+    firstName: empFirstName,
+    lastName: empLastName,
+    email: 'yy@example.com',
+    roles: []
+  })
     .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
   await Fixture.employeePin({ userId: employee.id, pin }).save()
@@ -95,7 +94,7 @@ describe('Mobile PIN login', () => {
         additionalInfo: ''
       })
       .save()
-    await Fixture.person().with(testAdult2).saveAdult()
+    await Fixture.person(testAdult2).saveAdult()
 
     const parentshipId = uuidv4()
     await createFridgePartner({

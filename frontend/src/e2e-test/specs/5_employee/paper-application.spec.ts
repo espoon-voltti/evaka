@@ -32,7 +32,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.preschoolTerm(preschoolTerm2022).save()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
@@ -91,23 +91,19 @@ describe('Employee - paper application', () => {
 
   test('Paper application can be created for other non guardian vtj person and child with ssn', async () => {
     const ssn = '270372-905L'
-    const child = await Fixture.person()
-      .with({
-        ssn: '010106A981M',
-        firstName: 'Lapsi',
-        lastName: 'Korhonen-Hämäläinen'
-      })
-      .saveChild({ updateMockVtj: true })
-    await Fixture.person()
-      .with({
-        ssn,
-        firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
-        lastName: 'Korhonen-Hämäläinen',
-        streetAddress: 'Kamreerintie 2',
-        postalCode: '00370',
-        postOffice: 'Espoo'
-      })
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const child = await Fixture.person({
+      ssn: '010106A981M',
+      firstName: 'Lapsi',
+      lastName: 'Korhonen-Hämäläinen'
+    }).saveChild({ updateMockVtj: true })
+    await Fixture.person({
+      ssn,
+      firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+      lastName: 'Korhonen-Hämäläinen',
+      streetAddress: 'Kamreerintie 2',
+      postalCode: '00370',
+      postOffice: 'Espoo'
+    }).saveAdult({ updateMockVtjWithDependants: [child] })
     await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 

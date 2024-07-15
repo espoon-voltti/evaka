@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { initial } from 'lodash'
+
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -358,7 +360,8 @@ export class Fixture {
       email: 'lasse.laskuttaja@evaka.test',
       firstName: 'Lasse',
       lastName: 'Laskuttaja',
-      roles: ['FINANCE_ADMIN']
+      roles: ['FINANCE_ADMIN'],
+      ...initial
     })
   }
 
@@ -981,33 +984,36 @@ export class Fixture {
     })
   }
 
-  static dailyServiceTime(childId: string): DailyServiceTimeBuilder {
+  static dailyServiceTime(
+    initial: SemiPartial<DevDailyServiceTimes, 'childId'>
+  ): DailyServiceTimeBuilder {
     return new DailyServiceTimeBuilder({
       id: uuidv4(),
       validityPeriod: new DateRange(LocalDate.of(2020, 1, 1), null),
       type: 'REGULAR',
       regularTimes: new TimeRange(LocalTime.of(1, 0), LocalTime.of(15, 0)),
-      childId,
       mondayTimes: null,
       tuesdayTimes: null,
       wednesdayTimes: null,
       thursdayTimes: null,
       fridayTimes: null,
       saturdayTimes: null,
-      sundayTimes: null
+      sundayTimes: null,
+      ...initial
     })
   }
 
   static dailyServiceTimeNotification(
-    guardianId: string,
-    dailyServiceTimeId: string
+    initial: SemiPartial<
+      DevDailyServiceTimeNotification,
+      'guardianId' | 'dailyServiceTimeId'
+    >
   ): DailyServiceTimeNotificationBuilder {
     return new DailyServiceTimeNotificationBuilder({
       id: uuidv4(),
-      guardianId,
-      dailyServiceTimeId,
       dateFrom: LocalDate.of(2020, 4, 3),
-      hasDeletedReservations: false
+      hasDeletedReservations: false,
+      ...initial
     })
   }
 
@@ -1258,14 +1264,6 @@ export class Fixture {
 
 abstract class FixtureBuilder<T> {
   constructor(public data: T) {}
-
-  with<K extends keyof T>(value: Pick<T, K>): this {
-    this.data = {
-      ...this.data,
-      ...value
-    }
-    return this
-  }
 }
 
 export class DaycareBuilder extends FixtureBuilder<DevDaycare> {
@@ -1380,15 +1378,15 @@ export interface Family {
 export class FamilyBuilder extends FixtureBuilder<Family> {
   async save() {
     for (const child of this.data.children) {
-      await Fixture.person().with(child).saveChild({ updateMockVtj: true })
+      await Fixture.person(child).saveChild({ updateMockVtj: true })
     }
-    await Fixture.person()
-      .with(this.data.guardian)
-      .saveAdult({ updateMockVtjWithDependants: this.data.children })
+    await Fixture.person(this.data.guardian).saveAdult({
+      updateMockVtjWithDependants: this.data.children
+    })
     if (this.data.otherGuardian) {
-      await Fixture.person()
-        .with(this.data.otherGuardian)
-        .saveAdult({ updateMockVtjWithDependants: this.data.children })
+      await Fixture.person(this.data.otherGuardian).saveAdult({
+        updateMockVtjWithDependants: this.data.children
+      })
     }
   }
 }
@@ -1401,6 +1399,11 @@ export class EmployeeBuilder extends FixtureBuilder<DevEmployee> {
     super(data)
     this.daycareAcl = []
     this.groupAcl = []
+  }
+
+  with(data: Partial<DevEmployee>): this {
+    this.data = { ...this.data, ...data }
+    return this
   }
 
   withDaycareAcl(unitId: string, role: ScopedRole): this {
@@ -1500,6 +1503,14 @@ export class ChildBuilder extends FixtureBuilder<DevChild> {
     await createChildren({ body: [this.data] })
     return this.data
   }
+
+  with(data: Partial<DevChild>): this {
+    this.data = {
+      ...this.data,
+      ...data
+    }
+    return this
+  }
 }
 
 export class AssistanceFactorBuilder extends FixtureBuilder<AssistanceFactor> {
@@ -1548,6 +1559,14 @@ export class AssistanceNeedPreschoolDecisionBuilder extends FixtureBuilder<DevAs
   async save() {
     await createAssistanceNeedPreschoolDecisions({ body: [this.data] })
     return this.data
+  }
+
+  with(value: Partial<DevAssistanceNeedPreschoolDecision>): this {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
   }
 
   withGuardian(guardianId: UUID) {
@@ -2434,7 +2453,7 @@ export const testPreschool: DevDaycare = {
   mealtimeEveningSnack: null
 }
 
-export const testAdult = Fixture.person().with({
+export const testAdult = Fixture.person({
   id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
   ssn: '070644-937X',
   firstName: 'Johannes Olavi Antero Tapio',
@@ -2451,7 +2470,7 @@ export const testAdult = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testChild = Fixture.person().with({
+export const testChild = Fixture.person({
   id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
   ssn: '070714A9126',
   firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
@@ -2469,7 +2488,7 @@ export const testChild = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testChild2 = Fixture.person().with({
+export const testChild2 = Fixture.person({
   id: '5a4f3ccc-5270-4d28-bd93-d355182b6768',
   ssn: '160616A978U',
   firstName: 'Kaarina Veera Nelli',
@@ -2486,7 +2505,7 @@ export const testChild2 = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testChildRestricted = Fixture.person().with({
+export const testChildRestricted = Fixture.person({
   id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
   ssn: '160620A999J',
   firstName: 'Porri Hatter',
@@ -2503,7 +2522,7 @@ export const testChildRestricted = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testAdult2 = Fixture.person().with({
+export const testAdult2 = Fixture.person({
   id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
   ssn: '311299-999E',
   firstName: 'Ville',
@@ -2520,7 +2539,7 @@ export const testAdult2 = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testChildDeceased = Fixture.person().with({
+export const testChildDeceased = Fixture.person({
   id: 'b8711722-0c1b-4044-a794-5b308207d78b',
   ssn: '150515-999T',
   firstName: 'Unelma',
@@ -2538,7 +2557,7 @@ export const testChildDeceased = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testChildNoSsn = Fixture.person().with({
+export const testChildNoSsn = Fixture.person({
   id: 'a5e87ec8-6221-46f8-8b2b-9ab124d51c22',
   firstName: 'Heluna',
   lastName: 'Hetuton',
@@ -2590,7 +2609,7 @@ const twoGuardiansGuardian2 = {
   restrictedDetailsEndDate: null
 }
 const twoGuardiansChildren = [
-  Fixture.person().with({
+  Fixture.person({
     id: '6ec99620-9ffd-11ea-bb37-0242ac130002',
     ssn: '071013A960W',
     firstName: 'Antero Onni Leevi Aatu',
@@ -2608,8 +2627,8 @@ const twoGuardiansChildren = [
   }).data
 ]
 export const familyWithTwoGuardians = {
-  guardian: Fixture.person().with(twoGuardiansGuardian1).data,
-  otherGuardian: Fixture.person().with(twoGuardiansGuardian2).data,
+  guardian: Fixture.person(twoGuardiansGuardian1).data,
+  otherGuardian: Fixture.person(twoGuardiansGuardian2).data,
   children: twoGuardiansChildren
 }
 
@@ -2623,7 +2642,7 @@ const separatedGuardiansGuardian1 = {
   postalCode: '02770',
   postOffice: 'Espoo'
 }
-const separatedGuardiansGuardian2 = Fixture.person().with({
+const separatedGuardiansGuardian2 = Fixture.person({
   id: '56064714-649f-457e-893a-44832936166c',
   firstName: 'Joan',
   lastName: 'Doe',
@@ -2634,7 +2653,7 @@ const separatedGuardiansGuardian2 = Fixture.person().with({
   postOffice: 'Espoo'
 }).data
 const separatedGuardiansChildren = [
-  Fixture.person().with({
+  Fixture.person({
     id: '5474ee62-16cf-4cfe-a297-40559e165a32',
     firstName: 'Ricky',
     lastName: 'Doe',
@@ -2646,8 +2665,8 @@ const separatedGuardiansChildren = [
   }).data
 ]
 export const familyWithSeparatedGuardians = {
-  guardian: Fixture.person().with(separatedGuardiansGuardian1).data,
-  otherGuardian: Fixture.person().with(separatedGuardiansGuardian2).data,
+  guardian: Fixture.person(separatedGuardiansGuardian1).data,
+  otherGuardian: Fixture.person(separatedGuardiansGuardian2).data,
   children: separatedGuardiansChildren
 }
 
@@ -2686,7 +2705,7 @@ const guardian2WithNoRestrictions = {
 }
 
 const restrictedDetailsGuardiansChildren = [
-  Fixture.person().with({
+  Fixture.person({
     id: '82a2586e-3fdd-11eb-b378-0242ac130002',
     firstName: 'Vadelma',
     lastName: 'Pelimerkki',
@@ -2699,12 +2718,12 @@ const restrictedDetailsGuardiansChildren = [
 ]
 
 export const familyWithRestrictedDetailsGuardian = {
-  guardian: Fixture.person().with(restrictedDetailsGuardian).data,
-  otherGuardian: Fixture.person().with(guardian2WithNoRestrictions).data,
+  guardian: Fixture.person(restrictedDetailsGuardian).data,
+  otherGuardian: Fixture.person(guardian2WithNoRestrictions).data,
   children: restrictedDetailsGuardiansChildren
 }
 
-const deadGuardian = Fixture.person().with({
+const deadGuardian = Fixture.person({
   id: 'faacfd43-878f-4a70-9e74-2051a18480e6',
   ssn: '080581-999A',
   firstName: 'Kuisma',
@@ -2722,7 +2741,7 @@ const deadGuardian = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-const deadGuardianChild = Fixture.person().with({
+const deadGuardianChild = Fixture.person({
   id: '1ad3469b-593d-45e4-a68b-a09f759bd029',
   firstName: 'Kuopus',
   lastName: 'Kuollut',
@@ -2738,7 +2757,7 @@ export const familyWithDeadGuardian: Family = {
   children: [deadGuardianChild]
 }
 
-export const testChildZeroYearOld = Fixture.person().with({
+export const testChildZeroYearOld = Fixture.person({
   id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
   ssn: null,
   firstName: 'Vasta Syntynyt',
@@ -2755,7 +2774,7 @@ export const testChildZeroYearOld = Fixture.person().with({
   restrictedDetailsEndDate: null
 }).data
 
-export const testAdultRestricted = Fixture.person().with({
+export const testAdultRestricted = Fixture.person({
   id: '92d707e9-6cbc-487b-8bde-0097d90044cd',
   ssn: '031083-910S',
   firstName: 'Seija Anna Kaarina',

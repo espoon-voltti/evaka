@@ -21,9 +21,9 @@ let childInfo: ChildInformationPage
 
 beforeAll(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
-  await Fixture.person().with(testChild).saveChild()
+  await Fixture.person(testChild).saveChild()
   await Fixture.placement({
     childId: testChild.id,
     unitId: testDaycare.id

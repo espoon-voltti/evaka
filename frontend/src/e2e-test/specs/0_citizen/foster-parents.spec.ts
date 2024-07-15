@@ -53,15 +53,15 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
 
-  fosterParent = await Fixture.person()
-    .with(testAdult)
-    .saveAdult({ updateMockVtjWithDependants: [] })
-  fosterChild = await Fixture.person()
-    .with({ ssn: '120220A995L' })
-    .saveChild({ updateMockVtj: true })
+  fosterParent = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: []
+  })
+  fosterChild = await Fixture.person({ ssn: '120220A995L' }).saveChild({
+    updateMockVtj: true
+  })
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
     body: [
@@ -150,7 +150,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
 })
 
 test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
-  const fosterChild = await Fixture.person().with({ ssn: null }).saveChild()
+  const fosterChild = await Fixture.person({ ssn: null }).saveChild()
 
   await Fixture.child(fosterChild.id).save()
   await createFosterParent({
@@ -468,15 +468,13 @@ test('Foster parent can see calendar events for foster children', async () => {
     daycarePlacementId: placement.id
   }).save()
   const groupEventId = uuidv4()
-  await Fixture.calendarEvent()
-    .with({
-      id: groupEventId,
-      title: 'Group-wide event',
-      description: 'Whole group',
-      period: new FiniteDateRange(mockedDate, mockedDate),
-      modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
-    })
-    .save()
+  await Fixture.calendarEvent({
+    id: groupEventId,
+    title: 'Group-wide event',
+    description: 'Whole group',
+    period: new FiniteDateRange(mockedDate, mockedDate),
+    modifiedAt: HelsinkiDateTime.fromLocal(mockedDate, LocalTime.MIN)
+  }).save()
   await Fixture.calendarEventAttendee({
     calendarEventId: groupEventId,
     unitId: testDaycare.id,

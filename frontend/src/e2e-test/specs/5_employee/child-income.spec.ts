@@ -20,7 +20,7 @@ let incomesSection: IncomeSection
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.person().with(testChild).saveChild()
+  await Fixture.person(testChild).saveChild()
   personId = testChild.id
 
   const financeAdmin = await Fixture.employeeFinanceAdmin().save()

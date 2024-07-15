@@ -39,15 +39,15 @@ const mockedDate = LocalDate.of(2021, 1, 15)
 beforeEach(async () => {
   await resetServiceState()
   await Fixture.preschoolTerm(preschoolTerm2021).save()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
-  await Fixture.person()
-    .with(testAdult2)
-    .saveAdult({ updateMockVtjWithDependants: [testChild] })
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))

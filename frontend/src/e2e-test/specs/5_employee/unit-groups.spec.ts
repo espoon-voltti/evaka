@@ -46,7 +46,7 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()
   await Fixture.family(familyWithTwoGuardians).save()
@@ -72,7 +72,7 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  child2Fixture = await Fixture.person().with(testChildZeroYearOld).saveChild()
+  child2Fixture = await Fixture.person(testChildZeroYearOld).saveChild()
   child2DaycarePlacementId = uuidv4()
   await Fixture.placement({
     id: child2DaycarePlacementId,
@@ -82,7 +82,7 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  child3Fixture = await Fixture.person().with(testChild2).saveChild()
+  child3Fixture = await Fixture.person(testChild2).saveChild()
   daycare2 = testDaycarePrivateVoucher
 })
 
@@ -258,9 +258,9 @@ describe('Unit groups - unit supervisor', () => {
       endDate: placementEndDate
     }).save()
 
-    const specialServiceNeed = await Fixture.serviceNeedOption()
-      .with({ occupancyCoefficientUnder3y: 1.89 })
-      .save()
+    const specialServiceNeed = await Fixture.serviceNeedOption({
+      occupancyCoefficientUnder3y: 1.89
+    }).save()
 
     await Fixture.serviceNeed({
       placementId: child2DaycarePlacementId,

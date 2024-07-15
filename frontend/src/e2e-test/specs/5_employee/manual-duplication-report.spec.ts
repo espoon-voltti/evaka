@@ -33,8 +33,8 @@ describe('Manual duplication report', () => {
       areaId: area.id,
       type: ['CENTRE']
     }).save()
-    const guardian = await Fixture.person().with({ ssn: null }).saveAdult()
-    const child = await Fixture.person().with({ ssn: null }).saveChild()
+    const guardian = await Fixture.person({ ssn: null }).saveAdult()
+    const child = await Fixture.person({ ssn: null }).saveChild()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))

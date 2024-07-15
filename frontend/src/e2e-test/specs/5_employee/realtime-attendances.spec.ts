@@ -48,7 +48,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea().with(testCareArea2).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id,
@@ -88,13 +88,12 @@ beforeEach(async () => {
     endDate: placementEndDate
   }).save()
 
-  groupStaff = await Fixture.employee()
-    .with({
-      email: 'kalle.kasvattaja@evaka.test',
-      firstName: 'Kalle',
-      lastName: 'Kasvattaja',
-      roles: []
-    })
+  groupStaff = await Fixture.employee({
+    email: 'kalle.kasvattaja@evaka.test',
+    firstName: 'Kalle',
+    lastName: 'Kasvattaja',
+    roles: []
+  })
     .withDaycareAcl(daycare.id, 'STAFF')
     .withGroupAcl(groupId)
     .withGroupAcl(groupId2)
@@ -269,13 +268,12 @@ describe('Realtime staff attendances', () => {
     test('Automatically closed attendance is indicated and cleared on edit', async () => {
       const yesterday = mockedToday.subDays(1)
 
-      const otherGroupStaff = await Fixture.employee()
-        .with({
-          email: 'raija.raivo@evaka.test',
-          firstName: 'Raija',
-          lastName: 'Raivo',
-          roles: []
-        })
+      const otherGroupStaff = await Fixture.employee({
+        email: 'raija.raivo@evaka.test',
+        firstName: 'Raija',
+        lastName: 'Raivo',
+        roles: []
+      })
         .withDaycareAcl(daycare.id, 'STAFF')
         .withGroupAcl(groupId)
         .withGroupAcl(groupId2)

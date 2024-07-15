@@ -36,12 +36,10 @@ beforeEach(async () => {
     language: 'fi',
     dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
   }).save()
-  child = await Fixture.person()
-    .with({
-      firstName: 'Esko',
-      lastName: 'Beck'
-    })
-    .saveChild()
+  child = await Fixture.person({
+    firstName: 'Esko',
+    lastName: 'Beck'
+  }).saveChild()
 
   await Fixture.child(child.id).save()
 

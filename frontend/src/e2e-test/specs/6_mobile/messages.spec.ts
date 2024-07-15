@@ -94,7 +94,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
@@ -118,37 +118,34 @@ beforeEach(async () => {
     daycareId: testDaycare.id
   }).save()
 
-  const employee = await Fixture.employee()
-    .with({
-      id: employeeId,
-      firstName: empFirstName,
-      lastName: empLastName,
-      email: 'yy@example.com',
-      roles: []
-    })
+  const employee = await Fixture.employee({
+    id: employeeId,
+    firstName: empFirstName,
+    lastName: empLastName,
+    email: 'yy@example.com',
+    roles: []
+  })
     .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
     .save()
 
-  const staff = await Fixture.employee()
-    .with({
-      firstName: staffFirstName,
-      lastName: staffLastName,
-      email: 'zz@example.com',
-      roles: []
-    })
+  const staff = await Fixture.employee({
+    firstName: staffFirstName,
+    lastName: staffLastName,
+    email: 'zz@example.com',
+    roles: []
+  })
     .withDaycareAcl(testDaycare.id, 'STAFF')
     .withGroupAcl(daycareGroup.id)
     .withGroupAcl(daycareGroup2.id)
     .withGroupAcl(daycareGroup3.id)
     .save()
 
-  const staff2 = await Fixture.employee()
-    .with({
-      firstName: staff2FirstName,
-      lastName: staff2LastName,
-      email: 'aa@example.com',
-      roles: []
-    })
+  const staff2 = await Fixture.employee({
+    firstName: staff2FirstName,
+    lastName: staff2LastName,
+    email: 'aa@example.com',
+    roles: []
+  })
     .withDaycareAcl(testDaycare.id, 'STAFF')
     .save()
 
@@ -342,12 +339,12 @@ describe('Messages page', () => {
 
   test('Employee sends a message to a group', async () => {
     const extraChildFixture = await Fixture.person().saveChild()
-    const extraGuardianFixture1 = await Fixture.person()
-      .with({ ssn: '240190-5442' })
-      .saveAdult()
-    const extraGuardianFixture2 = await Fixture.person()
-      .with({ ssn: '210390-383J' })
-      .saveAdult()
+    const extraGuardianFixture1 = await Fixture.person({
+      ssn: '240190-5442'
+    }).saveAdult()
+    const extraGuardianFixture2 = await Fixture.person({
+      ssn: '210390-383J'
+    }).saveAdult()
     await insertGuardians({
       body: [
         {
@@ -516,11 +513,9 @@ describe('Messages page', () => {
   })
 
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
-    await Fixture.person()
-      .with(testAdult2)
-      .saveAdult({
-        updateMockVtjWithDependants: [testChild]
-      })
+    await Fixture.person(testAdult2).saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
 
     // Add child's guardians to block list
     const admin = await Fixture.employeeAdmin().save()

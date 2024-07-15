@@ -24,23 +24,27 @@ beforeEach(async () => {
   await resetServiceState()
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare({ areaId: area.id }).save()
-  child = await Fixture.person()
-    .with({
-      firstName: 'Esko',
-      lastName: 'Beck',
-      ssn: null,
-      ophPersonOid: 'mock-oid-1'
-    })
-    .saveChild()
-  child2 = await Fixture.person()
-    .with({ firstName: 'Maija', lastName: 'Äänikolu', ssn: null })
-    .saveChild()
-  child3 = await Fixture.person()
-    .with({ firstName: 'Pasi', lastName: 'Pastplacement', ssn: null })
-    .saveChild()
-  child4 = await Fixture.person()
-    .with({ firstName: 'Sami', lastName: 'Ssnhaver', ssn: '050520A999M' })
-    .saveChild()
+  child = await Fixture.person({
+    firstName: 'Esko',
+    lastName: 'Beck',
+    ssn: null,
+    ophPersonOid: 'mock-oid-1'
+  }).saveChild()
+  child2 = await Fixture.person({
+    firstName: 'Maija',
+    lastName: 'Äänikolu',
+    ssn: null
+  }).saveChild()
+  child3 = await Fixture.person({
+    firstName: 'Pasi',
+    lastName: 'Pastplacement',
+    ssn: null
+  }).saveChild()
+  child4 = await Fixture.person({
+    firstName: 'Sami',
+    lastName: 'Ssnhaver',
+    ssn: '050520A999M'
+  }).saveChild()
 
   await Fixture.placement({
     type: 'DAYCARE',

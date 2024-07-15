@@ -76,7 +76,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.preschoolTerm(preschoolTerm2021).save()
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
 
     children = [testChild, testChild2, testChildRestricted]
@@ -195,13 +195,11 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const end = start.addDays(6)
     const opens = today.addDays(1)
 
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(start, end),
-        reservationsOpenOn: opens,
-        reservationDeadline: opens
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(start, end),
+      reservationsOpenOn: opens,
+      reservationDeadline: opens
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
 
@@ -618,7 +616,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
     // Wednesday
     const holiday = today.addDays(21)
-    await Fixture.holiday().with({ date: holiday }).save()
+    await Fixture.holiday({ date: holiday }).save()
 
     const calendarPage = await openCalendarPage(env)
 
@@ -654,14 +652,14 @@ describe.each(e)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
     await resetServiceState()
 
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     const child = await Fixture.person(testChild2).saveChild({
       updateMockVtj: true
     })
-    const guardian = await Fixture.person()
-      .with(testAdult)
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
@@ -682,7 +680,7 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
   it('Holiday', async () => {
     await init()
-    await Fixture.holiday().with({ date: today }).save()
+    await Fixture.holiday({ date: today }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertHoliday(today)
@@ -740,13 +738,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
   it('Holiday period highlight', async () => {
     await init()
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(today, today),
-        reservationsOpenOn: today,
-        reservationDeadline: today
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(today, today),
+      reservationsOpenOn: today,
+      reservationDeadline: today
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'holidayPeriod')
@@ -754,13 +750,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
   it('Holiday period not yet open', async () => {
     await init()
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(today, today),
-        reservationsOpenOn: today.addDays(1),
-        reservationDeadline: today.addDays(1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(today, today),
+      reservationsOpenOn: today.addDays(1),
+      reservationDeadline: today.addDays(1)
+    }).save()
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDay(today, [
@@ -773,13 +767,11 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
   it('Reservation without times', async () => {
     await init()
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(today, today),
-        reservationsOpenOn: today,
-        reservationDeadline: today
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(today, today),
+      reservationsOpenOn: today,
+      reservationDeadline: today
+    }).save()
 
     await Fixture.attendanceReservationRaw({
       childId: testChild2.id,
@@ -965,7 +957,7 @@ describe('Citizen calendar child visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.family({
       guardian: testAdult,
@@ -1037,7 +1029,7 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
-    const careArea = await Fixture.careArea().with(testCareArea2).save()
+    const careArea = await Fixture.careArea(testCareArea2).save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
       areaId: careArea.id
@@ -1079,7 +1071,7 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('Citizen creates a reservation for a child in round the clock daycare for holidays', async () => {
-    const careArea = await Fixture.careArea().with(testCareArea2).save()
+    const careArea = await Fixture.careArea(testCareArea2).save()
     const daycare = await Fixture.daycare({
       ...testDaycare2,
       areaId: careArea.id
@@ -1111,9 +1103,10 @@ describe('Citizen calendar child visibility', () => {
     }).save()
 
     const firstReservationDay = today.addDays(14)
-    await Fixture.holiday()
-      .with({ date: firstReservationDay, description: 'Test holiday 1' })
-      .save()
+    await Fixture.holiday({
+      date: firstReservationDay,
+      description: 'Test holiday 1'
+    }).save()
 
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
@@ -1153,7 +1146,7 @@ describe('Citizen calendar visibility', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
     child = testChild
@@ -1239,7 +1232,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
   beforeEach(async () => {
     await resetServiceState()
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
-    const careArea = await Fixture.careArea().with(testCareArea2).save()
+    const careArea = await Fixture.careArea(testCareArea2).save()
     await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 
     await createDaycarePlacements({

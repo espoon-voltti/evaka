@@ -49,12 +49,10 @@ describe('child document with person duplicate', () => {
       endDate: mockedDate
     }).save()
 
-    duplicate = await Fixture.person()
-      .with({
-        ssn: null,
-        duplicateOf: child.id
-      })
-      .saveChild()
+    duplicate = await Fixture.person({
+      ssn: null,
+      duplicateOf: child.id
+    }).saveChild()
     await Fixture.placement({
       childId: duplicate.id,
       unitId: preschool.id,
@@ -65,12 +63,10 @@ describe('child document with person duplicate', () => {
   })
 
   it('unit supervisor sees hojks document from duplicate', async () => {
-    const template = await Fixture.documentTemplate()
-      .with({
-        type: 'HOJKS',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const template = await Fixture.documentTemplate({
+      type: 'HOJKS',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     const document = await Fixture.childDocument({
       childId: duplicate.id,
       templateId: template.id
@@ -84,32 +80,26 @@ describe('child document with person duplicate', () => {
   })
 
   it('unit supervisor sees hojks documents from duplicate', async () => {
-    const pedagogicalAssessmentTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_ASSESSMENT',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const pedagogicalAssessmentTemplate = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_ASSESSMENT',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     await Fixture.childDocument({
       childId: duplicate.id,
       templateId: pedagogicalAssessmentTemplate.id
     }).save()
-    const pedagogicalReportTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const pedagogicalReportTemplate = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     await Fixture.childDocument({
       childId: duplicate.id,
       templateId: pedagogicalReportTemplate.id
     }).save()
-    const hojksTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'HOJKS',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const hojksTemplate = await Fixture.documentTemplate({
+      type: 'HOJKS',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     const hojksDocument = await Fixture.childDocument({
       childId: duplicate.id,
       templateId: hojksTemplate.id
@@ -125,35 +115,29 @@ describe('child document with person duplicate', () => {
   })
 
   it('admin can see all documents from duplicate and edit', async () => {
-    const pedagogicalAssessmentTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_ASSESSMENT',
-        name: 'Pedagoginen arvio',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const pedagogicalAssessmentTemplate = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_ASSESSMENT',
+      name: 'Pedagoginen arvio',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     const pedagogicalAssessmentDocument = await Fixture.childDocument({
       childId: duplicate.id,
       templateId: pedagogicalAssessmentTemplate.id
     }).save()
-    const pedagogicalReportTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        name: 'Pedagoginen selvitys',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const pedagogicalReportTemplate = await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      name: 'Pedagoginen selvitys',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     const pedagogicalReportDocument = await Fixture.childDocument({
       childId: duplicate.id,
       templateId: pedagogicalReportTemplate.id
     }).save()
-    const hojksTemplate = await Fixture.documentTemplate()
-      .with({
-        type: 'HOJKS',
-        name: 'HOJKS',
-        validity: new DateRange(mockedDate, mockedDate)
-      })
-      .save()
+    const hojksTemplate = await Fixture.documentTemplate({
+      type: 'HOJKS',
+      name: 'HOJKS',
+      validity: new DateRange(mockedDate, mockedDate)
+    }).save()
     const hojksDocument = await Fixture.childDocument({
       childId: duplicate.id,
       templateId: hojksTemplate.id

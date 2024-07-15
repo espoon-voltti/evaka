@@ -64,16 +64,16 @@ beforeEach(async () => {
   await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm(preschoolTerm2023).save()
 
-  const careArea = await Fixture.careArea().with(testCareArea).save()
+  const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testDaycare, areaId: careArea.id }).save()
   await Fixture.daycareGroup(testDaycareGroup).save()
   await Fixture.daycareGroup(group2).save()
 
-  await Fixture.person().with(testChild2).saveChild()
-  await Fixture.person().with(testChild).saveChild()
-  await Fixture.person().with(familyWithTwoGuardians.children[0]).saveChild()
+  await Fixture.person(testChild2).saveChild()
+  await Fixture.person(testChild).saveChild()
+  await Fixture.person(familyWithTwoGuardians.children[0]).saveChild()
 
-  await Fixture.person().with(testChildRestricted).saveChild()
+  await Fixture.person(testChildRestricted).saveChild()
 
   await Fixture.employee({ roles: ['ADMIN'] }).save()
 })

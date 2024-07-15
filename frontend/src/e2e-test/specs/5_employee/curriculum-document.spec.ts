@@ -56,12 +56,10 @@ describe('curriculum document with person duplicate', () => {
       endDate: mockedDate
     }).save()
 
-    duplicate = await Fixture.person()
-      .with({
-        ssn: null,
-        duplicateOf: child.id
-      })
-      .saveChild()
+    duplicate = await Fixture.person({
+      ssn: null,
+      duplicateOf: child.id
+    }).saveChild()
     await Fixture.child(duplicate.id).save()
     await Fixture.placement({
       childId: duplicate.id,
@@ -73,12 +71,10 @@ describe('curriculum document with person duplicate', () => {
   })
 
   it('unit supervisor sees preschool document from duplicate', async () => {
-    const templateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'PRESCHOOL',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const templateId = await Fixture.vasuTemplate({
+      type: 'PRESCHOOL',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const documentId = await createVasuDocument({
       body: { childId: duplicate.id, templateId }
     })
@@ -91,21 +87,17 @@ describe('curriculum document with person duplicate', () => {
   })
 
   it('unit supervisor sees preschool documents from duplicate', async () => {
-    const daycareTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'DAYCARE',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const daycareTemplateId = await Fixture.vasuTemplate({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     await createVasuDocument({
       body: { childId: duplicate.id, templateId: daycareTemplateId }
     })
-    const preschoolTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'PRESCHOOL',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const preschoolTemplateId = await Fixture.vasuTemplate({
+      type: 'PRESCHOOL',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const preschoolDocumentId = await createVasuDocument({
       body: {
         childId: duplicate.id,
@@ -130,12 +122,10 @@ describe('curriculum document with person duplicate', () => {
   })
 
   it('unit supervisor sees daycare document from duplicate of', async () => {
-    const templateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'DAYCARE',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const templateId = await Fixture.vasuTemplate({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const documentId = await createVasuDocument({
       body: { childId: child.id, templateId }
     })
@@ -148,24 +138,20 @@ describe('curriculum document with person duplicate', () => {
   })
 
   it('unit supervisor sees daycare documents from duplicate of', async () => {
-    const daycareTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'DAYCARE',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const daycareTemplateId = await Fixture.vasuTemplate({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const daycareDocumentId = await createVasuDocument({
       body: {
         childId: child.id,
         templateId: daycareTemplateId
       }
     })
-    const preschoolTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'PRESCHOOL',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const preschoolTemplateId = await Fixture.vasuTemplate({
+      type: 'PRESCHOOL',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     await createVasuDocument({
       body: { childId: child.id, templateId: preschoolTemplateId }
     })
@@ -187,24 +173,20 @@ describe('curriculum document with person duplicate', () => {
   })
 
   it('admin can see all documents from duplicate and edit', async () => {
-    const daycareTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'DAYCARE',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const daycareTemplateId = await Fixture.vasuTemplate({
+      type: 'DAYCARE',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const daycareDocumentId = await createVasuDocument({
       body: {
         childId: duplicate.id,
         templateId: daycareTemplateId
       }
     })
-    const preschoolTemplateId = await Fixture.vasuTemplate()
-      .with({
-        type: 'PRESCHOOL',
-        valid: new FiniteDateRange(mockedDate, mockedDate)
-      })
-      .saveAndReturnId()
+    const preschoolTemplateId = await Fixture.vasuTemplate({
+      type: 'PRESCHOOL',
+      valid: new FiniteDateRange(mockedDate, mockedDate)
+    }).saveAndReturnId()
     const preschoolDocumentId = await createVasuDocument({
       body: {
         childId: duplicate.id,

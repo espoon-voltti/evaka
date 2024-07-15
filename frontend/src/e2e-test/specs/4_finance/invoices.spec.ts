@@ -43,25 +43,23 @@ let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]
   }).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()
-  adultWithoutSSN = await Fixture.person()
-    .with({
-      id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
-      firstName: 'Aikuinen',
-      lastName: 'Hetuton',
-      ssn: null,
-      dateOfBirth: LocalDate.of(1980, 1, 1),
-      streetAddress: 'Kamreerintie 2',
-      postalCode: '02770',
-      postOffice: 'Espoo'
-    })
-    .saveAdult()
+  adultWithoutSSN = await Fixture.person({
+    id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
+    firstName: 'Aikuinen',
+    lastName: 'Hetuton',
+    ssn: null,
+    dateOfBirth: LocalDate.of(1980, 1, 1),
+    streetAddress: 'Kamreerintie 2',
+    postalCode: '02770',
+    postOffice: 'Espoo'
+  }).saveAdult()
   await Fixture.parentship({
     childId: testChild2.id,
     headOfChildId: testAdult.id,

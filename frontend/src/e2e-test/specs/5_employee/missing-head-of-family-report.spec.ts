@@ -23,7 +23,7 @@ describe('Missing head of family report', () => {
     const admin = await Fixture.employeeAdmin().save()
     const area = await Fixture.careArea().save()
     const unit = await Fixture.daycare({ areaId: area.id }).save()
-    const child = await Fixture.person().with({ lastName: '1' }).saveChild()
+    const child = await Fixture.person({ lastName: '1' }).saveChild()
     await Fixture.placement({
       type: 'DAYCARE',
       childId: child.id,
@@ -31,9 +31,11 @@ describe('Missing head of family report', () => {
       startDate: mockedToday,
       endDate: mockedToday.addDays(4)
     }).save()
-    const duplicate = await Fixture.person()
-      .with({ ssn: null, duplicateOf: child.id, lastName: '2' })
-      .saveChild()
+    const duplicate = await Fixture.person({
+      ssn: null,
+      duplicateOf: child.id,
+      lastName: '2'
+    }).saveChild()
     await Fixture.child(duplicate.id).save()
     await Fixture.placement({
       type: 'DAYCARE',

@@ -44,14 +44,12 @@ const mockedTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   serviceWorker = await Fixture.employeeServiceWorker().save()
   messagingAndServiceWorker = await Fixture.employeeServiceWorker()
-    .with({
-      roles: ['SERVICE_WORKER', 'MESSAGING']
-    })
+    .with({ roles: ['SERVICE_WORKER', 'MESSAGING'] })
     .save()
   await createMessageAccounts()
 })

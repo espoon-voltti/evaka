@@ -36,38 +36,33 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()
   const unitId = testDaycare.id
   childId = familyWithTwoGuardians.children[0].id
-  employee = await Fixture.employee()
-    .with({ roles: ['ADMIN'] })
-    .save()
+  employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
   placement = await Fixture.placement({
     childId,
     unitId,
     startDate: mockToday,
     endDate: mockToday.addDays(10)
   }).save()
-  activeServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.type })
-    .save()
-  inactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({
-      validPlacementType: placement.type,
-      validTo: mockToday.subDays(1)
-    })
-    .save()
-  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({
-      validPlacementType: placement.type,
-      validTo: mockToday.addDays(5)
-    })
-    .save()
-  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.type, partWeek: null })
-    .save()
+  activeServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
+  inactiveServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    validTo: mockToday.subDays(1)
+  }).save()
+  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    validTo: mockToday.addDays(5)
+  }).save()
+  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    partWeek: null
+  }).save()
 
   admin = await Fixture.employeeAdmin().save()
 

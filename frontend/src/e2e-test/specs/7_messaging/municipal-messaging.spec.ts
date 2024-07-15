@@ -51,7 +51,7 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({
     guardian: testAdult,
@@ -59,7 +59,7 @@ beforeEach(async () => {
   }).save()
   childInAreaA = testChild
   childInAreaB = testChild2
-  await Fixture.careArea().with(testCareArea2).save()
+  await Fixture.careArea(testCareArea2).save()
   await Fixture.daycare(testDaycare2).save()
   await Fixture.daycareGroup(testDaycareGroup).save()
   const daycareGroup2Fixture = {
@@ -98,8 +98,8 @@ beforeEach(async () => {
         endDate: placement.endDate
       }).save()
     )
-  const guardian2 = await Fixture.person().with({ ssn: null }).saveAdult()
-  const guardian3 = await Fixture.person().with({ ssn: null }).saveAdult()
+  const guardian2 = await Fixture.person({ ssn: null }).saveAdult()
+  const guardian3 = await Fixture.person({ ssn: null }).saveAdult()
   await insertGuardians({
     body: [
       {

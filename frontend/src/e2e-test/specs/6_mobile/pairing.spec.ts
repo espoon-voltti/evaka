@@ -18,7 +18,7 @@ let pairingFlow: PairingFlow
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
 
   page = await Page.open({ acceptDownloads: true })

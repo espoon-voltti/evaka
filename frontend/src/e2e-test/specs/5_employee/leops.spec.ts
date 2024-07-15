@@ -43,7 +43,7 @@ beforeAll(async () => {
 
   admin = await Fixture.employeeAdmin().save()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testPreschool).save()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()

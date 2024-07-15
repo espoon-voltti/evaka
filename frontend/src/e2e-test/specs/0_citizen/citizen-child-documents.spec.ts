@@ -40,7 +40,7 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
@@ -61,11 +61,10 @@ beforeEach(async () => {
   })
 
   templateIdHojks = (
-    await Fixture.documentTemplate()
-      .with({
-        type: 'HOJKS',
-        name: 'HOJKS 2023-2024'
-      })
+    await Fixture.documentTemplate({
+      type: 'HOJKS',
+      name: 'HOJKS 2023-2024'
+    })
       .withPublished(true)
       .save()
   ).id
@@ -88,11 +87,10 @@ beforeEach(async () => {
   ).id
 
   templateIdPed = (
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        name: 'Pedagoginen selvitys'
-      })
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      name: 'Pedagoginen selvitys'
+    })
       .withPublished(true)
       .save()
   ).id

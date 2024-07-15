@@ -40,7 +40,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
   beforeEach(async () => {
     await resetServiceState()
 
-    const area = await Fixture.careArea().with(testCareArea).save()
+    const area = await Fixture.careArea(testCareArea).save()
     daycare = await Fixture.daycare({
       ...testDaycare,
       areaId: area.id,
@@ -51,12 +51,12 @@ describe.each(e)('Citizen income (%s)', (env) => {
       daycareId: daycare.id
     }).save()
 
-    const child1 = await Fixture.person()
-      .with(child)
-      .saveChild({ updateMockVtj: true })
-    guardian = await Fixture.person()
-      .with(testAdult)
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const child1 = await Fixture.person(child).saveChild({
+      updateMockVtj: true
+    })
+    guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.child(child1.id).save()
     await Fixture.guardian(child1, guardian).save()
     const placement = await Fixture.placement({
@@ -81,11 +81,9 @@ describe.each(e)('Citizen income (%s)', (env) => {
     const financeAdmin = await Fixture.employeeFinanceAdmin().save()
     financeAdminId = financeAdmin.id
 
-    const serviceNeedOption = await Fixture.serviceNeedOption()
-      .with({
-        feeCoefficient: 42.0
-      })
-      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      feeCoefficient: 42.0
+    }).save()
 
     await Fixture.serviceNeed({
       id: uuidv4(),

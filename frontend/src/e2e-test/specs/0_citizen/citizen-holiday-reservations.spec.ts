@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
@@ -38,8 +39,10 @@ const today = LocalDate.of(2035, 12, 1)
 let daycare: DevDaycare
 let guardian: DevPerson
 
-const holidayQuestionnaireFixture = () =>
-  Fixture.holidayQuestionnaire().with({
+const holidayQuestionnaireFixture = (
+  initial?: Partial<FixedPeriodQuestionnaire>
+) =>
+  Fixture.holidayQuestionnaire({
     absenceType: 'FREE_ABSENCE',
     active: new FiniteDateRange(
       LocalDate.todayInSystemTz(),
@@ -62,7 +65,8 @@ const holidayQuestionnaireFixture = () =>
       ),
       new FiniteDateRange(LocalDate.of(2035, 12, 26), LocalDate.of(2036, 1, 1)),
       new FiniteDateRange(LocalDate.of(2036, 1, 2), LocalDate.of(2036, 1, 8))
-    ]
+    ],
+    ...initial
   })
 
 async function assertCalendarDayRange(
@@ -86,19 +90,17 @@ beforeEach(async () => {
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  const area = await Fixture.careArea().with(testCareArea).save()
+  const area = await Fixture.careArea(testCareArea).save()
   daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
   await Fixture.daycareGroup({
     ...testDaycareGroup,
     daycareId: daycare.id
   }).save()
 
-  const child1 = await Fixture.person()
-    .with(child)
-    .saveChild({ updateMockVtj: true })
-  guardian = await Fixture.person()
-    .with(testAdult)
-    .saveAdult({ updateMockVtjWithDependants: [child1] })
+  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
+  guardian = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [child1]
+  })
   await Fixture.child(child1.id).save()
   await Fixture.guardian(child1, guardian).save()
   await Fixture.placement({
@@ -113,9 +115,9 @@ async function setupAnotherChild(
   startDate = LocalDate.of(2022, 1, 1),
   endDate = LocalDate.of(2036, 6, 30)
 ) {
-  const child2 = await Fixture.person()
-    .with(testChild2)
-    .saveChild({ updateMockVtj: true })
+  const child2 = await Fixture.person(testChild2).saveChild({
+    updateMockVtj: true
+  })
   await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
   await Fixture.child(child2.id).save()
   await Fixture.guardian(child2, guardian).save()
@@ -138,13 +140,11 @@ describe('Holiday periods and questionnaires', () => {
       await calendar.assertHolidayCtaNotVisible()
     })
     test('Holiday period with reservations not open yet -> no CTA toast', async () => {
-      await Fixture.holidayPeriod()
-        .with({
-          period,
-          reservationsOpenOn: today.addDays(1),
-          reservationDeadline: today.addDays(5)
-        })
-        .save()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today.addDays(1),
+        reservationDeadline: today.addDays(5)
+      }).save()
 
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
@@ -152,13 +152,11 @@ describe('Holiday periods and questionnaires', () => {
       await calendar.assertHolidayCtaNotVisible()
     })
     test('Holiday period with reservations open -> CTA toast is visible', async () => {
-      await Fixture.holidayPeriod()
-        .with({
-          period,
-          reservationsOpenOn: today,
-          reservationDeadline: today.addDays(5)
-        })
-        .save()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today,
+        reservationDeadline: today.addDays(5)
+      }).save()
 
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
@@ -171,13 +169,11 @@ describe('Holiday periods and questionnaires', () => {
       await calendar.reservationModal.waitUntilVisible()
     })
     test('Holiday period with reservations deadline passed -> no CTA toast', async () => {
-      await Fixture.holidayPeriod()
-        .with({
-          period,
-          reservationsOpenOn: today.addDays(-2),
-          reservationDeadline: today.addDays(-1)
-        })
-        .save()
+      await Fixture.holidayPeriod({
+        period,
+        reservationsOpenOn: today.addDays(-2),
+        reservationDeadline: today.addDays(-1)
+      }).save()
 
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
@@ -303,14 +299,12 @@ describe('Holiday periods and questionnaires', () => {
 
   describe('Holiday questionnaire is inactive', () => {
     beforeEach(async () => {
-      await holidayQuestionnaireFixture()
-        .with({
-          active: new FiniteDateRange(
-            LocalDate.of(1990, 1, 1),
-            LocalDate.of(1990, 1, 31)
-          )
-        })
-        .save()
+      await holidayQuestionnaireFixture({
+        active: new FiniteDateRange(
+          LocalDate.of(1990, 1, 1),
+          LocalDate.of(1990, 1, 31)
+        )
+      }).save()
     })
 
     test('The holiday reservations toast is not shown on calendar page', async () => {
@@ -323,16 +317,14 @@ describe('Holiday periods and questionnaires', () => {
 
   describe('Child eligibility', () => {
     test('The holiday reservations toast is not shown if no child is eligible', async () => {
-      await holidayQuestionnaireFixture()
-        .with({
-          conditions: {
-            continuousPlacement: new FiniteDateRange(
-              LocalDate.of(1990, 1, 1),
-              LocalDate.of(1990, 1, 31)
-            )
-          }
-        })
-        .save()
+      await holidayQuestionnaireFixture({
+        conditions: {
+          continuousPlacement: new FiniteDateRange(
+            LocalDate.of(1990, 1, 1),
+            LocalDate.of(1990, 1, 31)
+          )
+        }
+      }).save()
 
       await enduserLogin(page, guardian)
       await new CitizenHeader(page).selectTab('calendar')
@@ -344,16 +336,14 @@ describe('Holiday periods and questionnaires', () => {
       const placementConditionStart = LocalDate.of(2022, 1, 1)
       const placementConditionEnd = LocalDate.of(2022, 1, 31)
 
-      await holidayQuestionnaireFixture()
-        .with({
-          conditions: {
-            continuousPlacement: new FiniteDateRange(
-              placementConditionStart,
-              placementConditionEnd
-            )
-          }
-        })
-        .save()
+      await holidayQuestionnaireFixture({
+        conditions: {
+          continuousPlacement: new FiniteDateRange(
+            placementConditionStart,
+            placementConditionEnd
+          )
+        }
+      }).save()
 
       const child2 = await setupAnotherChild(
         // Not eligible for a free holiday because the placement doesn't cover the required period

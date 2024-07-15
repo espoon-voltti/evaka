@@ -286,14 +286,12 @@ async function insertConfirmedDaysTestData() {
     ]
   }).save()
 
-  await Fixture.holiday()
-    .with({
-      date: LocalDate.of(2022, 5, 24),
-      description: 'Testing'
-    })
-    .save()
+  await Fixture.holiday({
+    date: LocalDate.of(2022, 5, 24),
+    description: 'Testing'
+  }).save()
 
-  const careArea = await Fixture.careArea().with(testCareArea).save()
+  const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({
     ...testDaycare,
     areaId: careArea.id,
@@ -304,16 +302,14 @@ async function insertConfirmedDaysTestData() {
   await Fixture.daycareGroup(testDaycareGroup).save()
   await Fixture.daycareGroup(group2).save()
 
-  await Fixture.person().with(testChild2).saveChild()
-  await Fixture.person().with(testChild).saveChild()
-  await Fixture.person().with(familyWithTwoGuardians.children[0]).saveChild()
-  await Fixture.person()
-    .with({
-      ...testChildRestricted,
-      dateOfBirth: LocalDate.of(2021, 4, 1)
-    })
-    .saveChild()
-  await Fixture.person().with(testChildNoSsn).saveChild()
+  await Fixture.person(testChild2).saveChild()
+  await Fixture.person(testChild).saveChild()
+  await Fixture.person(familyWithTwoGuardians.children[0]).saveChild()
+  await Fixture.person({
+    ...testChildRestricted,
+    dateOfBirth: LocalDate.of(2021, 4, 1)
+  }).saveChild()
+  await Fixture.person(testChildNoSsn).saveChild()
 
   await Fixture.employee({ roles: ['ADMIN'] }).save()
 
@@ -365,7 +361,8 @@ async function insertConfirmedDaysTestData() {
 }
 
 async function insertTestHolidayPeriod(period: FiniteDateRange) {
-  await Fixture.holidayPeriod()
-    .with({ period: period, reservationDeadline: LocalDate.of(2022, 4, 20) })
-    .save()
+  await Fixture.holidayPeriod({
+    period: period,
+    reservationDeadline: LocalDate.of(2022, 4, 20)
+  }).save()
 }

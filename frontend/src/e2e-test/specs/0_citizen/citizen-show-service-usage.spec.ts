@@ -37,14 +37,14 @@ describe('Service time usage', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
-    const child = await Fixture.person()
-      .with(testChild2)
-      .saveChild({ updateMockVtj: true })
-    const guardian = await Fixture.person()
-      .with(testAdult)
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const child = await Fixture.person(testChild2).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
@@ -52,16 +52,14 @@ describe('Service time usage', () => {
       testDaycare.id
     ).save()
 
-    const serviceNeedOption = await Fixture.serviceNeedOption()
-      .with({
-        validPlacementType: 'DAYCARE',
-        defaultOption: false,
-        nameFi: 'Kokopäiväinen',
-        nameSv: 'Kokopäiväinen (sv)',
-        nameEn: 'Kokopäiväinen (en)',
-        daycareHoursPerMonth: 140
-      })
-      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)',
+      daycareHoursPerMonth: 140
+    }).save()
 
     const placement = await Fixture.placement({
       childId: testChild2.id,
@@ -189,14 +187,14 @@ describe('Service time alert', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
-    const child = await Fixture.person()
-      .with(testChild2)
-      .saveChild({ updateMockVtj: true })
-    const guardian = await Fixture.person()
-      .with(testAdult)
-      .saveAdult({ updateMockVtjWithDependants: [child] })
+    const child = await Fixture.person(testChild2).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.child(testChild2.id).save()
     await Fixture.guardian(child, guardian).save()
 
@@ -204,16 +202,14 @@ describe('Service time alert', () => {
       testDaycare.id
     ).save()
 
-    const serviceNeedOption = await Fixture.serviceNeedOption()
-      .with({
-        validPlacementType: 'DAYCARE',
-        defaultOption: false,
-        nameFi: 'Kokopäiväinen',
-        nameSv: 'Kokopäiväinen (sv)',
-        nameEn: 'Kokopäiväinen (en)',
-        daycareHoursPerMonth: 75
-      })
-      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)',
+      daycareHoursPerMonth: 75
+    }).save()
 
     const placement = await Fixture.placement({
       childId: testChild2.id,

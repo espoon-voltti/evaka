@@ -46,7 +46,7 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 describe('Citizen children page', () => {
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.careArea().with(testCareArea).save()
+    await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.daycare(testPreschool).save()
     await Fixture.family({
@@ -529,7 +529,7 @@ describe.each(['desktop', 'mobile'] as const)(
   (env) => {
     beforeEach(async () => {
       await resetServiceState()
-      await Fixture.careArea().with(testCareArea).save()
+      await Fixture.careArea(testCareArea).save()
       await Fixture.daycare(testDaycare).save()
       await Fixture.daycare(testPreschool).save()
       await Fixture.family({
@@ -552,24 +552,20 @@ describe.each(['desktop', 'mobile'] as const)(
       const daycareSupervisor = await Fixture.employeeUnitSupervisor(
         testDaycare.id
       ).save()
-      const serviceNeedOption = await Fixture.serviceNeedOption()
-        .with({
-          validPlacementType: 'DAYCARE',
-          defaultOption: false,
-          nameFi: 'Kokopäiväinen',
-          nameSv: 'Kokopäiväinen (sv)',
-          nameEn: 'Kokopäiväinen (en)'
-        })
-        .save()
-      await Fixture.serviceNeedOption()
-        .with({
-          validPlacementType: 'PRESCHOOL',
-          defaultOption: true,
-          nameFi: 'Esiopetus',
-          nameSv: 'Esiopetus (sv)',
-          nameEn: 'Esiopetus (en)'
-        })
-        .save()
+      const serviceNeedOption = await Fixture.serviceNeedOption({
+        validPlacementType: 'DAYCARE',
+        defaultOption: false,
+        nameFi: 'Kokopäiväinen',
+        nameSv: 'Kokopäiväinen (sv)',
+        nameEn: 'Kokopäiväinen (en)'
+      }).save()
+      await Fixture.serviceNeedOption({
+        validPlacementType: 'PRESCHOOL',
+        defaultOption: true,
+        nameFi: 'Esiopetus',
+        nameSv: 'Esiopetus (sv)',
+        nameEn: 'Esiopetus (en)'
+      }).save()
       const placement = await Fixture.placement({
         childId: testChild.id,
         unitId: testDaycare.id,
@@ -584,38 +580,32 @@ describe.each(['desktop', 'mobile'] as const)(
         optionId: serviceNeedOption.id,
         confirmedBy: daycareSupervisor.id
       }).save()
-      await Fixture.dailyServiceTime(testChild.id)
-        .with({
-          validityPeriod: new DateRange(
-            mockedDate.subMonths(3),
-            mockedDate.subMonths(2).subDays(1)
-          ),
-          type: 'REGULAR',
-          regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
-        })
-        .save()
-      await Fixture.dailyServiceTime(testChild.id)
-        .with({
-          validityPeriod: new DateRange(
-            mockedDate.subMonths(2),
-            mockedDate.subMonths(1).subDays(1)
-          ),
-          type: 'IRREGULAR',
-          regularTimes: null,
-          mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
-          thursdayTimes: new TimeRange(
-            LocalTime.of(7, 46),
-            LocalTime.of(16, 32)
-          )
-        })
-        .save()
-      await Fixture.dailyServiceTime(testChild.id)
-        .with({
-          validityPeriod: new DateRange(mockedDate.subMonths(1), null),
-          type: 'VARIABLE_TIME',
-          regularTimes: null
-        })
-        .save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(
+          mockedDate.subMonths(3),
+          mockedDate.subMonths(2).subDays(1)
+        ),
+        type: 'REGULAR',
+        regularTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46))
+      }).save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(
+          mockedDate.subMonths(2),
+          mockedDate.subMonths(1).subDays(1)
+        ),
+        type: 'IRREGULAR',
+        regularTimes: null,
+        mondayTimes: new TimeRange(LocalTime.of(8, 15), LocalTime.of(14, 46)),
+        thursdayTimes: new TimeRange(LocalTime.of(7, 46), LocalTime.of(16, 32))
+      }).save()
+      await Fixture.dailyServiceTime({
+        childId: testChild.id,
+        validityPeriod: new DateRange(mockedDate.subMonths(1), null),
+        type: 'VARIABLE_TIME',
+        regularTimes: null
+      }).save()
       await Fixture.placement({
         childId: testChild2.id,
         unitId: testPreschool.id,

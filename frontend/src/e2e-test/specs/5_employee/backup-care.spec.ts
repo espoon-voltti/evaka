@@ -28,10 +28,10 @@ let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.careArea().with(testCareArea).save()
+  await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()
-  await Fixture.person().with(testChild2).saveChild()
+  await Fixture.person(testChild2).saveChild()
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(
     testDaycare.id
@@ -47,9 +47,9 @@ beforeEach(async () => {
     startDate: startDate,
     endDate: endDate
   }).save()
-  const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.type })
-    .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
   await Fixture.serviceNeed({
     placementId: placement.id,
     startDate: startDate,
