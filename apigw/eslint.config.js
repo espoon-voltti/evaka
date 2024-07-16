@@ -10,12 +10,9 @@ import typescriptEslint from 'typescript-eslint'
 
 export default [
   { ignores: ['dist/*', '.yarn/*'] },
-  ...typescriptEslint.config(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
-    eslint.configs.recommended,
-    ...typescriptEslint.configs.recommendedTypeChecked,
-    ...typescriptEslint.configs.stylistic
-  ),
+  eslint.configs.recommended,
+  ...typescriptEslint.configs.recommendedTypeChecked,
+  ...typescriptEslint.configs.stylistic,
   {
     languageOptions: {
       parserOptions: {
@@ -24,9 +21,12 @@ export default [
     }
   },
   {
+    files: ['**/*.js'],
+    ...typescriptEslint.configs.disableTypeChecked
+  },
+  {
     // Compatibility tricks for plugins that don't support ESLint v9 flat configs yet
     plugins: {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       import: fixupPluginRules(importPlugin)
     }
   },
