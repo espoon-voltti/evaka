@@ -19,16 +19,16 @@ let serviceWorkerPersonSearchPage: PersonSearchPage
 beforeEach(async () => {
   await resetServiceState()
 
-  const admin = await Fixture.employeeAdmin().save()
-  const serviceWorker = await Fixture.employeeServiceWorker().save()
+  const admin = await Fixture.employee().admin().save()
+  const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   adminPage = await Page.open()
-  await employeeLogin(adminPage, admin.data)
+  await employeeLogin(adminPage, admin)
   await adminPage.goto(`${config.employeeUrl}/search`)
   adminPersonSearchPage = new PersonSearchPage(adminPage)
 
   serviceWorkerPage = await Page.open()
-  await employeeLogin(serviceWorkerPage, serviceWorker.data)
+  await employeeLogin(serviceWorkerPage, serviceWorker)
   await serviceWorkerPage.goto(`${config.employeeUrl}/search`)
   serviceWorkerPersonSearchPage = new PersonSearchPage(serviceWorkerPage)
 })

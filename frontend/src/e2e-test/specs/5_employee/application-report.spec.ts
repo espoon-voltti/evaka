@@ -5,39 +5,33 @@
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let report: ApplicationsReport
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
 
-  const careArea = await Fixture.careArea().with({ name: 'Toinen alue' }).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
 
-  await Fixture.daycare()
-    .with({
-      name: 'Palvelusetelikoti',
-      providerType: 'PRIVATE_SERVICE_VOUCHER'
-    })
-    .careArea(careArea)
-    .save()
+  const careArea2 = await Fixture.careArea({ name: 'Toinen alue' }).save()
+  await Fixture.daycare({
+    areaId: careArea2.id,
+    name: 'Palvelusetelikoti',
+    providerType: 'PRIVATE_SERVICE_VOUCHER'
+  }).save()
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')
@@ -46,7 +40,7 @@ beforeEach(async () => {
 
 describe('Reporting - applications', () => {
   test('application report is generated correctly, respecting care area filter', async () => {
-    await report.assertContainsArea(fixtures.careAreaFixture.name)
+    await report.assertContainsArea(testCareArea.name)
     await report.assertContainsArea('Toinen alue')
     await report.assertContainsServiceProviders([
       'Kunnallinen',
@@ -59,6 +53,6 @@ describe('Reporting - applications', () => {
       LocalDate.todayInSystemTz()
     )
     await report.assertContainsArea('Toinen alue')
-    await report.assertDoesntContainArea(fixtures.careAreaFixture.name)
+    await report.assertDoesntContainArea(testCareArea.name)
   })
 })

@@ -7,18 +7,18 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   DecisionIncomeFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testChild,
+  testChild2,
+  testAdult,
   familyWithTwoGuardians,
   Fixture,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createVoucherValueDecisions,
@@ -45,9 +45,15 @@ const decision2DateTo = now.toLocalDate().addWeeks(5)
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 })
 
 const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
@@ -55,9 +61,9 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
     body: [
       voucherValueDecisionsFixture(
         'e2d75fa4-7359-406b-81b8-1703785ca649',
-        enduserGuardianFixture.id,
-        enduserChildFixtureKaarina.id,
-        daycareFixture.id,
+        testAdult.id,
+        testChild2.id,
+        testDaycare.id,
         null,
         'DRAFT',
         decision1DateFrom,
@@ -65,9 +71,9 @@ const insertTwoValueDecisionsFixturesAndNavigateToValueDecisions = async () => {
       ),
       voucherValueDecisionsFixture(
         'ed462aca-f74e-4384-910f-628823201023',
-        enduserGuardianFixture.id,
-        enduserChildFixtureJari.id,
-        daycare2Fixture.id,
+        testAdult.id,
+        testChild.id,
+        testDaycare2.id,
         null,
         'DRAFT',
         decision2DateFrom,
@@ -86,7 +92,7 @@ const insertValueDecisionWithPartnerFixtureAndNavigateToValueDecisions = async (
     'e2d75fa4-7359-406b-81b8-1703785ca649',
     familyWithTwoGuardians.guardian.id,
     familyWithTwoGuardians.children[0].id,
-    daycareFixture.id,
+    testDaycare.id,
     familyWithTwoGuardians.otherGuardian,
     'DRAFT',
     decision1DateFrom,
@@ -112,8 +118,8 @@ describe('Value decisions', () => {
       mockedTime: now
     })
 
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -247,8 +253,13 @@ describe('Value decisions with finance decision handler select enabled', () => {
       mockedTime: now
     })
 
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-    await employeeLogin(page, financeAdmin.data)
+    const financeAdmin = await Fixture.employee({
+      firstName: 'Lasse',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
+      .save()
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
@@ -273,12 +284,12 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decisions are toggled and sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     await valueDecisionsPage.toggleAllValueDecisions()
     const modal = await valueDecisionsPage.openDecisionHandlerModal()
@@ -307,12 +318,12 @@ describe('Value decisions with finance decision handler select enabled', () => {
 
   test('Voucher value decision is sent with selecting decision handler', async () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     const valueDecisionDetailsPageDraft =
       await valueDecisionsPage.openFirstValueDecision()

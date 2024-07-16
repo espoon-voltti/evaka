@@ -6,8 +6,13 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  testCareArea,
+  testPreschool,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   deleteVasuTemplates,
@@ -36,24 +41,24 @@ let childId: UUID
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employee().admin().save()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testPreschool).save()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.preschoolFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitId = testPreschool.id
+  childId = familyWithTwoGuardians.children[0].id
 
-  await Fixture.placement()
-    .with({
-      id: uuidv4(),
-      childId,
-      unitId,
-      startDate: LocalDate.todayInSystemTz(),
-      endDate: LocalDate.todayInSystemTz().addYears(1),
-      type: 'PRESCHOOL'
-    })
-    .save()
+  await Fixture.placement({
+    id: uuidv4(),
+    childId,
+    unitId,
+    startDate: LocalDate.todayInSystemTz(),
+    endDate: LocalDate.todayInSystemTz().addYears(1),
+    type: 'PRESCHOOL'
+  }).save()
 })
 
 describe('Child Information - Leops documents section', () => {

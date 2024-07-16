@@ -11,15 +11,17 @@ import { UUID } from 'lib-common/types'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  daycare2Fixture,
-  daycareGroupFixture,
-  enduserChildFixtureKaarina,
+  testDaycare2,
+  testDaycareGroup,
+  testChild2,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult2,
+  testAdult,
+  testChild,
+  testDaycarePrivateVoucher,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createBackupCares,
@@ -36,7 +38,8 @@ import { waitUntilEqual } from '../../utils'
 import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
-  defaultCitizenWeakAccount,
+  CitizenWeakAccount,
+  citizenWeakAccount,
   employeeLogin,
   enduserLogin,
   enduserLoginWeak
@@ -46,7 +49,7 @@ let unitSupervisorPage: Page
 let citizenPage: Page
 let childId: UUID
 let unitSupervisor: DevEmployee
-let fixtures: AreaAndPersonFixtures
+let account: CitizenWeakAccount
 let careArea: DevCareArea
 let backupDaycareId: UUID
 let backupGroupFixtureId: UUID
@@ -67,49 +70,54 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  careArea = fixtures.careAreaFixture
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
+
+  careArea = testCareArea
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
-  await keycloak.createUser({
-    ...defaultCitizenWeakAccount,
-    enabled: true
+  account = citizenWeakAccount(testAdult)
+  await keycloak.createUser({ ...account, enabled: true })
+
+  unitSupervisor = await Fixture.employee({
+    firstName: 'Essi',
+    lastName: 'Esimies'
   })
-
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-  ).data
-
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.enduserChildFixtureJari.id
-
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: daycareGroupFixture.id,
-      startDate: mockedDate,
-      endDate: mockedDate.addYears(1)
-    })
+    .unitSupervisor(testDaycare.id)
     .save()
 
-  await Fixture.daycare()
-    .with(daycare2Fixture)
-    .with({
-      areaId: careArea.id
-    })
-    .save()
+  const unitId = testDaycare.id
+  childId = testChild.id
 
-  backupDaycareId = daycare2Fixture.id
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: testDaycareGroup.id,
+    startDate: mockedDate,
+    endDate: mockedDate.addYears(1)
+  }).save()
+
+  await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id
+  }).save()
+
+  backupDaycareId = testDaycare2.id
   backupGroupFixtureId = uuidv4()
   await createDaycareGroups({
     body: [
@@ -129,7 +137,7 @@ beforeEach(async () => {
     body: [
       {
         childId: childId,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: testAdult.id
       }
     ]
   })
@@ -146,14 +154,14 @@ async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
     mockedTime: mockedTime
   })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({
     mockedTime: mockedTime
   })
-  await enduserLoginWeak(citizenPage)
+  await enduserLoginWeak(citizenPage, account)
 }
 
 const defaultTitle = 'Otsikko'
@@ -199,21 +207,19 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Unit supervisor sends a message to backup care child and citizen replies', async () => {
-        await Fixture.placement()
-          .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixturePrivateVoucher.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
+        await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycarePrivateVoucher.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
         await createBackupCares({
           body: [
             {
               id: uuidv4(),
-              childId: enduserChildFixtureKaarina.id,
-              unitId: fixtures.daycareFixture.id,
-              groupId: daycareGroupFixture.id,
+              childId: testChild2.id,
+              unitId: testDaycare.id,
+              groupId: testDaycareGroup.id,
               period: new FiniteDateRange(mockedDate, mockedDate)
             }
           ]
@@ -222,8 +228,8 @@ describe('Sending and receiving messages', () => {
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: testAdult.id
             }
           ]
         })
@@ -235,14 +241,14 @@ describe('Sending and receiving messages', () => {
         const messageEditor = await messagesPage.openMessageEditor()
         await messageEditor.sendNewMessage({
           ...defaultMessage,
-          receivers: [enduserChildFixtureKaarina.id]
+          receivers: [testChild2.id]
         })
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
         const sentMessagesPage = await messagesPage.openSentMessages()
         await sentMessagesPage.assertMessageParticipants(
           0,
-          `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`
+          `${testChild2.lastName} ${testChild2.firstName}`
         )
 
         await openCitizen(mockedDateAt11)
@@ -278,7 +284,7 @@ describe('Sending and receiving messages', () => {
           body: [
             {
               childId,
-              guardianId: fixtures.enduserGuardianFixture.id
+              guardianId: testAdult.id
             }
           ]
         })
@@ -373,9 +379,9 @@ describe('Sending and receiving messages', () => {
         const content = 'Tämän ei pitäisi mennä perille'
 
         // Add child's guardian to block list
-        const admin = await Fixture.employeeAdmin().save()
+        const admin = await Fixture.employee().admin().save()
         const adminPage = await Page.open()
-        await employeeLogin(adminPage, admin.data)
+        await employeeLogin(adminPage, admin)
 
         await adminPage.goto(
           `${config.employeeUrl}/child-information/${childId}`
@@ -384,9 +390,7 @@ describe('Sending and receiving messages', () => {
         const childInformationPage = new ChildInformationPage(adminPage)
         const blocklistSection =
           await childInformationPage.openCollapsible('messageBlocklist')
-        await blocklistSection.addParentToBlockList(
-          fixtures.enduserGuardianFixture.id
-        )
+        await blocklistSection.addParentToBlockList(testAdult.id)
 
         await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
@@ -447,27 +451,23 @@ describe('Sending and receiving messages', () => {
         )
       })
       test('The citizen must select the child that the message is in regards to', async () => {
-        const daycarePlacementFixture = await Fixture.placement()
-          .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixture.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
-        await Fixture.groupPlacement()
-          .with({
-            daycarePlacementId: daycarePlacementFixture.data.id,
-            daycareGroupId: daycareGroupFixture.id,
-            startDate: mockedDate,
-            endDate: mockedDate
-          })
-          .save()
+        const daycarePlacementFixture = await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacementFixture.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: mockedDate,
+          endDate: mockedDate
+        }).save()
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: testAdult.id
             }
           ]
         })
@@ -477,15 +477,12 @@ describe('Sending and receiving messages', () => {
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         const editor = await citizenMessagesPage.createNewMessage()
-        await editor.assertChildrenSelectable([
-          fixtures.enduserChildFixtureJari.id,
-          enduserChildFixtureKaarina.id
-        ])
+        await editor.assertChildrenSelectable([testChild.id, testChild2.id])
 
         // No recipients available before selecting a child
         await editor.assertNoRecipients()
 
-        await editor.selectChildren([enduserChildFixtureKaarina.id])
+        await editor.selectChildren([testChild2.id])
         await editor.selectRecipients(recipients)
         await editor.fillMessage(defaultTitle, defaultContent)
         await editor.sendMessage()
@@ -504,27 +501,23 @@ describe('Sending and receiving messages', () => {
 
       test('Messages cannot be sent after placement(s) end', async () => {
         const placementEndDate = mockedDate
-        const daycarePlacementFixture = await Fixture.placement()
-          .with({
-            childId: enduserChildFixtureKaarina.id,
-            unitId: fixtures.daycareFixture.id,
-            startDate: mockedDate,
-            endDate: placementEndDate
-          })
-          .save()
-        await Fixture.groupPlacement()
-          .with({
-            daycarePlacementId: daycarePlacementFixture.data.id,
-            daycareGroupId: daycareGroupFixture.id,
-            startDate: mockedDate,
-            endDate: placementEndDate
-          })
-          .save()
+        const daycarePlacementFixture = await Fixture.placement({
+          childId: testChild2.id,
+          unitId: testDaycare.id,
+          startDate: mockedDate,
+          endDate: placementEndDate
+        }).save()
+        await Fixture.groupPlacement({
+          daycarePlacementId: daycarePlacementFixture.id,
+          daycareGroupId: testDaycareGroup.id,
+          startDate: mockedDate,
+          endDate: placementEndDate
+        }).save()
         await insertGuardians({
           body: [
             {
-              childId: enduserChildFixtureKaarina.id,
-              guardianId: fixtures.enduserGuardianFixture.id
+              childId: testChild2.id,
+              guardianId: testAdult.id
             }
           ]
         })
@@ -544,14 +537,9 @@ describe('Sending and receiving messages', () => {
       })
 
       test('The guardian can select another guardian as an recipient', async () => {
-        const otherGuardian = fixtures.enduserChildJariOtherGuardianFixture
+        const otherGuardian = testAdult2
         await insertGuardians({
-          body: [
-            {
-              childId,
-              guardianId: otherGuardian.id
-            }
-          ]
+          body: [{ childId, guardianId: otherGuardian.id }]
         })
 
         const recipients = ['Esimies Essi']

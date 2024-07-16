@@ -6,15 +6,16 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
   applicationFixtureId,
-  daycareFixture,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testChild2,
+  testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  testChild,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,19 +36,21 @@ const testFilePath = `src/e2e-test/assets/${testFileName}`
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
 
-  const fixture = applicationFixture(
-    fixtures.enduserChildFixtureJari,
-    fixtures.enduserGuardianFixture
-  )
+  const fixture = applicationFixture(testChild, testAdult)
   await createApplications({ body: [fixture] })
-  const serviceWorker = await Fixture.employeeServiceWorker().save()
+  const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
-  await employeeLogin(page, serviceWorker.data)
+  await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).applicationsTab.click()
 })
@@ -101,14 +104,14 @@ describe('Employee application attachments', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
 
-    const unitSupervisor = (
-      await Fixture.employeeUnitSupervisor(daycareFixture.id).save()
-    ).data
+    const unitSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
+      .save()
 
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
     await employeeLogin(page2, unitSupervisor)
-    await unitPage.navigateToUnit(daycareFixture.id)
+    await unitPage.navigateToUnit(testDaycare.id)
 
     const view = new ApplicationReadView(page2)
     await view.navigateToApplication(applicationFixtureId)
@@ -118,22 +121,20 @@ describe('Employee application attachments', () => {
 
   test('Extended care attachment is not visible to non-around-the-clock unit supervisor', async () => {
     const daycareId = uuidv4()
-    await Fixture.daycare()
-      .with({
-        ...daycareFixture,
-        shiftCareOperationTimes: null,
-        shiftCareOpenOnHolidays: false,
-        id: daycareId
-      })
-      .save()
+    await Fixture.daycare({
+      ...testDaycare,
+      shiftCareOperationTimes: null,
+      shiftCareOpenOnHolidays: false,
+      id: daycareId
+    }).save()
 
     const applicationId = uuidv4()
     await createApplications({
       body: [
         {
           ...applicationFixture(
-            enduserChildFixtureKaarina,
-            enduserGuardianFixture,
+            testChild2,
+            testAdult,
             undefined,
             'DAYCARE',
             null,
@@ -161,7 +162,7 @@ describe('Employee application attachments', () => {
     const page2 = await Page.open()
     await employeeLogin(
       page2,
-      (await Fixture.employeeUnitSupervisor(daycareId).save()).data
+      await Fixture.employee().unitSupervisor(daycareId).save()
     )
     const view = new ApplicationReadView(page2)
     await view.navigateToApplication(applicationId)

@@ -2,76 +2,72 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  EmployeeBuilder,
+  familyWithTwoGuardians,
   Fixture,
-  PlacementBuilder,
-  ServiceNeedOptionBuilder
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeBuilder
+let admin: DevEmployee
 let childId: UUID
-let employee: EmployeeBuilder
-let placement: PlacementBuilder
-let activeServiceNeedOption: ServiceNeedOptionBuilder
-let inactiveServiceNeedOption: ServiceNeedOptionBuilder
-let partiallyInactiveServiceNeedOption: ServiceNeedOptionBuilder
-let serviceNeedOptionPartWeekNull: ServiceNeedOptionBuilder
+let employee: DevEmployee
+let placement: DevPlacement
+let activeServiceNeedOption: ServiceNeedOption
+let inactiveServiceNeedOption: ServiceNeedOption
+let partiallyInactiveServiceNeedOption: ServiceNeedOption
+let serviceNeedOptionPartWeekNull: ServiceNeedOption
 
 const mockToday = LocalDate.of(2024, 3, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
-  employee = await Fixture.employee()
-    .with({ roles: ['ADMIN'] })
-    .save()
-  placement = await Fixture.placement()
-    .with({
-      childId,
-      unitId,
-      startDate: mockToday,
-      endDate: mockToday.addDays(10)
-    })
-    .save()
-  activeServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
-    .save()
-  inactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({
-      validPlacementType: placement.data.type,
-      validTo: mockToday.subDays(1)
-    })
-    .save()
-  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({
-      validPlacementType: placement.data.type,
-      validTo: mockToday.addDays(5)
-    })
-    .save()
-  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type, partWeek: null })
-    .save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
+  employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
+  placement = await Fixture.placement({
+    childId,
+    unitId,
+    startDate: mockToday,
+    endDate: mockToday.addDays(10)
+  }).save()
+  activeServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
+  inactiveServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    validTo: mockToday.subDays(1)
+  }).save()
+  partiallyInactiveServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    validTo: mockToday.addDays(5)
+  }).save()
+  serviceNeedOptionPartWeekNull = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type,
+    partWeek: null
+  }).save()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 
   page = await Page.open({ mockedTime })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 const openCollapsible = async () => {
@@ -85,32 +81,29 @@ describe('Service need', () => {
   test('add service need to a placement', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi
+      placement.id,
+      activeServiceNeedOption.nameFi
     )
-    await section.assertNthServiceNeedName(
-      0,
-      activeServiceNeedOption.data.nameFi
-    )
+    await section.assertNthServiceNeedName(0, activeServiceNeedOption.nameFi)
     await section.assertNthServiceNeedPartWeek(0, false)
   })
 
   test('only active service need options can be selected', async () => {
     const section = await openCollapsible()
 
-    await section.assertServiceNeedOptions(placement.data.id, [
-      activeServiceNeedOption.data.id,
-      partiallyInactiveServiceNeedOption.data.id,
-      serviceNeedOptionPartWeekNull.data.id
+    await section.assertServiceNeedOptions(placement.id, [
+      activeServiceNeedOption.id,
+      partiallyInactiveServiceNeedOption.id,
+      serviceNeedOptionPartWeekNull.id
     ])
   })
 
   test('selecting partially inactive option shows validation error', async () => {
     const section = await openCollapsible()
-    await section.openPlacement(placement.data.id)
+    await section.openPlacement(placement.id)
     await section.addMissingServiceNeedButton.click()
     await section.serviceNeedOptionSelect.selectOption(
-      partiallyInactiveServiceNeedOption.data.id
+      partiallyInactiveServiceNeedOption.id
     )
     await section.serviceNeedSaveButton.assertDisabled(true)
     await section.partiallyInvalidWarning.waitUntilVisible()
@@ -121,38 +114,33 @@ describe('Service need', () => {
     await section.serviceNeedSaveButton.click()
     await section.assertNthServiceNeedName(
       0,
-      partiallyInactiveServiceNeedOption.data.nameFi
+      partiallyInactiveServiceNeedOption.nameFi
     )
   })
 
   test('inactive service need name is shown on placement', async () => {
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.data.id,
-        optionId: inactiveServiceNeedOption.data.id,
-        confirmedBy: employee.data.id
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      optionId: inactiveServiceNeedOption.id,
+      confirmedBy: employee.id
+    }).save()
     const section = await openCollapsible()
 
-    await section.assertNthServiceNeedName(
-      0,
-      inactiveServiceNeedOption.data.nameFi
-    )
+    await section.assertNthServiceNeedName(0, inactiveServiceNeedOption.nameFi)
   })
 
   test('add service need to a placement and choose partWeek', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      serviceNeedOptionPartWeekNull.data.nameFi,
+      placement.id,
+      serviceNeedOptionPartWeekNull.nameFi,
       'NONE',
       undefined,
       true
     )
     await section.assertNthServiceNeedName(
       0,
-      serviceNeedOptionPartWeekNull.data.nameFi
+      serviceNeedOptionPartWeekNull.nameFi
     )
     await section.assertNthServiceNeedPartWeek(0, true)
   })

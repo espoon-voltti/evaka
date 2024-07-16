@@ -18,7 +18,7 @@ let pinPage: EmployeePinPage
 
 beforeEach(async () => {
   await resetServiceState()
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
   await employeeLogin(page, admin)
@@ -43,14 +43,12 @@ describe('Employees PIN', () => {
   })
 
   test('shows a warning if PIN is locked, and warning disappears when new PIN is set', async () => {
-    await Fixture.employeePin()
-      .with({
-        userId: null,
-        employeeExternalId: admin.externalId,
-        pin: '2580',
-        locked: true
-      })
-      .save()
+    await Fixture.employeePin({
+      userId: null,
+      employeeExternalId: admin.externalId,
+      pin: '2580',
+      locked: true
+    }).save()
 
     await page.reload()
     await pinPage.pinLockedAlertBox.waitUntilVisible()

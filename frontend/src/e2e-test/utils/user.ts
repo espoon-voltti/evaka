@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../config'
+import { DevPerson } from '../generated/api-types'
 
 import { Page, TextInput } from './page'
 
-export async function enduserLogin(page: Page, ssn = '070644-937X') {
+export async function enduserLogin(page: Page, person: DevPerson) {
+  if (!person.ssn) {
+    throw new Error('Person does not have an SSN: cannot login')
+  }
+
   const authUrl = `${config.citizenApiUrl}/auth/saml/login/callback?RelayState=%2Fapplications`
   if (!page.url.startsWith(config.enduserUrl)) {
     // We must be in the correct domain to be able to fetch()
@@ -29,7 +34,7 @@ export async function enduserLogin(page: Page, ssn = '070644-937X') {
         }
       })
     },
-    { ssn, authUrl }
+    { ssn: person.ssn, authUrl }
   )
   await page.goto(config.enduserUrl + '/applications')
 }
@@ -43,18 +48,18 @@ export type CitizenWeakAccount = {
   lastName: string
 }
 
-export const defaultCitizenWeakAccount: CitizenWeakAccount = {
+export const citizenWeakAccount = (person: DevPerson): CitizenWeakAccount => ({
   username: 'test@example.com',
   password: 'test123',
   email: 'test@example.com',
-  socialSecurityNumber: '070644-937X',
+  socialSecurityNumber: person.ssn!,
   firstName: 'Seppo',
   lastName: 'Sorsa'
-}
+})
 
 export async function enduserLoginWeak(
   page: Page,
-  account = defaultCitizenWeakAccount
+  account: CitizenWeakAccount
 ) {
   await page.goto(config.enduserLoginUrl)
   await page.findByDataQa('weak-login').click()

@@ -10,20 +10,20 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
 import { waitUntilEqual } from '../../utils'
@@ -31,7 +31,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let child1Fixture: PersonDetail
+let child1Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
@@ -52,76 +52,64 @@ const insertTestDataAndLogin = async ({
 }: {
   childShiftCare?: ShiftCareType
 } = {}) => {
-  const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  const daycareBuilder = Fixture.daycare()
-    .with(daycare2Fixture)
-    .careArea(careArea)
-  await daycareBuilder.save()
-  daycare = daycareBuilder.data
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  daycare = await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id
+  }).save()
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
   const groupId2 = uuidv4()
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId2,
-      daycareId: daycareFixture.id,
-      name: 'Testailijat Toisessa'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId2,
+    daycareId: testDaycare.id,
+    name: 'Testailijat Toisessa'
+  }).save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  const placementBuilder = await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  const placementBuilder = await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
   const serviceNeedOption = await Fixture.serviceNeedOption().save()
-  await Fixture.serviceNeed()
-    .with({
-      placementId: placementBuilder.data.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate,
-      optionId: serviceNeedOption.data.id,
-      confirmedBy: unitSupervisor.id,
-      shiftCare: childShiftCare
-    })
-    .save()
-  await Fixture.backupCare()
-    .with({
-      id: uuidv4(),
-      childId: child1Fixture.id,
-      unitId: daycareFixture.id,
-      groupId: groupId2,
-      period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId: placementBuilder.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate,
+    optionId: serviceNeedOption.id,
+    confirmedBy: unitSupervisor.id,
+    shiftCare: childShiftCare
+  }).save()
+  await Fixture.backupCare({
+    id: uuidv4(),
+    childId: child1Fixture.id,
+    unitId: testDaycare.id,
+    groupId: groupId2,
+    period: new FiniteDateRange(backupCareStartDate, backupCareEndDate)
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: groupId,
-      daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child1DaycarePlacementId,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
   page = await Page.open({
     mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -150,25 +138,21 @@ describe('Unit group calendar', () => {
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
-    await Fixture.daycareGroup()
-      .with({
-        id: groupId3,
-        daycareId: daycare.id,
-        name: 'Varasijoitusryhmä samassa'
-      })
-      .save()
-    await Fixture.backupCare()
-      .with({
-        id: uuidv4(),
-        childId: child1Fixture.id,
-        unitId: daycare.id,
-        groupId: groupId3,
-        period: new FiniteDateRange(
-          backupCareSameUnitStartDate,
-          backupCareSameUnitEndDate
-        )
-      })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId3,
+      daycareId: daycare.id,
+      name: 'Varasijoitusryhmä samassa'
+    }).save()
+    await Fixture.backupCare({
+      id: uuidv4(),
+      childId: child1Fixture.id,
+      unitId: daycare.id,
+      groupId: groupId3,
+      period: new FiniteDateRange(
+        backupCareSameUnitStartDate,
+        backupCareSameUnitEndDate
+      )
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -184,25 +168,21 @@ describe('Unit group calendar', () => {
     const groupId3 = uuidv4()
     const backupCareSameUnitStartDate = backupCareStartDate.addWeeks(2)
     const backupCareSameUnitEndDate = backupCareSameUnitStartDate.addDays(3)
-    await Fixture.daycareGroup()
-      .with({
-        id: groupId3,
-        daycareId: daycare.id,
-        name: 'Varasijoitusryhmä samassa'
-      })
-      .save()
-    await Fixture.backupCare()
-      .with({
-        id: uuidv4(),
-        childId: child1Fixture.id,
-        unitId: daycare.id,
-        groupId: groupId3,
-        period: new FiniteDateRange(
-          backupCareSameUnitStartDate,
-          backupCareSameUnitEndDate
-        )
-      })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId3,
+      daycareId: daycare.id,
+      name: 'Varasijoitusryhmä samassa'
+    }).save()
+    await Fixture.backupCare({
+      id: uuidv4(),
+      childId: child1Fixture.id,
+      unitId: daycare.id,
+      groupId: groupId3,
+      period: new FiniteDateRange(
+        backupCareSameUnitStartDate,
+        backupCareSameUnitEndDate
+      )
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -255,20 +235,17 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: LocalDate.of(2023, 3, 1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: LocalDate.of(2023, 3, 1)
+    }).save()
 
-    await Fixture.dailyServiceTime(child1Fixture.id)
-      .with({
-        validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-      })
-      .save()
+    await Fixture.dailyServiceTime({
+      childId: child1Fixture.id,
+      validityPeriod: new DateRange(holidayPeriodStart.subWeeks(1), null),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
 
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
@@ -308,12 +285,10 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin({ childShiftCare: 'FULL' })
     const holidayPeriodStart = LocalDate.of(2023, 3, 13)
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: mockedToday.subDays(1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: mockedToday.subDays(1)
+    }).save()
 
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
@@ -330,21 +305,18 @@ describe('Unit group calendar', () => {
     await insertTestDataAndLogin()
     const holidayPeriodStart = LocalDate.of(2023, 3, 14) // Tuesday
     const holidayPeriodEnd = LocalDate.of(2023, 3, 19)
-    await Fixture.holidayPeriod()
-      .with({
-        period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
-        reservationDeadline: LocalDate.of(2023, 3, 1)
-      })
-      .save()
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
+      reservationDeadline: LocalDate.of(2023, 3, 1)
+    }).save()
 
     const dailyServiceTimeStart = holidayPeriodStart.subDays(5)
-    await Fixture.dailyServiceTime(child1Fixture.id)
-      .with({
-        validityPeriod: new DateRange(dailyServiceTimeStart, null),
-        type: 'REGULAR',
-        regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-      })
-      .save()
+    await Fixture.dailyServiceTime({
+      childId: child1Fixture.id,
+      validityPeriod: new DateRange(dailyServiceTimeStart, null),
+      type: 'REGULAR',
+      regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
 
     const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1) // Monday
     await Fixture.attendanceReservation({
@@ -476,15 +448,13 @@ describe('Unit group calendar', () => {
     ]
     await Promise.all(
       attendances.map(async ([arrival, departure]) => {
-        await Fixture.childAttendance()
-          .with({
-            childId: child1Fixture.id,
-            unitId: daycare2Fixture.id,
-            date: mockedToday,
-            arrived: arrival,
-            departed: departure
-          })
-          .save()
+        await Fixture.childAttendance({
+          childId: child1Fixture.id,
+          unitId: testDaycare2.id,
+          date: mockedToday,
+          arrived: arrival,
+          departed: departure
+        }).save()
       })
     )
 
@@ -582,34 +552,28 @@ describe('Unit group calendar for shift care unit', () => {
     const arrived = LocalTime.of(8, 30)
     const departed = LocalTime.of(13, 30)
 
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
-        date: startDate,
-        arrived,
-        departed
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate,
+      arrived,
+      departed
+    }).save()
 
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
-        date: startDate,
-        arrived: LocalTime.of(18, 15),
-        departed: LocalTime.of(23, 59)
-      })
-      .save()
-    await Fixture.childAttendance()
-      .with({
-        childId: child1Fixture.id,
-        unitId: daycare2Fixture.id,
-        date: startDate.addDays(1),
-        arrived: LocalTime.of(0, 0),
-        departed: LocalTime.of(5, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate,
+      arrived: LocalTime.of(18, 15),
+      departed: LocalTime.of(23, 59)
+    }).save()
+    await Fixture.childAttendance({
+      childId: child1Fixture.id,
+      unitId: testDaycare2.id,
+      date: startDate.addDays(1),
+      arrived: LocalTime.of(0, 0),
+      departed: LocalTime.of(5, 30)
+    }).save()
 
     await reservationModal.startDate.fill(startDate.format())
     await reservationModal.endDate.fill(startDate.format())

@@ -5,17 +5,19 @@
 import LocalDate from 'lib-common/local-date'
 
 import {
-  careAreaFixture,
-  DailyServiceTimeBuilder,
-  DaycareBuilder,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
-  Fixture,
-  PersonBuilder
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testAdult,
+  Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import {
+  DevDailyServiceTimes,
+  DevDaycare,
+  DevPerson
+} from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -24,62 +26,55 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 
-const child = enduserChildFixtureJari
-let daycare: DaycareBuilder
-let guardian: PersonBuilder
-let dailyServiceTime: DailyServiceTimeBuilder
+const child = testChild
+let daycare: DevDaycare
+let guardian: DevPerson
+let dailyServiceTime: DevDailyServiceTimes
 
 beforeEach(async () => {
   await resetServiceState()
   page = await Page.open()
 
-  daycare = await Fixture.daycare()
-    .with(daycareFixture)
-    .careArea(await Fixture.careArea().with(careAreaFixture).save())
-    .save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
+  const area = await Fixture.careArea(testCareArea).save()
+  daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: daycare.id
+  }).save()
 
-  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
-  guardian = await Fixture.person()
-    .with(enduserGuardianFixture)
-    .withDependants(child1)
-    .saveAndUpdateMockVtj()
-  await Fixture.child(child1.data.id).save()
+  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
+  guardian = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [child1]
+  })
   await Fixture.guardian(child1, guardian).save()
-  await Fixture.placement()
-    .child(child1)
-    .daycare(daycare)
-    .with({
-      startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2036, 6, 30)
-    })
-    .save()
-  dailyServiceTime = await Fixture.dailyServiceTime(child1.data.id).save()
+  await Fixture.placement({
+    childId: child1.id,
+    unitId: daycare.id,
+    startDate: LocalDate.of(2020, 1, 1),
+    endDate: LocalDate.of(2036, 6, 30)
+  }).save()
+  dailyServiceTime = await Fixture.dailyServiceTime({
+    childId: child1.id
+  }).save()
 })
 
 describe('Daily service times', () => {
   test('toast notifications are shown when non-destructive notifications exist', async () => {
-    await Fixture.dailyServiceTimeNotification(
-      guardian.data.id,
-      dailyServiceTime.data.id
-    )
-      .with({
-        dateFrom: LocalDate.of(2021, 3, 5),
-        hasDeletedReservations: false
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 3, 5),
+      hasDeletedReservations: false
+    }).save()
 
-    await Fixture.dailyServiceTimeNotification(
-      guardian.data.id,
-      dailyServiceTime.data.id
-    )
-      .with({
-        dateFrom: LocalDate.of(2021, 8, 11),
-        hasDeletedReservations: false
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 8, 11),
+      hasDeletedReservations: false
+    }).save()
 
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
@@ -94,17 +89,14 @@ describe('Daily service times', () => {
   })
 
   test('modal notification is shown when destructive notification exists', async () => {
-    await Fixture.dailyServiceTimeNotification(
-      guardian.data.id,
-      dailyServiceTime.data.id
-    )
-      .with({
-        dateFrom: LocalDate.of(2021, 3, 5),
-        hasDeletedReservations: true
-      })
-      .save()
+    await Fixture.dailyServiceTimeNotification({
+      guardianId: guardian.id,
+      dailyServiceTimeId: dailyServiceTime.id,
+      dateFrom: LocalDate.of(2021, 3, 5),
+      hasDeletedReservations: true
+    }).save()
 
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 

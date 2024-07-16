@@ -710,7 +710,6 @@ export interface DevPerson {
   duplicateOf: UUID | null
   email: string | null
   enabledEmailTypes: EmailMessageType[] | null
-  evakaUserId: UUID
   firstName: string
   forceManualFeeDecisions: boolean
   id: UUID
@@ -742,6 +741,14 @@ export interface DevPersonEmail {
   email: string | null
   personId: UUID
 }
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevPersonType
+*/
+export type DevPersonType =
+  | 'CHILD'
+  | 'ADULT'
+  | 'RAW_ROW'
 
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevPersonalMobileDevice

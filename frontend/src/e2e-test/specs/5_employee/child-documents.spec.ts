@@ -6,11 +6,11 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+  Fixture,
+  testCareArea,
+  testChild2,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -24,8 +24,6 @@ import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
-let childFixture: PersonDetail
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let page: Page
@@ -35,21 +33,20 @@ const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
-  childFixture = fixtures.enduserChildFixtureKaarina
-  admin = (await Fixture.employeeAdmin().save()).data
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(fixtures.daycareFixture.id).save()
-  ).data
-
-  await Fixture.placement()
-    .with({
-      childId: childFixture.id,
-      unitId: fixtures.daycareFixture.id,
-      startDate: now.toLocalDate().subYears(1),
-      endDate: now.toLocalDate().addYears(1)
-    })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.person(testChild2).saveChild()
+  admin = await Fixture.employee().admin().save()
+  unitSupervisor = await Fixture.employee()
+    .unitSupervisor(testDaycare.id)
     .save()
+
+  await Fixture.placement({
+    childId: testChild2.id,
+    unitId: testDaycare.id,
+    startDate: now.toLocalDate().subYears(1),
+    endDate: now.toLocalDate().addYears(1)
+  }).save()
 })
 
 describe('Employee - Child documents', () => {
@@ -93,9 +90,7 @@ describe('Employee - Child documents', () => {
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -168,19 +163,15 @@ describe('Employee - Child documents', () => {
   })
 
   test('Pedagogical report only has two states', async () => {
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        published: true
-      })
-      .save()
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
 
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     const childInformationPage = new ChildInformationPage(page)
     const childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -195,19 +186,15 @@ describe('Employee - Child documents', () => {
   })
 
   test('Edit mode cannot be entered for 15 minutes after another use has edited the document content', async () => {
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        published: true
-      })
-      .save()
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      published: true
+    }).save()
 
     // Unit supervisor creates a child document
     page = await Page.open({ mockedTime: now })
     await employeeLogin(page, unitSupervisor)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     let childInformationPage = new ChildInformationPage(page)
     let childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -222,9 +209,7 @@ describe('Employee - Child documents', () => {
     // Admin tries to open the document in edit mode too soon
     page = await Page.open({ mockedTime: now.addMinutes(3) })
     await employeeLogin(page, admin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')
@@ -239,9 +224,7 @@ describe('Employee - Child documents', () => {
     // Admin opens the document in edit mode after lock expires
     page = await Page.open({ mockedTime: now.addMinutes(6) })
     await employeeLogin(page, admin)
-    await page.goto(
-      `${config.employeeUrl}/child-information/${childFixture.id}`
-    )
+    await page.goto(`${config.employeeUrl}/child-information/${testChild2.id}`)
     childInformationPage = new ChildInformationPage(page)
     childDocumentsSection =
       await childInformationPage.openCollapsible('childDocuments')

@@ -6,15 +6,23 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture, systemInternalUser, uuidv4 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  systemInternalUser,
+  testCareArea,
+  testChild2,
+  testChildZeroYearOld,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -23,9 +31,9 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: PersonDetail
-let child2Fixture: PersonDetail
-let child3Fixture: PersonDetail
+let child1Fixture: DevPerson
+let child2Fixture: DevPerson
+let child3Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
@@ -38,48 +46,44 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  daycare = fixtures.daycareFixture
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  daycare = testDaycare
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  child2Fixture = fixtures.personFixtureChildZeroYearOld
+  child2Fixture = await Fixture.person(testChildZeroYearOld).saveChild()
   child2DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child2DaycarePlacementId,
-      childId: child2Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child2DaycarePlacementId,
+    childId: child2Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  child3Fixture = fixtures.enduserChildFixtureKaarina
-  daycare2 = fixtures.daycareFixturePrivateVoucher
+  child3Fixture = await Fixture.person(testChild2).saveChild()
+  daycare2 = testDaycarePrivateVoucher
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
@@ -100,14 +104,12 @@ describe('Unit groups - unit supervisor', () => {
     const groupsSection = await loadUnitGroupsPage()
     await groupsSection.missingPlacementsSection.assertRowCount(2)
 
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: groupId,
-        daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: child1DaycarePlacementId,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
 
     await page.reload()
     await groupsSection.missingPlacementsSection.assertRowCount(1)
@@ -179,14 +181,12 @@ describe('Unit groups - unit supervisor', () => {
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: groupId,
-        daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: child1DaycarePlacementId,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
@@ -195,26 +195,22 @@ describe('Unit groups - unit supervisor', () => {
   })
 
   test('Supervisor sees numeric child occupancy factor when not equal to 1', async () => {
-    await Fixture.assistanceFactor()
-      .with({
-        childId: child1Fixture.id,
-        capacityFactor: 1.5,
-        validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
-        modifiedBy: systemInternalUser
-      })
-      .save()
+    await Fixture.assistanceFactor({
+      childId: child1Fixture.id,
+      capacityFactor: 1.5,
+      validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
+      modifiedBy: systemInternalUser
+    }).save()
 
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: groupId,
-        daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: child1DaycarePlacementId,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
@@ -224,30 +220,24 @@ describe('Unit groups - unit supervisor', () => {
 
   test('Supervisor sees backup care numeric child occupancy factor when not equal to 1', async () => {
     const child3DaycarePlacementId = uuidv4()
-    await Fixture.placement()
-      .with({
-        id: child3DaycarePlacementId,
-        childId: child3Fixture.id,
-        unitId: daycare2.id,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
-    await Fixture.backupCare()
-      .with({
-        childId: child3Fixture.id,
-        unitId: daycare.id,
-        groupId,
-        period: new FiniteDateRange(placementStartDate, placementEndDate)
-      })
-      .save()
-    await Fixture.assistanceFactor()
-      .with({
-        childId: child3Fixture.id,
-        validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
-        capacityFactor: 1.5
-      })
-      .save()
+    await Fixture.placement({
+      id: child3DaycarePlacementId,
+      childId: child3Fixture.id,
+      unitId: daycare2.id,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
+    await Fixture.backupCare({
+      childId: child3Fixture.id,
+      unitId: daycare.id,
+      groupId,
+      period: new FiniteDateRange(placementStartDate, placementEndDate)
+    }).save()
+    await Fixture.assistanceFactor({
+      childId: child3Fixture.id,
+      validDuring: new FiniteDateRange(placementStartDate, placementEndDate),
+      capacityFactor: 1.5
+    }).save()
 
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
@@ -261,26 +251,22 @@ describe('Unit groups - unit supervisor', () => {
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.missingPlacementsSection.assertRowCount(2)
 
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: groupId,
-        daycarePlacementId: child2DaycarePlacementId,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: child2DaycarePlacementId,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
 
-    const specialServiceNeed = await Fixture.serviceNeedOption()
-      .with({ occupancyCoefficientUnder3y: 1.89 })
-      .save()
+    const specialServiceNeed = await Fixture.serviceNeedOption({
+      occupancyCoefficientUnder3y: 1.89
+    }).save()
 
-    await Fixture.serviceNeed()
-      .with({
-        placementId: child2DaycarePlacementId,
-        optionId: specialServiceNeed.data.id,
-        confirmedBy: unitSupervisor.id
-      })
-      .save()
+    await Fixture.serviceNeed({
+      placementId: child2DaycarePlacementId,
+      optionId: specialServiceNeed.id,
+      confirmedBy: unitSupervisor.id
+    }).save()
 
     await page.reload()
     await groupsPage.openGroupCollapsible(groupId)
@@ -291,10 +277,10 @@ describe('Unit groups - unit supervisor', () => {
 
 describe('Unit groups - staff', () => {
   beforeEach(async () => {
-    const staff = await Fixture.employeeStaff(daycare.id).save()
+    const staff = await Fixture.employee().staff(daycare.id).save()
 
     page = await Page.open()
-    await employeeLogin(page, staff.data)
+    await employeeLogin(page, staff)
   })
 
   test('Staff will not see terminated placements', async () => {
@@ -316,14 +302,12 @@ describe('Unit groups - staff', () => {
   })
 
   test('Staff does not see child occupancy factor', async () => {
-    await Fixture.groupPlacement()
-      .with({
-        daycareGroupId: groupId,
-        daycarePlacementId: child1DaycarePlacementId,
-        startDate: placementStartDate,
-        endDate: placementEndDate
-      })
-      .save()
+    await Fixture.groupPlacement({
+      daycareGroupId: groupId,
+      daycarePlacementId: child1DaycarePlacementId,
+      startDate: placementStartDate,
+      endDate: placementEndDate
+    }).save()
 
     const groupsPage = await loadUnitGroupsPage()
     await groupsPage.childCapacityFactorColumnHeading.waitUntilHidden()

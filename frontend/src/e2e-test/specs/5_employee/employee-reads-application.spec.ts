@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
+  applicationFixture,
+  familyWithTwoGuardians,
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testChild2,
+  testDaycare
+} from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -15,27 +20,29 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  const admin = await Fixture.employeeAdmin().save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   applicationReadView = new ApplicationReadView(page)
 })
 
 describe('Employee reads applications', () => {
   test('Daycare application opens by link', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(testChild, testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)
@@ -44,8 +51,8 @@ describe('Employee reads applications', () => {
 
   test('Preschool application opens by link', async () => {
     const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      testChild,
+      testAdult,
       undefined,
       'PRESCHOOL'
     )
@@ -57,9 +64,9 @@ describe('Employee reads applications', () => {
 
   test('Other VTJ guardian information is shown', async () => {
     const fixture = applicationFixture(
-      fixtures.familyWithTwoGuardians.children[0],
-      fixtures.familyWithTwoGuardians.guardian,
-      fixtures.familyWithTwoGuardians.otherGuardian
+      familyWithTwoGuardians.children[0],
+      familyWithTwoGuardians.guardian,
+      familyWithTwoGuardians.otherGuardian
     )
     await createApplications({ body: [fixture] })
 
@@ -67,22 +74,19 @@ describe('Employee reads applications', () => {
     await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
 
     await applicationReadView.assertOtherVtjGuardian(
-      `${fixtures.familyWithTwoGuardians.otherGuardian.lastName} ${fixtures.familyWithTwoGuardians.otherGuardian.firstName}`,
-      fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email
+      `${familyWithTwoGuardians.otherGuardian.lastName} ${familyWithTwoGuardians.otherGuardian.firstName}`,
+      familyWithTwoGuardians.otherGuardian.phone,
+      familyWithTwoGuardians.otherGuardian.email!
     )
 
     await applicationReadView.assertGivenOtherGuardianInfo(
-      fixtures.familyWithTwoGuardians.otherGuardian.phone,
-      fixtures.familyWithTwoGuardians.otherGuardian.email
+      familyWithTwoGuardians.otherGuardian.phone,
+      familyWithTwoGuardians.otherGuardian.email!
     )
   })
 
   test('If there is no other VTJ guardian it is mentioned', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureKaarina,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(testChild2, testAdult)
     await createApplications({ body: [fixture] })
 
     await applicationReadView.navigateToApplication(fixture.id)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
@@ -12,7 +12,7 @@ import CitizenPersonalDetailsPage, {
 import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
-  defaultCitizenWeakAccount,
+  citizenWeakAccount,
   enduserLogin,
   enduserLoginWeak
 } from '../../utils/user'
@@ -22,7 +22,7 @@ let personalDetailsPage: CitizenPersonalDetailsPage
 let page: Page
 
 const citizenFixture = {
-  ...enduserGuardianFixture,
+  ...testAdult,
   preferredName: '',
   phone: '',
   backupPhone: '',
@@ -31,7 +31,9 @@ const citizenFixture = {
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person().with(citizenFixture).saveAndUpdateMockVtj()
+  await Fixture.person(citizenFixture).saveAdult({
+    updateMockVtjWithDependants: []
+  })
   page = await Page.open()
 })
 
@@ -39,7 +41,7 @@ describe('Citizen personal details', () => {
   let section: CitizenPersonalDetailsSection
 
   beforeEach(async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
@@ -55,7 +57,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills successfully personal data without email by selecting I have no email -option', async () => {
     const data = {
-      preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+      preferredName: testAdult.firstName.split(' ')[1],
       phone: '123123',
       backupPhone: '456456',
       email: null
@@ -69,7 +71,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills in personal data but cannot save without phone', async () => {
     const data = {
-      preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+      preferredName: testAdult.firstName.split(' ')[1],
       phone: null,
       backupPhone: '456456',
       email: 'a@b.com'
@@ -82,7 +84,7 @@ describe('Citizen personal details', () => {
 
   test('Citizen fills in personal data correctly and saves', async () => {
     const data = {
-      preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+      preferredName: testAdult.firstName.split(' ')[1],
       phone: '123456789',
       backupPhone: '456456',
       email: 'a@b.com'
@@ -96,13 +98,10 @@ describe('Citizen personal details', () => {
 })
 
 test('Citizen keycloak email is shown', async () => {
-  const account = defaultCitizenWeakAccount
+  const account = citizenWeakAccount(citizenFixture)
   const keycloak = await KeycloakRealmClient.createCitizenClient()
   await keycloak.deleteAllUsers()
-  await keycloak.createUser({
-    ...account,
-    enabled: true
-  })
+  await keycloak.createUser({ ...account, enabled: true })
   await enduserLoginWeak(page, account)
   header = new CitizenHeader(page)
 
@@ -118,7 +117,7 @@ describe('Citizen notification settings', () => {
   let section: CitizenNotificationSettingsSection
 
   beforeEach(async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, citizenFixture)
     header = new CitizenHeader(page)
 
     await header.selectTab('personal-details')

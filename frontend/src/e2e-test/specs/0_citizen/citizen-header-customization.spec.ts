@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -10,7 +10,7 @@ import { enduserLogin } from '../../utils/user'
 
 beforeEach(async () => {
   await resetServiceState()
-  await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+  await Fixture.person(testAdult).saveAdult({ updateMockVtjWithDependants: [] })
 })
 
 describe('Citizen header customization', () => {
@@ -20,7 +20,7 @@ describe('Citizen header customization', () => {
         langs: ['fi', 'sv']
       }
     })
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     const header = new CitizenHeader(page)
     expect(await header.listLanguages()).toStrictEqual({
       fi: true,

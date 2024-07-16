@@ -2,53 +2,52 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  EmployeeBuilder,
+  familyWithTwoGuardians,
   Fixture,
-  PlacementBuilder,
-  ServiceNeedOptionBuilder
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let admin: EmployeeBuilder
+let admin: DevEmployee
 let childId: UUID
-let placement: PlacementBuilder
-let activeServiceNeedOption: ServiceNeedOptionBuilder
+let placement: DevPlacement
+let activeServiceNeedOption: ServiceNeedOption
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
-  await Fixture.employee()
-    .with({ roles: ['ADMIN'] })
-    .save()
-  placement = await Fixture.placement()
-    .with({
-      childId,
-      unitId
-    })
-    .save()
-  activeServiceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
-    .save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
+  await Fixture.employee({ roles: ['ADMIN'] }).save()
+  placement = await Fixture.placement({
+    childId,
+    unitId
+  }).save()
+  activeServiceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
 
-  admin = await Fixture.employeeAdmin().save()
+  admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     employeeCustomizations: {
       featureFlags: { intermittentShiftCare: true }
     }
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 const openCollapsible = async () => {
@@ -62,8 +61,8 @@ describe('Intermittent shiftcare', () => {
   test('service need can be added with intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi,
+      placement.id,
+      activeServiceNeedOption.nameFi,
       'INTERMITTENT',
       true
     )
@@ -73,8 +72,8 @@ describe('Intermittent shiftcare', () => {
   test('service need can be edited to have intermittent shift care', async () => {
     const section = await openCollapsible()
     await section.addMissingServiceNeed(
-      placement.data.id,
-      activeServiceNeedOption.data.nameFi
+      placement.id,
+      activeServiceNeedOption.nameFi
     )
     await section.assertNthServiceNeedShiftCare(0, 'NONE')
 

@@ -7,15 +7,17 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
-  enduserGuardianFixture,
+  testDaycareGroup,
+  testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testChild,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
@@ -25,6 +27,7 @@ import {
   resetServiceState,
   revokeSharingPermission
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
@@ -32,7 +35,7 @@ import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let child: PersonDetail
+let child: DevPerson
 let child2Id: UUID
 let templateId: UUID
 let vasuDocId: UUID
@@ -43,12 +46,15 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  child = fixtures.familyWithTwoGuardians.children[0]
-  child2Id = fixtures.enduserChildFixtureJari.id
+  const unitId = testDaycare.id
+  child = familyWithTwoGuardians.children[0]
+  child2Id = testChild.id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -65,7 +71,7 @@ beforeEach(async () => {
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
 })
 
 const insertVasu = async (childId: string): Promise<string> => {
@@ -89,7 +95,7 @@ describe('Citizen vasu document page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -113,7 +119,7 @@ describe('Citizen child documents listing page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -133,11 +139,11 @@ describe('Citizen child documents listing page', () => {
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         },
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child2Id
         }
       ]

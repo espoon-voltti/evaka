@@ -7,19 +7,18 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
+  testCareArea2,
+  testDaycare2,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   UnitStaffAttendancesTable,
@@ -32,7 +31,7 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 let attendancesSection: UnitWeekCalendarPage
-let child1Fixture: PersonDetail
+let child1Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
@@ -48,74 +47,69 @@ const groupId2 = uuidv4()
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  daycare = (
-    await Fixture.daycare()
-      .with({
-        ...daycare2Fixture,
-        enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
-      })
-      .careArea(careArea)
-      .save()
-  ).data
+  await Fixture.family(familyWithTwoGuardians).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  daycare = await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id,
+    enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+  }).save()
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employee({
+    email: 'essi.esimies@evaka.test',
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(daycare.id)
+    .save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId2,
-      daycareId: daycare.id,
-      name: 'Testailijat 2'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId2,
+    daycareId: daycare.id,
+    name: 'Testailijat 2'
+  }).save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: groupId,
-      daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child1DaycarePlacementId,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  groupStaff = (
-    await Fixture.employee()
-      .with({
-        email: 'kalle.kasvattaja@evaka.test',
-        firstName: 'Kalle',
-        lastName: 'Kasvattaja',
-        roles: []
-      })
-      .withDaycareAcl(daycare.id, 'STAFF')
-      .withGroupAcl(groupId)
-      .withGroupAcl(groupId2)
-      .save()
-  ).data
-  nonGroupStaff = (await Fixture.employeeStaff(daycare.id).save()).data
+  groupStaff = await Fixture.employee({
+    email: 'kalle.kasvattaja@evaka.test',
+    firstName: 'Kalle',
+    lastName: 'Kasvattaja'
+  })
+    .withDaycareAcl(daycare.id, 'STAFF')
+    .withGroupAcl(groupId)
+    .withGroupAcl(groupId2)
+    .save()
+  nonGroupStaff = await Fixture.employee({
+    email: 'kaisa.kasvattaja@evaka.test',
+    firstName: 'Kaisa',
+    lastName: 'Kasvattaja'
+  })
+    .staff(daycare.id)
+    .save()
 
   await Fixture.staffOccupancyCoefficient(daycare.id, groupStaff.id).save()
 
@@ -135,14 +129,12 @@ const openWeekCalendar = async (): Promise<UnitWeekCalendarPage> => {
 
 describe('Realtime staff attendances', () => {
   test('Occupancy graph', async () => {
-    await Fixture.realtimeStaffAttendance()
-      .with({
-        employeeId: groupStaff.id,
-        groupId,
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        departed: null
-      })
-      .save()
+    await Fixture.realtimeStaffAttendance({
+      employeeId: groupStaff.id,
+      groupId,
+      arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+      departed: null
+    }).save()
 
     attendancesSection = await openWeekCalendar()
     await attendancesSection.occupancies.assertGraphIsVisible()
@@ -172,18 +164,12 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Sunday entries are shown in the calendar', async () => {
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: nonGroupStaff.id,
-          groupId,
-          arrived: mockedToday
-            .subDays(3)
-            .toHelsinkiDateTime(LocalTime.of(7, 0)),
-          departed: mockedToday
-            .subDays(3)
-            .toHelsinkiDateTime(LocalTime.of(15, 0))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: nonGroupStaff.id,
+        groupId,
+        arrived: mockedToday.subDays(3).toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.subDays(3).toHelsinkiDateTime(LocalTime.of(15, 0))
+      }).save()
 
       await attendancesSection.changeWeekToDate(mockedToday.subWeeks(1))
       await staffAttendances.assertTableRow({
@@ -196,24 +182,20 @@ describe('Realtime staff attendances', () => {
 
   describe('Group staff attendances', () => {
     test('Attendance is shown on week view and day modal', async () => {
-      await Fixture.staffAttendancePlan()
-        .with({
-          id: uuidv4(),
-          employeeId: groupStaff.id,
-          startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-          endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
-        })
-        .save()
+      await Fixture.staffAttendancePlan({
+        id: uuidv4(),
+        employeeId: groupStaff.id,
+        startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
+      }).save()
 
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: groupStaff.id,
-          groupId,
-          type: 'OVERTIME',
-          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 3)),
-          departed: null
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        type: 'OVERTIME',
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 3)),
+        departed: null
+      }).save()
 
       attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
@@ -236,14 +218,12 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Employee without group ACL is shown if they have attendances', async () => {
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: nonGroupStaff.id,
-          groupId,
-          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: nonGroupStaff.id,
+        groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
+      }).save()
 
       attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
@@ -258,23 +238,19 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Staff can edit only own attendances', async () => {
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: groupStaff.id,
-          groupId,
-          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 30))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 30))
+      }).save()
 
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: nonGroupStaff.id,
-          groupId,
-          arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: nonGroupStaff.id,
+        groupId,
+        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
+      }).save()
 
       await employeeLogin(page, groupStaff)
 
@@ -303,63 +279,50 @@ describe('Realtime staff attendances', () => {
     test('Automatically closed attendance is indicated and cleared on edit', async () => {
       const yesterday = mockedToday.subDays(1)
 
-      const otherGroupStaff = (
-        await Fixture.employee()
-          .with({
-            email: 'raija.raivo@evaka.test',
-            firstName: 'Raija',
-            lastName: 'Raivo',
-            roles: []
-          })
-          .withDaycareAcl(daycare.id, 'STAFF')
-          .withGroupAcl(groupId)
-          .withGroupAcl(groupId2)
-          .save()
-      ).data
-
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: groupStaff.id,
-          groupId,
-          type: 'OVERTIME',
-          arrived: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-          departed: yesterday.toHelsinkiDateTime(LocalTime.of(20, 0)),
-          departedAutomatically: true
-        })
+      const otherGroupStaff = await Fixture.employee({
+        email: 'raija.raivo@evaka.test',
+        firstName: 'Raija',
+        lastName: 'Raivo',
+        roles: []
+      })
+        .withDaycareAcl(daycare.id, 'STAFF')
+        .withGroupAcl(groupId)
+        .withGroupAcl(groupId2)
         .save()
 
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: otherGroupStaff.id,
-          groupId,
-          type: 'OVERTIME',
-          arrived: yesterday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-          departed: yesterday.toHelsinkiDateTime(LocalTime.of(16, 0)),
-          departedAutomatically: false
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        type: 'OVERTIME',
+        arrived: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: yesterday.toHelsinkiDateTime(LocalTime.of(20, 0)),
+        departedAutomatically: true
+      }).save()
 
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: otherGroupStaff.id,
-          groupId,
-          type: 'OVERTIME',
-          arrived: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
-          departed: yesterday
-            .subDays(1)
-            .toHelsinkiDateTime(LocalTime.of(15, 0)),
-          departedAutomatically: false
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: otherGroupStaff.id,
+        groupId,
+        type: 'OVERTIME',
+        arrived: yesterday.toHelsinkiDateTime(LocalTime.of(8, 0)),
+        departed: yesterday.toHelsinkiDateTime(LocalTime.of(16, 0)),
+        departedAutomatically: false
+      }).save()
 
-      await Fixture.staffAttendancePlan()
-        .with({
-          id: uuidv4(),
-          employeeId: otherGroupStaff.id,
-          startTime: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-          endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: otherGroupStaff.id,
+        groupId,
+        type: 'OVERTIME',
+        arrived: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
+        departed: yesterday.subDays(1).toHelsinkiDateTime(LocalTime.of(15, 0)),
+        departedAutomatically: false
+      }).save()
+
+      await Fixture.staffAttendancePlan({
+        id: uuidv4(),
+        employeeId: otherGroupStaff.id,
+        startTime: yesterday.toHelsinkiDateTime(LocalTime.of(7, 0)),
+        endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))
+      }).save()
 
       attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup(groupId)
@@ -396,14 +359,12 @@ describe('Realtime staff attendances', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     async function prepareTest({ arrived }: { arrived: HelsinkiDateTime }) {
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: groupStaff.id,
-          groupId,
-          arrived,
-          departed: null
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: groupStaff.id,
+        groupId,
+        arrived,
+        departed: null
+      }).save()
       attendancesSection = await openWeekCalendar()
       await attendancesSection.selectGroup('staff')
       staffAttendances = attendancesSection.staffAttendances
@@ -622,31 +583,25 @@ describe('Realtime staff attendances', () => {
         [5, 10, 13]
       ]
       for (const [day, arrivalHour, departureHour] of times) {
-        await Fixture.realtimeStaffAttendance()
-          .with({
-            employeeId: groupStaff.id,
-            groupId,
-            arrived: mockedToday
-              .addDays(day)
-              .toHelsinkiDateTime(LocalTime.of(arrivalHour, 0)),
-            departed: mockedToday
-              .addDays(day)
-              .toHelsinkiDateTime(LocalTime.of(departureHour, 0))
-          })
-          .save()
+        await Fixture.realtimeStaffAttendance({
+          employeeId: groupStaff.id,
+          groupId,
+          arrived: mockedToday
+            .addDays(day)
+            .toHelsinkiDateTime(LocalTime.of(arrivalHour, 0)),
+          departed: mockedToday
+            .addDays(day)
+            .toHelsinkiDateTime(LocalTime.of(departureHour, 0))
+        }).save()
       }
 
       // This employee has no group ACLs, but should still be included in totals
-      await Fixture.realtimeStaffAttendance()
-        .with({
-          employeeId: nonGroupStaff.id,
-          groupId,
-          arrived: mockedToday
-            .subDays(1)
-            .toHelsinkiDateTime(LocalTime.of(7, 0)),
-          departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
-        })
-        .save()
+      await Fixture.realtimeStaffAttendance({
+        employeeId: nonGroupStaff.id,
+        groupId,
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
+        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
+      }).save()
 
       attendancesSection = await openWeekCalendar()
       staffAttendances = attendancesSection.staffAttendances

@@ -9,24 +9,24 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   DecisionIncomeFixture,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testChild2,
+  testAdult,
   familyWithTwoGuardians,
   feeDecisionsFixture,
-  Fixture
+  Fixture,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createFeeDecisions,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FeeDecisionsPage,
@@ -41,23 +41,26 @@ let feeDecisionsPage: FeeDecisionsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 })
 
 const insertFeeDecisionFixtureAndNavigateToIt = async (
-  headOfFamily: PersonDetail,
-  child: PersonDetail,
+  headOfFamily: DevPerson,
+  child: DevPerson,
   validDuring: DateRange,
-  partner: PersonDetail | null = null,
+  partner: DevPerson | null = null,
   childIncome: DecisionIncome | null = null
 ) => {
   const fd = feeDecisionsFixture(
     'DRAFT',
     headOfFamily,
     child,
-    daycareFixture.id,
+    testDaycare.id,
     partner,
     validDuring
   )
@@ -80,17 +83,17 @@ const insertFeeDecisionFixtureAndNavigateToIt = async (
 
 describe('Fee decisions', () => {
   beforeEach(async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee().financeAdmin().save()
 
     page = await Page.open({ acceptDownloads: true })
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
   test('List of fee decision drafts shows at least one row', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await waitUntilEqual(() => feeDecisionsPage.getFeeDecisionCount(), 1)
@@ -98,8 +101,8 @@ describe('Fee decisions', () => {
 
   test('Navigate to the from decision details page', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.openFirstFeeDecision()
@@ -107,8 +110,8 @@ describe('Fee decisions', () => {
 
   test('Fee decisions are toggled and sent', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
@@ -191,7 +194,12 @@ describe('Fee decisions', () => {
 
 describe('Fee decisions with finance decision handler select enabled', () => {
   beforeEach(async () => {
-    const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+    const financeAdmin = await Fixture.employee({
+      firstName: 'Lasse',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
+      .save()
 
     page = await Page.open({
       acceptDownloads: true,
@@ -201,14 +209,14 @@ describe('Fee decisions with finance decision handler select enabled', () => {
         }
       }
     })
-    await employeeLogin(page, financeAdmin.data)
+    await employeeLogin(page, financeAdmin)
     await page.goto(config.employeeUrl)
   })
 
   test('Fee decisions are toggled and cancelled', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
@@ -219,8 +227,8 @@ describe('Fee decisions with finance decision handler select enabled', () => {
 
   test('Fee decisions are toggled and sent without selecting decision handler', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
@@ -234,16 +242,16 @@ describe('Fee decisions with finance decision handler select enabled', () => {
 
   test('Fee decisions are toggled and sent with selecting decision handler', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     await feeDecisionsPage.toggleAllFeeDecisions(true)
     const modal = await feeDecisionsPage.openDecisionHandlerModal()
@@ -257,8 +265,8 @@ describe('Fee decisions with finance decision handler select enabled', () => {
 
   test('Fee decision is sent without selecting decision handler', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
     const feeDecisionDetailsPageDraft =
@@ -275,16 +283,16 @@ describe('Fee decisions with finance decision handler select enabled', () => {
 
   test('Fee decision is sent with selecting decision handler', async () => {
     await insertFeeDecisionFixtureAndNavigateToIt(
-      enduserGuardianFixture,
-      enduserChildFixtureKaarina,
+      testAdult,
+      testChild2,
       new DateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31))
     )
-    const { data: otherFinanceAdmin } = await Fixture.employeeFinanceAdmin()
-      .with({
-        email: 'laura.laskuttaja@evaka.test',
-        firstName: 'Laura',
-        lastName: 'Laskuttaja'
-      })
+    const otherFinanceAdmin = await Fixture.employee({
+      email: 'laura.laskuttaja@evaka.test',
+      firstName: 'Laura',
+      lastName: 'Laskuttaja'
+    })
+      .financeAdmin()
       .save()
     const feeDecisionDetailsPageDraft =
       await feeDecisionsPage.openFirstFeeDecision()

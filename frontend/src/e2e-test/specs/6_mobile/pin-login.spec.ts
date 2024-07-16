@@ -6,15 +6,14 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  enduserChildFixtureJari,
+  testChild,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult2,
+  testAdult,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createBackupPickup,
   createFamilyContact,
@@ -22,6 +21,7 @@ import {
   createFridgePartner,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
@@ -31,48 +31,48 @@ import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let pinLoginPage: PinLoginPage
 let topNav: TopNav
 
-let child: PersonDetail
+let child: DevPerson
 
 const empFirstName = 'Yrjö'
 const empLastName = 'Yksikkö'
 const employeeName = `${empLastName} ${empFirstName}`
-const childName =
-  enduserChildFixtureJari.firstName + ' ' + enduserChildFixtureJari.lastName
+const childName = testChild.firstName + ' ' + testChild.lastName
 
 const pin = '2580'
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  child = fixtures.enduserChildFixtureJari
-  const unit = fixtures.daycareFixture
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  child = testChild
+  const unit = testDaycare
 
-  const employee = await Fixture.employee()
-    .with({
-      firstName: empFirstName,
-      lastName: empLastName,
-      email: 'yy@example.com',
-      roles: []
-    })
+  const employee = await Fixture.employee({
+    firstName: empFirstName,
+    lastName: empLastName,
+    email: 'yy@example.com',
+    roles: []
+  })
     .withDaycareAcl(unit.id, 'UNIT_SUPERVISOR')
     .save()
-  await Fixture.employeePin().with({ userId: employee.data.id, pin }).save()
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({ daycareId: unit.id })
-    .save()
-  const placementFixture = await Fixture.placement()
-    .with({ childId: child.id, unitId: unit.id })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixture)
-    .save()
+  await Fixture.employeePin({ userId: employee.id, pin }).save()
+  const daycareGroup = await Fixture.daycareGroup({ daycareId: unit.id }).save()
+  const placementFixture = await Fixture.placement({
+    childId: child.id,
+    unitId: unit.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixture.id,
+    startDate: placementFixture.startDate,
+    endDate: placementFixture.endDate
+  }).save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)
@@ -86,16 +86,14 @@ beforeEach(async () => {
 
 describe('Mobile PIN login', () => {
   test('User can login with PIN and see child sensitive info', async () => {
-    const childAdditionalInfo = (
-      await Fixture.child(child.id)
-        .with({
-          allergies: 'Allergies',
-          diet: 'Diets',
-          medication: 'Medications',
-          additionalInfo: ''
-        })
-        .save()
-    ).data
+    const childAdditionalInfo = await Fixture.childAdditionalInfo({
+      id: child.id,
+      allergies: 'Allergies',
+      diet: 'Diets',
+      medication: 'Medications',
+      additionalInfo: ''
+    }).save()
+    await Fixture.person(testAdult2).saveAdult()
 
     const parentshipId = uuidv4()
     await createFridgePartner({
@@ -104,7 +102,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 1,
           otherIndx: 2,
-          personId: fixtures.enduserGuardianFixture.id,
+          personId: testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -114,7 +112,7 @@ describe('Mobile PIN login', () => {
           partnershipId: parentshipId,
           indx: 2,
           otherIndx: 1,
-          personId: fixtures.enduserChildJariOtherGuardianFixture.id,
+          personId: testAdult2.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           createdAt: HelsinkiDateTime.now(),
@@ -123,10 +121,7 @@ describe('Mobile PIN login', () => {
       ]
     })
 
-    const contacts = [
-      fixtures.enduserGuardianFixture,
-      fixtures.enduserChildJariOtherGuardianFixture
-    ]
+    const contacts = [testAdult, testAdult2]
     await createFamilyContact({
       body: contacts.map(({ id }, index) => ({
         id: uuidv4(),
@@ -161,7 +156,7 @@ describe('Mobile PIN login', () => {
         {
           id: uuidv4(),
           childId: child.id,
-          headOfChild: fixtures.enduserGuardianFixture.id,
+          headOfChild: testAdult.id,
           startDate: LocalDate.todayInSystemTz(),
           endDate: LocalDate.todayInSystemTz(),
           conflict: false

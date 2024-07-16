@@ -2,35 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { enduserGuardianFixture, Fixture } from '../../dev-api/fixtures'
+import { testAdult, Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { KeycloakRealmClient } from '../../utils/keycloak'
 import { Page } from '../../utils/page'
 import {
-  defaultCitizenWeakAccount,
+  CitizenWeakAccount,
+  citizenWeakAccount,
   enduserLogin,
   enduserLoginWeak
 } from '../../utils/user'
 
 describe('Citizen authentication', () => {
   let page: Page
+  let account: CitizenWeakAccount
 
   beforeEach(async () => {
     await resetServiceState()
-    await Fixture.person().with(enduserGuardianFixture).saveAndUpdateMockVtj()
+    await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: []
+    })
     const keycloak = await KeycloakRealmClient.createCitizenClient()
     await keycloak.deleteAllUsers()
-    await keycloak.createUser({
-      ...defaultCitizenWeakAccount,
-      enabled: true
-    })
+
+    account = citizenWeakAccount(testAdult)
+    await keycloak.createUser({ ...account, enabled: true })
+
     page = await Page.open()
   })
 
   const initConfigurations = [
-    ['direct login', async (page: Page) => enduserLogin(page)] as const,
-    ['weak login', async (page: Page) => enduserLoginWeak(page)] as const
+    [
+      'direct login',
+      async (page: Page) => enduserLogin(page, testAdult)
+    ] as const,
+    [
+      'weak login',
+      async (page: Page) => enduserLoginWeak(page, account)
+    ] as const
   ]
 
   describe.each(initConfigurations)(`Interactions with %s`, (_name, login) => {

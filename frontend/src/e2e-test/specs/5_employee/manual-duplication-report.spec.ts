@@ -23,16 +23,18 @@ describe('Manual duplication report', () => {
   test('works', async () => {
     const mockedToday = LocalDate.of(2023, 6, 19)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
-    const preschool = await Fixture.daycare()
-      .with({ areaId: area.data.id, type: ['PRESCHOOL'] })
-      .save()
-    const daycare = await Fixture.daycare()
-      .with({ areaId: area.data.id, type: ['CENTRE'] })
-      .save()
-    const guardian = await Fixture.person().with({ ssn: undefined }).save()
-    const child = await Fixture.person().with({ ssn: undefined }).save()
+    const preschool = await Fixture.daycare({
+      areaId: area.id,
+      type: ['PRESCHOOL']
+    }).save()
+    const daycare = await Fixture.daycare({
+      areaId: area.id,
+      type: ['CENTRE']
+    }).save()
+    const guardian = await Fixture.person({ ssn: null }).saveAdult()
+    const child = await Fixture.person({ ssn: null }).saveChild()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0))
@@ -43,12 +45,12 @@ describe('Manual duplication report', () => {
       body: [
         {
           ...applicationFixture(
-            child.data,
-            guardian.data,
+            child,
+            guardian,
             undefined,
             'PRESCHOOL',
             null,
-            [preschool.data.id],
+            [preschool.id],
             true,
             'SENT',
             mockedToday
@@ -57,40 +59,36 @@ describe('Manual duplication report', () => {
         }
       ]
     })
-    await Fixture.decision()
-      .with({
-        applicationId: application1Id,
-        employeeId: admin.data.id,
-        unitId: preschool.data.id,
-        type: 'PRESCHOOL',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
-    await Fixture.decision()
-      .with({
-        applicationId: application1Id,
-        employeeId: admin.data.id,
-        unitId: daycare.data.id,
-        type: 'PRESCHOOL_DAYCARE',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application1Id,
+      employeeId: admin.id,
+      unitId: preschool.id,
+      type: 'PRESCHOOL',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
+    await Fixture.decision({
+      applicationId: application1Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
 
     const application2Id = uuidv4()
     await createApplications({
       body: [
         {
           ...applicationFixture(
-            child.data,
-            guardian.data,
+            child,
+            guardian,
             undefined,
             'PRESCHOOL',
             null,
-            [preschool.data.id],
+            [preschool.id],
             true,
             'SENT',
             mockedToday
@@ -99,36 +97,32 @@ describe('Manual duplication report', () => {
         }
       ]
     })
-    await Fixture.decision()
-      .with({
-        applicationId: application2Id,
-        employeeId: admin.data.id,
-        unitId: daycare.data.id,
-        type: 'PRESCHOOL',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
-    await Fixture.decision()
-      .with({
-        applicationId: application2Id,
-        employeeId: admin.data.id,
-        unitId: daycare.data.id,
-        type: 'PRESCHOOL_DAYCARE',
-        startDate: mockedToday,
-        endDate: mockedToday,
-        status: 'ACCEPTED'
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
+    await Fixture.decision({
+      applicationId: application2Id,
+      employeeId: admin.id,
+      unitId: daycare.id,
+      type: 'PRESCHOOL_DAYCARE',
+      startDate: mockedToday,
+      endDate: mockedToday,
+      status: 'ACCEPTED'
+    }).save()
 
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await report.assertRows([
       {
-        childName: `${child.data.lastName}, ${child.data.firstName}`,
-        connectedUnitName: daycare.data.name,
+        childName: `${child.lastName}, ${child.firstName}`,
+        connectedUnitName: daycare.name,
         serviceNeedOptionName: '',
-        preschoolUnitName: preschool.data.name
+        preschoolUnitName: preschool.name
       }
     ])
   })

@@ -7,11 +7,12 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  daycareGroupFixture,
+  testDaycareGroup,
   Fixture,
-  ServiceNeedBuilder
+  familyWithTwoGuardians,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -20,7 +21,7 @@ import {
   createVardaServiceNeed,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevServiceNeed } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { VardaErrorsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -29,38 +30,36 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let admin: DevEmployee
 let childId: UUID
-let serviceNeed: ServiceNeedBuilder
+let serviceNeed: DevServiceNeed
 
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employee().admin().save()
 
-  const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
   await createDefaultServiceNeedOptions()
 
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
 
-  const placement = await Fixture.placement()
-    .with({
-      childId,
-      unitId
-    })
-    .save()
+  const placement = await Fixture.placement({
+    childId,
+    unitId
+  }).save()
 
-  const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: placement.data.type })
-    .save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: placement.type
+  }).save()
 
-  serviceNeed = await Fixture.serviceNeed()
-    .with({
-      placementId: placement.data.id,
-      optionId: serviceNeedOption.data.id,
-      confirmedBy: admin.id
-    })
-    .save()
+  serviceNeed = await Fixture.serviceNeed({
+    placementId: placement.id,
+    optionId: serviceNeedOption.id,
+    confirmedBy: admin.id
+  }).save()
 })
 
 describe('Varda error report', () => {
@@ -88,7 +87,7 @@ describe('Varda error report', () => {
 
     await createVardaServiceNeed({
       body: {
-        evakaServiceNeedId: serviceNeed.data.id,
+        evakaServiceNeedId: serviceNeed.id,
         evakaChildId: childId,
         evakaServiceNeedUpdated: HelsinkiDateTime.now(),
         updateFailed: true,

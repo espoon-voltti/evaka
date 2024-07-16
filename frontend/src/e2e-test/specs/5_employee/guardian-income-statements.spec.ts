@@ -6,42 +6,48 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  enduserGuardianFixture,
+  testDaycare,
+  testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  testChildRestricted,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycarePlacements,
   createIncomeStatements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let personId: UUID
-let child: PersonDetail
+let child: DevPerson
 
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserGuardianFixture.id
-  child = fixtures.enduserChildFixturePorriHatterRestricted
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChildRestricted]
+  }).save()
+  personId = testAdult.id
+  child = testChildRestricted
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open({ mockedTime: mockedNow })
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
 })
 
 describe('Guardian income statements', () => {
@@ -49,14 +55,14 @@ describe('Guardian income statements', () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
       child.id,
-      daycareFixture.id
+      testDaycare.id
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     await insertGuardians({
       body: [
         {
-          guardianId: enduserGuardianFixture.id,
+          guardianId: testAdult.id,
           childId: child.id
         }
       ]
@@ -79,7 +85,7 @@ describe('Guardian income statements', () => {
 
     await page.goto(config.employeeUrl + '/profile/' + personId)
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const incomesSection = guardianPage.getCollapsible('incomes')
     await incomesSection.assertIncomeStatementChildName(

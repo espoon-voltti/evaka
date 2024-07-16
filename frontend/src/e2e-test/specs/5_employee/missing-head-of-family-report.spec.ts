@@ -20,33 +20,29 @@ describe('Missing head of family report', () => {
   test('showIntentionalDuplicates filter works', async () => {
     const mockedToday = LocalDate.of(2023, 6, 12)
 
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
     const area = await Fixture.careArea().save()
-    const unit = await Fixture.daycare().with({ areaId: area.data.id }).save()
-    const child = await Fixture.person().with({ lastName: '1' }).save()
-    await Fixture.child(child.data.id).save()
-    await Fixture.placement()
-      .with({
-        type: 'DAYCARE',
-        childId: child.data.id,
-        unitId: unit.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday.addDays(4)
-      })
-      .save()
-    const duplicate = await Fixture.person()
-      .with({ ssn: undefined, duplicateOf: child.data.id, lastName: '2' })
-      .save()
-    await Fixture.child(duplicate.data.id).save()
-    await Fixture.placement()
-      .with({
-        type: 'DAYCARE',
-        childId: duplicate.data.id,
-        unitId: unit.data.id,
-        startDate: mockedToday,
-        endDate: mockedToday.addDays(2)
-      })
-      .save()
+    const unit = await Fixture.daycare({ areaId: area.id }).save()
+    const child = await Fixture.person({ lastName: '1' }).saveChild()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addDays(4)
+    }).save()
+    const duplicate = await Fixture.person({
+      ssn: null,
+      duplicateOf: child.id,
+      lastName: '2'
+    }).saveChild()
+    await Fixture.placement({
+      type: 'DAYCARE',
+      childId: duplicate.id,
+      unitId: unit.id,
+      startDate: mockedToday,
+      endDate: mockedToday.addDays(2)
+    }).save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
@@ -54,10 +50,10 @@ describe('Missing head of family report', () => {
         featureFlags: { personDuplicate: true }
       }
     })
-    const report = await navigateToReport(page, admin.data)
+    const report = await navigateToReport(page, admin)
     await report.assertRows([
       {
-        childName: `${child.data.lastName} ${child.data.firstName}`,
+        childName: `${child.lastName} ${child.firstName}`,
         rangesWithoutHead: '12.06.2023 - 16.06.2023'
       }
     ])
@@ -65,11 +61,11 @@ describe('Missing head of family report', () => {
     await report.toggleShowIntentionalDuplicates()
     await report.assertRows([
       {
-        childName: `${child.data.lastName} ${child.data.firstName}`,
+        childName: `${child.lastName} ${child.firstName}`,
         rangesWithoutHead: '12.06.2023 - 16.06.2023'
       },
       {
-        childName: `${duplicate.data.lastName} ${duplicate.data.firstName}`,
+        childName: `${duplicate.lastName} ${duplicate.firstName}`,
         rangesWithoutHead: '12.06.2023 - 14.06.2023'
       }
     ])
@@ -77,7 +73,7 @@ describe('Missing head of family report', () => {
     await report.toggleShowIntentionalDuplicates()
     await report.assertRows([
       {
-        childName: `${child.data.lastName} ${child.data.firstName}`,
+        childName: `${child.lastName} ${child.firstName}`,
         rangesWithoutHead: '12.06.2023 - 16.06.2023'
       }
     ])

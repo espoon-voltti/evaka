@@ -6,13 +6,14 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   applicationFixture,
   applicationFixtureId,
   Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testChild2,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -24,13 +25,17 @@ import ApplicationListView from '../../pages/employee/applications/application-l
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  admin = (await Fixture.employeeAdmin().save()).data
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  admin = await Fixture.employee().admin().save()
 })
 
 async function openPage(employee: DevEmployee = admin) {
@@ -42,24 +47,15 @@ async function openPage(employee: DevEmployee = admin) {
 
 describe('Employee searches applications', () => {
   test('Duplicate applications are found', async () => {
-    const fixture = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture
-    )
+    const fixture = applicationFixture(testChild, testAdult)
 
     const duplicateFixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(testChild, testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130222'
     }
 
     const nonDuplicateFixture = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureKaarina,
-        fixtures.enduserGuardianFixture
-      ),
+      ...applicationFixture(testChild2, testAdult),
       id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130224'
     }
 
@@ -76,38 +72,33 @@ describe('Employee searches applications', () => {
 
   test('Care area filters work', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
     const careArea2 = await Fixture.careArea().save()
-    const daycare2 = await Fixture.daycare().careArea(careArea2).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea2.id }).save()
     const careArea3 = await Fixture.careArea().save()
-    const daycare3 = await Fixture.daycare().careArea(careArea3).save()
+    const daycare3 = await Fixture.daycare({ areaId: careArea3.id }).save()
 
     const createApplicationForUnit = (unitId: string) => ({
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [unitId]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        unitId
+      ]),
       id: uuidv4()
     })
 
-    const app1 = createApplicationForUnit(daycare1.data.id)
-    const app2 = createApplicationForUnit(daycare2.data.id)
-    const app3 = createApplicationForUnit(daycare3.data.id)
+    const app1 = createApplicationForUnit(daycare1.id)
+    const app2 = createApplicationForUnit(daycare2.id)
+    const app3 = createApplicationForUnit(daycare3.id)
 
     await createApplications({ body: [app1, app2, app3] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(3)
 
-    await applicationListView.toggleArea(careArea1.data.name)
+    await applicationListView.toggleArea(careArea1.name)
     await applicationListView.assertApplicationCount(1)
     await applicationListView.assertApplicationIsVisible(app1.id)
 
-    await applicationListView.toggleArea(careArea2.data.name)
+    await applicationListView.toggleArea(careArea2.name)
     await applicationListView.assertApplicationCount(2)
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationIsVisible(app2.id)
@@ -115,50 +106,45 @@ describe('Employee searches applications', () => {
 
   test('Unit filter works', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
     const createApplicationForUnit = (unitId: string) => ({
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [unitId]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        unitId
+      ]),
       id: uuidv4()
     })
 
-    const app1 = createApplicationForUnit(daycare1.data.id)
-    const app2 = createApplicationForUnit(daycare2.data.id)
+    const app1 = createApplicationForUnit(daycare1.id)
+    const app2 = createApplicationForUnit(daycare2.id)
 
     await createApplications({ body: [app1, app2] })
     const applicationListView = await openPage()
 
     await applicationListView.assertApplicationCount(2)
 
-    await applicationListView.toggleUnit(daycare1.data.name)
+    await applicationListView.toggleUnit(daycare1.name)
     await applicationListView.assertApplicationIsVisible(app1.id)
     await applicationListView.assertApplicationCount(1)
   })
 
   test('Special education teacher (VEO) sees only allowed applications', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
+    const daycare2 = await Fixture.daycare({ areaId: careArea1.id }).save()
 
-    const specialEducationTeacher = (
-      await Fixture.employeeSpecialEducationTeacher(daycare1.data.id).save()
-    ).data
+    const specialEducationTeacher = await Fixture.employee()
+      .specialEducationTeacher(daycare1.id)
+      .save()
 
     const createApplicationForUnit = (
       unitId: string,
       assistanceNeeded: boolean
     ) => ({
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        testChild,
+        testAdult,
         undefined,
         'DAYCARE',
         null,
@@ -172,16 +158,13 @@ describe('Employee searches applications', () => {
       id: uuidv4()
     })
 
-    const appWithAssistanceNeeded = createApplicationForUnit(
-      daycare1.data.id,
-      true
-    )
+    const appWithAssistanceNeeded = createApplicationForUnit(daycare1.id, true)
     const appWithoutAssistanceNeeded = createApplicationForUnit(
-      daycare1.data.id,
+      daycare1.id,
       false
     )
     const appWithAssistanceNeededWrongUnit = createApplicationForUnit(
-      daycare2.data.id,
+      daycare2.id,
       true
     )
 
@@ -198,46 +181,32 @@ describe('Employee searches applications', () => {
 
   test('Voucher application filter works', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const voucherUnit = await Fixture.daycare()
-      .with({ providerType: 'PRIVATE_SERVICE_VOUCHER' })
-      .careArea(careArea1)
-      .save()
-    const municipalUnit = await Fixture.daycare()
-      .with({ providerType: 'MUNICIPAL' })
-      .careArea(careArea1)
-      .save()
+    const voucherUnit = await Fixture.daycare({
+      areaId: careArea1.id,
+      providerType: 'PRIVATE_SERVICE_VOUCHER'
+    }).save()
+    const municipalUnit = await Fixture.daycare({
+      areaId: careArea1.id,
+      providerType: 'MUNICIPAL'
+    }).save()
 
     const applicationWithVoucherUnitFirst = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [voucherUnit.data.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        voucherUnit.id
+      ]),
       id: uuidv4()
     }
     const applicationWithVoucherUnitSecond = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [municipalUnit.data.id, voucherUnit.data.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        municipalUnit.id,
+        voucherUnit.id
+      ]),
       id: uuidv4()
     }
     const applicationWithNoVoucherUnit = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [municipalUnit.data.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        municipalUnit.id
+      ]),
       id: uuidv4()
     }
 
@@ -276,54 +245,38 @@ describe('Employee searches applications', () => {
   })
   test('Application type filters work', async () => {
     const careArea = await Fixture.careArea().save()
-    const club = await Fixture.daycare()
-      .with({
-        type: ['CLUB']
-      })
-      .careArea(careArea)
-      .save()
-    const daycare = await Fixture.daycare()
-      .with({
-        type: ['CENTRE']
-      })
-      .careArea(careArea)
-      .save()
-    const preschool = await Fixture.daycare()
-      .with({
-        type: ['PRESCHOOL']
-      })
-      .careArea(careArea)
-      .save()
+    const club = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['CLUB']
+    }).save()
+    const daycare = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['CENTRE']
+    }).save()
+    const preschool = await Fixture.daycare({
+      areaId: careArea.id,
+      type: ['PRESCHOOL']
+    }).save()
     const clubApplication = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'CLUB',
-        null,
-        [club.data.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'CLUB', null, [
+        club.id
+      ]),
       id: uuidv4()
     }
     const daycareApplication = {
-      ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
-        undefined,
-        'DAYCARE',
-        null,
-        [daycare.data.id]
-      ),
+      ...applicationFixture(testChild, testAdult, undefined, 'DAYCARE', null, [
+        daycare.id
+      ]),
       id: uuidv4()
     }
     const preschoolApplication = {
       ...applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture,
+        testChild,
+        testAdult,
         undefined,
         'PRESCHOOL',
         null,
-        [preschool.data.id]
+        [preschool.id]
       ),
       id: uuidv4()
     }

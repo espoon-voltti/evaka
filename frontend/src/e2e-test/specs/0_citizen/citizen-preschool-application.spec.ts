@@ -6,10 +6,15 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { enduserGuardianFixture } from '../../dev-api/fixtures'
+  Fixture,
+  preschoolTerm2021,
+  testAdult,
+  testAdult2,
+  testCareArea,
+  testChild,
+  testChild2,
+  testDaycare
+} from '../../dev-api/fixtures'
 import {
   getApplication,
   resetServiceState,
@@ -28,18 +33,26 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
-let fixtures: AreaAndPersonFixtures
 
 const mockedDate = LocalDate.of(2021, 1, 15)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.preschoolTerm(preschoolTerm2021).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -48,7 +61,7 @@ describe('Citizen preschool applications', () => {
   test('Sending incomplete preschool application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()
@@ -58,7 +71,7 @@ describe('Citizen preschool applications', () => {
   test('Minimal valid preschool application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'PRESCHOOL'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -73,7 +86,7 @@ describe('Citizen preschool applications', () => {
   test('Full valid preschool application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'PRESCHOOL'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -82,9 +95,7 @@ describe('Citizen preschool applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication({ applicationId })
-    fullPreschoolForm.validateResult(application, [
-      fixtures.enduserChildFixtureKaarina
-    ])
+    fullPreschoolForm.validateResult(application, [testChild2])
   })
 
   test('If user has no email selected in settings the application assumes user has no email', async () => {
@@ -93,7 +104,7 @@ describe('Citizen preschool applications', () => {
     const section = personalDetailsPage.personalDetailsSection
     await section.editPersonalData(
       {
-        preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+        preferredName: testAdult.firstName.split(' ')[1],
         phone: '123123123',
         backupPhone: '456456',
         email: null // This sets the no email flag and email to ''
@@ -103,7 +114,7 @@ describe('Citizen preschool applications', () => {
 
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()
@@ -114,11 +125,11 @@ describe('Citizen preschool applications', () => {
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
     await setPersonEmail({
-      body: { personId: enduserGuardianFixture.id, email: null }
+      body: { personId: testAdult.id, email: null }
     })
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'PRESCHOOL'
     )
     await editorPage.goToVerification()

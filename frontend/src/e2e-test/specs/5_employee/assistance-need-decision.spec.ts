@@ -8,16 +8,13 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -35,7 +32,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 let staff: DevEmployee
 let assistanceNeedDecisionEditPage: AssistanceNeedDecisionEditPage
@@ -48,14 +44,16 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeEach(async () => {
   await resetServiceState()
 
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  staff = (await Fixture.employeeStaff(unitId).save()).data
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitId = testDaycare.id
+  staff = await Fixture.employee().staff(unitId).save()
+  childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -63,39 +61,36 @@ beforeEach(async () => {
     unitId
   )
 
-  assistanceNeedDecision = (
-    await Fixture.assistanceNeedDecision().withChild(childId).save()
-  ).data
+  assistanceNeedDecision = await Fixture.assistanceNeedDecision({
+    childId
+  }).save()
 
-  preFilledAssistanceNeedDecision = (
-    await Fixture.preFilledAssistanceNeedDecision()
-      .withChild(childId)
-      .with({
-        selectedUnit: fixtures.daycareFixture.id,
-        decisionMaker: {
-          employeeId: serviceWorker.id,
-          title: 'head teacher',
-          name: null,
-          phoneNumber: null
-        },
-        preparedBy1: {
-          employeeId: serviceWorker.id,
-          title: 'teacher',
-          phoneNumber: '010202020202',
-          name: null
-        },
-        guardianInfo: [
-          {
-            id: null,
-            personId: fixtures.familyWithTwoGuardians.guardian.id,
-            isHeard: true,
-            name: '',
-            details: 'Guardian 1 details'
-          }
-        ]
-      })
-      .save()
-  ).data
+  preFilledAssistanceNeedDecision =
+    await Fixture.preFilledAssistanceNeedDecision({
+      childId,
+      selectedUnit: testDaycare.id,
+      decisionMaker: {
+        employeeId: serviceWorker.id,
+        title: 'head teacher',
+        name: null,
+        phoneNumber: null
+      },
+      preparedBy1: {
+        employeeId: serviceWorker.id,
+        title: 'teacher',
+        phoneNumber: '010202020202',
+        name: null
+      },
+      guardianInfo: [
+        {
+          id: null,
+          personId: familyWithTwoGuardians.guardian.id,
+          isHeard: true,
+          name: '',
+          details: 'Guardian 1 details'
+        }
+      ]
+    }).save()
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 })
@@ -141,7 +136,7 @@ describe('Assistance Need Decisions - Edit page', () => {
 
   test('Clicking the preview button opens the decision in preview mode', async () => {
     await assistanceNeedDecisionEditPage.assertDeciderSelectVisible()
-    await assistanceNeedDecisionEditPage.selectUnit(daycareFixture.name)
+    await assistanceNeedDecisionEditPage.selectUnit(testDaycare.name)
     await assistanceNeedDecisionEditPage.pedagogicalMotivationInput.fill(
       'Pedagogical motivation text'
     )
@@ -285,7 +280,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
@@ -315,36 +310,33 @@ describe('Assistance Need Decisions - Preview page', () => {
 
   describe('Staff', () => {
     beforeEach(async () => {
-      const acceptedAssistanceNeedDecision = (
-        await Fixture.preFilledAssistanceNeedDecision()
-          .withChild(childId)
-          .with({
-            status: 'ACCEPTED',
-            selectedUnit: fixtures.daycareFixture.id,
-            decisionMaker: {
-              employeeId: serviceWorker.id,
-              title: 'head teacher',
-              name: null,
-              phoneNumber: null
-            },
-            preparedBy1: {
-              employeeId: serviceWorker.id,
-              title: 'teacher',
-              phoneNumber: '010202020202',
-              name: null
-            },
-            guardianInfo: [
-              {
-                id: null,
-                personId: fixtures.familyWithTwoGuardians.guardian.id,
-                isHeard: true,
-                name: '',
-                details: 'Guardian 1 details'
-              }
-            ]
-          })
-          .save()
-      ).data
+      const acceptedAssistanceNeedDecision =
+        await Fixture.preFilledAssistanceNeedDecision({
+          childId,
+          status: 'ACCEPTED',
+          selectedUnit: testDaycare.id,
+          decisionMaker: {
+            employeeId: serviceWorker.id,
+            title: 'head teacher',
+            name: null,
+            phoneNumber: null
+          },
+          preparedBy1: {
+            employeeId: serviceWorker.id,
+            title: 'teacher',
+            phoneNumber: '010202020202',
+            name: null
+          },
+          guardianInfo: [
+            {
+              id: null,
+              personId: familyWithTwoGuardians.guardian.id,
+              isHeard: true,
+              name: '',
+              details: 'Guardian 1 details'
+            }
+          ]
+        }).save()
 
       page = await openPage()
       await employeeLogin(page, staff)
@@ -414,7 +406,7 @@ describe('Assistance Need Decisions - Preview page', () => {
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.selectedUnit,
-        `${daycareFixture.name}\n${daycareFixture.visitingAddress.streetAddress}\n${daycareFixture.visitingAddress.postalCode} ${daycareFixture.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
+        `${testDaycare.name}\n${testDaycare.visitingAddress.streetAddress}\n${testDaycare.visitingAddress.postalCode} ${testDaycare.visitingAddress.postOffice}\nLoma-aikoina tuen järjestämispaikka ja -tapa saattavat muuttua.`
       )
       await waitUntilEqual(
         () => assistanceNeedDecisionPreviewPage.motivationForDecision,
@@ -437,10 +429,10 @@ describe('Assistance Need Decisions - Preview page', () => {
 
   describe('Admin', () => {
     test('Sent decision can be reverted by admin', async () => {
-      const admin = await Fixture.employeeAdmin().save()
+      const admin = await Fixture.employee().admin().save()
 
       page = await openPage()
-      await employeeLogin(page, admin.data)
+      await employeeLogin(page, admin)
 
       await page.goto(
         `${

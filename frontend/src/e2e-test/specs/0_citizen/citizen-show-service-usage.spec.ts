@@ -7,10 +7,10 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import {
-  careAreaFixture,
-  daycareFixture,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testCareArea,
+  testDaycare,
+  testChild2,
+  testAdult,
   Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
@@ -27,7 +27,7 @@ async function openCalendarPage() {
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   const header = new CitizenHeader(page, 'desktop')
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, 'desktop')
@@ -37,58 +37,50 @@ describe('Service time usage', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea().with(careAreaFixture).save()
-    await Fixture.daycare().with(daycareFixture).save()
-    const child = await Fixture.person()
-      .with(enduserChildFixtureKaarina)
-      .saveAndUpdateMockVtj()
-    const guardian = await Fixture.person()
-      .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
-    await Fixture.child(enduserChildFixtureKaarina.id).save()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    const child = await Fixture.person(testChild2).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.guardian(child, guardian).save()
 
-    const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-      daycareFixture.id
-    ).save()
-
-    const serviceNeedOption = await Fixture.serviceNeedOption()
-      .with({
-        validPlacementType: 'DAYCARE',
-        defaultOption: false,
-        nameFi: 'Kokopäiväinen',
-        nameSv: 'Kokopäiväinen (sv)',
-        nameEn: 'Kokopäiväinen (en)',
-        daycareHoursPerMonth: 140
-      })
+    const daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
       .save()
 
-    const placement = await Fixture.placement()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
-        type: 'DAYCARE',
-        startDate: yesterday,
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.data.id,
-        startDate: yesterday,
-        endDate: today.addYears(1),
-        optionId: serviceNeedOption.data.id,
-        confirmedBy: daycareSupervisor.data.id
-      })
-      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)',
+      daycareHoursPerMonth: 140
+    }).save()
+
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: yesterday,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: yesterday,
+      endDate: today.addYears(1),
+      optionId: serviceNeedOption.id,
+      confirmedBy: daycareSupervisor.id
+    }).save()
   })
 
   it('Reservation time shown in monthly summary', async () => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: yesterday,
-      childId: enduserChildFixtureKaarina.id,
+      childId: testChild2.id,
       reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
     }).save()
@@ -105,15 +97,13 @@ describe('Service time usage', () => {
   })
 
   it('Attendance time shown in monthly summary', async () => {
-    await Fixture.childAttendance()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
-        date: yesterday,
-        arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: yesterday,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(15, 30)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const summary = await calendarPage.openMonthlySummary(
@@ -133,7 +123,7 @@ describe('Service time usage', () => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: yesterday,
-      childId: enduserChildFixtureKaarina.id,
+      childId: testChild2.id,
       reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
       secondReservation: null
     }).save()
@@ -141,28 +131,26 @@ describe('Service time usage', () => {
     const calendarPage = await openCalendarPage()
     const dayView = await calendarPage.openDayView(yesterday)
     await dayView
-      .getUsedService(enduserChildFixtureKaarina.id)
+      .getUsedService(testChild2.id)
       .assertTextEquals('08:00–16:00 (8 h)')
   })
 
   it('Service time usage based on attendance shown in day view', async () => {
-    await Fixture.childAttendance()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
-        date: today,
-        arrived: LocalTime.of(8, 0),
-        departed: LocalTime.of(15, 30)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(8, 0),
+      departed: LocalTime.of(15, 30)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const dayView = await calendarPage.openDayView(today)
     await dayView
-      .getUsedService(enduserChildFixtureKaarina.id)
+      .getUsedService(testChild2.id)
       .assertTextEquals('08:00–15:30 (7 h 30 min)')
     await dayView
-      .getServiceUsageWarning(enduserChildFixtureKaarina.id)
+      .getServiceUsageWarning(testChild2.id)
       .assertTextEquals('Toteunut läsnäoloaika ylittää ilmoitetun ajan.')
   })
 
@@ -170,27 +158,25 @@ describe('Service time usage', () => {
     await Fixture.attendanceReservation({
       type: 'RESERVATIONS',
       date: today,
-      childId: enduserChildFixtureKaarina.id,
+      childId: testChild2.id,
       reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30)),
       secondReservation: null
     }).save()
-    await Fixture.childAttendance()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
-        date: today,
-        arrived: LocalTime.of(7, 55),
-        departed: LocalTime.of(16, 0)
-      })
-      .save()
+    await Fixture.childAttendance({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      date: today,
+      arrived: LocalTime.of(7, 55),
+      departed: LocalTime.of(16, 0)
+    }).save()
 
     const calendarPage = await openCalendarPage()
     const dayView = await calendarPage.openDayView(today)
     await dayView
-      .getUsedService(enduserChildFixtureKaarina.id)
+      .getUsedService(testChild2.id)
       .assertTextEquals('07:55–16:00 (8 h 5 min)')
     await dayView
-      .getServiceUsageWarning(enduserChildFixtureKaarina.id)
+      .getServiceUsageWarning(testChild2.id)
       .assertTextEquals(
         'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.'
       )
@@ -200,51 +186,43 @@ describe('Service time alert', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    await Fixture.careArea().with(careAreaFixture).save()
-    await Fixture.daycare().with(daycareFixture).save()
-    const child = await Fixture.person()
-      .with(enduserChildFixtureKaarina)
-      .saveAndUpdateMockVtj()
-    const guardian = await Fixture.person()
-      .with(enduserGuardianFixture)
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
-    await Fixture.child(enduserChildFixtureKaarina.id).save()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    const child = await Fixture.person(testChild2).saveChild({
+      updateMockVtj: true
+    })
+    const guardian = await Fixture.person(testAdult).saveAdult({
+      updateMockVtjWithDependants: [child]
+    })
     await Fixture.guardian(child, guardian).save()
 
-    const daycareSupervisor = await Fixture.employeeUnitSupervisor(
-      daycareFixture.id
-    ).save()
-
-    const serviceNeedOption = await Fixture.serviceNeedOption()
-      .with({
-        validPlacementType: 'DAYCARE',
-        defaultOption: false,
-        nameFi: 'Kokopäiväinen',
-        nameSv: 'Kokopäiväinen (sv)',
-        nameEn: 'Kokopäiväinen (en)',
-        daycareHoursPerMonth: 75
-      })
+    const daycareSupervisor = await Fixture.employee()
+      .unitSupervisor(testDaycare.id)
       .save()
 
-    const placement = await Fixture.placement()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        unitId: daycareFixture.id,
-        type: 'DAYCARE',
-        startDate: LocalDate.of(2022, 1, 1),
-        endDate: today.addYears(1)
-      })
-      .save()
-    await Fixture.serviceNeed()
-      .with({
-        placementId: placement.data.id,
-        startDate: LocalDate.of(2022, 1, 1),
-        endDate: today.addYears(1),
-        optionId: serviceNeedOption.data.id,
-        confirmedBy: daycareSupervisor.data.id
-      })
-      .save()
+    const serviceNeedOption = await Fixture.serviceNeedOption({
+      validPlacementType: 'DAYCARE',
+      defaultOption: false,
+      nameFi: 'Kokopäiväinen',
+      nameSv: 'Kokopäiväinen (sv)',
+      nameEn: 'Kokopäiväinen (en)',
+      daycareHoursPerMonth: 75
+    }).save()
+
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      type: 'DAYCARE',
+      startDate: LocalDate.of(2022, 1, 1),
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.serviceNeed({
+      placementId: placement.id,
+      startDate: LocalDate.of(2022, 1, 1),
+      endDate: today.addYears(1),
+      optionId: serviceNeedOption.id,
+      confirmedBy: daycareSupervisor.id
+    }).save()
   })
 
   it('Service time alert shown in month heading', async () => {
@@ -256,19 +234,17 @@ describe('Service time alert', () => {
       await Fixture.attendanceReservation({
         type: 'RESERVATIONS',
         date: date,
-        childId: enduserChildFixtureKaarina.id,
+        childId: testChild2.id,
         reservation: new TimeRange(LocalTime.of(12, 0), LocalTime.of(15, 0)),
         secondReservation: null
       }).save()
-      await Fixture.childAttendance()
-        .with({
-          childId: enduserChildFixtureKaarina.id,
-          unitId: daycareFixture.id,
-          date: date,
-          arrived: LocalTime.of(8, 0),
-          departed: LocalTime.of(15, 32)
-        })
-        .save()
+      await Fixture.childAttendance({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        date: date,
+        arrived: LocalTime.of(8, 0),
+        departed: LocalTime.of(15, 32)
+      }).save()
     }
 
     const calendarPage = await openCalendarPage()
@@ -294,7 +270,7 @@ describe('Service time alert', () => {
       await Fixture.attendanceReservation({
         type: 'RESERVATIONS',
         date: date,
-        childId: enduserChildFixtureKaarina.id,
+        childId: testChild2.id,
         reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
         secondReservation: null
       }).save()

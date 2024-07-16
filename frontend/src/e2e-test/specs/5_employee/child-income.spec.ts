@@ -5,8 +5,7 @@
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testChild } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { IncomeSection } from '../../pages/employee/guardian-information'
@@ -21,13 +20,13 @@ let incomesSection: IncomeSection
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserChildFixtureJari.id
+  await Fixture.person(testChild).saveChild()
+  personId = testChild.id
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
   await page.goto(config.employeeUrl + '/child-information/' + personId)
 
   const childInformationPage = new ChildInformationPage(page)

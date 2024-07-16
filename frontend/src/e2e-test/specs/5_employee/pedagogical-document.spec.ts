@@ -6,12 +6,14 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
+  testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testDaycare,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -38,11 +40,13 @@ const testfile2Path = `src/e2e-test/assets/${testfile2Name}`
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -51,10 +55,10 @@ beforeEach(async () => {
   )
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
   await page.goto(config.employeeUrl + '/child-information/' + childId)
   childInformationPage = new ChildInformationPage(page)
 })

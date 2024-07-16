@@ -624,17 +624,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/person/create")
-    fun createPerson(db: Database, @RequestBody body: DevPerson): PersonId {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val personId = tx.insert(body, DevPersonType.ADULT)
-                val dto = body.copy(id = personId).toPersonDTO()
-                if (dto.identity is ExternalIdentifier.SSN) {
-                    tx.updatePersonFromVtj(dto)
-                }
-                personId
-            }
-        }
+    fun createPerson(
+        db: Database,
+        @RequestBody body: DevPerson,
+        @RequestParam type: DevPersonType
+    ): PersonId {
+        return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body, type) } }
     }
 
     @PostMapping("/parentship")
@@ -2080,8 +2075,7 @@ data class DevPerson(
             ophPersonOid = this.ophPersonOid
         )
 
-    val evakaUserId: EvakaUserId
-        get() = EvakaUserId(id.raw)
+    fun evakaUserId() = EvakaUserId(id.raw)
 
     fun user(authLevel: CitizenAuthLevel) = AuthenticatedUser.Citizen(id, authLevel)
 }

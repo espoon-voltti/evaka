@@ -7,77 +7,65 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
 import config from '../../config'
-import {
-  DaycareBuilder,
-  Fixture,
-  PersonBuilder,
-  PreschoolTermBuilder
-} from '../../dev-api/fixtures'
+import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import {
+  DevDaycare,
+  DevEmployee,
+  DevPerson,
+  DevPreschoolTerm
+} from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const mockedToday = LocalDate.of(2023, 12, 13)
-let term: PreschoolTermBuilder
-let child: PersonBuilder
-let unit: DaycareBuilder
+let term: DevPreschoolTerm
+let child: DevPerson
+let unit: DevDaycare
 
 beforeEach(async () => {
   await resetServiceState()
-  term = await Fixture.preschoolTerm().save()
+  term = await Fixture.preschoolTerm(preschoolTerm2023).save()
   const area = await Fixture.careArea().save()
-  unit = await Fixture.daycare()
-    .with({
-      areaId: area.data.id,
-      name: 'TestiEO',
-      type: ['PRESCHOOL'],
-      language: 'fi',
-      dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
-    })
-    .save()
-  child = await Fixture.person()
-    .with({
-      firstName: 'Esko',
-      lastName: 'Beck'
-    })
-    .save()
+  unit = await Fixture.daycare({
+    areaId: area.id,
+    name: 'TestiEO',
+    type: ['PRESCHOOL'],
+    language: 'fi',
+    dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
+  }).save()
+  child = await Fixture.person({
+    firstName: 'Esko',
+    lastName: 'Beck'
+  }).saveChild()
 
-  await Fixture.child(child.data.id).save()
+  await Fixture.placement({
+    type: 'PRESCHOOL',
+    childId: child.id,
+    unitId: unit.id,
+    startDate: mockedToday.subDays(4),
+    endDate: mockedToday.addDays(4)
+  }).save()
 
-  await Fixture.placement()
-    .with({
-      type: 'PRESCHOOL',
-      childId: child.data.id,
-      unitId: unit.data.id,
-      startDate: mockedToday.subDays(4),
-      endDate: mockedToday.addDays(4)
-    })
-    .save()
-
-  await Fixture.absence()
-    .with({
-      absenceType: 'SICKLEAVE',
-      date: mockedToday,
-      childId: child.data.id
-    })
-    .save()
-  await Fixture.childAttendance()
-    .with({
-      childId: child.data.id,
-      date: mockedToday.subDays(1),
-      arrived: LocalTime.of(8, 0),
-      departed: LocalTime.of(12, 30),
-      unitId: unit.data.id
-    })
-    .save()
+  await Fixture.absence({
+    absenceType: 'SICKLEAVE',
+    date: mockedToday,
+    childId: child.id
+  }).save()
+  await Fixture.childAttendance({
+    childId: child.id,
+    date: mockedToday.subDays(1),
+    arrived: LocalTime.of(8, 0),
+    departed: LocalTime.of(12, 30),
+    unitId: unit.id
+  }).save()
 })
 
 describe('Preschool absence report', () => {
   test('report data is shown', async () => {
-    const admin = await Fixture.employeeAdmin().save()
+    const admin = await Fixture.employee().admin().save()
 
     const page = await Page.open({
       mockedTime: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
@@ -86,13 +74,13 @@ describe('Preschool absence report', () => {
       }
     })
 
-    const report = await navigateToReport(page, admin.data)
-    await report.selectUnit(unit.data.name)
-    await report.selectTerm(term.data.finnishPreschool.format())
+    const report = await navigateToReport(page, admin)
+    await report.selectUnit(unit.name)
+    await report.selectTerm(term.finnishPreschool.format())
     const initialExpectation = [
       {
-        firstName: child.data.firstName,
-        lastName: child.data.lastName,
+        firstName: child.firstName,
+        lastName: child.lastName,
         TOTAL: '6',
         OTHER_ABSENCE: '1',
         SICKLEAVE: '5',

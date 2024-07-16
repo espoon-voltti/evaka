@@ -7,16 +7,15 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  careAreaFixture,
-  DaycareBuilder,
-  daycareFixture,
-  daycareGroupFixture,
-  enduserChildFixtureJari,
-  enduserGuardianFixture,
-  Fixture,
-  PersonBuilder
+  testCareArea,
+  testDaycare,
+  testDaycareGroup,
+  testChild,
+  testAdult,
+  Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -26,10 +25,10 @@ let page: Page
 
 const startDate = LocalDate.of(2024, 6, 3)
 const period = new FiniteDateRange(startDate, LocalDate.of(2024, 8, 15))
-const child = enduserChildFixtureJari
+const child = testChild
 const mockedDate = LocalDate.of(2024, 5, 25)
-let daycare: DaycareBuilder
-let guardian: PersonBuilder
+let daycare: DevDaycare
+let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
@@ -37,38 +36,33 @@ beforeEach(async () => {
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
 
-  daycare = await Fixture.daycare()
-    .with(daycareFixture)
-    .careArea(await Fixture.careArea().with(careAreaFixture).save())
-    .save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).daycare(daycare).save()
+  const area = await Fixture.careArea(testCareArea).save()
+  daycare = await Fixture.daycare({ ...testDaycare, areaId: area.id }).save()
+  await Fixture.daycareGroup({
+    ...testDaycareGroup,
+    daycareId: daycare.id
+  }).save()
 
-  const child1 = await Fixture.person().with(child).saveAndUpdateMockVtj()
-  guardian = await Fixture.person()
-    .with(enduserGuardianFixture)
-    .withDependants(child1)
-    .saveAndUpdateMockVtj()
-  await Fixture.child(child1.data.id).save()
+  const child1 = await Fixture.person(child).saveChild({ updateMockVtj: true })
+  guardian = await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [child1]
+  })
   await Fixture.guardian(child1, guardian).save()
-  await Fixture.placement()
-    .child(child1)
-    .daycare(daycare)
-    .with({
-      startDate: startDate,
-      endDate: LocalDate.of(2026, 6, 30)
-    })
-    .save()
-  await Fixture.holidayPeriod()
-    .with({
-      period,
-      reservationDeadline: LocalDate.of(2024, 5, 10)
-    })
-    .save()
+  await Fixture.placement({
+    childId: child1.id,
+    unitId: daycare.id,
+    startDate: startDate,
+    endDate: LocalDate.of(2026, 6, 30)
+  }).save()
+  await Fixture.holidayPeriod({
+    period,
+    reservationDeadline: LocalDate.of(2024, 5, 10)
+  }).save()
 })
 
 describe('Placement start after deadline end', () => {
   test('citizen can mark repeating attendances', async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, guardian)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 
@@ -96,7 +90,7 @@ describe('Placement start after deadline end', () => {
     }
   })
   test('citizen can mark single day attendances', async () => {
-    await enduserLogin(page)
+    await enduserLogin(page, guardian)
     await new CitizenHeader(page).selectTab('calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
 

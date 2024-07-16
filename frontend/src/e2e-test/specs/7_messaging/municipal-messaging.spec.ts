@@ -9,23 +9,23 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareGroupFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult,
+  testChild,
+  testChild2,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createMessageAccounts,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee } from '../../generated/api-types'
+import { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
@@ -35,10 +35,9 @@ let messagingPage: Page
 let messenger: DevEmployee
 let staffPage: Page
 let staff: DevEmployee
-let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
-let childInAreaA: PersonDetail
-let childInAreaB: PersonDetail
+let childInAreaA: DevPerson
+let childInAreaB: DevPerson
 
 const mockedDate = LocalDate.of(2022, 11, 8)
 const messageSendTime = HelsinkiDateTime.fromLocal(
@@ -52,81 +51,77 @@ const messageReadTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  childInAreaA = fixtures.enduserChildFixtureJari
-  childInAreaB = fixtures.enduserChildFixtureKaarina
-  await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).save()
-  await Fixture.daycareGroup().with(daycareGroupFixture).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  childInAreaA = testChild
+  childInAreaB = testChild2
+  await Fixture.careArea(testCareArea2).save()
+  await Fixture.daycare(testDaycare2).save()
+  await Fixture.daycareGroup(testDaycareGroup).save()
   const daycareGroup2Fixture = {
-    ...daycareGroupFixture,
+    ...testDaycareGroup,
     id: uuidv4(),
-    daycareId: daycare2Fixture.id
+    daycareId: testDaycare2.id
   }
-  await Fixture.daycareGroup().with(daycareGroup2Fixture).save()
-  await Fixture.placement()
-    .with({
-      childId: childInAreaA.id,
-      unitId: fixtures.daycareFixture.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
+  await Fixture.daycareGroup(daycareGroup2Fixture).save()
+  await Fixture.placement({
+    childId: childInAreaA.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  })
     .save()
     .then((placement) =>
-      Fixture.groupPlacement()
-        .with({
-          daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroupFixture.id,
-          startDate: placement.data.startDate,
-          endDate: placement.data.endDate
-        })
-        .save()
+      Fixture.groupPlacement({
+        daycarePlacementId: placement.id,
+        daycareGroupId: testDaycareGroup.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate
+      }).save()
     )
-  await Fixture.placement()
-    .with({
-      childId: childInAreaB.id,
-      unitId: daycare2Fixture.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
+  await Fixture.placement({
+    childId: childInAreaB.id,
+    unitId: testDaycare2.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  })
     .save()
     .then((placement) =>
-      Fixture.groupPlacement()
-        .with({
-          daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroup2Fixture.id,
-          startDate: placement.data.startDate,
-          endDate: placement.data.endDate
-        })
-        .save()
+      Fixture.groupPlacement({
+        daycarePlacementId: placement.id,
+        daycareGroupId: daycareGroup2Fixture.id,
+        startDate: placement.startDate,
+        endDate: placement.endDate
+      }).save()
     )
-  const guardian2 = Fixture.person().with({ ssn: undefined })
-  await guardian2.save()
-  const guardian3 = Fixture.person().with({ ssn: undefined })
-  await guardian3.save()
+  const guardian2 = await Fixture.person({ ssn: null }).saveAdult()
+  const guardian3 = await Fixture.person({ ssn: null }).saveAdult()
   await insertGuardians({
     body: [
       {
         childId: childInAreaA.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: testAdult.id
       },
       {
         childId: childInAreaB.id,
-        guardianId: guardian2.data.id
+        guardianId: guardian2.id
       },
       {
         childId: childInAreaB.id,
-        guardianId: guardian3.data.id
+        guardianId: guardian3.id
       }
     ]
   })
   await createMessageAccounts()
-  messenger = (await Fixture.employeeMessenger().save()).data
-  staff = (
-    await Fixture.employeeStaff(fixtures.daycareFixture.id)
-      .withGroupAcl(daycareGroupFixture.id)
-      .save()
-  ).data
+  messenger = await Fixture.employee().messenger().save()
+  staff = await Fixture.employee()
+    .staff(testDaycare.id)
+    .withGroupAcl(testDaycareGroup.id)
+    .save()
 })
 
 async function openMessagingPage(mockedTime: HelsinkiDateTime) {
@@ -141,7 +136,7 @@ async function openStaffPage(mockedTime: HelsinkiDateTime) {
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 const defaultMessage = {
@@ -157,7 +152,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id, careArea2Fixture.id],
+      receivers: [testCareArea.id, testCareArea2.id],
       confirmManyRecipients: true
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
@@ -175,17 +170,14 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id]
+      receivers: [testCareArea.id]
     })
 
     const sentMessagesPage = await messagesPage.openSentMessages()
-    await sentMessagesPage.assertMessageParticipants(
-      0,
-      fixtures.careAreaFixture.name
-    )
+    await sentMessagesPage.assertMessageParticipants(0, testCareArea.name)
 
     const messagePage = await sentMessagesPage.openMessage(0)
-    await messagePage.assertMessageRecipients(fixtures.careAreaFixture.name)
+    await messagePage.assertMessageRecipients(testCareArea.name)
   })
 
   test('Messages sent by messaging role creates a copy for the staff', async () => {
@@ -195,7 +187,7 @@ describe('Municipal messaging -', () => {
     const messageEditor = await messagesPage.openMessageEditor()
     await messageEditor.sendNewMessage({
       ...defaultMessage,
-      receivers: [fixtures.careAreaFixture.id]
+      receivers: [testCareArea.id]
     })
     await runPendingAsyncJobs(messageSendTime.addMinutes(1))
 

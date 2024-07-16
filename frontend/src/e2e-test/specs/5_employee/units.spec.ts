@@ -5,9 +5,15 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import {
+  familyWithTwoGuardians,
+  Fixture,
+  testCareArea,
+  testClub,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  testPreschool
+} from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -15,6 +21,7 @@ import {
 import {
   DevDaycare,
   DevDaycareGroup,
+  DevPerson,
   DevPlacement
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -24,7 +31,7 @@ import { employeeLogin } from '../../utils/user'
 
 let unitFixture: DevDaycare
 let groupFixture: DevDaycareGroup
-let childFixture: PersonDetail
+let childFixture: DevPerson
 let placementFixture: DevPlacement
 let page: Page
 
@@ -35,40 +42,37 @@ const placementDates = () => ({
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
+  await Fixture.daycare(testPreschool).save()
+  await Fixture.daycare(testClub).save()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
-  unitFixture = fixtures.daycareFixture
-  childFixture = fixtures.familyWithTwoGuardians.children[0]
-  groupFixture = (
-    await Fixture.daycareGroup()
-      .with({
-        daycareId: unitFixture.id,
-        name: 'Kosmiset vakiot',
-        startDate: LocalDate.of(2020, 2, 1)
-      })
-      .save()
-  ).data
+  unitFixture = testDaycare
+  childFixture = familyWithTwoGuardians.children[0]
+  groupFixture = await Fixture.daycareGroup({
+    daycareId: unitFixture.id,
+    name: 'Kosmiset vakiot',
+    startDate: LocalDate.of(2020, 2, 1)
+  }).save()
 
   const today = LocalDate.of(2022, 12, 1)
-  placementFixture = (
-    await Fixture.placement()
-      .with({
-        childId: childFixture.id,
-        unitId: unitFixture.id,
-        startDate: today,
-        endDate: today.addYears(1)
-      })
-      .save()
-  ).data
+  placementFixture = await Fixture.placement({
+    childId: childFixture.id,
+    unitId: unitFixture.id,
+    startDate: today,
+    endDate: today.addYears(1)
+  }).save()
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     mockedTime: LocalDate.of(2022, 12, 1).toHelsinkiDateTime(
       LocalTime.of(12, 0)
     )
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 describe('Employee - Units', () => {
@@ -194,13 +198,11 @@ describe('Employee - Units', () => {
   })
 
   test('Unit occupancy rates are correct with properly set caretaker counts', async () => {
-    await Fixture.daycareCaretakers()
-      .with({
-        groupId: groupFixture.id,
-        amount: 1,
-        startDate: groupFixture.startDate
-      })
-      .save()
+    await Fixture.daycareCaretakers({
+      groupId: groupFixture.id,
+      amount: 1,
+      startDate: groupFixture.startDate
+    }).save()
 
     const unitPage = await UnitPage.openUnit(page, unitFixture.id)
     const unitAttendancePage = await unitPage.openWeekCalendar()
@@ -217,24 +219,22 @@ describe('Employee - Units', () => {
 
   test('Units list hides closed units unless toggled to show', async () => {
     const area = await Fixture.careArea().save()
-    const closedUnit = await Fixture.daycare()
-      .careArea(area)
-      .with({
-        name: 'Wanha päiväkoti',
-        openingDate: LocalDate.of(1900, 1, 1),
-        closingDate: LocalDate.of(2000, 1, 1)
-      })
-      .save()
+    const closedUnit = await Fixture.daycare({
+      areaId: area.id,
+      name: 'Wanha päiväkoti',
+      openingDate: LocalDate.of(1900, 1, 1),
+      closingDate: LocalDate.of(2000, 1, 1)
+    }).save()
 
     const unitsPage = await UnitsPage.open(page)
-    await unitsPage.filterByName(closedUnit.data.name)
+    await unitsPage.filterByName(closedUnit.name)
     await unitsPage.showClosedUnits(false)
     await unitsPage.assertRowCount(0)
 
     await unitsPage.showClosedUnits(true)
     await unitsPage.assertRowCount(1)
     await unitsPage
-      .unitRow(closedUnit.data.id)
-      .assertFields({ name: closedUnit.data.name })
+      .unitRow(closedUnit.id)
+      .assertFields({ name: closedUnit.name })
   })
 })

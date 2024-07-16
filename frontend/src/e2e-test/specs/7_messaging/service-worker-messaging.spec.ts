@@ -9,13 +9,13 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   applicationFixture,
   applicationFixtureId,
-  Fixture
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -31,7 +31,6 @@ import MessagesPage from '../../pages/employee/messages/messages-page'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let citizenPage: Page
 let staffPage: Page
 let serviceWorker: DevEmployee
@@ -45,21 +44,19 @@ const mockedTime = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
-  messagingAndServiceWorker = (
-    await Fixture.employeeServiceWorker()
-      .with({
-        roles: ['SERVICE_WORKER', 'MESSAGING']
-      })
-      .save()
-  ).data
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  serviceWorker = await Fixture.employee().serviceWorker().save()
+  messagingAndServiceWorker = await Fixture.employee({
+    roles: ['SERVICE_WORKER', 'MESSAGING']
+  }).save()
   await createMessageAccounts()
 })
 
 async function openCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 async function openStaffPage(
@@ -83,10 +80,7 @@ describe('Service Worker Messaging', () => {
   describe('Service Worker and citizen', () => {
     beforeEach(async () => {
       const applFixture = {
-        ...applicationFixture(
-          fixtures.enduserChildFixtureJari,
-          fixtures.enduserGuardianFixture
-        ),
+        ...applicationFixture(testChild, testAdult),
         sentDate: mockedToday
       }
       await createApplications({ body: [applFixture] })
@@ -152,10 +146,10 @@ describe('Service Worker Messaging', () => {
       ).getMessageEditor()
 
       await messageEditor.assertReceiver(
-        `${fixtures.enduserGuardianFixture.lastName} ${fixtures.enduserGuardianFixture.firstName}`
+        `${testAdult.lastName} ${testAdult.firstName}`
       )
       await messageEditor.assertTitle(
-        `Hakemus 08.11.2022: ${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+        `Hakemus 08.11.2022: ${testChild.firstName} ${testChild.lastName}`
       )
     })
 

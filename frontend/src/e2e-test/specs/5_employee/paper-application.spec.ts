@@ -5,11 +5,15 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+  testDaycareGroup,
+  Fixture,
+  testAdult2,
+  testAdult,
+  testChild,
+  testDaycare,
+  testCareArea,
+  preschoolTerm2022
+} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -21,81 +25,85 @@ import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
-  const admin = await Fixture.employeeAdmin().save()
+  await Fixture.preschoolTerm(preschoolTerm2022).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    otherGuardian: testAdult2,
+    children: [testChild]
+  }).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({ mockedTime: now })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(
-    fixtures.enduserChildFixtureJari.id
-  )
+  await childInformationPage.navigateToChild(testChild.id)
 
   const applications =
     await childInformationPage.openCollapsible('applications')
   createApplicationModal = await applications.openCreateApplicationModal()
 })
 
-const formatPersonName = (person: PersonDetail) =>
+const formatPersonName = (person: { firstName: string; lastName: string }) =>
   `${person.lastName} ${person.firstName}`
 
 const formatPersonAddress = ({
   streetAddress,
   postalCode,
   postOffice
-}: PersonDetail) =>
-  `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
+}: {
+  streetAddress?: string
+  postalCode?: string
+  postOffice?: string
+}) => `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
 describe('Employee - paper application', () => {
   test('Paper application can be created for guardian and child with ssn', async () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.assertGuardian(
-      formatPersonName(fixtures.enduserGuardianFixture),
-      fixtures.enduserGuardianFixture.ssn ?? '',
-      formatPersonAddress(fixtures.enduserGuardianFixture)
+      formatPersonName(testAdult),
+      testAdult.ssn ?? '',
+      formatPersonAddress(testAdult)
     )
   })
 
   test('Paper application can be created for other guardian and child with ssn', async () => {
-    await createApplicationModal.selectGuardian('Ville Vilkas')
+    await createApplicationModal.selectGuardian(
+      `${testAdult2.firstName} ${testAdult2.lastName}`
+    )
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(
-      formatPersonName(fixtures.enduserChildJariOtherGuardianFixture),
-      fixtures.enduserChildJariOtherGuardianFixture.ssn ?? '',
-      formatPersonAddress(fixtures.enduserChildJariOtherGuardianFixture)
+      formatPersonName(testAdult2),
+      testAdult2.ssn ?? '',
+      formatPersonAddress(testAdult2)
     )
   })
 
   test('Paper application can be created for other non guardian vtj person and child with ssn', async () => {
     const ssn = '270372-905L'
-    const child = await Fixture.person()
-      .with({
-        ssn: '010106A981M',
-        firstName: 'Lapsi',
-        lastName: 'Korhonen-Hämäläinen'
-      })
-      .saveAndUpdateMockVtj()
-    await Fixture.person()
-      .with({
-        ssn,
-        firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
-        lastName: 'Korhonen-Hämäläinen',
-        streetAddress: 'Kamreerintie 2',
-        postalCode: '00370',
-        postOffice: 'Espoo'
-      })
-      .withDependants(child)
-      .saveAndUpdateMockVtj()
+    const child = await Fixture.person({
+      ssn: '010106A981M',
+      firstName: 'Lapsi',
+      lastName: 'Korhonen-Hämäläinen'
+    }).saveChild({ updateMockVtj: true })
+    await Fixture.person({
+      ssn,
+      firstName: 'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+      lastName: 'Korhonen-Hämäläinen',
+      streetAddress: 'Kamreerintie 2',
+      postalCode: '00370',
+      postOffice: 'Espoo'
+    }).saveAdult({ updateMockVtjWithDependants: [child] })
     await createApplicationModal.selectVtjPersonAsGuardian(ssn)
     const applicationEditPage = await createApplicationModal.submit()
 
@@ -131,7 +139,7 @@ describe('Employee - paper application', () => {
 
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -145,7 +153,7 @@ describe('Employee - paper application', () => {
 
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -165,7 +173,7 @@ describe('Employee - paper application', () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.fillStartDate(now.toLocalDate().format())
     await applicationEditPage.fillTimes()
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'
@@ -187,7 +195,7 @@ describe('Employee - paper application', () => {
     await applicationEditPage.fillConnectedDaycarePreferredStartDate(
       now.toLocalDate().format()
     )
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'

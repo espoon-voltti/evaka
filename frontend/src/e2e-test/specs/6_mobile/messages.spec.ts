@@ -9,23 +9,21 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  daycareFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
+  testDaycare,
+  testChild,
+  testChild2,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult2,
+  testAdult,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createMessageAccounts,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup } from '../../generated/api-types'
+import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -44,7 +42,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let citizenPage: Page
@@ -63,8 +60,8 @@ const daycareGroup3Id = uuidv4()
 let daycareGroup: DevDaycareGroup
 let daycareGroup2: DevDaycareGroup
 let daycareGroup3: DevDaycareGroup
-let child: PersonDetail
-let child2: PersonDetail
+let child: DevPerson
+let child2: DevPerson
 
 const employeeId = uuidv4()
 const empFirstName = 'Yrjö'
@@ -97,108 +94,101 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  child = enduserChildFixtureJari
-  child2 = enduserChildFixtureKaarina
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  child = testChild
+  child2 = testChild2
 
-  daycareGroup = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroupId, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup = await Fixture.daycareGroup({
+    id: daycareGroupId,
+    daycareId: testDaycare.id
+  }).save()
 
-  daycareGroup2 = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroup2Id, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup2 = await Fixture.daycareGroup({
+    id: daycareGroup2Id,
+    daycareId: testDaycare.id
+  }).save()
 
-  daycareGroup3 = (
-    await Fixture.daycareGroup()
-      .with({ id: daycareGroup3Id, daycareId: daycareFixture.id })
-      .save()
-  ).data
+  daycareGroup3 = await Fixture.daycareGroup({
+    id: daycareGroup3Id,
+    daycareId: testDaycare.id
+  }).save()
 
-  const employee = (
-    await Fixture.employee()
-      .with({
-        id: employeeId,
-        firstName: empFirstName,
-        lastName: empLastName,
-        email: 'yy@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'UNIT_SUPERVISOR')
-      .save()
-  ).data
-
-  const staff = (
-    await Fixture.employee()
-      .with({
-        firstName: staffFirstName,
-        lastName: staffLastName,
-        email: 'zz@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'STAFF')
-      .withGroupAcl(daycareGroup.id)
-      .withGroupAcl(daycareGroup2.id)
-      .withGroupAcl(daycareGroup3.id)
-      .save()
-  ).data
-
-  const staff2 = (
-    await Fixture.employee()
-      .with({
-        firstName: staff2FirstName,
-        lastName: staff2LastName,
-        email: 'aa@example.com',
-        roles: []
-      })
-      .withDaycareAcl(daycareFixture.id, 'STAFF')
-      .save()
-  ).data
-
-  await Fixture.employeePin().with({ userId: employee.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff.id, pin }).save()
-  await Fixture.employeePin().with({ userId: staff2.id, pin }).save()
-
-  const placementFixture = await Fixture.placement()
-    .with({
-      childId: child.id,
-      unitId: daycareFixture.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({ daycareGroupId: daycareGroup.id })
-    .withPlacement(placementFixture)
+  const employee = await Fixture.employee({
+    id: employeeId,
+    firstName: empFirstName,
+    lastName: empLastName,
+    email: 'yy@example.com',
+    roles: []
+  })
+    .withDaycareAcl(testDaycare.id, 'UNIT_SUPERVISOR')
     .save()
 
-  const placement2Fixture = await Fixture.placement()
-    .with({
-      childId: child2.id,
-      unitId: daycareFixture.id,
-      startDate: mockedDate,
-      endDate: mockedDate
-    })
+  const staff = await Fixture.employee({
+    firstName: staffFirstName,
+    lastName: staffLastName,
+    email: 'zz@example.com',
+    roles: []
+  })
+    .withDaycareAcl(testDaycare.id, 'STAFF')
+    .withGroupAcl(daycareGroup.id)
+    .withGroupAcl(daycareGroup2.id)
+    .withGroupAcl(daycareGroup3.id)
     .save()
-  await Fixture.groupPlacement()
-    .with({ daycareGroupId: daycareGroup2.id })
-    .withPlacement(placement2Fixture)
+
+  const staff2 = await Fixture.employee({
+    firstName: staff2FirstName,
+    lastName: staff2LastName,
+    email: 'aa@example.com',
+    roles: []
+  })
+    .withDaycareAcl(testDaycare.id, 'STAFF')
     .save()
+
+  await Fixture.employeePin({ userId: employee.id, pin }).save()
+  await Fixture.employeePin({ userId: staff.id, pin }).save()
+  await Fixture.employeePin({ userId: staff2.id, pin }).save()
+
+  const placementFixture = await Fixture.placement({
+    childId: child.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixture.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
+
+  const placement2Fixture = await Fixture.placement({
+    childId: child2.id,
+    unitId: testDaycare.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup2.id,
+    daycarePlacementId: placement2Fixture.id,
+    startDate: mockedDate,
+    endDate: mockedDate
+  }).save()
 
   await createMessageAccounts()
   await insertGuardians({
     body: [
       {
         childId: child.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: testAdult.id
       },
       {
         childId: child2.id,
-        guardianId: fixtures.enduserGuardianFixture.id
+        guardianId: testAdult.id
       }
     ]
   })
@@ -217,12 +207,12 @@ beforeEach(async () => {
 
 async function initCitizenPage(mockedTime: HelsinkiDateTime) {
   citizenPage = await Page.open({ mockedTime })
-  await enduserLogin(citizenPage)
+  await enduserLogin(citizenPage, testAdult)
 }
 
 describe('Message editor in child page', () => {
   beforeEach(async () => {
-    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
 
@@ -253,7 +243,7 @@ describe('Message editor in child page', () => {
 
 describe('Messages page', () => {
   beforeEach(async () => {
-    const mobileSignupUrl = await pairMobileDevice(daycareFixture.id)
+    const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
     await page.goto(mobileSignupUrl)
   })
 
@@ -325,7 +315,7 @@ describe('Messages page', () => {
     await waitUntilEqual(() => threadView.getMessageContent(1), replyContent)
     await waitUntilEqual(
       () => threadView.getMessageSender(1),
-      `${daycareFixture.name} - ${daycareGroup.name}`
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
   })
 
@@ -348,43 +338,42 @@ describe('Messages page', () => {
   })
 
   test('Employee sends a message to a group', async () => {
-    const extraChildFixture = await Fixture.person().save()
-    const extraGuardianFixture1 = await Fixture.person()
-      .with({ ssn: '240190-5442' })
-      .save()
-    const extraGuardianFixture2 = await Fixture.person()
-      .with({ ssn: '210390-383J' })
-      .save()
+    const extraChildFixture = await Fixture.person().saveChild()
+    const extraGuardianFixture1 = await Fixture.person({
+      ssn: '240190-5442'
+    }).saveAdult()
+    const extraGuardianFixture2 = await Fixture.person({
+      ssn: '210390-383J'
+    }).saveAdult()
     await insertGuardians({
       body: [
         {
-          childId: extraChildFixture.data.id,
-          guardianId: extraGuardianFixture1.data.id
+          childId: extraChildFixture.id,
+          guardianId: extraGuardianFixture1.id
         },
         {
-          childId: extraChildFixture.data.id,
-          guardianId: extraGuardianFixture2.data.id
+          childId: extraChildFixture.id,
+          guardianId: extraGuardianFixture2.id
         }
       ]
     })
-    await Fixture.child(extraChildFixture.data.id).save()
-    const extraPlacementFixture = await Fixture.placement()
-      .with({
-        childId: extraChildFixture.data.id,
-        unitId: daycareFixture.id,
-        startDate: mockedDate,
-        endDate: mockedDate
-      })
-      .save()
-    await Fixture.groupPlacement()
-      .with({ daycareGroupId: daycareGroup.id })
-      .withPlacement(extraPlacementFixture)
-      .save()
+    const extraPlacementFixture = await Fixture.placement({
+      childId: extraChildFixture.id,
+      unitId: testDaycare.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
+    await Fixture.groupPlacement({
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: extraPlacementFixture.id,
+      startDate: mockedDate,
+      endDate: mockedDate
+    }).save()
 
     await staffStartsNewMessage()
 
     await messageEditor.senderName.assertTextEquals(
-      `${daycareFixture.name} - ${daycareGroup.name}`
+      `${testDaycare.name} - ${daycareGroup.name}`
     )
 
     // Required fields not filled -> send button is disabled
@@ -523,8 +512,12 @@ describe('Messages page', () => {
   })
 
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
+    await Fixture.person(testAdult2).saveAdult({
+      updateMockVtjWithDependants: [testChild]
+    })
+
     // Add child's guardians to block list
-    const admin = (await Fixture.employeeAdmin().save()).data
+    const admin = await Fixture.employee().admin().save()
     const adminPage = await Page.open({
       mockedTime: mockedDateAt10
     })
@@ -535,12 +528,8 @@ describe('Messages page', () => {
 
     const blocklistSection =
       await childInformationPage.openCollapsible('messageBlocklist')
-    await blocklistSection.addParentToBlockList(
-      fixtures.enduserGuardianFixture.id
-    )
-    await blocklistSection.addParentToBlockList(
-      fixtures.enduserChildJariOtherGuardianFixture.id
-    )
+    await blocklistSection.addParentToBlockList(testAdult.id)
+    await blocklistSection.addParentToBlockList(testAdult2.id)
 
     await listPage.selectChild(child.id)
     await childPage.messageEditorLink.click()

@@ -12,15 +12,15 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetailWithDependants } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
@@ -29,7 +29,7 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevEmployee, DevPlacement } from '../../generated/api-types'
+import { DevEmployee, DevPerson, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
   ChildDocumentsSection
 } from '../../pages/employee/child-information'
@@ -42,9 +42,9 @@ let page: Page
 let admin: DevEmployee
 let unitSupervisor: DevEmployee
 let childInformationPage: ChildInformationPage
-let child: PersonDetailWithDependants
-let firstGuardian: PersonDetailWithDependants
-let secondGuardian: PersonDetailWithDependants
+let child: DevPerson
+let firstGuardian: DevPerson
+let secondGuardian: DevPerson
 let templateId: UUID
 let daycarePlacementFixture: DevPlacement
 
@@ -53,17 +53,26 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeAll(async () => {
   await resetServiceState()
 
-  admin = (await Fixture.employeeAdmin().save()).data
+  admin = await Fixture.employee({ firstName: 'Seppo', lastName: 'Sorsa' })
+    .admin()
+    .save()
 
-  const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  child = fixtures.familyWithTwoGuardians.children[0]
-  firstGuardian = fixtures.familyWithTwoGuardians.guardian
-  secondGuardian = fixtures.familyWithTwoGuardians.otherGuardian
+  const unitId = testDaycare.id
+  child = familyWithTwoGuardians.children[0]
+  firstGuardian = familyWithTwoGuardians.guardian
+  secondGuardian = familyWithTwoGuardians.otherGuardian
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(unitId).save()).data
+  unitSupervisor = await Fixture.employee({
+    firstName: 'Essi',
+    lastName: 'Esimies'
+  })
+    .unitSupervisor(unitId)
+    .save()
 
   daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
@@ -73,18 +82,14 @@ beforeAll(async () => {
 
   await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: daycareGroupFixture.id,
-      daycarePlacementId: daycarePlacementFixture.id,
-      startDate: daycarePlacementFixture.startDate,
-      endDate: daycarePlacementFixture.endDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: testDaycareGroup.id,
+    daycarePlacementId: daycarePlacementFixture.id,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
 
-  templateId = await Fixture.vasuTemplate()
-    .with({ ...{} })
-    .saveAndReturnId()
+  templateId = await Fixture.vasuTemplate({ ...{} }).saveAndReturnId()
 
   await insertGuardians({
     body: [
@@ -125,34 +130,31 @@ describe('Child Information - Vasu documents section', () => {
 describe('Child Information - Vasu language', () => {
   let section: ChildDocumentsSection
   beforeEach(async () => {
-    const child = await Fixture.person().save()
-    await Fixture.child(child.data.id).save()
-    const swedishUnit = await Fixture.daycare()
-      .careArea(await Fixture.careArea().save())
-      .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })
-      .save()
+    const child = await Fixture.person().saveChild()
+    const area = await Fixture.careArea().save()
+    const swedishUnit = await Fixture.daycare({
+      areaId: area.id,
+      language: 'sv',
+      enabledPilotFeatures: ['VASU_AND_PEDADOC']
+    }).save()
     const placementDateRange = new FiniteDateRange(
       mockedTime.subMonths(1),
       mockedTime.addMonths(5)
     )
-    await Fixture.placement()
-      .daycare(swedishUnit)
-      .with({
-        childId: child.data.id,
-        startDate: placementDateRange.start,
-        endDate: placementDateRange.end
-      })
-      .save()
-    await Fixture.vasuTemplate()
-      .with({
-        language: 'SV',
-        valid: placementDateRange
-      })
-      .saveAndReturnId()
+    await Fixture.placement({
+      unitId: swedishUnit.id,
+      childId: child.id,
+      startDate: placementDateRange.start,
+      endDate: placementDateRange.end
+    }).save()
+    await Fixture.vasuTemplate({
+      language: 'SV',
+      valid: placementDateRange
+    }).saveAndReturnId()
 
     page = await openPage()
     await employeeLogin(page, admin)
-    await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
+    await page.goto(`${config.employeeUrl}/child-information/${child.id}`)
     childInformationPage = new ChildInformationPage(page)
     section = await childInformationPage.openCollapsible('childDocuments')
   })
@@ -211,8 +213,8 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(
         () => basicInfo.placement(0),
-        `${daycareFixture.name} (${
-          daycareGroupFixture.name
+        `${testDaycare.name} (${
+          testDaycareGroup.name
         }) ${daycarePlacementFixture.startDate.format()} - ${daycarePlacementFixture.endDate.format()}`
       )
       await waitUntilTrue(async () => {

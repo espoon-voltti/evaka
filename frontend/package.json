@@ -18,7 +18,7 @@
     "test:watch": "jest --watchAll src/*-frontend src/lib-*",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
     "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --runInBand src/e2e-test/specs",
-    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --bail 1 --retries=2"
+    "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --retries=2"
   },
   "dependencies": {
     "@evaka/eslint-plugin": "link:eslint-plugin",

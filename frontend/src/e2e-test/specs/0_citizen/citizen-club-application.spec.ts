@@ -6,9 +6,15 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
+  clubTerm2021,
+  Fixture,
+  testAdult,
+  testAdult2,
+  testCareArea,
+  testChild,
+  testChild2,
+  testClub
+} from '../../dev-api/fixtures'
 import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -19,18 +25,24 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
-let fixtures: AreaAndPersonFixtures
 
 const mockedDate = LocalDate.of(2021, 3, 1)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.clubTerm(clubTerm2021).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testClub).save()
+  await Fixture.family({
+    guardian: testAdult,
+    otherGuardian: testAdult2,
+    children: [testChild, testChild2]
+  }).save()
 
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -39,7 +51,7 @@ describe('Citizen club applications', () => {
   test('Sending incomplete club application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'CLUB'
     )
     await editorPage.goToVerification()
@@ -49,7 +61,7 @@ describe('Citizen club applications', () => {
   test('Minimal valid club application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'CLUB'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -64,7 +76,7 @@ describe('Citizen club applications', () => {
   test('Full valid club application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'CLUB'
     )
     const applicationId = editorPage.getNewApplicationId()

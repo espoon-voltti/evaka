@@ -7,10 +7,15 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { applicationFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+  applicationFixture,
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testChild2,
+  testDaycare,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
   createApplications,
@@ -21,14 +26,18 @@ import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  admin = (await Fixture.employeeAdmin().save()).data
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  admin = await Fixture.employee().admin().save()
 })
 
 async function openPage(
@@ -43,23 +52,23 @@ async function openPage(
 describe('Search person', () => {
   test('Special education teacher (VEO) sees person from application only if the application has assistance needed selected', async () => {
     const careArea1 = await Fixture.careArea().save()
-    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
-    const specialEducationTeacher = (
-      await Fixture.employeeSpecialEducationTeacher(daycare1.data.id).save()
-    ).data
+    const daycare1 = await Fixture.daycare({ areaId: careArea1.id }).save()
+    const specialEducationTeacher = await Fixture.employee()
+      .specialEducationTeacher(daycare1.id)
+      .save()
     const preferredStartDate = LocalDate.of(2021, 8, 16)
 
-    const childWithAssistanceNeed = fixtures.enduserChildFixtureJari
-    const childWithoutAssistanceNeed = fixtures.enduserChildFixtureKaarina
+    const childWithAssistanceNeed = testChild
+    const childWithoutAssistanceNeed = testChild2
 
     const appWithAssistanceNeeded = {
       ...applicationFixture(
         childWithAssistanceNeed,
-        fixtures.enduserGuardianFixture,
+        testAdult,
         undefined,
         'DAYCARE',
         null,
-        [daycare1.data.id],
+        [daycare1.id],
         false,
         'WAITING_PLACEMENT',
         preferredStartDate,
@@ -72,11 +81,11 @@ describe('Search person', () => {
     const appWithoutAssistanceNeeded = {
       ...applicationFixture(
         childWithoutAssistanceNeed,
-        fixtures.enduserGuardianFixture,
+        testAdult,
         undefined,
         'DAYCARE',
         null,
-        [daycare1.data.id],
+        [daycare1.id],
         false,
         'WAITING_PLACEMENT',
         preferredStartDate,
@@ -93,7 +102,7 @@ describe('Search person', () => {
     await createApplicationPlacementPlan({
       applicationId: appWithAssistanceNeeded.id,
       body: {
-        unitId: daycare1.data.id,
+        unitId: daycare1.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }
@@ -102,7 +111,7 @@ describe('Search person', () => {
     await createApplicationPlacementPlan({
       applicationId: appWithoutAssistanceNeeded.id,
       body: {
-        unitId: daycare1.data.id,
+        unitId: daycare1.id,
         period: new FiniteDateRange(preferredStartDate, preferredStartDate),
         preschoolDaycarePeriod: null
       }

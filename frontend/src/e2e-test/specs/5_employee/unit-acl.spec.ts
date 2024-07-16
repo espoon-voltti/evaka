@@ -4,8 +4,12 @@
 
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { daycareFixture, Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  testDaycare,
+  Fixture,
+  uuidv4,
+  testCareArea
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -45,13 +49,14 @@ let admin: DevEmployee
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  daycareId = fixtures.daycareFixture.id
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  daycareId = testDaycare.id
 
-  await Fixture.employeeUnitSupervisor(daycareFixture.id).with(esko).save()
-  await Fixture.employee().with(pete).save()
-  await Fixture.employee().with(yrjo).save()
-  admin = (await Fixture.employeeAdmin().save()).data
+  await Fixture.employee(esko).unitSupervisor(testDaycare.id).save()
+  await Fixture.employee(pete).save()
+  await Fixture.employee(yrjo).save()
+  admin = await Fixture.employee().admin().save()
 })
 
 const expectedAclRows = {
@@ -148,9 +153,11 @@ describe('Employee - unit ACL', () => {
       await editModal.saveButton.click()
     }
 
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, esko)
     const unitPage = await UnitPage.openUnit(page, daycareId)
@@ -291,9 +298,11 @@ describe('Employee - unit ACL - temporary employee', () => {
   })
 
   test('Temporary staff can be added and assigned/removed to/from groups', async () => {
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)
@@ -443,9 +452,11 @@ describe('Employee - unit ACL - temporary employee', () => {
   })
 
   test('Temporary staff member can be deleted', async () => {
-    await Fixture.daycareGroup()
-      .with({ id: groupId, daycareId, name: 'Testailijat' })
-      .save()
+    await Fixture.daycareGroup({
+      id: groupId,
+      daycareId,
+      name: 'Testailijat'
+    }).save()
 
     await employeeLogin(page, admin)
     const unitPage = await UnitPage.openUnit(page, daycareId)

@@ -8,10 +8,12 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare
+} from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
@@ -24,42 +26,39 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let personId: UUID
 let incomesSection: IncomeSection
-let fixtures: AreaAndPersonFixtures
 let placementStart: LocalDate
 let placementEnd: LocalDate
 let financeAdminId: UUID
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserGuardianFixture.id
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  personId = testAdult.id
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  financeAdminId = financeAdmin.data.id
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  financeAdminId = financeAdmin.id
 
-  await Fixture.fridgeChild()
-    .with({
-      headOfChild: fixtures.enduserGuardianFixture.id,
-      childId: fixtures.enduserChildFixtureJari.id,
-      startDate: LocalDate.of(2020, 1, 1),
-      endDate: LocalDate.of(2020, 12, 31)
-    })
-    .save()
+  await Fixture.fridgeChild({
+    headOfChild: testAdult.id,
+    childId: testChild.id,
+    startDate: LocalDate.of(2020, 1, 1),
+    endDate: LocalDate.of(2020, 12, 31)
+  }).save()
 
   placementStart = LocalDate.of(2020, 1, 1)
   placementEnd = LocalDate.of(2020, 3, 31)
 
-  await Fixture.placement()
-    .with({
-      childId: fixtures.enduserChildFixtureJari.id,
-      unitId: fixtures.daycareFixture.id,
-      startDate: placementStart,
-      endDate: placementEnd
-    })
-    .save()
+  await Fixture.placement({
+    childId: testChild.id,
+    unitId: testDaycare.id,
+    startDate: placementStart,
+    endDate: placementEnd
+  }).save()
 
   page = await Page.open()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
   await page.goto(config.employeeUrl + '/profile/' + personId)
 
   const guardianInformationPage = new GuardianInformationPage(page)
@@ -243,43 +242,31 @@ describe('Income', () => {
 
   it('Income notifications are shown', async () => {
     const incomeEndDate = placementEnd.subMonths(1)
-    await Fixture.income()
-      .with({
-        personId: personId,
-        validFrom: placementStart,
-        validTo: incomeEndDate,
-        updatedBy: financeAdminId,
-        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
-      })
-      .save()
+    await Fixture.income({
+      personId: personId,
+      validFrom: placementStart,
+      validTo: incomeEndDate,
+      updatedBy: financeAdminId,
+      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'INITIAL_EMAIL',
-        created: incomeEndDate
-          .subWeeks(2)
-          .toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'INITIAL_EMAIL',
+      created: incomeEndDate.subWeeks(2).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'REMINDER_EMAIL',
-        created: incomeEndDate
-          .subWeeks(1)
-          .toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'REMINDER_EMAIL',
+      created: incomeEndDate.subWeeks(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
-    await Fixture.incomeNotification()
-      .with({
-        receiverId: personId,
-        notificationType: 'NEW_CUSTOMER',
-        created: incomeEndDate.subDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
-      })
-      .save()
+    await Fixture.incomeNotification({
+      receiverId: personId,
+      notificationType: 'NEW_CUSTOMER',
+      created: incomeEndDate.subDays(1).toHelsinkiDateTime(LocalTime.of(6, 0))
+    }).save()
 
     await page.reload()
     await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 3)
@@ -297,15 +284,13 @@ describe('Income', () => {
 
   it('Income notification sent title is not shown if none has been sent', async () => {
     const incomeEndDate = placementEnd.subMonths(1)
-    await Fixture.income()
-      .with({
-        personId: personId,
-        validFrom: placementStart,
-        validTo: incomeEndDate,
-        updatedBy: financeAdminId,
-        updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
-      })
-      .save()
+    await Fixture.income({
+      personId: personId,
+      validFrom: placementStart,
+      validTo: incomeEndDate,
+      updatedBy: financeAdminId,
+      updatedAt: placementStart.toHelsinkiDateTime(LocalTime.of(0, 0))
+    }).save()
 
     await page.reload()
     await waitUntilEqual(() => incomesSection.incomeListItems.count(), 1)

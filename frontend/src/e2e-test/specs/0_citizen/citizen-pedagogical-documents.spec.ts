@@ -7,12 +7,12 @@ import LocalDate from 'lib-common/local-date'
 
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   createDaycarePlacementFixture,
   Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -25,7 +25,6 @@ import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagog
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let header: CitizenHeader
 let pedagogicalDocumentsPage: CitizenPedagogicalDocumentsPage
@@ -37,20 +36,18 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
     body: [
-      createDaycarePlacementFixture(
-        uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id
-      )
+      createDaycarePlacementFixture(uuidv4(), testChild.id, testDaycare.id)
     ]
   })
 
   page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(page)
 })
@@ -61,19 +58,15 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(0)
 
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureJari.id,
-          description: 'e2e test description'
-        })
-        .save()
+      const pd = await Fixture.pedagogicalDocument({
+        childId: testChild.id,
+        description: 'e2e test description'
+      }).save()
 
-      const employee = await Fixture.employee()
-        .with({ roles: ['ADMIN'] })
-        .save()
+      const employee = await Fixture.employee({ roles: ['ADMIN'] }).save()
       const attachmentId = await insertPedagogicalDocumentAttachment(
-        pd.data.id,
-        employee.data.id,
+        pd.id,
+        employee.id,
         testFileName,
         testFilePath
       )
@@ -81,7 +74,7 @@ describe('Citizen pedagogical documents', () => {
       await page.reload()
       await header.assertUnreadChildrenCount(1)
 
-      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await header.openChildPage(testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 
@@ -92,21 +85,19 @@ describe('Citizen pedagogical documents', () => {
 
   describe('Pedagogical documents view', () => {
     test('Existing pedagogical document without attachment is shown', async () => {
-      const pd = await Fixture.pedagogicalDocument()
-        .with({
-          childId: fixtures.enduserChildFixtureJari.id,
-          description: 'e2e test description'
-        })
-        .save()
+      const pd = await Fixture.pedagogicalDocument({
+        childId: testChild.id,
+        description: 'e2e test description'
+      }).save()
 
-      await header.openChildPage(fixtures.enduserChildFixtureJari.id)
+      await header.openChildPage(testChild.id)
       const childPage = new CitizenChildPage(page)
       await childPage.openCollapsible('pedagogical-documents')
 
       await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
-        pd.data.id,
+        pd.id,
         LocalDate.todayInSystemTz().format(),
-        pd.data.description
+        pd.description
       )
     })
   })

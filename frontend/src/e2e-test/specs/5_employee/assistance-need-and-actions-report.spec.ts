@@ -8,17 +8,19 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  daycareGroupFixture,
-  EmployeeBuilder,
-  Fixture
+  testDaycareGroup,
+  Fixture,
+  familyWithTwoGuardians,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevEmployee } from '../../generated/api-types'
 import { AssistanceNeedsAndActionsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -26,85 +28,73 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let childId: UUID
 let unitId: UUID
-let admin: EmployeeBuilder
+let admin: DevEmployee
 
 const mockedTime = LocalDate.of(2024, 2, 19)
 
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
-  const placementBuilder = await Fixture.placement()
-    .with({
-      childId,
-      unitId: unitId,
-      startDate: mockedTime,
-      endDate: mockedTime
-    })
-    .save()
+  unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
+  const placement = await Fixture.placement({
+    childId,
+    unitId: unitId,
+    startDate: mockedTime,
+    endDate: mockedTime
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: daycareGroupFixture.id,
-      daycarePlacementId: placementBuilder.data.id,
-      startDate: mockedTime,
-      endDate: mockedTime
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: testDaycareGroup.id,
+    daycarePlacementId: placement.id,
+    startDate: mockedTime,
+    endDate: mockedTime
+  }).save()
 
   page = await Page.open({
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  admin = await Fixture.employeeAdmin().save()
-  await employeeLogin(page, admin.data)
+  admin = await Fixture.employee().admin().save()
+  await employeeLogin(page, admin)
 })
 
 describe('Assistance need and actions report', () => {
   test('Shows assistance needs', async () => {
     const validDuring = new FiniteDateRange(mockedTime, mockedTime)
 
-    await Fixture.daycareAssistance()
-      .with({
-        childId,
-        validDuring
-      })
-      .save()
+    await Fixture.daycareAssistance({
+      childId,
+      validDuring
+    }).save()
 
-    await Fixture.otherAssistanceMeasure()
-      .with({
-        childId,
-        validDuring
-      })
-      .save()
+    await Fixture.otherAssistanceMeasure({
+      childId,
+      validDuring
+    }).save()
 
-    await Fixture.assistanceActionOption()
-      .with({
-        value: 'ASSISTANCE_SERVICE_CHILD'
-      })
-      .save()
+    await Fixture.assistanceActionOption({
+      value: 'ASSISTANCE_SERVICE_CHILD'
+    }).save()
 
-    await Fixture.assistanceAction()
-      .with({
-        childId,
-        updatedBy: admin.data.id,
-        startDate: validDuring.start,
-        endDate: validDuring.end,
-        actions: ['ASSISTANCE_SERVICE_CHILD']
-      })
-      .save()
+    await Fixture.assistanceAction({
+      childId,
+      updatedBy: admin.id,
+      startDate: validDuring.start,
+      endDate: validDuring.end,
+      actions: ['ASSISTANCE_SERVICE_CHILD']
+    }).save()
 
-    await Fixture.assistanceNeedVoucherCoefficient()
-      .with({
-        childId,
-        validityPeriod: new FiniteDateRange(validDuring.start, validDuring.end),
-        coefficient: 1.5
-      })
-      .save()
+    await Fixture.assistanceNeedVoucherCoefficient({
+      childId,
+      validityPeriod: new FiniteDateRange(validDuring.start, validDuring.end),
+      coefficient: 1.5
+    }).save()
 
     await page.goto(
       `${config.employeeUrl}/reports/assistance-needs-and-actions`

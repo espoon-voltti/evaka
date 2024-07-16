@@ -5,17 +5,17 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   applicationFixture,
-  daycareFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testChild,
+  testChild2,
+  testAdult,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createApplications,
   createDefaultServiceNeedOptions,
@@ -24,7 +24,8 @@ import {
 import {
   DevApplicationWithForm,
   DevDaycare,
-  DevEmployee
+  DevEmployee,
+  DevPerson
 } from '../../generated/api-types'
 import {
   ApplicationProcessPage,
@@ -36,8 +37,8 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 const groupId: UUID = uuidv4()
-let child1Fixture: PersonDetail
-let child2Fixture: PersonDetail
+let child1Fixture: DevPerson
+let child2Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
@@ -49,45 +50,44 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  daycare = fixtures.daycareFixture
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  daycare = testDaycare
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  child2Fixture = fixtures.enduserChildFixtureJari
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  child2Fixture = testChild2
   child2DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child2DaycarePlacementId,
-      childId: child2Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child2DaycarePlacementId,
+    childId: child2Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 })
 
 const loadUnitApplicationProcessPage =
@@ -109,56 +109,48 @@ describe('Unit groups - placement plans / proposals', () => {
     const today = LocalDate.todayInSystemTz()
 
     const application1: DevApplicationWithForm = {
-      ...applicationFixture(enduserChildFixtureJari, enduserGuardianFixture),
+      ...applicationFixture(testChild, testAdult),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
     const application2: DevApplicationWithForm = {
-      ...applicationFixture(enduserChildFixtureKaarina, enduserGuardianFixture),
+      ...applicationFixture(testChild2, testAdult),
       id: uuidv4(),
       status: 'WAITING_UNIT_CONFIRMATION'
     }
 
     await createApplications({ body: [application1, application2] })
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application1.id,
-        unitId: daycareFixture.id,
-        periodStart: today,
-        periodEnd: today
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application1.id,
+      unitId: testDaycare.id,
+      periodStart: today,
+      periodEnd: today
+    }).save()
 
-    await Fixture.placementPlan()
-      .with({
-        applicationId: application2.id,
-        unitId: daycareFixture.id,
-        periodStart: today,
-        periodEnd: today
-      })
-      .save()
+    await Fixture.placementPlan({
+      applicationId: application2.id,
+      unitId: testDaycare.id,
+      periodStart: today,
+      periodEnd: today
+    }).save()
 
-    await Fixture.decision()
-      .with({
-        applicationId: application2.id,
-        employeeId: unitSupervisor.id,
-        unitId: daycareFixture.id,
-        startDate: today,
-        endDate: today
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2.id,
+      employeeId: unitSupervisor.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today
+    }).save()
 
     // The second decision is used to ensure that multiple decisions do not create multiple identical proposals (a bug)
-    await Fixture.decision()
-      .with({
-        applicationId: application2.id,
-        employeeId: unitSupervisor.id,
-        unitId: daycareFixture.id,
-        startDate: today.addDays(1),
-        endDate: today.addDays(2)
-      })
-      .save()
+    await Fixture.decision({
+      applicationId: application2.id,
+      employeeId: unitSupervisor.id,
+      unitId: testDaycare.id,
+      startDate: today.addDays(1),
+      endDate: today.addDays(2)
+    }).save()
 
     const applicationProcessPage = await loadUnitApplicationProcessPage()
     await applicationProcessPage.placementProposals.assertPlacementProposalRowCount(

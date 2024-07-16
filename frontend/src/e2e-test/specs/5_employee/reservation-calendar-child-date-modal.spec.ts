@@ -8,7 +8,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
@@ -40,51 +40,46 @@ const setupTestData = async ({
   placementType?: PlacementType
 } = {}) => {
   await createDefaultServiceNeedOptions()
-  await Fixture.preschoolTerm().save()
+  await Fixture.preschoolTerm(preschoolTerm2023).save()
   daycareServiceNeedOptionId = (
-    await Fixture.serviceNeedOption()
-      .with({ validPlacementType: 'DAYCARE' })
-      .save()
-  ).data.id
+    await Fixture.serviceNeedOption({ validPlacementType: 'DAYCARE' }).save()
+  ).id
   const careArea = await Fixture.careArea().save()
   const operationTime = new TimeRange(LocalTime.of(7, 0), LocalTime.of(18, 0))
-  const daycare = await Fixture.daycare()
-    .careArea(careArea)
-    .with({
-      enabledPilotFeatures: ['RESERVATIONS'],
-      operationTimes: [
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        null,
-        null
-      ]
-    })
-    .save()
-  daycareId = daycare.data.id
-  const daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
-  const child = await Fixture.person().save()
-  childId = child.data.id
-  await Fixture.child(child.data.id).save()
-  const placement = await Fixture.placement()
-    .child(child)
-    .daycare(daycare)
-    .with({
-      type: placementType,
-      startDate: today.subMonths(6),
-      endDate: today.addMonths(6)
-    })
-    .save()
-  placementId = placement.data.id
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placement)
-    .save()
-  unitSupervisor = (
-    await Fixture.employeeUnitSupervisor(daycare.data.id).save()
-  ).data
+  const daycare = await Fixture.daycare({
+    areaId: careArea.id,
+    enabledPilotFeatures: ['RESERVATIONS'],
+    operationTimes: [
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      null,
+      null
+    ]
+  }).save()
+  daycareId = daycare.id
+  const daycareGroup = await Fixture.daycareGroup({
+    daycareId: daycare.id
+  }).save()
+  const child = await Fixture.person().saveChild()
+  childId = child.id
+  const placement = await Fixture.placement({
+    childId: child.id,
+    unitId: daycare.id,
+    type: placementType,
+    startDate: today.subMonths(6),
+    endDate: today.addMonths(6)
+  }).save()
+  placementId = placement.id
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate
+  }).save()
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 }
 
 async function navigateToTestView({
@@ -336,27 +331,23 @@ test('Intermittent shift care outside opening times', async () => {
   const date1 = today.addDays(1)
   const date2 = today.addDays(2)
   // Intermittent shift care for date 1
-  await Fixture.serviceNeed()
-    .with({
-      placementId,
-      optionId: daycareServiceNeedOptionId,
-      shiftCare: 'INTERMITTENT',
-      startDate: today.subDays(2),
-      endDate: today.addDays(1),
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId,
+    optionId: daycareServiceNeedOptionId,
+    shiftCare: 'INTERMITTENT',
+    startDate: today.subDays(2),
+    endDate: today.addDays(1),
+    confirmedBy: unitSupervisor.id
+  }).save()
   // No intermittent shift care for date 2
-  await Fixture.serviceNeed()
-    .with({
-      placementId,
-      optionId: daycareServiceNeedOptionId,
-      shiftCare: 'NONE',
-      startDate: today.addDays(2),
-      endDate: today.addDays(2),
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId,
+    optionId: daycareServiceNeedOptionId,
+    shiftCare: 'NONE',
+    startDate: today.addDays(2),
+    endDate: today.addDays(2),
+    confirmedBy: unitSupervisor.id
+  }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
   })
@@ -402,30 +393,26 @@ test('Intermittent shift care on a holiday', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
   const date1 = today.addDays(1)
   const date2 = today.addDays(2)
-  await Fixture.holiday().with({ date: date1 }).save()
-  await Fixture.holiday().with({ date: date2 }).save()
+  await Fixture.holiday({ date: date1 }).save()
+  await Fixture.holiday({ date: date2 }).save()
   // Intermittent shift care for date 1
-  await Fixture.serviceNeed()
-    .with({
-      placementId,
-      optionId: daycareServiceNeedOptionId,
-      shiftCare: 'INTERMITTENT',
-      startDate: today.subDays(2),
-      endDate: today.addDays(1),
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId,
+    optionId: daycareServiceNeedOptionId,
+    shiftCare: 'INTERMITTENT',
+    startDate: today.subDays(2),
+    endDate: today.addDays(1),
+    confirmedBy: unitSupervisor.id
+  }).save()
   // No intermittent shift care for date 2
-  await Fixture.serviceNeed()
-    .with({
-      placementId,
-      optionId: daycareServiceNeedOptionId,
-      shiftCare: 'NONE',
-      startDate: today.addDays(2),
-      endDate: today.addDays(2),
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId,
+    optionId: daycareServiceNeedOptionId,
+    shiftCare: 'NONE',
+    startDate: today.addDays(2),
+    endDate: today.addDays(2),
+    confirmedBy: unitSupervisor.id
+  }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
   })
@@ -460,16 +447,14 @@ test('Intermittent shift care on a holiday', async () => {
 test('Intermittent shift care on a weekend', async () => {
   await setupTestData({ placementType: 'DAYCARE' })
   const date = today.addDays(3) // Sat
-  await Fixture.serviceNeed()
-    .with({
-      placementId,
-      optionId: daycareServiceNeedOptionId,
-      shiftCare: 'INTERMITTENT',
-      startDate: today.subDays(2),
-      endDate: today.addDays(7),
-      confirmedBy: unitSupervisor.id
-    })
-    .save()
+  await Fixture.serviceNeed({
+    placementId,
+    optionId: daycareServiceNeedOptionId,
+    shiftCare: 'INTERMITTENT',
+    startDate: today.subDays(2),
+    endDate: today.addDays(7),
+    confirmedBy: unitSupervisor.id
+  }).save()
   const weekCalendar = await navigateToTestView({
     intermittentShiftCareEnabled: true
   })

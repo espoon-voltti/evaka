@@ -12,22 +12,22 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  daycareFixture,
+  testDaycare,
   feeDecisionsFixture,
   uuidv4,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  Fixture,
+  testAdultRestricted,
+  testAdult,
+  testChild,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createFeeDecisions,
   createVoucherValueDecisions,
   resetServiceState
 } from '../../generated/api-clients'
-import { VoucherValueDecision } from '../../generated/api-types'
+import { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -36,14 +36,13 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let citizenDecisionsPage: CitizenDecisionsPage
-let fixtures: AreaAndPersonFixtures
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 let feeDecision: FeeDecision
 let voucherValueDecision: VoucherValueDecision
-let headOfFamily: PersonDetail
-let partner: PersonDetail
-let child: PersonDetail
+let headOfFamily: DevPerson
+let partner: DevPerson
+let child: DevPerson
 
 const feeDecisionValidDuring = new DateRange(LocalDate.of(2023, 1, 1), null)
 const voucherValueDecisionValidDuring = new DateRange(
@@ -53,16 +52,20 @@ const voucherValueDecisionValidDuring = new DateRange(
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  headOfFamily = fixtures.enduserGuardianFixture
-  partner = fixtures.restrictedPersonFixture
-  child = fixtures.enduserChildFixtureJari
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  headOfFamily = testAdult
+  partner = await Fixture.person(testAdultRestricted).saveAdult({
+    updateMockVtjWithDependants: []
+  })
+  child = testChild
 
   feeDecision = feeDecisionsFixture(
     'SENT',
     headOfFamily,
     child,
-    daycareFixture.id,
+    testDaycare.id,
     partner,
     feeDecisionValidDuring,
     now,
@@ -74,7 +77,7 @@ beforeEach(async () => {
     uuidv4(),
     headOfFamily.id,
     child.id,
-    daycareFixture.id,
+    testDaycare.id,
     null,
     'SENT',
     voucherValueDecisionValidDuring.start,
@@ -85,7 +88,7 @@ beforeEach(async () => {
   await insertVoucherValueDecision(voucherValueDecision)
 })
 
-const parsePersonNames = (persons: PersonDetail[]) =>
+const parsePersonNames = (persons: DevPerson[]) =>
   persons.map((person) => `${person.firstName} ${person.lastName}`)
 
 describe('Citizen finance decisions', () => {
@@ -93,7 +96,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')
@@ -117,7 +120,7 @@ describe('Citizen finance decisions', () => {
     page = await Page.open({ mockedTime: now })
     header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, partner.ssn)
+    await enduserLogin(page, partner)
     await page.goto(config.enduserUrl)
 
     await header.selectTab('decisions')

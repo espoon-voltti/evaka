@@ -5,10 +5,14 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { daycareGroupFixture, Fixture } from '../../dev-api/fixtures'
+  testDaycareGroup,
+  Fixture,
+  testAdult,
+  testChild,
+  testCareArea,
+  testDaycare,
+  preschoolTerm2022
+} from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
   resetServiceState
@@ -20,22 +24,26 @@ import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
-  await Fixture.serviceNeedOption()
-    .with({ validPlacementType: 'PRESCHOOL_DAYCARE', nameFi: 'vaka' })
-    .save()
-  await Fixture.serviceNeedOption()
-    .with({ validPlacementType: 'PRESCHOOL_CLUB', nameFi: 'kerho' })
-    .save()
-  const admin = await Fixture.employeeAdmin().save()
+  await Fixture.preschoolTerm(preschoolTerm2022).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
+  await Fixture.serviceNeedOption({
+    validPlacementType: 'PRESCHOOL_DAYCARE',
+    nameFi: 'vaka'
+  }).save()
+  await Fixture.serviceNeedOption({
+    validPlacementType: 'PRESCHOOL_CLUB',
+    nameFi: 'kerho'
+  }).save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({
     mockedTime: now,
@@ -47,12 +55,10 @@ beforeEach(async () => {
       }
     }
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   childInformationPage = new ChildInformationPage(page)
-  await childInformationPage.navigateToChild(
-    fixtures.enduserChildFixtureJari.id
-  )
+  await childInformationPage.navigateToChild(testChild.id)
 
   const applications =
     await childInformationPage.openCollapsible('applications')
@@ -71,7 +77,7 @@ describe('Employee - paper application', () => {
     )
     await applicationEditPage.selectPreschoolPlacementType('PRESCHOOL_DAYCARE')
     await applicationEditPage.selectPreschoolServiceNeedOption('vaka')
-    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
       'email@evaka.test'

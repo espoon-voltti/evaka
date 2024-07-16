@@ -6,14 +6,16 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   applicationFixture,
-  daycareFixture,
-  enduserGuardianFixture,
-  uuidv4
+  testDaycare,
+  testAdult,
+  uuidv4,
+  Fixture,
+  testAdult2,
+  testChild,
+  testChild2,
+  testChildRestricted,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,7 +37,6 @@ import { enduserLogin } from '../../utils/user'
 let page: Page
 let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
-let fixtures: AreaAndPersonFixtures
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
@@ -44,10 +45,18 @@ const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2, testChildRestricted]
+  }).save()
+  await Fixture.person(testAdult2).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
   page = await Page.open({ mockedTime: mockedNow })
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
 })
@@ -56,7 +65,7 @@ describe('Citizen daycare applications', () => {
   test('Sending incomplete daycare application gives validation error', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     await editorPage.goToVerification()
@@ -69,7 +78,7 @@ describe('Citizen daycare applications', () => {
     const section = personalDetailsPage.personalDetailsSection
     await section.editPersonalData(
       {
-        preferredName: enduserGuardianFixture.firstName.split(' ')[1],
+        preferredName: testAdult.firstName.split(' ')[1],
         phone: '123123123',
         backupPhone: '456456',
         email: null // This sets the no email flag and email to ''
@@ -79,7 +88,7 @@ describe('Citizen daycare applications', () => {
 
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     await editorPage.goToVerification()
@@ -90,11 +99,11 @@ describe('Citizen daycare applications', () => {
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
     await setPersonEmail({
-      body: { personId: enduserGuardianFixture.id, email: null }
+      body: { personId: testAdult.id, email: null }
     })
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     await editorPage.goToVerification()
@@ -106,7 +115,7 @@ describe('Citizen daycare applications', () => {
   test('Minimal valid daycare application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -119,15 +128,13 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication({ applicationId })
-    applicationForm.validateResult(application, [
-      fixtures.enduserChildFixtureKaarina
-    ])
+    applicationForm.validateResult(application, [testChild2])
   })
 
   test('Full valid daycare application can be sent', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -140,19 +147,17 @@ describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication({ applicationId })
-    applicationForm.validateResult(application, [
-      fixtures.enduserChildFixtureKaarina
-    ])
+    applicationForm.validateResult(application, [testChild2])
   })
 
   test('Notification on duplicate application is visible', async () => {
     const application = applicationFixture(
-      fixtures.enduserChildFixtureJari,
-      fixtures.enduserGuardianFixture,
+      testChild,
+      testAdult,
       undefined,
       'DAYCARE',
       null,
-      [fixtures.daycareFixture.id],
+      [testDaycare.id],
       true
     )
     await createApplications({ body: [application] })
@@ -164,7 +169,7 @@ describe('Citizen daycare applications', () => {
 
     await header.selectTab('applications')
     await applicationsPage.assertDuplicateWarningIsShown(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
   })
@@ -175,8 +180,8 @@ describe('Citizen daycare applications', () => {
         {
           id: uuidv4(),
           type: 'DAYCARE',
-          childId: fixtures.enduserChildFixtureJari.id,
-          unitId: fixtures.daycareFixture.id,
+          childId: testChild.id,
+          unitId: testDaycare.id,
           startDate: mockedDate.subYears(1),
           endDate: mockedDate.addYears(1),
           placeGuarantee: false,
@@ -188,7 +193,7 @@ describe('Citizen daycare applications', () => {
 
     await header.selectTab('applications')
     await applicationsPage.assertTransferNotificationIsShown(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
   })
@@ -196,7 +201,7 @@ describe('Citizen daycare applications', () => {
   test('A warning is shown if preferred start date is very soon', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
 
@@ -212,7 +217,7 @@ describe('Citizen daycare applications', () => {
   test('A validation error message is shown if preferred start date is not valid', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
 
@@ -226,7 +231,7 @@ describe('Citizen daycare applications', () => {
   test('Citizen cannot move preferred start date before a previously selected date', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -245,7 +250,7 @@ describe('Citizen daycare applications', () => {
   test('Previously selected preferred units exists', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -258,13 +263,13 @@ describe('Citizen daycare applications', () => {
     await editorPage.modalOkBtn.click()
     await page.reload()
     await applicationsPage.editApplication(applicationId)
-    await editorPage.assertSelectedPreferredUnits([daycareFixture.id])
+    await editorPage.assertSelectedPreferredUnits([testDaycare.id])
   })
 
   test('Application can be made for restricted child', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixturePorriHatterRestricted.id,
+      testChildRestricted.id,
       'DAYCARE'
     )
     await editorPage.fillData(minimalDaycareForm().form)
@@ -276,7 +281,7 @@ describe('Citizen daycare applications', () => {
   test('Urgent application attachment can be uploaded and downloaded by citizen', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixturePorriHatterRestricted.id,
+      testChildRestricted.id,
       'DAYCARE'
     )
     await editorPage.fillData(minimalDaycareForm().form)
@@ -289,7 +294,7 @@ describe('Citizen daycare applications', () => {
   test('Other guardian can see an application after it has been sent, and cannot see person details', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
@@ -304,10 +309,7 @@ describe('Citizen daycare applications', () => {
     const otherGuardianPage = await Page.open({
       mockedTime: mockedNow
     })
-    await enduserLogin(
-      otherGuardianPage,
-      fixtures.enduserChildJariOtherGuardianFixture.ssn
-    )
+    await enduserLogin(otherGuardianPage, testAdult2)
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)
     await applications.assertApplicationExists(applicationId)
@@ -322,7 +324,7 @@ describe('Citizen daycare applications', () => {
   test('Application can be saved as draft', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
-      fixtures.enduserChildFixtureJari.id,
+      testChild.id,
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()

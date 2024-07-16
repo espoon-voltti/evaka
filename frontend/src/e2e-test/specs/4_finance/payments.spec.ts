@@ -19,21 +19,24 @@ let paymentsPage: PaymentsPage
 
 beforeEach(async () => {
   await resetServiceState()
-  const { data: unit } = await Fixture.daycare()
-    .careArea(await Fixture.careArea().save())
-    .with({
-      businessId: 'businessId',
-      providerId: 'providerId',
-      iban: 'iban'
-    })
-    .save()
+  const area = await Fixture.careArea().save()
+  const unit = await Fixture.daycare({
+    areaId: area.id,
+    businessId: 'businessId',
+    providerId: 'providerId',
+    iban: 'iban'
+  }).save()
 
-  await Fixture.payment().with({ unitId: unit.id, amount: 10000 }).save()
+  await Fixture.payment({
+    unitId: unit.id,
+    unitName: unit.name,
+    amount: 10000
+  }).save()
 
   page = await Page.open({})
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  await employeeLogin(page, financeAdmin.data)
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)

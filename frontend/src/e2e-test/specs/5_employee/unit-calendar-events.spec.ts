@@ -7,19 +7,19 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
+  testCareArea2,
+  testDaycare2,
+  familyWithRestrictedDetailsGuardian,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee } from '../../generated/api-types'
+import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
 import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
@@ -29,8 +29,8 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
-let child1Fixture: PersonDetail
-let child2Fixture: PersonDetail
+let child1Fixture: DevPerson
+let child2Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
@@ -47,102 +47,85 @@ const eventTimeId = uuidv4()
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  daycare = (
-    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
-  ).data
+  await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  daycare = await Fixture.daycare({
+    ...testDaycare2,
+    areaId: careArea.id
+  }).save()
 
-  unitSupervisor = (await Fixture.employeeUnitSupervisor(daycare.id).save())
-    .data
+  unitSupervisor = await Fixture.employee().unitSupervisor(daycare.id).save()
 
   await createDefaultServiceNeedOptions()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId,
-      daycareId: daycare.id,
-      name: 'Testailijat'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId,
+    daycareId: daycare.id,
+    name: 'Testailijat'
+  }).save()
 
-  await Fixture.daycareGroup()
-    .with({
-      id: groupId2,
-      daycareId: daycare.id,
-      name: 'Testailijat 2'
-    })
-    .save()
+  await Fixture.daycareGroup({
+    id: groupId2,
+    daycareId: daycare.id,
+    name: 'Testailijat 2'
+  }).save()
 
-  child1Fixture = fixtures.familyWithTwoGuardians.children[0]
-  child2Fixture = fixtures.familyWithRestrictedDetailsGuardian.children[0]
+  child1Fixture = familyWithTwoGuardians.children[0]
+  child2Fixture = familyWithRestrictedDetailsGuardian.children[0]
 
   child1DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child1DaycarePlacementId,
-      childId: child1Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child1DaycarePlacementId,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: groupId,
-      daycarePlacementId: child1DaycarePlacementId,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child1DaycarePlacementId,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
   const child2DaycarePlacementId = uuidv4()
-  await Fixture.placement()
-    .with({
-      id: child2DaycarePlacementId,
-      childId: child2Fixture.id,
-      unitId: daycare.id,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.placement({
+    id: child2DaycarePlacementId,
+    childId: child2Fixture.id,
+    unitId: daycare.id,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: groupId,
-      daycarePlacementId: child2DaycarePlacementId,
-      startDate: placementStartDate,
-      endDate: placementEndDate
-    })
-    .save()
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child2DaycarePlacementId,
+    startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
 
-  await Fixture.calendarEvent()
-    .with({
-      id: testSurveyId,
-      title: 'Survey title',
-      description: 'Survey description',
-      period: new FiniteDateRange(mockedToday, mockedToday),
-      eventType: 'DISCUSSION_SURVEY'
-    })
-    .save()
+  await Fixture.calendarEvent({
+    id: testSurveyId,
+    title: 'Survey title',
+    description: 'Survey description',
+    period: new FiniteDateRange(mockedToday, mockedToday),
+    eventType: 'DISCUSSION_SURVEY'
+  }).save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: testSurveyId,
-      unitId: daycare.id,
-      groupId: groupId
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: testSurveyId,
+    unitId: daycare.id,
+    groupId: groupId
+  }).save()
 
-  await Fixture.calendarEventTime()
-    .with({
-      id: eventTimeId,
-      calendarEventId: testSurveyId,
-      date: mockedToday,
-      modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN)
-    })
-    .save()
+  await Fixture.calendarEventTime({
+    id: eventTimeId,
+    calendarEventId: testSurveyId,
+    date: mockedToday,
+    modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN)
+  }).save()
 
   page = await Page.open({
     employeeCustomizations: {

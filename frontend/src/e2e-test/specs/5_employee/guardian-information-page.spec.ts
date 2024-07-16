@@ -5,22 +5,19 @@
 import LocalDate from 'lib-common/local-date'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   applicationFixture,
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   decisionFixture,
-  enduserChildFixtureJari,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testChild,
+  testChild2,
+  testAdult,
   familyWithTwoGuardians,
   Fixture,
   invoiceFixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createApplications,
@@ -35,31 +32,33 @@ import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
-    fixtures.enduserChildFixtureJari.id,
-    daycareFixture.id
+    testChild.id,
+    testDaycare.id
   )
-  const application = applicationFixture(
-    enduserChildFixtureJari,
-    enduserGuardianFixture
-  )
+  const application = applicationFixture(testChild, testAdult)
 
   const application2 = {
     ...applicationFixture(
-      enduserChildFixtureKaarina,
+      testChild2,
       familyWithTwoGuardians.guardian,
-      enduserGuardianFixture
+      testAdult
     ),
     id: uuidv4()
   }
@@ -71,37 +70,35 @@ beforeEach(async () => {
     body: [
       {
         ...decisionFixture(application.id, startDate, startDate),
-        employeeId: admin.data.id
+        employeeId: admin.id
       },
       {
         ...decisionFixture(application2.id, startDate, startDate),
-        employeeId: admin.data.id,
+        employeeId: admin.id,
         id: uuidv4()
       }
     ]
   })
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 })
 
 describe('Employee - Guardian Information', () => {
   test('guardian information is shown', async () => {
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const personInfoSection = guardianPage.getCollapsible('personInfo')
     await personInfoSection.assertPersonInfo(
-      enduserGuardianFixture.lastName,
-      enduserGuardianFixture.firstName,
-      enduserGuardianFixture.ssn ?? ''
+      testAdult.lastName,
+      testAdult.firstName,
+      testAdult.ssn ?? ''
     )
 
-    const expectedChildName = `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`
+    const expectedChildName = `${testChild.lastName} ${testChild.firstName}`
     const dependantsSection = await guardianPage.openCollapsible('dependants')
-    await dependantsSection.assertContainsDependantChild(
-      enduserChildFixtureJari.id
-    )
+    await dependantsSection.assertContainsDependantChild(testChild.id)
 
     const applicationsSection =
       await guardianPage.openCollapsible('applications')
@@ -109,7 +106,7 @@ describe('Employee - Guardian Information', () => {
     await applicationsSection.assertApplicationSummary(
       0,
       expectedChildName,
-      daycareFixture.name
+      testDaycare.name
     )
 
     const decisionsSection = await guardianPage.openCollapsible('decisions')
@@ -117,14 +114,14 @@ describe('Employee - Guardian Information', () => {
     await decisionsSection.assertDecision(
       0,
       expectedChildName,
-      daycareFixture.name,
+      testDaycare.name,
       'Odottaa vastausta'
     )
 
     await decisionsSection.assertDecision(
       1,
-      `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`,
-      daycareFixture.name,
+      `${testChild2.lastName} ${testChild2.firstName}`,
+      testDaycare.name,
       'Odottaa vastausta'
     )
   })
@@ -133,10 +130,10 @@ describe('Employee - Guardian Information', () => {
     await createInvoices({
       body: [
         invoiceFixture(
-          fixtures.enduserGuardianFixture.id,
-          fixtures.enduserChildFixtureJari.id,
-          fixtures.careAreaFixture.id,
-          fixtures.daycareFixture.id,
+          testAdult.id,
+          testChild.id,
+          testCareArea.id,
+          testDaycare.id,
           'DRAFT',
           LocalDate.of(2020, 1, 1),
           LocalDate.of(2020, 1, 31)
@@ -145,7 +142,7 @@ describe('Employee - Guardian Information', () => {
     })
 
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)
@@ -153,23 +150,21 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoice correction can be created and deleted', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        headOfChild: fixtures.enduserGuardianFixture.id,
-        childId: fixtures.enduserChildFixtureJari.id,
-        startDate: LocalDate.of(2020, 1, 1),
-        endDate: LocalDate.of(2020, 12, 31)
-      })
-      .save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    }).save()
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
     const newRow = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await newRow.productSelect.selectOption('DAYCARE_DISCOUNT')
     await newRow.description.fill('Virheen korjaus')
-    await newRow.unitSelect.fillAndSelectFirst(daycareFixture.name)
+    await newRow.unitSelect.fillAndSelectFirst(testDaycare.name)
     await newRow.startDate.fill('01.01.2020')
     await newRow.endDate.fill('05.01.2020')
     await newRow.amount.fill('5')
@@ -184,7 +179,7 @@ describe('Employee - Guardian Information', () => {
     const row = invoiceCorrectionsSection.lastRow()
     await row.productSelect.assertTextEquals('Alennus (maksup.)')
     await row.description.assertTextEquals('Virheen korjaus')
-    await row.unitSelect.assertTextEquals(daycareFixture.name)
+    await row.unitSelect.assertTextEquals(testDaycare.name)
     await row.period.assertTextEquals('01.01.2020 - 05.01.2020')
     await row.amount.assertTextEquals('5')
     await row.unitPrice.assertTextEquals('12 €')
@@ -198,29 +193,27 @@ describe('Employee - Guardian Information', () => {
   })
 
   test('Invoice corrections show only units with cost center', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        headOfChild: fixtures.enduserGuardianFixture.id,
-        childId: fixtures.enduserChildFixtureJari.id,
-        startDate: LocalDate.of(2020, 1, 1),
-        endDate: LocalDate.of(2020, 12, 31)
-      })
-      .save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: LocalDate.of(2020, 1, 1),
+      endDate: LocalDate.of(2020, 12, 31)
+    }).save()
 
     const guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
     await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
     let row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
-    await row.clickAndAssertUnitVisibility(daycareFixture.name, true)
+    await row.clickAndAssertUnitVisibility(testDaycare.name, true)
 
-    await deleteDaycareCostCenter({ daycareId: daycareFixture.id })
-    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await deleteDaycareCostCenter({ daycareId: testDaycare.id })
+    await guardianPage.navigateToGuardian(testAdult.id)
     await guardianPage.openCollapsible('invoiceCorrections')
     await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
     row = await invoiceCorrectionsSection.addNewInvoiceCorrection()
-    await row.clickAndAssertUnitVisibility(daycareFixture.name, false)
+    await row.clickAndAssertUnitVisibility(testDaycare.name, false)
   })
 })

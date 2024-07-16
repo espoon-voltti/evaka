@@ -7,17 +7,17 @@ import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { insertPersonFixture } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  adultFixtureWihtoutSSN,
   createDaycarePlacementFixture,
+  familyWithRestrictedDetailsGuardian,
   feeDecisionsFixture,
   Fixture,
   invoiceFixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testChild2,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
 import {
@@ -26,6 +26,7 @@ import {
   createInvoices,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -37,28 +38,40 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 let financePage: FinancePage
 let invoicesPage: InvoicesPage
-let fixtures: AreaAndPersonFixtures
 let feeDecisionFixture: FeeDecision
-const adultWithoutSSN = adultFixtureWihtoutSSN
+let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  await insertPersonFixture(adultWithoutSSN)
-  await Fixture.parentship()
-    .with({
-      childId: fixtures.enduserChildFixtureKaarina.id,
-      headOfChildId: fixtures.enduserGuardianFixture.id,
-      startDate: fixtures.enduserChildFixtureKaarina.dateOfBirth,
-      endDate: LocalDate.of(2099, 1, 1)
-    })
-    .save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  await Fixture.family(familyWithRestrictedDetailsGuardian).save()
+  adultWithoutSSN = await Fixture.person({
+    id: 'a6cf0ec0-4573-4816-be30-6b87fd943817',
+    firstName: 'Aikuinen',
+    lastName: 'Hetuton',
+    ssn: null,
+    dateOfBirth: LocalDate.of(1980, 1, 1),
+    streetAddress: 'Kamreerintie 2',
+    postalCode: '02770',
+    postOffice: 'Espoo'
+  }).saveAdult()
+  await Fixture.parentship({
+    childId: testChild2.id,
+    headOfChildId: testAdult.id,
+    startDate: testChild2.dateOfBirth,
+    endDate: LocalDate.of(2099, 1, 1)
+  }).save()
 
   feeDecisionFixture = feeDecisionsFixture(
     'SENT',
-    fixtures.enduserGuardianFixture,
-    fixtures.enduserChildFixtureKaarina,
-    fixtures.daycareFixture.id,
+    testAdult,
+    testChild2,
+    testDaycare.id,
     null,
     new DateRange(
       LocalDate.todayInSystemTz().subMonths(1).withDate(1),
@@ -70,8 +83,8 @@ beforeEach(async () => {
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureKaarina.id,
-        fixtures.daycareFixture.id,
+        testChild2.id,
+        testDaycare.id,
         feeDecisionFixture.validDuring.start,
         feeDecisionFixture.validDuring.end ?? undefined
       )
@@ -82,8 +95,8 @@ beforeEach(async () => {
 
   page = await Page.open({ acceptDownloads: true })
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
-  await employeeLogin(page, financeAdmin.data)
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
+  await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
   const nav = new EmployeeNav(page)
@@ -103,7 +116,7 @@ describe('Invoices', () => {
     await invoicesPage.createInvoiceDrafts()
     await invoicesPage.openFirstInvoice()
     await invoicesPage.assertInvoiceHeadOfFamily(
-      `${fixtures.enduserGuardianFixture.firstName} ${fixtures.enduserGuardianFixture.lastName}`
+      `${testAdult.firstName} ${testAdult.lastName}`
     )
     await invoicesPage.navigateBackToInvoices()
   })
@@ -114,7 +127,7 @@ describe('Invoices', () => {
     await invoicesPage.assertInvoiceRowCount(1)
     await invoicesPage.addNewInvoiceRow(
       'DAYCARE_INCREASE',
-      fixtures.daycareFixture.name,
+      testDaycare.name,
       10,
       100
     )
@@ -138,17 +151,17 @@ describe('Invoices', () => {
     await createInvoices({
       body: [
         invoiceFixture(
-          fixtures.enduserGuardianFixture.id,
-          fixtures.enduserChildFixtureJari.id,
-          fixtures.careAreaFixture.id,
-          fixtures.daycareFixture.id,
+          testAdult.id,
+          testChild.id,
+          testCareArea.id,
+          testDaycare.id,
           'DRAFT'
         ),
         invoiceFixture(
-          fixtures.familyWithRestrictedDetailsGuardian.guardian.id,
-          fixtures.familyWithRestrictedDetailsGuardian.children[0].id,
-          fixtures.careAreaFixture.id,
-          fixtures.daycareFixture.id,
+          familyWithRestrictedDetailsGuardian.guardian.id,
+          familyWithRestrictedDetailsGuardian.children[0].id,
+          testCareArea.id,
+          testDaycare.id,
           'DRAFT'
         )
       ]
@@ -170,15 +183,15 @@ describe('Invoices', () => {
       body: [
         invoiceFixture(
           adultWithoutSSN.id,
-          fixtures.enduserChildFixtureJari.id,
-          fixtures.careAreaFixture.id,
-          fixtures.daycareFixture.id,
+          testChild.id,
+          testCareArea.id,
+          testDaycare.id,
           'DRAFT'
         )
       ]
     })
 
-    await invoicesPage.freeTextFilter(adultFixtureWihtoutSSN.firstName)
+    await invoicesPage.freeTextFilter(adultWithoutSSN.firstName)
     await invoicesPage.assertInvoiceCount(1)
     await invoicesPage.toggleAllInvoices(true)
     await invoicesPage.sendInvoices()

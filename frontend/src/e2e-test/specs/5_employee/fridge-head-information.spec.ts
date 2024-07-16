@@ -7,22 +7,22 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import { insertChildFixture, runPendingAsyncJobs } from '../../dev-api'
+import { runPendingAsyncJobs } from '../../dev-api'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
+  familyWithTwoGuardians,
   Fixture,
-  personFixtureChildZeroYearOld,
+  testAdultRestricted,
+  testCareArea,
+  testChildZeroYearOld,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -32,64 +32,71 @@ let page: Page
 let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage
 
-let fixtures: AreaAndPersonFixtures
-let regularPerson: PersonDetail
-let fridgePartner: PersonDetail
-let child: PersonDetail
+let regularPerson: DevPerson
+let fridgePartner: DevPerson
+let child: DevPerson
 
 const mockToday = LocalDate.of(2020, 1, 1)
-const childZeroYo: PersonDetail = {
-  ...personFixtureChildZeroYearOld,
+const childZeroYo = Fixture.person({
+  ...testChildZeroYearOld,
   dateOfBirth: mockToday.subWeeks(9),
   firstName: 'Vauva',
   id: '023c3d55-3bd5-494b-8996-60a3643fe94b'
-}
+}).data
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await Fixture.person(testAdultRestricted).saveAdult({
+    updateMockVtjWithDependants: []
+  })
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
-  regularPerson = fixtures.familyWithTwoGuardians.guardian
-  fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
-  child = fixtures.familyWithTwoGuardians.children[0]
-  await insertChildFixture(childZeroYo)
-  await Fixture.feeThresholds()
-    .with({
-      validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
-      minIncomeThreshold2: 210200,
-      minIncomeThreshold3: 271300,
-      minIncomeThreshold4: 308000,
-      minIncomeThreshold5: 344700,
-      minIncomeThreshold6: 381300,
-      maxIncomeThreshold2: 479900,
-      maxIncomeThreshold3: 541000,
-      maxIncomeThreshold4: 577700,
-      maxIncomeThreshold5: 614400,
-      maxIncomeThreshold6: 651000,
-      incomeMultiplier2: 0.107,
-      incomeMultiplier3: 0.107,
-      incomeMultiplier4: 0.107,
-      incomeMultiplier5: 0.107,
-      incomeMultiplier6: 0.107,
-      incomeThresholdIncrease6Plus: 14200,
-      siblingDiscount2: 0.5,
-      siblingDiscount2Plus: 0.8,
-      minFee: 2700,
-      maxFee: 28900,
-      temporaryFee: 2800,
-      temporaryFeePartDay: 1500,
-      temporaryFeeSibling: 1500,
-      temporaryFeeSiblingPartDay: 800
-    })
-    .save()
+  regularPerson = familyWithTwoGuardians.guardian
+  fridgePartner = familyWithTwoGuardians.otherGuardian
+  child = familyWithTwoGuardians.children[0]
+  await Fixture.person(childZeroYo).saveChild()
+  await Fixture.feeThresholds({
+    validDuring: new DateRange(LocalDate.of(2020, 1, 1), null),
+    minIncomeThreshold2: 210200,
+    minIncomeThreshold3: 271300,
+    minIncomeThreshold4: 308000,
+    minIncomeThreshold5: 344700,
+    minIncomeThreshold6: 381300,
+    maxIncomeThreshold2: 479900,
+    maxIncomeThreshold3: 541000,
+    maxIncomeThreshold4: 577700,
+    maxIncomeThreshold5: 614400,
+    maxIncomeThreshold6: 651000,
+    incomeMultiplier2: 0.107,
+    incomeMultiplier3: 0.107,
+    incomeMultiplier4: 0.107,
+    incomeMultiplier5: 0.107,
+    incomeMultiplier6: 0.107,
+    incomeThresholdIncrease6Plus: 14200,
+    siblingDiscount2: 0.5,
+    siblingDiscount2Plus: 0.8,
+    minFee: 2700,
+    maxFee: 28900,
+    temporaryFee: 2800,
+    temporaryFeePartDay: 1500,
+    temporaryFeeSibling: 1500,
+    temporaryFeeSiblingPartDay: 800
+  }).save()
 
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee({
+    firstName: 'Seppo',
+    lastName: 'Sorsa'
+  })
+    .admin()
+    .save()
 
   page = await Page.open({
     mockedTime: mockToday.toHelsinkiDateTime(LocalTime.of(12, 0))
   })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   guardianInformation = new GuardianInformationPage(page)
   childInformation = new ChildInformationPage(page)
@@ -97,9 +104,7 @@ beforeEach(async () => {
 
 describe('Employee - Head of family details', () => {
   test('guardian has restriction details enabled', async () => {
-    await guardianInformation.navigateToGuardian(
-      fixtures.restrictedPersonFixture.id
-    )
+    await guardianInformation.navigateToGuardian(testAdultRestricted.id)
     await guardianInformation.assertRestrictedDetails(true)
   })
 
@@ -132,7 +137,7 @@ describe('Employee - Head of family details', () => {
     await childInformation.navigateToChild(child.id)
     const placements = await childInformation.openCollapsible('placements')
     await placements.createNewPlacement({
-      unitName: fixtures.daycareFixture.name,
+      unitName: testDaycare.name,
       startDate: '01.01.2020',
       endDate: '31.07.2020'
     })
@@ -183,55 +188,49 @@ describe('Employee - Head of family details', () => {
   })
 
   test('Manually added income is shown in family overview', async () => {
-    await Fixture.fridgeChild()
-      .with({
-        id: uuidv4(),
-        childId: child.id,
-        headOfChild: regularPerson.id,
-        startDate: mockToday,
-        endDate: mockToday
-      })
-      .save()
+    await Fixture.fridgeChild({
+      id: uuidv4(),
+      childId: child.id,
+      headOfChild: regularPerson.id,
+      startDate: mockToday,
+      endDate: mockToday
+    }).save()
 
     const totalIncome = 100000
     const employee = await Fixture.employee().save()
-    await Fixture.income()
-      .with({
-        personId: regularPerson.id,
-        effect: 'INCOME',
-        validFrom: mockToday,
-        validTo: mockToday.addYears(1),
-        data: {
-          MAIN_INCOME: {
-            multiplier: 1,
-            amount: totalIncome,
-            monthlyAmount: totalIncome,
-            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
-          }
-        },
-        updatedBy: employee.data.id
-      })
-      .save()
+    await Fixture.income({
+      personId: regularPerson.id,
+      effect: 'INCOME',
+      validFrom: mockToday,
+      validTo: mockToday.addYears(1),
+      data: {
+        MAIN_INCOME: {
+          multiplier: 1,
+          amount: totalIncome,
+          monthlyAmount: totalIncome,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      updatedBy: employee.id
+    }).save()
 
     const totalChildIncome = 1234
 
-    await Fixture.income()
-      .with({
-        personId: child.id,
-        effect: 'INCOME',
-        validFrom: mockToday,
-        validTo: mockToday.addYears(1),
-        data: {
-          MAIN_INCOME: {
-            multiplier: 1,
-            amount: totalChildIncome,
-            monthlyAmount: totalChildIncome,
-            coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
-          }
-        },
-        updatedBy: employee.data.id
-      })
-      .save()
+    await Fixture.income({
+      personId: child.id,
+      effect: 'INCOME',
+      validFrom: mockToday,
+      validTo: mockToday.addYears(1),
+      data: {
+        MAIN_INCOME: {
+          multiplier: 1,
+          amount: totalChildIncome,
+          monthlyAmount: totalChildIncome,
+          coefficient: 'MONTHLY_NO_HOLIDAY_BONUS'
+        }
+      },
+      updatedBy: employee.id
+    }).save()
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const familyOverview =

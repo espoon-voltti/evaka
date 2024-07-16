@@ -19,10 +19,10 @@ let personSearchPage: PersonSearchPage
 
 beforeEach(async () => {
   await resetServiceState()
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
   await page.goto(`${config.employeeUrl}/search`)
   personSearchPage = new PersonSearchPage(page)
 })

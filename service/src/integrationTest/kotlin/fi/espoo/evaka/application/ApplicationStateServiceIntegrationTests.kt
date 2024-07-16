@@ -2057,15 +2057,15 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals(120, metadata.process.archiveDurationMonths)
         assertEquals(4, metadata.process.history.size)
         assertEquals(ArchivedProcessState.INITIAL, metadata.process.history[0].state)
-        assertEquals(guardian.evakaUserId, metadata.process.history[0].enteredBy.id)
+        assertEquals(guardian.evakaUserId(), metadata.process.history[0].enteredBy.id)
         assertEquals(ArchivedProcessState.PREPARATION, metadata.process.history[1].state)
         assertEquals(serviceWorker.evakaUserId, metadata.process.history[1].enteredBy.id)
         assertEquals(ArchivedProcessState.DECIDING, metadata.process.history[2].state)
         assertEquals(serviceWorker.evakaUserId, metadata.process.history[2].enteredBy.id)
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
-        assertEquals(guardian.evakaUserId, metadata.process.history[3].enteredBy.id)
+        assertEquals(guardian.evakaUserId(), metadata.process.history[3].enteredBy.id)
         assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
-        assertEquals(guardian.evakaUserId, metadata.primaryDocument.createdBy?.id)
+        assertEquals(guardian.evakaUserId(), metadata.primaryDocument.createdBy?.id)
         assertEquals(
             HelsinkiDateTime.of(clock.today().atStartOfDay()),
             metadata.primaryDocument.createdAt

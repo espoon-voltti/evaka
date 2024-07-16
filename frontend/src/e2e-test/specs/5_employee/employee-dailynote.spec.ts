@@ -5,71 +5,71 @@
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
-  DaycareBuilder,
-  DaycareGroupBuilder,
-  Fixture
+  Fixture,
+  testAdult,
+  testChild,
+  testChild2
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   postChildDailyNote,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-let fixtures: AreaAndPersonFixtures
 let page: Page
-let daycare: DaycareBuilder
-let daycareGroup: DaycareGroupBuilder
+let daycare: DevDaycare
+let daycareGroup: DevDaycareGroup
 let unitPage: UnitPage
 
 beforeEach(async () => {
   await resetServiceState()
-  fixtures = await initializeAreaAndPersonData()
-  const admin = await Fixture.employeeAdmin().save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
+  const admin = await Fixture.employee().admin().save()
 
   await createDefaultServiceNeedOptions()
 
   const careArea = await Fixture.careArea().save()
-  daycare = await Fixture.daycare().careArea(careArea).save()
-  daycareGroup = await Fixture.daycareGroup().daycare(daycare).save()
+  daycare = await Fixture.daycare({ areaId: careArea.id }).save()
+  daycareGroup = await Fixture.daycareGroup({ daycareId: daycare.id }).save()
 
-  const placementFixtureJari = await Fixture.placement()
-    .with({
-      childId: fixtures.enduserChildFixtureJari.id,
-      unitId: daycare.data.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixtureJari)
-    .save()
+  const placementFixtureJari = await Fixture.placement({
+    childId: testChild.id,
+    unitId: daycare.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixtureJari.id,
+    startDate: placementFixtureJari.startDate,
+    endDate: placementFixtureJari.endDate
+  }).save()
 
-  const placementFixtureKaarina = await Fixture.placement()
-    .with({
-      childId: fixtures.enduserChildFixtureKaarina.id,
-      unitId: daycare.data.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .withGroup(daycareGroup)
-    .withPlacement(placementFixtureKaarina)
-    .save()
+  const placementFixtureKaarina = await Fixture.placement({
+    childId: testChild2.id,
+    unitId: daycare.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: daycareGroup.id,
+    daycarePlacementId: placementFixtureKaarina.id,
+    startDate: placementFixtureKaarina.startDate,
+    endDate: placementFixtureKaarina.endDate
+  }).save()
 
   page = await Page.open()
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   unitPage = new UnitPage(page)
 })
 
 describe('Mobile employee daily notes', () => {
   test('Child daycare daily note indicators are shown on group view and can be edited', async () => {
-    const childId = fixtures.enduserChildFixtureJari.id
+    const childId = testChild.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Testi viesti',
       feedingNote: 'MEDIUM',
@@ -90,11 +90,9 @@ describe('Mobile employee daily notes', () => {
 
     await postChildDailyNote({ childId, body: daycareDailyNote })
 
-    await unitPage.navigateToUnit(daycare.data.id)
+    await unitPage.navigateToUnit(daycare.id)
     const group = await unitPage.openGroupsPage()
-    const groupCollapsible = await group.openGroupCollapsible(
-      daycareGroup.data.id
-    )
+    const groupCollapsible = await group.openGroupCollapsible(daycareGroup.id)
 
     const childRow = groupCollapsible.childRow(childId)
     await childRow.assertDailyNoteContainsText(daycareDailyNote.note)
@@ -114,8 +112,8 @@ describe('Mobile employee daily notes', () => {
   })
 
   test('Group daycare daily notes can be written and are shown on group notes tab', async () => {
-    const childId1 = fixtures.enduserChildFixtureJari.id
-    const childId2 = fixtures.enduserChildFixtureKaarina.id
+    const childId1 = testChild.id
+    const childId2 = testChild2.id
     const daycareDailyNote: ChildDailyNoteBody = {
       note: 'Toinen viesti',
       feedingNote: 'NONE',
@@ -127,9 +125,9 @@ describe('Mobile employee daily notes', () => {
 
     await postChildDailyNote({ childId: childId1, body: daycareDailyNote })
 
-    await unitPage.navigateToUnit(daycare.data.id)
+    await unitPage.navigateToUnit(daycare.id)
     const groupsSection = await unitPage.openGroupsPage()
-    const group = await groupsSection.openGroupCollapsible(daycareGroup.data.id)
+    const group = await groupsSection.openGroupCollapsible(daycareGroup.id)
     let groupNoteModal = await group.openGroupDailyNoteModal()
     await groupNoteModal.fillNote('Ryhmälle viesti')
     await groupNoteModal.save()

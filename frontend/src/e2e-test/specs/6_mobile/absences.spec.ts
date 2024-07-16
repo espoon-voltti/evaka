@@ -24,44 +24,37 @@ let absencesPage: MobileAbsencesPage
 beforeEach(async () => {
   await resetServiceState()
   const area = await Fixture.careArea().save()
-  const unit = await Fixture.daycare()
-    .with({
-      areaId: area.data.id,
+  const unit = await Fixture.daycare({
+    areaId: area.id,
 
-      // MOBILE must be on
-      // RESERVATIONS must be off
-      enabledPilotFeatures: ['MOBILE']
-    })
-    .save()
-  const group = await Fixture.daycareGroup()
-    .with({
-      daycareId: unit.data.id
-    })
-    .save()
+    // MOBILE must be on
+    // RESERVATIONS must be off
+    enabledPilotFeatures: ['MOBILE']
+  }).save()
+  const group = await Fixture.daycareGroup({
+    daycareId: unit.id
+  }).save()
 
-  const person = await Fixture.person().save()
-  const child = await Fixture.child(person.data.id).save()
-  childId = child.data.id
+  const person = await Fixture.person().saveChild()
+  childId = person.id
 
-  const daycarePlacementFixture = await Fixture.placement()
-    .with({
-      childId,
-      unitId: unit.data.id
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: group.data.id
-    })
-    .save()
+  const daycarePlacementFixture = await Fixture.placement({
+    childId,
+    unitId: unit.id
+  }).save()
+  await Fixture.groupPlacement({
+    daycarePlacementId: daycarePlacementFixture.id,
+    daycareGroupId: group.id,
+    startDate: daycarePlacementFixture.startDate,
+    endDate: daycarePlacementFixture.endDate
+  }).save()
 
   page = await Page.open()
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   absencesPage = new MobileAbsencesPage(page)
 
-  const mobileSignupUrl = await pairMobileDevice(unit.data.id)
+  const mobileSignupUrl = await pairMobileDevice(unit.id)
   await page.goto(mobileSignupUrl)
 })
 

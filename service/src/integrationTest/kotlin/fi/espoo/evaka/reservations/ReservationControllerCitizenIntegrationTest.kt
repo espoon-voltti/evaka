@@ -563,14 +563,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         date = monday,
                         startTime = LocalTime.of(9, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId
+                        createdBy = adult.evakaUserId()
                     ),
                     DevReservation(
                         childId = child.id,
                         date = tuesday,
                         startTime = LocalTime.of(9, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId
+                        createdBy = adult.evakaUserId()
                     ),
                     // No reservation on Wednesday
                     // No reservation on Thursday
@@ -1765,7 +1765,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE
                 )
             )
@@ -1774,7 +1774,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE
                 )
             )
@@ -1836,7 +1836,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE
                 )
             )
@@ -1845,7 +1845,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE
                 )
             )
@@ -1920,7 +1920,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE
                 )
             )
@@ -1929,7 +1929,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE
                 )
             )
@@ -2076,7 +2076,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     childId = child.id,
                     date = monday,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    modifiedBy = adult.evakaUserId,
+                    modifiedBy = adult.evakaUserId(),
                     absenceCategory = AbsenceCategory.BILLABLE
                 )
             )
@@ -2132,7 +2132,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     date = monday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = adult.evakaUserId,
+                    createdBy = adult.evakaUserId(),
                 )
             )
         }
@@ -2186,7 +2186,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     date = monday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = adult.evakaUserId,
+                    createdBy = adult.evakaUserId(),
                 )
             )
         }

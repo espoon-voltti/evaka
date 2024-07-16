@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -25,12 +24,13 @@ describe('Employee - unit details', () => {
 
   beforeEach(async () => {
     await resetServiceState()
-    const fixtures = await initializeAreaAndPersonData()
-    daycare1 = fixtures.daycareFixture
-    const admin = await Fixture.employeeAdmin().save()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    daycare1 = testDaycare
+    const admin = await Fixture.employee().admin().save()
 
     page = await Page.open()
-    await employeeLogin(page, admin.data)
+    await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     await new EmployeeNav(page).openTab('units')
     unitsPage = new UnitsPage(page)
@@ -112,12 +112,13 @@ describe('Employee - unit editor validations and warnings', () => {
   beforeEach(async () => {
     await resetServiceState()
 
-    const fixtures = await initializeAreaAndPersonData()
-    const admin = await Fixture.employeeAdmin().save()
+    await Fixture.careArea(testCareArea).save()
+    await Fixture.daycare(testDaycare).save()
+    const admin = await Fixture.employee().admin().save()
 
     page = await Page.open()
-    await employeeLogin(page, admin.data)
-    const unitPage = await UnitPage.openUnit(page, fixtures.daycareFixture.id)
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, testDaycare.id)
     unitInfoPage = await unitPage.openUnitInformation()
     unitDetailsPage = await unitInfoPage.openUnitDetails()
     unitEditorPage = await unitDetailsPage.edit()

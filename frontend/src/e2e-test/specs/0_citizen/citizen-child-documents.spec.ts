@@ -5,27 +5,30 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture,
+  testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  testAdult,
+  testChild,
+  testCareArea,
+  testDaycare
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDaycareGroups,
   createDaycarePlacements,
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 let page: Page
-let child: PersonDetail
+let child: DevPerson
 let templateIdHojks: UUID
 let documentIdHojks: UUID
 let templateIdPed: UUID
@@ -37,15 +40,17 @@ const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  child = fixtures.enduserChildFixtureJari
+  const unitId = testDaycare.id
+  child = testChild
   await insertGuardians({
     body: [
       {
-        guardianId: fixtures.enduserGuardianFixture.id,
+        guardianId: testAdult.id,
         childId: child.id
       }
     ]
@@ -56,18 +61,18 @@ beforeEach(async () => {
   })
 
   templateIdHojks = (
-    await Fixture.documentTemplate()
-      .with({
-        type: 'HOJKS',
-        name: 'HOJKS 2023-2024'
-      })
+    await Fixture.documentTemplate({
+      type: 'HOJKS',
+      name: 'HOJKS 2023-2024'
+    })
       .withPublished(true)
       .save()
-  ).data.id
+  ).id
   documentIdHojks = (
-    await Fixture.childDocument()
-      .withTemplate(templateIdHojks)
-      .withChild(child.id)
+    await Fixture.childDocument({
+      childId: child.id,
+      templateId: templateIdHojks
+    })
       .withPublishedAt(mockedNow)
       .withPublishedContent({
         answers: [
@@ -79,21 +84,21 @@ beforeEach(async () => {
         ]
       })
       .save()
-  ).data.id
+  ).id
 
   templateIdPed = (
-    await Fixture.documentTemplate()
-      .with({
-        type: 'PEDAGOGICAL_REPORT',
-        name: 'Pedagoginen selvitys'
-      })
+    await Fixture.documentTemplate({
+      type: 'PEDAGOGICAL_REPORT',
+      name: 'Pedagoginen selvitys'
+    })
       .withPublished(true)
       .save()
-  ).data.id
+  ).id
   documentIdPed = (
-    await Fixture.childDocument()
-      .withTemplate(templateIdPed)
-      .withChild(child.id)
+    await Fixture.childDocument({
+      templateId: templateIdPed,
+      childId: child.id
+    })
       .withModifiedAt(mockedNow)
       .withPublishedAt(mockedNow)
       .withPublishedContent({
@@ -106,11 +111,11 @@ beforeEach(async () => {
         ]
       })
       .save()
-  ).data.id
+  ).id
 
   page = await Page.open({ mockedTime: mockedNow })
   header = new CitizenHeader(page, 'desktop')
-  await enduserLogin(page, fixtures.enduserGuardianFixture.ssn)
+  await enduserLogin(page, testAdult)
 })
 
 describe('Citizen child documents listing page', () => {

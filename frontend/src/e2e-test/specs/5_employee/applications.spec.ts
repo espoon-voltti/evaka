@@ -6,9 +6,13 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { applicationFixture, Fixture } from '../../dev-api/fixtures'
-import { Family } from '../../dev-api/types'
+import {
+  applicationFixture,
+  familyWithDeadGuardian,
+  Fixture,
+  testCareArea,
+  testDaycare
+} from '../../dev-api/fixtures'
 import {
   createApplications,
   resetServiceState
@@ -20,18 +24,18 @@ import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let applicationsPage: ApplicationsPage
-let familyWithDeadGuardian: Family
 
 beforeEach(async () => {
   await resetServiceState()
-  familyWithDeadGuardian = (await initializeAreaAndPersonData())
-    .familyWithDeadGuardian
-  const serviceWorker = await Fixture.employeeServiceWorker().save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithDeadGuardian).save()
+  const serviceWorker = await Fixture.employee().serviceWorker().save()
 
   page = await Page.open()
   applicationsPage = new ApplicationsPage(page)
 
-  await employeeLogin(page, serviceWorker.data)
+  await employeeLogin(page, serviceWorker)
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).applicationsTab.click()
 })

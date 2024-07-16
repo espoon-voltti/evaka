@@ -7,21 +7,24 @@ import assert from 'assert'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  careArea2Fixture,
-  daycare2Fixture,
-  daycareFixture,
+  testCareArea2,
+  testDaycare2,
+  testDaycare,
   Fixture,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testAdult,
+  testChild,
+  testChild2,
+  testCareArea
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createDefaultServiceNeedOptions,
   createVoucherValueDecisions,
   createVoucherValues,
   resetServiceState
 } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, {
   ServiceVoucherUnitReport,
@@ -34,23 +37,28 @@ let page: Page
 let report: VoucherServiceProvidersReport
 let startDate: LocalDate
 let endDate: LocalDate
-let child: PersonDetail
-let otherChild: PersonDetail
-let guardian: PersonDetail
+let child: DevPerson
+let otherChild: DevPerson
+let guardian: DevPerson
 
 beforeEach(async () => {
   await resetServiceState()
-  const fixtures = await initializeAreaAndPersonData()
-  const careArea = await Fixture.careArea().with(careArea2Fixture).save()
-  await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  const careArea = await Fixture.careArea(testCareArea2).save()
+  await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
+  await Fixture.family({
+    guardian: testAdult,
+    children: [testChild, testChild2]
+  }).save()
   await createDefaultServiceNeedOptions()
   await createVoucherValues()
 
   startDate = LocalDate.of(2020, 1, 1)
   endDate = LocalDate.of(2020, 12, 31)
-  child = fixtures.enduserChildFixtureKaarina
-  otherChild = fixtures.enduserChildFixtureJari
-  guardian = fixtures.enduserGuardianFixture
+  child = testChild2
+  otherChild = testChild
+  guardian = testAdult
 
   await createVoucherValueDecisions({
     body: [
@@ -58,7 +66,7 @@ beforeEach(async () => {
         'e2d75fa4-7359-406b-81b8-1703785ca649',
         guardian.id,
         child.id,
-        fixtures.daycareFixture.id,
+        testDaycare.id,
         null,
         'SENT',
         startDate,
@@ -68,7 +76,7 @@ beforeEach(async () => {
         'ed462aca-f74e-4384-910f-628823201023',
         guardian.id,
         otherChild.id,
-        daycare2Fixture.id,
+        testDaycare2.id,
         null,
         'SENT',
         startDate,
@@ -76,10 +84,10 @@ beforeEach(async () => {
       )
     ]
   })
-  const admin = await Fixture.employeeAdmin().save()
+  const admin = await Fixture.employee().admin().save()
 
   page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, admin.data)
+  await employeeLogin(page, admin)
 
   await page.goto(config.employeeUrl)
   await new EmployeeNav(page).openTab('reports')
@@ -94,16 +102,16 @@ describe('Reporting - voucher reports', () => {
     await report.selectArea('Superkeskus')
 
     await report.assertRowCount(1)
-    await report.assertRow(daycareFixture.id, '1', '581,00')
+    await report.assertRow(testDaycare.id, '1', '581,00')
 
     const csvReport = await report.getCsvReport()
     assert(
-      csvReport.includes(daycareFixture.name),
-      `Expected csv report to contain ${daycareFixture.name}`
+      csvReport.includes(testDaycare.name),
+      `Expected csv report to contain ${testDaycare.name}`
     )
     assert(
-      !csvReport.includes(daycare2Fixture.name),
-      `Expected csv report to not contain ${daycare2Fixture.name}`
+      !csvReport.includes(testDaycare2.name),
+      `Expected csv report to not contain ${testDaycare2.name}`
     )
   })
 
@@ -113,7 +121,7 @@ describe('Reporting - voucher reports', () => {
     await report.selectArea('Superkeskus')
 
     await report.assertRowCount(1)
-    await report.openUnitReport(daycareFixture.name)
+    await report.openUnitReport(testDaycare.name)
 
     const unitReport = new ServiceVoucherUnitReport(page)
     await unitReport.assertChildRowCount(1)

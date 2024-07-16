@@ -1892,7 +1892,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = monday,
                         absenceType = AbsenceType.PLANNED_ABSENCE,
                         absenceCategory = category,
-                        modifiedBy = adult.evakaUserId
+                        modifiedBy = adult.evakaUserId()
                     )
                 )
             }

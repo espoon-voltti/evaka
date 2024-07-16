@@ -5,10 +5,14 @@
 import LocalDate from 'lib-common/local-date'
 
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
+  createDaycarePlacementFixture,
+  Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare,
+  uuidv4
+} from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
   resetServiceState
@@ -26,26 +30,27 @@ const testFileName1 = 'test_file.png'
 const testFilePath1 = `src/e2e-test/assets/${testFileName1}`
 const testFileName2 = 'test_file.jpg'
 const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
-let fixtures: AreaAndPersonFixtures
 
 beforeEach(async () => {
   await resetServiceState()
 
-  fixtures = await initializeAreaAndPersonData()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   await createDaycarePlacements({
     body: [
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
+        testChild.id,
+        testDaycare.id,
         LocalDate.todayInSystemTz(),
         LocalDate.todayInSystemTz()
       ),
       createDaycarePlacementFixture(
         uuidv4(),
-        fixtures.enduserChildFixtureJari.id,
-        fixtures.daycareFixture.id,
+        testChild.id,
+        testDaycare.id,
         LocalDate.todayInSystemTz().addDays(1),
         LocalDate.todayInSystemTz().addDays(1)
       )
@@ -53,7 +58,7 @@ beforeEach(async () => {
   })
 
   page = await Page.open()
-  await enduserLogin(page)
+  await enduserLogin(page, testAdult)
   header = new CitizenHeader(page)
   child1ISList = new CitizenChildIncomeStatementListPage(page, 0)
 })

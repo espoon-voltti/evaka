@@ -8,10 +8,9 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { careAreaFixture, Fixture } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
+import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
+import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
   FormatterReservation,
   TwoPartReservation
@@ -56,9 +55,10 @@ describe.each(e)(
     test('Citizen creates a repeating reservation on a bank holiday', async () => {
       const firstReservationDay = june7th2023.addDays(14).addDays(2) //Friday, holiday
 
-      await Fixture.holiday()
-        .with({ date: firstReservationDay, description: 'Test holiday 1' })
-        .save()
+      await Fixture.holiday({
+        date: firstReservationDay,
+        description: 'Test holiday 1'
+      }).save()
 
       const { child, parent } = await addTestData(june7th2023)
       const calendarPage = await openCalendarPage(
@@ -194,7 +194,7 @@ describe.each(e)(
 async function openCalendarPage(
   time: HelsinkiDateTime,
   env: EnvType,
-  endUser?: PersonDetail
+  endUser: DevPerson
 ) {
   const viewport =
     env === 'mobile'
@@ -209,85 +209,69 @@ async function openCalendarPage(
       featureFlags: { intermittentShiftCare: true }
     }
   })
-  await enduserLogin(page, endUser?.ssn)
+  await enduserLogin(page, endUser)
   const header = new CitizenHeader(page, env)
   await header.selectTab('calendar')
   return new CitizenCalendarPage(page, env)
 }
 
 const addTestData = async (date: LocalDate) => {
-  const bulkFixtures = await initializeAreaAndPersonData()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   const operationTime = new TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
 
-  const unit = await Fixture.daycare()
-    .with({
-      name: '10h/5d',
-      areaId: bulkFixtures.careAreaFixture.id,
-      type: ['CENTRE'],
-      providerType: 'MUNICIPAL',
-      operationTimes: [
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        operationTime,
-        null,
-        null
-      ],
-      shiftCareOperationTimes: null,
-      shiftCareOpenOnHolidays: false,
-      enabledPilotFeatures: ['RESERVATIONS']
-    })
-    .save()
-  const group = await Fixture.daycareGroup()
-    .with({ daycareId: unit.data.id })
-    .save()
+  const area = await Fixture.careArea().save()
+  const unit = await Fixture.daycare({
+    name: '10h/5d',
+    areaId: area.id,
+    type: ['CENTRE'],
+    providerType: 'MUNICIPAL',
+    operationTimes: [
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      operationTime,
+      null,
+      null
+    ],
+    shiftCareOperationTimes: null,
+    shiftCareOpenOnHolidays: false,
+    enabledPilotFeatures: ['RESERVATIONS']
+  }).save()
+  const group = await Fixture.daycareGroup({ daycareId: unit.id }).save()
 
-  const child = bulkFixtures.enduserChildFixtureJari
-  const parent = bulkFixtures.enduserGuardianFixture
+  const child = testChild
+  const parent = testAdult
 
-  const unitSupervisor = await Fixture.employeeUnitSupervisor(
-    unit.data.id
-  ).save()
+  const unitSupervisor = await Fixture.employee().unitSupervisor(unit.id).save()
 
-  const placement = await Fixture.placement()
-    .with({
-      type: 'DAYCARE',
-      childId: child.id,
-      unitId: unit.data.id,
-      startDate: date,
-      endDate: date.addDays(30)
-    })
-    .save()
-  const serviceNeedOption = await Fixture.serviceNeedOption()
-    .with({ validPlacementType: 'DAYCARE' })
-    .save()
-  await Fixture.serviceNeed()
-    .with({
-      placementId: placement.data.id,
-      startDate: placement.data.startDate,
-      endDate: placement.data.endDate,
-      optionId: serviceNeedOption.data.id,
-      shiftCare: 'INTERMITTENT',
-      confirmedBy: unitSupervisor.data.id,
-      confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
-    })
-    .save()
-  await Fixture.groupPlacement()
-    .with({
-      daycareGroupId: group.data.id,
-      daycarePlacementId: placement.data.id,
-      startDate: placement.data.startDate,
-      endDate: placement.data.endDate
-    })
-    .save()
+  const placement = await Fixture.placement({
+    type: 'DAYCARE',
+    childId: child.id,
+    unitId: unit.id,
+    startDate: date,
+    endDate: date.addDays(30)
+  }).save()
+  const serviceNeedOption = await Fixture.serviceNeedOption({
+    validPlacementType: 'DAYCARE'
+  }).save()
+  await Fixture.serviceNeed({
+    placementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate,
+    optionId: serviceNeedOption.id,
+    shiftCare: 'INTERMITTENT',
+    confirmedBy: unitSupervisor.id,
+    confirmedAt: date.toHelsinkiDateTime(LocalTime.of(12, 0))
+  }).save()
+  await Fixture.groupPlacement({
+    daycareGroupId: group.id,
+    daycarePlacementId: placement.id,
+    startDate: placement.startDate,
+    endDate: placement.endDate
+  }).save()
 
-  return {
-    areaId: careAreaFixture.id,
-    parent,
-    unitId: unit.data.id,
-    child
-  }
+  return { parent, child }
 }
 
 const getFormatterReservationOutput = (res: FormatterReservation) =>

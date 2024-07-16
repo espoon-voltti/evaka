@@ -6,13 +6,13 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  enduserChildFixtureJari,
+  testDaycare,
+  testChild,
   Fixture,
-  uuidv4
+  uuidv4,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -29,13 +29,15 @@ let personId: UUID
 beforeEach(async () => {
   await resetServiceState()
 
-  const fixtures = await initializeAreaAndPersonData()
-  personId = fixtures.enduserChildFixtureJari.id
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.person(testChild).saveChild()
+  personId = testChild.id
 
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open()
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
   await page.goto(config.employeeUrl + '/child-information/' + personId)
 })
 
@@ -43,14 +45,14 @@ describe('Child profile income statements', () => {
   test('Shows income statements', async () => {
     const daycarePlacementFixture = createDaycarePlacementFixture(
       uuidv4(),
-      enduserChildFixtureJari.id,
-      daycareFixture.id
+      testChild.id,
+      testDaycare.id
     )
     await createDaycarePlacements({ body: [daycarePlacementFixture] })
 
     await createIncomeStatements({
       body: {
-        personId: enduserChildFixtureJari.id,
+        personId: testChild.id,
         data: [
           {
             type: 'CHILD_INCOME',
@@ -64,7 +66,7 @@ describe('Child profile income statements', () => {
     })
 
     const profilePage = new ChildInformationPage(page)
-    await profilePage.navigateToChild(enduserChildFixtureJari.id)
+    await profilePage.navigateToChild(testChild.id)
     await profilePage.waitUntilLoaded()
 
     const incomeSection = await profilePage.openCollapsible('income')

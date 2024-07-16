@@ -8,15 +8,13 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  AreaAndPersonFixtures,
-  initializeAreaAndPersonData
-} from '../../dev-api/data-init'
-import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareGroupFixture,
+  testDaycare,
+  testDaycareGroup,
   Fixture,
-  uuidv4
+  uuidv4,
+  familyWithTwoGuardians,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
@@ -39,7 +37,6 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
-let fixtures: AreaAndPersonFixtures
 let serviceWorker: DevEmployee
 let staff: DevEmployee
 let decisionPage: AssistanceNeedPreschoolDecisionPage
@@ -52,15 +49,17 @@ const mockedTime = LocalDate.of(2022, 12, 20)
 beforeEach(async () => {
   await resetServiceState()
 
-  serviceWorker = (await Fixture.employeeServiceWorker().save()).data
+  serviceWorker = await Fixture.employee().serviceWorker().save()
 
-  fixtures = await initializeAreaAndPersonData()
-  await createDaycareGroups({ body: [daycareGroupFixture] })
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.family(familyWithTwoGuardians).save()
+  await createDaycareGroups({ body: [testDaycareGroup] })
 
-  const unitId = fixtures.daycareFixture.id
-  childId = fixtures.familyWithTwoGuardians.children[0].id
+  const unitId = testDaycare.id
+  childId = familyWithTwoGuardians.children[0].id
 
-  staff = (await Fixture.employeeStaff(unitId).save()).data
+  staff = await Fixture.employee().staff(unitId).save()
   const daycarePlacementFixture = createDaycarePlacementFixture(
     uuidv4(),
     childId,
@@ -79,13 +78,12 @@ const openPage = async (addDays = 0) =>
 
 describe('Assistance Need Preschool Decisions - Editing', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = (
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
-        .save()
-    ).data
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision({
+      childId
+    })
+      .withGuardian(familyWithTwoGuardians.guardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+      .save()
 
     page = await openPage()
     await employeeLogin(page, serviceWorker)
@@ -126,7 +124,7 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
     await decisionPage.typeRadioNew.click()
     await decisionPage.validFromInput.fill('01.08.2022')
     await page.keyboard.press('Enter')
-    await decisionPage.unitSelect.fillAndSelectFirst(daycareFixture.name)
+    await decisionPage.unitSelect.fillAndSelectFirst(testDaycare.name)
     await decisionPage.primaryGroupInput.fill('Keijukaiset')
     await decisionPage.decisionBasisInput.fill('Hyvät perustelut')
     await decisionPage.basisPedagogicalReportCheckbox.check()
@@ -159,18 +157,17 @@ describe('Assistance Need Preschool Decisions - Editing', () => {
 
 describe('Assistance Need Decisions - Decision process', () => {
   beforeEach(async () => {
-    assistanceNeedDecision = (
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
-        .withRequiredFieldsFilled(
-          daycareFixture.id,
-          serviceWorker.id,
-          serviceWorker.id
-        )
-        .save()
-    ).data
+    assistanceNeedDecision = await Fixture.assistanceNeedPreschoolDecision({
+      childId
+    })
+      .withGuardian(familyWithTwoGuardians.guardian.id)
+      .withGuardian(familyWithTwoGuardians.otherGuardian.id)
+      .withRequiredFieldsFilled(
+        testDaycare.id,
+        serviceWorker.id,
+        serviceWorker.id
+      )
+      .save()
 
     page = await openPage()
     await employeeLogin(page, serviceWorker)
@@ -253,34 +250,31 @@ let acceptedAssistanceNeedPreschoolDecision: DevAssistanceNeedPreschoolDecision
 describe('Decision visibility for role', () => {
   describe('Staff', () => {
     beforeEach(async () => {
-      acceptedAssistanceNeedPreschoolDecision = (
-        await Fixture.assistanceNeedPreschoolDecision()
-          .withChild(childId)
-          .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-          .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      acceptedAssistanceNeedPreschoolDecision =
+        await Fixture.assistanceNeedPreschoolDecision({ childId })
+          .withGuardian(familyWithTwoGuardians.guardian.id)
+          .withGuardian(familyWithTwoGuardians.otherGuardian.id)
           .withForm({
             validFrom: LocalDate.of(2022, 7, 1),
             guardiansHeardOn: LocalDate.of(2022, 7, 1)
           })
           .withRequiredFieldsFilled(
-            daycareFixture.id,
+            testDaycare.id,
             serviceWorker.id,
             serviceWorker.id
           )
           .with({
             decisionMade: LocalDate.of(2022, 7, 1),
             status: 'ACCEPTED',
-            unreadGuardianIds: [fixtures.familyWithTwoGuardians.guardian.id]
+            unreadGuardianIds: [familyWithTwoGuardians.guardian.id]
           })
           .save()
-      ).data
 
-      await Fixture.assistanceNeedPreschoolDecision()
-        .withChild(childId)
-        .withGuardian(fixtures.familyWithTwoGuardians.guardian.id)
-        .withGuardian(fixtures.familyWithTwoGuardians.otherGuardian.id)
+      await Fixture.assistanceNeedPreschoolDecision({ childId })
+        .withGuardian(familyWithTwoGuardians.guardian.id)
+        .withGuardian(familyWithTwoGuardians.otherGuardian.id)
         .withRequiredFieldsFilled(
-          daycareFixture.id,
+          testDaycare.id,
           serviceWorker.id,
           serviceWorker.id
         )
@@ -308,7 +302,7 @@ describe('Decision visibility for role', () => {
         acceptedAssistanceNeedPreschoolDecision.form.guardiansHeardOn?.format() ??
           ''
       )
-      await previewPage.selectedUnit.assertTextEquals(daycareFixture.name)
+      await previewPage.selectedUnit.assertTextEquals(testDaycare.name)
       await previewPage.preparedBy1.assertTextEquals(
         `${serviceWorker.firstName} ${serviceWorker.lastName}, ${acceptedAssistanceNeedPreschoolDecision.form.preparer1Title}`
       )

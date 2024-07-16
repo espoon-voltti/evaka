@@ -7,17 +7,17 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareFixture,
-  daycareFixturePrivateVoucher,
-  enduserChildFixtureKaarina,
-  enduserGuardianFixture,
+  testDaycare,
+  testDaycarePrivateVoucher,
+  testChild2,
+  testAdult,
   feeDecisionsFixture,
   Fixture,
   uuidv4,
-  voucherValueDecisionsFixture
+  voucherValueDecisionsFixture,
+  testCareArea
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -37,11 +37,13 @@ let guardianPage: GuardianInformationPage
 beforeEach(async () => {
   await resetServiceState()
   await createDefaultServiceNeedOptions()
-  await initializeAreaAndPersonData()
-  const financeAdmin = await Fixture.employeeFinanceAdmin().save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare(testDaycare).save()
+  await Fixture.daycare(testDaycarePrivateVoucher).save()
+  const financeAdmin = await Fixture.employee().financeAdmin().save()
 
   page = await Page.open({ acceptDownloads: true })
-  await employeeLogin(page, financeAdmin.data)
+  await employeeLogin(page, financeAdmin)
 
   await page.goto(config.employeeUrl)
   guardianPage = new GuardianInformationPage(page)
@@ -49,6 +51,8 @@ beforeEach(async () => {
 
 describe('Person finance decisions', () => {
   test('Fee decisions are sorted by sent date', async () => {
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
@@ -58,9 +62,9 @@ describe('Person finance decisions', () => {
         body: [
           feeDecisionsFixture(
             'SENT',
-            enduserGuardianFixture,
-            enduserChildFixtureKaarina,
-            daycareFixture.id,
+            testAdult,
+            testChild2,
+            testDaycare.id,
             null,
             new DateRange(sentAt, sentAt),
             sentAt.toHelsinkiDateTime(LocalTime.of(12, 0)),
@@ -74,7 +78,7 @@ describe('Person finance decisions', () => {
     await createFeeDecisionFixture(sentAtThird)
     await createFeeDecisionFixture(sentAtSecond)
 
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
     const feeDecisions = await guardianPage.openCollapsible('feeDecisions')
 
     await feeDecisions.checkFeeDecisionSentAt(0, sentAtThird)
@@ -83,6 +87,8 @@ describe('Person finance decisions', () => {
   })
 
   test('Voucher value decisions are sorted by sent date', async () => {
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+
     const sentAtFirst = LocalDate.todayInSystemTz().subDays(3)
     const sentAtSecond = sentAtFirst.addDays(1)
     const sentAtThird = sentAtSecond.addDays(1)
@@ -92,9 +98,9 @@ describe('Person finance decisions', () => {
         body: [
           voucherValueDecisionsFixture(
             uuidv4(),
-            enduserGuardianFixture.id,
-            enduserChildFixtureKaarina.id,
-            daycareFixture.id,
+            testAdult.id,
+            testChild2.id,
+            testDaycare.id,
             null,
             'SENT',
             sentAt,
@@ -109,7 +115,7 @@ describe('Person finance decisions', () => {
     await createVoucherValueDecisionFixture(sentAtThird)
     await createVoucherValueDecisionFixture(sentAtSecond)
 
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
     const voucherValueDecisions = await guardianPage.openCollapsible(
       'voucherValueDecisions'
     )
@@ -125,33 +131,32 @@ describe('Person finance decisions', () => {
     await Fixture.feeThresholds().save()
     await createVoucherValues()
 
-    await Fixture.parentship()
-      .with({
-        childId: enduserChildFixtureKaarina.id,
-        headOfChildId: enduserGuardianFixture.id,
-        startDate: enduserChildFixtureKaarina.dateOfBirth,
-        endDate: LocalDate.of(2099, 1, 1)
-      })
-      .save()
+    await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
+    await Fixture.parentship({
+      childId: testChild2.id,
+      headOfChildId: testAdult.id,
+      startDate: testChild2.dateOfBirth,
+      endDate: LocalDate.of(2099, 1, 1)
+    }).save()
 
     await createDaycarePlacements({
       body: [
         createDaycarePlacementFixture(
           uuidv4(),
-          enduserChildFixtureKaarina.id,
-          daycareFixturePrivateVoucher.id,
+          testChild2.id,
+          testDaycarePrivateVoucher.id,
           from,
           LocalDate.todayInSystemTz()
         )
       ]
     })
 
-    const adminUser = await Fixture.employeeAdmin().save()
+    const adminUser = await Fixture.employee().admin().save()
     page = await Page.open({ acceptDownloads: true })
-    await employeeLogin(page, adminUser.data)
+    await employeeLogin(page, adminUser)
     await page.goto(config.employeeUrl)
     guardianPage = new GuardianInformationPage(page)
-    await guardianPage.navigateToGuardian(enduserGuardianFixture.id)
+    await guardianPage.navigateToGuardian(testAdult.id)
 
     const voucherValueDecisions = await guardianPage.openCollapsible(
       'voucherValueDecisions'
