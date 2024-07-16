@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faQuestion } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -16,10 +17,7 @@ import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import {
-  cancelMutation,
-  MutateButton
-} from 'lib-components/atoms/buttons/MutateButton'
+import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -28,8 +26,10 @@ import {
   ExpandingInfoBox,
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
-import { Bold, H1, H2, H3, P, Strong } from 'lib-components/typography'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import { Bold, H1, H2, H3, Light, P, Strong } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
@@ -70,7 +70,11 @@ export const DiscussionHeader = styled.div`
   top: 0;
   background-color: ${(p) => p.theme.colors.grayscale.g0};
 `
-
+export interface ConfirmModalState {
+  visible: boolean
+  childId: UUID | null
+  eventTimeId: UUID | null
+}
 export default React.memo(function DiscussionSurveyModal({
   close,
   surveys,
@@ -106,9 +110,66 @@ export default React.memo(function DiscussionSurveyModal({
     [sortedChildrenWithSurveys, sortedSurveys]
   )
 
+  const [confirmationModalState, setConfirmationModalState] =
+    useState<ConfirmModalState>({
+      visible: false,
+      childId: null,
+      eventTimeId: null
+    })
+  const onCancelClick = useCallback(
+    (childId: UUID, eventTimeId: UUID) => {
+      setConfirmationModalState({ visible: true, childId, eventTimeId })
+    },
+    [setConfirmationModalState]
+  )
+
+  const onConfirmClose = useCallback(
+    () =>
+      setConfirmationModalState({
+        visible: false,
+        childId: null,
+        eventTimeId: null
+      }),
+    [setConfirmationModalState]
+  )
+
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto" data-qa="discussions-modal">
+      {confirmationModalState.visible && (
+        <MutateFormModal
+          resolveMutation={deleteCalendarEventTimeReservationMutation}
+          data-qa="confirm-cancel-modal"
+          resolveAction={() => {
+            if (
+              confirmationModalState.childId &&
+              confirmationModalState.eventTimeId
+            ) {
+              return {
+                childId: confirmationModalState.childId,
+                calendarEventTimeId: confirmationModalState.eventTimeId
+              }
+            } else return cancelMutation
+          }}
+          rejectAction={onConfirmClose}
+          title={i18n.calendar.discussionTimeReservation.confirmCancel.title}
+          onSuccess={onConfirmClose}
+          rejectLabel={
+            i18n.calendar.discussionTimeReservation.confirmCancel.cancel
+          }
+          resolveLabel={
+            i18n.calendar.discussionTimeReservation.cancelTimeButtonText
+          }
+          type="warning"
+          icon={faQuestion}
+          zIndex={1000}
+        />
+      )}
+      <PlainModal
+        mobileFullScreen
+        margin="auto"
+        zIndex={100}
+        data-qa="discussions-modal"
+      >
         <CalendarModalBackground>
           <div>
             <DiscussionHeader>
@@ -134,6 +195,7 @@ export default React.memo(function DiscussionSurveyModal({
                   <DiscussionChildElement
                     childWithSurveys={cs}
                     openDiscussionReservations={openDiscussionReservations}
+                    onCancelClick={onCancelClick}
                     key={`child-${cs.childId}`}
                   />
                 ))}
@@ -177,6 +239,7 @@ export default React.memo(function DiscussionSurveyModal({
 
 interface DiscussionChildElementProps {
   childWithSurveys: ChildWithSurveys
+  onCancelClick: (childId: UUID, eventTimeId: UUID) => void
   openDiscussionReservations: (
     selectedChildId: UUID,
     selectedEventId: UUID
@@ -185,9 +248,9 @@ interface DiscussionChildElementProps {
 
 const DiscussionChildElement = React.memo(function DiscussionChildElement({
   childWithSurveys,
+  onCancelClick,
   openDiscussionReservations
 }: DiscussionChildElementProps) {
-  const today = LocalDate.todayInHelsinkiTz()
   return (
     <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
       <StaticChip color={colors.main.m1}>
@@ -195,9 +258,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
       </StaticChip>
       {childWithSurveys.surveys.map((s) => {
         const reservations = s.timesByChild[childWithSurveys.childId].filter(
-          (r) =>
-            r.childId === childWithSurveys.childId &&
-            r.date.isEqualOrAfter(today)
+          (r) => r.childId === childWithSurveys.childId
         )
         const sortedReservations = orderBy(reservations, [
           'date',
@@ -206,6 +267,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
         ])
         return (
           <ChildSurveyElement
+            onCancelClick={onCancelClick}
             survey={s}
             reservations={sortedReservations}
             childId={childWithSurveys.childId}
@@ -225,16 +287,18 @@ interface ChildSurveyElementProps {
   reservations: CalendarEventTime[]
   childId: UUID
   openDiscussionReservations: () => void
+  onCancelClick: (childId: UUID, eventTimeId: UUID) => void
 }
 const ChildSurveyElement = React.memo(function ChildSurveyElement({
   survey,
   reservations,
   childId,
-  openDiscussionReservations
+  openDiscussionReservations,
+  onCancelClick
 }: ChildSurveyElementProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
-
+  const today = LocalDate.todayInHelsinkiTz()
   return (
     <SurveyElementContainer data-qa={`child-survey-${childId}-${survey.id}`}>
       {reservations.length > 0 ? (
@@ -249,32 +313,51 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
             {reservations.map((r) => (
               <FixedSpaceColumn key={r.id} alignItems="flex-start">
                 <div data-qa={`reservation-${r.id}`}>
-                  <Bold>
-                    {`${r.date.format('EEEEEE d.M.', lang)} 
+                  {r.date.isBefore(today) ? (
+                    <Light>
+                      {`${r.date.format('EEEEEE d.M.', lang)} 
                     ${i18n.calendar.discussionTimeReservation.timePreDescriptor} 
                     ${r.startTime.format()} - ${r.endTime.format()}`}
-                  </Bold>
+                    </Light>
+                  ) : (
+                    <Bold>
+                      {`${r.date.format('EEEEEE d.M.', lang)} 
+                    ${i18n.calendar.discussionTimeReservation.timePreDescriptor} 
+                    ${r.startTime.format()} - ${r.endTime.format()}`}
+                    </Bold>
+                  )}
                 </div>
-
-                <MutateButton
-                  appearance="inline"
-                  icon={faTimes}
-                  text={
-                    i18n.calendar.discussionTimeReservation.cancelTimeButtonText
-                  }
-                  disabled={
-                    !isEventTimeCancellable(r, LocalDate.todayInHelsinkiTz())
-                  }
-                  mutation={deleteCalendarEventTimeReservationMutation}
-                  onClick={() => {
-                    if (r.childId !== null) {
-                      return { childId: r.childId, calendarEventTimeId: r.id }
-                    } else {
-                      return cancelMutation
-                    }
-                  }}
-                  data-qa="reservation-cancel-button"
-                />
+                {r.date.isEqualOrAfter(today) && (
+                  <>
+                    <Button
+                      appearance="inline"
+                      icon={faTimes}
+                      text={
+                        i18n.calendar.discussionTimeReservation
+                          .cancelTimeButtonText
+                      }
+                      disabled={!isEventTimeCancellable(r, today)}
+                      onClick={() => {
+                        if (r.childId !== null) {
+                          onCancelClick(r.childId, r.id)
+                        }
+                      }}
+                      data-qa="reservation-cancel-button"
+                    />
+                    {!isEventTimeCancellable(r, today) && (
+                      <InfoBox
+                        aria-label={
+                          i18n.calendar.discussionTimeReservation
+                            .cancellationDeadlineInfoMessage
+                        }
+                        message={
+                          i18n.calendar.discussionTimeReservation
+                            .cancellationDeadlineInfoMessage
+                        }
+                      />
+                    )}
+                  </>
+                )}
               </FixedSpaceColumn>
             ))}
           </SurveyReservationElement>

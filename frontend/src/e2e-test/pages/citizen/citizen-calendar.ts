@@ -40,6 +40,7 @@ export default class CitizenCalendarPage {
   #dailyServiceTimeNotificationModal: Element
   discussionSurveyModal: Element
   discussionReservationModal: Element
+  cancelConfirmModal: Element
   #discussionsCta: Element
 
   constructor(
@@ -59,6 +60,7 @@ export default class CitizenCalendarPage {
       'daily-service-time-notification-modal'
     )
     this.discussionSurveyModal = page.findByDataQa('discussions-modal')
+    this.cancelConfirmModal = page.findByDataQa('confirm-cancel-modal')
     this.discussionReservationModal = page.findByDataQa(
       'discussion-reservations-modal'
     )

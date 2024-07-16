@@ -96,6 +96,7 @@ export class DiscussionSurveyModal extends Element {
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
     await cancelButton.waitUntilVisible()
+    await cancelButton.assertDisabled(false)
     await cancelButton.click()
   }
 }

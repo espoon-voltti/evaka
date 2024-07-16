@@ -326,11 +326,31 @@ const sv: Translations = {
         'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
       surveyListTitle: 'Varattavat keskustelut',
       timePreDescriptor: 'klo',
-      reservationLabelText: 'Valittu keskusteluaika:',
-      reservationInfoButtonText: 'Entä jos haluan varata lisää aikoja?',
+      reservationLabelText: 'Valitut keskusteluajat:',
+      reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
       reservationInfoText:
-        'Ota suoraan yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
-      reservationChildTitle: 'Lapsi, jota keskustelu koskee:'
+        'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      freeTimesInfoButtonText: 'Vapaat ajat',
+      freeTimesInfoText:
+        'Valitse sopiva aika alla näkyvistä vaihtoehdoista. Voit perua ajan eVakan kautta kaksi arkipäivää ennen varattua aikaa.',
+      cancellationDeadlineInfoMessage:
+        'Jos haluat perua tämän keskusteluajan, ole yhteydessä henkilökuntaan',
+      reservationChildTitle: 'Lapsi, jota keskustelu koskee:',
+      reservationTime: 'Aika',
+      reservationSelect: 'Valitse',
+      reservationError: 'Valitsemasi aika ei ole enää varattavissa',
+      reservationErrorInstruction:
+        'Valitsemasi aika oli jo varattu, valitse toinen aika.',
+      noReservationsText:
+        'Valitussa kyselyssä ei tällä hetkellä ole vapaita aikoja',
+      backButtonText: 'Palaa',
+      cancelTimeButtonText: 'Peru',
+      surveyToastMessage:
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
+      confirmCancel: {
+        title: 'Haluatko perua varauksen?',
+        cancel: 'Alä peru'
+      }
     },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',

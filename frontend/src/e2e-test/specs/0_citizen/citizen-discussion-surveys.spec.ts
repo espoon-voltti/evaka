@@ -26,7 +26,7 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
-import { Page } from '../../utils/page'
+import { Modal, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const e: EnvType[] = ['desktop', 'mobile']
@@ -368,6 +368,11 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       individualEventId,
       reservationId
     )
+
+    const confirmationModal = new Modal(calendarPage.cancelConfirmModal)
+    await confirmationModal.waitUntilVisible()
+    await confirmationModal.submit()
+
     await dayView.assertEventNotShown(testChild.id, individualEventId)
   })
 
@@ -383,6 +388,9 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     )
 
     await surveyModal.cancelReservation(individualEventId, testChild.id)
+    const confirmationModal = new Modal(calendarPage.cancelConfirmModal)
+    await confirmationModal.waitUntilVisible()
+    await confirmationModal.submit()
 
     await surveyModal.assertChildSurvey(
       individualEventId,

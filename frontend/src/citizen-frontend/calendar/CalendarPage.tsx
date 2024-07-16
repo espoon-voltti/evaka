@@ -130,7 +130,6 @@ const CalendarPage = React.memo(function CalendarPage() {
   return (
     <>
       <DailyServiceTimeNotifications />
-
       {renderResult(
         combine(data, events, holidayPeriods),
         ([response, events, holidayPeriods]) => (
@@ -219,7 +218,9 @@ const CalendarPage = React.memo(function CalendarPage() {
                   close={closeModal}
                   childData={response.children}
                   surveys={events.filter(
-                    (e) => e.eventType === 'DISCUSSION_SURVEY'
+                    (e) =>
+                      e.eventType === 'DISCUSSION_SURVEY' &&
+                      e.period.end.isEqualOrAfter(LocalDate.todayInSystemTz())
                   )}
                   openDiscussionReservations={openDiscussionReservationModal}
                 />

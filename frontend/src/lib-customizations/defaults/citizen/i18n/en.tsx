@@ -320,19 +320,39 @@ const en: Translations = {
       PLANNED_ABSENCE: 'Shift work absence'
     },
     discussionTimeReservation: {
-      surveyModalButtonText: 'Siirry ajanvaraukseen',
-      reservationModalButtonText: 'Siirry varaamaan',
-      surveyModalTitle: 'Ajanvaraus',
-      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalButtonText: 'Reserve a discussion time',
+      reservationModalButtonText: 'Reserve a discussion time',
+      surveyModalTitle: 'Time reservation',
+      surveyModalSubTitle: 'Discussion times',
       surveyModalInstruction:
-        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
-      surveyListTitle: 'Varattavat keskustelut',
-      timePreDescriptor: 'klo',
-      reservationLabelText: 'Valittu keskusteluaika:',
-      reservationInfoButtonText: 'Entä jos haluan varata lisää aikoja?',
+        'You have been invited to reserve a discussion time.',
+      surveyListTitle: 'Ongoing discussion surveys',
+      timePreDescriptor: 'at',
+      reservationLabelText: 'Chosen discussion times:',
+      reservationInfoButtonText: 'What if I need multiple times?',
       reservationInfoText:
-        'Ota suoraan yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
-      reservationChildTitle: 'Lapsi, jota keskustelu koskee:'
+        'Contact the staff directly, they can reserve times for you',
+      freeTimesInfoButtonText: 'Free discussion times',
+      freeTimesInfoText:
+        'Choose a time from the options below. You can cancel a reservation in eVaka two business days before the reservation.',
+      cancellationDeadlineInfoMessage:
+        'If you wish to cancel this reservation, contact the staff',
+      reservationChildTitle: 'The child the discussion is related to:',
+      reservationTime: 'Time',
+      reservationSelect: 'Choose',
+      reservationError: 'The chosen time is no longer available',
+      reservationErrorInstruction:
+        'The chosen time has already been reserved, please choose another one.',
+      noReservationsText:
+        'The chosen discussion survey currently has no times available ',
+      backButtonText: 'Back',
+      cancelTimeButtonText: 'Cancel',
+      surveyToastMessage:
+        'You have been invited to reserve a time for a discussion about your child',
+      confirmCancel: {
+        title: 'Do you wish to cancel the reservation?',
+        cancel: 'Do not cancel'
+      }
     },
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:

@@ -13,6 +13,7 @@ import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useUser } from '../auth/state'
@@ -66,15 +67,17 @@ export default React.memo(function ActionPickerModal({
               </IconBackground>
             </Action>
           )}
-          <Action
-            onClick={onOpenDiscussionReservation}
-            data-qa="calendar-action-discussions"
-          >
-            {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
-            <IconBackground>
-              <FontAwesomeIcon icon={faComment} size="1x" />
-            </IconBackground>
-          </Action>
+          {featureFlags.discussionReservations && (
+            <Action
+              onClick={onOpenDiscussionReservation}
+              data-qa="calendar-action-discussions"
+            >
+              {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
+              <IconBackground>
+                <FontAwesomeIcon icon={faComment} size="1x" />
+              </IconBackground>
+            </Action>
+          )}
           <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
             {i18n.calendar.newAbsence}
             <IconBackground>

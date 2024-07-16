@@ -35,6 +35,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { H1, H2, H3, Label, P } from 'lib-components/typography'
@@ -95,6 +99,9 @@ export default React.memo(function DiscussionReservationModal({
 }: Props) {
   const i18n = useTranslation()
   const t = i18n.calendar.discussionTimeReservation
+
+  const [infoOpen, setInfoOpen] = useState(false)
+  const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
   const eventTimeDays: DiscussionTimeDay[] = useMemo(() => {
     const today = LocalDate.todayInHelsinkiTz()
@@ -180,23 +187,57 @@ export default React.memo(function DiscussionReservationModal({
                     <FixedSpaceRow justifyContent="space-between" />
                   </FixedSpaceRow>
                   {eventTimeDays.length > 0 ? (
-                    <ReservationGrid>
-                      <Label />
-                      <Label>{t.reservationTime}</Label>
-                      <Label>{t.reservationSelect}</Label>
-                      {eventTimeDays.map((etd) => (
-                        <React.Fragment key={etd.date}>
-                          {etd.times.map((t, i) => (
-                            <ReservationGridItem
-                              itemData={t}
-                              showDate={i === 0}
-                              bind={eventTimeId}
-                              key={t.id}
-                            />
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </ReservationGrid>
+                    <>
+                      <div>
+                        <FixedSpaceRow gap="m" alignItems="center">
+                          <div>
+                            <H2
+                              noMargin
+                            >{`${i18n.calendar.discussionTimeReservation.freeTimesInfoButtonText}`}</H2>
+                          </div>
+                          <InfoButton
+                            aria-label={i18n.common.openExpandingInfo}
+                            margin="zero"
+                            data-qa="free-times-info-button"
+                            open={infoOpen}
+                            onClick={onInfoClick}
+                          />
+                        </FixedSpaceRow>
+
+                        {infoOpen && (
+                          <ExpandingInfoBox
+                            data-qa="free-times-info-box"
+                            aria-label={
+                              i18n.calendar.discussionTimeReservation
+                                .freeTimesInfoText
+                            }
+                            info={
+                              i18n.calendar.discussionTimeReservation
+                                .freeTimesInfoText
+                            }
+                            width="full"
+                            close={onInfoClick}
+                          />
+                        )}
+                      </div>
+                      <ReservationGrid>
+                        <Label />
+                        <Label>{t.reservationTime}</Label>
+                        <Label>{t.reservationSelect}</Label>
+                        {eventTimeDays.map((etd) => (
+                          <React.Fragment key={etd.date}>
+                            {etd.times.map((t, i) => (
+                              <ReservationGridItem
+                                itemData={t}
+                                showDate={i === 0}
+                                bind={eventTimeId}
+                                key={t.id}
+                              />
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </ReservationGrid>
+                    </>
                   ) : (
                     <P>{t.noReservationsText}</P>
                   )}

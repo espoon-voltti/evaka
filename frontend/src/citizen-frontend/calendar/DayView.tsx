@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faTimes } from 'Icons'
+import { faQuestion, faTimes } from 'Icons'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -43,6 +43,7 @@ import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   LegacyButton,
@@ -63,11 +64,13 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, H2, H3, Label, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -85,6 +88,7 @@ import {
   RoundChildImage
 } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
+import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
 import { isEventTimeCancellable } from './discussion-reservation-modal/discussion-survey'
 import {
   deleteCalendarEventTimeReservationMutation,
@@ -319,14 +323,71 @@ const DayModal = React.memo(function DayModal({
 }: DayModalProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
+  const today = LocalDate.todayInHelsinkiTz()
+  const [confirmationModalState, setConfirmationModalState] =
+    useState<ConfirmModalState>({
+      visible: false,
+      childId: null,
+      eventTimeId: null
+    })
+  const onCancelClick = useCallback(
+    (childId: UUID, eventTimeId: UUID) => {
+      setConfirmationModalState({ visible: true, childId, eventTimeId })
+    },
+    [setConfirmationModalState]
+  )
+
+  const onConfirmClose = useCallback(
+    () =>
+      setConfirmationModalState({
+        visible: false,
+        childId: null,
+        eventTimeId: null
+      }),
+    [setConfirmationModalState]
+  )
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
+      {confirmationModalState.visible && (
+        <MutateFormModal
+          data-qa="confirm-cancel-modal"
+          resolveMutation={deleteCalendarEventTimeReservationMutation}
+          resolveAction={() => {
+            if (
+              confirmationModalState.childId &&
+              confirmationModalState.eventTimeId
+            ) {
+              return {
+                childId: confirmationModalState.childId,
+                calendarEventTimeId: confirmationModalState.eventTimeId
+              }
+            } else return cancelMutation
+          }}
+          rejectAction={onConfirmClose}
+          title={i18n.calendar.discussionTimeReservation.confirmCancel.title}
+          onSuccess={onConfirmClose}
+          rejectLabel={
+            i18n.calendar.discussionTimeReservation.confirmCancel.cancel
+          }
+          resolveLabel={
+            i18n.calendar.discussionTimeReservation.cancelTimeButtonText
+          }
+          type="warning"
+          icon={faQuestion}
+          zIndex={1000}
+        />
+      )}
+      <PlainModal
+        margin="auto"
+        mobileFullScreen
+        data-qa="calendar-dayview"
+        zIndex={100}
+      >
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
-              <DayHeader highlight={date.isEqual(LocalDate.todayInSystemTz())}>
+              <DayHeader highlight={date.isEqual(today)}>
                 <ModalCloseButton
                   close={onClose}
                   closeLabel={i18n.common.closeModal}
@@ -451,6 +512,7 @@ const DayModal = React.memo(function DayModal({
                                   </FixedSpaceColumn>
                                 )
                               } else if (
+                                featureFlags.discussionReservations &&
                                 event.eventType === 'DISCUSSION_SURVEY'
                               ) {
                                 return (
@@ -472,40 +534,54 @@ const DayModal = React.memo(function DayModal({
                                             <P
                                               noMargin
                                               data-qa={`reservation-time-${rt.id}`}
-                                            >{`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}</P>
+                                            >
+                                              {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
+                                            </P>
                                           </div>
-                                          {rt.date.isEqualOrAfter(
-                                            LocalDate.todayInHelsinkiTz()
-                                          ) && (
-                                            <MutateButton
-                                              appearance="inline"
-                                              data-qa={`reservation-cancel-button-${rt.id}`}
-                                              icon={faTimes}
-                                              text={
-                                                i18n.calendar
-                                                  .discussionTimeReservation
-                                                  .cancelTimeButtonText
-                                              }
-                                              disabled={
-                                                !isEventTimeCancellable(
-                                                  rt,
-                                                  LocalDate.todayInHelsinkiTz()
-                                                )
-                                              }
-                                              mutation={
-                                                deleteCalendarEventTimeReservationMutation
-                                              }
-                                              onClick={() => {
-                                                if (rt.childId !== null) {
-                                                  return {
-                                                    childId: rt.childId,
-                                                    calendarEventTimeId: rt.id
-                                                  }
-                                                } else {
-                                                  return cancelMutation
+                                          {rt.date.isEqualOrAfter(today) && (
+                                            <>
+                                              <Button
+                                                appearance="inline"
+                                                data-qa={`reservation-cancel-button-${rt.id}`}
+                                                icon={faTimes}
+                                                text={
+                                                  i18n.calendar
+                                                    .discussionTimeReservation
+                                                    .cancelTimeButtonText
                                                 }
-                                              }}
-                                            />
+                                                disabled={
+                                                  !isEventTimeCancellable(
+                                                    rt,
+                                                    today
+                                                  )
+                                                }
+                                                onClick={() => {
+                                                  if (rt.childId !== null) {
+                                                    onCancelClick(
+                                                      rt.childId,
+                                                      rt.id
+                                                    )
+                                                  }
+                                                }}
+                                              />
+                                              {!isEventTimeCancellable(
+                                                rt,
+                                                today
+                                              ) && (
+                                                <InfoBox
+                                                  aria-label={
+                                                    i18n.calendar
+                                                      .discussionTimeReservation
+                                                      .cancellationDeadlineInfoMessage
+                                                  }
+                                                  message={
+                                                    i18n.calendar
+                                                      .discussionTimeReservation
+                                                      .cancellationDeadlineInfoMessage
+                                                  }
+                                                />
+                                              )}
+                                            </>
                                           )}
                                         </DiscussionReservationContainer>
                                       ))}

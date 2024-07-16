@@ -329,10 +329,15 @@ export default {
         'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
       surveyListTitle: 'Varattavat keskustelut',
       timePreDescriptor: 'klo',
-      reservationLabelText: 'Valittu keskusteluaika:',
+      reservationLabelText: 'Valitut keskusteluajat:',
       reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
       reservationInfoText:
         'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      freeTimesInfoButtonText: 'Vapaat ajat',
+      freeTimesInfoText:
+        'Valitse sopiva aika alla näkyvistä vaihtoehdoista. Voit perua ajan eVakan kautta kaksi arkipäivää ennen varattua aikaa.',
+      cancellationDeadlineInfoMessage:
+        'Jos haluat perua tämän keskusteluajan, ole yhteydessä henkilökuntaan',
       reservationChildTitle: 'Lapsi, jota keskustelu koskee:',
       reservationTime: 'Aika',
       reservationSelect: 'Valitse',
@@ -344,7 +349,11 @@ export default {
       backButtonText: 'Palaa',
       cancelTimeButtonText: 'Peru',
       surveyToastMessage:
-        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.'
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
+      confirmCancel: {
+        title: 'Haluatko perua varauksen?',
+        cancel: 'Alä peru'
+      }
     },
 
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
