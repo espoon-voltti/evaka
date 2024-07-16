@@ -35,7 +35,6 @@ const customizations: EmployeeCustomizations = overrides
   ? mergeWith({}, defaults, overrides, mergeCustomizer)
   : defaults
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const {
   appConfig,
   cityLogo,

@@ -10,16 +10,14 @@ src/lib-customizations/espoo
 !*.json
 !*.lock
 !*.js
+!*.mjs
 !*.sh
 
 !.yarn/releases
 !.yarn/plugins
 !.yarnrc.yml
 
-!eslint-plugin/*.js
-!eslint-plugin/*.json
-!eslint-plugin/rules
-
+!eslint-plugin
 !espoo-customizations
 
 !node_modules/@fortawesome/pro-*

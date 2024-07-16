@@ -123,7 +123,6 @@ interface ChildIncomeTypeSelectionData {
   entrepreneurSelected: boolean
 }
 
-// eslint-disable-next-line react/display-name
 const ChildIncomeTimeRangeSelection = React.memo(
   React.forwardRef(function ChildIncomeTypeSelection(
     {
@@ -211,7 +210,6 @@ const Confidential = styled.div`
   flex: 0 0 auto;
 `
 
-// eslint-disable-next-line react/display-name
 export default React.memo(
   React.forwardRef(function ChildIncomeStatementForm(
     {

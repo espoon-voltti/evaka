@@ -70,7 +70,6 @@ interface Props {
   onCancel: () => void
 }
 
-// eslint-disable-next-line react/display-name
 export default React.memo(
   React.forwardRef(function IncomeStatementForm(
     {
@@ -287,7 +286,6 @@ interface IncomeTypeSelectionData {
   entrepreneurSelected: boolean
 }
 
-// eslint-disable-next-line react/display-name
 const IncomeTypeSelection = React.memo(
   React.forwardRef(function IncomeTypeSelection(
     {

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+/* global self */
+
 /// <reference lib="WebWorker" />
 /** @type {ServiceWorkerGlobalScope} */
 const serviceWorker = self

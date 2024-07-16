@@ -62,11 +62,9 @@ export default React.memo(function Heading({
                         <React.Fragment key={section}>
                           <div>
                             <strong>
-                              {/*eslint-disable-next-line @typescript-eslint/no-unsafe-member-access*/}
                               {t.applications.editor[section].title}:{' '}
                             </strong>
                             {t.applications.editor.heading.errors(
-                              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                               getErrorCount(errors[section])
                             )}
                           </div>

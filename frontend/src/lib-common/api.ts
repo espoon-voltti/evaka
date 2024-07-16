@@ -165,7 +165,6 @@ export class Success<T> {
     return fs.success(this.value, this.isReloading)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getOrElse<A>(_other: A): A | T {
     return this.value
   }
