@@ -31,7 +31,6 @@ const customizations: EmployeeMobileCustomizations = overrides
   ? mergeWith({}, defaults, overrides, mergeCustomizer)
   : defaults
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { appConfig, featureFlags }: EmployeeMobileCustomizations = customizations
 export { appConfig, featureFlags }
 

@@ -140,7 +140,6 @@ const formatMessageAccountName = (
     ? `${account.name} (${i18n.messages.staffAnnotation})`
     : account.name
 
-// eslint-disable-next-line react/display-name
 const SingleMessage = React.memo(
   React.forwardRef(function SingleMessage(
     {

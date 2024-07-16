@@ -2,14 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-/* eslint-disable
-  @typescript-eslint/no-unsafe-member-access,
-  @typescript-eslint/no-unsafe-assignment,
-  @typescript-eslint/no-unsafe-call,
-  @typescript-eslint/no-var-requires,
-  no-undef
-*/
-
 const NodeEnvironment = require('jest-environment-node').default
 
 class PlaywrightEnvironment extends NodeEnvironment {

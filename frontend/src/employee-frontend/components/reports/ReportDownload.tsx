@@ -35,7 +35,6 @@ interface Props<T> {
   'data-qa'?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 function ReportDownload<T extends object>({
   data,
   headers,

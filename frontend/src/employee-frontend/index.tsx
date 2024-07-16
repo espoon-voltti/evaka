@@ -49,7 +49,6 @@ Chart.defaults.font = {
 }
 Chart.defaults.color = colors.grayscale.g100
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!)
 root.render(<RouterProvider router={router} />)
 

@@ -68,10 +68,10 @@ function useLocaleWithCapitalizedNames(locale: 'fi' | 'sv' | 'en'): Locale {
       localize: {
         ...localeData.localize,
         month: (m: Month) =>
-          capitalizeFirstLetter(localeData.localize?.month(m) ?? ''), // eslint-disable-line @typescript-eslint/no-unsafe-argument
+          capitalizeFirstLetter(localeData.localize?.month(m) ?? ''),
         day: (d: Day) =>
           capitalizeFirstLetter(
-            localeData.localize?.day(d, { width: 'short' }) ?? '' // eslint-disable-line @typescript-eslint/no-unsafe-argument
+            localeData.localize?.day(d, { width: 'short' }) ?? ''
           )
       }
     }),

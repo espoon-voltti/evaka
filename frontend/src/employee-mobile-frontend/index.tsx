@@ -29,7 +29,6 @@ Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!)
 root.render(<App />)
 

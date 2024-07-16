@@ -91,7 +91,6 @@ export default React.memo(function CreateOrEditTemplateModal({
           } else if (res.isFailure) {
             setErrorMessage({
               resolveLabel: i18n.common.ok,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               text:
                 (res?.errorCode &&
                   t.errorCodes[res.errorCode as CurriculumTemplateError]) ||
