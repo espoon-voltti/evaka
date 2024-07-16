@@ -329,9 +329,9 @@ const sv: Translations = {
     notYetReservable: 'Närvaroanmälningar kan ännu inte göras',
     notYetReservableInfo: (
       period: FiniteDateRange,
-      reservationOpensOn: LocalDate
+      _reservationOpensOn: LocalDate
     ) =>
-      `Närvaroanmälningar för perioden ${period.format()} öppnas ${reservationOpensOn.format()}`,
+      `Närvaroanmälningar för perioden ${period.format()} kan ännu inte göras`,
     missingReservation: 'Ingen närvaro',
     reservationNotRequired: 'Närvaroanmälan krävs inte',
     termBreak: 'Ingen undervisning idag',

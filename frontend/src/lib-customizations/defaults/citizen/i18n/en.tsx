@@ -332,9 +332,9 @@ const en: Translations = {
     notYetReservable: 'Reservations cannot be made yet',
     notYetReservableInfo: (
       period: FiniteDateRange,
-      reservationOpensOn: LocalDate
+      _reservationOpensOn: LocalDate
     ) =>
-      `Reservations for holiday period ${period.format()} will open on ${reservationOpensOn.format()}`,
+      `Reservations for holiday period ${period.format()} cannot be made yet`,
     missingReservation: 'No attendance',
     reservationNotRequired: 'Reservation not required',
     termBreak: 'No teaching today',
