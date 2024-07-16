@@ -14,14 +14,12 @@ import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
-import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -161,16 +159,6 @@ class CalendarEventNotificationService(
             tx.getChildGuardiansAndFosterParents(childId, LocalDate.now()).mapNotNull {
                 tx.getPersonById(it)
             }
-        }
-    }
-
-    private fun getDiscussionDetailsForEventTime(
-        db: Database.Connection,
-        eventTimeId: CalendarEventTimeId
-    ): DiscussionTimeDetailsRow {
-        return db.read { tx ->
-            tx.getDiscussionTimeDetailsByEventTimeId(eventTimeId)
-                ?: throw NotFound("Event not found")
         }
     }
 }
