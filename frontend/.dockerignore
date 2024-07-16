@@ -10,6 +10,7 @@ src/lib-customizations/espoo
 !*.json
 !*.lock
 !*.js
+!*.mjs
 !*.sh
 
 !.yarn/releases

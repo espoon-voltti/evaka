@@ -53,9 +53,9 @@ updates:
           - "jest-junit"
       lint:
         patterns:
-          - "@typescript-eslint/*"
           - "eslint*"
           - "prettier"
+          - "typescript-eslint"
       playwright:
         patterns:
           - "@playwright/*"
