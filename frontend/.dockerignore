@@ -17,10 +17,7 @@ src/lib-customizations/espoo
 !.yarn/plugins
 !.yarnrc.yml
 
-!eslint-plugin/*.js
-!eslint-plugin/*.json
-!eslint-plugin/rules
-
+!eslint-plugin
 !espoo-customizations
 
 !node_modules/@fortawesome/pro-*

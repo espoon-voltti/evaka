@@ -14,8 +14,8 @@
     "build": "webpack --mode production",
     "build:dev": "node build.js --dev",
     "build:serve": "node build.js --dev --watch --serve",
-    "test": "jest src/*-frontend src/lib-*",
-    "test:watch": "jest --watchAll src/*-frontend src/lib-*",
+    "test": "jest src/*-frontend src/lib-* eslint-plugin",
+    "test:watch": "yarn test --watchAll",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
     "e2e-test": "LANG=fi-FI LANGUAGE=fi_FI jest --runInBand src/e2e-test/specs",
     "e2e-ci": "LANG=fi-FI LANGUAGE=fi_FI BASE_URL=${BASE_URL:-http://localhost:9099} jest --runInBand --retries=2"
@@ -186,7 +186,8 @@
       "./src/e2e-test",
       "./src/employee-frontend",
       "./src/lib-common",
-      "./src/lib-components"
+      "./src/lib-components",
+      "./eslint-plugin"
     ],
     "reporters": [
       "default",
