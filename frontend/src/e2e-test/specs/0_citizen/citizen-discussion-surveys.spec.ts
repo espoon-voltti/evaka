@@ -2,24 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  DevCalendarEventTime,
-  DevCareArea,
-  DevDaycare
-} from 'e2e-test/generated/api-types'
-import DateRange from 'lib-common/date-range'
+import { DevCalendarEventTime, DevPerson } from 'e2e-test/generated/api-types'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import TimeRange from 'lib-common/time-range'
 
 import {
   createDaycarePlacementFixture,
   Fixture,
+  testAdult,
+  testCareArea,
+  testChild,
+  testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import { PersonDetail } from '../../dev-api/types'
 import {
   createChildren,
   createDaycarePlacements,
@@ -37,7 +34,7 @@ const e: EnvType[] = ['desktop', 'mobile']
 let page: Page
 let header: CitizenHeader
 let calendarPage: CitizenCalendarPage
-let children: PersonDetail[]
+let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 3)
 
 const groupEventId = uuidv4()
@@ -49,160 +46,20 @@ const restrictedEventId = uuidv4()
 const restrictedEventTimeId = uuidv4()
 const noncancellableEventTimeId = uuidv4()
 
-export const enduserGuardianFixture: PersonDetail = {
-  id: '87a5c962-9b3d-11ea-bb37-0242ac130002',
-  ssn: '070644-937X',
-  firstName: 'Johannes Olavi Antero Tapio',
-  lastName: 'Karhula',
-  email: 'johannes.karhula@evaka.test',
-  phone: '123456789',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(1944, 7, 7),
-  streetAddress: 'Kamreerintie 1',
-  postalCode: '00340',
-  postOffice: 'Espoo',
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-const enduserChildFixtureJari: PersonDetail = {
-  id: '572adb7e-9b3d-11ea-bb37-0242ac130002',
-  ssn: '070714A9126',
-  firstName: 'Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani',
-  lastName: 'Karhula',
-  preferredName: 'Jari',
-  email: '',
-  phone: '',
-  language: 'fi',
-  dateOfBirth: LocalDate.of(2014, 7, 7),
-  streetAddress: enduserGuardianFixture.streetAddress,
-  postalCode: enduserGuardianFixture.postalCode,
-  postOffice: enduserGuardianFixture.postOffice,
-  nationalities: ['FI'],
-  restrictedDetailsEnabled: false,
-  restrictedDetailsEndDate: null
-}
-
-export const careAreaFixture: DevCareArea = {
-  id: '674dfb66-8849-489e-b094-e6a0ebfb3c71',
-  name: 'Superkeskus',
-  shortName: 'super-keskus',
-  areaCode: 299,
-  subCostCenter: '99'
-}
-
-export const fullDayTimeRange: TimeRange = new TimeRange(
-  LocalTime.MIN,
-  LocalTime.parse('23:59')
-)
-export const daycareFixture: DevDaycare = {
-  id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
-  areaId: careAreaFixture.id,
-  name: 'Alkuräjähdyksen päiväkoti',
-  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
-  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
-  dailyPreparatoryTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-  costCenter: '31500',
-  visitingAddress: {
-    streetAddress: 'Kamreerintie 1',
-    postalCode: '02210',
-    postOffice: 'Espoo'
-  },
-  decisionCustomization: {
-    daycareName: 'Päiväkoti päätöksellä',
-    preschoolName: 'Päiväkoti päätöksellä',
-    handler: 'Käsittelijä',
-    handlerAddress: 'Käsittelijän osoite'
-  },
-  providerType: 'MUNICIPAL',
-  operationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    null,
-    null
-  ],
-  shiftCareOperationTimes: [
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange,
-    fullDayTimeRange
-  ],
-  shiftCareOpenOnHolidays: true,
-  location: {
-    lat: 60.20377343765089,
-    lon: 24.655715743526994
-  },
-  enabledPilotFeatures: [
-    'MESSAGING',
-    'MOBILE',
-    'RESERVATIONS',
-    'VASU_AND_PEDADOC',
-    'MOBILE_MESSAGING',
-    'PLACEMENT_TERMINATION'
-  ],
-  businessId: '',
-  iban: '',
-  providerId: '',
-  capacity: 0,
-  openingDate: null,
-  closingDate: null,
-  ghostUnit: false,
-  invoicedByMunicipality: true,
-  uploadChildrenToVarda: true,
-  uploadToVarda: true,
-  uploadToKoski: true,
-  language: 'fi',
-  mailingAddress: {
-    poBox: null,
-    postOffice: null,
-    postalCode: null,
-    streetAddress: null
-  },
-  unitManager: {
-    email: '',
-    name: 'Unit Manager',
-    phone: ''
-  },
-  financeDecisionHandler: null,
-  clubApplyPeriod: null,
-  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  email: null,
-  phone: null,
-  url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
-  additionalInfo: null,
-  dwCostCenter: 'dw-test',
-  mealtimeBreakfast: null,
-  mealtimeLunch: null,
-  mealtimeSnack: null,
-  mealtimeSupper: null,
-  mealtimeEveningSnack: null
-}
-
 let reservationData: DevCalendarEventTime
 
 beforeEach(async () => {
   await resetServiceState()
-  const careArea = await Fixture.careArea().with(careAreaFixture).save()
-  await Fixture.daycare().with(daycareFixture).careArea(careArea).save()
+  await Fixture.careArea(testCareArea).save()
+  await Fixture.daycare({ ...testDaycare, areaId: testCareArea.id }).save()
 
-  await Fixture.person().with(enduserChildFixtureJari).saveAndUpdateMockVtj()
+  await Fixture.person(testChild).saveChild({ updateMockVtj: true })
 
-  await Fixture.person()
-    .with(enduserGuardianFixture)
-    .withDependants(enduserChildFixtureJari)
-    .saveAndUpdateMockVtj()
+  await Fixture.person(testAdult).saveAdult({
+    updateMockVtjWithDependants: [testChild]
+  })
 
-  children = [enduserChildFixtureJari]
+  children = [testChild]
 
   const cs = children.map(({ id }) => ({
     id,
@@ -225,169 +82,135 @@ beforeEach(async () => {
       createDaycarePlacementFixture(
         placementIds.get(child.id) ?? '',
         child.id,
-        daycareFixture.id,
+        testDaycare.id,
         today,
         today.addYears(1)
       )
     )
   })
 
-  const daycareGroup = await Fixture.daycareGroup()
-    .with({
-      daycareId: daycareFixture.id,
-      name: 'Group 1'
-    })
-    .save()
+  const daycareGroup = await Fixture.daycareGroup({
+    daycareId: testDaycare.id,
+    name: 'Group 1'
+  }).save()
 
   for (const child of children) {
-    await Fixture.groupPlacement()
-      .with({
-        startDate: today,
-        endDate: today.addYears(1),
-        daycareGroupId: daycareGroup.data.id,
-        daycarePlacementId: placementIds.get(child.id) ?? ''
-      })
-      .save()
+    await Fixture.groupPlacement({
+      startDate: today,
+      endDate: today.addYears(1),
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placementIds.get(child.id) ?? ''
+    }).save()
   }
 
-  const { data: groupEvent } = await Fixture.calendarEvent()
-    .with({
-      id: groupEventId,
-      title: 'Group-wide survey',
-      description: 'Whole group',
-      period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
-      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
-      eventType: 'DISCUSSION_SURVEY'
-    })
-    .save()
+  const groupEvent = await Fixture.calendarEvent({
+    id: groupEventId,
+    title: 'Group-wide survey',
+    description: 'Whole group',
+    period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
+    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+    eventType: 'DISCUSSION_SURVEY'
+  }).save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: groupEvent.id,
-      unitId: daycareFixture.id,
-      groupId: daycareGroup.data.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: groupEvent.id,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id
+  }).save()
 
-  await Fixture.calendarEventTime()
-    .with({
-      calendarEventId: groupEvent.id,
-      date: today.addDays(3),
-      start: LocalTime.of(8, 0),
-      end: LocalTime.of(8, 30),
-      childId: null
-    })
-    .save()
+  await Fixture.calendarEventTime({
+    calendarEventId: groupEvent.id,
+    date: today.addDays(3),
+    start: LocalTime.of(8, 0),
+    end: LocalTime.of(8, 30),
+    childId: null
+  }).save()
 
-  await Fixture.calendarEventTime()
-    .with({
-      id: restrictedEventTimeId,
-      calendarEventId: groupEvent.id,
-      date: today.addDays(1),
-      start: LocalTime.of(9, 0),
-      end: LocalTime.of(9, 30),
-      childId: null
-    })
-    .save()
-  await Fixture.calendarEventTime()
-    .with({
-      id: groupReservationId,
-      calendarEventId: groupEvent.id,
-      date: today.addDays(3),
-      start: LocalTime.of(9, 0),
-      end: LocalTime.of(9, 30),
-      childId: null
-    })
-    .save()
+  await Fixture.calendarEventTime({
+    id: restrictedEventTimeId,
+    calendarEventId: groupEvent.id,
+    date: today.addDays(1),
+    start: LocalTime.of(9, 0),
+    end: LocalTime.of(9, 30),
+    childId: null
+  }).save()
+  await Fixture.calendarEventTime({
+    id: groupReservationId,
+    calendarEventId: groupEvent.id,
+    date: today.addDays(3),
+    start: LocalTime.of(9, 0),
+    end: LocalTime.of(9, 30),
+    childId: null
+  }).save()
 
-  const { data: individualEvent } = await Fixture.calendarEvent()
-    .with({
-      id: individualEventId,
-      title: 'Individual survey',
-      description: 'Just Jari',
-      period: new FiniteDateRange(today.addDays(3), today.addDays(3)),
-      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
-      eventType: 'DISCUSSION_SURVEY'
-    })
-    .save()
+  const individualEvent = await Fixture.calendarEvent({
+    id: individualEventId,
+    title: 'Individual survey',
+    description: 'Just Jari',
+    period: new FiniteDateRange(today.addDays(3), today.addDays(3)),
+    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+    eventType: 'DISCUSSION_SURVEY'
+  }).save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: individualEvent.id,
-      unitId: daycareFixture.id,
-      groupId: daycareGroup.data.id,
-      childId: enduserChildFixtureJari.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: individualEvent.id,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id,
+    childId: testChild.id
+  }).save()
 
-  reservationData = (
-    await Fixture.calendarEventTime()
-      .with({
-        id: reservationId,
-        calendarEventId: individualEvent.id,
-        date: today.addDays(3),
-        start: LocalTime.of(12, 0),
-        end: LocalTime.of(12, 30),
-        childId: enduserChildFixtureJari.id
-      })
-      .save()
-  ).data
+  reservationData = await Fixture.calendarEventTime({
+    id: reservationId,
+    calendarEventId: individualEvent.id,
+    date: today.addDays(3),
+    start: LocalTime.of(12, 0),
+    end: LocalTime.of(12, 30),
+    childId: testChild.id
+  }).save()
 
-  const { data: unitEvent } = await Fixture.calendarEvent()
-    .with({
-      id: unitEventId,
-      title: 'Unit event',
-      description: 'For everyone in the unit',
-      period: new FiniteDateRange(today, today.addDays(4)),
-      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
-    })
-    .save()
+  const unitEvent = await Fixture.calendarEvent({
+    id: unitEventId,
+    title: 'Unit event',
+    description: 'For everyone in the unit',
+    period: new FiniteDateRange(today, today.addDays(4)),
+    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN)
+  }).save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: unitEvent.id,
-      unitId: daycareFixture.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: unitEvent.id,
+    unitId: testDaycare.id
+  }).save()
 
-  const { data: restrictedEvent } = await Fixture.calendarEvent()
-    .with({
-      id: restrictedEventId,
-      title: 'Restricted survey',
-      description: 'Too late',
-      period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
-      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
-      eventType: 'DISCUSSION_SURVEY'
-    })
-    .save()
+  const restrictedEvent = await Fixture.calendarEvent({
+    id: restrictedEventId,
+    title: 'Restricted survey',
+    description: 'Too late',
+    period: new FiniteDateRange(today.addDays(1), today.addDays(3)),
+    modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+    eventType: 'DISCUSSION_SURVEY'
+  }).save()
 
-  await Fixture.calendarEventAttendee()
-    .with({
-      calendarEventId: restrictedEvent.id,
-      unitId: daycareFixture.id,
-      groupId: daycareGroup.data.id
-    })
-    .save()
+  await Fixture.calendarEventAttendee({
+    calendarEventId: restrictedEvent.id,
+    unitId: testDaycare.id,
+    groupId: daycareGroup.id
+  }).save()
 
-  await Fixture.calendarEventTime()
-    .with({
-      calendarEventId: restrictedEvent.id,
-      date: today.addDays(3),
-      start: LocalTime.of(8, 0),
-      end: LocalTime.of(8, 30),
-      childId: null
-    })
-    .save()
-  await Fixture.calendarEventTime()
-    .with({
-      id: noncancellableEventTimeId,
-      calendarEventId: restrictedEvent.id,
-      date: today.addDays(1),
-      start: LocalTime.of(10, 0),
-      end: LocalTime.of(10, 30),
-      childId: enduserChildFixtureJari.id
-    })
-    .save()
+  await Fixture.calendarEventTime({
+    calendarEventId: restrictedEvent.id,
+    date: today.addDays(3),
+    start: LocalTime.of(8, 0),
+    end: LocalTime.of(8, 30),
+    childId: null
+  }).save()
+  await Fixture.calendarEventTime({
+    id: noncancellableEventTimeId,
+    calendarEventId: restrictedEvent.id,
+    date: today.addDays(1),
+    start: LocalTime.of(10, 0),
+    end: LocalTime.of(10, 30),
+    childId: testChild.id
+  }).save()
 })
 
 describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
@@ -402,7 +225,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
       screen: viewport,
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page)
+    await enduserLogin(page, testAdult)
     header = new CitizenHeader(page, env)
     calendarPage = new CitizenCalendarPage(page, env)
     await header.selectTab('calendar')
@@ -425,7 +248,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   test('Day modals have correct events', async () => {
     let dayView = await calendarPage.openDayView(today)
 
-    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+    await dayView.assertEvent(testChild.id, unitEventId, {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
     })
@@ -433,12 +256,12 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(1))
-    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+    await dayView.assertEvent(testChild.id, unitEventId, {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
     })
     await dayView.assertDiscussionReservation(
-      enduserChildFixtureJari.id,
+      testChild.id,
       restrictedEventId,
       noncancellableEventTimeId,
       false,
@@ -451,12 +274,12 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(3))
-    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+    await dayView.assertEvent(testChild.id, unitEventId, {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
     })
     await dayView.assertDiscussionReservation(
-      enduserChildFixtureJari.id,
+      testChild.id,
       individualEventId,
       reservationId,
       true,
@@ -466,14 +289,11 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
         reservationText: `klo ${reservationData.start.format()} - ${reservationData.end.format()}`
       }
     )
-    await dayView.assertEventNotShown(
-      enduserChildFixtureJari.id,
-      restrictedEventId
-    )
+    await dayView.assertEventNotShown(testChild.id, restrictedEventId)
     await dayView.close()
 
     dayView = await calendarPage.openDayView(today.addDays(4))
-    await dayView.assertEvent(enduserChildFixtureJari.id, unitEventId, {
+    await dayView.assertEvent(testChild.id, unitEventId, {
       title: 'Unit event / Alkuräjähdyksen päiväkoti',
       description: 'For everyone in the unit'
     })
@@ -484,13 +304,13 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     await calendarPage.closeToasts()
     await surveyModal.assertChildSurvey(
       groupEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Group-wide survey'
     )
 
     await surveyModal.assertChildReservation(
       individualEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Individual survey',
       reservationId,
       `to 6.1. klo 12:00 - 12:30`,
@@ -499,7 +319,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
 
     await surveyModal.assertChildReservation(
       restrictedEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Restricted survey',
       noncancellableEventTimeId,
       `ti 4.1. klo 10:00 - 10:30`,
@@ -510,7 +330,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   test('Citizen can reserve a discussion time', async () => {
     const reservationModal = await calendarPage.openDiscussionReservationModal(
       groupEventId,
-      enduserChildFixtureJari.id
+      testChild.id
     )
     await reservationModal.reserveEventTime(groupReservationId)
 
@@ -519,7 +339,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     )
     await surveyModal.assertChildReservation(
       groupEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Group-wide survey',
       groupReservationId,
       `to 6.1. klo 09:00 - 09:30`,
@@ -536,7 +356,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     }
 
     await dayView.assertDiscussionReservation(
-      enduserChildFixtureJari.id,
+      testChild.id,
       individualEventId,
       reservationId,
       true,
@@ -544,35 +364,29 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     )
 
     await dayView.cancelDiscussionReservation(
-      enduserChildFixtureJari.id,
+      testChild.id,
       individualEventId,
       reservationId
     )
-    await dayView.assertEventNotShown(
-      enduserChildFixtureJari.id,
-      individualEventId
-    )
+    await dayView.assertEventNotShown(testChild.id, individualEventId)
   })
 
   test('Citizen can cancel a discussion time from survey modal', async () => {
     const surveyModal = await calendarPage.openDiscussionSurveyModal()
     await surveyModal.assertChildReservation(
       individualEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Individual survey',
       reservationId,
       `to 6.1. klo 12:00 - 12:30`,
       true
     )
 
-    await surveyModal.cancelReservation(
-      individualEventId,
-      enduserChildFixtureJari.id
-    )
+    await surveyModal.cancelReservation(individualEventId, testChild.id)
 
     await surveyModal.assertChildSurvey(
       individualEventId,
-      enduserChildFixtureJari.id,
+      testChild.id,
       'Individual survey'
     )
   })
@@ -580,7 +394,7 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
   test('Citizen is not offered times for the next day', async () => {
     const reservationModal = await calendarPage.openDiscussionReservationModal(
       groupEventId,
-      enduserChildFixtureJari.id
+      testChild.id
     )
     await reservationModal.assertEventTimeNotShown(restrictedEventTimeId)
   })
