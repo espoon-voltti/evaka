@@ -333,9 +333,8 @@ export default {
     notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
     notYetReservableInfo: (
       period: FiniteDateRange,
-      reservationOpensOn: LocalDate
-    ) =>
-      `Ilmoittautuminen loma-ajalle ${period.format()} avataan ${reservationOpensOn.format()}`,
+      _reservationOpensOn: LocalDate
+    ) => `Loma-ajalle ${period.format()} ei voi vielä tehdä ilmoituksia`,
     missingReservation: 'Ilmoitus puuttuu',
     reservationNotRequired: 'Ilmoitusta ei tarvita',
     termBreak: 'Ei opetusta tänään',
