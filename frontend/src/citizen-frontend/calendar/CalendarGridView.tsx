@@ -50,7 +50,6 @@ import MonthlyHoursSummary, { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
-import { showModalEventTime } from './discussion-reservation-modal/discussion-survey'
 import { useSummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
@@ -67,6 +66,7 @@ export interface Props {
   includeWeekends: boolean
   dayIsReservable: (date: LocalDate) => boolean
   events: CitizenCalendarEvent[]
+  isDiscussionActionVisible: boolean
 }
 
 export function countEventsForDay(
@@ -122,7 +122,8 @@ export default React.memo(function CalendarGridView({
   selectDate,
   includeWeekends,
   dayIsReservable,
-  events
+  events,
+  isDiscussionActionVisible
 }: Props) {
   const i18n = useTranslation()
   const calendarMonths = useMemo(
@@ -164,20 +165,6 @@ export default React.memo(function CalendarGridView({
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
 
-  const discussionSurveys = useMemo(
-    () =>
-      events.filter(
-        (e) =>
-          e.eventType === 'DISCUSSION_SURVEY' &&
-          Object.values(e.timesByChild).some((times) =>
-            times.some((t) =>
-              showModalEventTime(t, LocalDate.todayInHelsinkiTz())
-            )
-          )
-      ),
-    [events]
-  )
-
   return (
     <>
       <StickyBottomBar>
@@ -195,18 +182,17 @@ export default React.memo(function CalendarGridView({
               data-qa="open-holiday-modal"
             />
           )}
-          {featureFlags.discussionReservations &&
-            discussionSurveys.length > 0 && (
-              <Button
-                appearance="inline"
-                onClick={onOpenDiscussionReservations}
-                text={
-                  i18n.calendar.discussionTimeReservation.surveyModalButtonText
-                }
-                icon={faComment}
-                data-qa="open-discussions-modal"
-              />
-            )}
+          {featureFlags.discussionReservations && isDiscussionActionVisible && (
+            <Button
+              appearance="inline"
+              onClick={onOpenDiscussionReservations}
+              text={
+                i18n.calendar.discussionTimeReservation.surveyModalButtonText
+              }
+              icon={faComment}
+              data-qa="open-discussions-modal"
+            />
+          )}
           <Button
             appearance="inline"
             onClick={onCreateAbsences}

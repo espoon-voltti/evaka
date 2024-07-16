@@ -30,6 +30,7 @@ interface Props {
   openAbsences: (initialDate: LocalDate | undefined) => void
   openHolidays: () => void
   openDiscussionReservations: (initialDate: LocalDate | undefined) => void
+  isDiscussionActionVisible: boolean
 }
 
 export default React.memo(function ActionPickerModal({
@@ -37,7 +38,8 @@ export default React.memo(function ActionPickerModal({
   openReservations,
   openAbsences,
   openHolidays,
-  openDiscussionReservations
+  openDiscussionReservations,
+  isDiscussionActionVisible
 }: Props) {
   const i18n = useTranslation()
   const onCreateAbsences = useCallback(
@@ -67,7 +69,7 @@ export default React.memo(function ActionPickerModal({
               </IconBackground>
             </Action>
           )}
-          {featureFlags.discussionReservations && (
+          {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Action
               onClick={onOpenDiscussionReservation}
               data-qa="calendar-action-discussions"
