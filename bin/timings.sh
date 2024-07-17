@@ -1,27 +1,24 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-# shellcheck disable=SC2207
 
 # Split test in even chunks by execution duration
 # Fetches and parses durations from github action job logs
 #
-# Usage:   ./timings <test-number> <max-test>
-# Example: ./timings 1 2 # first chunk of total of two chunks
-#          ./timings 2 2 # second chunk of total of two chunks
+# Usage:   ./timings <num-chunks> <chunk_file-pattern>
+# Example: ./timings 5 /tmp/chunk-{}.txt
+# Outputs: /tmp/chunk-1.txt, /tmp/chunk-2.txt, ..., /tmp/chunk-5.txt
 
 set -euo pipefail
-#set -x
-SPLIT_PRINT="$1"
-SPLIT_COUNT="$2"
+NUM_CHUNKS="$1"
+FILENAME_PATTERN="$2"
 
 cd "$( dirname "${BASH_SOURCE[0]}")/.."
 
 _get_log_output() {
-    run_id="$(gh run list -w build.yml --json headBranch,status,databaseId --jq '.[] | select(.status == "completed" and .headBranch == "master")' -L 100 | sed '1!d' | jq -r .databaseId)"
+    run_id="$(gh run list -w build.yml --json headBranch,status,conclusion,databaseId --jq '.[] | select(.status == "completed" and .conclusion == "success" and .headBranch == "master")' -L 100 | sed '1!d' | jq -r .databaseId)"
     if test -z "$run_id"; then
         echo "Could not get run ID"
         exit 1
@@ -44,7 +41,7 @@ get_log_output() {
 # Find test files and durations from logs and store into $timings
 declare -A timings
 while IFS="" read -r line || [ -n "$line" ]; do
-    regex="(src/e2e-test/specs.*)\s\(([0-9]+\.[0-9]+) s\)"
+    regex="(src/e2e-test/specs.*) \(([0-9]+\.[0-9]+) s\)"
     if [[ $line =~ $regex ]]; then
         timings["${BASH_REMATCH[1]}"]="${BASH_REMATCH[2]}"
     else
@@ -52,39 +49,53 @@ while IFS="" read -r line || [ -n "$line" ]; do
     fi
 done < <( get_log_output | grep '^e2e' | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | grep ' e2e-test ' )
 
-# Set missing test times to zeros
+# Jest only reports times for test suites that take >5 seconds. Add missing files using 3 seconds as the time.
 while IFS="" read -r line || [ -n "$line" ]; do
-    [ "${timings[$line]+found}" ] || timings["$line"]="0"
-done < <(cd frontend; find src/e2e-test/specs/ -type f -name '*.ts' ; cd ..)
+    [ "${timings[$line]+found}" ] || timings["$line"]="3.0"
+done < <(cd frontend; find src/e2e-test/specs -type f -name '*.ts' ; cd ..)
 
-# Sort files by time and put $lines array
-lines=($(
+# Sort files by time, longest time first
+lines="$(
     for key in "${!timings[@]}"; do
         echo "${timings[$key]} $key"
-    done | sort -n | cut -d ' ' -f 2
-))
+    done | sort -gr | cut -d ' ' -f 2
+)"
 
-# Poor man algorithm to split test to even chunks by test execution duration
-# Takes first and last element from list sorted by duration
-current_split=1
-while true; do
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[0]}"
-    fi
-    lines=("${lines[@]:1}")
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[-1]}"
-    fi
-    unset 'lines[-1]'
+# Initialize buckets
+declare -A buckets
+declare -A bucket_sums
+for ((i=0; i<NUM_CHUNKS; i++)); do
+    buckets[$i]=""
+    bucket_sums[$i]=0
+done
 
-    current_split=$((current_split+1))
-    if [ "$current_split" = "$(( SPLIT_COUNT + 1 ))" ]; then
-        current_split=1
+for line in $lines; do
+    weight="${timings[$line]}"
+
+    # Find the bucket with the smallest sum
+    min_index=0
+    min_sum=${bucket_sums[0]}
+    for ((i=1; i<NUM_CHUNKS; i++)); do
+        if [ "$(echo "${bucket_sums[$i]} < $min_sum" | bc -l)" = 1 ] ; then
+            min_index=$i
+            min_sum=${bucket_sums[$i]}
+        fi
+    done
+
+    # Add line to that bucket
+    if [ -z "${buckets[$min_index]}" ]; then
+        buckets[$min_index]="$line"
+    else
+        buckets[$min_index]="${buckets[$min_index]} $line"
     fi
+    bucket_sums[$min_index]=$(echo "${bucket_sums[$min_index]} + $weight" | bc -l)
+done
+
+for ((i=0; i<NUM_CHUNKS; i++)); do
+    echo "Chunk $((i+1)): ${bucket_sums[$i]} seconds total"
+    chunk_file=${FILENAME_PATTERN//{\}/$((i+1))}
+    for line in ${buckets[$i]}; do
+        echo "  $line - ${timings[$line]} seconds"
+        echo "$line" >> "$chunk_file"
+    done
 done
