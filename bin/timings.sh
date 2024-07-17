@@ -21,7 +21,7 @@ SPLIT_COUNT="$2"
 cd "$( dirname "${BASH_SOURCE[0]}")/.."
 
 _get_log_output() {
-    run_id="$(gh run list -w build.yml --json headBranch,status,databaseId --jq '.[] | select(.status == "completed" and .headBranch == "master")' -L 100 | sed '1!d' | jq -r .databaseId)"
+    run_id="$(gh run list -w build.yml --json headBranch,status,conclusion,databaseId --jq '.[] | select(.status == "completed" and .conclusion == "success" and .headBranch == "master")' -L 100 | sed '1!d' | jq -r .databaseId)"
     if test -z "$run_id"; then
         echo "Could not get run ID"
         exit 1
