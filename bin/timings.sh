@@ -7,14 +7,13 @@
 # Split test in even chunks by execution duration
 # Fetches and parses durations from github action job logs
 #
-# Usage:   ./timings <test-number> <max-test>
-# Example: ./timings 1 2 # first chunk of total of two chunks
-#          ./timings 2 2 # second chunk of total of two chunks
+# Usage:   ./timings <num-chunks> <chunk_file-pattern>
+# Example: ./timings 5 /tmp/chunk-{}.txt
+# Outputs: /tmp/chunk-1.txt, /tmp/chunk-2.txt, ..., /tmp/chunk-5.txt
 
 set -euo pipefail
-#set -x
-SPLIT_PRINT="$1"
-SPLIT_COUNT="$2"
+NUM_CHUNKS="$1"
+FILENAME_PATTERN="$2"
 
 cd "$( dirname "${BASH_SOURCE[0]}")/.."
 
@@ -65,7 +64,7 @@ lines="$(
 # Initialize buckets
 declare -A buckets
 declare -A bucket_sums
-for ((i=0; i<SPLIT_COUNT; i++)); do
+for ((i=0; i<NUM_CHUNKS; i++)); do
     buckets[$i]=""
     bucket_sums[$i]=0
 done
@@ -76,7 +75,7 @@ for line in $lines; do
     # Find the bucket with the smallest sum
     min_index=0
     min_sum=${bucket_sums[0]}
-    for ((i=1; i<SPLIT_COUNT; i++)); do
+    for ((i=1; i<NUM_CHUNKS; i++)); do
         if [ "$(echo "${bucket_sums[$i]} < $min_sum" | bc -l)" = 1 ] ; then
             min_index=$i
             min_sum=${bucket_sums[$i]}
@@ -92,15 +91,11 @@ for line in $lines; do
     bucket_sums[$min_index]=$(echo "${bucket_sums[$min_index]} + $weight" | bc -l)
 done
 
-# Print info to stderr
-for ((i=0; i<SPLIT_COUNT; i++)); do
-    echo "Chunk $((i+1)): ${bucket_sums[$i]} seconds" >&2
+for ((i=0; i<NUM_CHUNKS; i++)); do
+    echo "Chunk $((i+1)): ${bucket_sums[$i]} seconds total"
+    chunk_file=${FILENAME_PATTERN//{\}/$((i+1))}
     for line in ${buckets[$i]}; do
-        echo "  $line - ${timings[$line]} seconds" >&2
+        echo "  $line - ${timings[$line]} seconds"
+        echo "$line" >> "$chunk_file"
     done
-done
-
-# Print filenames in the selected bucket to stdout
-for line in ${buckets[$((SPLIT_PRINT-1))]}; do
-    echo "$line"
 done

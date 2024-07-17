@@ -522,6 +522,22 @@ jobs:
           path: ./compose/test-results/
           retention-days: 2
 
+  e2e-split:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CHUNK_COUNT: 6  # must match the number of chunks in the e2e job
+    steps:
+      - uses: actions/checkout@v4
+      - name: Split e2e tests
+        run: |
+          ./bin/timings.sh $CHUNK_COUNT e2e-test-chunk--{}.txt
+      - name: Upload test chunks
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-chunks
+          path: e2e-test-chunk--*.txt
+
   e2e:
     needs:
       - service
@@ -529,13 +545,14 @@ jobs:
       - keycloak
       - frontend-common
       - frontend
+      - e2e-split
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
+        # If you change the number of chunks, remember to update CHUNK_COUNT in e2e-split job
         test_chunk_number: [1, 2, 3, 4, 5, 6]
-        test_chunk_count: [6] # must max value of above list
     env:
       PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
     steps:
@@ -556,16 +573,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download test chunks
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-test-chunks
+
       - name: Run e2e tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         env:
           TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
           BUILD: "false"
-          GH_TOKEN: ${{ github.token }}
           FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
         run: |
-          set -eo pipefail
-          ./bin/timings.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}" | tee -a frontend/playwright-filenames.txt
+          set -e
+          cp e2e-test-chunk--${{ matrix.test_chunk_number }}.txt frontend/playwright-filenames.txt
+
+          echo "Tests to run:"
+          cat frontend/playwright-filenames.txt
+
           cd ./compose
           ./test-e2e pull
           ./test-e2e run playwright | tee e2e.log
