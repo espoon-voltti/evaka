@@ -1984,6 +1984,10 @@ const sv: Translations = {
       subtitle: 'Meddelande som skickas till e-posten',
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
+      discussionTimeReservationConfirmation:
+        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationConfirmationInfo:
+        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
       outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',

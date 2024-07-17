@@ -335,6 +335,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class SendDiscussionSurveyReservationEmail(
+        val recipientId: PersonId,
         val childId: ChildId,
         val language: Language,
         val calendarEventTime: CalendarEventTime,
@@ -345,6 +346,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class SendDiscussionSurveyReservationCancellationEmail(
+        val recipientId: PersonId,
         val childId: ChildId,
         val language: Language,
         val calendarEventTime: CalendarEventTime,

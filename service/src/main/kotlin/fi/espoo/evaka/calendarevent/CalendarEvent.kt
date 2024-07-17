@@ -57,7 +57,7 @@ data class CalendarEventTime(
 
 data class AttendingChild(
     val periods: List<FiniteDateRange>,
-    val type: String,
+    val type: AttendanceType,
     val groupName: String?,
     val unitName: String?
 )

@@ -1745,6 +1745,10 @@ const en: Translations = {
       subtitle: 'Email notifications',
       message: 'messages sent to eVaka by staff',
       bulletin: 'bulletins sent to eVaka',
+      discussionTimeReservationConfirmation:
+        'Confirmations of discussion time reservations in eVaka',
+      discussionTimeReservationConfirmationInfo:
+        'An email confirmation is sent on reservation or cancellation of discussion times',
       outdatedIncome: 'Reminders about updating your income information',
       outdatedIncomeInfo:
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',

@@ -134,6 +134,7 @@ export interface EmailNotificationSettings {
   bulletin: boolean
   calendarEvent: boolean
   decision: boolean
+  discussionTimeReservationConfirmation: boolean
   document: boolean
   informalDocument: boolean
   message: boolean

@@ -780,7 +780,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         individualEvent.attendingChildren[testChild_1.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
-            assertEquals("individual", attendee.type)
+            assertEquals(AttendanceType.INDIVIDUAL, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
                 attendee.periods
@@ -797,7 +797,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertNotNull(attendee)
             assertNull(attendee.groupName)
             assertEquals(testDaycare.name, attendee.unitName)
-            assertEquals("unit", attendee.type)
+            assertEquals(AttendanceType.UNIT, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(1), today.plusDays(1))),
                 attendee.periods
@@ -813,7 +813,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         groupEvent.attendingChildren[testChild_1.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
-            assertEquals("group", attendee.type)
+            assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(1), today.plusDays(1))),
                 attendee.periods
@@ -848,7 +848,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         event.attendingChildren[testChild_1.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
-            assertEquals("group", attendee.type)
+            assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
                 attendee.periods
@@ -858,7 +858,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         event.attendingChildren[testChild_2.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
-            assertEquals("group", attendee.type)
+            assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
                 attendee.periods
@@ -1062,7 +1062,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         mainUnitEvent.attendingChildren[testChild_3.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
-            assertEquals("group", attendee.type)
+            assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(
                     FiniteDateRange(placementStart, placementStart.plusDays(9)),
@@ -1082,7 +1082,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertNotNull(attendee)
             assertNull(attendee.groupName)
             assertEquals(testDaycare2.name, attendee.unitName)
-            assertEquals("unit", attendee.type)
+            assertEquals(AttendanceType.UNIT, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(placementStart.plusDays(10), placementStart.plusDays(20))),
                 attendee.periods

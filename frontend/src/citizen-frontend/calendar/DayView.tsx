@@ -499,10 +499,10 @@ const DayModal = React.memo(function DayModal({
                                   >
                                     <LabelLike data-qa="event-title">
                                       {event.title} /{' '}
-                                      {event.currentAttending.type === 'unit'
+                                      {event.currentAttending.type === 'UNIT'
                                         ? event.currentAttending.unitName
                                         : event.currentAttending.type ===
-                                            'group'
+                                            'GROUP'
                                           ? event.currentAttending.groupName
                                           : row.firstName}
                                     </LabelLike>

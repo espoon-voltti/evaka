@@ -13,12 +13,20 @@ import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.AttendanceType
+*/
+export type AttendanceType =
+  | 'INDIVIDUAL'
+  | 'GROUP'
+  | 'UNIT'
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.AttendingChild
 */
 export interface AttendingChild {
   groupName: string | null
   periods: FiniteDateRange[]
-  type: string
+  type: AttendanceType
   unitName: string | null
 }
 

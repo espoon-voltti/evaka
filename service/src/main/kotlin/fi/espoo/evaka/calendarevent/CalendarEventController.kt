@@ -10,6 +10,9 @@ import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
 import fi.espoo.evaka.shared.CalendarEventId
@@ -458,17 +461,20 @@ class CalendarEventController(
                     )
 
                     if (preUpdateEventTimeDetails.eventTime.childId != null) {
+                        val cancellationRecipients =
+                            getRecipientsForChild(tx, preUpdateEventTimeDetails.eventTime.childId)
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
+                            cancellationRecipients.map {
                                 AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
                                     eventTitle = associatedEvent.title,
                                     childId = preUpdateEventTimeDetails.eventTime.childId,
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                    unitName = preUpdateEventTimeDetails.unitName
+                                    unitName = preUpdateEventTimeDetails.unitName,
+                                    recipientId = it.id
                                 )
-                            ),
+                            },
                             runAt = clock.now()
                         )
                     }
@@ -506,7 +512,9 @@ class CalendarEventController(
                             ?: throw BadRequest("Calendar event time not found")
 
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+
                     if (body.childId != null) {
+                        val reservationRecipients = getRecipientsForChild(tx, body.childId)
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
                             childId = body.childId,
@@ -517,15 +525,16 @@ class CalendarEventController(
                         if (body.childId != preUpdateEventTimeDetails.eventTime.childId) {
                             asyncJobRunner.plan(
                                 tx,
-                                listOf(
+                                reservationRecipients.map {
                                     AsyncJob.SendDiscussionSurveyReservationEmail(
                                         eventTitle = preUpdateEventTimeDetails.title,
                                         childId = body.childId,
                                         language = Language.fi,
                                         calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                        unitName = preUpdateEventTimeDetails.unitName
+                                        unitName = preUpdateEventTimeDetails.unitName,
+                                        recipientId = it.id
                                     )
-                                ),
+                                },
                                 runAt = clock.now()
                             )
                         }
@@ -534,17 +543,20 @@ class CalendarEventController(
                         preUpdateEventTimeDetails.eventTime.childId != null &&
                             preUpdateEventTimeDetails.eventTime.childId != body.childId
                     ) {
+                        val cancellationRecipients =
+                            getRecipientsForChild(tx, preUpdateEventTimeDetails.eventTime.childId)
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
+                            cancellationRecipients.map {
                                 AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
                                     eventTitle = preUpdateEventTimeDetails.title,
                                     childId = preUpdateEventTimeDetails.eventTime.childId,
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                    unitName = preUpdateEventTimeDetails.unitName
+                                    unitName = preUpdateEventTimeDetails.unitName,
+                                    recipientId = it.id
                                 )
-                            ),
+                            },
                             runAt = clock.now()
                         )
                     }
@@ -746,18 +758,20 @@ class CalendarEventController(
 
                     // send reservation email if reservation changes
                     if (eventTimeDetails.eventTime.childId != body.childId) {
+                        val recipients = getRecipientsForChild(tx, body.childId)
                         val finalEventTime = eventTimeDetails.eventTime.copy(childId = body.childId)
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
+                            recipients.map {
                                 AsyncJob.SendDiscussionSurveyReservationEmail(
                                     eventTitle = eventTimeDetails.title,
                                     childId = body.childId,
                                     language = Language.fi,
                                     calendarEventTime = finalEventTime,
-                                    unitName = eventTimeDetails.unitName
+                                    unitName = eventTimeDetails.unitName,
+                                    recipientId = it.id
                                 )
-                            ),
+                            },
                             runAt = clock.now()
                         )
                     }
@@ -793,18 +807,19 @@ class CalendarEventController(
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
-
+                    val recipients = getRecipientsForChild(tx, body.childId)
                     asyncJobRunner.plan(
                         tx,
-                        listOf(
+                        recipients.map {
                             AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
                                 eventTitle = eventTimeDetails.title,
                                 childId = body.childId,
                                 language = Language.fi,
                                 calendarEventTime = eventTimeDetails.eventTime,
-                                unitName = eventTimeDetails.unitName
+                                unitName = eventTimeDetails.unitName,
+                                recipientId = it.id
                             )
-                        ),
+                        },
                         runAt = clock.now()
                     )
                 }
@@ -854,4 +869,10 @@ private fun getPeriodOfTimes(
     val maxDate = dateList.maxOfOrNull { it.date }
     return if (minDate != null && maxDate != null) FiniteDateRange(minDate, maxDate)
     else FiniteDateRange(default, default)
+}
+
+private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): List<PersonDTO> {
+    return tx.getChildGuardiansAndFosterParents(childId, LocalDate.now()).mapNotNull {
+        tx.getPersonById(it)
+    }
 }

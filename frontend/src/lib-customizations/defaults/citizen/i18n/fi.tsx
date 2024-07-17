@@ -1989,6 +1989,10 @@ export default {
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      discussionTimeReservationConfirmation:
+        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationConfirmationInfo:
+        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
       outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
       outdatedIncomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',

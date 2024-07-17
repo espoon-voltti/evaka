@@ -55,10 +55,7 @@ enum class EmailMessageType {
     MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION,
 
     /** Confirmation email for discussion time reservation */
-    DISCUSSION_TIME_RESERVATION,
-
-    /** Confirmation email for discussion time reservation cancellation */
-    DISCUSSION_TIME_RESERVATION_CANCELLATION
+    DISCUSSION_TIME_RESERVATION_CONFIRMATION
 }
 
 data class EmailNotificationSettings(
@@ -69,7 +66,8 @@ data class EmailNotificationSettings(
     val decision: Boolean,
     val document: Boolean,
     val informalDocument: Boolean,
-    val missingAttendanceReservation: Boolean
+    val missingAttendanceReservation: Boolean,
+    val discussionTimeReservationConfirmation: Boolean
 ) {
     fun toNotificationTypes() =
         listOfNotNull(
@@ -83,6 +81,9 @@ data class EmailNotificationSettings(
             EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION.takeIf { informalDocument },
             EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION.takeIf {
                 missingAttendanceReservation
+            },
+            EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION.takeIf {
+                discussionTimeReservationConfirmation
             }
         )
 
@@ -98,7 +99,8 @@ data class EmailNotificationSettings(
                     decision = true,
                     document = true,
                     informalDocument = true,
-                    missingAttendanceReservation = true
+                    missingAttendanceReservation = true,
+                    discussionTimeReservationConfirmation = true
                 )
             } else {
                 EmailNotificationSettings(
@@ -114,6 +116,9 @@ data class EmailNotificationSettings(
                         EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION in enabledNotificationTypes,
                     missingAttendanceReservation =
                         EmailMessageType.MISSING_ATTENDANCE_RESERVATION_NOTIFICATION in
+                            enabledNotificationTypes,
+                    discussionTimeReservationConfirmation =
+                        EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION in
                             enabledNotificationTypes
                 )
             }

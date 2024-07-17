@@ -297,12 +297,18 @@ data class CitizenCalendarEventRow(
     val eventPeriod: FiniteDateRange,
     val title: String,
     val description: String,
-    val type: String,
+    val type: AttendanceType,
     val groupId: GroupId?,
     val groupName: String?,
     val unitId: DaycareId,
     val unitName: String
 )
+
+enum class AttendanceType {
+    INDIVIDUAL,
+    GROUP,
+    UNIT
+}
 
 data class CitizenDiscussionSurveyRow(
     val id: CalendarEventId,
@@ -311,7 +317,7 @@ data class CitizenDiscussionSurveyRow(
     val eventPeriod: FiniteDateRange,
     val title: String,
     val description: String,
-    val type: String,
+    val type: AttendanceType,
     val groupId: GroupId?,
     val groupName: String?,
     val unitId: DaycareId,
@@ -364,9 +370,9 @@ child_placement AS NOT MATERIALIZED (
       AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
 )
 SELECT ce.id, cp.child_id, ce.period * daterange(dgp.start_date, dgp.end_date, '[]') * cp.period period, ce.period event_period, ce.title, ce.description, (
-    CASE WHEN cea.child_id IS NOT NULL THEN 'individual'
-         WHEN cea.group_id IS NOT NULL THEN 'group'
-         ELSE 'unit' END
+    CASE WHEN cea.child_id IS NOT NULL THEN 'INDIVIDUAL'
+         WHEN cea.group_id IS NOT NULL THEN 'GROUP'
+         ELSE 'UNIT' END
 ) type, dg.id group_id, dg.name group_name, unit.id unit_id, unit.name unit_name
 FROM child_placement cp
 LEFT JOIN daycare_group_placement dgp ON cp.backup_group_id IS NULL AND dgp.daycare_placement_id = cp.id
@@ -417,9 +423,9 @@ SELECT ce.id,
        ce.description,
        (
            CASE
-               WHEN cea.child_id IS NOT NULL THEN 'individual'
-               WHEN cea.group_id IS NOT NULL THEN 'group'
-               ELSE 'unit' END
+               WHEN cea.child_id IS NOT NULL THEN 'INDIVIDUAL'
+               WHEN cea.group_id IS NOT NULL THEN 'GROUP'
+               ELSE 'UNIT' END
            )                                                                 as type,
        dg.id                                                                 as group_id,
        dg.name                                                               as group_name,

@@ -32,7 +32,8 @@ const notificationSettingsForm = object({
   decision: boolean(),
   document: boolean(),
   informalDocument: boolean(),
-  missingAttendanceReservation: boolean()
+  missingAttendanceReservation: boolean(),
+  discussionTimeReservationConfirmation: boolean()
 })
 
 export interface Props {
@@ -59,7 +60,8 @@ export default React.memo(
       decision,
       document,
       informalDocument,
-      missingAttendanceReservation
+      missingAttendanceReservation,
+      discussionTimeReservationConfirmation
     } = useFormFields(form)
 
     return (
@@ -165,6 +167,23 @@ export default React.memo(
             }
             disabled={!editing}
             data-qa="missing-attendance-reservation"
+          />
+        </ExpandingInfo>
+        <Gap size="s" />
+        <ExpandingInfo
+          info={
+            t.personalDetails.notificationsSection
+              .discussionTimeReservationConfirmationInfo
+          }
+        >
+          <CheckboxF
+            bind={discussionTimeReservationConfirmation}
+            label={
+              t.personalDetails.notificationsSection
+                .discussionTimeReservationConfirmation
+            }
+            disabled={!editing}
+            data-qa="discussion-time-reservation-confirmation"
           />
         </ExpandingInfo>
         <Gap size="s" />
