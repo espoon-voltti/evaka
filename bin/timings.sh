@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+# SPDX-FileCopyrightText: 2017-2024 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
-# shellcheck disable=SC2207
 
 # Split test in even chunks by execution duration
 # Fetches and parses durations from github action job logs
@@ -52,39 +50,57 @@ while IFS="" read -r line || [ -n "$line" ]; do
     fi
 done < <( get_log_output | grep '^e2e' | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | grep ' e2e-test ' )
 
-# Set missing test times to zeros
+# Jest only reports times for test suites that take >5 seconds. Add missing files using 3 seconds as the time.
 while IFS="" read -r line || [ -n "$line" ]; do
-    [ "${timings[$line]+found}" ] || timings["$line"]="0"
-done < <(cd frontend; find src/e2e-test/specs/ -type f -name '*.ts' ; cd ..)
+    [ "${timings[$line]+found}" ] || timings["$line"]="3.0"
+done < <(cd frontend; find src/e2e-test/specs -type f -name '*.ts' ; cd ..)
 
-# Sort files by time and put $lines array
-lines=($(
+# Sort files by time, longest time first
+lines="$(
     for key in "${!timings[@]}"; do
         echo "${timings[$key]} $key"
-    done | sort -n | cut -d ' ' -f 2
-))
+    done | sort -gr | cut -d ' ' -f 2
+)"
 
-# Poor man algorithm to split test to even chunks by test execution duration
-# Takes first and last element from list sorted by duration
-current_split=1
-while true; do
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[0]}"
-    fi
-    lines=("${lines[@]:1}")
-    if [[ "${#lines[@]}" = "0" ]]; then
-        break
-    fi
-    if [ "$SPLIT_PRINT" = "$current_split" ]; then
-        echo "${lines[-1]}"
-    fi
-    unset 'lines[-1]'
+# Initialize buckets
+declare -A buckets
+declare -A bucket_sums
+for ((i=0; i<SPLIT_COUNT; i++)); do
+    buckets[$i]=""
+    bucket_sums[$i]=0
+done
 
-    current_split=$((current_split+1))
-    if [ "$current_split" = "$(( SPLIT_COUNT + 1 ))" ]; then
-        current_split=1
+for line in $lines; do
+    weight="${timings[$line]}"
+
+    # Find the bucket with the smallest sum
+    min_index=0
+    min_sum=${bucket_sums[0]}
+    for ((i=1; i<SPLIT_COUNT; i++)); do
+        if [ "$(echo "${bucket_sums[$i]} < $min_sum" | bc -l)" = 1 ] ; then
+            min_index=$i
+            min_sum=${bucket_sums[$i]}
+        fi
+    done
+
+    # Add line to that bucket
+    if [ -z "${buckets[$min_index]}" ]; then
+        buckets[$min_index]="$line"
+    else
+        buckets[$min_index]="${buckets[$min_index]} $line"
     fi
+    bucket_sums[$min_index]=$(echo "${bucket_sums[$min_index]} + $weight" | bc -l)
+done
+
+# Print info to stderr
+for ((i=0; i<SPLIT_COUNT; i++)); do
+    echo "Chunk $((i+1)): ${bucket_sums[$i]} seconds" >&2
+    for line in ${buckets[$i]}; do
+        echo "  $line - ${timings[$line]} seconds" >&2
+    done
+done
+
+# Print filenames in the selected bucket to stdout
+for line in ${buckets[$((SPLIT_PRINT-1))]}; do
+    echo "$line"
 done
