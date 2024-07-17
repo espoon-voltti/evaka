@@ -44,7 +44,7 @@ get_log_output() {
 # Find test files and durations from logs and store into $timings
 declare -A timings
 while IFS="" read -r line || [ -n "$line" ]; do
-    regex="(src/e2e-test/specs.*)\s\(([0-9]+\.[0-9]+) s\)"
+    regex="(src/e2e-test/specs.*) \(([0-9]+\.[0-9]+) s\)"
     if [[ $line =~ $regex ]]; then
         timings["${BASH_REMATCH[1]}"]="${BASH_REMATCH[2]}"
     else
