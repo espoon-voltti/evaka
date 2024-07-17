@@ -561,6 +561,7 @@ jobs:
         env:
           TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
           BUILD: "false"
+          GH_TOKEN: ${{ github.token }}
           FRONTEND_IMAGE: "ghcr.io/espoon-voltti/evaka/frontend"
         run: |
           set -eo pipefail
