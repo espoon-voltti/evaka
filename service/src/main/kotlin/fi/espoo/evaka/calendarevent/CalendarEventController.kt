@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.DayOfWeek
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -581,13 +582,12 @@ class CalendarEventController(
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
         }
-
         val range = FiniteDateRange(start, end)
-
         if (range.durationInDays() > 450) {
             throw BadRequest("Only 450 days of calendar events may be fetched at once")
         }
 
+        val today = clock.today()
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -666,12 +666,18 @@ class CalendarEventController(
                                             .map { (key, values) ->
                                                 key to
                                                     values.map {
-                                                        CalendarEventTime(
+                                                        CitizenCalendarEventTime(
                                                             id = it.eventTimeId,
                                                             childId = it.eventTimeOccupant,
                                                             startTime = it.eventTimeStart,
                                                             endTime = it.eventTimeEnd,
                                                             date = it.eventTimeDate,
+                                                            isEditable =
+                                                                !it.eventTimeDate.isBefore(
+                                                                    getManipulationWindowStart(
+                                                                        today
+                                                                    )
+                                                                )
                                                         )
                                                     }
                                             }
@@ -876,3 +882,15 @@ private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): L
         tx.getPersonById(it)
     }
 }
+
+// manipulation allowed if there is a full business day "buffer" from today
+// i.e. for times on the first business day after the next business day
+// today | FRI | SAT | SUN | MON
+//   f   |  f  | N/A | N/A |  t
+private fun getManipulationWindowStart(originalDate: LocalDate) =
+    when (originalDate.dayOfWeek) {
+        DayOfWeek.THURSDAY -> originalDate.plusDays(4) // MONDAY
+        DayOfWeek.FRIDAY -> originalDate.plusDays(4) // TUESDAY
+        DayOfWeek.SATURDAY -> originalDate.plusDays(3) // TUESDAY
+        else -> originalDate.plusDays(2)
+    }

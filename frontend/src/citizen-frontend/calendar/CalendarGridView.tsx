@@ -147,11 +147,6 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const onOpenDiscussionReservations = useCallback(
-    () => onOpenDiscussionReservationsClicked(),
-    [onOpenDiscussionReservationsClicked]
-  )
-
   const holidayPeriodResult = useQueryResult(holidayPeriodsQuery())
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
@@ -185,7 +180,7 @@ export default React.memo(function CalendarGridView({
           {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Button
               appearance="inline"
-              onClick={onOpenDiscussionReservations}
+              onClick={onOpenDiscussionReservationsClicked}
               text={
                 i18n.calendar.discussionTimeReservation.surveyModalButtonText
               }

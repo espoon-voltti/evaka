@@ -21,9 +21,9 @@ import {
 import { StateOf } from 'lib-common/form/types'
 import {
   AttendingChild,
-  CalendarEventTime,
   CalendarEventType,
-  CitizenCalendarEvent
+  CitizenCalendarEvent,
+  CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
@@ -89,7 +89,6 @@ import {
 } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
 import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
-import { isEventTimeCancellable } from './discussion-reservation-modal/discussion-survey'
 import {
   deleteCalendarEventTimeReservationMutation,
   postReservationsMutation
@@ -549,12 +548,7 @@ const DayModal = React.memo(function DayModal({
                                                     .discussionTimeReservation
                                                     .cancelTimeButtonText
                                                 }
-                                                disabled={
-                                                  !isEventTimeCancellable(
-                                                    rt,
-                                                    today
-                                                  )
-                                                }
+                                                disabled={!rt.isEditable}
                                                 onClick={() => {
                                                   if (rt.childId !== null) {
                                                     onCancelClick(
@@ -564,10 +558,7 @@ const DayModal = React.memo(function DayModal({
                                                   }
                                                 }}
                                               />
-                                              {!isEventTimeCancellable(
-                                                rt,
-                                                today
-                                              ) && (
+                                              {!rt.isEditable && (
                                                 <InfoBox
                                                   aria-label={
                                                     i18n.calendar
@@ -638,7 +629,7 @@ interface ModalRow {
 
 interface ModalRowEvent extends CitizenCalendarEvent {
   currentAttending: AttendingChild
-  reservedTimes: CalendarEventTime[]
+  reservedTimes: CitizenCalendarEventTime[]
   eventType: CalendarEventType
 }
 

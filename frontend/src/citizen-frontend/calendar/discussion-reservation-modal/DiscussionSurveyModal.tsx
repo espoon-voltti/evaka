@@ -8,8 +8,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import {
-  CalendarEventTime,
-  CitizenCalendarEvent
+  CitizenCalendarEvent,
+  CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
@@ -42,8 +42,6 @@ import {
   CalendarModalSection
 } from '../CalendarModal'
 import { deleteCalendarEventTimeReservationMutation } from '../queries'
-
-import { isEventTimeCancellable } from './discussion-survey'
 
 interface ChildWithSurveys {
   childId: string
@@ -284,7 +282,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 
 interface ChildSurveyElementProps {
   survey: CitizenCalendarEvent
-  reservations: CalendarEventTime[]
+  reservations: CitizenCalendarEventTime[]
   childId: UUID
   openDiscussionReservations: () => void
   onCancelClick: (childId: UUID, eventTimeId: UUID) => void
@@ -336,7 +334,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                         i18n.calendar.discussionTimeReservation
                           .cancelTimeButtonText
                       }
-                      disabled={!isEventTimeCancellable(r, today)}
+                      disabled={!r.isEditable}
                       onClick={() => {
                         if (r.childId !== null) {
                           onCancelClick(r.childId, r.id)
@@ -344,7 +342,7 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                       }}
                       data-qa="reservation-cancel-button"
                     />
-                    {!isEventTimeCancellable(r, today) && (
+                    {!r.isEditable && (
                       <InfoBox
                         aria-label={
                           i18n.calendar.discussionTimeReservation

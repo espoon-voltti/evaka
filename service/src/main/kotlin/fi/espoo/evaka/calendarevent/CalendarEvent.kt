@@ -38,8 +38,6 @@ data class CalendarEvent(
     val eventType: CalendarEventType
 )
 
-data class CalendarEventInfo(val id: CalendarEventId, val title: String, val description: String)
-
 data class DiscussionReservationDay(
     val date: LocalDate,
     val events: Set<CalendarEvent>,
@@ -81,9 +79,18 @@ data class CitizenCalendarEvent(
     val title: String,
     val description: String,
     val period: FiniteDateRange,
-    @Json val timesByChild: Map<ChildId, List<CalendarEventTime>>,
+    @Json val timesByChild: Map<ChildId, List<CitizenCalendarEventTime>>,
     val eventType: CalendarEventType,
     @Json val attendingChildren: Map<ChildId, List<AttendingChild>>
+)
+
+data class CitizenCalendarEventTime(
+    val id: CalendarEventTimeId,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+    val childId: ChildId?,
+    val isEditable: Boolean
 )
 
 data class CalendarEventForm(

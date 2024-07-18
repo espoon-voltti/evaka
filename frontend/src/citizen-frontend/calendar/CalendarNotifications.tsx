@@ -59,8 +59,7 @@ export default React.memo(function CalendarNotifications({
     () =>
       events.filter(
         (e) =>
-          e.eventType === 'DISCUSSION_SURVEY' &&
-          showSurveyReservationToast(e, LocalDate.todayInHelsinkiTz())
+          e.eventType === 'DISCUSSION_SURVEY' && showSurveyReservationToast(e)
       ),
     [events]
   )

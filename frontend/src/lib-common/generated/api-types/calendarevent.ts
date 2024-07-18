@@ -119,8 +119,20 @@ export interface CitizenCalendarEvent {
   eventType: CalendarEventType
   id: UUID
   period: FiniteDateRange
-  timesByChild: Record<UUID, CalendarEventTime[]>
+  timesByChild: Record<UUID, CitizenCalendarEventTime[]>
   title: string
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEventTime
+*/
+export interface CitizenCalendarEventTime {
+  childId: UUID | null
+  date: LocalDate
+  endTime: LocalTime
+  id: UUID
+  isEditable: boolean
+  startTime: LocalTime
 }
 
 /**
@@ -206,8 +218,18 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
     )),
     period: FiniteDateRange.parseJson(json.period),
     timesByChild: Object.fromEntries(Object.entries(json.timesByChild).map(
-      ([k, v]) => [k, v.map(e => deserializeJsonCalendarEventTime(e))]
+      ([k, v]) => [k, v.map(e => deserializeJsonCitizenCalendarEventTime(e))]
     ))
+  }
+}
+
+
+export function deserializeJsonCitizenCalendarEventTime(json: JsonOf<CitizenCalendarEventTime>): CitizenCalendarEventTime {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    endTime: LocalTime.parseIso(json.endTime),
+    startTime: LocalTime.parseIso(json.startTime)
   }
 }
 
