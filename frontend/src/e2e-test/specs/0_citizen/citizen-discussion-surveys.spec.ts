@@ -18,7 +18,6 @@ import {
   uuidv4
 } from '../../dev-api/fixtures'
 import {
-  createChildren,
   createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
@@ -53,27 +52,11 @@ beforeEach(async () => {
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testDaycare, areaId: testCareArea.id }).save()
 
-  await Fixture.person(testChild).saveChild({ updateMockVtj: true })
-
-  await Fixture.person(testAdult).saveAdult({
-    updateMockVtjWithDependants: [testChild]
-  })
-
   children = [testChild]
-
-  const cs = children.map(({ id }) => ({
-    id,
-    additionalInfo: '',
-    allergies: '',
-    diet: '',
-    dietId: null,
-    mealTextureId: null,
-    languageAtHome: '',
-    languageAtHomeDetails: '',
-    medication: ''
-  }))
-
-  await createChildren({ body: cs })
+  await Fixture.family({
+    guardian: testAdult,
+    children: children
+  }).save()
 
   const placementIds = new Map(children.map((child) => [child.id, uuidv4()]))
 
