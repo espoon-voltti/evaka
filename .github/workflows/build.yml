@@ -598,8 +598,12 @@ jobs:
       - name: Run e2e tests for fork
         if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
-          set -eo pipefail
-          ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
+          set -e
+          cp e2e-test-chunk--${{ matrix.test_chunk_number }}.txt frontend/playwright-filenames.txt
+
+          echo "Tests to run:"
+          cat frontend/playwright-filenames.txt
+
           cd ./compose
           ./test-e2e run playwright | tee e2e.log
 
