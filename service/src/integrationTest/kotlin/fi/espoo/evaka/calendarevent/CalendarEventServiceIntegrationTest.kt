@@ -2444,9 +2444,32 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val updatedEvent =
             calendarEventController.getCalendarEvent(dbInstance(), admin, clock, event.id)
 
-        val expectedGuardianEventTimes = updatedEvent.times.filter { it.id != child4EventTime.id }
+        val expectedGuardianEventTimes =
+            updatedEvent.times
+                .filter { it.id != child4EventTime.id }
+                .map {
+                    CitizenCalendarEventTime(
+                        id = it.id,
+                        date = it.date,
+                        startTime = it.startTime,
+                        endTime = it.endTime,
+                        childId = it.childId,
+                        isEditable = true
+                    )
+                }
         val expectedFosterParentEventTimes =
-            updatedEvent.times.filter { it.id != child3EventTime.id }
+            updatedEvent.times
+                .filter { it.id != child3EventTime.id }
+                .map {
+                    CitizenCalendarEventTime(
+                        id = it.id,
+                        date = it.date,
+                        startTime = it.startTime,
+                        endTime = it.endTime,
+                        childId = it.childId,
+                        isEditable = true
+                    )
+                }
 
         val guardianEventResult =
             calendarEventController.getCitizenCalendarEvents(
