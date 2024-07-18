@@ -12,10 +12,12 @@ import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendareve
 import { ReservationsResponse } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
@@ -30,6 +32,9 @@ import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import ReservationModal from './ReservationModal'
+import DiscussionReservationModal from './discussion-reservation-modal/DiscussionReservationModal'
+import DiscussionSurveyModal from './discussion-reservation-modal/DiscussionSurveyModal'
+import { showModalEventTime } from './discussion-reservation-modal/discussion-survey'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 import {
   activeQuestionnaireQuery,
@@ -74,6 +79,8 @@ const CalendarPage = React.memo(function CalendarPage() {
     openReservationModal,
     openHolidayModal,
     openAbsenceModal,
+    openDiscussionSurveyModal,
+    openDiscussionReservationModal,
     openDayModal,
     closeModal
   } = useCalendarModalState()
@@ -124,103 +131,150 @@ const CalendarPage = React.memo(function CalendarPage() {
   return (
     <>
       <DailyServiceTimeNotifications />
-
       {renderResult(
         combine(data, events, holidayPeriods),
-        ([response, events, holidayPeriods]) => (
-          <div data-qa="calendar-page" data-isloading={isLoading(data)}>
-            <CalendarNotifications calendarDays={response.days} />
-            <RenderOnlyOn mobile tablet>
-              <ContentArea
-                opaque
-                paddingVertical="zero"
-                paddingHorizontal="zero"
-              >
-                <CalendarListView
+        ([response, events, holidayPeriods]) => {
+          const discussionSurveys = events.filter(
+            (e) =>
+              e.eventType === 'DISCUSSION_SURVEY' &&
+              Object.values(e.timesByChild).some((times) =>
+                times.some((t) =>
+                  showModalEventTime(t, LocalDate.todayInHelsinkiTz())
+                )
+              )
+          )
+          return (
+            <div data-qa="calendar-page" data-isloading={isLoading(data)}>
+              <CalendarNotifications
+                calendarDays={response.days}
+                events={events}
+              />
+              <RenderOnlyOn mobile tablet>
+                <ContentArea
+                  opaque
+                  paddingVertical="zero"
+                  paddingHorizontal="zero"
+                >
+                  <CalendarListView
+                    childData={response.children}
+                    calendarDays={response.days}
+                    onHoverButtonClick={openPickActionModal}
+                    selectDate={openDayModal}
+                    dayIsReservable={dayIsReservable}
+                    dayIsHolidayPeriod={dayIsHolidayPeriod}
+                    events={events}
+                  />
+                </ContentArea>
+              </RenderOnlyOn>
+              <RenderOnlyOn desktop>
+                <CalendarGridView
                   childData={response.children}
                   calendarDays={response.days}
-                  onHoverButtonClick={openPickActionModal}
+                  onCreateReservationClicked={
+                    openReservationModalWithoutInitialRange
+                  }
+                  onCreateAbsencesClicked={openAbsenceModal}
+                  onOpenDiscussionReservationsClicked={
+                    openDiscussionSurveyModal
+                  }
+                  onReportHolidaysClicked={openHolidayModal}
+                  selectedDate={
+                    modalState?.type === 'day' ? modalState.date : undefined
+                  }
                   selectDate={openDayModal}
+                  includeWeekends={true}
                   dayIsReservable={dayIsReservable}
-                  dayIsHolidayPeriod={dayIsHolidayPeriod}
+                  events={events}
+                  isDiscussionActionVisible={discussionSurveys.length > 0}
+                />
+              </RenderOnlyOn>
+              {modalState?.type === 'day' && (
+                <DayView
+                  date={modalState.date}
+                  reservationsResponse={response}
+                  selectDate={openDayModal}
+                  onClose={closeModal}
+                  openAbsenceModal={openAbsenceModal}
                   events={events}
                 />
-              </ContentArea>
-            </RenderOnlyOn>
-            <RenderOnlyOn desktop>
-              <CalendarGridView
-                childData={response.children}
-                calendarDays={response.days}
-                onCreateReservationClicked={
-                  openReservationModalWithoutInitialRange
-                }
-                onCreateAbsencesClicked={openAbsenceModal}
-                onReportHolidaysClicked={openHolidayModal}
-                selectedDate={
-                  modalState?.type === 'day' ? modalState.date : undefined
-                }
-                selectDate={openDayModal}
-                includeWeekends={true}
-                dayIsReservable={dayIsReservable}
-                events={events}
-              />
-            </RenderOnlyOn>
-            {modalState?.type === 'day' && (
-              <DayView
-                date={modalState.date}
-                reservationsResponse={response}
-                selectDate={openDayModal}
-                onClose={closeModal}
-                openAbsenceModal={openAbsenceModal}
-                events={events}
-              />
-            )}
-            {modalState?.type === 'pickAction' && (
-              <ActionPickerModal
-                close={closeModal}
-                openReservations={openReservationModalWithoutInitialRange}
-                openAbsences={openAbsenceModal}
-                openHolidays={openHolidayModal}
-              />
-            )}
-            {modalState?.type === 'reservations' && (
-              <ReservationModal
-                onClose={closeModal}
-                reservationsResponse={response}
-                onSuccess={closeModal}
-                initialStart={
-                  modalState.initialRange?.start ?? firstReservableDate
-                }
-                initialEnd={modalState.initialRange?.end ?? null}
-                holidayPeriods={holidayPeriods}
-              />
-            )}
-            {modalState?.type === 'absences' && (
-              <AbsenceModal
-                close={closeModal}
-                initialDate={modalState.initialDate}
-                reservationsResponse={response}
-              />
-            )}
-            {modalState?.type === 'holidays' && questionnaire && (
-              <RequireAuth
-                strength={
-                  questionnaire.questionnaire.requiresStrongAuth
-                    ? 'STRONG'
-                    : 'WEAK'
-                }
-              >
-                <FixedPeriodSelectionModal
+              )}
+              {modalState?.type === 'pickAction' && (
+                <ActionPickerModal
                   close={closeModal}
-                  questionnaire={questionnaire.questionnaire}
-                  availableChildren={response.children}
-                  eligibleChildren={questionnaire.eligibleChildren}
-                  previousAnswers={questionnaire.previousAnswers}
+                  openReservations={openReservationModalWithoutInitialRange}
+                  openDiscussionReservations={openDiscussionSurveyModal}
+                  openAbsences={openAbsenceModal}
+                  openHolidays={openHolidayModal}
+                  isDiscussionActionVisible={discussionSurveys.length > 0}
                 />
-              </RequireAuth>
-            )}
-          </div>
-        )
+              )}
+              {modalState?.type === 'reservations' && (
+                <ReservationModal
+                  onClose={closeModal}
+                  reservationsResponse={response}
+                  onSuccess={closeModal}
+                  initialStart={
+                    modalState.initialRange?.start ?? firstReservableDate
+                  }
+                  initialEnd={modalState.initialRange?.end ?? null}
+                  holidayPeriods={holidayPeriods}
+                />
+              )}
+              {modalState?.type === 'absences' && (
+                <AbsenceModal
+                  close={closeModal}
+                  initialDate={modalState.initialDate}
+                  reservationsResponse={response}
+                />
+              )}
+              {featureFlags.discussionReservations &&
+                modalState?.type === 'discussions' && (
+                  <DiscussionSurveyModal
+                    close={closeModal}
+                    childData={response.children}
+                    surveys={events.filter(
+                      (e) =>
+                        e.eventType === 'DISCUSSION_SURVEY' &&
+                        e.period.end.isEqualOrAfter(LocalDate.todayInSystemTz())
+                    )}
+                    openDiscussionReservations={openDiscussionReservationModal}
+                  />
+                )}
+
+              {featureFlags.discussionReservations &&
+                modalState?.type === 'discussion-reservations' &&
+                !!modalState.selectedChildId &&
+                !!modalState.selectedEventId && (
+                  <DiscussionReservationModal
+                    close={closeModal}
+                    childData={response.children.find(
+                      (c) => c.id === modalState.selectedChildId
+                    )}
+                    eventData={events.find(
+                      (e) => e.id === modalState.selectedEventId
+                    )}
+                  />
+                )}
+              {modalState?.type === 'holidays' && questionnaire && (
+                <RequireAuth
+                  strength={
+                    questionnaire.questionnaire.requiresStrongAuth
+                      ? 'STRONG'
+                      : 'WEAK'
+                  }
+                >
+                  <FixedPeriodSelectionModal
+                    close={closeModal}
+                    questionnaire={questionnaire.questionnaire}
+                    availableChildren={response.children}
+                    eligibleChildren={questionnaire.eligibleChildren}
+                    previousAnswers={questionnaire.previousAnswers}
+                  />
+                </RequireAuth>
+              )}
+            </div>
+          )
+        }
       )}
     </>
   )
@@ -232,6 +286,12 @@ type URLModalState =
   | { type: 'absences'; initialDate: LocalDate | undefined }
   | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
+  | { type: 'discussions' }
+  | {
+      type: 'discussion-reservations'
+      selectedEventId: UUID | undefined
+      selectedChildId: UUID | undefined
+    }
 
 // Modal state not stored to the URL
 type NonURLModalState = { type: 'pickAction' }
@@ -246,6 +306,11 @@ interface UseModalStateResult {
   openReservationModal: (initialRange: FiniteDateRange | undefined) => void
   openAbsenceModal: (initialDate: LocalDate | undefined) => void
   openHolidayModal: () => void
+  openDiscussionSurveyModal: () => void
+  openDiscussionReservationModal: (
+    selectedChildId: UUID | undefined,
+    selectedEventId: UUID | undefined
+  ) => void
   closeModal: () => void
 }
 
@@ -285,6 +350,20 @@ export function useCalendarModalState(): UseModalStateResult {
       openModal({ type: 'absences', initialDate }),
     [openModal]
   )
+
+  const openDiscussionSurveyModal = useCallback(
+    () => openModal({ type: 'discussions' }),
+    [openModal]
+  )
+  const openDiscussionReservationModal = useCallback(
+    (selectedChildId: UUID | undefined, selectedEventId: UUID | undefined) =>
+      openModal({
+        type: 'discussion-reservations',
+        selectedChildId,
+        selectedEventId
+      }),
+    [openModal]
+  )
   const openHolidayModal = useCallback(
     () => openModal({ type: 'holidays' }),
     [openModal]
@@ -302,6 +381,8 @@ export function useCalendarModalState(): UseModalStateResult {
     openReservationModal,
     openAbsenceModal,
     openHolidayModal,
+    openDiscussionSurveyModal,
+    openDiscussionReservationModal,
     closeModal
   }
 }
@@ -312,6 +393,8 @@ function parseQueryString(qs: string): URLModalState | undefined {
   const modalParam = searchParams.get('modal')
   const startDateParam = searchParams.get('startDate')
   const endDateParam = searchParams.get('endDate')
+  const selectedChildId = searchParams.get('selectedChildId') ?? undefined
+  const selectedEventId = searchParams.get('selectedEventId') ?? undefined
 
   const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
   const startDate = startDateParam
@@ -328,9 +411,17 @@ function parseQueryString(qs: string): URLModalState | undefined {
       ? { type: 'holidays' }
       : modalParam === 'absences'
         ? { type: 'absences', initialDate: date }
-        : date
-          ? { type: 'day', date }
-          : undefined
+        : modalParam === 'discussions'
+          ? { type: 'discussions' }
+          : modalParam === 'discussion-reservations'
+            ? {
+                type: 'discussion-reservations',
+                selectedChildId,
+                selectedEventId
+              }
+            : date
+              ? { type: 'day', date }
+              : undefined
 }
 
 function buildQueryString(modal: URLModalState): string {
@@ -349,6 +440,10 @@ function buildQueryString(modal: URLModalState): string {
       }`
     case 'day':
       return `day=${modal.date.toString()}`
+    case 'discussions':
+      return `modal=discussions`
+    case 'discussion-reservations':
+      return `modal=discussion-reservations${modal.selectedChildId ? '&selectedChildId=' + modal.selectedChildId : ''}${modal.selectedEventId ? '&selectedEventId=' + modal.selectedEventId : ''}`
   }
 }
 

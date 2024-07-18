@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
@@ -92,10 +93,26 @@ interface IEmailMessageProvider {
         events: List<CalendarEventNotificationData>
     ): EmailContent
 
+    fun discussionSurveyReservationNotification(
+        language: Language,
+        notificationDetails: DiscussionSurveyReservationNotificationData
+    ): EmailContent
+
+    fun discussionSurveyReservationCancellationNotification(
+        language: Language,
+        notificationDetails: DiscussionSurveyReservationNotificationData
+    ): EmailContent
+
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
 data class CalendarEventNotificationData(
     val title: String,
     val period: FiniteDateRange,
+)
+
+data class DiscussionSurveyReservationNotificationData(
+    val title: String,
+    val unitName: String,
+    val calendarEventTime: CalendarEventTime
 )

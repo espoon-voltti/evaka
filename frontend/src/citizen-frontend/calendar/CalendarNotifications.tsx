@@ -3,21 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faInfo } from 'Icons'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
-import { Translations } from 'lib-customizations/citizen'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { featureFlags, Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
 import { useCalendarModalState } from './CalendarPage'
+import { showSurveyReservationToast } from './discussion-reservation-modal/discussion-survey'
 import {
   activeQuestionnaireQuery,
   holidayPeriodsQuery,
@@ -32,10 +35,12 @@ type HolidayCta =
 
 interface Props {
   calendarDays: ReservationResponseDay[]
+  events: CitizenCalendarEvent[]
 }
 
 export default React.memo(function CalendarNotifications({
-  calendarDays
+  calendarDays,
+  events
 }: Props) {
   const navigate = useNavigate()
 
@@ -43,11 +48,22 @@ export default React.memo(function CalendarNotifications({
     useContext(NotificationsContext)
   const i18n = useTranslation()
 
-  const { openHolidayModal, openReservationModal } = useCalendarModalState()
+  const { openHolidayModal, openReservationModal, openDiscussionSurveyModal } =
+    useCalendarModalState()
 
   const incomeExpirationDateResult = useQueryResult(
     incomeExpirationDatesQuery()
   )
+
+  const activeDiscussionSurveys = useMemo(
+    () =>
+      events.filter(
+        (e) =>
+          e.eventType === 'DISCUSSION_SURVEY' && showSurveyReservationToast(e)
+      ),
+    [events]
+  )
+
   useEffect(() => {
     if (
       !incomeExpirationDateResult.isSuccess ||
@@ -147,6 +163,43 @@ export default React.memo(function CalendarNotifications({
     openHolidayModal,
     openReservationModal,
     removeNotification
+  ])
+
+  useEffect(() => {
+    if (
+      featureFlags.discussionReservations &&
+      activeDiscussionSurveys.length > 0
+    ) {
+      addNotification(
+        {
+          icon: faInfo,
+          iconColor: colors.main.m2,
+          children: (
+            <>
+              {i18n.calendar.discussionTimeReservation.surveyToastMessage}
+              <Button
+                appearance="link"
+                text={
+                  i18n.calendar.discussionTimeReservation.surveyModalButtonText
+                }
+              />
+            </>
+          ),
+          onClick: () => {
+            openDiscussionSurveyModal()
+            removeNotification('active-discussions-cta')
+          },
+          dataQa: 'active-discussions-cta'
+        },
+        'active-discussions-cta'
+      )
+    }
+  }, [
+    addNotification,
+    removeNotification,
+    openDiscussionSurveyModal,
+    i18n,
+    activeDiscussionSurveys.length
   ])
 
   return (

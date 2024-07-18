@@ -16,6 +16,9 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
+import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
@@ -291,16 +294,42 @@ data class CitizenCalendarEventRow(
     val id: CalendarEventId,
     val childId: ChildId,
     val period: FiniteDateRange,
+    val eventPeriod: FiniteDateRange,
     val title: String,
     val description: String,
-    val type: String,
+    val type: AttendanceType,
     val groupId: GroupId?,
     val groupName: String?,
     val unitId: DaycareId,
     val unitName: String
 )
 
-fun Database.Read.getCalendarEventsForGuardian(
+enum class AttendanceType {
+    INDIVIDUAL,
+    GROUP,
+    UNIT
+}
+
+data class CitizenDiscussionSurveyRow(
+    val id: CalendarEventId,
+    val childId: ChildId,
+    val period: FiniteDateRange,
+    val eventPeriod: FiniteDateRange,
+    val title: String,
+    val description: String,
+    val type: AttendanceType,
+    val groupId: GroupId?,
+    val groupName: String?,
+    val unitId: DaycareId,
+    val unitName: String,
+    val eventTimeId: CalendarEventTimeId,
+    val eventTimeOccupant: ChildId?,
+    val eventTimeDate: LocalDate,
+    val eventTimeStart: LocalTime,
+    val eventTimeEnd: LocalTime
+)
+
+fun Database.Read.getDaycareEventsForGuardian(
     guardianId: PersonId,
     range: FiniteDateRange
 ): List<CitizenCalendarEventRow> =
@@ -340,10 +369,10 @@ child_placement AS NOT MATERIALIZED (
     WHERE EXISTS(SELECT 1 FROM child WHERE bc.child_id = child.id)
       AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
 )
-SELECT ce.id, cp.child_id, ce.period * daterange(dgp.start_date, dgp.end_date, '[]') * cp.period period, ce.title, ce.description, (
-    CASE WHEN cea.child_id IS NOT NULL THEN 'individual'
-         WHEN cea.group_id IS NOT NULL THEN 'group'
-         ELSE 'unit' END
+SELECT ce.id, cp.child_id, ce.period * daterange(dgp.start_date, dgp.end_date, '[]') * cp.period period, ce.period event_period, ce.title, ce.description, (
+    CASE WHEN cea.child_id IS NOT NULL THEN 'INDIVIDUAL'
+         WHEN cea.group_id IS NOT NULL THEN 'GROUP'
+         ELSE 'UNIT' END
 ) type, dg.id group_id, dg.name group_name, unit.id unit_id, unit.name unit_name
 FROM child_placement cp
 LEFT JOIN daycare_group_placement dgp ON cp.backup_group_id IS NULL AND dgp.daycare_placement_id = cp.id
@@ -358,12 +387,76 @@ WHERE cp.period && ce.period
   AND ce.period && ${bind(range)}
   AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
   AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
-  -- FIXME: discussion surveys hidden from guardians until guardian UI is implemented
   AND ce.event_type = 'DAYCARE_EVENT'
 """
             )
         }
         .toList<CitizenCalendarEventRow>()
+
+fun Database.Read.getDiscussionSurveysForGuardian(
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<CitizenDiscussionSurveyRow> =
+    createQuery {
+            sql(
+                """
+WITH children_of_guardian AS NOT MATERIALIZED (SELECT g.child_id id
+                                FROM guardian g
+                                WHERE g.guardian_id = ${bind(guardianId)}
+                                UNION
+                                SELECT fp.child_id
+                                FROM foster_parent fp
+                                WHERE parent_id = ${bind(guardianId)}
+                                  AND valid_during && ${bind(range)}),
+     child_placement AS NOT MATERIALIZED (SELECT p.id,
+                                                 p.unit_id,
+                                                 p.child_id,
+                                                 daterange(p.start_date, p.end_date, '[]') as period
+                                          FROM placement p
+                                          WHERE EXISTS(SELECT 1 FROM children_of_guardian WHERE p.child_id = children_of_guardian.id)
+                                            AND daterange(p.start_date, p.end_date, '[]') && ${bind(range)})
+SELECT ce.id,
+       cp.child_id,
+       ce.period * daterange(dgp.start_date, dgp.end_date, '[]') * cp.period as period,
+       ce.period                                                             as event_period,
+       ce.title,
+       ce.description,
+       (
+           CASE
+               WHEN cea.child_id IS NOT NULL THEN 'INDIVIDUAL'
+               WHEN cea.group_id IS NOT NULL THEN 'GROUP'
+               ELSE 'UNIT' END
+           )                                                                 as type,
+       dg.id                                                                 as group_id,
+       dg.name                                                               as group_name,
+       unit.id                                                               as unit_id,
+       unit.name                                                             as unit_name,
+       cet.id                                                                as event_time_id,
+       cet.date                                                              as event_time_date,
+       cet.start_time                                                        as event_time_start,
+       cet.end_time                                                          as event_time_end,
+       cet.child_id                                                          as event_time_occupant
+FROM child_placement cp
+         LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = cp.id
+         LEFT JOIN calendar_event_attendee cea
+                   ON cea.unit_id = cp.unit_id
+                       AND (cea.child_id IS NULL OR cea.child_id = cp.child_id)
+                       AND (cea.group_id IS NULL OR cea.group_id = dgp.daycare_group_id)
+         JOIN calendar_event ce ON ce.id = cea.calendar_event_id
+         LEFT JOIN daycare_group dg ON dg.id = cea.group_id
+         LEFT JOIN daycare unit ON unit.id = cea.unit_id
+         JOIN calendar_event_time cet
+                  ON ce.id = cet.calendar_event_id
+                       AND (cet.child_id IS NULL OR cet.child_id = cp.child_id)
+WHERE cp.period && ce.period
+  AND ce.period && ${bind(range)}
+  AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
+  AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
+  AND ce.event_type = 'DISCUSSION_SURVEY';
+"""
+            )
+        }
+        .toList<CitizenDiscussionSurveyRow>()
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
     this.createQuery {
@@ -487,3 +580,26 @@ WHERE id = ${bind(eventId)}
             )
         }
         .updateExactlyOne()
+
+data class DiscussionTimeDetailsRow(
+    @Nested("et") val eventTime: CalendarEventTime,
+    val title: String,
+    val unitName: String
+)
+
+fun Database.Read.getDiscussionTimeDetailsByEventTimeId(id: CalendarEventTimeId) =
+    createQuery {
+            sql(
+                """
+SELECT distinct cet.id as et_id, cet.date as et_date, cet.start_time as et_start_time, cet.end_time as et_end_time, cet.child_id as et_child_id, ce.title, d.name as unit_name
+FROM calendar_event_time cet
+JOIN calendar_event ce ON cet.calendar_event_id = ce.id 
+JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+JOIN daycare d ON d.id = cea.unit_id
+WHERE cet.id = ${bind(id)}
+        
+        """
+                    .trimIndent()
+            )
+        }
+        .exactlyOneOrNull<DiscussionTimeDetailsRow>()

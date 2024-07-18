@@ -7,8 +7,12 @@ package fi.espoo.evaka.calendarevent
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.backupcare.getBackupCareChildrenInGroup
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.placement.getDaycarePlacements
 import fi.espoo.evaka.placement.getGroupPlacementChildren
 import fi.espoo.evaka.shared.CalendarEventId
@@ -16,6 +20,8 @@ import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -26,6 +32,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.DayOfWeek
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,7 +46,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CalendarEventController(private val accessControl: AccessControl) {
+class CalendarEventController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @GetMapping(
         "/units/{unitId}/calendar-events", // deprecated
         "/employee/units/{unitId}/calendar-events"
@@ -430,6 +440,11 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.CalendarEventTime.DELETE,
                         id
                     )
+
+                    val preUpdateEventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(id)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     val calendarEventId =
                         tx.getCalendarEventIdByTimeId(id)
                             ?: throw NotFound("No corresponding discussion survey found")
@@ -445,6 +460,25 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         modifiedAt = clock.now(),
                         period = getPeriodOfTimes(associatedEvent.times, clock.today())
                     )
+
+                    if (preUpdateEventTimeDetails.eventTime.childId != null) {
+                        val cancellationRecipients =
+                            getRecipientsForChild(tx, preUpdateEventTimeDetails.eventTime.childId)
+                        asyncJobRunner.plan(
+                            tx,
+                            cancellationRecipients.map {
+                                AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                    eventTitle = associatedEvent.title,
+                                    childId = preUpdateEventTimeDetails.eventTime.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                    unitName = preUpdateEventTimeDetails.unitName,
+                                    recipientId = it.id
+                                )
+                            },
+                            runAt = clock.now()
+                        )
+                    }
                 }
             }
             .also { Audit.CalendarEventTimeDelete.log(targetId = AuditId(id)) }
@@ -474,13 +508,57 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         eventTimeId = body.calendarEventTimeId,
                         childId = body.childId
                     )
+                    val preUpdateEventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+
                     if (body.childId != null) {
+                        val reservationRecipients = getRecipientsForChild(tx, body.childId)
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
                             childId = body.childId,
                             modifiedAt = clock.now(),
                             modifiedBy = user.evakaUserId
+                        )
+
+                        if (body.childId != preUpdateEventTimeDetails.eventTime.childId) {
+                            asyncJobRunner.plan(
+                                tx,
+                                reservationRecipients.map {
+                                    AsyncJob.SendDiscussionSurveyReservationEmail(
+                                        eventTitle = preUpdateEventTimeDetails.title,
+                                        childId = body.childId,
+                                        language = Language.fi,
+                                        calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                        unitName = preUpdateEventTimeDetails.unitName,
+                                        recipientId = it.id
+                                    )
+                                },
+                                runAt = clock.now()
+                            )
+                        }
+                    }
+                    if (
+                        preUpdateEventTimeDetails.eventTime.childId != null &&
+                            preUpdateEventTimeDetails.eventTime.childId != body.childId
+                    ) {
+                        val cancellationRecipients =
+                            getRecipientsForChild(tx, preUpdateEventTimeDetails.eventTime.childId)
+                        asyncJobRunner.plan(
+                            tx,
+                            cancellationRecipients.map {
+                                AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                    eventTitle = preUpdateEventTimeDetails.title,
+                                    childId = preUpdateEventTimeDetails.eventTime.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = preUpdateEventTimeDetails.eventTime,
+                                    unitName = preUpdateEventTimeDetails.unitName,
+                                    recipientId = it.id
+                                )
+                            },
+                            runAt = clock.now()
                         )
                     }
                 }
@@ -504,13 +582,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
         }
-
         val range = FiniteDateRange(start, end)
-
         if (range.durationInDays() > 450) {
             throw BadRequest("Only 450 days of calendar events may be fetched at once")
         }
 
+        val today = clock.today()
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -520,30 +597,94 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Person.READ_CALENDAR_EVENTS,
                         user.id
                     )
-                    tx.getCalendarEventsForGuardian(user.id, range)
-                        .groupBy { it.id }
-                        .map { (eventId, attendees) ->
-                            CitizenCalendarEvent(
-                                id = eventId,
-                                title = attendees[0].title,
-                                description = attendees[0].description,
-                                attendingChildren =
-                                    attendees
-                                        .groupBy { it.childId }
-                                        .mapValues { (_, attendee) ->
-                                            attendee
-                                                .groupBy { Triple(it.type, it.groupId, it.unitId) }
-                                                .map { (t, attendance) ->
-                                                    AttendingChild(
-                                                        periods = attendance.map { it.period },
-                                                        type = t.first,
-                                                        groupName = attendance[0].groupName,
-                                                        unitName = attendance[0].unitName
-                                                    )
-                                                }
-                                        }
-                            )
-                        }
+                    val daycareEvents = tx.getDaycareEventsForGuardian(user.id, range)
+                    val discussionEvents = tx.getDiscussionSurveysForGuardian(user.id, range)
+
+                    val daycareEventResults =
+                        daycareEvents
+                            .groupBy { it.id }
+                            .map { (eventId, attendees) ->
+                                CitizenCalendarEvent(
+                                    id = eventId,
+                                    title = attendees[0].title,
+                                    description = attendees[0].description,
+                                    period = attendees[0].eventPeriod,
+                                    eventType = CalendarEventType.DAYCARE_EVENT,
+                                    attendingChildren =
+                                        attendees
+                                            .groupBy { it.childId }
+                                            .mapValues { (_, attendee) ->
+                                                attendee
+                                                    .groupBy {
+                                                        Triple(it.type, it.groupId, it.unitId)
+                                                    }
+                                                    .map { (t, attendance) ->
+                                                        AttendingChild(
+                                                            periods = attendance.map { it.period },
+                                                            type = t.first,
+                                                            groupName = attendance[0].groupName,
+                                                            unitName = attendance[0].unitName
+                                                        )
+                                                    }
+                                            },
+                                    timesByChild = emptyMap()
+                                )
+                            }
+                    val discussionEventResults =
+                        discussionEvents
+                            .groupBy { it.id }
+                            .map { (eventId, attendeeRows) ->
+                                CitizenCalendarEvent(
+                                    id = eventId,
+                                    title = attendeeRows[0].title,
+                                    description = attendeeRows[0].description,
+                                    eventType = CalendarEventType.DISCUSSION_SURVEY,
+                                    period = attendeeRows[0].eventPeriod,
+                                    attendingChildren =
+                                        attendeeRows
+                                            .groupBy { it.childId }
+                                            .mapValues { (_, attendee) ->
+                                                attendee
+                                                    .groupBy {
+                                                        Triple(it.type, it.groupId, it.unitId)
+                                                    }
+                                                    .map { (t, attendance) ->
+                                                        AttendingChild(
+                                                            periods =
+                                                                attendance
+                                                                    .map { it.period }
+                                                                    .distinct(),
+                                                            type = t.first,
+                                                            groupName = attendance[0].groupName,
+                                                            unitName = attendance[0].unitName
+                                                        )
+                                                    }
+                                            },
+                                    timesByChild =
+                                        attendeeRows
+                                            .groupBy { it.childId }
+                                            .map { (key, values) ->
+                                                key to
+                                                    values.map {
+                                                        CitizenCalendarEventTime(
+                                                            id = it.eventTimeId,
+                                                            childId = it.eventTimeOccupant,
+                                                            startTime = it.eventTimeStart,
+                                                            endTime = it.eventTimeEnd,
+                                                            date = it.eventTimeDate,
+                                                            isEditable =
+                                                                !it.eventTimeDate.isBefore(
+                                                                    getManipulationWindowStart(
+                                                                        today
+                                                                    )
+                                                                )
+                                                        )
+                                                    }
+                                            }
+                                            .toMap(),
+                                )
+                            }
+                    daycareEventResults + discussionEventResults
                 }
             }
             .also {
@@ -603,6 +744,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         eventTimeId = body.calendarEventTimeId,
                         childId = body.childId
                     )
+                    val eventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
+
                     val count =
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
@@ -611,7 +756,30 @@ class CalendarEventController(private val accessControl: AccessControl) {
                             modifiedBy = user.evakaUserId
                         )
                     if (count != 1) {
-                        throw Conflict("Calendar event time already reserved")
+                        throw Conflict(
+                            "Calendar event time already reserved",
+                            errorCode = "TIME_ALREADY_RESERVED"
+                        )
+                    }
+
+                    // send reservation email if reservation changes
+                    if (eventTimeDetails.eventTime.childId != body.childId) {
+                        val recipients = getRecipientsForChild(tx, body.childId)
+                        val finalEventTime = eventTimeDetails.eventTime.copy(childId = body.childId)
+                        asyncJobRunner.plan(
+                            tx,
+                            recipients.map {
+                                AsyncJob.SendDiscussionSurveyReservationEmail(
+                                    eventTitle = eventTimeDetails.title,
+                                    childId = body.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = finalEventTime,
+                                    unitName = eventTimeDetails.unitName,
+                                    recipientId = it.id
+                                )
+                            },
+                            runAt = clock.now()
+                        )
                     }
                 }
             }
@@ -641,7 +809,25 @@ class CalendarEventController(private val accessControl: AccessControl) {
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
                         body.childId
                     )
+                    val eventTimeDetails =
+                        tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
+                            ?: throw BadRequest("Calendar event time not found")
                     tx.deleteCalendarEventTimeReservation(body.calendarEventTimeId)
+                    val recipients = getRecipientsForChild(tx, body.childId)
+                    asyncJobRunner.plan(
+                        tx,
+                        recipients.map {
+                            AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                eventTitle = eventTimeDetails.title,
+                                childId = body.childId,
+                                language = Language.fi,
+                                calendarEventTime = eventTimeDetails.eventTime,
+                                unitName = eventTimeDetails.unitName,
+                                recipientId = it.id
+                            )
+                        },
+                        runAt = clock.now()
+                    )
                 }
             }
             .also {
@@ -690,3 +876,21 @@ private fun getPeriodOfTimes(
     return if (minDate != null && maxDate != null) FiniteDateRange(minDate, maxDate)
     else FiniteDateRange(default, default)
 }
+
+private fun getRecipientsForChild(tx: Database.Transaction, childId: ChildId): List<PersonDTO> {
+    return tx.getChildGuardiansAndFosterParents(childId, LocalDate.now()).mapNotNull {
+        tx.getPersonById(it)
+    }
+}
+
+// manipulation allowed if there is a full business day "buffer" from today
+// i.e. for times on the first business day after the next business day
+// today | FRI | SAT | SUN | MON
+//   f   |  f  | N/A | N/A |  t
+private fun getManipulationWindowStart(originalDate: LocalDate) =
+    when (originalDate.dayOfWeek) {
+        DayOfWeek.THURSDAY -> originalDate.plusDays(4) // MONDAY
+        DayOfWeek.FRIDAY -> originalDate.plusDays(4) // TUESDAY
+        DayOfWeek.SATURDAY -> originalDate.plusDays(3) // TUESDAY
+        else -> originalDate.plusDays(2)
+    }

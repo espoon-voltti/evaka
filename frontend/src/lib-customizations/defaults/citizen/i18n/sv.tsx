@@ -317,6 +317,41 @@ const sv: Translations = {
       SICKLEAVE: 'Sjukfrånvaro',
       PLANNED_ABSENCE: 'Skiftarbete frånvaro'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      reservationModalButtonText: 'Siirry varaamaan',
+      surveyModalTitle: 'Ajanvaraus',
+      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalInstruction:
+        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
+      surveyListTitle: 'Varattavat keskustelut',
+      timePreDescriptor: 'klo',
+      reservationLabelText: 'Valitut keskusteluajat:',
+      reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
+      reservationInfoText:
+        'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      freeTimesInfoButtonText: 'Vapaat ajat',
+      freeTimesInfoText:
+        'Valitse sopiva aika alla näkyvistä vaihtoehdoista. Voit perua ajan eVakan kautta kaksi arkipäivää ennen varattua aikaa.',
+      cancellationDeadlineInfoMessage:
+        'Jos haluat perua tämän keskusteluajan, ole yhteydessä henkilökuntaan',
+      reservationChildTitle: 'Lapsi, jota keskustelu koskee:',
+      reservationTime: 'Aika',
+      reservationSelect: 'Valitse',
+      reservationError: 'Valitsemasi aika ei ole enää varattavissa',
+      reservationErrorInstruction:
+        'Valitsemasi aika oli jo varattu, valitse toinen aika.',
+      noReservationsText:
+        'Valitussa kyselyssä ei tällä hetkellä ole vapaita aikoja',
+      backButtonText: 'Palaa',
+      cancelTimeButtonText: 'Peru',
+      surveyToastMessage:
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
+      confirmCancel: {
+        title: 'Haluatko perua varauksen?',
+        cancel: 'Alä peru'
+      }
+    },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
     contactStaffToEditAbsence: 'Kontakta personalen om du vill ändra frånvaron',
     intermittentShiftCareNotification: 'Kvälls-/skiftvård',
@@ -1949,6 +1984,10 @@ const sv: Translations = {
       subtitle: 'Meddelande som skickas till e-posten',
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
+      discussionTimeReservationConfirmation:
+        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationConfirmationInfo:
+        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
       outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',

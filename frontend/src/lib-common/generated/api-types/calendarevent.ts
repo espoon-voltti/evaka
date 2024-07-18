@@ -13,12 +13,20 @@ import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.calendarevent.AttendanceType
+*/
+export type AttendanceType =
+  | 'INDIVIDUAL'
+  | 'GROUP'
+  | 'UNIT'
+
+/**
 * Generated from fi.espoo.evaka.calendarevent.AttendingChild
 */
 export interface AttendingChild {
   groupName: string | null
   periods: FiniteDateRange[]
-  type: string
+  type: AttendanceType
   unitName: string | null
 }
 
@@ -108,8 +116,23 @@ export interface CalendarEventUpdateForm {
 export interface CitizenCalendarEvent {
   attendingChildren: Record<UUID, AttendingChild[]>
   description: string
+  eventType: CalendarEventType
   id: UUID
+  period: FiniteDateRange
+  timesByChild: Record<UUID, CitizenCalendarEventTime[]>
   title: string
+}
+
+/**
+* Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEventTime
+*/
+export interface CitizenCalendarEventTime {
+  childId: UUID | null
+  date: LocalDate
+  endTime: LocalTime
+  id: UUID
+  isEditable: boolean
+  startTime: LocalTime
 }
 
 /**
@@ -192,7 +215,21 @@ export function deserializeJsonCitizenCalendarEvent(json: JsonOf<CitizenCalendar
     ...json,
     attendingChildren: Object.fromEntries(Object.entries(json.attendingChildren).map(
       ([k, v]) => [k, v.map(e => deserializeJsonAttendingChild(e))]
+    )),
+    period: FiniteDateRange.parseJson(json.period),
+    timesByChild: Object.fromEntries(Object.entries(json.timesByChild).map(
+      ([k, v]) => [k, v.map(e => deserializeJsonCitizenCalendarEventTime(e))]
     ))
+  }
+}
+
+
+export function deserializeJsonCitizenCalendarEventTime(json: JsonOf<CitizenCalendarEventTime>): CitizenCalendarEventTime {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date),
+    endTime: LocalTime.parseIso(json.endTime),
+    startTime: LocalTime.parseIso(json.startTime)
   }
 }
 

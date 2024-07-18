@@ -48,6 +48,7 @@ export default React.memo(function Toast({
         <ToastContent onClick={onClick}>{children}</ToastContent>
         {onClose && (
           <CloseButton
+            data-qa="toast-close-button"
             icon={faTimes}
             onClick={onClose}
             aria-label={closeLabel}

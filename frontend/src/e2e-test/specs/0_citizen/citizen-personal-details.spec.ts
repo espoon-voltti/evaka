@@ -151,5 +151,8 @@ describe('Citizen notification settings', () => {
     await section.checkboxes.document.waitUntilChecked(true)
     await section.checkboxes.informalDocument.waitUntilChecked(false)
     await section.checkboxes.missingAttendanceReservation.waitUntilChecked(true)
+    await section.checkboxes.discussionTimeReservationConfirmation.waitUntilChecked(
+      true
+    )
   })
 })

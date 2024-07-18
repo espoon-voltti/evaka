@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faQuestion, faTimes } from 'Icons'
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -20,7 +21,9 @@ import {
 import { StateOf } from 'lib-common/form/types'
 import {
   AttendingChild,
-  CitizenCalendarEvent
+  CalendarEventType,
+  CitizenCalendarEvent,
+  CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
 import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
@@ -40,6 +43,7 @@ import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
   LegacyButton,
@@ -60,11 +64,13 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H1, H2, H3, Label, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -82,7 +88,11 @@ import {
   RoundChildImage
 } from './RoundChildImages'
 import { formatReservation } from './calendar-elements'
-import { postReservationsMutation } from './queries'
+import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
+import {
+  deleteCalendarEventTimeReservationMutation,
+  postReservationsMutation
+} from './queries'
 import { Day } from './reservation-modal/TimeInputs'
 import {
   day,
@@ -312,14 +322,71 @@ const DayModal = React.memo(function DayModal({
 }: DayModalProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
+  const today = LocalDate.todayInHelsinkiTz()
+  const [confirmationModalState, setConfirmationModalState] =
+    useState<ConfirmModalState>({
+      visible: false,
+      childId: null,
+      eventTimeId: null
+    })
+  const onCancelClick = useCallback(
+    (childId: UUID, eventTimeId: UUID) => {
+      setConfirmationModalState({ visible: true, childId, eventTimeId })
+    },
+    [setConfirmationModalState]
+  )
+
+  const onConfirmClose = useCallback(
+    () =>
+      setConfirmationModalState({
+        visible: false,
+        childId: null,
+        eventTimeId: null
+      }),
+    [setConfirmationModalState]
+  )
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal margin="auto" mobileFullScreen data-qa="calendar-dayview">
+      {confirmationModalState.visible && (
+        <MutateFormModal
+          data-qa="confirm-cancel-modal"
+          resolveMutation={deleteCalendarEventTimeReservationMutation}
+          resolveAction={() => {
+            if (
+              confirmationModalState.childId &&
+              confirmationModalState.eventTimeId
+            ) {
+              return {
+                childId: confirmationModalState.childId,
+                calendarEventTimeId: confirmationModalState.eventTimeId
+              }
+            } else return cancelMutation
+          }}
+          rejectAction={onConfirmClose}
+          title={i18n.calendar.discussionTimeReservation.confirmCancel.title}
+          onSuccess={onConfirmClose}
+          rejectLabel={
+            i18n.calendar.discussionTimeReservation.confirmCancel.cancel
+          }
+          resolveLabel={
+            i18n.calendar.discussionTimeReservation.cancelTimeButtonText
+          }
+          type="warning"
+          icon={faQuestion}
+          zIndex={1000}
+        />
+      )}
+      <PlainModal
+        margin="auto"
+        mobileFullScreen
+        data-qa="calendar-dayview"
+        zIndex={100}
+      >
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>
-              <DayHeader highlight={date.isEqual(LocalDate.todayInSystemTz())}>
+              <DayHeader highlight={date.isEqual(today)}>
                 <ModalCloseButton
                   close={onClose}
                   closeLabel={i18n.common.closeModal}
@@ -421,25 +488,102 @@ const DayModal = React.memo(function DayModal({
                           <ColoredH3 noMargin>{i18n.calendar.events}</ColoredH3>
                           <Gap size="s" />
                           <FixedSpaceColumn spacing="s">
-                            {row.events.map((event) => (
-                              <FixedSpaceColumn
-                                spacing="xxs"
-                                key={event.id}
-                                data-qa={`event-${event.id}`}
-                              >
-                                <LabelLike data-qa="event-title">
-                                  {event.title} /{' '}
-                                  {event.currentAttending.type === 'unit'
-                                    ? event.currentAttending.unitName
-                                    : event.currentAttending.type === 'group'
-                                      ? event.currentAttending.groupName
-                                      : row.firstName}
-                                </LabelLike>
-                                <P noMargin data-qa="event-description">
-                                  {event.description}
-                                </P>
-                              </FixedSpaceColumn>
-                            ))}
+                            {row.events.map((event) => {
+                              if (event.eventType === 'DAYCARE_EVENT') {
+                                return (
+                                  <FixedSpaceColumn
+                                    spacing="xxs"
+                                    key={event.id}
+                                    data-qa={`event-${event.id}`}
+                                  >
+                                    <LabelLike data-qa="event-title">
+                                      {event.title} /{' '}
+                                      {event.currentAttending.type === 'UNIT'
+                                        ? event.currentAttending.unitName
+                                        : event.currentAttending.type ===
+                                            'GROUP'
+                                          ? event.currentAttending.groupName
+                                          : row.firstName}
+                                    </LabelLike>
+                                    <P noMargin data-qa="event-description">
+                                      {event.description}
+                                    </P>
+                                  </FixedSpaceColumn>
+                                )
+                              } else if (
+                                featureFlags.discussionReservations &&
+                                event.eventType === 'DISCUSSION_SURVEY'
+                              ) {
+                                return (
+                                  <SurveyContainer
+                                    key={event.id}
+                                    data-qa={`event-${event.id}`}
+                                  >
+                                    <LabelLike>
+                                      <WordBreakContainer>
+                                        <P noMargin data-qa="title-text">
+                                          {event.title}
+                                        </P>
+                                      </WordBreakContainer>
+                                      {event.reservedTimes.map((rt, i) => (
+                                        <DiscussionReservationContainer
+                                          key={`reservation-${i}`}
+                                        >
+                                          <div>
+                                            <P
+                                              noMargin
+                                              data-qa={`reservation-time-${rt.id}`}
+                                            >
+                                              {`${i18n.calendar.discussionTimeReservation.timePreDescriptor} ${rt.startTime.format()} - ${rt.endTime.format()}`}
+                                            </P>
+                                          </div>
+                                          {rt.date.isEqualOrAfter(today) && (
+                                            <>
+                                              <Button
+                                                appearance="inline"
+                                                data-qa={`reservation-cancel-button-${rt.id}`}
+                                                icon={faTimes}
+                                                text={
+                                                  i18n.calendar
+                                                    .discussionTimeReservation
+                                                    .cancelTimeButtonText
+                                                }
+                                                disabled={!rt.isEditable}
+                                                onClick={() => {
+                                                  if (rt.childId !== null) {
+                                                    onCancelClick(
+                                                      rt.childId,
+                                                      rt.id
+                                                    )
+                                                  }
+                                                }}
+                                              />
+                                              {!rt.isEditable && (
+                                                <InfoBox
+                                                  aria-label={
+                                                    i18n.calendar
+                                                      .discussionTimeReservation
+                                                      .cancellationDeadlineInfoMessage
+                                                  }
+                                                  message={
+                                                    i18n.calendar
+                                                      .discussionTimeReservation
+                                                      .cancellationDeadlineInfoMessage
+                                                  }
+                                                />
+                                              )}
+                                            </>
+                                          )}
+                                        </DiscussionReservationContainer>
+                                      ))}
+                                    </LabelLike>
+                                    <P noMargin data-qa="event-description">
+                                      {event.description}
+                                    </P>
+                                  </SurveyContainer>
+                                )
+                              } else return null
+                            })}
                           </FixedSpaceColumn>
                         </>
                       )}
@@ -485,6 +629,8 @@ interface ModalRow {
 
 interface ModalRowEvent extends CitizenCalendarEvent {
   currentAttending: AttendingChild
+  reservedTimes: CitizenCalendarEventTime[]
+  eventType: CalendarEventType
 }
 
 function computeModalData(
@@ -532,9 +678,20 @@ function computeModalData(
         const currentAttending = event.attendingChildren?.[child.childId]?.find(
           ({ periods }) => periods.some((period) => period.includes(date))
         )
-        return currentAttending === undefined
-          ? []
-          : [{ ...event, currentAttending }]
+        const reservedTimes = (event.timesByChild[child.childId] ?? []).filter(
+          (t) => t.childId === child.childId && t.date.isEqual(date)
+        )
+        if (event.eventType === 'DAYCARE_EVENT') {
+          return currentAttending === undefined
+            ? []
+            : [{ ...event, currentAttending, reservedTimes }]
+        } else if (event.eventType === 'DISCUSSION_SURVEY') {
+          return reservedTimes.length > 0
+            ? currentAttending
+              ? [{ ...event, currentAttending, reservedTimes }]
+              : []
+            : []
+        } else return []
       })
     }
   })
@@ -855,4 +1012,21 @@ export const ReservationAttendanceHeading = styled(LabelLike)`
   @media (max-width: ${tabletMin}) {
     margin: ${defaultMargins.xs} 0px ${defaultMargins.xs} 0px;
   }
+`
+const SurveyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 10px 0;
+`
+
+const DiscussionReservationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 10px 0;
+`
+
+export const WordBreakContainer = styled.div`
+  word-break: break-word;
 `

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faComment } from 'Icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
@@ -12,6 +13,7 @@ import { useQueryResult } from 'lib-common/query'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useUser } from '../auth/state'
@@ -27,18 +29,26 @@ interface Props {
   openReservations: () => void
   openAbsences: (initialDate: LocalDate | undefined) => void
   openHolidays: () => void
+  openDiscussionReservations: (initialDate: LocalDate | undefined) => void
+  isDiscussionActionVisible: boolean
 }
 
 export default React.memo(function ActionPickerModal({
   close,
   openReservations,
   openAbsences,
-  openHolidays
+  openHolidays,
+  openDiscussionReservations,
+  isDiscussionActionVisible
 }: Props) {
   const i18n = useTranslation()
   const onCreateAbsences = useCallback(
     () => openAbsences(undefined),
     [openAbsences]
+  )
+  const onOpenDiscussionReservation = useCallback(
+    () => openDiscussionReservations(undefined),
+    [openDiscussionReservations]
   )
   const questionnaireAvailable = isQuestionnaireAvailable(
     useQueryResult(activeQuestionnaireQuery()),
@@ -56,6 +66,17 @@ export default React.memo(function ActionPickerModal({
               />
               <IconBackground>
                 <FontAwesomeIcon icon={faTreePalm} size="1x" />
+              </IconBackground>
+            </Action>
+          )}
+          {featureFlags.discussionReservations && isDiscussionActionVisible && (
+            <Action
+              onClick={onOpenDiscussionReservation}
+              data-qa="calendar-action-discussions"
+            >
+              {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
+              <IconBackground>
+                <FontAwesomeIcon icon={faComment} size="1x" />
               </IconBackground>
             </Action>
           )}

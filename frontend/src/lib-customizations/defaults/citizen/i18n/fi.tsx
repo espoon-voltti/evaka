@@ -320,9 +320,46 @@ export default {
       SICKLEAVE: 'Sairauspoissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Siirry ajanvaraukseen',
+      reservationModalButtonText: 'Siirry varaamaan',
+      surveyModalTitle: 'Ajanvaraus',
+      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalInstruction:
+        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
+      surveyListTitle: 'Varattavat keskustelut',
+      timePreDescriptor: 'klo',
+      reservationLabelText: 'Valitut keskusteluajat:',
+      reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
+      reservationInfoText:
+        'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
+      freeTimesInfoButtonText: 'Vapaat ajat',
+      freeTimesInfoText:
+        'Valitse sopiva aika alla näkyvistä vaihtoehdoista. Voit perua ajan eVakan kautta kaksi arkipäivää ennen varattua aikaa.',
+      cancellationDeadlineInfoMessage:
+        'Jos haluat perua tämän keskusteluajan, ole yhteydessä henkilökuntaan',
+      reservationChildTitle: 'Lapsi, jota keskustelu koskee:',
+      reservationTime: 'Aika',
+      reservationSelect: 'Valitse',
+      reservationError: 'Valitsemasi aika ei ole enää varattavissa',
+      reservationErrorInstruction:
+        'Valitsemasi aika oli jo varattu, valitse toinen aika.',
+      noReservationsText:
+        'Valitussa kyselyssä ei tällä hetkellä ole vapaita aikoja',
+      backButtonText: 'Palaa',
+      cancelTimeButtonText: 'Peru',
+      surveyToastMessage:
+        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
+      confirmCancel: {
+        title: 'Haluatko perua varauksen?',
+        cancel: 'Alä peru'
+      }
+    },
+
     absenceMarkedByEmployee: 'Henkilökunnan merkitsemä poissaolo',
     contactStaffToEditAbsence:
       'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
+
     intermittentShiftCareNotification: 'Ilta-/vuorohoito',
     newReservationOrAbsence: 'Läsnäolo / Poissaolo',
     newHoliday: 'Vastaa poissaolokyselyyn',
@@ -1952,6 +1989,10 @@ export default {
       subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
       message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
       bulletin: 'eVakaan saapuneista yleisistä tiedotteista',
+      discussionTimeReservationConfirmation:
+        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationConfirmationInfo:
+        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
       outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
       outdatedIncomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',

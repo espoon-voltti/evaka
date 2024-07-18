@@ -124,6 +124,9 @@ export class CitizenNotificationSettingsSection extends Element {
     informalDocument: new Checkbox(this.findByDataQa('informal-document')),
     missingAttendanceReservation: new Checkbox(
       this.findByDataQa('missing-attendance-reservation')
+    ),
+    discussionTimeReservationConfirmation: new Checkbox(
+      this.findByDataQa('discussion-time-reservation-confirmation')
     )
   }
 

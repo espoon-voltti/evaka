@@ -319,6 +319,41 @@ const en: Translations = {
       SICKLEAVE: 'Absence due to illness',
       PLANNED_ABSENCE: 'Shift work absence'
     },
+    discussionTimeReservation: {
+      surveyModalButtonText: 'Reserve a discussion time',
+      reservationModalButtonText: 'Reserve a discussion time',
+      surveyModalTitle: 'Time reservation',
+      surveyModalSubTitle: 'Discussion times',
+      surveyModalInstruction:
+        'You have been invited to reserve a discussion time.',
+      surveyListTitle: 'Ongoing discussion surveys',
+      timePreDescriptor: 'at',
+      reservationLabelText: 'Chosen discussion times:',
+      reservationInfoButtonText: 'What if I need multiple times?',
+      reservationInfoText:
+        'Contact the staff directly, they can reserve times for you',
+      freeTimesInfoButtonText: 'Free discussion times',
+      freeTimesInfoText:
+        'Choose a time from the options below. You can cancel a reservation in eVaka two business days before the reservation.',
+      cancellationDeadlineInfoMessage:
+        'If you wish to cancel this reservation, contact the staff',
+      reservationChildTitle: 'The child the discussion is related to:',
+      reservationTime: 'Time',
+      reservationSelect: 'Choose',
+      reservationError: 'The chosen time is no longer available',
+      reservationErrorInstruction:
+        'The chosen time has already been reserved, please choose another one.',
+      noReservationsText:
+        'The chosen discussion survey currently has no times available ',
+      backButtonText: 'Back',
+      cancelTimeButtonText: 'Cancel',
+      surveyToastMessage:
+        'You have been invited to reserve a time for a discussion about your child',
+      confirmCancel: {
+        title: 'Do you wish to cancel the reservation?',
+        cancel: 'Do not cancel'
+      }
+    },
     absenceMarkedByEmployee: 'Absence marked by staff',
     contactStaffToEditAbsence:
       'Contact staff if you want to change the absence',
@@ -1710,6 +1745,10 @@ const en: Translations = {
       subtitle: 'Email notifications',
       message: 'messages sent to eVaka by staff',
       bulletin: 'bulletins sent to eVaka',
+      discussionTimeReservationConfirmation:
+        'Confirmations of discussion time reservations in eVaka',
+      discussionTimeReservationConfirmationInfo:
+        'An email confirmation is sent on reservation or cancellation of discussion times',
       outdatedIncome: 'Reminders about updating your income information',
       outdatedIncomeInfo:
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
