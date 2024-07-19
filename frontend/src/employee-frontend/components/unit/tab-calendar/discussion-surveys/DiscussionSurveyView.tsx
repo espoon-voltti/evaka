@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faQuestion, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
 import React, {
@@ -47,6 +46,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { theme } from 'lib-customizations/common'
+import { faPen, faQuestion, faTrash } from 'lib-icons'
 
 import { unitGroupDetailsQuery } from '../../queries'
 import {

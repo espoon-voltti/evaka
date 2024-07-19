@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faLockAlt, faPen } from 'Icons'
 import React, { useCallback } from 'react'
 
 import { boolean, string } from 'lib-common/form/fields'
@@ -38,6 +37,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faLockAlt, faPen } from 'lib-icons'
 
 import { User } from '../auth/state'
 import { useTranslation } from '../localization'

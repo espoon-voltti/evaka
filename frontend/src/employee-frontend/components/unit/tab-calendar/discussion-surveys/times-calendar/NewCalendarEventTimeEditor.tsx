@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faCheck, faTrash } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -12,6 +11,7 @@ import { UUID } from 'lib-common/types'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { faCheck, faTrash } from 'lib-icons'
 
 import { calendarEventTimeForm } from '../survey-editor/form'
 

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faInfo } from 'Icons'
 import React, { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,6 +16,7 @@ import { NotificationsContext } from 'lib-components/Notifications'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { featureFlags, Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { faInfo } from 'lib-icons'
 import { faTreePalm } from 'lib-icons'
 
 import { useCalendarModalState } from './CalendarPage'

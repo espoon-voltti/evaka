@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCommentAlt, fasCommentAltLines, fasFile } from 'Icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -31,6 +30,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faCommentAlt, fasCommentAltLines, fasFile } from 'lib-icons'
 
 import { getIncomeStatementsAwaitingHandler } from '../../generated/api-clients/incomestatement'
 import { useTranslation } from '../../state/i18n'

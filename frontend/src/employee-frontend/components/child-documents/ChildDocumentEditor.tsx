@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
-import { fasCheckCircle, fasExclamationTriangle } from 'Icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
@@ -48,6 +47,7 @@ import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H1, H2 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { fasCheckCircle, fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'

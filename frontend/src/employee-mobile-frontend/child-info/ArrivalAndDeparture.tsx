@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowRotateLeft } from 'Icons'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
@@ -12,6 +11,7 @@ import LocalDate from 'lib-common/local-date'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
+import { faArrowRotateLeft } from 'lib-icons'
 
 import { ArrivalTime } from '../common/components'
 import { useTranslation } from '../common/i18n'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
@@ -33,6 +32,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'
 

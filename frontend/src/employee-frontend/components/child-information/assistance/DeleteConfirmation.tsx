@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'Icons'
 import React, { useCallback, useContext } from 'react'
 
 import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'

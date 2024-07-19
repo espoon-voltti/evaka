@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronDown, faChevronUp, faPen, faTrash } from 'Icons'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
@@ -16,6 +15,7 @@ import { Td, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H4, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faChevronDown, faChevronUp, faPen, faTrash } from 'lib-icons'
 
 import { TimeBasedStatusChip } from '../TimeBasedStatusChip'
 

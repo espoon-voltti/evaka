@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faUserMinus } from 'Icons'
 import classNames from 'classnames'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -54,6 +53,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, H2, Label, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employee'
+import { faUserMinus } from 'lib-icons'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'

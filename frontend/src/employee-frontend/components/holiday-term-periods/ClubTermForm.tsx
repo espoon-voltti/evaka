@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus, faTrash } from 'Icons'
 import React, { useCallback } from 'react'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -38,6 +37,7 @@ import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 

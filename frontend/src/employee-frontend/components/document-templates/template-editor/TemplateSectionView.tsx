@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDown, faArrowUp, faPen, faPlus, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -17,6 +16,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowDown, faArrowUp, faPen, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { templateSectionForm } from '../templates'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDownToLine } from 'Icons'
 import React from 'react'
 
 import { Result } from 'lib-common/api'
@@ -19,6 +18,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H2, H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faArrowDownToLine } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faFileAlt } from 'Icons'
 import noop from 'lodash/noop'
 import React, {
   useCallback,
@@ -37,6 +36,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
+import { faFileAlt } from 'lib-icons'
 import { faCopy, faPen, faSync } from 'lib-icons'
 
 import LabelValueList from '../../components/common/LabelValueList'

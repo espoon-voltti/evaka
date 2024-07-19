@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -14,6 +13,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { WithRange } from './common'
 import { EventRenderer } from './renderers'

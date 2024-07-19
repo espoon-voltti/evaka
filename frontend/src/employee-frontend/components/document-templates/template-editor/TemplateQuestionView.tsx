@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDown, faArrowUp, faPen, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -10,6 +9,7 @@ import { BoundForm } from 'lib-common/form/hooks'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
+import { faArrowDown, faArrowUp, faPen, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { templateQuestionForm, TemplateQuestionPreview } from '../templates'

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleEllipsis } from 'Icons'
 import React, { useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -28,6 +27,7 @@ import TimeRangeEndpoint from 'lib-common/time-range-endpoint'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { fontWeights } from 'lib-components/typography'
 import { colors } from 'lib-customizations/common'
+import { faCircleEllipsis } from 'lib-icons'
 import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'

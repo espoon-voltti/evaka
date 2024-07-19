@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
@@ -31,6 +30,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
+import { faPlus, faTrash } from 'lib-icons'
 
 import { IconOnlyButton } from '../../atoms/buttons/IconOnlyButton'
 import { useTranslations } from '../../i18n'

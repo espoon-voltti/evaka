@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faListTimeline } from 'Icons'
 import React, { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -16,6 +15,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faListTimeline } from 'lib-icons'
 
 import CircularLabel from '../components/common/CircularLabel'
 import WarningLabel from '../components/common/WarningLabel'

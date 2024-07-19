@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from 'Icons'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { Light } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { fasExclamationTriangle } from 'lib-icons'
 
 export const EditButtonRow = styled.div`
   display: flex;

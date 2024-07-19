@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowDownToLine, faPrint } from 'Icons'
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
@@ -35,6 +34,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faArrowDownToLine, faPrint } from 'lib-icons'
 
 import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
 

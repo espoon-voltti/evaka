@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
@@ -19,6 +18,7 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Table, Tbody } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'

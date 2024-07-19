@@ -3,15 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCheck,
-  faCopy,
-  faFileExport,
-  faFileImport,
-  faPen,
-  faTimes,
-  faTrash
-} from 'Icons'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -30,6 +21,15 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import {
+  faCheck,
+  faCopy,
+  faFileExport,
+  faFileImport,
+  faPen,
+  faTimes,
+  faTrash
+} from 'lib-icons'
 
 import { API_URL } from '../../../api/client'
 import { useTranslation } from '../../../state/i18n'

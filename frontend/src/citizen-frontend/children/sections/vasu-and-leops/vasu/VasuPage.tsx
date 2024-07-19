@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -22,6 +21,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { vasuTranslations } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 import { faArrowDownToLine } from 'lib-icons'
 
 import { UnwrapResult } from '../../../../async-rendering'

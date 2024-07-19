@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -32,6 +31,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, H1, H2, H3, Light, P, Strong } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faQuestion } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'Icons'
 import React from 'react'
 
 import { boolean } from 'lib-common/form/fields'
@@ -18,6 +17,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, P, Strong } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
