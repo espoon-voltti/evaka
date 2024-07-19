@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faComment } from 'Icons'
 import sum from 'lodash/sum'
 import React, {
   MutableRefObject,
@@ -34,6 +33,7 @@ import { fontWeights, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
+import { faComment } from 'lib-icons'
 import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useUser } from '../auth/state'

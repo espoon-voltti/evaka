@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as Sentry from '@sentry/browser'
-import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -18,6 +17,7 @@ import PageWrapper from 'lib-components/layout/PageWrapper'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faMagnifyingGlassMinus, faMagnifyingGlassPlus } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'

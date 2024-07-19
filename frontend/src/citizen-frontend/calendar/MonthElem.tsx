@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from 'Icons'
 import React from 'react'
 import styled, { css } from 'styled-components'
 
@@ -21,6 +20,7 @@ import {
 import { fontWeights, H2, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { fasExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 

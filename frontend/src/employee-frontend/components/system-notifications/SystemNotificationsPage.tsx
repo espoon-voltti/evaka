@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen, faPlus, faTrash } from 'Icons'
 import React, { useContext, useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -36,6 +35,7 @@ import {
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faPen, faPlus, faTrash } from 'lib-icons'
 
 import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -11,6 +10,7 @@ import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faArrowRotateLeft } from 'lib-icons'
 
 import { routes } from '../../App'
 import { useTranslation } from '../../common/i18n'

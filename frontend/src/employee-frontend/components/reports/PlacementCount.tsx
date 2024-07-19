@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown, faChevronUp } from 'Icons'
 import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -25,6 +24,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { unitProviderTypes } from 'lib-customizations/employee'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { getPlacementCountReport } from '../../generated/api-clients/reports'

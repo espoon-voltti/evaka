@@ -7,7 +7,8 @@ const plugin = {
   rules: {
     'no-page-pause': require('./rules/no-page-pause'),
     'no-testonly': require('./rules/no-testonly'),
-    'no-relative-lib-imports': require('./rules/no-relative-lib-imports')
+    'no-relative-lib-imports': require('./rules/no-relative-lib-imports'),
+    'no-icons-imports': require('./rules/no-icons-imports')
   },
   configs: {}
 }
@@ -20,7 +21,8 @@ Object.assign(plugin.configs, {
     rules: {
       '@evaka/no-page-pause': 'error',
       '@evaka/no-testonly': 'error',
-      '@evaka/no-relative-lib-imports': 'error'
+      '@evaka/no-relative-lib-imports': 'error',
+      '@evaka/no-icons-imports': 'error'
     }
   }
 })

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, fasExclamationTriangle, faTrash } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -57,6 +56,7 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, H4 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
 import { absenceTypes } from 'lib-customizations/employee'
+import { faPlus, fasExclamationTriangle, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import {

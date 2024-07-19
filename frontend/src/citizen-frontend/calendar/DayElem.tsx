@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCalendar } from 'Icons'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -16,6 +15,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faCalendar } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'

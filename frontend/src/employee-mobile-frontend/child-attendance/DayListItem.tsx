@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown, faChevronUp } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -13,6 +12,7 @@ import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import colors, { theme } from 'lib-customizations/common'
+import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import { useTranslation } from '../common/i18n'
 

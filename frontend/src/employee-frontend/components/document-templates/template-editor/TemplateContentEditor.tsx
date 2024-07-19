@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPen } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -41,6 +40,7 @@ import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRange
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import LabelValueList from '../../common/LabelValueList'

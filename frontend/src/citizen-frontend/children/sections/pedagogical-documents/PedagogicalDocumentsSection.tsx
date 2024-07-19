@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChevronRight } from 'Icons'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
@@ -33,6 +32,7 @@ import {
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { Dimmed, fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { faChevronRight } from 'lib-icons'
 import {
   faArrowDown,
   faChevronDown,

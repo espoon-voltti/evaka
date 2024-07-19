@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamation } from 'Icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
@@ -14,6 +13,7 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { fasExclamation } from 'lib-icons'
 import { faArrowLeft, faTimes } from 'lib-icons'
 
 import { topBarHeight, zIndex } from '../constants'

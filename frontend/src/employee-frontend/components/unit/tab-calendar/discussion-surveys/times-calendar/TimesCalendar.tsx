@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faPlus, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
 import React, {
@@ -39,6 +38,7 @@ import {
 import { fontWeights, H3 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faPlus, faTrash } from 'lib-icons'
 
 import { addCalendarEventTimeMutation } from '../../queries'
 import { ChildGroupInfo } from '../DiscussionSurveyView'

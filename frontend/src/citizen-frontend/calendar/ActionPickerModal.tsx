@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faComment } from 'Icons'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
@@ -14,6 +13,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import { faComment } from 'lib-icons'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import { useUser } from '../auth/state'

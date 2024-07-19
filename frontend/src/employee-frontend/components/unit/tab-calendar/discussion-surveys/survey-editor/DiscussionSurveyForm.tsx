@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faQuestion } from 'Icons'
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
@@ -29,6 +28,7 @@ import {
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label } from 'lib-components/typography'
+import { faQuestion } from 'lib-icons'
 
 import {
   createCalendarEventMutation,

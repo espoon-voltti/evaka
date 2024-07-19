@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLockAlt } from 'Icons'
 import React from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -13,6 +12,7 @@ import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { faLockAlt } from 'lib-icons'
 
 import { useTranslations } from '../i18n'
 

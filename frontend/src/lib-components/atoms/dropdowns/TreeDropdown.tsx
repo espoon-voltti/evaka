@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as Sentry from '@sentry/browser'
-import { faChevronUp } from 'Icons'
 import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
@@ -13,6 +12,7 @@ import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { faChevronUp } from 'lib-icons'
 import { faCheck, faChevronDown, faDash } from 'lib-icons'
 
 import { useTranslations } from '../../i18n'

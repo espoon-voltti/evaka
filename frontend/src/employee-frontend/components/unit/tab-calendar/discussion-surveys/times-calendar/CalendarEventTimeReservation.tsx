@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faX } from '@fortawesome/free-solid-svg-icons'
-import { faPlus, faQuestion, faTrash } from 'Icons'
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
@@ -31,6 +30,7 @@ import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label, fontWeights } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
+import { faPlus, faQuestion, faTrash } from 'lib-icons'
 
 import {
   deleteCalendarEventTimeMutation,
