@@ -54,6 +54,7 @@ export default React.memo(function CreateUnitPage() {
               areas={areas}
               financeDecisionHandlerOptions={financeDecisionHandlerOptions}
               unit={undefined}
+              lastPlacementDate={null}
             >
               {(getFormData, isValid) => (
                 <>

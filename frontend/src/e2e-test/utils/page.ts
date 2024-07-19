@@ -318,11 +318,22 @@ export class DatePicker extends Element {
 }
 
 export class DatePickerDeprecated extends Element {
-  #input = new TextInput(this.find('input'))
+  #input: TextInput
+  #clearIcon: Element
+
+  constructor(value: Element | Locator) {
+    super(value)
+    this.#input = new TextInput(this.find('input'))
+    this.#clearIcon = this.find('.react-datepicker__close-icon')
+  }
 
   async fill(text: string | LocalDate) {
     await this.#input.fill(typeof text === 'string' ? text : text.format())
     await this.#input.press('Enter')
+  }
+
+  async clear() {
+    await this.#clearIcon.click()
   }
 }
 

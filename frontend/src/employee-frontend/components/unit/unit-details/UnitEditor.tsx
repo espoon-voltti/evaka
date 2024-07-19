@@ -319,7 +319,8 @@ function parseLocation(value: string): Coordinate | undefined {
 interface Props {
   areas: DaycareCareArea[]
   financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
-  unit?: Daycare
+  unit: Daycare | undefined
+  lastPlacementDate: LocalDate | null
   editable: boolean
   onClickEdit?: () => void
   children: (
@@ -359,6 +360,7 @@ function validateTimeRange({
 
 function validateForm(
   i18n: Translations,
+  lastPlacementDate: LocalDate | null,
   form: FormData
 ): [DaycareFields | undefined, UnitEditorErrors] {
   const errors: FormErrorItem[] = []
@@ -489,6 +491,18 @@ function validateForm(
     errors.push({
       text: i18n.unitEditor.error.openingDateIsAfterClosingDate,
       key: 'unit-openingclosingorder'
+    })
+  }
+  if (
+    form.closingDate != null &&
+    lastPlacementDate != null &&
+    form.closingDate.isBefore(lastPlacementDate)
+  ) {
+    errors.push({
+      text: i18n.unitEditor.error.closingDateBeforeLastPlacementDate(
+        lastPlacementDate
+      ),
+      key: 'unit-closing-placement'
     })
   }
   if (
@@ -930,7 +944,7 @@ export default function UnitEditor(props: Props) {
   const updateForm = (updates: Partial<FormData>) => {
     const newForm = { ...form, ...updates }
     setForm(newForm)
-    const [, errors] = validateForm(i18n, newForm)
+    const [, errors] = validateForm(i18n, props.lastPlacementDate, newForm)
     setValidationErrors(errors)
   }
   const updateCareTypes = (updates: Partial<Record<CareType, boolean>>) =>
@@ -953,7 +967,7 @@ export default function UnitEditor(props: Props) {
   )
 
   const getFormData = () => {
-    const [fields, errors] = validateForm(i18n, form)
+    const [fields, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
     if (fields && checkFormValidation()) {
       return fields
@@ -963,7 +977,7 @@ export default function UnitEditor(props: Props) {
   }
 
   const onClickEditHandler = () => {
-    const [, errors] = validateForm(i18n, form)
+    const [, errors] = validateForm(i18n, props.lastPlacementDate, form)
     setValidationErrors(errors)
     if (props.onClickEdit) props.onClickEdit()
   }
@@ -1046,14 +1060,6 @@ export default function UnitEditor(props: Props) {
               form.closingDate?.format()
             )}
           </div>
-          {props.editable && !props.unit?.closingDate && form.closingDate && (
-            <AlertBox
-              message={
-                i18n.unitEditor.warning.placementsShouldBeEndedIfUnitIsClosed
-              }
-              data-qa="closing-date-warning"
-            />
-          )}
         </AlertBoxContainer>
       </FormPart>
       <FormPart>

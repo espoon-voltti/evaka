@@ -5,6 +5,8 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.Daycare
+import fi.espoo.evaka.daycare.DaycareFields
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.service.Caretakers
@@ -17,13 +19,11 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareCaretaker
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -64,10 +65,9 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private val today = LocalDate.of(2021, 1, 12)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
-    private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor = AuthenticatedUser.Employee(supervisorId, emptySet())
-    private val staffId = EmployeeId(UUID.randomUUID())
-    private val staffMember = AuthenticatedUser.Employee(staffId, emptySet())
+
+    private val supervisor = DevEmployee(firstName = "Elina", lastName = "Esimies")
+    private val staffMember = DevEmployee()
 
     @BeforeEach
     fun beforeEach() {
@@ -80,10 +80,8 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             }
             tx.insertServiceNeedOptions()
 
-            tx.insert(DevEmployee(id = supervisorId, firstName = "Elina", lastName = "Esimies"))
-            tx.insert(DevEmployee(id = staffId))
-            tx.insertDaycareAclRow(testDaycare.id, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(testDaycare.id, staffId, UserRole.STAFF)
+            tx.insert(supervisor, mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(staffMember, mapOf(testDaycare.id to UserRole.STAFF))
         }
     }
 
@@ -437,8 +435,85 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
+    @Test
+    fun `cannot set daycare close date to earlier than the end of last placement`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val endDate = today.plusYears(1)
+        val placement =
+            DevPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = today,
+                endDate = endDate
+            )
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(placement)
+        }
+
+        val daycare = getDaycare(testDaycare.id).daycare
+        val fields = DaycareFields.fromDaycare(daycare)
+
+        assertThrows<BadRequest> {
+            updateDaycare(admin.user, fields.copy(closingDate = endDate.minusDays(1)))
+        }
+
+        updateDaycare(admin.user, fields.copy(closingDate = endDate))
+    }
+
+    @Test
+    fun `cannot set daycare close date to earlier than the end of last backup care`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        val endDate = today.plusYears(1)
+        val backupCare =
+            DevBackupCare(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                period = FiniteDateRange(today, endDate)
+            )
+        db.transaction { tx ->
+            tx.insert(admin)
+            tx.insert(backupCare)
+        }
+
+        val daycare = getDaycare(testDaycare.id).daycare
+        val fields = DaycareFields.fromDaycare(daycare)
+
+        assertThrows<BadRequest> {
+            updateDaycare(admin.user, fields.copy(closingDate = endDate.minusDays(1)))
+        }
+
+        updateDaycare(admin.user, fields.copy(closingDate = endDate))
+    }
+
+    @Test
+    fun `daycare can be closed if there are no placements or backup cares`() {
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx -> tx.insert(admin) }
+
+        val daycare = getDaycare(testDaycare.id).daycare
+        val fields = DaycareFields.fromDaycare(daycare)
+
+        updateDaycare(admin.user, fields.copy(closingDate = today))
+    }
+
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
-        return daycareController.getDaycare(dbInstance(), staffMember, RealEvakaClock(), daycareId)
+        return daycareController.getDaycare(
+            dbInstance(),
+            staffMember.user,
+            RealEvakaClock(),
+            daycareId
+        )
+    }
+
+    private fun updateDaycare(user: AuthenticatedUser.Employee, fields: DaycareFields) {
+        daycareController.updateDaycare(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            testDaycare.id,
+            fields
+        )
     }
 
     private fun createDaycareGroup(
@@ -449,7 +524,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     ): DaycareGroup {
         return daycareController.createGroup(
             dbInstance(),
-            supervisor,
+            supervisor.user,
             RealEvakaClock(),
             daycareId,
             DaycareController.CreateGroupRequest(name, startDate, initialCaretakers)
@@ -462,7 +537,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     ) {
         daycareController.deleteGroup(
             dbInstance(),
-            supervisor,
+            supervisor.user,
             RealEvakaClock(),
             daycareId,
             groupId
@@ -472,7 +547,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun getGroupDetails(daycareId: DaycareId): UnitGroupDetails {
         return daycareController.getUnitGroupDetails(
             dbInstance(),
-            supervisor,
+            supervisor.user,
             MockEvakaClock(now),
             daycareId,
             from = today,
@@ -494,3 +569,47 @@ SELECT EXISTS(
             }
             .exactlyOne()
 }
+
+private fun DaycareFields.Companion.fromDaycare(daycare: Daycare): DaycareFields =
+    DaycareFields(
+        name = daycare.name,
+        openingDate = daycare.openingDate,
+        closingDate = null,
+        areaId = daycare.area.id,
+        type = daycare.type,
+        dailyPreschoolTime = daycare.dailyPreschoolTime,
+        dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+        daycareApplyPeriod = daycare.daycareApplyPeriod,
+        preschoolApplyPeriod = daycare.preschoolApplyPeriod,
+        clubApplyPeriod = daycare.clubApplyPeriod,
+        providerType = daycare.providerType,
+        capacity = daycare.capacity,
+        language = daycare.language,
+        withSchool = daycare.withSchool,
+        ghostUnit = daycare.ghostUnit,
+        uploadToVarda = daycare.uploadToVarda,
+        uploadChildrenToVarda = daycare.uploadChildrenToVarda,
+        uploadToKoski = daycare.uploadToKoski,
+        invoicedByMunicipality = daycare.invoicedByMunicipality,
+        costCenter = daycare.costCenter,
+        dwCostCenter = daycare.dwCostCenter,
+        financeDecisionHandlerId = daycare.financeDecisionHandler?.id,
+        additionalInfo = daycare.additionalInfo,
+        phone = daycare.phone,
+        email = daycare.email,
+        url = daycare.url,
+        visitingAddress = daycare.visitingAddress,
+        location = daycare.location,
+        mailingAddress = daycare.mailingAddress,
+        unitManager = daycare.unitManager,
+        decisionCustomization = daycare.decisionCustomization,
+        ophUnitOid = daycare.ophUnitOid,
+        ophOrganizerOid = daycare.ophOrganizerOid,
+        operationTimes = daycare.operationTimes,
+        shiftCareOperationTimes = daycare.shiftCareOperationTimes,
+        shiftCareOpenOnHolidays = daycare.shiftCareOpenOnHolidays,
+        businessId = daycare.businessId,
+        iban = daycare.iban,
+        providerId = daycare.providerId,
+        mealtimes = daycare.mealTimes,
+    )

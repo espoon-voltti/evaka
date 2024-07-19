@@ -13,8 +13,8 @@ import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../../utils'
 import {
   Checkbox,
   Combobox,
+  DatePickerDeprecated,
   Element,
-  ElementCollection,
   Modal,
   Page,
   SelectionChip,
@@ -233,9 +233,7 @@ export class UnitEditor {
   #managerEmailInputField: TextInput
   #checkInvoicedByMunicipality: Element
   #invoiceByMunicipality: Checkbox
-  #closingDateInput: Element
-  #reactDatePickerDays: ElementCollection
-  #reactDatePickerCloseIcon: Element
+  #closingDateInput: DatePickerDeprecated
   #unitHandlerAddressInput: TextInput
   #unitCostCenterInput: TextInput
   saveButton: Element
@@ -260,9 +258,9 @@ export class UnitEditor {
     this.#invoiceByMunicipality = new Checkbox(
       page.findByDataQa('check-invoice-by-municipality')
     )
-    this.#closingDateInput = page.find('[data-qa="closing-date-input"] input')
-    this.#reactDatePickerDays = page.findAll('.react-datepicker__day')
-    this.#reactDatePickerCloseIcon = page.find('.react-datepicker__close-icon')
+    this.#closingDateInput = new DatePickerDeprecated(
+      page.findByDataQa('closing-date-input')
+    )
     this.#unitHandlerAddressInput = new TextInput(
       page.find('#unit-handler-address')
     )
@@ -405,14 +403,12 @@ export class UnitEditor {
     await this.page.findByDataQa(`${dataQa}`).waitUntilHidden()
   }
 
-  async selectSomeClosingDate() {
-    await this.#closingDateInput.waitUntilVisible()
-    await this.#closingDateInput.click()
-    await this.#reactDatePickerDays.nth(15).click()
+  async selectClosingDate(date: LocalDate) {
+    await this.#closingDateInput.fill(date)
   }
 
   async clearClosingDate() {
-    await this.#reactDatePickerCloseIcon.click()
+    await this.#closingDateInput.clear()
   }
 
   async selectProviderType(providerType: UnitProviderType) {

@@ -66,6 +66,7 @@ export default React.memo(function UnitDetailsPage() {
               areas={areas}
               financeDecisionHandlerOptions={financeDecisionHandlerOptions}
               unit={unit.daycare}
+              lastPlacementDate={unit.lastPlacementDate}
               onClickEdit={useEditable.on}
             >
               {(getFormData, isValid) => (
