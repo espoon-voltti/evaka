@@ -352,7 +352,7 @@ export default {
         'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
       confirmCancel: {
         title: 'Haluatko perua varauksen?',
-        cancel: 'Alä peru'
+        cancel: 'Älä peru'
       }
     },
 
