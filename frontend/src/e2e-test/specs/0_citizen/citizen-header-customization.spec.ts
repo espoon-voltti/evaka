@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import { testAdult, Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.person(testAdult).saveAdult({ updateMockVtjWithDependants: [] })
 })
 

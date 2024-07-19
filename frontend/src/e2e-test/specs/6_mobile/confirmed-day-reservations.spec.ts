@@ -9,6 +9,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare2,
@@ -23,10 +24,7 @@ import {
   preschoolTerm2021,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import { pairMobileDevice } from '../../utils/mobile'
@@ -45,7 +43,7 @@ const group2 = {
 }
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await createDefaultServiceNeedOptions()
   await insertConfirmedDaysTestData()
 

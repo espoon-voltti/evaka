@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
@@ -13,10 +14,7 @@ import {
   testCareArea,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createApplications,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createApplications } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
@@ -26,7 +24,7 @@ let page: Page
 let applicationsPage: ApplicationsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithDeadGuardian).save()

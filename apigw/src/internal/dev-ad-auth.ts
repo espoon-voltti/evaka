@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
-import { getEmployees } from '../shared/dev-api.js'
+import { getDatabaseId, getEmployees } from '../shared/dev-api.js'
 import { assertStringProp } from '../shared/express.js'
 import { employeeLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
@@ -26,7 +26,10 @@ export function createDevAdRouter(sessions: Sessions): Router {
     root: '/employee',
     strategyName: 'dev-ad',
     loginFormHandler: async (req, res) => {
-      const employees = _.sortBy(await getEmployees(), ({ id }) => id)
+      const employees = _.sortBy(
+        await getEmployees(getDatabaseId(req)),
+        ({ id }) => id
+      )
       const employeeInputs = employees
         .filter((employee) => employee.externalId && employee.email)
         .map((employee, idx) => {
@@ -87,7 +90,8 @@ export function createDevAdRouter(sessions: Sessions): Router {
     verifyUser: async (req) => {
       const preset = assertStringProp(req.body, 'preset')
       const person = await employeeLogin(
-        Employee.parse(preset === 'new' ? req.body : JSON.parse(preset))
+        Employee.parse(preset === 'new' ? req.body : JSON.parse(preset)),
+        getDatabaseId(req)
       )
       return {
         id: person.id,

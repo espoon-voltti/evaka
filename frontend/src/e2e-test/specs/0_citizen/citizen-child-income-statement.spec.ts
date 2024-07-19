@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   createDaycarePlacementFixture,
   Fixture,
@@ -13,10 +14,7 @@ import {
   testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDaycarePlacements } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -32,7 +30,7 @@ const testFileName2 = 'test_file.jpg'
 const testFilePath2 = `src/e2e-test/assets/${testFileName2}`
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

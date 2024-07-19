@@ -5,6 +5,7 @@
 import { SamlConfig, Strategy as SamlStrategy } from '@node-saml/passport-saml'
 import { z } from 'zod'
 
+import { getDatabaseId } from '../shared/dev-api.js'
 import { createSamlStrategy } from '../shared/saml/index.js'
 import { citizenLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
@@ -25,12 +26,16 @@ export function createKeycloakCitizenSamlStrategy(
     if (!socialSecurityNumber)
       throw Error('No socialSecurityNumber in evaka IDP SAML data')
 
-    const person = await citizenLogin({
-      socialSecurityNumber,
-      firstName: profile.firstName ?? '',
-      lastName: profile.lastName ?? '',
-      keycloakEmail: profile.email ?? ''
-    })
+    console.log('HERE keycloak-citizen-saml')
+    const person = await citizenLogin(
+      {
+        socialSecurityNumber,
+        firstName: profile.firstName ?? '',
+        lastName: profile.lastName ?? '',
+        keycloakEmail: profile.email ?? ''
+      },
+      undefined
+    )
 
     return {
       id: person.id,

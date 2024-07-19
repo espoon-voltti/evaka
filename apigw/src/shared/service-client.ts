@@ -113,13 +113,17 @@ export interface CitizenUserResponse {
 }
 
 export async function employeeLogin(
-  employee: EmployeeLoginRequest
+  employee: EmployeeLoginRequest,
+  databaseId: number | undefined
 ): Promise<EmployeeUser> {
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-login`,
     employee,
     {
-      headers: createServiceRequestHeaders(undefined, machineUser)
+      headers: {
+        ...createServiceRequestHeaders(undefined, machineUser),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+      }
     }
   )
   return data
@@ -127,25 +131,34 @@ export async function employeeLogin(
 
 export async function getEmployeeDetails(
   req: express.Request,
-  employeeId: string
+  employeeId: string,
+  databaseId: number | undefined
 ) {
   const { data } = await client.get<EmployeeUserResponse | undefined>(
     `/system/employee/${employeeId}`,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: {
+        ...createServiceRequestHeaders(req, machineUser),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+      }
     }
   )
   return data
 }
 
 export async function citizenLogin(
-  person: CitizenLoginRequest
+  person: CitizenLoginRequest,
+  databaseId: number | undefined
 ): Promise<CitizenUser> {
+  console.log('USING database id', databaseId, 'for citizenLogin')
   const { data } = await client.post<CitizenUser>(
     `/system/citizen-login`,
     person,
     {
-      headers: createServiceRequestHeaders(undefined, machineUser)
+      headers: {
+        ...createServiceRequestHeaders(undefined, machineUser),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+      }
     }
   )
   return data
@@ -153,12 +166,17 @@ export async function citizenLogin(
 
 export async function getCitizenDetails(
   req: express.Request,
-  personId: string
+  personId: string,
+  databaseId: number | undefined
 ) {
+  console.log('using database id', databaseId, 'for getCitizenDetails')
   const { data } = await client.get<CitizenUserResponse>(
     `/system/citizen/${encodeURIComponent(personId)}`,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: {
+        ...createServiceRequestHeaders(req, machineUser),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+      }
     }
   )
   return data
@@ -177,13 +195,17 @@ export interface MobileDeviceIdentity {
 export async function validatePairing(
   req: express.Request,
   id: UUID,
-  request: ValidatePairingRequest
+  request: ValidatePairingRequest,
+  databaseId: number | undefined
 ): Promise<MobileDeviceIdentity> {
   const { data } = await client.post<MobileDeviceIdentity>(
     `/system/pairings/${encodeURIComponent(id)}/validation`,
     request,
     {
-      headers: createServiceRequestHeaders(req, machineUser)
+      headers: {
+        ...createServiceRequestHeaders(req, machineUser),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+      }
     }
   )
   return data
@@ -200,13 +222,17 @@ export interface MobileDevice {
 
 export async function identifyMobileDevice(
   req: express.Request,
-  token: UUID
+  token: UUID,
+  databaseId: number | undefined
 ): Promise<MobileDeviceIdentity | undefined> {
   try {
     const { data } = await client.get<MobileDeviceIdentity | undefined>(
       `/system/mobile-identity/${encodeURIComponent(token)}`,
       {
-        headers: createServiceRequestHeaders(req, machineUser)
+        headers: {
+          ...createServiceRequestHeaders(req, machineUser),
+          ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+        }
       }
     )
     return data
@@ -221,7 +247,8 @@ export async function identifyMobileDevice(
 
 export async function authenticateMobileDevice(
   req: express.Request,
-  id: UUID
+  id: UUID,
+  databaseId: number | undefined
 ): Promise<MobileDevice | undefined> {
   try {
     const { data } = await client.post<MobileDevice | undefined>(
@@ -230,7 +257,10 @@ export async function authenticateMobileDevice(
         userAgent: req.headers['user-agent'] ?? ''
       },
       {
-        headers: createServiceRequestHeaders(req, machineUser)
+        headers: {
+          ...createServiceRequestHeaders(req, machineUser),
+          ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
+        }
       }
     )
     return data
@@ -249,14 +279,16 @@ export interface EmployeePinLoginResponse {
 }
 
 export async function employeePinLogin(
-  req: express.Request
+  req: express.Request,
+  databaseId: number | undefined
 ): Promise<EmployeePinLoginResponse> {
   const { data } = await client.post<EmployeePinLoginResponse>(
     `/mobile-devices/pin-login`,
     req.body,
     {
       headers: {
-        ...createServiceRequestHeaders(req)
+        ...createServiceRequestHeaders(req),
+        ...(databaseId !== undefined && { EvakaDatabaseId: databaseId })
       }
     }
   )

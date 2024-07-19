@@ -2,13 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
-import {
-  postPairing,
-  postPairingResponse,
-  resetServiceState
-} from '../../generated/api-clients'
+import { postPairing, postPairingResponse } from '../../generated/api-clients'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
@@ -17,7 +14,7 @@ let page: Page
 let pairingFlow: PairingFlow
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
 

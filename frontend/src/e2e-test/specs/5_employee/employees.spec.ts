@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
 import { waitUntilEqual } from '../../utils'
@@ -16,7 +16,7 @@ let nav: EmployeeNav
 let employeesPage: EmployeesPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   const admin = await Fixture.employee({
     firstName: 'Seppo',
     lastName: 'Sorsa'

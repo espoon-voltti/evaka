@@ -4,8 +4,8 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import { testAdult, Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
 import { waitUntilEqual, waitUntilTrue } from '../../utils'
@@ -17,7 +17,7 @@ let header: CitizenHeader
 let incomeStatementsPage: IncomeStatementsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.person(testAdult).saveAdult({ updateMockVtjWithDependants: [] })
 

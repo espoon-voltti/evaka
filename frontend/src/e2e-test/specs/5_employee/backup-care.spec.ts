@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   testDaycareGroup,
   Fixture,
@@ -14,10 +15,7 @@ import {
   testDaycare,
   testDaycarePrivateVoucher
 } from '../../dev-api/fixtures'
-import {
-  createDaycareGroups,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDaycareGroups } from '../../generated/api-clients'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitGroupsPage } from '../../pages/employee/units/unit-groups-page'
 import { Page } from '../../utils/page'
@@ -27,7 +25,7 @@ let page: Page
 let groupsPage: UnitGroupsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()

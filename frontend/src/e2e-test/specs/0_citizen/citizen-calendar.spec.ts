@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   createDaycarePlacementFixture,
   Fixture,
@@ -19,10 +20,7 @@ import {
   testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDaycarePlacements } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -44,7 +42,7 @@ const individualEventId = uuidv4()
 let jariId: UUID
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   children = [testChild, testChild2, testChildRestricted]

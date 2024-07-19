@@ -7,6 +7,7 @@ import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -23,8 +24,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
-  insertGuardians,
-  resetServiceState
+  insertGuardians
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -40,7 +40,7 @@ let page: Page
 let feeDecisionsPage: FeeDecisionsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()

@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
@@ -24,8 +25,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  getApplicationDecisions,
-  resetServiceState
+  getApplicationDecisions
 } from '../../generated/api-clients'
 import { DevEmployee, DevPerson } from '../../generated/api-types'
 import AssistanceNeedDecisionPage from '../../pages/citizen/citizen-assistance-need-decision'
@@ -40,7 +40,7 @@ let decisionMaker: DevEmployee
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.preschoolTerm(preschoolTerm2022).save()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

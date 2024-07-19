@@ -10,6 +10,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -26,8 +27,7 @@ import {
   createDaycarePlacements,
   createVasuDocument,
   getSentEmails,
-  insertGuardians,
-  resetServiceState
+  insertGuardians
 } from '../../generated/api-clients'
 import { DevEmployee, DevPerson, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -51,7 +51,7 @@ let daycarePlacementFixture: DevPlacement
 const mockedTime = LocalDate.of(2022, 12, 20)
 
 beforeAll(async () => {
-  await resetServiceState()
+  await startTest()
 
   admin = await Fixture.employee({ firstName: 'Seppo', lastName: 'Sorsa' })
     .admin()

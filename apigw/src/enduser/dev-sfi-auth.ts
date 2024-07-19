@@ -6,7 +6,7 @@ import { Router } from 'express'
 import _ from 'lodash'
 
 import { createDevAuthRouter } from '../shared/auth/dev-auth.js'
-import { getCitizens } from '../shared/dev-api.js'
+import { getCitizens, stringToInt } from '../shared/dev-api.js'
 import { assertStringProp } from '../shared/express.js'
 import { citizenLogin } from '../shared/service-client.js'
 import { Sessions } from '../shared/session.js'
@@ -20,7 +20,7 @@ export function createDevSfiRouter(sessions: Sessions): Router {
       const defaultSsn = '070644-937X'
 
       const citizens = _.orderBy(
-        await getCitizens(),
+        await getCitizens(undefined),
         [
           ({ ssn }) => defaultSsn === ssn,
           ({ dependantCount }) => dependantCount,
@@ -58,11 +58,16 @@ export function createDevSfiRouter(sessions: Sessions): Router {
     },
     verifyUser: async (req) => {
       const socialSecurityNumber = assertStringProp(req.body, 'preset')
-      const person = await citizenLogin({
-        socialSecurityNumber,
-        firstName: '',
-        lastName: ''
-      })
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const databaseId = stringToInt(req.body.databaseId as string | undefined)
+      const person = await citizenLogin(
+        {
+          socialSecurityNumber,
+          firstName: '',
+          lastName: ''
+        },
+        databaseId
+      )
       return {
         id: person.id,
         userType: 'CITIZEN_STRONG',

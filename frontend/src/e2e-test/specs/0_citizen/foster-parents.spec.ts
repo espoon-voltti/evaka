@@ -8,6 +8,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   execSimpleApplicationActions,
@@ -25,8 +26,7 @@ import {
   createMessageAccounts,
   createVasuDocument,
   getApplicationDecisions,
-  publishVasuDocument,
-  resetServiceState
+  publishVasuDocument
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -52,7 +52,7 @@ const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
 

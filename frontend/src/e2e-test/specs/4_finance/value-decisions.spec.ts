@@ -5,6 +5,7 @@
 import { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -22,8 +23,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createVoucherValueDecisions,
-  insertGuardians,
-  resetServiceState
+  insertGuardians
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -44,7 +44,7 @@ const decision2DateFrom = now.toLocalDate()
 const decision2DateTo = now.toLocalDate().addWeeks(5)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

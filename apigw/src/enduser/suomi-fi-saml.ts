@@ -35,11 +35,15 @@ export function createSuomiFiStrategy(
     if (!ssnRegex.test(socialSecurityNumber)) {
       logWarn('Invalid SSN received from Suomi.fi login')
     }
-    const person = await citizenLogin({
-      socialSecurityNumber,
-      firstName: profile[SUOMI_FI_GIVEN_NAME_KEY]?.trim() ?? '',
-      lastName: profile[SUOMI_FI_SURNAME_KEY]?.trim() ?? ''
-    })
+    console.log('HERE suomi-fi-saml')
+    const person = await citizenLogin(
+      {
+        socialSecurityNumber,
+        firstName: profile[SUOMI_FI_GIVEN_NAME_KEY]?.trim() ?? '',
+        lastName: profile[SUOMI_FI_SURNAME_KEY]?.trim() ?? ''
+      },
+      undefined
+    )
     return {
       id: person.id,
       userType: 'CITIZEN_STRONG',

@@ -23,7 +23,12 @@ import {
 } from 'lib-customizations/types'
 
 import config from './config'
-import { setTestMode } from './generated/api-clients'
+import { addTestDatabaseInterceptor } from './dev-api'
+import {
+  createTestDb,
+  setTestMode,
+  resetServiceState
+} from './generated/api-clients'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -70,6 +75,22 @@ afterAll(async () => {
   await setTestMode({ enabled: false })
 })
 
+let databaseId: number | undefined
+
+export function setDatabaseId(id: number) {
+  databaseId = id
+  addTestDatabaseInterceptor(databaseId)
+}
+
+export function getDatabaseId(): number | null {
+  return databaseId ?? null
+}
+
+export async function startTest() {
+  setDatabaseId((await createTestDb({ body: { id: getDatabaseId() } })).id)
+  await resetServiceState()
+}
+
 const initScript = (options: EvakaBrowserContextOptions) => {
   const override = (key: keyof EvakaBrowserContextOptions) => {
     const value = options[key]
@@ -79,9 +100,11 @@ const initScript = (options: EvakaBrowserContextOptions) => {
   }
   const { mockedTime } = options
 
+  console.log('USING DATABASE', databaseId)
   return `
 window.evaka = window.evaka ?? {}
 window.evaka.automatedTest = true
+${databaseId !== undefined ? `window.evaka.databaseId = ${databaseId}` : ''}
 ${
   mockedTime
     ? `window.evaka.mockedTime = new Date('${mockedTime.toString()}')`

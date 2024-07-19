@@ -23,12 +23,15 @@ export function createKeycloakEmployeeSamlStrategy(
   return createSamlStrategy(sessions, config, Profile, async (profile) => {
     const id = profile.id
     if (!id) throw Error('No user ID in evaka IDP SAML data')
-    const person = await employeeLogin({
-      externalId: `evaka:${id}`,
-      firstName: profile.firstName ?? '',
-      lastName: profile.lastName ?? '',
-      email: profile.email
-    })
+    const person = await employeeLogin(
+      {
+        externalId: `evaka:${id}`,
+        firstName: profile.firstName ?? '',
+        lastName: profile.lastName ?? '',
+        email: profile.email
+      },
+      undefined
+    )
     return {
       id: person.id,
       userType: 'EMPLOYEE',

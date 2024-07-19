@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   familyWithTwoGuardians,
@@ -15,7 +16,6 @@ import {
   testCareArea,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ const mockToday = LocalDate.of(2024, 3, 1)
 const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(12, 0))
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare,
@@ -15,7 +16,6 @@ import {
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -38,7 +38,7 @@ describe.each(e)('Citizen income (%s)', (env) => {
   const placementEnd = placementStart.addYears(1)
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
 
     const area = await Fixture.careArea(testCareArea).save()
     daycare = await Fixture.daycare({

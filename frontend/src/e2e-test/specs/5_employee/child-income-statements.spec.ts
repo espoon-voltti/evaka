@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -16,8 +17,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  createIncomeStatements,
-  resetServiceState
+  createIncomeStatements
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -27,7 +27,7 @@ let page: Page
 let personId: UUID
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

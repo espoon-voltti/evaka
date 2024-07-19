@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -18,7 +18,7 @@ let financePage: FinancePage
 let paymentsPage: PaymentsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare({
     areaId: area.id,

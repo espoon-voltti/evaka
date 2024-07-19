@@ -4,13 +4,13 @@
 
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   testDaycare,
   Fixture,
   uuidv4,
   testCareArea
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
   EmployeeRowEditModal,
@@ -47,7 +47,7 @@ const yrjo = {
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

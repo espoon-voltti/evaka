@@ -29,6 +29,7 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.config.MockPersonDetailsServiceFactory
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
@@ -46,8 +47,23 @@ import org.thymeleaf.context.Context
 
 private val logger = KotlinLogging.logger {}
 
+val mockVtjId = ThreadLocal<Int>()
+
 @Service
-class PersonService(private val personDetailsService: IPersonDetailsService) {
+class PersonService(
+    private val globalPersonDetailsService: IPersonDetailsService,
+    private val mockPersonDetailsServiceFactory: MockPersonDetailsServiceFactory
+) {
+    val personDetailsService: IPersonDetailsService
+        get() {
+            val id = mockVtjId.get()
+            return if (id == null) {
+                globalPersonDetailsService
+            } else {
+                mockPersonDetailsServiceFactory.get(id)
+            }
+        }
+
     // Does a request to VTJ if the person has a SSN and updates person data
     fun getUpToDatePersonFromVtj(
         tx: Database.Transaction,

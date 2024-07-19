@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import {
   testDaycareGroup,
   Fixture,
@@ -14,10 +15,7 @@ import {
   testCareArea,
   preschoolTerm2022
 } from '../../dev-api/fixtures'
-import {
-  createDaycareGroups,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDaycareGroups } from '../../generated/api-clients'
 import CreateApplicationModal from '../../pages/employee/applications/create-application-modal'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Page } from '../../utils/page'
@@ -30,7 +28,7 @@ let createApplicationModal: CreateApplicationModal
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.preschoolTerm(preschoolTerm2022).save()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

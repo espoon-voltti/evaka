@@ -5,9 +5,9 @@
 import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import FinanceBasicsPage from '../../pages/employee/finance-basics'
 import { Page } from '../../utils/page'
@@ -18,7 +18,7 @@ let financeBasicsPage: FinanceBasicsPage
 let nav: EmployeeNav
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 })
 
 describe('Finance basics', () => {

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
@@ -17,7 +17,7 @@ let nav: EmployeeNav
 let pinPage: EmployeePinPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   admin = await Fixture.employee().admin().save()
 
   page = await Page.open()

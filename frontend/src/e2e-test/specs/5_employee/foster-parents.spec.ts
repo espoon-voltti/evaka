@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   Fixture,
   testAdult,
@@ -11,7 +12,6 @@ import {
   testChild,
   testChild2
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -22,7 +22,7 @@ let guardianInformation: GuardianInformationPage
 let childInformation: ChildInformationPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

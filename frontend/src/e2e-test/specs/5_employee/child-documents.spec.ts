@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   Fixture,
@@ -11,7 +12,6 @@ import {
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -31,7 +31,7 @@ let page: Page
 const now = HelsinkiDateTime.of(2023, 2, 1, 12, 10, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

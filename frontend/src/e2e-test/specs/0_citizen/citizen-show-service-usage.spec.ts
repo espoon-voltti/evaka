@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare,
@@ -13,7 +14,6 @@ import {
   testAdult,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ async function openCalendarPage() {
 
 describe('Service time usage', () => {
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
 
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
@@ -184,7 +184,7 @@ describe('Service time usage', () => {
 })
 describe('Service time alert', () => {
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
 
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()

@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testCareArea2,
@@ -21,8 +22,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
-  createDaycarePlacements,
-  resetServiceState
+  createDaycarePlacements
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import {
@@ -43,7 +43,7 @@ let childId: UUID
 const mockedTime = LocalDate.of(2021, 8, 16)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   decisionMaker = await Fixture.employee().admin().save()
   director = await Fixture.employee().director().save()

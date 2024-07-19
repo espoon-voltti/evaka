@@ -8,8 +8,8 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
   FormatterReservation,
@@ -25,7 +25,7 @@ const june7th2023 = LocalDate.of(2023, 6, 7)
 describe.each(e)(
   'Citizen reservations with intermittent shift care (%s)',
   (env) => {
-    beforeEach(async (): Promise<void> => resetServiceState())
+    beforeEach(async (): Promise<void> => startTest())
 
     test('Citizen creates a repeating reservation outside placement unit times', async () => {
       const { child, parent } = await addTestData(june7th2023)

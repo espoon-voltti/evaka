@@ -6,9 +6,9 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { HolidayAndTermPeriodsPage } from '../../pages/employee/holiday-term-periods'
 import { waitUntilEqual } from '../../utils'
@@ -19,7 +19,7 @@ let page: Page
 let holidayAndTermPeriodsPage: HolidayAndTermPeriodsPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   const admin = await Fixture.employee().admin().save()
   page = await Page.open({
     mockedTime: LocalDate.of(2021, 11, 1).toHelsinkiDateTime(

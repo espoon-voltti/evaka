@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
 
+import { startTest } from '../../browser'
 import {
   testDaycare2,
   testDaycareGroup,
@@ -17,8 +18,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  getStaffAttendances,
-  resetServiceState
+  getStaffAttendances
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
@@ -45,7 +45,7 @@ const daycareGroup2Fixture: DevDaycareGroup = {
 }
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 

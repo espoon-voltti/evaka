@@ -46,6 +46,8 @@ class AsyncJobConfig {
 
     @Bean
     fun asyncJobRunnerStarter(
+        jdbi: Jdbi,
+        tracer: Tracer,
         asyncJobRunners: List<AsyncJobRunner<*>>,
         evakaEnv: EvakaEnv,
         meterRegistry: MeterRegistry

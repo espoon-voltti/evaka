@@ -99,83 +99,81 @@ data class MockVtjPerson(
 }
 
 class MockPersonDetailsService : IPersonDetailsService {
-    companion object {
-        private val readCounts: ConcurrentHashMap<Ssn, Int> = ConcurrentHashMap()
+    private val readCounts: ConcurrentHashMap<Ssn, Int> = ConcurrentHashMap()
 
-        private val persons: ConcurrentHashMap<Ssn, MockVtjPerson> = ConcurrentHashMap()
-        private val dependantsOfGuardian: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
-        private val guardiansOfDependant: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
+    private val persons: ConcurrentHashMap<Ssn, MockVtjPerson> = ConcurrentHashMap()
+    private val dependantsOfGuardian: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
+    private val guardiansOfDependant: ConcurrentHashMap<Ssn, Set<Ssn>> = ConcurrentHashMap()
 
-        fun reset() {
-            readCounts.clear()
-            persons.clear()
-            dependantsOfGuardian.clear()
-            guardiansOfDependant.clear()
+    fun reset() {
+        readCounts.clear()
+        persons.clear()
+        dependantsOfGuardian.clear()
+        guardiansOfDependant.clear()
+    }
+
+    fun getPerson(ssn: Ssn) =
+        persons[ssn]
+            ?.toVtjPerson()
+            ?.copy(guardians = getGuardians(ssn), dependants = getDependants(ssn))
+
+    fun getAllPersons(): List<VtjPerson> =
+        persons.values.map {
+            it.toVtjPerson()
+                .copy(
+                    guardians = getGuardians(it.socialSecurityNumber),
+                    dependants = getDependants(it.socialSecurityNumber)
+                )
         }
 
-        fun getPerson(ssn: Ssn) =
-            persons[ssn]
-                ?.toVtjPerson()
-                ?.copy(guardians = getGuardians(ssn), dependants = getDependants(ssn))
+    fun getGuardians(ssn: Ssn): List<VtjPerson> =
+        (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
-        fun getAllPersons(): List<VtjPerson> =
-            persons.values.map {
-                it.toVtjPerson()
-                    .copy(
-                        guardians = getGuardians(it.socialSecurityNumber),
-                        dependants = getDependants(it.socialSecurityNumber)
-                    )
-            }
+    fun getDependants(ssn: Ssn): List<VtjPerson> =
+        (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
 
-        fun getGuardians(ssn: Ssn): List<VtjPerson> =
-            (guardiansOfDependant[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
-
-        fun getDependants(ssn: Ssn): List<VtjPerson> =
-            (dependantsOfGuardian[ssn] ?: emptySet()).mapNotNull { persons[it]?.toVtjPerson() }
-
-        fun add(dataset: MockVtjDataset) {
-            dataset.persons.forEach(::addPerson)
-            dataset.guardianDependants.forEach { (guardian, dependants) ->
-                addDependants(guardian, dependants.asSequence())
-            }
-        }
-
-        fun addPerson(person: MockVtjPerson) {
-            this.persons[person.socialSecurityNumber] = person
-        }
-
-        fun addPersons(vararg persons: MockVtjPerson) {
-            persons.forEach(::addPerson)
-        }
-
-        fun addPersons(vararg persons: DevPerson) {
-            persons.forEach { addPerson(MockVtjPerson.from(it)) }
-        }
-
-        fun addPersons(vararg persons: PersonDTO) {
-            persons.forEach { addPerson(MockVtjPerson.from(it)) }
-        }
-
-        fun addDependants(guardian: Ssn, dependants: Sequence<Ssn>) {
-            require(persons.containsKey(guardian)) { "Guardian $guardian not found" }
-            dependants.forEach { dependant ->
-                require(persons.containsKey(dependant)) { "Dependant $dependant not found" }
-                dependantsOfGuardian.merge(guardian, linkedSetOf(dependant), Set<Ssn>::plus)
-                guardiansOfDependant.merge(dependant, linkedSetOf(guardian), Set<Ssn>::plus)
-            }
-        }
-
-        fun addDependants(guardian: Ssn, vararg dependants: Ssn) {
+    fun add(dataset: MockVtjDataset) {
+        dataset.persons.forEach(::addPerson)
+        dataset.guardianDependants.forEach { (guardian, dependants) ->
             addDependants(guardian, dependants.asSequence())
         }
+    }
 
-        fun addDependants(guardian: ExternalIdentifier, vararg dependants: ExternalIdentifier) {
-            addDependants(guardian.toString(), dependants.asSequence().map { it.toString() })
-        }
+    fun addPerson(person: MockVtjPerson) {
+        this.persons[person.socialSecurityNumber] = person
+    }
 
-        fun addDependants(guardian: DevPerson, vararg dependants: DevPerson) {
-            addDependants(guardian.ssn!!, dependants.asSequence().map { it.ssn!! })
+    fun addPersons(vararg persons: MockVtjPerson) {
+        persons.forEach(::addPerson)
+    }
+
+    fun addPersons(vararg persons: DevPerson) {
+        persons.forEach { addPerson(MockVtjPerson.from(it)) }
+    }
+
+    fun addPersons(vararg persons: PersonDTO) {
+        persons.forEach { addPerson(MockVtjPerson.from(it)) }
+    }
+
+    fun addDependants(guardian: Ssn, dependants: Sequence<Ssn>) {
+        require(persons.containsKey(guardian)) { "Guardian $guardian not found" }
+        dependants.forEach { dependant ->
+            require(persons.containsKey(dependant)) { "Dependant $dependant not found" }
+            dependantsOfGuardian.merge(guardian, linkedSetOf(dependant), Set<Ssn>::plus)
+            guardiansOfDependant.merge(dependant, linkedSetOf(guardian), Set<Ssn>::plus)
         }
+    }
+
+    fun addDependants(guardian: Ssn, vararg dependants: Ssn) {
+        addDependants(guardian, dependants.asSequence())
+    }
+
+    fun addDependants(guardian: ExternalIdentifier, vararg dependants: ExternalIdentifier) {
+        addDependants(guardian.toString(), dependants.asSequence().map { it.toString() })
+    }
+
+    fun addDependants(guardian: DevPerson, vararg dependants: DevPerson) {
+        addDependants(guardian.ssn!!, dependants.asSequence().map { it.ssn!! })
     }
 
     override fun getPersonWithDependants(query: IPersonDetailsService.DetailsQuery): VtjPerson =

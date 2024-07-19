@@ -4,9 +4,9 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -17,7 +17,7 @@ let serviceWorkerPage: Page
 let serviceWorkerPersonSearchPage: PersonSearchPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   const admin = await Fixture.employee().admin().save()
   const serviceWorker = await Fixture.employee().serviceWorker().save()

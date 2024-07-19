@@ -20,6 +20,11 @@ export const setAntiCsrfToken = (value: string | undefined) => {
 
 if (isAutomatedTest) {
   client.interceptors.request.use((config) => {
+    const evakaDatabaseId =
+      typeof window !== 'undefined' ? window.evaka?.databaseId : undefined
+    if (evakaDatabaseId !== undefined) {
+      config.headers.set('EvakaDatabaseId', evakaDatabaseId)
+    }
     const mockedTime =
       typeof window !== 'undefined'
         ? window.evaka?.mockedTime?.toISOString()

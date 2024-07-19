@@ -4,8 +4,8 @@
 
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 
+import { startTest } from '../../browser'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevCareArea, DevDaycare } from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import { SettingsPage } from '../../pages/mobile/settings-page'
@@ -24,7 +24,7 @@ const enabledPilotFeatures: PilotFeature[] = [
 ]
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   area = await Fixture.careArea().save()
   unit = await Fixture.daycare({
     enabledPilotFeatures,

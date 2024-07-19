@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import {
   applicationFixture,
   familyWithTwoGuardians,
@@ -12,10 +13,7 @@ import {
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createApplications,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createApplications } from '../../generated/api-clients'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
@@ -24,7 +22,7 @@ let page: Page
 let applicationReadView: ApplicationReadView
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

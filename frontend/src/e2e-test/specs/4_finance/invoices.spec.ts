@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -23,8 +24,7 @@ import {
 import {
   createDaycarePlacements,
   createFeeDecisions,
-  createInvoices,
-  resetServiceState
+  createInvoices
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -42,7 +42,7 @@ let feeDecisionFixture: FeeDecision
 let adultWithoutSSN: DevPerson
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

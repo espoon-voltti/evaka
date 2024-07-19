@@ -4,6 +4,7 @@
 
 import { EvakaSessionUser } from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
+import { getDatabaseId } from '../../shared/dev-api.js'
 import { toRequestHandler } from '../../shared/express.js'
 import {
   CitizenUserResponse,
@@ -32,7 +33,7 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
 export default toRequestHandler(async (req, res) => {
   let status: AuthStatus
   if (req.user && req.user.id) {
-    const data = await getCitizenDetails(req, req.user.id)
+    const data = await getCitizenDetails(req, req.user.id, getDatabaseId(req))
     status = {
       loggedIn: true,
       antiCsrfToken: req.session.antiCsrfToken,

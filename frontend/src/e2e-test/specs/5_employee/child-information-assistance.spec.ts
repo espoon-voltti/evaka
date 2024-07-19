@@ -9,6 +9,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testDaycare,
@@ -20,8 +21,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
-  createDefaultServiceNeedOptions,
-  resetServiceState
+  createDefaultServiceNeedOptions
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -40,7 +40,7 @@ let voucherUnitId: UUID
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

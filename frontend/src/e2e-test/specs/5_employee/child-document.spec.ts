@@ -5,9 +5,9 @@
 import DateRange from 'lib-common/date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
@@ -17,7 +17,7 @@ import { employeeLogin } from '../../utils/user'
 const mockedTime = HelsinkiDateTime.of(2023, 9, 27, 10, 31)
 const mockedDate = mockedTime.toLocalDate()
 
-beforeEach(async (): Promise<void> => resetServiceState())
+beforeEach(async (): Promise<void> => startTest())
 
 describe('child document with person duplicate', () => {
   let admin: DevEmployee

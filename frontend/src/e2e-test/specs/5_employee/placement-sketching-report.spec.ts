@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   applicationFixture,
@@ -20,8 +21,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  createDaycarePlacements,
-  resetServiceState
+  createDaycarePlacements
 } from '../../generated/api-clients'
 import { DevApplicationWithForm } from '../../generated/api-types'
 import ReportsPage from '../../pages/employee/reports'
@@ -33,7 +33,7 @@ let page: Page
 const mockToday = LocalDate.of(2021, 2, 1)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

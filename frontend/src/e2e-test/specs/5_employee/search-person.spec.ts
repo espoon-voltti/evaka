@@ -5,6 +5,7 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   applicationFixture,
@@ -18,8 +19,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplicationPlacementPlan,
-  createApplications,
-  resetServiceState
+  createApplications
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import PersonSearchPage from '../../pages/employee/person-search'
@@ -30,7 +30,7 @@ let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

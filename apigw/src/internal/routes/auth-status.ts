@@ -7,6 +7,7 @@ import _ from 'lodash'
 
 import { logout } from '../../shared/auth/index.js'
 import { appCommit } from '../../shared/config.js'
+import { getDatabaseId } from '../../shared/dev-api.js'
 import { toRequestHandler } from '../../shared/express.js'
 import { fromCallback } from '../../shared/promise-utils.js'
 import {
@@ -58,7 +59,11 @@ async function validateUser(
   if (!user || !user.id) return undefined
   switch (user.userType) {
     case 'MOBILE': {
-      const device = await authenticateMobileDevice(req, user.id)
+      const device = await authenticateMobileDevice(
+        req,
+        user.id,
+        getDatabaseId(req)
+      )
       if (!device) {
         return undefined
       }
@@ -82,7 +87,11 @@ async function validateUser(
       }
     }
     case 'EMPLOYEE': {
-      const employee = await getEmployeeDetails(req, user.id)
+      const employee = await getEmployeeDetails(
+        req,
+        user.id,
+        getDatabaseId(req)
+      )
       if (!employee) {
         return undefined
       }

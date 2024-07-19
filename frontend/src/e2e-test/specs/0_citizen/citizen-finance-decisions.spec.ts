@@ -10,6 +10,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testDaycare,
@@ -24,8 +25,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createFeeDecisions,
-  createVoucherValueDecisions,
-  resetServiceState
+  createVoucherValueDecisions
 } from '../../generated/api-clients'
 import { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
@@ -51,7 +51,7 @@ const voucherValueDecisionValidDuring = new DateRange(
 )
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

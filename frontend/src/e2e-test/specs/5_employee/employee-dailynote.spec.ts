@@ -4,6 +4,7 @@
 
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 
+import { startTest } from '../../browser'
 import {
   Fixture,
   testAdult,
@@ -12,8 +13,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  postChildDailyNote,
-  resetServiceState
+  postChildDailyNote
 } from '../../generated/api-clients'
 import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -26,7 +26,7 @@ let daycareGroup: DevDaycareGroup
 let unitPage: UnitPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.family({
     guardian: testAdult,
     children: [testChild, testChild2]

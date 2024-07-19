@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import { Fixture, testAdult, testChild } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -12,7 +12,7 @@ let page: Page
 let header: CitizenHeader
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
   page = await Page.open()

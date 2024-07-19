@@ -6,6 +6,7 @@ import DateRange from 'lib-common/date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -24,8 +25,7 @@ import {
   createDefaultServiceNeedOptions,
   createFeeDecisions,
   createVoucherValueDecisions,
-  createVoucherValues,
-  resetServiceState
+  createVoucherValues
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ let page: Page
 let guardianPage: GuardianInformationPage
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await createDefaultServiceNeedOptions()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

@@ -2,10 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import express from 'express'
+
 import { client, UUID } from './service-client.js'
 
-export async function getCitizens(): Promise<DevCitizen[]> {
-  const { data } = await client.get<DevCitizen[]>(`/dev-api/citizen`)
+export function stringToInt(input: string | undefined): number | undefined {
+  if (typeof input !== 'string') {
+    return undefined
+  }
+  const parsed = parseInt(input, 10)
+  return isNaN(parsed) ? undefined : parsed
+}
+
+export function getDatabaseId(req: express.Request): number | undefined {
+  return stringToInt(req.header('EvakaDatabaseId'))
+}
+
+export async function getCitizens(
+  databaseId: number | undefined
+): Promise<DevCitizen[]> {
+  const { data } = await client.get<DevCitizen[]>(`/dev-api/citizen`, {
+    headers: { EvakaDatabaseId: databaseId }
+  })
   return data
 }
 
@@ -24,7 +42,11 @@ interface Employee {
   externalId: string | null
 }
 
-export async function getEmployees(): Promise<Employee[]> {
-  const { data } = await client.get<Employee[]>(`/dev-api/employee`)
+export async function getEmployees(
+  databaseId: number | undefined
+): Promise<Employee[]> {
+  const { data } = await client.get<Employee[]>(`/dev-api/employee`, {
+    headers: { EvakaDatabaseId: databaseId }
+  })
   return data
 }

@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -18,8 +19,7 @@ import {
   createDaycareGroups,
   createDefaultServiceNeedOptions,
   createVardaReset,
-  createVardaServiceNeed,
-  resetServiceState
+  createVardaServiceNeed
 } from '../../generated/api-clients'
 import { DevEmployee, DevServiceNeed } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -33,7 +33,7 @@ let childId: UUID
 let serviceNeed: DevServiceNeed
 
 beforeAll(async () => {
-  await resetServiceState()
+  await startTest()
 
   admin = await Fixture.employee().admin().save()
 

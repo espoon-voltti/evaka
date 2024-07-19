@@ -8,11 +8,9 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
@@ -31,7 +29,7 @@ let page: Page
 const today = LocalDate.of(2023, 9, 13) // Wed
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 })
 
 const setupTestData = async ({

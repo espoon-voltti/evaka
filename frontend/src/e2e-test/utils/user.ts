@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { getDatabaseId } from '../browser'
 import config from '../config'
 import { DevPerson } from '../generated/api-types'
 
@@ -19,8 +20,19 @@ export async function enduserLogin(page: Page, person: DevPerson) {
   }
 
   await page.page.evaluate(
-    ({ ssn, authUrl }: { ssn: string; authUrl: string }) => {
+    ({
+      ssn,
+      authUrl,
+      databaseId
+    }: {
+      ssn: string
+      authUrl: string
+      databaseId: number | null
+    }) => {
       const params = new URLSearchParams()
+      if (databaseId !== null) {
+        params.append('databaseId', databaseId.toString())
+      }
       params.append('preset', ssn)
       return fetch(authUrl, {
         method: 'POST',
@@ -34,7 +46,7 @@ export async function enduserLogin(page: Page, person: DevPerson) {
         }
       })
     },
-    { ssn: person.ssn, authUrl }
+    { ssn: person.ssn, authUrl, databaseId: getDatabaseId() }
   )
   await page.goto(config.enduserUrl + '/applications')
 }
@@ -99,9 +111,20 @@ export async function employeeLogin(
   }
 
   await page.page.evaluate(
-    ({ preset, authUrl }: { preset: string; authUrl: string }) => {
+    ({
+      preset,
+      authUrl,
+      databaseId
+    }: {
+      preset: string
+      authUrl: string
+      databaseId: number | null
+    }) => {
       const params = new URLSearchParams()
       params.append('preset', preset)
+      if (databaseId !== null) {
+        params.append('databaseId', databaseId.toString())
+      }
       return fetch(authUrl, {
         method: 'POST',
         body: params,
@@ -114,6 +137,6 @@ export async function employeeLogin(
         }
       })
     },
-    { preset, authUrl }
+    { preset, authUrl, databaseId: getDatabaseId() }
   )
 }

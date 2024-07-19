@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   Fixture,
@@ -9,7 +10,6 @@ import {
   testChild,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { Page } from '../../utils/page'
@@ -20,7 +20,7 @@ let nav: EmployeeNav
 let childInfo: ChildInformationPage
 
 beforeAll(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.person(testChild).saveChild()

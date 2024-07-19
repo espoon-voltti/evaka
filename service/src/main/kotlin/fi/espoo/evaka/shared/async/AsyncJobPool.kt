@@ -119,10 +119,10 @@ class AsyncJobPool<T : AsyncJobPayload>(
     }
 
     fun runPendingJobs(clock: EvakaClock, maxCount: Int) =
-        executor.execute { runWorker(clock, maxCount) }
+        executor.execute { runWorker(Database(jdbi, tracer), clock, maxCount) }
 
-    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int): Int {
-        val task = FutureTask { runWorker(clock, maxCount) }
+    fun runPendingJobsSync(db: Database, clock: EvakaClock, maxCount: Int): Int {
+        val task = FutureTask { runWorker(db, clock, maxCount) }
         while (!executor.queue.offer(task)) {
             // no available workers
             if (!executor.prestartCoreThread()) {
@@ -133,9 +133,9 @@ class AsyncJobPool<T : AsyncJobPayload>(
         return task.get()
     }
 
-    private fun runWorker(clock: EvakaClock, maxCount: Int) =
+    private fun runWorker(db: Database, clock: EvakaClock, maxCount: Int) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
-            Database(jdbi, tracer).connect { dbc ->
+            db.connect { dbc ->
                 dbc.transaction { it.upsertPermit(this.id) }
                 var executed = 0
                 while (maxCount - executed > 0 && !executor.isTerminating) {

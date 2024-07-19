@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid'
 
 import { login } from '../shared/auth/index.js'
 import { pinSessionTimeoutSeconds, useSecureCookies } from '../shared/config.js'
+import { getDatabaseId } from '../shared/dev-api.js'
 import {
   assertStringProp,
   toMiddleware,
@@ -57,8 +58,11 @@ export const refreshMobileSession = toMiddleware(async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     const token = req.signedCookies[mobileLongTermCookieName]
     if (token) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      const deviceIdentity = await identifyMobileDevice(req, token)
+      const deviceIdentity = await identifyMobileDevice(
+        req,
+        token,
+        getDatabaseId(req)
+      )
       if (deviceIdentity) {
         await mobileLogin(req, res, deviceIdentity)
       } else {
@@ -73,17 +77,26 @@ export default toRequestHandler(async (req, res) => {
   const id = assertStringProp(req.body, 'id')
   const challengeKey = assertStringProp(req.body, 'challengeKey')
   const responseKey = assertStringProp(req.body, 'responseKey')
-  const deviceIdentity = await validatePairing(req, id, {
-    challengeKey,
-    responseKey
-  })
+  const deviceIdentity = await validatePairing(
+    req,
+    id,
+    {
+      challengeKey,
+      responseKey
+    },
+    getDatabaseId(req)
+  )
   await mobileLogin(req, res, deviceIdentity)
   res.sendStatus(204)
 })
 
 export const devApiE2ESignup = toRequestHandler(async (req, res) => {
   const token = assertStringProp(req.query, 'token')
-  const deviceIdentity = await identifyMobileDevice(req, token)
+  const deviceIdentity = await identifyMobileDevice(
+    req,
+    token,
+    getDatabaseId(req)
+  )
   if (deviceIdentity) {
     await mobileLogin(req, res, deviceIdentity)
     res.redirect('/employee/mobile')
@@ -99,7 +112,7 @@ export const pinLoginRequestHandler = (redisClient: RedisClient) =>
     if (req.user?.userType !== 'MOBILE') return
 
     const employeeId = assertStringProp(req.body, 'employeeId')
-    const response = await employeePinLogin(req)
+    const response = await employeePinLogin(req, getDatabaseId(req))
 
     const token = uuid()
     await redisClient.set(toMobileEmployeeIdKey(token), employeeId, {

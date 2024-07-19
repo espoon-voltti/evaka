@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import com.auth0.jwt.interfaces.JWTVerifier
+import fi.espoo.evaka.pis.service.mockVtjId
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.RequestToAuthenticatedUser
@@ -38,6 +39,14 @@ class HttpFilterConfig {
             setName("jwtTokenParser")
             urlPatterns = listOf("/*")
             order = -10
+        }
+
+    @Bean
+    fun mockVtjId() =
+        FilterRegistrationBean(MockVtjIdFilter()).apply {
+            setName("mockVtjId")
+            urlPatterns = listOf("/*")
+            order = -11
         }
 
     @Bean
@@ -132,3 +141,23 @@ class HttpFilterConfig {
 
 private fun HttpServletRequest.isHealthCheck() =
     requestURI == "/health" || requestURI == "/actuator/health"
+
+class MockVtjIdFilter() : HttpFilter() {
+    private val logger = mu.KotlinLogging.logger {}
+
+    override fun doFilter(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain
+    ) {
+        val id = request.getHeader("EvakaDatabaseId")?.toIntOrNull()
+        if (id != null) {
+            logger.info("SETTING MOCK VTJ ID TO $id")
+            mockVtjId.set(id)
+        } else {
+            logger.info("NO MOCK VTJ ID!")
+            mockVtjId.remove()
+        }
+        chain.doFilter(request, response)
+    }
+}

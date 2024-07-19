@@ -5,16 +5,16 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+beforeEach(async (): Promise<void> => startTest())
 
 describe('Placement guarantee report', () => {
   test('child with placement guarantee is in the report', async () => {

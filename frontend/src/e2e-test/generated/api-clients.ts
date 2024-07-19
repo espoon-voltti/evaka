@@ -92,11 +92,13 @@ import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingReq } from 'lib-common/generated/api-types/pairing'
 import { PostPairingResponseReq } from 'lib-common/generated/api-types/pairing'
 import { PostVasuDocBody } from './api-types'
+import { PrevTestDb } from './api-types'
 import { ReservationInsert } from './api-types'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { SfiMessage } from './api-types'
 import { SpecialDiet } from 'lib-common/generated/api-types/specialdiet'
 import { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
+import { TestDb } from './api-types'
 import { UUID } from 'lib-common/types'
 import { VoucherValueDecision } from './api-types'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -1397,6 +1399,27 @@ export async function createServiceNeeds(
       url: uri`/service-need`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevServiceNeed[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createTestDb
+*/
+export async function createTestDb(
+  request: {
+    body: PrevTestDb
+  }
+): Promise<TestDb> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<TestDb>>({
+      url: uri`/create-test-db`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<PrevTestDb>
     })
     return json
   } catch (e) {

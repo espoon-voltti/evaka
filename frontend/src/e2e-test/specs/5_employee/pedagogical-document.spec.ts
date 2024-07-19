@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -17,8 +18,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
-  createDaycarePlacements,
-  resetServiceState
+  createDaycarePlacements
 } from '../../generated/api-clients'
 import ChildInformationPage, {
   PedagogicalDocumentsSection
@@ -38,7 +38,7 @@ const testfile2Name = 'test_file.jpg'
 const testfile2Path = `src/e2e-test/assets/${testfile2Name}`
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

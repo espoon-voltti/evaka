@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -16,8 +17,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
-  createIncomeStatements,
-  resetServiceState
+  createIncomeStatements
 } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
@@ -34,7 +34,7 @@ const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0, 0)
 const today = now.toLocalDate()
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

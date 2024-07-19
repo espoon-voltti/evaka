@@ -169,12 +169,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun disableAfterCommitHooks() = stateLock.write { afterCommitHooks = emptyMap() }
 
-    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
+    fun runPendingJobsSync(db: Database, clock: EvakaClock, maxCount: Int = 1_000): Int {
         var totalCount = 0
         do {
             val executed =
                 pools.fold(0) { count, pool ->
-                    count + pool.runPendingJobsSync(clock, max(0, maxCount - totalCount - count))
+                    count +
+                        pool.runPendingJobsSync(db, clock, max(0, maxCount - totalCount - count))
                 }
             // A job in one pool may plan a job for some other pool, so we can't just iterate once
             // and assume all jobs were executed. Instead, we're done only when all pools are done

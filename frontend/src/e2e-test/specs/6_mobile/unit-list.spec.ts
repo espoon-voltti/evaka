@@ -10,7 +10,7 @@ import {
   testCareArea,
   testPreschool
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import { startTest } from '../../generated/api-clients'
 import { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import UnitListPage from '../../pages/mobile/unit-list-page'
 import { pairPersonalMobileDevice } from '../../utils/mobile'
@@ -24,7 +24,7 @@ let group: DevDaycareGroup
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testPreschool).save()
 

@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   applicationFixture,
@@ -16,10 +17,7 @@ import {
   testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  createApplications,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createApplications } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import { Page } from '../../utils/page'
@@ -28,7 +26,7 @@ import { employeeLogin } from '../../utils/user'
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

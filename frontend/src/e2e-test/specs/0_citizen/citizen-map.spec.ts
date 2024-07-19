@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testCareArea,
@@ -10,10 +11,7 @@ import {
   Fixture,
   testPreschool
 } from '../../dev-api/fixtures'
-import {
-  putDigitransitAutocomplete,
-  resetServiceState
-} from '../../generated/api-clients'
+import { putDigitransitAutocomplete } from '../../generated/api-clients'
 import {
   DevDaycare,
   Feature as DigitransitFeature
@@ -59,7 +57,7 @@ const privateDaycareWithoutPeriods: DevDaycare = {
 let page: Page
 let mapPage: CitizenMapPage
 beforeAll(async () => {
-  await resetServiceState()
+  await startTest()
   const careArea = await Fixture.careArea(testCareArea).save()
   await Fixture.daycare({ ...testClub, areaId: careArea.id }).save()
   await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()

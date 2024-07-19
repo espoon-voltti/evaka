@@ -10,6 +10,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   testCareArea2,
   testDaycare2,
@@ -19,10 +20,7 @@ import {
   familyWithTwoGuardians,
   testCareArea
 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
@@ -44,7 +42,7 @@ const backupCareEndDate = backupCareStartDate.addDays(8)
 const groupId: UUID = uuidv4()
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 })
 
 const insertTestDataAndLogin = async ({

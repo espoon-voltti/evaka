@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import { vtjDependants } from '../../dev-api'
 import {
   testCareArea,
@@ -18,10 +19,7 @@ import {
   testAdult,
   Fixture
 } from '../../dev-api/fixtures'
-import {
-  resetServiceState,
-  upsertVtjDataset
-} from '../../generated/api-clients'
+import { upsertVtjDataset } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -85,7 +83,7 @@ async function assertCalendarDayRange(
 }
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   page = await Page.open({
     mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
   })

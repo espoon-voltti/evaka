@@ -29,6 +29,7 @@ import fi.espoo.evaka.invoicing.service.InvoiceProductProvider
 import fi.espoo.evaka.logging.defaultAccessLoggingValve
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.mealintegration.MealTypeMapper
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.reports.patu.EspooPatuIntegrationClient
 import fi.espoo.evaka.reports.patu.PatuAsyncJobProcessor
 import fi.espoo.evaka.reports.patu.PatuIntegrationClient
@@ -133,7 +134,8 @@ class EspooConfig {
 
     @Bean
     @Profile("local")
-    fun devDataInitializer(jdbi: Jdbi, tracer: Tracer) = DevDataInitializer(jdbi, tracer)
+    fun devDataInitializer(jdbi: Jdbi, tracer: Tracer, personService: PersonService) =
+        DevDataInitializer(jdbi, tracer, personService)
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 

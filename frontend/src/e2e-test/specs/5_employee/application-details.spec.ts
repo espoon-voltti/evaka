@@ -5,6 +5,7 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { execSimpleApplicationAction, runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -23,8 +24,7 @@ import {
   cleanUpMessages,
   createApplicationPlacementPlan,
   createApplications,
-  getMessages,
-  resetServiceState
+  getMessages
 } from '../../generated/api-clients'
 import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
 import ApplicationDetailsPage from '../../pages/admin/application-details-page'
@@ -46,7 +46,7 @@ let separatedFamilyApplication: DevApplicationWithForm
 let restrictedDetailsGuardianApplication: DevApplicationWithForm
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testPreschool).save()

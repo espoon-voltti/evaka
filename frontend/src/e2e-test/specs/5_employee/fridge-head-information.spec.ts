@@ -7,6 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
   familyWithTwoGuardians,
@@ -19,8 +20,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  createVoucherValues,
-  resetServiceState
+  createVoucherValues
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
@@ -45,7 +45,7 @@ const childZeroYo = Fixture.person({
 }).data
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family(familyWithTwoGuardians).save()

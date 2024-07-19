@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
   applicationFixture,
@@ -21,7 +22,6 @@ import {
   createApplications,
   createDaycarePlacements,
   getApplication,
-  resetServiceState,
   setPersonEmail
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -44,7 +44,7 @@ const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
 const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

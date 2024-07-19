@@ -5,6 +5,7 @@
 import { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   Fixture,
@@ -12,7 +13,6 @@ import {
   testChild,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
   DevDaycareGroup,
@@ -33,7 +33,7 @@ describe('Child and group notes', () => {
   let child: DevPerson
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.person(testChild).saveChild()
@@ -130,7 +130,7 @@ describe('Child and group notes (backup care)', () => {
   let backupCareDaycare: DevDaycare
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.person(testChild).saveChild()

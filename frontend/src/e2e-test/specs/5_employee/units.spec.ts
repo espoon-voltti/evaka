@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import {
   familyWithTwoGuardians,
   Fixture,
@@ -14,10 +15,7 @@ import {
   testDaycarePrivateVoucher,
   testPreschool
 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import {
   DevDaycare,
   DevDaycareGroup,
@@ -41,7 +39,7 @@ const placementDates = () => ({
 })
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.daycare(testDaycarePrivateVoucher).save()

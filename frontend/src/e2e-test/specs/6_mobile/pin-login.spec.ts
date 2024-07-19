@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   testChild,
   Fixture,
@@ -18,8 +19,7 @@ import {
   createBackupPickup,
   createFamilyContact,
   createFridgeChild,
-  createFridgePartner,
-  resetServiceState
+  createFridgePartner
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -46,7 +46,7 @@ const childName = testChild.firstName + ' ' + testChild.lastName
 const pin = '2580'
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

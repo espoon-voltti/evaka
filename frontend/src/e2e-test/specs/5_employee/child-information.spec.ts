@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testDaycareGroup,
@@ -19,8 +20,7 @@ import {
 import {
   createDaycareGroups,
   forceFullVtjRefresh,
-  putDiets,
-  resetServiceState
+  putDiets
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -42,7 +42,7 @@ let admin: DevEmployee
 const mockedDate = LocalDate.of(2022, 3, 1)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

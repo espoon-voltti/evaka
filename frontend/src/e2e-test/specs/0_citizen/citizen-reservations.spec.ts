@@ -12,6 +12,7 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 
+import { startTest } from '../../browser'
 import {
   testCareArea2,
   testCareArea,
@@ -30,8 +31,7 @@ import {
 import {
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
-  getAbsences,
-  resetServiceState
+  getAbsences
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -74,7 +74,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let children: DevPerson[]
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.preschoolTerm(preschoolTerm2021).save()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
@@ -650,7 +650,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
 
 describe.each(e)('Calendar day content (%s)', (env) => {
   async function init(options?: { placementType?: PlacementType }) {
-    await resetServiceState()
+    await startTest()
 
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
@@ -955,7 +955,7 @@ describe('Citizen calendar child visibility', () => {
   let child2: DevPerson
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.family({
@@ -1144,7 +1144,7 @@ describe('Citizen calendar visibility', () => {
   let daycareId: string
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
@@ -1229,7 +1229,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
   const placement1end = today.addMonths(6)
 
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.family({ guardian: testAdult, children: [testChild2] }).save()
     const careArea = await Fixture.careArea(testCareArea2).save()
     await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()

@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare,
@@ -14,7 +15,6 @@ import {
   testAdult,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -31,7 +31,7 @@ let daycare: DevDaycare
 let guardian: DevPerson
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   page = await Page.open({
     mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   })

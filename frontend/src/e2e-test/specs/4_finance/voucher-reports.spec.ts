@@ -6,6 +6,7 @@ import assert from 'assert'
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   testCareArea2,
@@ -21,8 +22,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   createVoucherValueDecisions,
-  createVoucherValues,
-  resetServiceState
+  createVoucherValues
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -42,7 +42,7 @@ let otherChild: DevPerson
 let guardian: DevPerson
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   const careArea = await Fixture.careArea(testCareArea2).save()

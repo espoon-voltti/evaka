@@ -4,9 +4,9 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { ApplicationsReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
@@ -16,7 +16,7 @@ let page: Page
 let report: ApplicationsReport
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

@@ -4,9 +4,9 @@
 
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture, testChild } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage, {
   FeeAlterationsSection
 } from '../../pages/employee/child-information'
@@ -18,7 +18,7 @@ let personId: UUID
 let feeAlterationSection: FeeAlterationsSection
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.person(testChild).saveChild()
   personId = testChild.id

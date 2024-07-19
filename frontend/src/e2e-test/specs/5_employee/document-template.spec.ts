@@ -5,9 +5,9 @@
 import fs from 'fs'
 import { promisify } from 'util'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { DocumentTemplatesListPage } from '../../pages/employee/documents/document-templates'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -18,7 +18,7 @@ let admin: DevEmployee
 let page: Page
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   admin = await Fixture.employee().admin().save()
   page = await Page.open()

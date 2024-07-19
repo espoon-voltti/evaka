@@ -6,9 +6,9 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture, preschoolTerm2023 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDaycare,
   DevEmployee,
@@ -26,7 +26,7 @@ let child: DevPerson
 let unit: DevDaycare
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   term = await Fixture.preschoolTerm(preschoolTerm2023).save()
   const area = await Fixture.careArea().save()
   unit = await Fixture.daycare({

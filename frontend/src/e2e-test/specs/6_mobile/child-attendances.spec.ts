@@ -9,6 +9,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { EvakaBrowserContextOptions } from '../../browser'
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare2,
@@ -22,10 +23,7 @@ import {
   uuidv4,
   preschoolTerm2023
 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import { DevPlacement } from '../../generated/api-types'
 import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
@@ -60,7 +58,7 @@ const openPage = async (
 }
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await createDefaultServiceNeedOptions()
   await Fixture.preschoolTerm(preschoolTerm2023).save()
 

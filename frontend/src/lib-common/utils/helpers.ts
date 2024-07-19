@@ -46,6 +46,7 @@ declare global {
 
   interface EvakaWindowConfig {
     automatedTest?: boolean
+    databaseId?: number
     mockedTime?: Date | undefined
   }
 }

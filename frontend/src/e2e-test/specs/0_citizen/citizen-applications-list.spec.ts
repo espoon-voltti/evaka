@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
   applicationFixture,
@@ -13,10 +14,7 @@ import {
   testChild,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createApplications,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createApplications } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -26,7 +24,7 @@ import { enduserLogin } from '../../utils/user'
 const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

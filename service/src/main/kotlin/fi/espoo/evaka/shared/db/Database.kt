@@ -95,7 +95,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     ) : AutoCloseable {
         private var rawHandle: Handle? = null
 
-        private fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
+        fun getRawHandle(): Handle = rawHandle ?: openRawHandle().also { rawHandle = it }
 
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any

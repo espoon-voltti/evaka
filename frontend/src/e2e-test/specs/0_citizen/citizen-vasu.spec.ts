@@ -6,6 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -24,7 +25,6 @@ import {
   createVasuDocument,
   insertGuardians,
   publishVasuDocument,
-  resetServiceState,
   revokeSharingPermission
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
@@ -44,7 +44,7 @@ let header: CitizenHeader
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

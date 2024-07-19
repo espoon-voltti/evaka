@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   testCareArea2,
   testDaycare2,
@@ -15,10 +16,7 @@ import {
   uuidv4,
   familyWithTwoGuardians
 } from '../../dev-api/fixtures'
-import {
-  createDefaultServiceNeedOptions,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDefaultServiceNeedOptions } from '../../generated/api-clients'
 import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
@@ -45,7 +43,7 @@ const testSurveyId = uuidv4()
 const eventTimeId = uuidv4()
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.family(familyWithTwoGuardians).save()
   await Fixture.family(familyWithRestrictedDetailsGuardian).save()

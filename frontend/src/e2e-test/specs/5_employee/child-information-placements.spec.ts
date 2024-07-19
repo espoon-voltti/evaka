@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   createDaycarePlacementFixture,
@@ -22,14 +23,13 @@ import {
   createDaycareGroups,
   createDaycarePlacements,
   createDefaultServiceNeedOptions,
-  resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { Combobox, Modal, Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+beforeEach(async (): Promise<void> => startTest())
 
 const setupPlacement = async (
   placementId: string,

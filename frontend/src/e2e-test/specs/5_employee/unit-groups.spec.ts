@@ -6,6 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   familyWithTwoGuardians,
   Fixture,
@@ -19,7 +20,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  resetServiceState,
   terminatePlacement
 } from '../../generated/api-clients'
 import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
@@ -44,7 +44,7 @@ const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

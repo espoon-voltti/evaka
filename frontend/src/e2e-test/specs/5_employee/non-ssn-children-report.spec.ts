@@ -5,9 +5,9 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee, DevPerson } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import ReportsPage, { NonSsnChildrenReport } from '../../pages/employee/reports'
@@ -21,7 +21,7 @@ let child3: DevPerson
 let child4: DevPerson
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   const area = await Fixture.careArea().save()
   const unit = await Fixture.daycare({ areaId: area.id }).save()
   child = await Fixture.person({

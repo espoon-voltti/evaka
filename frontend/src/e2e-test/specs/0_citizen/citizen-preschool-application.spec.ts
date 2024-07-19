@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import {
   Fixture,
   preschoolTerm2021,
@@ -15,11 +16,7 @@ import {
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  getApplication,
-  resetServiceState,
-  setPersonEmail
-} from '../../generated/api-clients'
+import { getApplication, setPersonEmail } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
@@ -37,7 +34,7 @@ let applicationsPage: CitizenApplicationsPage
 const mockedDate = LocalDate.of(2021, 1, 15)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.preschoolTerm(preschoolTerm2021).save()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

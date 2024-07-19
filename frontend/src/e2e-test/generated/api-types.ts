@@ -993,6 +993,13 @@ export interface PostVasuDocBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.PrevTestDb
+*/
+export interface PrevTestDb {
+  id: number | null
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.ReservationInsert
 */
 export interface ReservationInsert {
@@ -1029,6 +1036,13 @@ export interface SfiMessage {
   postalCode: string
   ssn: string
   streetAddress: string
+}
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.TestDb
+*/
+export interface TestDb {
+  id: number
 }
 
 /**

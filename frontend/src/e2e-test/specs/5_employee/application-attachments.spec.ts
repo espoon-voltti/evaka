@@ -4,6 +4,7 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
@@ -17,10 +18,7 @@ import {
   testChild,
   testCareArea
 } from '../../dev-api/fixtures'
-import {
-  createApplications,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createApplications } from '../../generated/api-clients'
 import ApplicationsPage from '../../pages/employee/applications'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -35,7 +33,7 @@ const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

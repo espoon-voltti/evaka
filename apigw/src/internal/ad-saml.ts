@@ -41,7 +41,7 @@ export function createAdSamlStrategy(
       lastName: profile[AD_FAMILY_NAME_KEY] ?? '',
       email: profile[AD_EMAIL_KEY],
       employeeNumber: profile[AD_EMPLOYEE_NUMBER_KEY]
-    })
+    }, undefined)
     return {
       id: person.id,
       userType: 'EMPLOYEE',

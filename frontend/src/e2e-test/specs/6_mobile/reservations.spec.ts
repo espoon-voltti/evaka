@@ -10,12 +10,12 @@ import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   Fixture,
   fullDayTimeRange,
   preschoolTerm2023
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare, DevPerson } from '../../generated/api-types'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
@@ -23,7 +23,7 @@ import MobileReservationsPage from '../../pages/mobile/reservations-page'
 import { pairMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
 
-beforeEach(async (): Promise<void> => resetServiceState())
+beforeEach(async (): Promise<void> => startTest())
 
 describe('when placement is ending tomorrow', () => {
   const mockedToday = LocalDate.of(2023, 11, 13)

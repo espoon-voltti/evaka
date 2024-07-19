@@ -20,6 +20,16 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class DatabaseConfig {
     @Bean
+    fun testDbFactory(): TestDbFactory {
+        return TestDbFactory().also { it.initializeTemplateDb() }
+    }
+
+    @Bean
+    fun mockPersonDetailsServiceFactory(): MockPersonDetailsServiceFactory {
+        return MockPersonDetailsServiceFactory()
+    }
+
+    @Bean
     fun jdbi(dataSource: DataSource, env: DatabaseEnv) =
         configureJdbi(Jdbi.create(dataSource)).apply {
             if (env.logSql) {

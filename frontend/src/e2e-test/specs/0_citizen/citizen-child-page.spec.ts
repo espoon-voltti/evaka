@@ -8,6 +8,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import {
   applicationFixture,
   applicationFixtureId,
@@ -23,8 +24,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  createDaycarePlacements,
-  resetServiceState
+  createDaycarePlacements
 } from '../../generated/api-clients'
 import { DevPlacement } from '../../generated/api-types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
@@ -45,7 +45,7 @@ const mockedDate = LocalDate.of(2022, 3, 1)
 
 describe('Citizen children page', () => {
   beforeEach(async () => {
-    await resetServiceState()
+    await startTest()
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
     await Fixture.daycare(testPreschool).save()
@@ -528,7 +528,7 @@ describe.each(['desktop', 'mobile'] as const)(
   'Citizen children page with weak login (%s)',
   (env) => {
     beforeEach(async () => {
-      await resetServiceState()
+      await startTest()
       await Fixture.careArea(testCareArea).save()
       await Fixture.daycare(testDaycare).save()
       await Fixture.daycare(testPreschool).save()

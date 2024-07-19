@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   familyWithTwoGuardians,
@@ -15,8 +16,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
-  deleteVasuTemplates,
-  resetServiceState
+  deleteVasuTemplates
 } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import ChildInformationPage, {
@@ -39,7 +39,7 @@ let childInformationPage: ChildInformationPage
 let childId: UUID
 
 beforeAll(async () => {
-  await resetServiceState()
+  await startTest()
 
   admin = await Fixture.employee().admin().save()
 

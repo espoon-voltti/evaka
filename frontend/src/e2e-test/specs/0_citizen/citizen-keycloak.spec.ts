@@ -4,9 +4,9 @@
 
 import libqp from 'libqp'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import {
   DummySuomiFiConfirmPage,
   DummySuomiFiLoginPage
@@ -32,7 +32,7 @@ import { Page } from '../../utils/page'
 let keycloak: KeycloakRealmClient
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await deleteCapturedEmails()
   await deleteAllSuomiFiUsers()
   keycloak = await KeycloakRealmClient.createCitizenClient()

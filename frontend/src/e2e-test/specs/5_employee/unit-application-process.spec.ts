@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   applicationFixture,
   testDaycare,
@@ -18,8 +19,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  createDefaultServiceNeedOptions,
-  resetServiceState
+  createDefaultServiceNeedOptions
 } from '../../generated/api-clients'
 import {
   DevApplicationWithForm,
@@ -48,7 +48,7 @@ const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

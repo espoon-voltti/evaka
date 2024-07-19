@@ -55,6 +55,17 @@ export const devClient = axios.create({
   baseURL: config.devApiGwUrl
 })
 
+let databaseInterceptor: number | undefined = undefined
+export function addTestDatabaseInterceptor(evakaDatabaseId: number) {
+  if (databaseInterceptor !== undefined) {
+    devClient.interceptors.request.eject(databaseInterceptor)
+  }
+  databaseInterceptor = devClient.interceptors.request.use((config) => {
+    config.headers.set('EvakaDatabaseId', evakaDatabaseId)
+    return config
+  })
+}
+
 type ApplicationActionSimple =
   | 'move-to-waiting-placement'
   | 'cancel-application'

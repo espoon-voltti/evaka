@@ -6,6 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -20,8 +21,7 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createMessageAccounts,
-  insertGuardians,
-  resetServiceState
+  insertGuardians
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
@@ -93,7 +93,7 @@ const mockedDateAt12 = HelsinkiDateTime.fromLocal(
 )
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

@@ -6,6 +6,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import {
   Fixture,
@@ -14,7 +15,6 @@ import {
   testChild,
   testDaycare
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import GuardianInformationPage, {
   IncomeSection
@@ -30,7 +30,7 @@ let placementStart: LocalDate
 let placementEnd: LocalDate
 let financeAdminId: UUID
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

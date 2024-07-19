@@ -6,6 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { startTest } from '../../browser'
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
   applicationFixture,
@@ -31,8 +32,7 @@ import {
   createDecisions,
   createDefaultServiceNeedOptions,
   getApplicationDecisions,
-  rejectDecisionByCitizen,
-  resetServiceState
+  rejectDecisionByCitizen
 } from '../../generated/api-clients'
 import { DevApplicationWithForm, DevEmployee } from '../../generated/api-types'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
@@ -51,7 +51,7 @@ let serviceWorker: DevEmployee
 let applicationId: string
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await cleanUpMessages()
   await Fixture.preschoolTerm(preschoolTerm2021).save()
   await Fixture.careArea(testCareArea).save()

@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
   createDaycarePlacementFixture,
@@ -15,10 +16,7 @@ import {
   testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { createDaycarePlacements } from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
@@ -35,7 +33,7 @@ const testFilePath = `src/e2e-test/assets`
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()

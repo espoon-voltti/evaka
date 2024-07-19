@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
@@ -19,7 +19,7 @@ const firstName = 'Matti-Teppo Seppo'
 const lastName = 'Sorsa'
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   admin = await Fixture.employee({ firstName, lastName }).admin().save()
 
   page = await Page.open()

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.db
 
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.dev.ensureDevData
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -11,7 +12,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
 import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 
-class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
+class DevDataInitializer(jdbi: Jdbi, tracer: Tracer, personService: PersonService) {
     init {
         Database(jdbi, tracer).connect { db ->
             db.transaction { tx ->
@@ -20,6 +21,6 @@ class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
                 tx.ensureDevData()
             }
         }
-        MockPersonDetailsService.add(legacyMockVtjDataset())
+        (personService.personDetailsService as MockPersonDetailsService).add(legacyMockVtjDataset())
     }
 }

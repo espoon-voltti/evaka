@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare,
@@ -18,8 +19,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   postAttendances,
-  postReservations,
-  resetServiceState
+  postReservations
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
@@ -34,7 +34,7 @@ let group: DevDaycareGroup
 let unitSupervisor: DevEmployee
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await createDefaultServiceNeedOptions()
   const careArea = await Fixture.careArea(testCareArea).save()

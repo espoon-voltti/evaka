@@ -110,6 +110,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.mockVtjId
 import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
@@ -179,6 +180,8 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.config.MockPersonDetailsServiceFactory
+import fi.espoo.evaka.shared.config.TestDbFactory
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
@@ -257,14 +260,16 @@ class DevApi(
     private val env: EvakaEnv,
     bucketEnv: BucketEnv,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
+    private val testDbFactory: TestDbFactory,
+    private val mockPersonDetailsServiceFactory: MockPersonDetailsServiceFactory,
 ) {
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
 
-    private fun runAllAsyncJobs(clock: EvakaClock) {
+    private fun runAllAsyncJobs(db: Database, clock: EvakaClock) {
         asyncJobRunners.forEach {
-            it.runPendingJobsSync(clock)
+            it.runPendingJobsSync(db, clock)
             it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
         }
     }
@@ -275,7 +280,7 @@ class DevApi(
     }
 
     @PostMapping("/test-mode")
-    fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
+    fun setTestMode(@RequestParam enabled: Boolean) {
         asyncJobRunners.forEach {
             if (enabled) {
                 it.stopBackgroundPolling()
@@ -287,22 +292,28 @@ class DevApi(
         }
     }
 
+    val mockPersonDetailsService: MockPersonDetailsService
+        get() {
+            val id = mockVtjId.get() ?: throw BadRequest("Mock VTJ ID not set")
+            return mockPersonDetailsServiceFactory.get(id)
+        }
+
     @PostMapping("/reset-service-state")
     fun resetServiceState(db: Database, clock: EvakaClock) {
         // Run async jobs before database reset to avoid database locks/deadlocks
-        runAllAsyncJobs(clock)
+        runAllAsyncJobs(db, clock)
 
-        db.connect { dbc ->
-            dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
-            dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) { it.resetDatabase() }
-        }
+        // db.connect { dbc ->
+        //     dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
+        //     dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) { it.resetDatabase() }
+        // }
         MockEmailClient.clear()
-        MockPersonDetailsService.reset()
+        mockPersonDetailsService.reset()
     }
 
     @PostMapping("/run-jobs")
-    fun runJobs(clock: EvakaClock) {
-        runAllAsyncJobs(clock)
+    fun runJobs(db: Database, clock: EvakaClock) {
+        runAllAsyncJobs(db, clock)
     }
 
     @PostMapping("/care-areas")
@@ -651,11 +662,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @GetMapping("/citizen/ssn/{ssn}")
     fun getCitizen(@PathVariable ssn: String): Citizen =
-        Citizen.from(MockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
+        Citizen.from(mockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
 
     @GetMapping("/citizen")
     fun getCitizens(): List<Citizen> =
-        MockPersonDetailsService.getAllPersons()
+        mockPersonDetailsService
+            .getAllPersons()
             .filter { it.guardians.isEmpty() }
             .map(Citizen::from)
 
@@ -775,7 +787,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/vtj-persons")
     fun upsertVtjDataset(db: Database, @RequestBody dataset: MockVtjDataset) {
-        MockPersonDetailsService.add(dataset)
+        mockPersonDetailsService.add(dataset)
     }
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
@@ -821,7 +833,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 actionFn.invoke(tx, fakeAdmin, clock, applicationId)
             }
         }
-        runAllAsyncJobs(clock)
+        runAllAsyncJobs(db, clock)
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
@@ -1703,6 +1715,14 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
                     .execute()
             }
         }
+
+    data class TestDb(val id: Int)
+
+    data class PrevTestDb(val id: Int?)
+
+    @PostMapping("/create-test-db")
+    fun createTestDb(@RequestBody body: PrevTestDb): TestDb =
+        TestDb(testDbFactory.createTestDb(body.id))
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html

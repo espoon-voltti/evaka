@@ -4,9 +4,9 @@
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
+import { startTest } from '../../browser'
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import { DevEmployee } from '../../generated/api-types'
 import { SystemNotificationsPage } from '../../pages/employee/SystemNotificationsPage'
 import EmployeeNav from '../../pages/employee/employee-nav'
@@ -18,7 +18,7 @@ import { employeeLogin } from '../../utils/user'
 let admin: DevEmployee
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   admin = await Fixture.employee().admin().save()
 })
 

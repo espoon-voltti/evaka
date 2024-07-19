@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   applicationFixture,
   createDaycarePlacementFixture,
@@ -25,8 +26,7 @@ import {
   createDaycarePlacements,
   createDecisions,
   createInvoices,
-  deleteDaycareCostCenter,
-  resetServiceState
+  deleteDaycareCostCenter
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { Page } from '../../utils/page'
@@ -35,7 +35,7 @@ import { employeeLogin } from '../../utils/user'
 let page: Page
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()
   await Fixture.family({

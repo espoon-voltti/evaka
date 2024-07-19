@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 
+import { startTest } from '../../browser'
 import {
   createDaycarePlacementFixture,
   testDaycareGroup,
@@ -18,8 +19,7 @@ import {
 import {
   createDaycareGroups,
   createDaycarePlacements,
-  insertGuardians,
-  resetServiceState
+  insertGuardians
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
@@ -38,7 +38,7 @@ let header: CitizenHeader
 const mockedNow = HelsinkiDateTime.of(2022, 7, 31, 13, 0)
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
 
   await Fixture.careArea(testCareArea).save()
   await Fixture.daycare(testDaycare).save()

@@ -4,6 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
+import { startTest } from '../../browser'
 import {
   testCareArea,
   testDaycare,
@@ -12,7 +13,6 @@ import {
   testAdult,
   Fixture
 } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
 import {
   DevDailyServiceTimes,
   DevDaycare,
@@ -32,7 +32,7 @@ let guardian: DevPerson
 let dailyServiceTime: DevDailyServiceTimes
 
 beforeEach(async () => {
-  await resetServiceState()
+  await startTest()
   page = await Page.open()
 
   const area = await Fixture.careArea(testCareArea).save()
