@@ -23,6 +23,7 @@ import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.getGroupStats
+import fi.espoo.evaka.daycare.getLastPlacementDate
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.removeUnitFeatures
@@ -154,29 +155,31 @@ class DaycareController(
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.Unit.READ, daycareId)
-                    tx.getDaycare(daycareId)?.let { daycare ->
-                        val groups = tx.getDaycareGroupSummaries(daycareId)
-                        val permittedActions =
-                            accessControl.getPermittedActions<GroupId, Action.Group>(
-                                tx,
-                                user,
-                                clock,
-                                groups.map { it.id }
-                            )
-                        DaycareResponse(
-                            daycare,
-                            groups.map {
-                                DaycareGroupResponse(
-                                    id = it.id,
-                                    name = it.name,
-                                    endDate = it.endDate,
-                                    permittedActions = permittedActions[it.id]!!
-                                )
-                            },
-                            accessControl.getPermittedActions(tx, user, clock, daycareId)
+                    val daycare =
+                        tx.getDaycare(daycareId) ?: throw NotFound("daycare $daycareId not found")
+                    val lastPlacementDate = tx.getLastPlacementDate(daycareId)
+                    val groups = tx.getDaycareGroupSummaries(daycareId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<GroupId, Action.Group>(
+                            tx,
+                            user,
+                            clock,
+                            groups.map { it.id }
                         )
-                    }
-                } ?: throw NotFound("daycare $daycareId not found")
+                    DaycareResponse(
+                        daycare,
+                        groups.map {
+                            DaycareGroupResponse(
+                                id = it.id,
+                                name = it.name,
+                                endDate = it.endDate,
+                                permittedActions = permittedActions[it.id]!!
+                            )
+                        },
+                        lastPlacementDate,
+                        accessControl.getPermittedActions(tx, user, clock, daycareId)
+                    )
+                }
             }
             .also { Audit.UnitRead.log(targetId = AuditId(daycareId)) }
     }
@@ -424,16 +427,17 @@ class DaycareController(
     ) {
         fields.validate()
         db.connect { dbc ->
-                dbc.transaction {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Unit.UPDATE,
                         daycareId
                     )
-                    it.updateDaycareManager(daycareId, fields.unitManager)
-                    it.updateDaycare(daycareId, fields)
+                    fields.validateClosingDate(tx, daycareId)
+                    tx.updateDaycareManager(daycareId, fields.unitManager)
+                    tx.updateDaycare(daycareId, fields)
                 }
             }
             .also { Audit.UnitUpdate.log(targetId = AuditId(daycareId)) }
@@ -685,6 +689,7 @@ class DaycareController(
     data class DaycareResponse(
         val daycare: Daycare,
         val groups: List<DaycareGroupResponse>,
+        val lastPlacementDate: LocalDate?,
         val permittedActions: Set<Action.Unit>
     )
 

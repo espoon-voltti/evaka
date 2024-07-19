@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
+
 import config from '../../config'
 import { Fixture, testCareArea, testDaycare } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevDaycare } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
-  UnitDetailsPage,
   UnitEditor,
   UnitInfoPage,
   UnitPage
@@ -16,6 +18,9 @@ import {
 import UnitsPage from '../../pages/employee/units/units'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
+
+const today = LocalDate.of(2024, 3, 1)
+const now = today.toHelsinkiDateTime(LocalTime.of(12, 0))
 
 describe('Employee - unit details', () => {
   let page: Page
@@ -29,7 +34,7 @@ describe('Employee - unit details', () => {
     daycare1 = testDaycare
     const admin = await Fixture.employee().admin().save()
 
-    page = await Page.open()
+    page = await Page.open({ mockedTime: now })
     await employeeLogin(page, admin)
     await page.goto(config.employeeUrl)
     await new EmployeeNav(page).openTab('units')
@@ -104,35 +109,45 @@ describe('Employee - unit details', () => {
 })
 
 describe('Employee - unit editor validations and warnings', () => {
-  let page: Page
-  let unitInfoPage: UnitInfoPage
-  let unitEditorPage: UnitEditor
-  let unitDetailsPage: UnitDetailsPage
-
   beforeEach(async () => {
     await resetServiceState()
 
     await Fixture.careArea(testCareArea).save()
     await Fixture.daycare(testDaycare).save()
-    const admin = await Fixture.employee().admin().save()
-
-    page = await Page.open()
-    await employeeLogin(page, admin)
-    const unitPage = await UnitPage.openUnit(page, testDaycare.id)
-    unitInfoPage = await unitPage.openUnitInformation()
-    unitDetailsPage = await unitInfoPage.openUnitDetails()
-    unitEditorPage = await unitDetailsPage.edit()
   })
 
-  test('Unit closing date warning is shown when needed', async () => {
-    await unitEditorPage.assertWarningIsNotVisible('closing-date-warning')
-    await unitEditorPage.selectSomeClosingDate()
-    await unitEditorPage.assertWarningIsVisible('closing-date-warning')
+  const openUnitEditorPage = async () => {
+    const admin = await Fixture.employee().admin().save()
+    const page = await Page.open()
+    await employeeLogin(page, admin)
+    const unitPage = await UnitPage.openUnit(page, testDaycare.id)
+    const unitInfoPage = await unitPage.openUnitInformation()
+    const unitDetailsPage = await unitInfoPage.openUnitDetails()
+    return await unitDetailsPage.edit()
+  }
+
+  test('Unit closing date error is shown if there are active placements', async () => {
+    const placementStart = today.addMonths(1)
+    const placementEnd = today.addYears(1)
+
+    const child = await Fixture.person().saveChild()
+    await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: placementStart,
+      endDate: placementEnd
+    }).save()
+
+    const unitEditorPage = await openUnitEditorPage()
+    await unitEditorPage.assertWarningIsNotVisible('unit-closing-placement')
+    await unitEditorPage.selectClosingDate(placementEnd.subDays(1))
+    await unitEditorPage.assertWarningIsVisible('unit-closing-placement')
     await unitEditorPage.clearClosingDate()
     await unitEditorPage.assertWarningIsNotVisible('closing-date-warning')
   })
 
   test('Invalid unit operation times produce a form error', async () => {
+    const unitEditorPage = await openUnitEditorPage()
     await unitEditorPage.assertWarningIsNotVisible('unit-operationtimes')
     await unitEditorPage.fillDayTimeRange(2, '10:00', '10:66')
     await unitEditorPage.assertWarningIsVisible('unit-operationtimes')
@@ -146,6 +161,7 @@ describe('Employee - unit editor validations and warnings', () => {
   })
 
   test('Invalid unit shift care operation times produce a form error', async () => {
+    const unitEditorPage = await openUnitEditorPage()
     await unitEditorPage.assertWarningIsNotVisible(
       'shift-care-unit-operationtimes'
     )
@@ -175,12 +191,13 @@ describe('Employee - unit editor validations and warnings', () => {
       'manager@example.com'
     )
 
-    await unitEditorPage.submit()
+    const unitDetailsPage = await unitEditorPage.submit()
     await unitDetailsPage.assertShiftCareOperationTime(6, '')
     await unitDetailsPage.assertShiftCareOperationTime(7, '16:00 - 22:00')
   })
 
   test('Varda unit warning is shown for non varda units', async () => {
+    const unitEditorPage = await openUnitEditorPage()
     await unitEditorPage.selectProviderType('MUNICIPAL')
     await unitEditorPage.assertWarningIsNotVisible('send-to-varda-warning')
     await unitEditorPage.selectProviderType('PRIVATE')
@@ -188,6 +205,7 @@ describe('Employee - unit editor validations and warnings', () => {
   })
 
   test('Municipal, service voucher and purchased units shows warning if handler address is missing', async () => {
+    const unitEditorPage = await openUnitEditorPage()
     await unitEditorPage.assertUnitHandlerAddressVisibility(
       'MUNICIPAL',
       '',
@@ -245,6 +263,7 @@ describe('Employee - unit editor validations and warnings', () => {
   })
 
   test('Invoicing related fields are only shown if unit is invoiced by municipality', async () => {
+    const unitEditorPage = await openUnitEditorPage()
     await unitEditorPage.assertInvoicingFieldsVisibility(true)
     await unitEditorPage.clickInvoicedByMunicipality()
     await unitEditorPage.assertInvoicingFieldsVisibility(false)

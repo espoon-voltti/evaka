@@ -88,6 +88,15 @@ data class DaycareFields(
             }
         }
     }
+
+    fun validateClosingDate(tx: Database.Read, daycareId: DaycareId) {
+        val lastPlacementDate = tx.getLastPlacementDate(daycareId)
+        if (closingDate != null && lastPlacementDate != null && lastPlacementDate > closingDate) {
+            throw BadRequest("Closing date cannot be before the last placement date")
+        }
+    }
+
+    companion object {}
 }
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
@@ -207,6 +216,19 @@ WHERE id = ANY(${bind(ids)})
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
     createQuery { daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }) }
         .exactlyOneOrNull<Daycare>()
+
+fun Database.Read.getLastPlacementDate(daycareId: DaycareId): LocalDate? =
+    createQuery {
+            sql(
+                """
+SELECT GREATEST(
+    (SELECT MAX(end_date) FROM placement WHERE unit_id = ${bind(daycareId)}),
+    (SELECT MAX(end_date) FROM backup_care WHERE unit_id = ${bind(daycareId)})
+)
+"""
+            )
+        }
+        .exactlyOneOrNull()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
     createQuery { sql("SELECT EXISTS (SELECT 1 FROM daycare WHERE id = ${bind(id)}) AS valid") }

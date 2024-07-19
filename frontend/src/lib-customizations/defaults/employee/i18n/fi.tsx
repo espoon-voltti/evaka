@@ -4273,11 +4273,11 @@ export const fi = {
       operationTimes: 'Virheellinen merkintä yksikön toiminta-ajoissa',
       shiftCareOperationTimes:
         'Virheellinen merkintä yksikön vuorohoidon toiminta-ajoissa',
-      mealTimes: 'Virheellinen merkintä yksikön ruokailuajoissa'
+      mealTimes: 'Virheellinen merkintä yksikön ruokailuajoissa',
+      closingDateBeforeLastPlacementDate: (lastPlacementDate: LocalDate) =>
+        `Yksikössä on sijoituksia ${lastPlacementDate.format()} asti. Kaikki sijoitukset ja varasijoitukset tulee päättää yksikön päättymispäivään mennessä, mukaan lukien myös mahdolliset tulevaisuuden sijoitukset.`
     },
     warning: {
-      placementsShouldBeEndedIfUnitIsClosed:
-        'Huomioithan, että kaikki sijoitukset tulee päättää yksikön päättymispäivään mennessä, mukaan lukien myös mahdolliset tulevaisuuden sijoitukset.',
       onlyMunicipalUnitsShouldBeSentToVarda:
         'Älä lähetä Vardaan muiden kuin kunnallisten ja kunnallisten ostopalveluyksiköiden tietoja.',
       handlerAddressIsMandatory:

@@ -323,6 +323,7 @@ export interface DaycareMealtimes {
 export interface DaycareResponse {
   daycare: Daycare
   groups: DaycareGroupResponse[]
+  lastPlacementDate: LocalDate | null
   permittedActions: Action.Unit[]
 }
 
@@ -690,7 +691,8 @@ export function deserializeJsonDaycareResponse(json: JsonOf<DaycareResponse>): D
   return {
     ...json,
     daycare: deserializeJsonDaycare(json.daycare),
-    groups: json.groups.map(e => deserializeJsonDaycareGroupResponse(e))
+    groups: json.groups.map(e => deserializeJsonDaycareGroupResponse(e)),
+    lastPlacementDate: (json.lastPlacementDate != null) ? LocalDate.parseIso(json.lastPlacementDate) : null
   }
 }
 
