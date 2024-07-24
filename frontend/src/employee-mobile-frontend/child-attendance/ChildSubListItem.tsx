@@ -159,6 +159,9 @@ export default React.memo(function ChildSubListItem({
         }
         size="m"
       />
+      {reservationData.inBackupPlacement && (
+        <RoundIcon content="V" size="m" color={colors.main.m1} />
+      )}
       <ChildBoxInfo>
         <NameRow
           className={reservationData.sortCategory > 3 ? 'absent' : 'present'}

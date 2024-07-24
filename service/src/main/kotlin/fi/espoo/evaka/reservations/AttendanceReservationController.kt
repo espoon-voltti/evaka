@@ -467,6 +467,7 @@ class AttendanceReservationController(
         val groupId: GroupId?,
         val absent: Boolean,
         val outOnBackupPlacement: Boolean,
+        val inBackupPlacement: Boolean,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val scheduleType: ScheduleType,
         val isInHolidayPeriod: Boolean
@@ -556,7 +557,12 @@ class AttendanceReservationController(
                                     ),
                                 groupId = childRow.groupId,
                                 childId = childRow.childId,
-                                outOnBackupPlacement = childRow.backupUnitId != null,
+                                outOnBackupPlacement =
+                                    childRow.unitId != childRow.placementUnitId &&
+                                        childRow.placementUnitId == unitId,
+                                inBackupPlacement =
+                                    childRow.unitId != childRow.placementUnitId &&
+                                        childRow.placementUnitId != unitId,
                                 dailyServiceTimes =
                                     dailyServiceTimes[row.key]?.find {
                                         it.validityPeriod.includes(examinationDate)

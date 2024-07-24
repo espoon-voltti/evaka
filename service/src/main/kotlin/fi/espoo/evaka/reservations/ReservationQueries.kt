@@ -485,7 +485,8 @@ data class DailyChildReservationInfoRow(
     @Json val absences: List<ConfirmedDayAbsenceInfo>,
     val groupId: GroupId?,
     val absenceType: AbsenceType?,
-    val backupUnitId: DaycareId?,
+    val unitId: DaycareId,
+    val placementUnitId: DaycareId,
     val placementType: PlacementType
 )
 
@@ -512,9 +513,8 @@ SELECT pcd.child_id,
        CASE -- affected group in the examination unit
            WHEN (pcd.unit_id <> ${bind(unitId)}) THEN pcd.placement_group_id
            ELSE pcd.group_id END                                       AS group_id,
-       CASE
-           WHEN (pcd.unit_id <> pcd.placement_unit_id AND pcd.placement_unit_id = ${bind(unitId)})
-           THEN unit_id END                                            AS backup_unit_id,
+       pcd.unit_id,
+       pcd.placement_unit_id,
         pcd.placement_type,
         -- reservation roll up
         (SELECT coalesce(jsonb_agg(json_build_object(

@@ -96,6 +96,7 @@ export interface ChildReservationInfo {
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
+  inBackupPlacement: boolean
   isInHolidayPeriod: boolean
   outOnBackupPlacement: boolean
   reservations: ReservationResponse[]
