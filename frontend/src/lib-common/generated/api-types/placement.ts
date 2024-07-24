@@ -81,6 +81,7 @@ export interface DaycareGroupPlacement {
 export interface DaycarePlacementWithDetails {
   child: ChildBasics
   daycare: DaycareBasics
+  defaultServiceNeedOptionNameFi: string | null
   endDate: LocalDate
   groupPlacements: DaycareGroupPlacement[]
   id: UUID
@@ -118,6 +119,7 @@ export interface MissingGroupPlacement {
   backup: boolean
   childId: UUID
   dateOfBirth: LocalDate
+  defaultServiceNeedOptionNameFi: string | null
   firstName: string
   fromUnits: string[]
   gap: FiniteDateRange

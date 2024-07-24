@@ -882,19 +882,34 @@ const ServiceNeedTooltipLabel = ({
     placement.endDate
   )
   const filterRange = new FiniteDateRange(filters.startDate, filters.endDate)
-  const serviceNeeds = placement.serviceNeeds.filter((sn) => {
+  const serviceNeeds = placement.serviceNeeds.reduce<
+    { range: FiniteDateRange; nameFi: string }[]
+  >((prev, sn) => {
     const snRange = new FiniteDateRange(sn.startDate, sn.endDate)
     return snRange.overlaps(placementRange) && snRange.overlaps(filterRange)
-  })
+      ? [...prev, { range: snRange, nameFi: sn.option.nameFi }]
+      : prev
+  }, [])
+  const serviceNeedGaps = placementRange
+    .getGaps(serviceNeeds.map((sn) => sn.range))
+    .filter((gap) => gap.overlaps(filterRange))
+    .map((gap) => ({
+      range: gap,
+      nameFi: placement.defaultServiceNeedOptionNameFi ?? ''
+    }))
   return (
     <>
       {serviceNeeds
-        .sort((a, b) => a.startDate.compareTo(b.startDate))
+        .concat(serviceNeedGaps)
+        .sort((a, b) => a.range.start.compareTo(b.range.start))
         .map((sn) => (
-          <p key={`service-need-${sn.id}`} style={{ whiteSpace: 'nowrap' }}>
-            {sn.option.nameFi}:
+          <p
+            key={`service-need-${sn.range.start.formatIso()}`}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {sn.nameFi}:
             <br />
-            {sn.startDate.format()} - {sn.endDate.format()}
+            {sn.range.format()}
           </p>
         ))}
     </>
