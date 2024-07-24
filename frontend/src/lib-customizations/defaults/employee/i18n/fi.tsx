@@ -3799,6 +3799,8 @@ export const fi = {
       uploadToVarda: 'Varda',
       uploadChildrenToVarda: 'Varda (lapset)',
       uploadToKoski: 'Koski',
+      ophUnitOid: 'Toimipaikan OID',
+      ophOrganizerOid: 'Järjestäjän OID',
       invoicedByMunicipality: 'Laskutetaan eVakasta',
       costCenter: 'Kustannuspaikka',
       address: 'Käyntiosoite',
