@@ -214,7 +214,11 @@ export default React.memo(function Decisions() {
                   paddingVertical="L"
                   data-qa={`child-decisions-${child.id}`}
                 >
-                  <H2 noMargin aria-label={getAriaLabelForChild(child)}>
+                  <H2
+                    noMargin
+                    aria-label={getAriaLabelForChild(child)}
+                    translate="no"
+                  >
                     {child.firstName} {child.lastName}
                   </H2>
                   {child.decisions.map((decision) => (

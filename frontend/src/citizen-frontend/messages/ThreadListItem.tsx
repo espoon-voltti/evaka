@@ -84,7 +84,7 @@ export default React.memo(function ThreadListItem({
     >
       <FixedSpaceColumn>
         <Header isRead={!hasUnreadMessages}>
-          <Truncated data-qa="message-participants">
+          <Truncated data-qa="message-participants" translate="no">
             <ScreenReaderOnly>
               {i18n.messages.threadList.participants}:
             </ScreenReaderOnly>

@@ -53,7 +53,7 @@ export default React.memo(function ContactInfoSection({
         columnGap="L"
       >
         <Label>{tLocal.child.name}</Label>
-        <span>
+        <span translate="no">
           {formData.childFirstName} {formData.childLastName}
         </span>
 
@@ -61,7 +61,7 @@ export default React.memo(function ContactInfoSection({
         <span>{formData.childSSN}</span>
 
         <Label>{tLocal.child.streetAddress}</Label>
-        <span>{formData.childStreet}</span>
+        <span translate="no">{formData.childStreet}</span>
 
         <Label>{tLocal.child.isAddressChanging}</Label>
         <span>
@@ -76,7 +76,7 @@ export default React.memo(function ContactInfoSection({
             <span>{formData.childMoveDate?.format()}</span>
 
             <Label>{tLocal.child.newAddress}</Label>
-            <span>
+            <span translate="no">
               {formData.childFutureStreet} {formData.childFuturePostalCode}{' '}
               {formData.childFuturePostOffice}
             </span>
@@ -93,13 +93,13 @@ export default React.memo(function ContactInfoSection({
         columnGap="L"
       >
         <Label>{tLocal.guardian.name}</Label>
-        <span>
+        <span translate="no">
           {formData.guardianFirstName} {formData.guardianLastName}
         </span>
         <Label>{tLocal.guardian.tel}</Label>
         <span>{formData.guardianPhone}</span>
         <Label>{tLocal.guardian.email}</Label>
-        <span>{formData.guardianEmail}</span>
+        <span translate="no">{formData.guardianEmail}</span>
         <Label>{tLocal.guardian.streetAddress}</Label>
         <span>{formData.guardianHomeAddress}</span>
 
@@ -116,7 +116,7 @@ export default React.memo(function ContactInfoSection({
             <span>{formData.guardianMoveDate?.format()}</span>
 
             <Label>{tLocal.guardian.newAddress}</Label>
-            <span>
+            <span translate="no">
               {formData.guardianFutureStreet}{' '}
               {formData.guardianFuturePostalCode}{' '}
               {formData.guardianFuturePostOffice}
@@ -144,7 +144,7 @@ export default React.memo(function ContactInfoSection({
                   columnGap="L"
                 >
                   <Label>{tLocal.fridgePartner.name}</Label>
-                  <span>
+                  <span translate="no">
                     {formData.otherPartnerFirstName}{' '}
                     {formData.otherPartnerLastName}
                   </span>
@@ -168,7 +168,7 @@ export default React.memo(function ContactInfoSection({
                       columnGap="L"
                     >
                       <Label>{tLocal.fridgeChildren.name}</Label>
-                      <span>
+                      <span translate="no">
                         {firstName} {lastName}
                       </span>
 

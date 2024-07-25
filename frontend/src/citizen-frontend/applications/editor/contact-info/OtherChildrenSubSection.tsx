@@ -42,6 +42,7 @@ export default React.memo(function OtherChildrenSubSection({
             label={`${child.firstName || ''} ${child.lastName || ''}, ${
               child.socialSecurityNumber || ''
             }`}
+            translate="no"
             checked={child.selected}
             onChange={(checked) =>
               updateFormData({

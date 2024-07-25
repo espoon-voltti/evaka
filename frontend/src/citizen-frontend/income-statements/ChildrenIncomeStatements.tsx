@@ -217,7 +217,7 @@ export default React.memo(function ChildrenIncomeStatements({
             >
               <Gap size="s" />
               <HeadingContainer>
-                <H3 data-qa="child-name">
+                <H3 data-qa="child-name" translate="no">
                   {child.firstName} {child.lastName}
                 </H3>
                 <ResponsiveAddButton

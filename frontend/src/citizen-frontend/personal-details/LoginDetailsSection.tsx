@@ -22,7 +22,9 @@ export default React.memo(function LoginDetailsSection({ user }: Props) {
         <H2 noMargin>{t.personalDetails.loginDetailsSection.title}</H2>
         <div />
         <Label>{t.personalDetails.loginDetailsSection.keycloakEmail}</Label>
-        <div data-qa="keycloak-email">{user.keycloakEmail}</div>
+        <div data-qa="keycloak-email" translate="no">
+          {user.keycloakEmail}
+        </div>
       </ListGrid>
     </div>
   )

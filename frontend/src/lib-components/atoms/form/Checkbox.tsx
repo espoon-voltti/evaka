@@ -128,6 +128,7 @@ export interface CheckboxProps extends CommonProps {
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void
   disabled?: boolean
+  translate?: 'yes' | 'no'
 }
 
 const Checkbox = React.memo(function Checkbox({
@@ -137,6 +138,7 @@ const Checkbox = React.memo(function Checkbox({
   onChange,
   disabled,
   className,
+  translate,
   'data-qa': dataQa
 }: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -165,7 +167,9 @@ const Checkbox = React.memo(function Checkbox({
       </Box>
       {!hiddenLabel && (
         <LabelContainer>
-          <label htmlFor={ariaId}>{label}</label>
+          <label htmlFor={ariaId} translate={translate}>
+            {label}
+          </label>
           <ExpandingInfoButtonSlot />
         </LabelContainer>
       )}

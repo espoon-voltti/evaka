@@ -133,7 +133,7 @@ const ServiceNeedTableMobile = ({ serviceNeeds }: ServiceNeedTableProps) => {
                   (lang === 'en' && serviceNeed.option?.nameEn) ||
                   ''}
               </FixedSpaceRow>
-              <FixedSpaceRow data-qa="service-need-unit">
+              <FixedSpaceRow data-qa="service-need-unit" translate="no">
                 {serviceNeed.unitName}
               </FixedSpaceRow>
             </FixedSpaceColumn>

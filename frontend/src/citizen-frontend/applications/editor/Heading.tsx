@@ -39,7 +39,7 @@ export default React.memo(function Heading({
         {transferApplication && ` (${t.applicationsList.transferApplication})`}
       </H1>
 
-      <H2 data-qa="application-child-name-title">
+      <H2 data-qa="application-child-name-title" translate="no">
         {firstName} {lastName}
       </H2>
 

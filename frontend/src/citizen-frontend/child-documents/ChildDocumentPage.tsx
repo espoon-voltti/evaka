@@ -125,7 +125,7 @@ const ChildDocumentView = React.memo(function ChildDocumentView({
         <FixedSpaceRow justifyContent="space-between">
           <FixedSpaceColumn>
             <H1 noMargin>{document.template.name}</H1>
-            <H2 noMargin>
+            <H2 noMargin translate="no">
               {document.child.firstName} {document.child.lastName}
               {document.child.dateOfBirth
                 ? ` (${document.child.dateOfBirth.format()})`

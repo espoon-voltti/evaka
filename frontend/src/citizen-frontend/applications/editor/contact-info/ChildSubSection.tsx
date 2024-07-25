@@ -42,11 +42,11 @@ export default React.memo(function ChildSubSection({
         <AdaptiveFlex breakpoint="1060px">
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
-            <span>{formData.childFirstName}</span>
+            <span translate="no">{formData.childFirstName}</span>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childLastName}</Label>
-            <span>{formData.childLastName}</span>
+            <span translate="no">{formData.childLastName}</span>
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing="xs">
             <Label>{t.applications.editor.contactInfo.childSSN}</Label>
@@ -57,7 +57,9 @@ export default React.memo(function ChildSubSection({
       <Gap size="s" />
       <FixedSpaceColumn spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span data-qa="child-street-address">{formData.childStreet}</span>
+        <span data-qa="child-street-address" translate="no">
+          {formData.childStreet}
+        </span>
       </FixedSpaceColumn>
       <Gap size="m" />
 

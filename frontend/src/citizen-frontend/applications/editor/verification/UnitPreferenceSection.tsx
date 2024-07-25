@@ -61,7 +61,7 @@ export default React.memo(function UnitPreferenceSection({
             <span>{tLocal.siblingBasis.siblingBasisYes}</span>
 
             <Label>{tLocal.siblingBasis.name}</Label>
-            <span>{sibling?.name}</span>
+            <span translate="no">{sibling?.name}</span>
 
             <Label>{tLocal.siblingBasis.ssn}</Label>
             <span>{sibling?.ssn}</span>

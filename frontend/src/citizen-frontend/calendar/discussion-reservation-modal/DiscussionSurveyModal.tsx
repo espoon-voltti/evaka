@@ -251,7 +251,7 @@ const DiscussionChildElement = React.memo(function DiscussionChildElement({
 }: DiscussionChildElementProps) {
   return (
     <div data-qa={`discussion-child-${childWithSurveys.childId}`}>
-      <StaticChip color={colors.main.m1}>
+      <StaticChip color={colors.main.m1} translate="no">
         {formatFirstName(childWithSurveys)}
       </StaticChip>
       {childWithSurveys.surveys.map((s) => {
@@ -313,14 +313,14 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                 <div data-qa={`reservation-${r.id}`}>
                   {r.date.isBefore(today) ? (
                     <Light>
-                      {`${r.date.format('EEEEEE d.M.', lang)} 
-                    ${i18n.calendar.discussionTimeReservation.timePreDescriptor} 
+                      {`${r.date.format('EEEEEE d.M.', lang)}
+                    ${i18n.calendar.discussionTimeReservation.timePreDescriptor}
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                     </Light>
                   ) : (
                     <Bold>
-                      {`${r.date.format('EEEEEE d.M.', lang)} 
-                    ${i18n.calendar.discussionTimeReservation.timePreDescriptor} 
+                      {`${r.date.format('EEEEEE d.M.', lang)}
+                    ${i18n.calendar.discussionTimeReservation.timePreDescriptor}
                     ${r.startTime.format()} - ${r.endTime.format()}`}
                     </Bold>
                   )}

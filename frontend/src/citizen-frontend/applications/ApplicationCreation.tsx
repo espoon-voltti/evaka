@@ -87,7 +87,9 @@ export default React.memo(function ApplicationCreation() {
           >
             <H1 noMargin>{t.applications.creation.title}</H1>
             <Gap size="m" />
-            <H2 noMargin>{childName.getOrElse('')}</H2>
+            <H2 noMargin translate="no">
+              {childName.getOrElse('')}
+            </H2>
             <Gap size="XL" />
             <ExpandingInfo
               data-qa="daycare-expanding-info"

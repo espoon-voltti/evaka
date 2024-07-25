@@ -72,7 +72,7 @@ export function CitizenVasuHeader({
     <HeaderSection opaque>
       <Titles>
         <H1 data-qa="template-name">{templateName}</H1>
-        <H2 data-qa="title-child-name">
+        <H2 data-qa="title-child-name" translate="no">
           {firstName} {lastName}
         </H2>
       </Titles>

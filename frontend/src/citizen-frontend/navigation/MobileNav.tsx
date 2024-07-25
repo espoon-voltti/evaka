@@ -315,6 +315,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             to={`/children/${child.id}`}
             onClick={closeMenu}
             $alignRight
+            translate="no"
           >
             {formatFirstName(child)} {child.lastName}
             {unreadChildNotifications[child.id] ? (

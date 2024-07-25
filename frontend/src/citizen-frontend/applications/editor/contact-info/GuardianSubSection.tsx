@@ -37,11 +37,11 @@ export default React.memo(function GuardianSubSection({
       <AdaptiveFlex breakpoint="1060px" horizontalSpacing="XL">
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
-          <span>{formData.guardianFirstName}</span>
+          <span translate="no">{formData.guardianFirstName}</span>
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
-          <span>{formData.guardianLastName}</span>
+          <span translate="no">{formData.guardianLastName}</span>
         </FixedSpaceColumn>
         <FixedSpaceColumn spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
@@ -53,7 +53,7 @@ export default React.memo(function GuardianSubSection({
 
       <FixedSpaceColumn spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span>{formData.guardianHomeAddress}</span>
+        <span translate="no">{formData.guardianHomeAddress}</span>
       </FixedSpaceColumn>
 
       <Gap size="s" />
