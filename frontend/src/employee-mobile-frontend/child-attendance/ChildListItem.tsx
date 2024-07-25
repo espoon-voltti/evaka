@@ -137,6 +137,14 @@ export default React.memo(function ChildListItem({
   const today = LocalDate.todayInSystemTz()
   const childAge = today.differenceInYears(child.dateOfBirth)
 
+  const hasActiveNote = useMemo(
+    () =>
+      !!child.dailyNote ||
+      child.stickyNotes.filter((n) => n.expires.isEqualOrAfter(today)).length >
+        0,
+    [child, today]
+  )
+
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
@@ -169,7 +177,7 @@ export default React.memo(function ChildListItem({
               )}
             </LeftDetailsDiv>
             <FixedSpaceRowWithLeftMargin alignItems="center">
-              {child.dailyNote && (
+              {hasActiveNote && (
                 <Link
                   to={
                     routes.childNotes(
