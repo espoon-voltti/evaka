@@ -123,6 +123,14 @@ export default React.memo(function MissingHeadOfFamily() {
                   key: 'uploadToKoski'
                 },
                 {
+                  label: i18n.reports.units.ophUnitOid,
+                  key: 'ophUnitOid'
+                },
+                {
+                  label: i18n.reports.units.ophOrganizerOid,
+                  key: 'ophOrganizerOid'
+                },
+                {
                   label: i18n.reports.units.invoicedByMunicipality,
                   key: 'invoicedByMunicipality'
                 },
@@ -168,6 +176,8 @@ export default React.memo(function MissingHeadOfFamily() {
                     {i18n.reports.units.uploadChildrenToVarda}
                   </CheckboxTh>
                   <CheckboxTh>{i18n.reports.units.uploadToKoski}</CheckboxTh>
+                  <Th>{i18n.reports.units.ophUnitOid}</Th>
+                  <Th>{i18n.reports.units.ophOrganizerOid}</Th>
                   <CheckboxTh>
                     {i18n.reports.units.invoicedByMunicipality}
                   </CheckboxTh>
@@ -223,6 +233,8 @@ export default React.memo(function MissingHeadOfFamily() {
                     <Td>
                       <StaticCheckBox checked={row.uploadToKoski} />
                     </Td>
+                    <Td>{row.ophUnitOid}</Td>
+                    <Td>{row.ophOrganizerOid}</Td>
                     <Td>
                       <StaticCheckBox checked={row.invoicedByMunicipality} />
                     </Td>

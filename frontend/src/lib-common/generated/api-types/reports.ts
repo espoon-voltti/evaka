@@ -890,6 +890,8 @@ export interface UnitsReportRow {
   id: UUID
   invoicedByMunicipality: boolean
   name: string
+  ophOrganizerOid: string | null
+  ophUnitOid: string | null
   preschoolApply: boolean
   providerType: ProviderType
   unitManagerName: string
