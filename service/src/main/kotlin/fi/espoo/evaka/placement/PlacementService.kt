@@ -13,6 +13,7 @@ import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.clearServiceNeedsFromPeriod
 import fi.espoo.evaka.serviceneed.findServiceNeedOptionById
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
@@ -507,6 +508,10 @@ fun Database.Read.getDetailedDaycarePlacements(
             childId != null -> getServiceNeedsByChild(childId)
             else -> listOf()
         }
+    val defaultServiceNeedOptionNames =
+        getServiceNeedOptions()
+            .filter { it.defaultOption }
+            .associate { it.validPlacementType to it.nameFi }
 
     return daycarePlacements
         .map { daycarePlacement ->
@@ -521,6 +526,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 groupPlacements =
                     groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
+                defaultServiceNeedOptionNameFi =
+                    defaultServiceNeedOptionNames[daycarePlacement.type],
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
                 placeGuarantee = daycarePlacement.placeGuarantee
@@ -595,7 +602,8 @@ SELECT
     c.last_name,
     c.date_of_birth,
     '[]' AS from_units,
-    sn.service_needs
+    sn.service_needs,
+    default_sno.name_fi AS default_service_need_option_name_fi
 FROM missing_group_placement p
 JOIN person c ON p.child_id = c.id
 JOIN LATERAL (
@@ -608,6 +616,7 @@ JOIN LATERAL (
     JOIN service_need_option sno ON sn.option_id = sno.id
     WHERE p.id = sn.placement_id
 ) sn ON true
+LEFT JOIN service_need_option default_sno ON default_sno.default_option AND default_sno.valid_placement_type = p.type
 """
                 )
             }
@@ -623,6 +632,7 @@ SELECT
     NULL AS placement_type,
     daterange(bc.start_date, bc.end_date, '[]') AS placement_period,
     '[]' AS service_needs,
+    '' AS default_service_need_option_name_fi,
     daterange(bc.start_date, bc.end_date, '[]') AS gap,
     bc.child_id,
     c.first_name,
@@ -681,6 +691,7 @@ data class DaycarePlacementWithDetails(
     val missingServiceNeedDays: Int,
     val groupPlacements: List<DaycareGroupPlacement>,
     val serviceNeeds: List<ServiceNeed>,
+    val defaultServiceNeedOptionNameFi: String?,
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
@@ -713,6 +724,7 @@ data class MissingGroupPlacement(
     val dateOfBirth: LocalDate,
     @Json val fromUnits: List<String>, // for backup care
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
+    val defaultServiceNeedOptionNameFi: String?,
     val gap: FiniteDateRange
 )
 

@@ -1198,6 +1198,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             )
                         ),
                     serviceNeeds = emptyList(),
+                    defaultServiceNeedOptionNameFi = "Kokopäiväinen",
                     terminatedBy = null,
                     terminationRequestedDate = null,
                     placeGuarantee = false
@@ -1361,6 +1362,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             )
                         ),
                     serviceNeeds = emptyList(),
+                    defaultServiceNeedOptionNameFi = "Kokopäiväinen",
                     terminatedBy = null,
                     terminationRequestedDate = null,
                     placeGuarantee = false
@@ -1409,6 +1411,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     testChild_1.dateOfBirth,
                     listOf(),
                     listOf(),
+                    "Kokopäiväinen",
                     FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1))
                 )
             ),
@@ -1471,6 +1474,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     testChild_1.dateOfBirth,
                     listOf(daycare1.name),
                     listOf(),
+                    "",
                     FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
                 )
             ),
