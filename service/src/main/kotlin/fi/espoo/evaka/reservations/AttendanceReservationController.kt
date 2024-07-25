@@ -466,12 +466,16 @@ class AttendanceReservationController(
         val reservations: List<ReservationResponse>,
         val groupId: GroupId?,
         val absent: Boolean,
-        val outOnBackupPlacement: Boolean,
-        val inBackupPlacement: Boolean,
+        val backupPlacement: BackupPlacementType?,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val scheduleType: ScheduleType,
         val isInHolidayPeriod: Boolean
     )
+
+    enum class BackupPlacementType {
+        OUT_ON_BACKUP_PLACEMENT,
+        IN_BACKUP_PLACEMENT
+    }
 
     data class DailyChildReservationResult(
         val children: Map<ChildId, ReservationChildInfo>,
@@ -557,12 +561,12 @@ class AttendanceReservationController(
                                     ),
                                 groupId = childRow.groupId,
                                 childId = childRow.childId,
-                                outOnBackupPlacement =
-                                    childRow.unitId != childRow.placementUnitId &&
-                                        childRow.placementUnitId == unitId,
-                                inBackupPlacement =
-                                    childRow.unitId != childRow.placementUnitId &&
-                                        childRow.placementUnitId != unitId,
+                                backupPlacement =
+                                    if (childRow.unitId != childRow.placementUnitId)
+                                        if (childRow.placementUnitId == unitId)
+                                            BackupPlacementType.OUT_ON_BACKUP_PLACEMENT
+                                        else BackupPlacementType.IN_BACKUP_PLACEMENT
+                                    else null,
                                 dailyServiceTimes =
                                     dailyServiceTimes[row.key]?.find {
                                         it.validityPeriod.includes(examinationDate)
