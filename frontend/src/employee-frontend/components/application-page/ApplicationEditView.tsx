@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result, wrapResult } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import {
   Address,
   ApplicationDetails,
@@ -124,33 +125,42 @@ export default React.memo(function ApplicationEditView({
     guardianRestricted,
     attachments
   } = application
+  const serviceNeedPreferredStartDate =
+    type === 'PRESCHOOL' &&
+    featureFlags.preschoolApplication.connectedDaycarePreferredStartDate
+      ? connectedDaycarePreferredStartDate
+      : preferredStartDate
+  const serviceNeedOptionsByType = useMemo(
+    () =>
+      serviceNeedOptions?.reduce<
+        Map<PlacementType, ServiceNeedOptionPublicInfo[]>
+      >((map, item) => {
+        if (
+          serviceNeedPreferredStartDate === null ||
+          !new DateRange(item.validFrom, item.validTo).includes(
+            serviceNeedPreferredStartDate
+          )
+        ) {
+          return map
+        }
+        const key = item.validPlacementType
+        const list = map.get(key) ?? []
+        list.push(item)
+        map.set(key, list)
+        return map
+      }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
+      new Map<PlacementType, ServiceNeedOptionPublicInfo[]>(),
+    [serviceNeedOptions, serviceNeedPreferredStartDate]
+  )
 
   const fullTimeOptions = useMemo(
-    () =>
-      serviceNeedOptions?.filter(
-        (opt) => opt.validPlacementType === 'DAYCARE'
-      ) ?? [],
-    [serviceNeedOptions]
+    () => serviceNeedOptionsByType.get('DAYCARE') ?? [],
+    [serviceNeedOptionsByType]
   )
   const partTimeOptions = useMemo(
-    () =>
-      serviceNeedOptions?.filter(
-        (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
-      ) ?? [],
-    [serviceNeedOptions]
+    () => serviceNeedOptionsByType.get('DAYCARE_PART_TIME') ?? [],
+    [serviceNeedOptionsByType]
   )
-
-  const serviceNeedOptionsByType =
-    serviceNeedOptions?.reduce<
-      Map<PlacementType, ServiceNeedOptionPublicInfo[]>
-    >((map, item) => {
-      const key = item.validPlacementType
-      const list = map.get(key) ?? []
-      list.push(item)
-      map.set(key, list)
-      return map
-    }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
-    new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()
 
   const preferencesInUnitsList = units
     .map((us) =>
@@ -499,7 +509,8 @@ export default React.memo(function ApplicationEditView({
                 )}
 
               {type === 'PRESCHOOL' &&
-                featureFlags.preschoolApplication.serviceNeedOption && (
+                featureFlags.preschoolApplication.serviceNeedOption &&
+                serviceNeedPreferredStartDate && (
                   <>
                     <Label>
                       {
