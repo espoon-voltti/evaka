@@ -110,7 +110,7 @@ export default React.memo(function ChildSubListItem({
       return [i18n.attendances.confirmedDays.status.ON_TERM_BREAK]
     if (reservationData.absent)
       return [i18n.attendances.confirmedDays.status.ABSENT]
-    if (reservationData.outOnBackupPlacement)
+    if (reservationData.backupPlacement === 'OUT_ON_BACKUP_PLACEMENT')
       return [i18n.attendances.confirmedDays.inOtherUnit]
 
     const withTimes = filter(reservationData.reservations, reservationHasTimes)
@@ -159,6 +159,9 @@ export default React.memo(function ChildSubListItem({
         }
         size="m"
       />
+      {reservationData.backupPlacement === 'IN_BACKUP_PLACEMENT' && (
+        <RoundIcon content="V" size="m" color={colors.main.m1} />
+      )}
       <ChildBoxInfo>
         <NameRow
           className={reservationData.sortCategory > 3 ? 'absent' : 'present'}

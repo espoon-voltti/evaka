@@ -1323,7 +1323,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     ),
                 groupId = testGroup1.id,
                 absent = false,
-                outOnBackupPlacement = false,
+                backupPlacement = null,
                 dailyServiceTimes = null,
                 scheduleType = ScheduleType.RESERVATION_REQUIRED,
                 isInHolidayPeriod = false

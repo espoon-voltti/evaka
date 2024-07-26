@@ -47,6 +47,13 @@ export interface AbsenceTypeResponse {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.BackupPlacementType
+*/
+export type BackupPlacementType =
+  | 'OUT_ON_BACKUP_PLACEMENT'
+  | 'IN_BACKUP_PLACEMENT'
+
+/**
 * Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Child
 */
 export interface Child {
@@ -93,11 +100,11 @@ export interface ChildRecordOfDay {
 */
 export interface ChildReservationInfo {
   absent: boolean
+  backupPlacement: BackupPlacementType | null
   childId: UUID
   dailyServiceTimes: DailyServiceTimesValue | null
   groupId: UUID | null
   isInHolidayPeriod: boolean
-  outOnBackupPlacement: boolean
   reservations: ReservationResponse[]
   scheduleType: ScheduleType
 }

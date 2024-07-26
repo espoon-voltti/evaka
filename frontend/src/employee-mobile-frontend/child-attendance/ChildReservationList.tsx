@@ -119,7 +119,8 @@ export default React.memo(function ChildReservationList({
                     withTimes[withTimes.length - 1].range.end.asLocalTime()
                 }
               if (ri.absent) categoryInfo = { sortCategory: 4 }
-              if (ri.outOnBackupPlacement) categoryInfo = { sortCategory: 5 }
+              if (ri.backupPlacement === 'OUT_ON_BACKUP_PLACEMENT')
+                categoryInfo = { sortCategory: 5 }
               if (ri.scheduleType === 'FIXED_SCHEDULE')
                 categoryInfo = { sortCategory: 2 }
               if (ri.scheduleType === 'TERM_BREAK')
