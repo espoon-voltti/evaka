@@ -62,6 +62,7 @@ export default React.memo(function SiblingBasisSubSection({
                     key={sibling.socialSecurityNumber}
                     checked={sibling.selected}
                     label={`${sibling.firstName} ${sibling.lastName}, ${sibling.socialSecurityNumber}`}
+                    translate="no"
                     onChange={() =>
                       updateFormData((prev) => ({
                         vtjSiblings: prev.vtjSiblings.map((s) => ({

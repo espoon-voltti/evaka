@@ -105,14 +105,16 @@ export default React.memo(function UnitDetailsPanel({
           onClick={onClose}
         />
         <Gap size="s" />
-        <H2 data-qa="map-unit-details-name">{unit.name}</H2>
+        <H2 data-qa="map-unit-details-name" translate="no">
+          {unit.name}
+        </H2>
 
         {selectedAddress && distance && distance.isLoading ? null : (
           <>
             <Gap size="s" />
             <Label>{t.map.address}</Label>
             <Gap size="xs" />
-            <div>
+            <div translate="no">
               {unit.streetAddress}, {unit.postalCode} {unit.postOffice}
             </div>
             {selectedAddress && distance && (

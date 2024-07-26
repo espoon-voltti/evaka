@@ -308,10 +308,22 @@ const AccountantInfo = React.memo(function AccountantInfo({
   return (
     <>
       <H3>{t.income.view.accountantTitle}</H3>
-      <Row label={t.income.view.accountant} value={accountant.name} />
-      <Row label={t.income.view.email} value={accountant.email} />
+      <Row
+        label={t.income.view.accountant}
+        value={accountant.name}
+        translate="no"
+      />
+      <Row
+        label={t.income.view.email}
+        value={accountant.email}
+        translate="no"
+      />
       <Row label={t.income.view.phone} value={accountant.phone} />
-      <Row label={t.income.view.address} value={accountant.address} />
+      <Row
+        label={t.income.view.address}
+        value={accountant.address}
+        translate="no"
+      />
     </>
   )
 })
@@ -369,17 +381,19 @@ const EditButtonContainer = styled.div`
 const Row = React.memo(function Row({
   label,
   light,
-  value
+  value,
+  translate
 }: {
   label: string
   light?: boolean
   value: React.ReactNode
+  translate?: 'yes' | 'no'
 }) {
   return (
     <>
       <ListGrid>
         <LabelColumn light={light}>{label}</LabelColumn>
-        <div>{value}</div>
+        <div translate={translate}>{value}</div>
       </ListGrid>
       <Gap size="s" />
     </>

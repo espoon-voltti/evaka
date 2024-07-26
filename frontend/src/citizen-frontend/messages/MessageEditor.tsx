@@ -153,7 +153,10 @@ export default React.memo(function MessageEditor({
               <>
                 <Bold>{i18n.messages.sender}</Bold>
                 <Gap size="xs" />
-                <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
+                <P
+                  noMargin
+                  translate="no"
+                >{`${user.firstName} ${user.lastName}`}</P>
               </>
             )}
             <Gap size="s" />
@@ -173,6 +176,7 @@ export default React.memo(function MessageEditor({
                                 ? ` ${duplicateChildInfo[child.id]}`
                                 : ''
                             }`}
+                            translate="no"
                             selected={message.children.includes(child.id)}
                             onChange={(selected) => {
                               const children = selected

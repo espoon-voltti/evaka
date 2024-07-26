@@ -29,7 +29,7 @@ export default React.memo(function StaticInfoSubsection({
   return (
     <FixedSpaceColumn spacing="xxs">
       <Label>{t.name}</Label>
-      <div>
+      <div translate="no">
         {basics.child.firstName} {basics.child.lastName}
       </div>
 
@@ -42,7 +42,7 @@ export default React.memo(function StaticInfoSubsection({
 
       <Label>{t.placements[type]}</Label>
       {basics.placements?.map((p) => (
-        <div key={p.range.start.formatIso()}>
+        <div key={p.range.start.formatIso()} translate="no">
           {p.unitName} ({p.groupName}) {p.range.start.format()} -{' '}
           {p.range.end.isAfter(templateRange.end) ? '' : p.range.end.format()}
         </div>
@@ -52,7 +52,7 @@ export default React.memo(function StaticInfoSubsection({
 
       <Label>{t.guardians}</Label>
       {basics.guardians.map((g) => (
-        <div key={g.id}>
+        <div key={g.id} translate="no">
           {g.firstName} {g.lastName}
         </div>
       ))}

@@ -174,7 +174,7 @@ export default React.memo(function DiscussionReservationModal({
                   <H2>{eventData?.title}</H2>
                   <p>{eventData?.description}</p>
                   <H3>{t.reservationChildTitle}</H3>
-                  <StaticChip color={colors.main.m1}>
+                  <StaticChip color={colors.main.m1} translate="no">
                     {childData ? formatFirstName(childData) : ''}
                   </StaticChip>
                 </WordBreakContainer>

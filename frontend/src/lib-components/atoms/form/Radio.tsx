@@ -116,6 +116,7 @@ type RadioProps = BaseProps & {
   disabled?: boolean
   small?: boolean
   id?: string
+  translate?: 'yes' | 'no'
 } & ({ label: string } | { label: ReactNode; ariaLabel: string })
 
 export default React.memo(function Radio({
@@ -127,6 +128,7 @@ export default React.memo(function Radio({
   'data-qa': dataQa,
   small,
   id,
+  translate,
   ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -162,7 +164,9 @@ export default React.memo(function Radio({
         </IconWrapper>
       </Circle>
       <LabelContainer small={small}>
-        <label htmlFor={id ?? ariaId}>{props.label}</label>
+        <label htmlFor={id ?? ariaId} translate={translate}>
+          {props.label}
+        </label>
         <ExpandingInfoButtonSlot />
       </LabelContainer>
     </Wrapper>

@@ -153,8 +153,8 @@ const SingleMessage = React.memo(
     return (
       <MessageContainer tabIndex={-1} ref={ref}>
         <TitleRow>
-          <SenderName>
-            <ScreenReaderOnly>{i18n.messages.thread.sender}:</ScreenReaderOnly>
+          <SenderName translate="no">
+            <ScreenReaderOnly>{i18n.messages.thread.sender}: </ScreenReaderOnly>
             {formatMessageAccountName(message.sender, i18n)}
           </SenderName>
           <InformationText>
@@ -164,7 +164,7 @@ const SingleMessage = React.memo(
             </time>
           </InformationText>
         </TitleRow>
-        <InformationText>
+        <InformationText translate="no">
           <ScreenReaderOnly>
             {i18n.messages.thread.recipients}:
           </ScreenReaderOnly>
@@ -266,7 +266,11 @@ export default React.memo(function ThreadView({
                 {i18n.messages.thread.children}:
               </ScreenReaderOnly>
               {children.map((child) => (
-                <StaticChip key={child.childId} color={theme.colors.main.m2}>
+                <StaticChip
+                  key={child.childId}
+                  color={theme.colors.main.m2}
+                  translate="no"
+                >
                   {formatFirstName(child) || ''}
                 </StaticChip>
               ))}

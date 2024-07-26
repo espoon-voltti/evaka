@@ -195,7 +195,9 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             <H1 noMargin data-qa="page-title">
               {t.pageTitle}
             </H1>
-            <ChildName noMargin>{decision.child?.name}</ChildName>
+            <ChildName noMargin translate="no">
+              {decision.child?.name}
+            </ChildName>
           </FixedSpaceColumn>
           <AssistanceNeedDecisionInfoHeader
             decisionNumber={decision.decisionNumber ?? 0}
@@ -284,7 +286,8 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
                         key={guardian.personId}
                         data-qa={`guardian-${guardian.personId ?? ''}`}
                       >
-                        {guardian.name}: {guardian.details}
+                        <span translate="no">{guardian.name}</span>:{' '}
+                        {guardian.details}
                       </li>
                     ))}
                   {decision.otherRepresentativeHeard && (
@@ -337,8 +340,10 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
               value={
                 !!decision.selectedUnit?.id && (
                   <LabelContainer>
-                    <div>{decision.selectedUnit?.name}</div>
-                    <div>{decision.selectedUnit?.streetAddress}</div>
+                    <div translate="no">{decision.selectedUnit?.name}</div>
+                    <div translate="no">
+                      {decision.selectedUnit?.streetAddress}
+                    </div>
                     <div>
                       {decision.selectedUnit?.postalCode}{' '}
                       {decision.selectedUnit?.postOffice}
@@ -372,7 +377,7 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
               value={
                 !!decision.preparedBy1?.employeeId && (
                   <LabelContainer>
-                    <div>
+                    <div translate="no">
                       {decision.preparedBy1.name}, {decision.preparedBy1.title}
                     </div>
                     <div>{decision.preparedBy1.phoneNumber}</div>
@@ -387,7 +392,7 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
               value={
                 !!decision.preparedBy2?.employeeId && (
                   <LabelContainer>
-                    <div>
+                    <div translate="no">
                       {decision.preparedBy2.name}, {decision.preparedBy2.title}
                     </div>
                     <div>{decision.preparedBy2.phoneNumber}</div>
@@ -401,7 +406,7 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
               label={t.decisionMaker}
               value={
                 !!decision.decisionMaker?.employeeId && (
-                  <LabelContainer>
+                  <LabelContainer translate="no">
                     {decision.decisionMaker.name},{' '}
                     {decision.decisionMaker.title}
                   </LabelContainer>

@@ -441,7 +441,7 @@ const DayModal = React.memo(function DayModal({
                           spacing="zero"
                           justifyContent="center"
                         >
-                          <H2 noMargin data-qa="child-name">
+                          <H2 noMargin data-qa="child-name" translate="no">
                             {`${formatFirstName(row)} ${row.lastName}`}
                           </H2>
                           {row.duplicateInfo !== undefined && (

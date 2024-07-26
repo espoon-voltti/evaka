@@ -39,7 +39,7 @@ export default React.memo(function ContactInfoSecondGuardian({
             <span>{formData.otherGuardianPhone}</span>
 
             <Label>{tLocal.secondGuardian.email}</Label>
-            <span>{formData.otherGuardianEmail}</span>
+            <span translate="no">{formData.otherGuardianEmail}</span>
           </ListGrid>
         </>
       )}

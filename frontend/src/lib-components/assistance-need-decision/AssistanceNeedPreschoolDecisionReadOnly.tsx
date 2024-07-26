@@ -123,7 +123,7 @@ export default React.memo(function DecisionFormReadView({
         <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
           <FixedSpaceColumn>
             <H1 noMargin>{t.pageTitle}</H1>
-            <H2>{decision.child.name}</H2>
+            <H2 translate="no">{decision.child.name}</H2>
           </FixedSpaceColumn>
           <FixedSpaceColumn>
             <span>
@@ -218,7 +218,9 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.selectedUnit}</Label>
-              <span data-qa="unit">{decision.unitName ?? '-'}</span>
+              <span data-qa="unit" translate="no">
+                {decision.unitName ?? '-'}
+              </span>
             </LabeledValue>
 
             <LabeledValue>
@@ -314,6 +316,7 @@ export default React.memo(function DecisionFormReadView({
                   .map((guardian) => (
                     <li
                       key={guardian.personId}
+                      translate="no"
                     >{`${guardian.name}: ${guardian.details}`}</li>
                   ))}
                 {decision.form.otherRepresentativeHeard && (
@@ -351,7 +354,7 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.preparer}</Label>
-              <span data-qa="preparer-1">
+              <span data-qa="preparer-1" translate="no">
                 {decision.preparer1Name}, {decision.form.preparer1Title}
               </span>
               {!!decision.form.preparer1PhoneNumber && (
@@ -362,7 +365,7 @@ export default React.memo(function DecisionFormReadView({
             {!!decision.form.preparer2EmployeeId && (
               <LabeledValue>
                 <Label>{t.preparer}</Label>
-                <span>
+                <span translate="no">
                   {decision.preparer2Name}, {decision.form.preparer2Title}
                 </span>
                 {!!decision.form.preparer2PhoneNumber && (
@@ -373,7 +376,7 @@ export default React.memo(function DecisionFormReadView({
 
             <LabeledValue>
               <Label>{t.decisionMaker}</Label>
-              <span data-qa="decision-maker">
+              <span data-qa="decision-maker" translate="no">
                 {decision.decisionMakerName}, {decision.form.decisionMakerTitle}
               </span>
             </LabeledValue>

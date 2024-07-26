@@ -211,6 +211,7 @@ export default React.memo(function ReservationModal({
                               ? ` ${duplicateChildInfo[child.id]}`
                               : ''
                           }`}
+                          translate="no"
                           selected={selectedChildren.state.includes(child.id)}
                           onChange={(selected) => {
                             selectedChildren.update((prev) =>

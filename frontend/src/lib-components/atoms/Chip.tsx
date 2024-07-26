@@ -54,6 +54,7 @@ type SelectionChipProps = {
   disabled?: boolean
   'data-qa'?: string
   showIcon?: boolean
+  translate?: 'yes' | 'no'
 }
 
 function preventDefault(e: React.UIEvent<unknown>) {
@@ -66,7 +67,8 @@ export const SelectionChip = React.memo(function SelectionChip({
   onChange,
   disabled,
   'data-qa': dataQa,
-  showIcon = true
+  showIcon = true,
+  translate
 }: SelectionChipProps) {
   const onClick = useCallback(
     (e: React.UIEvent<HTMLElement>) => {
@@ -98,6 +100,7 @@ export const SelectionChip = React.memo(function SelectionChip({
           className={classNames({ checked: showIcon && selected, disabled })}
           aria-hidden="true"
           onClick={preventDefault}
+          translate={translate}
         >
           {text}
         </StyledLabel>

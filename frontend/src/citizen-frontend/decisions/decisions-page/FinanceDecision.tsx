@@ -78,7 +78,7 @@ export default React.memo(function FinanceDecision({
         </span>
 
         <Label>{t.decisions.financeDecisions.liableCitizens}</Label>
-        <span data-qa="finance-decision-co-debtors">
+        <span data-qa="finance-decision-co-debtors" translate="no">
           {decisionData.coDebtors
             .map((citizen) => `${citizen.firstName} ${citizen.lastName}`)
             .join(', ')}
@@ -86,7 +86,7 @@ export default React.memo(function FinanceDecision({
         {decisionData.decisionChildren.length > 0 && (
           <>
             <Label>{t.decisions.financeDecisions.voucherValueChild}</Label>
-            <span data-qa="finance-decision-children">
+            <span data-qa="finance-decision-children" translate="no">
               {decisionData.decisionChildren
                 .map((child) => `${child.firstName} ${child.lastName}`)
                 .join(', ')}

@@ -216,7 +216,9 @@ const UnitMarker = React.memo(function UnitMarker({
     >
       <UnitPopup>
         <div data-qa={`map-popup-${id}`}>
-          <UnitName data-qa="map-popup-name">{name}</UnitName>
+          <UnitName data-qa="map-popup-name" translate="no">
+            {name}
+          </UnitName>
           <div>{t.common.unit.providerTypes[providerType]}</div>
           {noApplying && (
             <div data-qa="map-popup-no-applying">{t.map.noApplying}</div>

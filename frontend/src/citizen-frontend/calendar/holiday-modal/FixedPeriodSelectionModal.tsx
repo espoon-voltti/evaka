@@ -101,7 +101,7 @@ export default React.memo(function FixedPeriodSelectionModal({
               key={child.id}
               data-qa={`holiday-section-${child.id}`}
             >
-              <H2>
+              <H2 translate="no">
                 {formatFirstName(child)}
                 {duplicateChildInfo[child.id] !== undefined
                   ? ` ${duplicateChildInfo[child.id]}`

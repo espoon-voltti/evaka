@@ -51,7 +51,7 @@ export default React.memo(function ChildHeader({
         alt={t.children.childPicture}
       />
       <div>
-        <H1 noMargin data-qa="child-name">
+        <H1 noMargin data-qa="child-name" translate="no">
           {`${firstName} ${lastName}`}
         </H1>
         {group && <Title>{group.name}</Title>}

@@ -32,7 +32,7 @@ export default React.memo(function UnitListItem({
   return (
     <Wrapper onClick={onClick} data-qa={`map-unit-list-${unit.id}`}>
       <MainRow>
-        <UnitName>{unit.name}</UnitName>
+        <UnitName translate="no">{unit.name}</UnitName>
         {distance !== null && <Distance>{distance}</Distance>}
       </MainRow>
       <UnitDetails>

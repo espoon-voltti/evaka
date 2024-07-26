@@ -89,7 +89,9 @@ export default React.memo(function AssistanceDecision({
         {selectedUnit !== null && (
           <>
             <Label>{t.decisions.assistanceDecisions.unit}</Label>
-            <span data-qa="selected-unit">{selectedUnit.name}</span>
+            <span data-qa="selected-unit" translate="no">
+              {selectedUnit.name}
+            </span>
           </>
         )}
         <Label>{t.decisions.assistanceDecisions.decisionMade}</Label>

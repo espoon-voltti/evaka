@@ -286,7 +286,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu() {
               }}
               data-qa={`children-menu-${child.id}`}
             >
-              <span>
+              <span translate="no">
                 {formatFirstName(child)} {child.lastName}
               </span>
               {unreadChildNotifications[child.id] ? (

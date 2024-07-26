@@ -68,7 +68,9 @@ export default React.memo(function AssistancePreschoolDecision({
         <Label>{t.decisions.assistanceDecisions.validityPeriod}</Label>
         <span data-qa="validity-period">{validityPeriod.format()}</span>
         <Label>{t.decisions.assistanceDecisions.unit}</Label>
-        <span data-qa="selected-unit">{unitName}</span>
+        <span data-qa="selected-unit" translate="no">
+          {unitName}
+        </span>
         <Label>{t.decisions.assistanceDecisions.decisionMade}</Label>
         <span data-qa="decision-made">{decisionMade.format()}</span>
         <Label>{t.decisions.assistanceDecisions.statusLabel}</Label>

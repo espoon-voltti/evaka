@@ -171,19 +171,21 @@ export default React.memo(function PersonalDetailsSection({
             <H2 noMargin>{t.personalDetails.detailsSection.title}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.name}</Label>
-            <div>
+            <div translate="no">
               {firstName} {lastName}
             </div>
             <Label>{t.personalDetails.detailsSection.preferredName}</Label>
             {editing ? (
               <SelectF bind={preferredNameState} data-qa="preferred-name" />
             ) : (
-              <div data-qa="preferred-name">{preferredName}</div>
+              <div data-qa="preferred-name" translate="no">
+                {preferredName}
+              </div>
             )}
             <H2 noMargin>{t.personalDetails.detailsSection.contactInfo}</H2>
             <div />
             <Label>{t.personalDetails.detailsSection.address}</Label>
-            <div>
+            <div translate="no">
               {!!streetAddress &&
                 `${streetAddress}, ${postalCode} ${postOffice}`}
             </div>
@@ -253,7 +255,7 @@ export default React.memo(function PersonalDetailsSection({
             ) : (
               <div data-qa="email">
                 {email ? (
-                  email
+                  <span translate="no">{email}</span>
                 ) : (
                   <MandatoryValueMissingWarning
                     text={t.personalDetails.detailsSection.emailMissing}

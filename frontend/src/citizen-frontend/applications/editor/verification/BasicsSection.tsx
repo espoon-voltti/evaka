@@ -29,7 +29,7 @@ export default React.memo(function BasicsSection({
 
   return (
     <div>
-      <H2>
+      <H2 translate="no">
         {formData.contactInfo.childFirstName}{' '}
         {formData.contactInfo.childLastName}
       </H2>

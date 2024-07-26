@@ -160,9 +160,13 @@ export default React.memo(function DecisionResponse({
       <Gap size="m" />
       <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
         <Label>{t.decisions.applicationDecisions.childName}</Label>
-        <span data-qa="decision-child-name">{childName}</span>
+        <span data-qa="decision-child-name" translate="no">
+          {childName}
+        </span>
         <Label>{t.decisions.applicationDecisions.unit}</Label>
-        <span data-qa="decision-unit">{getUnitName()}</span>
+        <span data-qa="decision-unit" translate="no">
+          {getUnitName()}
+        </span>
         <Label>{t.decisions.applicationDecisions.period}</Label>
         <span data-qa="decision-period">
           {startDate.format()} - {endDate.format()}
