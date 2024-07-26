@@ -140,8 +140,7 @@ export default React.memo(function ChildListItem({
   const hasActiveNote = useMemo(
     () =>
       !!child.dailyNote ||
-      child.stickyNotes.filter((n) => n.expires.isEqualOrAfter(today)).length >
-        0,
+      child.stickyNotes.some((n) => n.expires.isEqualOrAfter(today)),
     [child, today]
   )
 
