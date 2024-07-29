@@ -161,19 +161,6 @@ export default React.memo(function UnitAttendanceReservationsView({
           />
         ) : (
           <>
-            {realtimeStaffAttendanceEnabled &&
-            selectedGroup.type === 'group' ? (
-              <StaffAttendanceTable
-                unitId={unitId}
-                operationalDays={childData.days}
-                staffAttendances={staffData.staff}
-                externalAttendances={staffData.extraAttendances}
-                reloadStaffAttendances={reloadStaffAttendances}
-                groups={groups}
-                groupFilter={groupFilter}
-                defaultGroup={selectedGroup.id}
-              />
-            ) : null}
             <ChildReservationsTable
               unitId={unitId}
               days={childData.days}
@@ -197,6 +184,19 @@ export default React.memo(function UnitAttendanceReservationsView({
               selectedDate={selectedDate}
               selectedGroup={selectedGroup}
             />
+            {realtimeStaffAttendanceEnabled &&
+            selectedGroup.type === 'group' ? (
+              <StaffAttendanceTable
+                unitId={unitId}
+                operationalDays={childData.days}
+                staffAttendances={staffData.staff}
+                externalAttendances={staffData.extraAttendances}
+                reloadStaffAttendances={reloadStaffAttendances}
+                groups={groups}
+                groupFilter={groupFilter}
+                defaultGroup={selectedGroup.id}
+              />
+            ) : null}
           </>
         )}
       </FixedSpaceColumn>
