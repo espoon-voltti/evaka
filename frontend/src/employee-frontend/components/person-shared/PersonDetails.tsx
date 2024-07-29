@@ -283,12 +283,14 @@ export default React.memo(function PersonDetails({
         permittedActions.has('READ_ATTENDANCE_REPORT') &&
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
-            <Button
-              appearance="inline"
-              icon={faCalendar}
-              onClick={() => navigate(`/reports/child-attendance/${person.id}`)}
-              text={i18n.childInformation.personDetails.attendanceReport}
-            />
+            <a href={`/employee/reports/child-attendance/${person.id}`}>
+              <Button
+                appearance="inline"
+                icon={faCalendar}
+                onClick={() => undefined}
+                text={i18n.childInformation.personDetails.attendanceReport}
+              />
+            </a>
           </ButtonSpacer>
         ) : null}
         {permittedActions.has('UPDATE_FROM_VTJ') &&

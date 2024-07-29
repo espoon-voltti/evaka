@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
@@ -211,7 +210,6 @@ const layouts: Layouts<typeof components> = {
 
 const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
-  const navigate = useNavigate()
 
   const { roles } = useContext(UserContext)
   const { person, permittedActions } = useContext(PersonContext)
@@ -250,13 +248,15 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
                   </InfoLabelContainer>
                 )}
               {permittedActions.has('READ_TIMELINE') && (
-                <Button
-                  appearance="inline"
-                  text={i18n.personProfile.timeline}
-                  onClick={() => navigate(`/profile/${id}/timeline`)}
-                  icon={faListTimeline}
-                  data-qa="timeline-button"
-                />
+                <a href={`/employee/profile/${id}/timeline`}>
+                  <Button
+                    appearance="inline"
+                    text={i18n.personProfile.timeline}
+                    onClick={() => undefined}
+                    icon={faListTimeline}
+                    data-qa="timeline-button"
+                  />
+                </a>
               )}
             </FixedSpaceColumn>
           </HeaderRow>
