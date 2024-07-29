@@ -178,6 +178,7 @@ const EmployeeSelectWithTitle = React.memo(function EmployeeSelectWithTitle({
 export interface FieldInfos {
   startDate?: InputInfo
   endDate?: InputInfo
+  assistanceLevels?: InputInfo
   preparator?: InputInfo
   pedagogicalMotivation?: InputInfo
   careMotivation?: InputInfo
@@ -524,6 +525,10 @@ export default React.memo(function AssistanceNeedDecisionForm({
           'ASSISTANCE_ENDS',
           t.assistanceLevel.assistanceEnds
         )}
+        {fieldInfos.assistanceLevels &&
+          fieldInfos.assistanceLevels.status === 'warning' && (
+            <AlertBox message={fieldInfos.assistanceLevels.text} thin />
+          )}
       </FixedSpaceColumn>
 
       <FieldWithInfo

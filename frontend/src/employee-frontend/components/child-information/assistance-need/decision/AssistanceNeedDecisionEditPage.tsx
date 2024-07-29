@@ -59,6 +59,8 @@ const getFieldTranslation = (
   fieldKey: keyof FieldInfos
 ): string => {
   switch (fieldKey) {
+    case 'assistanceLevels':
+      return t.futureLevelOfAssistance
     case 'guardianInfo':
       return t.guardiansHeardOn
     case 'viewOfGuardians':
@@ -183,6 +185,14 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
             { text: i18n.validationErrors.required, status: 'warning' }
           ])
         ),
+        assistanceLevels:
+          (formState?.assistanceLevels?.length ?? 0) > 1
+            ? {
+                text: i18n.childInformation.assistanceNeedDecision
+                  .oneAssistanceLevel,
+                status: 'warning'
+              }
+            : undefined,
         guardianInfo: !formState?.guardianInfo.every(
           (guardian) => guardian.isHeard
         )
@@ -218,10 +228,12 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
       }) as const,
     [
       missingFields,
+      formState?.assistanceLevels,
       formState?.guardianInfo,
       formState?.otherRepresentativeHeard,
       formState?.otherRepresentativeDetails,
       i18n.childInformation.assistanceNeedDecision.guardiansHeardValidation,
+      i18n.childInformation.assistanceNeedDecision.oneAssistanceLevel,
       i18n.validationErrors.required
     ]
   )
