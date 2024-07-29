@@ -41,7 +41,7 @@
     "pino-http": "^10.2.0",
     "pino-pretty": "^11.2.0",
     "pump": "^3.0.0",
-    "query-string": "^9.0.0",
+    "query-string": "^9.1.0",
     "redis": "^4.6.7",
     "split2": "^4.2.0",
     "through2": "^4.0.2",
