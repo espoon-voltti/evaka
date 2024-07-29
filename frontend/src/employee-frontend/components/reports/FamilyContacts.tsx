@@ -5,36 +5,67 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { combine } from 'lib-common/api'
-import { useQueryResult } from 'lib-common/query'
+import { localDate } from 'lib-common/form/fields'
+import { object, required } from 'lib-common/form/form'
+import { useForm, useFormFields } from 'lib-common/form/hooks'
+import LocalDate from 'lib-common/local-date'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
+import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 import { unitQuery } from '../unit/queries'
 
-import { TableScrollable } from './common'
+import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { familyContactsReportQuery } from './queries'
+
+const filterForm = object({
+  date: required(localDate())
+})
 
 export default React.memo(function FamilyContacts() {
   const { unitId } = useRouteParams(['unitId'])
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
-  const rows = useQueryResult(familyContactsReportQuery({ unitId }))
+  const filters = useForm(
+    filterForm,
+    () => ({
+      date: localDate.fromDate(LocalDate.todayInSystemTz())
+    }),
+    i18n.validationErrors
+  )
+  const { date } = useFormFields(filters)
+
+  const rows = useQueryResult(
+    queryOrDefault(
+      familyContactsReportQuery,
+      []
+    )(filters.isValid() ? { unitId, date: date.value() } : null)
+  )
+
   const unit = useQueryResult(unitQuery({ daycareId: unitId }))
 
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        {renderResult(combine(unit, rows), ([unit, rows]) => (
+        {renderResult(unit, (unit) => (
+          <Title size={1}>{unit.daycare.name}</Title>
+        ))}
+
+        <FilterRow>
+          <FilterLabel>{i18n.reports.familyContacts.date}</FilterLabel>
+          <DatePickerF bind={date} locale={lang} />
+        </FilterRow>
+
+        {renderResult(rows, (rows) => (
           <>
-            <Title size={1}>{unit.daycare.name}</Title>
             <ReportDownload
               data={rows.map((row) => ({
                 name: `${row.lastName} ${row.firstName}`,
