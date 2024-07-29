@@ -985,6 +985,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
         ),
+        READ_ATTENDANCE_REPORT(HasGlobalRole(ADMIN)),
         DELETE_ABSENCE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),

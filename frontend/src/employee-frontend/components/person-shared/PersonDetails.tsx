@@ -37,7 +37,7 @@ import {
 } from 'lib-components/molecules/ExpandingInfo'
 import { featureFlags } from 'lib-customizations/employee'
 import { faFileAlt } from 'lib-icons'
-import { faCopy, faPen, faSync } from 'lib-icons'
+import { faCalendar, faCopy, faPen, faSync } from 'lib-icons'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import AddSsnModal from '../../components/person-shared/person-details/AddSsnModal'
@@ -277,6 +277,20 @@ export default React.memo(function PersonDetails({
                 text={i18n.personProfile.duplicate}
               />
             )}
+          </ButtonSpacer>
+        ) : null}
+        {isChild &&
+        permittedActions.has('READ_ATTENDANCE_REPORT') &&
+        uiMode !== 'person-details-editing' ? (
+          <ButtonSpacer>
+            <a href={`/employee/reports/child-attendance/${person.id}`}>
+              <Button
+                appearance="inline"
+                icon={faCalendar}
+                onClick={() => undefined}
+                text={i18n.childInformation.personDetails.attendanceReport}
+              />
+            </a>
           </ButtonSpacer>
         ) : null}
         {permittedActions.has('UPDATE_FROM_VTJ') &&

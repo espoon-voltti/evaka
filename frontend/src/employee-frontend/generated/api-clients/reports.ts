@@ -14,6 +14,7 @@ import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
+import { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { ChildPreschoolAbsenceRow } from 'lib-common/generated/api-types/reports'
 import { ChildrenInDifferentAddressReportRow } from 'lib-common/generated/api-types/reports'
 import { CustomerFeesReportRow } from 'lib-common/generated/api-types/reports'
@@ -63,6 +64,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
@@ -235,6 +237,29 @@ export async function getChildAgeLanguageReport(
     params
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildAttendanceReportController.getChildAttendanceReport
+*/
+export async function getChildAttendanceReport(
+  request: {
+    childId: UUID,
+    from: LocalDate,
+    to: LocalDate
+  }
+): Promise<ChildAttendanceReportRow[]> {
+  const params = createUrlSearchParams(
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<ChildAttendanceReportRow[]>>({
+    url: uri`/employee/reports/child-attendance/${request.childId}`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonChildAttendanceReportRow(e))
 }
 
 

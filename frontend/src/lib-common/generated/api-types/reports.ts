@@ -8,6 +8,8 @@ import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import LocalTime from '../../local-time'
+import TimeInterval from '../../time-interval'
+import TimeRange from '../../time-range'
 import { AbsenceType } from './absence'
 import { ApplicationStatus } from './application'
 import { AssistanceActionOption } from './assistanceaction'
@@ -177,6 +179,17 @@ export interface ChildAgeLanguageReportRow {
   unitName: string
   unitProviderType: ProviderType
   unitType: UnitType
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.ChildAttendanceReportRow
+*/
+export interface ChildAttendanceReportRow {
+  attendances: TimeInterval[]
+  billableAbsence: AbsenceType | null
+  date: LocalDate
+  nonbillableAbsence: AbsenceType | null
+  reservations: TimeRange[]
 }
 
 /**
@@ -958,6 +971,16 @@ export function deserializeJsonAttendanceReservationReportRow(json: JsonOf<Atten
   return {
     ...json,
     dateTime: HelsinkiDateTime.parseIso(json.dateTime)
+  }
+}
+
+
+export function deserializeJsonChildAttendanceReportRow(json: JsonOf<ChildAttendanceReportRow>): ChildAttendanceReportRow {
+  return {
+    ...json,
+    attendances: json.attendances.map(e => TimeInterval.parseJson(e)),
+    date: LocalDate.parseIso(json.date),
+    reservations: json.reservations.map(e => TimeRange.parseJson(e))
   }
 }
 

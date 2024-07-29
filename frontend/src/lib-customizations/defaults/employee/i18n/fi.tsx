@@ -600,6 +600,7 @@ export const fi = {
     restrictedDetails: 'Turvakielto',
     personDetails: {
       title: 'Henkilö-, yhteys- ja terveystiedot',
+      attendanceReport: 'Läsnä- ja poissaolotiedot',
       name: 'Lapsen nimi',
       email: 'Sähköposti',
       socialSecurityNumber: 'Henkilötunnus',
@@ -3573,6 +3574,15 @@ export const fi = {
       absenceType: 'Poissaolo',
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö'
+    },
+    childAttendance: {
+      title: 'Lapsen läsnä- ja poissaolotiedot',
+      range: 'Aikaväli',
+      date: 'Päivä',
+      reservations: 'Varaus',
+      attendances: 'Läsnäolo',
+      absenceBillable: 'Poissaolo (maksullisesta)',
+      absenceNonbillable: 'Poissaolo (maksuttomasta)'
     },
     customerFees: {
       title: 'Asiakasmaksut',
