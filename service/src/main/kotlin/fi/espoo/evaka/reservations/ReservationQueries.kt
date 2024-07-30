@@ -643,12 +643,17 @@ GROUP BY a.date, a.affected_group_id
         .groupBy { it.date }
 }
 
-fun Database.Read.getFirstPlacementStartDateByChild(
+fun Database.Read.getFirstReservationEnabledPlacementStartDateByChild(
     childIds: Set<PersonId>
 ): Map<ChildId, LocalDate> {
     return createQuery {
             sql(
-                "SELECT child_id, MIN(start_date) AS start_date FROM placement WHERE child_id = ANY(${bind(childIds)}) GROUP BY child_id"
+                """
+                    SELECT child_id, MIN(start_date) AS start_date 
+                    FROM placement JOIN daycare ON placement.unit_id = daycare.id
+                    WHERE child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(daycare.enabled_pilot_features)
+                    GROUP BY child_id
+                    """
             )
         }
         .toMap { columnPair("child_id", "start_date") }
