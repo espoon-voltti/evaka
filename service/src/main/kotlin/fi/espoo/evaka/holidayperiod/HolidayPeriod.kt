@@ -40,9 +40,14 @@ data class HolidayPeriod(
      * Returns the effect of the holiday period for all dates inside `period`, when the *current*
      * date is `today`. Returns `null` if the holiday period doesn't have an effect.
      */
-    fun effect(today: LocalDate, placementStartDate: LocalDate): HolidayPeriodEffect? =
+    fun effect(
+        today: LocalDate,
+        reservationEnabledPlacementRanges: List<FiniteDateRange>
+    ): HolidayPeriodEffect? =
         when {
-            placementStartDate > reservationDeadline -> null
+            reservationEnabledPlacementRanges.none {
+                it.overlaps(FiniteDateRange(reservationsOpenOn, reservationDeadline))
+            } -> null
             today < reservationsOpenOn ->
                 HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn)
             today in reservationsOpenOn..reservationDeadline -> HolidayPeriodEffect.ReservationsOpen
