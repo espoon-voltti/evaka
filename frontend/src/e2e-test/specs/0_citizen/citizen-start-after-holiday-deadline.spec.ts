@@ -56,6 +56,7 @@ beforeEach(async () => {
   }).save()
   await Fixture.holidayPeriod({
     period,
+    reservationsOpenOn: LocalDate.of(2024, 5, 1),
     reservationDeadline: LocalDate.of(2024, 5, 10)
   }).save()
 })

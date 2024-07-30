@@ -91,7 +91,8 @@ class ReservationControllerCitizen(
                     val clubTerms = tx.getClubTerms()
                     val children = tx.getReservationChildren(user.id, today)
                     val childIds = children.map { it.id }.toSet()
-                    val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
+                    val reservationEnabledPlacementRangesByChild =
+                        tx.getReservationEnabledPlacementRangesByChild(childIds)
                     val placements =
                         tx.getReservationPlacements(
                             childIds,
@@ -209,7 +210,8 @@ class ReservationControllerCitizen(
                                                             holidayPeriodEffect =
                                                                 holidayPeriod?.effect(
                                                                     today,
-                                                                    childStartDates[child.id]!!
+                                                                    reservationEnabledPlacementRangesByChild[
+                                                                        child.id]!!
                                                                 )
                                                         )
                                                     }

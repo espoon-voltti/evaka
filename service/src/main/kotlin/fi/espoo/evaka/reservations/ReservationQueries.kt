@@ -643,13 +643,20 @@ GROUP BY a.date, a.affected_group_id
         .groupBy { it.date }
 }
 
-fun Database.Read.getFirstPlacementStartDateByChild(
+fun Database.Read.getReservationEnabledPlacementRangesByChild(
     childIds: Set<PersonId>
-): Map<ChildId, LocalDate> {
+): Map<ChildId, List<FiniteDateRange>> {
+    data class ResultRow(val childId: ChildId, val range: FiniteDateRange)
     return createQuery {
             sql(
-                "SELECT child_id, MIN(start_date) AS start_date FROM placement WHERE child_id = ANY(${bind(childIds)}) GROUP BY child_id"
+                """
+                    SELECT pl.child_id, daterange(pl.start_date, pl.end_date, '[]') AS range 
+                    FROM placement pl
+                    JOIN daycare d ON pl.unit_id = d.id
+                    WHERE pl.child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+                """
             )
         }
-        .toMap { columnPair("child_id", "start_date") }
+        .toList<ResultRow>()
+        .groupBy(keySelector = { it.childId }, valueTransform = { it.range })
 }

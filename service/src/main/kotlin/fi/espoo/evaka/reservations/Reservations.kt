@@ -214,13 +214,15 @@ fun createReservationsAndAbsences(
             ?.type
             ?.scheduleType(req.date, clubTerms, preschoolTerms) == ScheduleType.RESERVATION_REQUIRED
     }
-    val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
+    val reservationEnabledPlacementRangesByChild =
+        tx.getReservationEnabledPlacementRangesByChild(childIds)
 
     val holidayPeriodEffect = { req: DailyReservationRequest ->
         val holidayPeriod = holidayPeriods.find { it.period.includes(req.date) }
-        val placementStartDate = childStartDates[req.childId]
-        if (holidayPeriod != null && placementStartDate != null) {
-            holidayPeriod.effect(today, placementStartDate)
+        val reservationEnabledPlacementRanges =
+            reservationEnabledPlacementRangesByChild[req.childId]
+        if (holidayPeriod != null && reservationEnabledPlacementRanges != null) {
+            holidayPeriod.effect(today, reservationEnabledPlacementRanges)
         } else {
             null
         }
