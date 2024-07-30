@@ -249,6 +249,11 @@ interface BaseFeatureFlags {
    * when adding reservations.
    */
   automaticFixedScheduleAbsences?: boolean
+
+  /**
+   * Display account number on invoice details view.
+   */
+  invoiceDisplayAccountNumber?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

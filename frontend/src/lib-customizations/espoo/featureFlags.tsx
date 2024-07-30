@@ -42,7 +42,8 @@ const features: Features = {
     discussionReservations: true,
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
-    automaticFixedScheduleAbsences: true
+    automaticFixedScheduleAbsences: true,
+    invoiceDisplayAccountNumber: true
   },
   staging: {
     citizenShiftCareAbsence: true,
@@ -73,7 +74,8 @@ const features: Features = {
     discussionReservations: true,
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
-    automaticFixedScheduleAbsences: true
+    automaticFixedScheduleAbsences: true,
+    invoiceDisplayAccountNumber: true
   },
   prod: {
     citizenShiftCareAbsence: true,
@@ -102,7 +104,8 @@ const features: Features = {
     intermittentShiftCare: false,
     noAbsenceType: false,
     discussionReservations: false,
-    forceUnpublishDocumentTemplate: false
+    forceUnpublishDocumentTemplate: false,
+    invoiceDisplayAccountNumber: true
   }
 }
 

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 
 import { InvoiceDetailed } from 'lib-common/generated/api-types/invoicing'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { featureFlags } from 'lib-customizations/employee'
 import { faMoneyCheck } from 'lib-icons'
 
 import LabelValueList from '../../components/common/LabelValueList'
@@ -46,14 +47,22 @@ const InvoiceDetailsSection = React.memo(function InvoiceDetailsSection({
             label: i18n.invoice.form.details.dueDate,
             value: invoice.dueDate.format()
           },
-          {
-            label: i18n.invoice.form.details.account,
-            value: invoice.account
-          },
-          {
-            label: i18n.invoice.form.details.agreementType,
-            value: invoice.agreementType
-          },
+          ...(featureFlags.invoiceDisplayAccountNumber
+            ? [
+                {
+                  label: i18n.invoice.form.details.account,
+                  value: invoice.account
+                }
+              ]
+            : []),
+          ...(invoice.agreementType !== null
+            ? [
+                {
+                  label: i18n.invoice.form.details.agreementType,
+                  value: invoice.agreementType
+                }
+              ]
+            : []),
           {
             label: i18n.invoice.form.details.relatedFeeDecisions,
             value: (
