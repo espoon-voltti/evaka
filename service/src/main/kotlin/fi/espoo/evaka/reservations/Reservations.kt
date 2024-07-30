@@ -214,7 +214,7 @@ fun createReservationsAndAbsences(
             ?.type
             ?.scheduleType(req.date, clubTerms, preschoolTerms) == ScheduleType.RESERVATION_REQUIRED
     }
-    val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
+    val childStartDates = tx.getFirstReservationEnabledPlacementStartDateByChild(childIds)
 
     val holidayPeriodEffect = { req: DailyReservationRequest ->
         val holidayPeriod = holidayPeriods.find { it.period.includes(req.date) }

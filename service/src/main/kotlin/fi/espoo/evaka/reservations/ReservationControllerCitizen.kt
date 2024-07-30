@@ -91,7 +91,8 @@ class ReservationControllerCitizen(
                     val clubTerms = tx.getClubTerms()
                     val children = tx.getReservationChildren(user.id, today)
                     val childIds = children.map { it.id }.toSet()
-                    val childStartDates = tx.getFirstPlacementStartDateByChild(childIds)
+                    val childStartDates =
+                        tx.getFirstReservationEnabledPlacementStartDateByChild(childIds)
                     val placements =
                         tx.getReservationPlacements(
                             childIds,
