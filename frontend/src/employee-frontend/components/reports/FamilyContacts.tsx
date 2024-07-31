@@ -61,7 +61,7 @@ export default React.memo(function FamilyContacts() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.familyContacts.date}</FilterLabel>
-          <DatePickerF bind={date} locale={lang} />
+          <DatePickerF bind={date} locale={lang} info={date.inputInfo()} />
         </FilterRow>
 
         {renderResult(rows, (rows) => (
