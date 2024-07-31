@@ -418,11 +418,13 @@ export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRo
 */
 export async function getFamilyContactsReport(
   request: {
-    unitId: UUID
+    unitId: UUID,
+    date: LocalDate
   }
 ): Promise<FamilyContactReportRow[]> {
   const params = createUrlSearchParams(
-    ['unitId', request.unitId]
+    ['unitId', request.unitId],
+    ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<FamilyContactReportRow[]>>({
     url: uri`/reports/family-contacts`.toString(),

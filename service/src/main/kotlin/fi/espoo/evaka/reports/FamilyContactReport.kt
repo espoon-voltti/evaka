@@ -30,7 +30,8 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        @RequestParam unitId: DaycareId,
+        @RequestParam date: LocalDate
     ): List<FamilyContactReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -42,7 +43,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
                         unitId
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getFamilyContacts(clock.today(), unitId)
+                    it.getFamilyContacts(date, unitId)
                 }
             }
             .also { Audit.FamilyContactReportRead.log(meta = mapOf("count" to it.size)) }
@@ -50,7 +51,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
 }
 
 private fun Database.Read.getFamilyContacts(
-    today: LocalDate,
+    date: LocalDate,
     unitId: DaycareId
 ): List<FamilyContactReportRow> {
     return createQuery {
@@ -59,14 +60,14 @@ private fun Database.Read.getFamilyContacts(
 WITH all_placements AS (
     SELECT pl.child_id, dgp.daycare_group_id AS group_id
     FROM placement pl
-    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(today)}
-    WHERE pl.unit_id = ${bind(unitId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+    LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ${bind(date)}
+    WHERE pl.unit_id = ${bind(unitId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
     
     UNION DISTINCT 
     
     SELECT bc.child_id, bc.group_id
     FROM backup_care bc
-    WHERE bc.unit_id = ${bind(unitId)} AND daterange(bc.start_date, bc.end_date, '[]') @> ${bind(today)}
+    WHERE bc.unit_id = ${bind(unitId)} AND daterange(bc.start_date, bc.end_date, '[]') @> ${bind(date)}
 )
 SELECT
     ch.id,
@@ -98,7 +99,7 @@ SELECT
 FROM all_placements pl
 JOIN person ch ON ch.id = pl.child_id
 LEFT JOIN daycare_group dg ON dg.id = pl.group_id
-LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
+LEFT JOIN fridge_child fc ON ch.id = fc.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> ${bind(date)}
 LEFT JOIN person hoc ON hoc.id = fc.head_of_child
 LEFT JOIN guardian g1 ON ch.id = g1.child_id AND g1.guardian_id = (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)
 LEFT JOIN guardian g2 ON ch.id = g2.child_id AND g2.guardian_id = (SELECT max(guardian_id::text)::uuid FROM guardian where child_id = ch.id) AND g2.guardian_id != (SELECT min(guardian_id::text)::uuid FROM guardian where child_id = ch.id)

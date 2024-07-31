@@ -3684,6 +3684,7 @@ export const fi = {
       childConflictCount: 'Konflikteja lapsissa'
     },
     familyContacts: {
+      date: 'Päivämäärä',
       name: 'Lapsen nimi',
       ssn: 'Hetu',
       group: 'Ryhmä',
