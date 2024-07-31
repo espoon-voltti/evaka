@@ -1,13 +1,11 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DaycareGroup,
@@ -98,14 +96,6 @@ function getDefaultGroup(
       return { type: 'group', id: groupParam }
     }
   }
-
-  // Default to the first open group
-  const group = sortBy(groups, [(g) => g.name.toLowerCase()]).find((group) =>
-    new DateRange(group.startDate, group.endDate).includes(
-      LocalDate.todayInSystemTz()
-    )
-  )
-  if (group !== undefined) return { type: 'group', id: group.id }
 
   return { type: 'no-group' }
 }
