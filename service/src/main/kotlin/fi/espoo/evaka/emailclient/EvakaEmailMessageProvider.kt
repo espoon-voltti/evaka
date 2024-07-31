@@ -298,7 +298,14 @@ $unsubscribeEn
     override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
         assistanceNeedDecisionNotification(language) // currently same content
 
-    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent {
+    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent =
+        messageNotification(language, thread, false)
+
+    override fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub,
+        isSenderMunicipalAccount: Boolean
+    ): EmailContent {
         val (typeFi, typeSv, typeEn) =
             when (thread.type) {
                 MessageType.MESSAGE ->
@@ -318,19 +325,22 @@ $unsubscribeEn
                         )
                     else Triple("tiedote", "allmänt meddelande", "bulletin")
             }
+
+        val showSubjectInBody = isSenderMunicipalAccount && thread.type == MessageType.BULLETIN
+
         return EmailContent.fromHtml(
             subject = "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi $typeFi eVakaan. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
+<p>Sinulle on saapunut uusi $typeFi eVakaan${if (showSubjectInBody) " otsikolla \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
-<p>Du har fått ett nytt $typeSv i eVaka. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
+<p>Du har fått ett nytt $typeSv i eVaka${if (showSubjectInBody) " med titeln \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
 <hr>
-<p>You have received a new $typeEn in eVaka. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
+<p>You have received a new $typeEn in eVaka${if (showSubjectInBody) " with title \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """

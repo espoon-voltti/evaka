@@ -77,6 +77,12 @@ interface IEmailMessageProvider {
 
     fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
 
+    fun messageNotification(
+        language: Language,
+        thread: MessageThreadStub,
+        isSenderMunicipalAccount: Boolean
+    ): EmailContent = messageNotification(language, thread)
+
     fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
 
     fun vasuNotification(language: Language, childId: ChildId): EmailContent
