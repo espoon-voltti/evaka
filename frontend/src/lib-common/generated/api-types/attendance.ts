@@ -220,6 +220,7 @@ export interface ExternalStaffMember {
   groupId: UUID
   id: UUID
   name: string
+  occupancyEffect: boolean
 }
 
 /**
