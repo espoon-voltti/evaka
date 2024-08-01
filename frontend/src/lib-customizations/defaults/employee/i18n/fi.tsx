@@ -491,10 +491,10 @@ export const fi = {
       title: 'Lapsen tiedot'
     },
     guardians: {
-      title: 'Huoltajien tiedot',
-      appliedGuardian: 'Hakeneen huoltajan tiedot',
+      title: 'Hakijan tiedot',
+      appliedGuardian: 'Hakijan tiedot',
       secondGuardian: {
-        title: 'Ilmoitetun toisen huoltajan tiedot',
+        title: 'Ilmoitetun toisen aikuisen tiedot',
         checkboxLabel: 'Hakija on ilmoittanut toisen huoltajan tiedot',
         exists: 'Lapsella on toinen huoltaja',
         sameAddress: 'Toinen huoltaja asuu samassa osoitteessa',
