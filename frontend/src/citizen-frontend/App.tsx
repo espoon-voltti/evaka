@@ -12,10 +12,12 @@ import {
   Notifications,
   NotificationsContextProvider
 } from 'lib-components/Notifications'
+import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import AccessibilityStatement from './AccessibilityStatement'
 import RequireAuth from './RequireAuth'
@@ -115,6 +117,9 @@ const Content = React.memo(function Content() {
         <Outlet />
       </MainContainer>
       <MobileNav />
+      {!!featureFlags.environmentLabel && (
+        <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
+      )}
     </FullPageContainer>
   )
 })

@@ -9,6 +9,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import { Notifications } from 'lib-components/Notifications'
+import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
@@ -164,6 +165,9 @@ const Content = React.memo(function Content() {
       <Outlet />
 
       <Footer />
+      {!!featureFlags.environmentLabel && (
+        <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
+      )}
       <ErrorMessage />
       <LoginErrorModal />
       <PairingModal />

@@ -14,6 +14,7 @@ type Features = {
 
 const features: Features = {
   default: {
+    environmentLabel: 'Lokaali',
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {
@@ -45,6 +46,7 @@ const features: Features = {
     automaticFixedScheduleAbsences: true
   },
   staging: {
+    environmentLabel: 'Staging',
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {
@@ -76,6 +78,7 @@ const features: Features = {
     automaticFixedScheduleAbsences: true
   },
   prod: {
+    environmentLabel: null,
     citizenShiftCareAbsence: true,
     assistanceActionOther: true,
     daycareApplication: {

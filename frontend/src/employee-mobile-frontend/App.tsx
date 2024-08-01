@@ -22,8 +22,10 @@ import {
   Notifications,
   NotificationsContextProvider
 } from 'lib-components/Notifications'
+import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 
 import RequireAuth from './RequireAuth'
 import { RequirePinAuth } from './RequirePinAuth'
@@ -114,6 +116,11 @@ export default function App() {
                             element={<Navigate replace to="/landing" />}
                           />
                         </Routes>
+                        {!!featureFlags.environmentLabel && (
+                          <EnvironmentLabel>
+                            {featureFlags.environmentLabel}
+                          </EnvironmentLabel>
+                        )}
                       </Router>
                     </RememberContextProvider>
                   </NotificationsContextProvider>
