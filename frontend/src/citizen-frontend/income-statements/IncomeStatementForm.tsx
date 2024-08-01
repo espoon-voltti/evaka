@@ -176,11 +176,16 @@ export default React.memo(
       [onChange]
     )
 
-    const saveButtonEnabled =
-      (formData.highestFee ||
-        formData.gross.selected ||
-        formData.entrepreneur.selected) &&
-      formData.assure
+    const saveButtonEnabled = useMemo(
+      () =>
+        formData.startDate &&
+        (formData.highestFee ||
+          ((formData.gross.selected || formData.entrepreneur.selected) &&
+            formData.endDate &&
+            formData.endDate <= formData.startDate.addYears(1))) &&
+        formData.assure,
+      [formData]
+    )
 
     return (
       <>
@@ -322,21 +327,35 @@ const IncomeTypeSelection = React.memo(
       [formData.startDate, t]
     )
 
-    const endDateInputInfo = useMemo(
-      () =>
-        errorToInputInfo(
-          formData.highestFeeSelected
-            ? undefined
-            : formData.endDate
-              ? undefined
-              : 'required',
-          t.validationErrors
-        ),
-      [formData.highestFeeSelected, formData.endDate, t]
+    const validateEndDate = useCallback(
+      (endDate: LocalDate | null) => {
+        if (!formData.startDate) return undefined
+
+        if (endDate && formData.startDate > endDate) return 'validDate'
+
+        if (formData.highestFeeSelected) return undefined
+
+        if (formData.grossSelected || formData.entrepreneurSelected) {
+          if (!endDate) return 'required'
+
+          if (endDate > formData.startDate.addYears(1)) return 'dateTooLate'
+        }
+
+        return undefined
+      },
+      [
+        formData.entrepreneurSelected,
+        formData.grossSelected,
+        formData.highestFeeSelected,
+        formData.startDate
+      ]
     )
 
-    const isValidEndDate = (date: LocalDate) =>
-      formData.highestFeeSelected || !!date
+    const endDateInputInfo = useMemo(
+      () =>
+        errorToInputInfo(validateEndDate(formData.endDate), t.validationErrors),
+      [formData, validateEndDate, t]
+    )
 
     return (
       <ContentArea opaque paddingVertical="L" ref={ref}>
@@ -359,6 +378,7 @@ const IncomeTypeSelection = React.memo(
               <Gap size="xs" />
               <DatePicker
                 id="start-date"
+                data-qa="income-start-date"
                 date={formData.startDate}
                 onChange={useFieldDispatch(onChange, 'startDate')}
                 info={startDateInputInfo}
@@ -376,6 +396,7 @@ const IncomeTypeSelection = React.memo(
               <Gap size="xs" />
               <DatePicker
                 id="end-date"
+                data-qa="income-end-date"
                 date={formData.endDate}
                 onChange={useFieldDispatch(onChange, 'endDate')}
                 minDate={formData.startDate ?? undefined}
@@ -383,7 +404,8 @@ const IncomeTypeSelection = React.memo(
                 locale={lang}
                 info={endDateInputInfo}
                 isInvalidDate={(d) =>
-                  isValidEndDate(d) ? null : t.validationErrors.unselectableDate
+                  errorToInputInfo(validateEndDate(d), t.validationErrors)
+                    ?.text || null
                 }
               />
             </div>

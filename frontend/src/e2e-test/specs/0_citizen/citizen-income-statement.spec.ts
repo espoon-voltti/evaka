@@ -48,6 +48,7 @@ const assertRequiredAttachment = async (attachment: string, present = true) =>
 
 describe('Income statements', () => {
   const startDate = '24.12.2044'
+  const endDate = '24.12.2044'
 
   describe('With the bare minimum selected', () => {
     test('Highest fee', async () => {
@@ -65,12 +66,21 @@ describe('Income statements', () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
       await incomeStatementsPage.selectIncomeStatementType('gross-income')
+      await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
+
       await incomeStatementsPage.checkIncomesRegisterConsent()
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
-      await incomeStatementsPage.submit()
+      // End date can be max 1y from start date so a warning is shown
+      await incomeStatementsPage.setValidToDate('25.12.2045')
+      await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
 
+      await incomeStatementsPage.setValidToDate(endDate)
+      await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
+
+      await incomeStatementsPage.submit()
       await assertIncomeStatementCreated(startDate)
     })
   })
@@ -80,6 +90,7 @@ describe('Income statements', () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -118,6 +129,7 @@ describe('Income statements', () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -155,6 +167,7 @@ describe('Income statements', () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
@@ -188,6 +201,7 @@ describe('Income statements', () => {
       await header.selectTab('income')
       await incomeStatementsPage.createNewIncomeStatement()
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.selectIncomeStatementType(
         'entrepreneur-income'
       )
