@@ -173,7 +173,9 @@ const CalendarPage = React.memo(function CalendarPage() {
                   onCreateReservationClicked={
                     openReservationModalWithoutInitialRange
                   }
-                  onCreateAbsencesClicked={openAbsenceModal}
+                  onCreateAbsencesClicked={(date) =>
+                    openAbsenceModal(date, false)
+                  }
                   onOpenDiscussionReservationsClicked={
                     openDiscussionSurveyModal
                   }
@@ -194,7 +196,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   reservationsResponse={response}
                   selectDate={openDayModal}
                   onClose={closeModal}
-                  openAbsenceModal={openAbsenceModal}
+                  openAbsenceModal={(date) => openAbsenceModal(date, true)}
                   events={events}
                 />
               )}
@@ -203,7 +205,7 @@ const CalendarPage = React.memo(function CalendarPage() {
                   close={closeModal}
                   openReservations={openReservationModalWithoutInitialRange}
                   openDiscussionReservations={openDiscussionSurveyModal}
-                  openAbsences={openAbsenceModal}
+                  openAbsences={(date) => openAbsenceModal(date, false)}
                   openHolidays={openHolidayModal}
                   isDiscussionActionVisible={discussionSurveys.length > 0}
                 />
@@ -223,6 +225,15 @@ const CalendarPage = React.memo(function CalendarPage() {
               {modalState?.type === 'absences' && (
                 <AbsenceModal
                   close={closeModal}
+                  onReturn={
+                    modalState.returnToDayModal && modalState.initialDate
+                      ? () =>
+                          openDayModal(
+                            modalState.initialDate ??
+                              LocalDate.todayInHelsinkiTz()
+                          )
+                      : closeModal
+                  }
                   initialDate={modalState.initialDate}
                   reservationsResponse={response}
                 />
@@ -283,7 +294,11 @@ const CalendarPage = React.memo(function CalendarPage() {
 // Modal states stored to the URL
 type URLModalState =
   | { type: 'day'; date: LocalDate }
-  | { type: 'absences'; initialDate: LocalDate | undefined }
+  | {
+      type: 'absences'
+      initialDate: LocalDate | undefined
+      returnToDayModal: boolean
+    }
   | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
   | { type: 'discussions' }
@@ -304,7 +319,10 @@ interface UseModalStateResult {
   openDayModal: (date: LocalDate) => void
   openPickActionModal: () => void
   openReservationModal: (initialRange: FiniteDateRange | undefined) => void
-  openAbsenceModal: (initialDate: LocalDate | undefined) => void
+  openAbsenceModal: (
+    initialDate: LocalDate | undefined,
+    returnToDayModal: boolean
+  ) => void
   openHolidayModal: () => void
   openDiscussionSurveyModal: () => void
   openDiscussionReservationModal: (
@@ -346,8 +364,8 @@ export function useCalendarModalState(): UseModalStateResult {
     [openModal]
   )
   const openAbsenceModal = useCallback(
-    (initialDate: LocalDate | undefined) =>
-      openModal({ type: 'absences', initialDate }),
+    (initialDate: LocalDate | undefined, returnToDayModal: boolean) =>
+      openModal({ type: 'absences', initialDate, returnToDayModal }),
     [openModal]
   )
 
@@ -395,6 +413,7 @@ function parseQueryString(qs: string): URLModalState | undefined {
   const endDateParam = searchParams.get('endDate')
   const selectedChildId = searchParams.get('selectedChildId') ?? undefined
   const selectedEventId = searchParams.get('selectedEventId') ?? undefined
+  const returnToDayModal = searchParams.has('returnToDayModal')
 
   const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
   const startDate = startDateParam
@@ -410,7 +429,7 @@ function parseQueryString(qs: string): URLModalState | undefined {
     : modalParam === 'holidays'
       ? { type: 'holidays' }
       : modalParam === 'absences'
-        ? { type: 'absences', initialDate: date }
+        ? { type: 'absences', initialDate: date, returnToDayModal }
         : modalParam === 'discussions'
           ? { type: 'discussions' }
           : modalParam === 'discussion-reservations'
@@ -437,7 +456,7 @@ function buildQueryString(modal: URLModalState): string {
     case 'absences':
       return `modal=absences${
         modal.initialDate ? '&day=' + modal.initialDate.toString() : ''
-      }`
+      }${modal.returnToDayModal ? '&returnToDayModal=true' : ''}`
     case 'day':
       return `day=${modal.date.toString()}`
     case 'discussions':
