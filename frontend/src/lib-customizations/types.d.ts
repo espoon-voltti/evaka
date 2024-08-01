@@ -103,6 +103,12 @@ interface MapConfig {
  */
 interface BaseFeatureFlags {
   /**
+   * Name of the environment to be displayed on the upper left corner.
+   * Use null for prod environment to not display it.
+   */
+  environmentLabel: string | null
+
+  /**
    * Whether to show PLANNED_ABSENCE as a third absence option for shift care children in
    * citizen's absence modal
    */
