@@ -50,6 +50,8 @@ import { ServiceWorkerContextProvider } from './common/service-worker'
 import { UnitOrGroup, toUnitOrGroup } from './common/unit-or-group'
 import MessagesPage from './messages/MessagesPage'
 import NewChildMessagePage from './messages/NewChildMessagePage'
+import NewMessagePage from './messages/NewMessagePage'
+import ReceivedThreadPage from './messages/ReceivedThreadPage'
 import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
 import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
@@ -367,6 +369,14 @@ function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         path="unread-messages"
         element={<UnreadMessagesPage unitOrGroup={unitOrGroup} />}
       />
+      <Route
+        path="thread/:threadId"
+        element={<ReceivedThreadPage unitOrGroup={unitOrGroup} />}
+      />
+      <Route
+        path="new"
+        element={<NewMessagePage unitId={unitOrGroup.unitId} />}
+      />
     </Routes>
   )
 }
@@ -447,5 +457,11 @@ export const routes = {
   },
   unreadMessages(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/messages/unread-messages`
+  },
+  receivedThread(unitOrGroup: UnitOrGroup, threadId: UUID): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/messages/thread/${threadId}`
+  },
+  newMessage(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/messages/new`
   }
 }

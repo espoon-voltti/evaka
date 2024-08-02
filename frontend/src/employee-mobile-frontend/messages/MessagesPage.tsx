@@ -40,7 +40,7 @@ import DraftMessagesList from './DraftMessagesList'
 import MessageEditor from './MessageEditor'
 import ReceivedThreadsList from './ReceivedThreadsList'
 import SentMessagesList from './SentMessagesList'
-import { ReceivedThreadView, SentMessageView } from './ThreadView'
+import { SentMessageView } from './ThreadView'
 import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
@@ -48,9 +48,8 @@ type Tab = 'received' | 'sent' | 'drafts'
 
 type UiState =
   | { type: 'list' }
-  | { type: 'receivedThread'; threadId: UUID }
   | { type: 'sentMessage'; message: SentMessage }
-  | { type: 'newMessage'; draft: DraftContent | undefined }
+  | { type: 'continueDraft'; draft: DraftContent }
 
 export default function MessagesPage({
   unitOrGroup
@@ -96,10 +95,10 @@ export default function MessagesPage({
     setUiState({ type: 'list' })
   }, [unitOrGroup])
 
-  const selectReceivedThread = useCallback(
-    (threadId: UUID) => setUiState({ type: 'receivedThread', threadId }),
-    []
-  )
+  const onSelectThread = (threadId: UUID) =>
+    navigate(routes.receivedThread(unitOrGroup, threadId).value)
+
+  const onNewMessageClick = () => navigate(routes.newMessage(unitOrGroup).value)
 
   const selectSentMessage = useCallback(
     (message: SentMessage) => setUiState({ type: 'sentMessage', message }),
@@ -107,7 +106,7 @@ export default function MessagesPage({
   )
 
   const selectDraftMessage = useCallback(
-    (draft: DraftContent) => setUiState({ type: 'newMessage', draft }),
+    (draft: DraftContent) => setUiState({ type: 'continueDraft', draft }),
     []
   )
 
@@ -153,9 +152,7 @@ export default function MessagesPage({
                 >
                   <Tabs mobile active={activeTab} tabs={threadListTabs} />
                   {activeTab === 'received' ? (
-                    <ReceivedThreadsList
-                      onSelectThread={selectReceivedThread}
-                    />
+                    <ReceivedThreadsList onSelectThread={onSelectThread} />
                   ) : activeTab === 'sent' ? (
                     <SentMessagesList onSelectMessage={selectSentMessage} />
                   ) : (
@@ -163,9 +160,7 @@ export default function MessagesPage({
                   )}
                   <HoverButton
                     primary
-                    onClick={() =>
-                      setUiState({ type: 'newMessage', draft: undefined })
-                    }
+                    onClick={onNewMessageClick}
                     data-qa="new-message-btn"
                   >
                     <FontAwesomeIcon icon={faPlus} />
@@ -174,7 +169,6 @@ export default function MessagesPage({
                 </ContentArea>
               </PageWithNavigation>
             )
-          case 'receivedThread':
           case 'sentMessage': {
             return (
               <ContentArea
@@ -184,25 +178,16 @@ export default function MessagesPage({
                 paddingVertical="zero"
                 data-qa="messages-page-content-area"
               >
-                {uiState.type === 'receivedThread' ? (
-                  <ReceivedThreadView
-                    unitId={unitId}
-                    threadId={uiState.threadId}
-                    onBack={onBack}
-                    accountId={selectedAccount.account.id}
-                  />
-                ) : (
-                  <SentMessageView
-                    unitId={unitId}
-                    account={selectedAccount.account}
-                    message={uiState.message}
-                    onBack={onBack}
-                  />
-                )}
+                <SentMessageView
+                  unitId={unitId}
+                  account={selectedAccount.account}
+                  message={uiState.message}
+                  onBack={onBack}
+                />
               </ContentArea>
             )
           }
-          case 'newMessage':
+          case 'continueDraft':
             return renderResult(recipients, (availableRecipients) => (
               <MessageEditor
                 unitId={unitId}
