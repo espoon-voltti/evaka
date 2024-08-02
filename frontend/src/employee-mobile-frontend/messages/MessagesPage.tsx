@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -85,6 +91,10 @@ export default function MessagesPage({
   )
   const [activeTab, setActiveTab] = useState<Tab>('received')
   const [uiState, setUiState] = useState<UiState>({ type: 'list' })
+
+  useEffect(() => {
+    setUiState({ type: 'list' })
+  }, [unitOrGroup])
 
   const selectReceivedThread = useCallback(
     (threadId: UUID) => setUiState({ type: 'receivedThread', threadId }),
