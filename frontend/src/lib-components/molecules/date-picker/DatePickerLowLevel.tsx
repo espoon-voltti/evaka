@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
-import { DayModifiers } from 'react-day-picker'
+import { Modifiers } from 'react-day-picker'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
@@ -49,21 +49,44 @@ const DayPickerDiv = styled.div`
   display: flex;
   justify-content: center;
 
-  .rdp-caption_label {
+  .rdp-root {
+    --rdp-day-width: 40px;
+    --rdp-day-height: 40px;
+    --rdp-weekday-padding: 0;
+    --rdp-selected-font: inherit;
+    --rdp-selected-border: none;
+  }
+
+  .rdp-month_caption {
+    font-family: inherit;
+    font-size: 18px;
     font-weight: ${fontWeights.medium};
   }
 
-  .rdp-head_cell {
+  .rdp-chevron {
+    fill: #0f0f0f;
+  }
+
+  .rdp-caption_label {
+    padding: 0 0.5em;
+  }
+
+  .rdp-day {
+    padding: 0;
+  }
+
+  .rdp-weekday {
     text-transform: none;
     font-size: 1em;
     font-weight: ${fontWeights.normal};
   }
 
-  .rdp-day_today {
+  .rdp-today {
     color: ${(p) => p.theme.colors.accents.a2orangeDark};
+    font-weight: ${fontWeights.bold};
   }
 
-  .rdp-button:not([disabled]) {
+  .rdp-day_button:not([disabled]) {
     &:hover {
       color: ${(p) => p.theme.colors.grayscale.g100};
       background-color: ${(p) => p.theme.colors.accents.a8lightBlue};
@@ -77,7 +100,7 @@ const DayPickerDiv = styled.div`
     }
   }
 
-  .rdp-day_selected:not([disabled]) {
+  .rdp-selected:not([disabled]) .rdp-day_button {
     color: ${(p) => p.theme.colors.grayscale.g0};
     background-color: ${(p) => p.theme.colors.main.m2Active};
   }
@@ -137,7 +160,7 @@ export default React.memo(function DatePickerLowLevel({
   )
 
   const handleDayClick = useCallback(
-    (day: Date, modifiers?: DayModifiers) => {
+    (day: Date, modifiers?: Modifiers) => {
       if (modifiers?.disabled) {
         return
       }
