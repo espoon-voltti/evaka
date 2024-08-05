@@ -19,7 +19,7 @@ import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faPen, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { templateSectionForm } from '../templates'
+import { type templateSectionForm } from '../templates'
 
 import TemplateQuestionModal from './TemplateQuestionModal'
 import TemplateQuestionView from './TemplateQuestionView'

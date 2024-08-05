@@ -70,7 +70,7 @@ export function useAsyncButtonBehavior<T>({
     (value: Failure<T> | undefined) => {
       if (!mountedRef.current) return
       setButtonState(failure)
-      onFailure && value !== undefined && onFailure(value)
+      if (onFailure && value !== undefined) onFailure(value)
     },
     [onFailure]
   )

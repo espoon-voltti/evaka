@@ -33,9 +33,11 @@ export class IncomeStatementPage {
     expectedAttachmentsCount: number
   ) {
     await this.#childOtherInfo.assertTextEquals(expectedOtherInfo)
-    expectedAttachmentsCount > 0
-      ? await this.#attachments.assertCount(expectedAttachmentsCount)
-      : await this.#noAttachments.waitUntilVisible()
+    if (expectedAttachmentsCount > 0) {
+      await this.#attachments.assertCount(expectedAttachmentsCount)
+    } else {
+      await this.#noAttachments.waitUntilVisible()
+    }
   }
 
   async typeHandlerNote(text: string) {
@@ -43,9 +45,11 @@ export class IncomeStatementPage {
   }
 
   async setHandled(handled = true) {
-    handled
-      ? await this.#handledCheckbox.check()
-      : await this.#handledCheckbox.uncheck()
+    if (handled) {
+      await this.#handledCheckbox.check()
+    } else {
+      await this.#handledCheckbox.uncheck()
+    }
   }
 
   async submit() {

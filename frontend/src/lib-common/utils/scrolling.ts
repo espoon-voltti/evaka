@@ -67,9 +67,11 @@ function scrollWithTimeout(
   withTimeout(() => {
     const opts = getOptions()
     if (opts) {
-      element
-        ? element.scrollTo({ behavior: 'smooth', ...opts })
-        : window.scrollTo({ behavior: 'smooth', ...opts })
+      if (element) {
+        element.scrollTo({ behavior: 'smooth', ...opts })
+      } else {
+        window.scrollTo({ behavior: 'smooth', ...opts })
+      }
     }
   }, timeout)
 }

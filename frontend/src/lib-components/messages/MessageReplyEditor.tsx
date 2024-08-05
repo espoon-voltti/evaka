@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import { AccountType } from 'lib-common/generated/api-types/messaging'
-import { cancelMutation, MutationDescription } from 'lib-common/query'
+import { type cancelMutation, MutationDescription } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faTrash } from 'lib-icons'

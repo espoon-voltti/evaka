@@ -19,7 +19,7 @@ import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import { getEndedPlacementsReport } from '../../generated/api-clients/reports'
-import { Translations, useTranslation } from '../../state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
@@ -40,7 +40,7 @@ const yearOptions = range(
   -1
 )
 
-function getFilename(i18n: Translations, year: number, month: number) {
+function getFilename(year: number, month: number) {
   const time = LocalDate.of(year, month, 1).formatExotic('yyyy-MM')
   return `Päättyvät_sijoitukset-${time}.csv`
 }
@@ -116,7 +116,7 @@ export default React.memo(function EndedPlacements() {
                   key: 'nextPlacementStart'
                 }
               ]}
-              filename={getFilename(i18n, filters.year, filters.month)}
+              filename={getFilename(filters.year, filters.month)}
             />
             <TableScrollable>
               <Thead>

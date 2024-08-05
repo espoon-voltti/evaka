@@ -6,7 +6,7 @@
 
 // Helper for Readonly types with depth until Typescript natively supports them
 // See: https://github.com/microsoft/TypeScript/issues/13923
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export type primitive = string | number | boolean | undefined | null | Function
 export type DeepReadonly<T> = T extends primitive ? T : DeepReadonlyObject<T>
 export type DeepReadonlyObject<T> = {

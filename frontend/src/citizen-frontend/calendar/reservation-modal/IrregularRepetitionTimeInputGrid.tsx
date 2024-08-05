@@ -12,7 +12,7 @@ import { fontWeights, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 
 import { Day } from './TimeInputs'
-import { irregularDay, irregularTimes } from './form'
+import { type irregularDay, type irregularTimes } from './form'
 
 export interface IrregularRepetitionTimeInputGridProps {
   bind: BoundForm<typeof irregularTimes>

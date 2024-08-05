@@ -160,10 +160,11 @@ export default React.memo(function ReservationModal({
   const [saveError, setSaveError] = useState<string | undefined>()
   const showSaveError = useCallback(
     (reason: Failure<unknown>) => {
-      reason.errorCode === 'NON_RESERVABLE_DAYS' &&
+      if (reason.errorCode === 'NON_RESERVABLE_DAYS') {
         setSaveError(
           i18n.calendar.reservationModal.saveErrors.NON_RESERVABLE_DAYS
         )
+      }
     },
     [i18n, setSaveError]
   )

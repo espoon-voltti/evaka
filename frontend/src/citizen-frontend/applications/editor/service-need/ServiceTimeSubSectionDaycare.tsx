@@ -126,7 +126,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       'EXTENDED_CARE',
       onUploadProgress
     ).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           shiftCareAttachments: [
             ...formData.shiftCareAttachments,
@@ -142,17 +142,19 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             }
           ]
         })
+      }
       return result
     })
 
   const deleteExtendedCareAttachment = (id: UUID) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           shiftCareAttachments: formData.shiftCareAttachments.filter(
             (file) => file.id !== id
           )
         })
+      }
       return result
     })
 

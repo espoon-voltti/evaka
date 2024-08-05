@@ -13,7 +13,7 @@ import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faCheck, faTrash } from 'lib-icons'
 
-import { calendarEventTimeForm } from '../survey-editor/form'
+import { type calendarEventTimeForm } from '../survey-editor/form'
 
 const InputContainer = styled(FixedSpaceRow)`
   margin-left: 10px;

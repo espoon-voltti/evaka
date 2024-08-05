@@ -57,9 +57,11 @@ export default React.memo(function VoucherValueDecisionPage() {
         decision.value.headOfFamily.firstName,
         decision.value.headOfFamily.lastName
       )
-      decision.value.status === 'DRAFT'
-        ? setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
-        : setTitle(`${name} | ${i18n.titles.valueDecision}`)
+      if (decision.value.status === 'DRAFT') {
+        setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
+      } else {
+        setTitle(`${name} | ${i18n.titles.valueDecision}`)
+      }
       setNewDecisionType(decision.value.decisionType)
     }
   }, [decision, formatTitleName, setTitle, i18n])
@@ -69,7 +71,8 @@ export default React.memo(function VoucherValueDecisionPage() {
     (type: VoucherValueDecisionType) => {
       if (decisionType.isSuccess) {
         setNewDecisionType(type)
-        decisionType.value === type ? setModified(false) : setModified(true)
+        if (decisionType.value === type) setModified(false)
+        else setModified(true)
       }
     },
     [decisionType]

@@ -346,7 +346,7 @@ class CitizenApplicationEditor {
               field,
               value,
               true,
-              field.toLowerCase().indexOf('date') >= 0
+              field.toLowerCase().includes('date')
             )
           } else if (typeof value === 'boolean') {
             await this.setCheckbox(field, value)

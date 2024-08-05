@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 
-import { cancelMutation, MutationDescription } from 'lib-common/query'
+import { type cancelMutation, MutationDescription } from 'lib-common/query'
 
 import { Button } from '../atoms/buttons/Button'
 import { IconOnlyButton } from '../atoms/buttons/IconOnlyButton'

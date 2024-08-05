@@ -54,9 +54,11 @@ export default React.memo(function InvoiceDetailsPage() {
   useEffect(() => {
     if (invoice.isSuccess) {
       const name = `${invoice.value.data.headOfFamily.firstName} ${invoice.value.data.headOfFamily.lastName}`
-      invoice.value.data.status === 'DRAFT'
-        ? setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
-        : setTitle(`${name} | ${i18n.titles.invoice}`)
+      if (invoice.value.data.status === 'DRAFT') {
+        setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
+      } else {
+        setTitle(`${name} | ${i18n.titles.invoice}`)
+      }
     }
   }, [invoice]) // eslint-disable-line react-hooks/exhaustive-deps
 

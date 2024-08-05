@@ -43,7 +43,7 @@ import { faPlus, faTrash } from 'lib-icons'
 import { addCalendarEventTimeMutation } from '../../queries'
 import { ChildGroupInfo } from '../DiscussionSurveyView'
 import { NewEventTimeForm } from '../survey-editor/DiscussionTimesForm'
-import { eventTimeArray } from '../survey-editor/form'
+import { type eventTimeArray } from '../survey-editor/form'
 
 import CalendarEventTimeInput from './CalendarEventTimeInput'
 import CalendarEventTimeReservation, {

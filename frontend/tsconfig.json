@@ -13,6 +13,7 @@
     { "path": "./src/employee-frontend" },
     { "path": "./src/employee-mobile-frontend" },
     { "path": "./src/lib-icons" },
-    { "path": "./src/lib-customizations" }
+    { "path": "./src/lib-customizations" },
+    { "path": "./eslint-plugin" }
   ]
 }

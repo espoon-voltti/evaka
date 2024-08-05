@@ -20,7 +20,7 @@ import {
 import type { CommonCustomizations } from './types'
 
 export const mergeCustomizer = (
-  original: unknown,
+  _original: unknown,
   customized: unknown
 ): unknown =>
   isArray(customized) || React.isValidElement(customized as never)

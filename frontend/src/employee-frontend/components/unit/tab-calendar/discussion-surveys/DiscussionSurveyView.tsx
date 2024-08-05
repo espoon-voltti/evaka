@@ -60,7 +60,7 @@ import {
   NewEventTimeForm,
   TimesCalendarContainer
 } from './survey-editor/DiscussionTimesForm'
-import { eventTimeArray, timesForm } from './survey-editor/form'
+import { type eventTimeArray, timesForm } from './survey-editor/form'
 import { DiscussionReservationCalendar } from './times-calendar/TimesCalendar'
 
 export interface ChildGroupInfo {

@@ -257,7 +257,7 @@ function serve(projects) {
     const middleware = express.static(outdir)
 
     app.use(pathPrefix, middleware)
-    app.get(`${pathPrefix}/*`, (req, res, next) => {
+    app.get(`${pathPrefix}/*`, (req, _res, next) => {
       req.url = `${pathPrefix}/index.html`
       next()
     })

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { fi } from './fi'
+import { type fi } from './fi'
 
 export const sv: typeof fi = {
   staticSections: {

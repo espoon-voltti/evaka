@@ -291,7 +291,7 @@ const InputField = React.memo(function InputField({
         onFocus={onFocus}
         onBlur={(e) => {
           setTouched(true)
-          onBlur && onBlur(e)
+          if (onBlur) onBlur(e)
         }}
         onKeyPress={onKeyPress}
         placeholder={placeholder}

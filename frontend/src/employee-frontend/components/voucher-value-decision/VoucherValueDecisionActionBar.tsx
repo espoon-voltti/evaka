@@ -35,7 +35,7 @@ const markVoucherValueDecisionSentResult = wrapResult(
 
 type Props = {
   decision: VoucherValueDecisionDetailed
-  goToDecisions(): void
+  goToDecisions: () => void
   loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void

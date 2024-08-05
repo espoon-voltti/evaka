@@ -113,7 +113,6 @@ function BaseDateRangeInput({
         start: i18n.validationError.dateRange
       }))
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setValidationErrors(({ start, ...state }) => ({
         ...state
       }))
@@ -128,7 +127,6 @@ function BaseDateRangeInput({
         end: i18n.validationError.dateRange
       }))
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setValidationErrors(({ end, ...state }) => ({
         ...state
       }))

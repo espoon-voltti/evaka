@@ -182,7 +182,7 @@ export default React.memo(function OtherChildrenSubSection({
                       onClick={() => {
                         updateFormData({
                           otherChildren: formData.otherChildren.filter(
-                            (c, i) => i !== index
+                            (_, i) => i !== index
                           )
                         })
                       }}
