@@ -6994,7 +6994,7 @@ __metadata:
     react-chartjs-2: "npm:^5.2.0"
     react-csv: "npm:^2.2.2"
     react-datepicker: "npm:^7.3.0"
-    react-day-picker: "npm:^8.10.0"
+    react-day-picker: "npm:^9.0.7"
     react-dom: "npm:^18.3.1"
     react-focus-lock: "npm:2.12.1"
     react-image-crop: "npm:^11.0.1"
@@ -11049,13 +11049,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:^8.10.0":
-  version: 8.10.0
-  resolution: "react-day-picker@npm:8.10.0"
+"react-day-picker@npm:^9.0.7":
+  version: 9.0.7
+  resolution: "react-day-picker@npm:9.0.7"
+  dependencies:
+    date-fns: "npm:^3.6.0"
   peerDependencies:
-    date-fns: ^2.28.0 || ^3.0.0
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/974496ce004762d521923fc533f6ad6ff8d1f24368220753106617eb199aeb9658b4b7734e12a3fe8a5057840464a3d2d08b4b7f9a84ec77a59c50cc647f6dbc
+    react: ">=16.8.0"
+  checksum: 10/5e1a67fc307f821673bcd46c5296ecdda4deff157dbbea3d0d1a92753f1f20616e3fcfd33863ffe99d33426221ea9dc21bac63afcc04a4b729664e9fe6467350
   languageName: node
   linkType: hard
 
