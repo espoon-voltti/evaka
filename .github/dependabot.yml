@@ -53,6 +53,7 @@ updates:
           - "jest-junit"
       lint:
         patterns:
+          - "@eslint/*"
           - "eslint*"
           - "prettier"
           - "typescript-eslint"
@@ -90,6 +91,7 @@ updates:
           - "jest-junit"
       lint:
         patterns:
+          - "@eslint/*"
           - "eslint*"
           - "prettier"
           - "typescript-eslint"
