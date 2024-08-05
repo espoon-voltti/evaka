@@ -8,6 +8,7 @@ export function fromCallback<T>(
   f: (cb: (err: any, result?: T) => void) => void
 ): Promise<T> {
   return new Promise<T>((resolve, reject) =>
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     f((err, result) => (err ? reject(err) : resolve(result!)))
   )
 }

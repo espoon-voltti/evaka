@@ -83,8 +83,10 @@ export const authenticate = async (
 ): Promise<Express.User | undefined> =>
   await new Promise<Express.User | undefined>((resolve, reject) => {
     const cb: AuthenticateCallback = (err, user) =>
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       err ? reject(err) : resolve(user || undefined)
     const next: express.NextFunction = (err) =>
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       err ? reject(err) : resolve(undefined)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     passport.authenticate(strategyName, cb)(req, res, next)
