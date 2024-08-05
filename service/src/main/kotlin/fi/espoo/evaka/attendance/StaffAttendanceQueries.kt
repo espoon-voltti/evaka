@@ -100,7 +100,7 @@ fun Database.Read.getExternalStaffAttendance(
     createQuery {
             sql(
                 """
-SELECT sae.id, sae.name, sae.group_id, sae.arrived
+SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.occupancy_coefficient > 0 AS occupancy_effect
 FROM staff_attendance_external sae
 WHERE id = ${bind(id)}
 """
@@ -114,7 +114,7 @@ fun Database.Read.getExternalStaffAttendances(
     createQuery {
             sql(
                 """
-SELECT sae.id, sae.name, sae.group_id, sae.arrived
+SELECT sae.id, sae.name, sae.group_id, sae.arrived, sae.occupancy_coefficient > 0 AS occupancy_effect
 FROM staff_attendance_external sae
 JOIN daycare_group dg on sae.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)} AND departed IS NULL 

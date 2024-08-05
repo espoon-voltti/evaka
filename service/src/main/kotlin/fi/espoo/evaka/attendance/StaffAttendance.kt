@@ -45,6 +45,7 @@ data class ExternalStaffMember(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
+    val occupancyEffect: Boolean
 )
 
 data class StaffMember(

@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Bold } from 'lib-components/typography'
@@ -71,8 +71,11 @@ export default React.memo(function StaffListItem({
   name,
   id,
   present,
-  type
-}: Staff & { unitOrGroup: UnitOrGroup }) {
+  type,
+  occupancyEffect
+}: Staff & { unitOrGroup: UnitOrGroup; occupancyEffect: boolean }) {
+  const theme = useTheme()
+
   const link = (
     type === 'external'
       ? routes.externalStaffAttendance(unitOrGroup, id)
@@ -92,6 +95,14 @@ export default React.memo(function StaffListItem({
         <StaffBoxInfo>
           <Bold data-qa="employee-name">{name}</Bold>
         </StaffBoxInfo>
+        {present && occupancyEffect && (
+          <RoundIcon
+            content="K"
+            active={true}
+            color={theme.colors.accents.a3emerald}
+            size="s"
+          />
+        )}
       </AttendanceLinkBox>
     </StaffBox>
   )

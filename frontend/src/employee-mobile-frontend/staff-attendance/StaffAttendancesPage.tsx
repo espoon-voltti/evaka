@@ -154,7 +154,14 @@ export default React.memo(function StaffAttendancesPage({
         <FixedSpaceColumn spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
-            return <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
+            return (
+              <StaffListItem
+                {...s}
+                key={s.id}
+                unitOrGroup={unitOrGroup}
+                occupancyEffect={staffMember.occupancyEffect}
+              />
+            )
           })}
         </FixedSpaceColumn>
       ))}
