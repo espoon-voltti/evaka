@@ -10,7 +10,7 @@ import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { LabelLike } from 'lib-components/typography'
 
 import { Day } from './TimeInputs'
-import { weekDay, weeklyTimes } from './form'
+import { type weekDay, type weeklyTimes } from './form'
 
 export interface WeeklyRepetitionTimeInputGridProps {
   bind: BoundForm<typeof weeklyTimes>

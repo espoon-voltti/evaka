@@ -105,7 +105,7 @@ export interface MessagesState {
   setSelectedThread: (threadId: UUID) => void
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
-  onReplySent: (accountId: UUID, reply: ThreadReply) => void
+  onReplySent: (reply: ThreadReply) => void
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
   refreshMessages: (account?: UUID) => void
@@ -591,7 +591,7 @@ export const MessageContextProvider = React.memo(
     )
 
     const onReplySent = useCallback(
-      (accountId: UUID, { message, threadId }: ThreadReply) => {
+      ({ message, threadId }: ThreadReply) => {
         if (selectedAccount?.view === 'thread') {
           appendMessageToSingleThread(message)
         } else {

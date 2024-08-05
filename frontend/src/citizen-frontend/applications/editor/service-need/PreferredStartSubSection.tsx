@@ -59,7 +59,7 @@ export default React.memo(function PreferredStartSubSection({
       'URGENCY',
       onUploadProgress
     ).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           urgencyAttachments: [
             ...formData.urgencyAttachments,
@@ -75,17 +75,19 @@ export default React.memo(function PreferredStartSubSection({
             }
           ]
         })
+      }
       return result
     })
 
   const deleteUrgencyAttachment = (id: UUID) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           urgencyAttachments: formData.urgencyAttachments.filter(
             (file) => file.id !== id
           )
         })
+      }
       return result
     })
 
@@ -132,12 +134,7 @@ export default React.memo(function PreferredStartSubSection({
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
           isInvalidDate={(date: LocalDate) =>
-            isValidPreferredStartDate(
-              date,
-              originalPreferredStartDate,
-              type,
-              terms
-            )
+            isValidPreferredStartDate(date, originalPreferredStartDate, terms)
               ? null
               : t.validationErrors.unselectableDate
           }

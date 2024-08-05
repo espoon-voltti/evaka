@@ -139,11 +139,11 @@ export default class CitizenHeader {
 
   async assertUnreadChildrenCount(expectedCount: number) {
     await this.#childrenNav.waitUntilVisible()
-    expectedCount != 0
-      ? await this.#unreadChildrenCount.assertTextEquals(
-          expectedCount.toString()
-        )
-      : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
+    if (expectedCount != 0) {
+      await this.#unreadChildrenCount.assertTextEquals(expectedCount.toString())
+    } else {
+      await waitUntilFalse(() => this.#unreadChildrenCount.visible)
+    }
   }
 
   async assertChildUnreadCount(childId: string, expectedCount: number) {
@@ -153,11 +153,13 @@ export default class CitizenHeader {
       const notification = this.page.findByDataQa(
         `children-menu-${childId}-notification-count`
       )
-      expectedCount != 0
-        ? await notification.assertText(
-            (text) => text === expectedCount.toString()
-          )
-        : await notification.waitUntilHidden()
+      if (expectedCount != 0) {
+        await notification.assertText(
+          (text) => text === expectedCount.toString()
+        )
+      } else {
+        await notification.waitUntilHidden()
+      }
       await this.#toggleChildrenMenu()
     } else {
       await this.assertUnreadChildrenCount(expectedCount)

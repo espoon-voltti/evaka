@@ -41,7 +41,6 @@ declare global {
     evaka?: EvakaWindowConfig
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface EvakaWindowConfig {}
 }
 

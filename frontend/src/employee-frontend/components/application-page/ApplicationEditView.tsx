@@ -190,7 +190,7 @@ export default React.memo(function ApplicationEditView({
         type,
         onUploadProgress
       ).then((res) => {
-        res.isSuccess &&
+        if (res.isSuccess) {
           setApplication(
             (prev) =>
               prev && {
@@ -210,12 +210,13 @@ export default React.memo(function ApplicationEditView({
                 ]
               }
           )
+        }
         return res
       })
 
   const onDeleteAttachment = (id: UUID) =>
     deleteAttachmentResult({ attachmentId: id }).then((res) => {
-      res.isSuccess &&
+      if (res.isSuccess) {
         setApplication(
           (prev) =>
             prev && {
@@ -223,6 +224,7 @@ export default React.memo(function ApplicationEditView({
               attachments: prev.attachments.filter((a) => a.id !== id)
             }
         )
+      }
       return res
     })
 
@@ -1228,7 +1230,7 @@ export default React.memo(function ApplicationEditView({
                             setApplication(
                               set(
                                 'form.otherChildren',
-                                otherChildren.filter((c, i) => i !== index)
+                                otherChildren.filter((_, i) => i !== index)
                               )
                             )
                           }

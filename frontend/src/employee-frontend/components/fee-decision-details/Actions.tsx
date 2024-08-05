@@ -27,8 +27,8 @@ const setFeeDecisionTypeResult = wrapResult(setFeeDecisionType)
 
 interface Props {
   decision: FeeDecisionDetailed
-  goToDecisions(): void
-  loadDecision(): Promise<void>
+  goToDecisions: () => void
+  loadDecision: () => Promise<void>
   modified: boolean
   setModified: (value: boolean) => void
   newDecisionType: FeeDecisionType

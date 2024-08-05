@@ -9,7 +9,7 @@ import { BoundForm, useFormField, useFormFields } from 'lib-common/form/hooks'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
-import { calendarEventTimeForm } from '../survey-editor/form'
+import { type calendarEventTimeForm } from '../survey-editor/form'
 
 const InputContainer = styled(FixedSpaceRow)`
   * > input:focus {

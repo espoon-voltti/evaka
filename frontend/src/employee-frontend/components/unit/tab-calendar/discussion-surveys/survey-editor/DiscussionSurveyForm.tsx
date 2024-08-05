@@ -36,7 +36,7 @@ import {
 } from '../../queries'
 
 import { getPeriodFromDatesOrToday } from './DiscussionTimesForm'
-import { surveyForm } from './form'
+import { type surveyForm } from './form'
 
 const SurveyFormFieldGroup = styled(FixedSpaceColumn).attrs({ spacing: 'S' })``
 const SurveyFormSectionGroup = styled(FixedSpaceColumn).attrs({ spacing: 'L' })`

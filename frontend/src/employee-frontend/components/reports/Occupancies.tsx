@@ -36,8 +36,8 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import ReportDownload from '../../components/reports/ReportDownload'
 import {
-  getOccupancyGroupReport,
-  getOccupancyUnitReport
+  type getOccupancyGroupReport,
+  type getOccupancyUnitReport
 } from '../../generated/api-clients/reports'
 import { Translations, useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'

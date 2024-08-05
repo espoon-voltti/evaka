@@ -9,7 +9,10 @@ import { MutationDescription } from 'lib-common/query'
 
 import { AsyncButton } from '../../atoms/buttons/AsyncButton'
 import { LegacyButton } from '../../atoms/buttons/LegacyButton'
-import { MutateButton, cancelMutation } from '../../atoms/buttons/MutateButton'
+import {
+  MutateButton,
+  type cancelMutation
+} from '../../atoms/buttons/MutateButton'
 import { Gap } from '../../white-space'
 
 import BaseModal, { ModalBaseProps, ModalButtons } from './BaseModal'

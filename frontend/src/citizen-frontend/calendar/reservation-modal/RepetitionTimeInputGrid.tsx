@@ -12,7 +12,7 @@ import { useTranslation } from '../../localization'
 import DailyRepetitionTimeInputGrid from './DailyRepetitionTimeInputGrid'
 import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid'
 import WeeklyRepetitionTimeInputGrid from './WeeklyRepetitionTimeInputGrid'
-import { timesUnion } from './form'
+import { type timesUnion } from './form'
 
 export interface RepetitionTimeInputGridProps {
   bind: BoundForm<typeof timesUnion>

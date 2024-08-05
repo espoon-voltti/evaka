@@ -581,7 +581,7 @@ class InvoicesSection extends Section {
     endDate: string,
     status: string
   ) {
-    const row = this.#invoiceRows.nth(0)
+    const row = this.#invoiceRows.nth(n)
     await row.findText(startDate).waitUntilVisible()
     await row.findText(endDate).waitUntilVisible()
     await row.findText(status).waitUntilVisible()
@@ -652,9 +652,11 @@ class InvoiceCorrectionRowEdit extends Element {
     visible: boolean
   ) {
     await this.unitSelect.click()
-    visible
-      ? await this.unitSelect.findText(expectedUnitName).waitUntilVisible()
-      : await this.unitSelect.findText(expectedUnitName).waitUntilHidden()
+    if (visible) {
+      await this.unitSelect.findText(expectedUnitName).waitUntilVisible()
+    } else {
+      await this.unitSelect.findText(expectedUnitName).waitUntilHidden()
+    }
   }
 
   async addNote() {

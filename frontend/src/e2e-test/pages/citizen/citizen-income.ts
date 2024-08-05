@@ -86,7 +86,11 @@ export default class CitizenIncomePage {
     check: boolean
   ) {
     const elem = new Checkbox(this.page.findByDataQa(`${checkbox}`))
-    check ? await elem.check() : await elem.uncheck()
+    if (check) {
+      await elem.check()
+    } else {
+      await elem.uncheck()
+    }
   }
 
   async toggleEntrepreneurStartupGrant(check: boolean) {

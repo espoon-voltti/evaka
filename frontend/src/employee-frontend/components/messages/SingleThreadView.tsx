@@ -231,10 +231,10 @@ export function SingleThreadView({
 
   const handleReplySent = useCallback(
     (response: ThreadReply) => {
-      onReplySent(accountId, response)
+      onReplySent(response)
       setReplyEditorVisible(false)
     },
-    [accountId, onReplySent]
+    [onReplySent]
   )
 
   const onDiscard = useCallback(() => {
