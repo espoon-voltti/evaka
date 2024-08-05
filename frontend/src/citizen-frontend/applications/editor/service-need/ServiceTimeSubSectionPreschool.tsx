@@ -91,7 +91,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
       'EXTENDED_CARE',
       onUploadProgress
     ).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           shiftCareAttachments: [
             ...formData.shiftCareAttachments,
@@ -107,17 +107,19 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
             }
           ]
         })
+      }
       return result
     })
 
   const deleteExtendedCareAttachment = (id: UUID) =>
     deleteAttachmentResult({ attachmentId: id }).then((result) => {
-      result.isSuccess &&
+      if (result.isSuccess) {
         updateFormData({
           shiftCareAttachments: formData.shiftCareAttachments.filter(
             (file) => file.id !== id
           )
         })
+      }
       return result
     })
 
@@ -203,7 +205,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                   isValidPreferredStartDate(
                     date,
                     originalPreferredStartDate,
-                    'PRESCHOOL',
                     terms
                   )
                     ? null

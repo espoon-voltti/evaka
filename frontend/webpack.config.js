@@ -301,7 +301,7 @@ function employeeMobile(flags) {
   return config
 }
 
-module.exports = (env, argv) => {
+module.exports = (_env, argv) => {
   const isDevelopment = !!(argv && argv['mode'] !== 'production')
   const flags = { isDevelopment }
 

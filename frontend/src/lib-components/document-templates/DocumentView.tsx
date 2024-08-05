@@ -10,9 +10,9 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H2 } from 'lib-components/typography'
 
 import {
-  documentForm,
+  type documentForm,
   DocumentQuestionView,
-  documentSectionForm
+  type documentSectionForm
 } from './documents'
 
 interface Props {

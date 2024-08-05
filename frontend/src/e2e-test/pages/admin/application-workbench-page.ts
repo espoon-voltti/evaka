@@ -196,7 +196,7 @@ export class ApplicationWorkbenchPage {
   }
 
   async assertApplicationStatusTextMatches(
-    index: number,
+    _index: number,
     matchingText: string
   ) {
     await this.#applicationPlacementProposalStatusIndicator.hover()

@@ -25,11 +25,11 @@ import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 import TimeRangeInput from '../TimeRangeInput'
 
 import {
-  day,
+  type day,
   emptyTimeRange,
-  noTimes,
-  timeRanges,
-  reservation,
+  type noTimes,
+  type timeRanges,
+  type reservation,
   LimitedLocalTimeRangeField,
   ReadOnlyState
 } from './form'

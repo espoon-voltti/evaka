@@ -111,27 +111,31 @@ export default React.memo(function VoucherValueDecisionFilters() {
   )
 
   const toggleDifference = (difference: VoucherValueDecisionDifference) => {
-    searchFilters.difference.includes(difference)
-      ? setSearchFilters({
-          ...searchFilters,
-          difference: searchFilters.difference.filter((v) => v !== difference)
-        })
-      : setSearchFilters({
-          ...searchFilters,
-          difference: [...searchFilters.difference, difference]
-        })
+    if (searchFilters.difference.includes(difference)) {
+      setSearchFilters({
+        ...searchFilters,
+        difference: searchFilters.difference.filter((v) => v !== difference)
+      })
+    } else {
+      setSearchFilters({
+        ...searchFilters,
+        difference: [...searchFilters.difference, difference]
+      })
+    }
   }
 
   const toggleStatus = (status: VoucherValueDecisionStatus) => () => {
-    searchFilters.statuses.includes(status)
-      ? setSearchFilters({
-          ...searchFilters,
-          statuses: searchFilters.statuses.filter((v) => v !== status)
-        })
-      : setSearchFilters({
-          ...searchFilters,
-          statuses: [...searchFilters.statuses, status]
-        })
+    if (searchFilters.statuses.includes(status)) {
+      setSearchFilters({
+        ...searchFilters,
+        statuses: searchFilters.statuses.filter((v) => v !== status)
+      })
+    } else {
+      setSearchFilters({
+        ...searchFilters,
+        statuses: [...searchFilters.statuses, status]
+      })
+    }
   }
 
   const setStartDate = (startDate: LocalDate | undefined) => {
@@ -157,17 +161,19 @@ export default React.memo(function VoucherValueDecisionFilters() {
 
   const toggleDistinctiveParams =
     (id: VoucherValueDecisionDistinctiveParams) => () => {
-      searchFilters.distinctiveDetails.includes(id)
-        ? setSearchFilters({
-            ...searchFilters,
-            distinctiveDetails: searchFilters.distinctiveDetails.filter(
-              (v) => v !== id
-            )
-          })
-        : setSearchFilters({
-            ...searchFilters,
-            distinctiveDetails: [...searchFilters.distinctiveDetails, id]
-          })
+      if (searchFilters.distinctiveDetails.includes(id)) {
+        setSearchFilters({
+          ...searchFilters,
+          distinctiveDetails: searchFilters.distinctiveDetails.filter(
+            (v) => v !== id
+          )
+        })
+      } else {
+        setSearchFilters({
+          ...searchFilters,
+          distinctiveDetails: [...searchFilters.distinctiveDetails, id]
+        })
+      }
     }
 
   return (
@@ -189,11 +195,10 @@ export default React.memo(function VoucherValueDecisionFilters() {
               .map((us) => us.map(({ id, name }) => ({ id, label: name })))
               .getOrElse([])}
             selected={units
-              .map(
-                (us) =>
-                  us
-                    .map(({ id, name }) => ({ id, label: name }))
-                    .filter((unit) => unit.id === searchFilters.unit)[0]
+              .map((us) =>
+                us
+                  .map(({ id, name }) => ({ id, label: name }))
+                  .find((unit) => unit.id === searchFilters.unit)
               )
               .getOrElse(undefined)}
             select={selectUnit}

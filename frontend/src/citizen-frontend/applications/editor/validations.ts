@@ -18,10 +18,7 @@ import {
   TIME_REGEXP,
   validate
 } from 'lib-common/form-validation'
-import {
-  ApplicationDetails as ApplicationDetailsGen,
-  ApplicationType
-} from 'lib-common/generated/api-types/application'
+import { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/citizen'
 
@@ -46,7 +43,6 @@ export const maxPreferredStartDate = (): LocalDate =>
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
-  type: ApplicationType,
   terms?: FiniteDateRange[]
 ): boolean => {
   if (date.isBefore(minPreferredStartDate(originalPreferredStartDate)))
@@ -62,17 +58,12 @@ export const isValidPreferredStartDate = (
 }
 
 const preferredStartDateValidator =
-  (
-    originalPreferredStartDate: LocalDate | null,
-    type: ApplicationType,
-    terms?: FiniteDateRange[]
-  ) =>
+  (originalPreferredStartDate: LocalDate | null, terms?: FiniteDateRange[]) =>
   (
     val: LocalDate | null,
     err: ErrorKey = 'preferredStartDate'
   ): ErrorKey | undefined =>
-    val &&
-    isValidPreferredStartDate(val, originalPreferredStartDate, type, terms)
+    val && isValidPreferredStartDate(val, originalPreferredStartDate, terms)
       ? undefined
       : err
 
@@ -97,7 +88,6 @@ export const validateApplication = (
           apiData.status !== 'CREATED'
             ? apiData.form.preferences.preferredStartDate
             : null,
-          apiData.type,
           terms
         )
       ),

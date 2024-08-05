@@ -550,7 +550,7 @@ export const ValueDecisionStatusFilter = React.memo(
     toggle
   }: {
     toggled: VoucherValueDecisionStatus[]
-    toggle(v: VoucherValueDecisionStatus): () => void
+    toggle: (v: VoucherValueDecisionStatus) => () => void
   }) {
     const { i18n } = useTranslation()
 

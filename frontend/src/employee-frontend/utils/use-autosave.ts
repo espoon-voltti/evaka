@@ -54,7 +54,7 @@ export function useAutosave<T, F extends ApiFunction>({
         loading: () => null,
         failure: () => setStatus({ state: 'loading-error' }),
         success: (loadedItem: T) => {
-          onLoaded && onLoaded(loadedItem)
+          if (onLoaded) onLoaded(loadedItem)
           setStatus((prev) =>
             prev.state === 'loading-dirty'
               ? { ...prev, state: 'dirty' }

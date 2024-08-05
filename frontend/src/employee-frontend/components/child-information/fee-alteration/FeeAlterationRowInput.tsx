@@ -60,7 +60,7 @@ function IsAbsoluteRadio({
   onChange
 }: {
   value: boolean
-  onChange(v: boolean): void
+  onChange: (v: boolean) => void
 }) {
   return (
     <RadioContainer>

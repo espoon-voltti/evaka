@@ -23,7 +23,7 @@ export default [
   {
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.eslint.json',
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
         globals: globals.browser
       }
@@ -67,6 +67,23 @@ export default [
     }
   },
   {
+    files: ['**/*.{ts,tsx,js,mjs}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          caughtErrors: 'all',
+          caughtErrorsIgnorePattern: '^.*',
+          destructuredArrayIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true
+        }
+      ]
+    }
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     plugins: {
       react: reactPlugin,
@@ -88,17 +105,18 @@ export default [
         { additionalHooks: '(useApiState)' }
       ],
       'jsx-expressions/strict-logical-expressions': 'error',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'always' }
+      ],
       '@typescript-eslint/no-misused-promises': [
         'error',
         { checksVoidReturn: false }
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
-      ],
-      '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off'
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/prefer-promise-reject-errors': 'off'
     }
   },
   {
@@ -108,6 +126,12 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-var-requires': 'off'
+    }
+  },
+  {
+    files: ['**/*.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off'
     }
   },
   {

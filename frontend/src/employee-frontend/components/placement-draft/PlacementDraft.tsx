@@ -134,14 +134,14 @@ export default React.memo(function PlacementDraft() {
     useState<boolean>(false)
 
   useEffect(() => {
-    units.isSuccess &&
-      placement.unitId &&
+    if (units.isSuccess && placement.unitId) {
       setSelectedUnitIsGhostUnit(
         units.value
           .filter((unit) => unit.id === placement.unitId)
           .map((unit) => unit.ghostUnit)
           .includes(true)
       )
+    }
   }, [placement, units])
 
   function removeOldPlacements(

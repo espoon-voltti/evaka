@@ -310,9 +310,11 @@ export class UnitEditor {
   }
 
   async setProvidesShiftCare(on: boolean) {
-    on
-      ? await this.providesShiftCare.check()
-      : await this.providesShiftCare.uncheck()
+    if (on) {
+      await this.providesShiftCare.check()
+    } else {
+      await this.providesShiftCare.uncheck()
+    }
   }
 
   async clearDayTimeRange(dayNumber: number) {
@@ -426,11 +428,11 @@ export class UnitEditor {
   ) {
     await this.selectProviderType(providerType)
     await this.setUnitHandlerAddress(handlerAddress)
-    warningShown
-      ? await this.assertWarningIsVisible('handler-address-mandatory-warning')
-      : await this.assertWarningIsNotVisible(
-          'handler-address-mandatory-warning'
-        )
+    if (warningShown) {
+      await this.assertWarningIsVisible('handler-address-mandatory-warning')
+    } else {
+      await this.assertWarningIsNotVisible('handler-address-mandatory-warning')
+    }
   }
 
   async clickInvoicedByMunicipality() {
@@ -438,9 +440,11 @@ export class UnitEditor {
   }
 
   async assertInvoicingFieldsVisibility(visible: boolean) {
-    visible
-      ? await this.#unitCostCenterInput.waitUntilVisible()
-      : await this.#unitCostCenterInput.waitUntilHidden()
+    if (visible) {
+      await this.#unitCostCenterInput.waitUntilVisible()
+    } else {
+      await this.#unitCostCenterInput.waitUntilHidden()
+    }
   }
 
   async submit() {

@@ -208,9 +208,11 @@ export class UnitStaffAttendancesTable extends Element {
     const cell = this.#attendanceCell(date, row)
     await cell.hover()
 
-    visible
-      ? await cell.findByDataQa('open-details').waitUntilVisible()
-      : await cell.findByDataQa('open-details').waitUntilHidden()
+    if (visible) {
+      await cell.findByDataQa('open-details').waitUntilVisible()
+    } else {
+      await cell.findByDataQa('open-details').waitUntilHidden()
+    }
   }
 }
 

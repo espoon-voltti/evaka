@@ -58,9 +58,11 @@ export default React.memo(function FeeDecisionDetailsPage() {
         decision.value.headOfFamily.firstName,
         decision.value.headOfFamily.lastName
       )
-      decision.value.status === 'DRAFT'
-        ? setTitle(`${name} | ${i18n.titles.feeDecisionDraft}`)
-        : setTitle(`${name} | ${i18n.titles.feeDecision}`)
+      if (decision.value.status === 'DRAFT') {
+        setTitle(`${name} | ${i18n.titles.feeDecisionDraft}`)
+      } else {
+        setTitle(`${name} | ${i18n.titles.feeDecision}`)
+      }
       setNewDecisionType(decision.value.decisionType)
     }
   }, [decision]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -70,7 +72,8 @@ export default React.memo(function FeeDecisionDetailsPage() {
     (type: FeeDecisionType) => {
       if (decisionType.isSuccess) {
         setNewDecisionType(type)
-        decisionType.value === type ? setModified(false) : setModified(true)
+        if (decisionType.value === type) setModified(false)
+        else setModified(true)
       }
     },
     [decisionType]

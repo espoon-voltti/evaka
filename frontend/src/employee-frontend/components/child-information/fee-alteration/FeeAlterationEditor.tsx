@@ -76,9 +76,11 @@ export default React.memo(function FeeAlterationEditor({
   >({})
 
   useEffect(() => {
-    edited.validTo && !edited.validFrom.isBefore(edited.validTo)
-      ? setValidationErrors((prev) => ({ ...prev, validTo: true }))
-      : setValidationErrors((prev) => ({ ...prev, validTo: false }))
+    if (edited.validTo && !edited.validFrom.isBefore(edited.validTo)) {
+      setValidationErrors((prev) => ({ ...prev, validTo: true }))
+    } else {
+      setValidationErrors((prev) => ({ ...prev, validTo: false }))
+    }
   }, [edited])
 
   const onSubmit = useCallback(() => {

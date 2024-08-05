@@ -196,11 +196,11 @@ function CreateApplicationModal({
 
       void apiCall()
         .then((id) => {
-          id.isSuccess
-            ? (window.location.href = `${getEmployeeUrlPrefix()}/employee/applications/${
-                id.value
-              }?create=true`)
-            : null
+          if (id.isSuccess) {
+            window.location.href = `${getEmployeeUrlPrefix()}/employee/applications/${
+              id.value
+            }?create=true`
+          }
         })
         .finally(() => setIsSubmitting(false))
     }

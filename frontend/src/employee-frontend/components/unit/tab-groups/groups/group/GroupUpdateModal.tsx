@@ -101,7 +101,7 @@ export default React.memo(function GroupUpdateModal({ group }: Props) {
               <InputField
                 value={data.jamixCustomerNumber?.toString() ?? ''}
                 onChange={(value) => {
-                  if (value.match(/^\d*$/)) {
+                  if (/^\d*$/.exec(value)) {
                     const parsedNumber = parseInt(value)
                     setData((state) => ({
                       ...state,

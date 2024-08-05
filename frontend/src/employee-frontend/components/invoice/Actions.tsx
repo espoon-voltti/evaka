@@ -20,7 +20,7 @@ const markInvoicesSentResult = wrapResult(markInvoicesSent)
 
 type Props = {
   invoice: InvoiceDetailed
-  loadInvoice(): void
+  loadInvoice: () => void
   editable: boolean
 }
 

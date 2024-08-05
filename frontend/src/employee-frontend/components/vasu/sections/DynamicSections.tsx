@@ -229,11 +229,13 @@ export function DynamicSections({
                                       delete question1.textValue[option.key]
                                   }
                                 } else {
-                                  question1.textValue
-                                    ? (question1.textValue[option.key] = value)
-                                    : (question.textValue = {
-                                        [option.key]: value
-                                      })
+                                  if (question1.textValue) {
+                                    question1.textValue[option.key] = value
+                                  } else {
+                                    question.textValue = {
+                                      [option.key]: value
+                                    }
+                                  }
                                 }
                                 if (option.date) {
                                   if (question1.dateValue) {
