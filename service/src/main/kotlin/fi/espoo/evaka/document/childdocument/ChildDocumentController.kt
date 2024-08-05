@@ -17,6 +17,8 @@ import fi.espoo.evaka.process.updateDocumentProcessHistory
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -44,7 +46,8 @@ import org.springframework.web.bind.annotation.RestController
 class ChildDocumentController(
     private val accessControl: AccessControl,
     private val childDocumentService: ChildDocumentService,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping
     fun createDocument(
@@ -451,6 +454,13 @@ class ChildDocumentController(
                         documentId
                     )
                     deleteProcessByDocumentId(tx, documentId)
+                    tx.getChildDocumentKey(documentId)?.also { key ->
+                        asyncJobRunner.plan(
+                            tx = tx,
+                            payloads = listOf(AsyncJob.DeleteChildDocumentPdf(key)),
+                            runAt = clock.now()
+                        )
+                    }
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }

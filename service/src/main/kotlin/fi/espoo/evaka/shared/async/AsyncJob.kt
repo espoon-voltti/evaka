@@ -222,6 +222,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeleteChildDocumentPdf(val key: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAssistanceNeedPreschoolDecisionEmail(
         val decisionId: AssistanceNeedPreschoolDecisionId
     ) : AsyncJob {
@@ -371,6 +375,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     CreateAssistanceNeedPreschoolDecisionPdf::class,
                     CreateChildDocumentPdf::class,
                     DeleteAttachment::class,
+                    DeleteChildDocumentPdf::class,
                     DvvModificationsRefresh::class,
                     GarbageCollectPairing::class,
                     GenerateFinanceDecisions::class,

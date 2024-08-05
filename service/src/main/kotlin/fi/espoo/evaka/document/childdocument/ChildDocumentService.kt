@@ -50,6 +50,9 @@ class ChildDocumentService(
             createAndUploadPdf(db, msg.documentId)
         }
         asyncJobRunner.registerHandler(::sendChildDocumentNotificationEmail)
+        asyncJobRunner.registerHandler<AsyncJob.DeleteChildDocumentPdf> { _, _, msg ->
+            documentClient.delete(bucketName = bucket, key = msg.key)
+        }
     }
 
     fun createAndUploadPdf(db: Database.Connection, documentId: ChildDocumentId) {
