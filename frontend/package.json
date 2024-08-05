@@ -40,7 +40,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "classnames": "^2.5.1",
     "compute-scroll-into-view": "^3.1.0",
-    "core-js": "^3.37.0",
+    "core-js": "^3.38.0",
     "csstype": "^3.1.2",
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.1.3",
