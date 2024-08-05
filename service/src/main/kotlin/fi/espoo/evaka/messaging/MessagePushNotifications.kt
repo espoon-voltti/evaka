@@ -44,10 +44,11 @@ class MessagePushNotifications(
     private fun getPendingPushNotifications() = QuerySql {
         sql(
             """
-SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name
+SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name, sender.name AS sender_name
 FROM message_recipients mr
 JOIN message_account ma ON mr.recipient_id = ma.id
 JOIN message m ON mr.message_id = m.id
+JOIN message_account_view sender ON sender.id = m.sender_id
 JOIN message_thread mt ON m.thread_id = mt.id
 JOIN daycare_group dg ON ma.daycare_group_id = dg.id
 JOIN daycare d ON d.id = dg.daycare_id
@@ -97,6 +98,7 @@ WHERE notification.message = ANY(${bind(messages)})
     data class GroupNotification(
         val groupId: GroupId,
         val groupName: String,
+        val senderName: String?,
         val endpoint: WebPushEndpoint
     )
 
@@ -107,7 +109,7 @@ WHERE notification.message = ANY(${bind(messages)})
         createQuery {
                 sql(
                     """
-SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+SELECT group_id, group_name, sender_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM (${subquery(getPendingPushNotifications())}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.recipient = ${bind(messageRecipient)}
@@ -119,6 +121,7 @@ AND notification.device = ${bind(device)}
                 GroupNotification(
                     groupId = column("group_id"),
                     groupName = column("group_name"),
+                    senderName = column("sender_name"),
                     WebPushEndpoint(
                         uri = column("endpoint"),
                         ecdhPublicKey =
@@ -164,7 +167,8 @@ AND notification.device = ${bind(device)}
                     payloads =
                         listOf(
                             WebPushPayload.NotificationV1(
-                                title = "Uusi viesti ryhmälle ${notification.groupName}"
+                                title =
+                                    "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)"} ?: ""}",
                             )
                         )
                 )
