@@ -1158,6 +1158,7 @@ export const fi = {
       guardiansHeardInfo:
         'Kirjaa tähän millä keinoin huoltajaa on kuultu (esim. palaveri, etäyhteys, huoltajan kirjallinen vastine). Jos huoltajaa ei ole kuultu, kirjaa tähän selvitys siitä, miten ja milloin hänet on kutsuttu kuultavaksi, ja miten ja milloin lapsen varhaiskasvatussuunnitelma on annettu huoltajalle tiedoksi.\nKaikilla lapsen huoltajilla tulee olla mahdollisuus tulla kuulluksi. Huoltaja voi tarvittaessa valtuuttaa toisen huoltajan edustamaan itseään valtakirjalla.',
       guardiansHeardValidation: 'Kaikkia huoltajia tulee olla kuultu.',
+      oneAssistanceLevel: 'Valitse vain yksi tuen taso',
       viewOfTheGuardians: 'Huoltajien näkemys esitetystä tuesta',
       viewOfTheGuardiansInfo:
         'Kirjaa tähän huoltajien näkemys lapselle esitetystä tuesta.',
