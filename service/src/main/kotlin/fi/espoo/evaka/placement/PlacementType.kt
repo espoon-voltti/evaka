@@ -182,6 +182,10 @@ enum class PlacementType : DatabaseEnum {
         val invoiced = entries.filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
         val requiringAttendanceReservations =
             entries.filter { it != CLUB && it != PRESCHOOL && it != PREPARATORY }
+        val withBillableAbsences =
+            entries.filter { it.absenceCategories().contains(AbsenceCategory.BILLABLE) }
+        val withNonbillableAbsences =
+            entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
     }
 }
 
