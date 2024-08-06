@@ -268,6 +268,52 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
     }
 
+    // TODO
+    @Test
+    fun `VEO cannot see own document for child no longer placed in her unit`() {
+        val veoInPlacementUnit = DevEmployee()
+        db.transaction {
+            it.insert(
+                veoInPlacementUnit,
+                unitRoles = mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+        }
+
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                veoInPlacementUnit.user,
+                clock,
+                ChildDocumentCreateRequest(childId = testChild_1.id, templateId = templateIdPed)
+            )
+
+        assertEquals(
+            documentId,
+            controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId).data.id
+        )
+        assertEquals(
+            1,
+            controller
+                .getDocuments(dbInstance(), veoInPlacementUnit.user, clock, testChild_1.id)
+                .size
+        )
+        // remove child placement so child is not in VEO's unit so no document should be visible
+        db.transaction { tx ->
+                tx.createUpdate {
+                    sql("DELETE FROM placement WHERE child_id = ${bind(testChild_1.id)}")
+                }
+            }
+            .execute()
+
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId)
+        }
+
+        assertThrows<Forbidden> {
+            controller.getDocuments(dbInstance(), veoInPlacementUnit.user, clock, testChild_1.id)
+        }
+    }
+
     @Test
     fun `creating new document may start a metadata process`() {
         val now1 = clock.now()
