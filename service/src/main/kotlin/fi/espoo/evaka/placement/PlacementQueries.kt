@@ -842,3 +842,39 @@ WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '
             )
         }
         .exactlyOneOrNull<Language>()
+
+fun Database.Transaction.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+    childId: ChildId,
+    today: LocalDate
+) {
+    execute {
+        sql(
+            """
+        DELETE FROM attendance_reservation ar
+        WHERE ar.child_id = ${bind(childId)} AND ar.date > ${bind(today)} AND NOT EXISTS(
+            SELECT FROM placement pl
+            WHERE pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
+            AND pl.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
+        )
+    """
+        )
+    }
+
+    execute {
+        sql(
+            """
+        DELETE FROM absence ab
+        WHERE ab.child_id = ${bind(childId)} AND ab.date > ${bind(today)} AND (
+            (ab.category = 'BILLABLE' AND NOT EXISTS(
+                SELECT FROM placement pl
+                WHERE pl.child_id = ab.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ab.date
+                AND pl.type = ANY(${bind(PlacementType.withBillableAbsences)})
+            )) OR (ab.category = 'NONBILLABLE' AND NOT EXISTS(
+                SELECT FROM placement pl
+                WHERE pl.child_id = ab.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ab.date
+                AND pl.type = ANY(${bind(PlacementType.withNonbillableAbsences)})
+        )))
+    """
+        )
+    }
+}
