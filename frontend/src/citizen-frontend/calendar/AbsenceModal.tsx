@@ -87,12 +87,14 @@ function initialFormState(
 
 interface Props {
   close: () => void
+  onReturn: () => void
   reservationsResponse: ReservationsResponse
   initialDate: LocalDate | undefined
 }
 
 export default React.memo(function AbsenceModal({
   close,
+  onReturn,
   reservationsResponse,
   initialDate
 }: Props) {
@@ -273,7 +275,7 @@ export default React.memo(function AbsenceModal({
             </div>
             <CalendarModalButtons>
               <LegacyButton
-                onClick={close}
+                onClick={onReturn}
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
               />
