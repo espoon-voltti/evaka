@@ -6,7 +6,7 @@
 java = "21"
 jackson = "2.17.1"
 jboss-logging = "3.6.0.Final"
-keycloak = "25.0.1"
+keycloak = "25.0.2"
 kotlin = "2.0.0"
 http4k = "5.24.0.0"
 shadow = "8.1.1"
