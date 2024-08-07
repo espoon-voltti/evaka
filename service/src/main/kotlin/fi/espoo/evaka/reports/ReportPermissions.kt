@@ -74,7 +74,13 @@ class ReportPermissions(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.AssistanceNeedDecision.READ_IN_REPORT
-                        )
+                        ) ||
+                            accessControl.isPermittedForSomeTarget(
+                                tx,
+                                user,
+                                clock,
+                                Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT
+                            )
                     },
                     Report.ASSISTANCE_NEEDS_AND_ACTIONS.takeIf {
                         permittedActionsForSomeUnit.contains(
