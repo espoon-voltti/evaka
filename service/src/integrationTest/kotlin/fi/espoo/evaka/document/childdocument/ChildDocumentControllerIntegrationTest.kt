@@ -268,7 +268,6 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         )
     }
 
-    // TODO
     @Test
     fun `VEO cannot see own document for child no longer placed in her unit`() {
         val veoInPlacementUnit = DevEmployee()

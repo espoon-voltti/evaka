@@ -39,7 +39,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.io.File
@@ -68,8 +67,16 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     private val assistanceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+
+    private val specialEducationTeacherOfTestDaycare =
+        DevEmployee(firstName = "Sally", lastName = "SpecialEducationTeacher")
+
     private val decisionMaker =
-        AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
+        AuthenticatedUser.Employee(
+            specialEducationTeacherOfTestDaycare.id,
+            setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+        )
+
     private val testAdmin =
         DevEmployee(
             id = EmployeeId(UUID.randomUUID()),
@@ -144,12 +151,15 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testDecisionMaker_3)
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)
+            tx.insert(testDecisionMaker_1)
+            tx.insert(
+                specialEducationTeacherOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+            tx.insert(testDecisionMaker_3)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
@@ -198,7 +208,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.decisionMaker?.title, assistanceNeedDecision.decisionMaker?.title)
         assertEquals(
             assistanceNeedDecision.decisionMaker?.name,
-            "${testDecisionMaker_2.firstName} ${testDecisionMaker_2.lastName}"
+            "${specialEducationTeacherOfTestDaycare.firstName} ${specialEducationTeacherOfTestDaycare.lastName}"
         )
 
         assertEquals(
@@ -251,6 +261,47 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             testDecision.motivationForDecision,
             assistanceNeedDecision.motivationForDecision
         )
+    }
+
+    @Test
+    fun `Special Education Teacher is not allowed to read own decisions for child no longer placed in her unit`() {
+        val assistanceNeedDecision =
+            createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
+
+        db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
+            )
+        }
+
+        assertEquals(
+            assistanceNeedDecision.id,
+            getAssistanceNeedDecision(
+                    assistanceNeedDecision.id,
+                    specialEducationTeacherOfTestDaycare.user
+                )
+                .id
+        )
+
+        // remove child placement so child is not in VEO's unit so no document should be visible
+        db.transaction { tx ->
+                tx.createUpdate {
+                    sql("DELETE FROM placement WHERE child_id = ${bind(testChild_1.id)}")
+                }
+            }
+            .execute()
+
+        assertThrows<Forbidden> {
+            getAssistanceNeedDecision(
+                assistanceNeedDecision.id,
+                specialEducationTeacherOfTestDaycare.user
+            )
+        }
     }
 
     @Test
@@ -554,9 +605,9 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     testDecisionMaker_1.firstName
                 ),
                 Tuple(
-                    testDecisionMaker_2.id,
-                    testDecisionMaker_2.lastName,
-                    testDecisionMaker_2.firstName
+                    specialEducationTeacherOfTestDaycare.id,
+                    specialEducationTeacherOfTestDaycare.lastName,
+                    specialEducationTeacherOfTestDaycare.firstName
                 ),
                 Tuple(
                     testDecisionMaker_3.id,
@@ -1247,9 +1298,12 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    private fun getAssistanceNeedDecision(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
+    private fun getAssistanceNeedDecision(
+        id: AssistanceNeedDecisionId,
+        user: AuthenticatedUser.Employee = assistanceWorker
+    ): AssistanceNeedDecision {
         return assistanceNeedDecisionController
-            .getAssistanceNeedDecision(dbInstance(), assistanceWorker, clock, id)
+            .getAssistanceNeedDecision(dbInstance(), user, clock, id)
             .decision
     }
 

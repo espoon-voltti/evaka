@@ -46,7 +46,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.testDecisionMaker_3
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.io.File
@@ -77,9 +76,13 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private val assistanceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+
+    private val specialEducationTeacherOfTestDaycare =
+        DevEmployee(firstName = "Sally", lastName = "SpecialEducationTeacher")
+
     private val decisionMaker =
         AuthenticatedUser.Employee(
-            testDecisionMaker_2.id,
+            specialEducationTeacherOfTestDaycare.id,
             setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
         )
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
@@ -131,19 +134,22 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             preparer2EmployeeId = null,
             preparer2Title = "",
             preparer2PhoneNumber = "",
-            decisionMakerEmployeeId = decisionMaker.id,
+            decisionMakerEmployeeId = specialEducationTeacherOfTestDaycare.id,
             decisionMakerTitle = "Decider of everything"
         )
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testDecisionMaker_2)
-            tx.insert(testDecisionMaker_3)
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)
+            tx.insert(testDecisionMaker_1)
+            tx.insert(
+                specialEducationTeacherOfTestDaycare,
+                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER)
+            )
+            tx.insert(testDecisionMaker_3)
             tx.insert(
                 unitSupervisorOfTestDaycare,
                 mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
@@ -152,6 +158,15 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             tx.insert(testChild_1, DevPersonType.CHILD)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
             tx.insert(admin)
+
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5)
+                )
+            )
         }
     }
 
@@ -164,6 +179,29 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         val firstGuardian = assistanceNeedDecision.form.guardianInfo.first()
         assertEquals(testAdult_2.id, firstGuardian.personId)
         assertEquals("${testAdult_2.lastName} ${testAdult_2.firstName}", firstGuardian.name)
+    }
+
+    @Test
+    fun `Special Education Teacher is not allowed to read own decisions for child no longer placed in her unit`() {
+        val assistanceNeedDecision =
+            createAndFillDecision(testForm, specialEducationTeacherOfTestDaycare.user)
+
+        assertEquals(
+            assistanceNeedDecision.id,
+            getDecision(assistanceNeedDecision.id, specialEducationTeacherOfTestDaycare.user).id
+        )
+
+        // remove child placement so child is not in VEO's unit so no document should be visible
+        db.transaction { tx ->
+                tx.createUpdate {
+                    sql("DELETE FROM placement WHERE child_id = ${bind(testChild_1.id)}")
+                }
+            }
+            .execute()
+
+        assertThrows<Forbidden> {
+            getDecision(assistanceNeedDecision.id, specialEducationTeacherOfTestDaycare.user)
+        }
     }
 
     @Test
@@ -382,9 +420,9 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testDecisionMaker_1.firstName
                 ),
                 Tuple(
-                    testDecisionMaker_2.id,
-                    testDecisionMaker_2.lastName,
-                    testDecisionMaker_2.firstName
+                    specialEducationTeacherOfTestDaycare.id,
+                    specialEducationTeacherOfTestDaycare.lastName,
+                    specialEducationTeacherOfTestDaycare.firstName
                 ),
                 Tuple(
                     testDecisionMaker_3.id,
@@ -768,10 +806,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
-    private fun createEmptyDraft(): AssistanceNeedPreschoolDecision {
+    private fun createEmptyDraft(
+        user: AuthenticatedUser.Employee = assistanceWorker
+    ): AssistanceNeedPreschoolDecision {
         return assistanceNeedDecisionController.createAssistanceNeedPreschoolDecision(
             dbInstance(),
-            assistanceWorker,
+            user,
             clock,
             testChild_1.id
         )
@@ -779,11 +819,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private fun updateDecision(
         form: AssistanceNeedPreschoolDecisionForm,
-        decision: AssistanceNeedPreschoolDecision
+        decision: AssistanceNeedPreschoolDecision,
+        user: AuthenticatedUser.Employee = assistanceWorker
     ) {
         assistanceNeedDecisionController.updateAssistanceNeedPreschoolDecision(
             dbInstance(),
-            assistanceWorker,
+            user,
             clock,
             decision.id,
             form.copy(
@@ -796,10 +837,11 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     }
 
     private fun getDecision(
-        id: AssistanceNeedPreschoolDecisionId
+        id: AssistanceNeedPreschoolDecisionId,
+        user: AuthenticatedUser.Employee = assistanceWorker
     ): AssistanceNeedPreschoolDecision {
         return assistanceNeedDecisionController
-            .getAssistanceNeedPreschoolDecision(dbInstance(), assistanceWorker, clock, id)
+            .getAssistanceNeedPreschoolDecision(dbInstance(), user, clock, id)
             .decision
     }
 
@@ -810,9 +852,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     }
 
     private fun createAndFillDecision(
-        form: AssistanceNeedPreschoolDecisionForm
+        form: AssistanceNeedPreschoolDecisionForm,
+        user: AuthenticatedUser.Employee = assistanceWorker
     ): AssistanceNeedPreschoolDecision {
-        return createEmptyDraft().also { updateDecision(form, it) }.let { getDecision(it.id) }
+        return createEmptyDraft(user)
+            .also { updateDecision(form, it, user) }
+            .let { getDecision(it.id, user) }
     }
 
     private fun deleteDecision(id: AssistanceNeedPreschoolDecisionId) {
