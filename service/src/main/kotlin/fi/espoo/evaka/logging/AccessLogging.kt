@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.logging
 
-import ch.qos.logback.access.PatternLayoutEncoder
-import ch.qos.logback.access.spi.IAccessEvent
+import ch.qos.logback.access.common.PatternLayoutEncoder
+import ch.qos.logback.access.common.spi.IAccessEvent
 import ch.qos.logback.access.tomcat.LogbackValve
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.Context

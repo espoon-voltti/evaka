@@ -69,7 +69,7 @@ dependencies {
     integrationTestImplementation(kotlin("test-junit5"))
 
     // Logging
-    implementation("ch.qos.logback:logback-access")
+    implementation("ch.qos.logback.access:tomcat")
     implementation("io.github.microutils:kotlin-logging-jvm")
     implementation("net.logstash.logback:logstash-logback-encoder")
 
