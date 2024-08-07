@@ -68,7 +68,8 @@ const absenceForm = mapped(
 
 function initialFormState(
   initialDate: LocalDate | undefined,
-  availableChildren: ReservationChild[]
+  availableChildren: ReservationChild[],
+  maxDate: LocalDate
 ): StateOf<typeof absenceForm> {
   const selectedChildren =
     availableChildren.length == 1 ? [availableChildren[0].id] : []
@@ -78,7 +79,8 @@ function initialFormState(
       : { startDate: LocalDate.todayInSystemTz(), endDate: null }
   return {
     range: localDateRange.fromDates(range.startDate, range.endDate, {
-      minDate: LocalDate.todayInSystemTz()
+      minDate: LocalDate.todayInSystemTz(),
+      maxDate
     }),
     selectedChildren,
     absenceType: undefined
@@ -113,7 +115,12 @@ export default React.memo(function AbsenceModal({
 
   const form = useForm(
     absenceForm,
-    () => initialFormState(initialDate, reservationsResponse.children),
+    () =>
+      initialFormState(
+        initialDate,
+        reservationsResponse.children,
+        reservationsResponse.reservableRange.end
+      ),
     i18n.validationErrors
   )
   const { selectedChildren, range, absenceType } = useFormFields(form)
