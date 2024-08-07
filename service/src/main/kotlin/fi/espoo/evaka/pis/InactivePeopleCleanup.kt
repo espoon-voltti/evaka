@@ -23,108 +23,109 @@ fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<P
 WITH people_with_no_archive_data AS (
     SELECT id FROM person
     WHERE (last_login IS NULL OR last_login::date < ${bind(twoMonthsAgo)})
-    AND NOT EXISTS (SELECT 1 FROM application WHERE application.guardian_id = person.id OR application.child_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM application_other_guardian aog WHERE aog.guardian_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM placement WHERE placement.child_id = person.id)
-    AND NOT EXISTS (
-        SELECT 1 FROM fee_decision JOIN fee_decision_child ON fee_decision.id = fee_decision_child.fee_decision_id
-        WHERE fee_decision.head_of_family_id = person.id OR fee_decision.partner_id = person.id OR fee_decision_child.child_id = person.id
+    -- a long EXCEPT chain of reasons to *keep* the person
+    EXCEPT
+    SELECT DISTINCT guardian_id AS id FROM application
+    EXCEPT
+    SELECT DISTINCT child_id FROM application
+    EXCEPT
+    SELECT DISTINCT guardian_id FROM application_other_guardian
+    EXCEPT
+    SELECT DISTINCT child_id FROM placement
+    EXCEPT
+    SELECT DISTINCT head_of_family_id AS id FROM fee_decision
+    EXCEPT
+    SELECT DISTINCT partner_id FROM fee_decision
+    EXCEPT
+    SELECT DISTINCT child_id FROM fee_decision_child
+    EXCEPT
+    SELECT DISTINCT head_of_family_id FROM voucher_value_decision
+    EXCEPT
+    SELECT DISTINCT partner_id FROM voucher_value_decision
+    EXCEPT
+    SELECT DISTINCT child_id FROM voucher_value_decision
+    EXCEPT
+    SELECT DISTINCT head_of_family_id FROM invoice_correction WHERE NOT applied_completely
+    EXCEPT
+    SELECT DISTINCT person_id FROM income_statement
+    EXCEPT
+    SELECT DISTINCT child_id FROM curriculum_document
+    EXCEPT
+    SELECT DISTINCT child_id FROM absence
+    EXCEPT
+    SELECT DISTINCT child_id FROM child_attendance
+    EXCEPT
+    SELECT DISTINCT child_id FROM assistance_need_decision
+    EXCEPT
+    SELECT DISTINCT person_id FROM assistance_need_decision_guardian
+    EXCEPT
+    SELECT DISTINCT child_id FROM assistance_need_preschool_decision
+    EXCEPT
+    SELECT DISTINCT person_id FROM message_account
+    WHERE person_id IS NOT NULL
+    AND (
+        EXISTS (SELECT FROM message WHERE message.sender_id = message_account.id)
+        OR EXISTS (SELECT FROM message_content WHERE message_content.author_id = message_account.id)
     )
-    AND NOT EXISTS (
-        SELECT 1 FROM voucher_value_decision
-        WHERE voucher_value_decision.head_of_family_id = person.id OR voucher_value_decision.partner_id = person.id OR voucher_value_decision.child_id = person.id
-    )
-    AND NOT EXISTS (SELECT 1 FROM invoice_correction WHERE head_of_family_id = person.id AND NOT applied_completely)
-    AND NOT EXISTS (
-        SELECT 1 FROM curriculum_document
-        WHERE curriculum_document.child_id = person.id
-    )
-    AND NOT EXISTS (SELECT 1 FROM absence WHERE absence.child_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM child_attendance WHERE child_attendance.child_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM income_statement WHERE income_statement.person_id = person.id)
-    AND NOT EXISTS (
-        SELECT 1 FROM message
-        WHERE message.sender_id = (SELECT id FROM message_account a WHERE a.person_id = person.id)
-    )
-    AND NOT EXISTS (
-        SELECT 1 FROM message_content
-        WHERE message_content.author_id = (SELECT id FROM message_account a WHERE a.person_id = person.id)
-    )
-    AND NOT EXISTS (SELECT 1 FROM assistance_need_decision WHERE assistance_need_decision.child_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM assistance_need_decision_guardian WHERE assistance_need_decision_guardian.person_id = person.id)
-    AND NOT EXISTS (SELECT 1 FROM assistance_need_preschool_decision WHERE assistance_need_preschool_decision.child_id = person.id)
 )
 DELETE FROM person p
-WHERE id IN (SELECT id FROM people_with_no_archive_data)
--- guardianship
-AND NOT EXISTS (
-    SELECT child_id FROM guardian WHERE guardian_id = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
-    UNION ALL
-    SELECT guardian_id FROM guardian WHERE child_id = p.id AND NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- blocked guardianship
-AND NOT EXISTS (
-    SELECT guardian_id FROM guardian_blocklist WHERE guardian_id = p.id
-)
--- own fridge child
-AND NOT EXISTS (
-    SELECT child_id FROM fridge_child
-    WHERE head_of_child = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- partner
-AND NOT EXISTS (
-    SELECT p2.person_id
-    FROM fridge_partner p1
-    JOIN fridge_partner p2 ON p1.person_id = p.id AND p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
+WHERE p.id IN (
+    SELECT id FROM people_with_no_archive_data
+    EXCEPT
+    -- guardianship
+    SELECT DISTINCT guardian_id FROM guardian
+    WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- guardianship
+    SELECT DISTINCT child_id FROM guardian WHERE NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- blocked guardianship
+    SELECT DISTINCT guardian_id FROM guardian_blocklist
+    EXCEPT
+    -- own fridge child
+    SELECT DISTINCT head_of_child FROM fridge_child WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- partner
+    SELECT DISTINCT p1.person_id FROM fridge_partner p1
+    JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
     WHERE NOT p2.person_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- partner's child
-AND NOT EXISTS (
-    SELECT fridge_child.child_id
-    FROM fridge_partner p1
-    JOIN fridge_partner p2 ON p1.person_id = p.id AND p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
+    EXCEPT
+    -- partner's child
+    SELECT DISTINCT p1.person_id FROM fridge_partner p1
+    JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
     JOIN fridge_child ON fridge_child.head_of_child = p2.person_id AND daterange(p2.start_date, p2.end_date, '[]') && daterange(fridge_child.start_date, fridge_child.end_date, '[]')
     WHERE NOT fridge_child.child_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- own head of family
-AND NOT EXISTS (
-    SELECT head_of_child FROM fridge_child
-    WHERE child_id = p.id AND NOT head_of_child IN (SELECT id FROM people_with_no_archive_data)
-)
--- own head of family's partner
-AND NOT EXISTS (
-    SELECT p2.person_id
-    FROM fridge_child
+    EXCEPT
+    -- own head of family
+    SELECT DISTINCT child_id FROM fridge_child
+    WHERE NOT head_of_child IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- own head of family's partner
+    SELECT DISTINCT child_id FROM fridge_child
     JOIN fridge_partner p1 ON fridge_child.head_of_child = p1.person_id AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && daterange(p1.start_date, p1.end_date, '[]')
     JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
-    WHERE fridge_child.child_id = p.id AND NOT p2.person_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- siblings through own head of family
-AND NOT EXISTS (
-    SELECT sibling.child_id
-    FROM fridge_child
+    WHERE NOT p2.person_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- siblings through own head of family
+    SELECT DISTINCT fridge_child.child_id FROM fridge_child
     JOIN fridge_child sibling ON fridge_child.head_of_child = sibling.head_of_child AND fridge_child.child_id != sibling.child_id AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && daterange(sibling.start_date, sibling.end_date, '[]')
-    WHERE fridge_child.child_id = p.id AND NOT sibling.child_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- siblings through own head of family's partner
-AND NOT EXISTS (
-    SELECT sibling.child_id
-    FROM fridge_child
+    WHERE NOT sibling.child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- siblings through own head of family's partner
+    SELECT DISTINCT fridge_child.child_id FROM fridge_child
     JOIN fridge_partner p1 ON fridge_child.head_of_child = p1.person_id AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && daterange(p1.start_date, p1.end_date, '[]')
     JOIN fridge_partner p2 ON p1.partnership_id = p2.partnership_id AND p1.indx != p2.indx
     JOIN fridge_child sibling ON p2.person_id = sibling.head_of_child AND daterange(fridge_child.start_date, fridge_child.end_date, '[]') && daterange(sibling.start_date, sibling.end_date, '[]')
-    WHERE fridge_child.child_id = p.id AND NOT sibling.child_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- contact person for a child
-AND NOT EXISTS (
-    SELECT family_contact.child_id FROM family_contact
-    WHERE contact_person_id = p.id AND NOT family_contact.child_id IN (SELECT id FROM people_with_no_archive_data)
-)
--- foster parent or child
-AND NOT EXISTS (
-    SELECT child_id FROM foster_parent WHERE parent_id = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
-    UNION ALL
-    SELECT parent_id FROM foster_parent WHERE child_id = p.id AND NOT parent_id IN (SELECT id FROM people_with_no_archive_data)
+    WHERE NOT sibling.child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- contact person for a child
+    SELECT DISTINCT contact_person_id FROM family_contact
+    WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    -- foster parent or child
+    SELECT DISTINCT parent_id FROM foster_parent WHERE NOT child_id IN (SELECT id FROM people_with_no_archive_data)
+    EXCEPT
+    SELECT DISTINCT child_id FROM foster_parent WHERE NOT parent_id IN (SELECT id FROM people_with_no_archive_data)
 )
 RETURNING id
 """
