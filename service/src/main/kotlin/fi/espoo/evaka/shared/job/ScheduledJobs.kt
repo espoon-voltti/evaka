@@ -247,18 +247,16 @@ WITH attendances_to_end AS (
     SELECT ca.id
     FROM child_attendance ca
     JOIN daycare u ON u.id = ca.unit_id
+    LEFT JOIN placement p ON p.child_id = ca.child_id AND daterange(p.start_date, p.end_date, '[]') @> ${bind(today)}
+    LEFT JOIN service_need sn ON sn.placement_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(today)}
+    LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> ${bind(today)}
     WHERE ca.end_time IS NULL AND (
         -- Unit is not open through midnight (checking until midnight but in practice no unit closes at midnight)
         u.shift_care_operation_times[extract(isodow FROM ca.date)].end IS DISTINCT FROM '23:59'::time OR
-        -- No placement to this unit anymore, as of today
-        NOT EXISTS (
-            SELECT 1 FROM placement p
-            LEFT JOIN backup_care bc ON ca.child_id = bc.child_id AND ${bind(today)} BETWEEN bc.start_date AND bc.end_date
-            WHERE
-                p.child_id = ca.child_id AND
-                (p.unit_id = ca.unit_id OR bc.unit_id = ca.unit_id) AND
-                ${bind(today)} BETWEEN p.start_date AND p.end_date
-        )
+        -- Child does not have shift care in service need
+        coalesce(sn.shift_care = 'NONE', FALSE) OR
+        -- No (backup) placement to this unit anymore, as of today
+        (p.unit_id IS DISTINCT FROM u.id AND bc.unit_id IS DISTINCT FROM u.id)
     )
 )
 UPDATE child_attendance SET end_time = '23:59'::time
