@@ -215,8 +215,12 @@ class EspooConfig {
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.03",
                             archiveDurationMonths = 120 * 12
+                        ),
+                    ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
+                        ArchiveProcessConfig(
+                            processDefinitionNumber = "12.06.04",
+                            archiveDurationMonths = 120 * 12
                         )
-                    // TODO: ASSISTANCE_NEED_DECISION_PRESCHOOL config
                 )
         )
 
