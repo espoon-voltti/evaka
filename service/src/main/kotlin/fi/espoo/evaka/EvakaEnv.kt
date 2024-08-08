@@ -16,7 +16,6 @@ import java.util.Locale
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.core.io.UrlResource
-import software.amazon.awssdk.regions.Region
 
 /**
  * A type-safe configuration parsed from environment variables / other property sources supported by
@@ -29,7 +28,6 @@ data class EvakaEnv(
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
     val forceUnpublishDocumentTemplateEnabled: Boolean,
-    val awsRegion: Region,
     val asyncJobRunnerDisabled: Boolean,
     val frontendBaseUrlFi: String,
     val frontendBaseUrlSv: String,
@@ -60,7 +58,6 @@ data class EvakaEnv(
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
                         ?: false,
-                awsRegion = Region.of(env.lookup("evaka.aws.region", "aws.region")),
                 asyncJobRunnerDisabled =
                     env.lookup("evaka.async_job_runner.disable_runner") ?: false,
                 frontendBaseUrlFi =
