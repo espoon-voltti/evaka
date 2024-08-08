@@ -206,6 +206,9 @@ class VasuTemplateController(
         Audit.VasuTemplateUpdate.log(targetId = AuditId(id))
     }
 
+    data class MigrateVasuRequest(
+        val processDefinitionNumber: String
+    )
     @PutMapping("/{id}/migrate")
     fun migrateVasuDocuments(
         db: Database,
