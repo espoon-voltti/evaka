@@ -14,13 +14,19 @@ import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.insertTemplate
 import fi.espoo.evaka.document.publishTemplate
 import fi.espoo.evaka.document.updateDraftTemplateContent
+import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.insertProcess
+import fi.espoo.evaka.process.insertProcessHistoryRow
+import fi.espoo.evaka.shared.ArchivedProcessId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
@@ -29,17 +35,32 @@ import java.time.format.DateTimeFormatter
 import org.springframework.stereotype.Service
 
 @Service
-class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
+class VasuMigratorService(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    featureConfig: FeatureConfig
+) {
     init {
         asyncJobRunner.registerHandler<AsyncJob.MigrateVasuDocument> { db, clock, msg ->
-            db.transaction { tx -> migrateVasu(tx, clock.today(), msg.documentId) }
+            if (msg.processDefinitionNumber == null) {
+                return@registerHandler // old job
+            }
+            db.transaction { tx ->
+                migrateVasu(
+                    tx = tx,
+                    today = clock.today(),
+                    id = msg.documentId,
+                    processDefinitionNumber = msg.processDefinitionNumber,
+                    archiveMetadataOrganization = featureConfig.archiveMetadataOrganization
+                )
+            }
         }
     }
 
     fun planMigrationJobs(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
-        vasuTemplateId: VasuTemplateId
+        vasuTemplateId: VasuTemplateId,
+        processDefinitionNumber: String
     ) {
         val vasuDocumentIds =
             tx.createQuery {
@@ -54,14 +75,21 @@ class VasuMigratorService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) 
 
         asyncJobRunner.plan(
             tx,
-            payloads = vasuDocumentIds.map { AsyncJob.MigrateVasuDocument(it) },
+            payloads =
+                vasuDocumentIds.map { AsyncJob.MigrateVasuDocument(it, processDefinitionNumber) },
             retryCount = 3,
             runAt = now
         )
     }
 }
 
-fun migrateVasu(tx: Database.Transaction, today: LocalDate, id: VasuDocumentId) {
+fun migrateVasu(
+    tx: Database.Transaction,
+    today: LocalDate,
+    id: VasuDocumentId,
+    processDefinitionNumber: String,
+    archiveMetadataOrganization: String
+) {
     val vasuDocument =
         tx.getLatestPublishedVasuDocument(today, id)?.takeIf {
             it.documentState == VasuDocumentState.CLOSED && it.publishedAt != null
@@ -74,14 +102,58 @@ fun migrateVasu(tx: Database.Transaction, today: LocalDate, id: VasuDocumentId) 
 
     val documentId = ChildDocumentId(vasuDocument.id.raw)
     tx.deletePreviouslyMigratedChildDocument(documentId)
+
+    val processId =
+        migrateMetadataProcess(
+            tx = tx,
+            vasuDocument = vasuDocument,
+            processDefinitionNumber = processDefinitionNumber,
+            archiveMetadataOrganization = archiveMetadataOrganization
+        )
+
     tx.insertMigratedChildDocument(
-        documentId,
-        vasuDocument.basics.child.id,
-        templateId,
-        documentContent,
-        vasuDocument.modifiedAt,
-        vasuDocument.publishedAt!!
+        id = documentId,
+        childId = vasuDocument.basics.child.id,
+        templateId = templateId,
+        content = documentContent,
+        modifiedAt = vasuDocument.modifiedAt,
+        publishedAt = vasuDocument.publishedAt!!,
+        processId = processId
     )
+}
+
+private fun migrateMetadataProcess(
+    tx: Database.Transaction,
+    vasuDocument: VasuDocument,
+    processDefinitionNumber: String,
+    archiveMetadataOrganization: String
+): ArchivedProcessId {
+    val archiveDurationMonths = 120 * 12
+    val processId =
+        tx.insertProcess(
+                processDefinitionNumber = processDefinitionNumber,
+                year = vasuDocument.created.year,
+                organization = archiveMetadataOrganization,
+                archiveDurationMonths = archiveDurationMonths
+            )
+            .id
+    tx.insertProcessHistoryRow(
+        processId = processId,
+        state = ArchivedProcessState.INITIAL,
+        now = vasuDocument.created,
+        userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+    )
+    vasuDocument.events
+        .firstOrNull { it.eventType == VasuDocumentEventType.MOVED_TO_CLOSED }
+        ?.also {
+            tx.insertProcessHistoryRow(
+                processId = processId,
+                state = ArchivedProcessState.COMPLETED,
+                now = it.created,
+                userId = it.createdBy
+            )
+        }
+    return processId
 }
 
 private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
@@ -124,17 +196,36 @@ private fun getMatchingTemplate(
         .exactlyOneOrNull()
 
 private fun Database.Transaction.deletePreviouslyMigratedChildDocument(id: ChildDocumentId) {
-    createUpdate {
-            sql(
-                """
-        DELETE FROM child_document cd WHERE id = ${bind(id)} AND EXISTS(
-            SELECT 1 FROM document_template dt
-            WHERE cd.template_id = dt.id AND dt.type IN ('MIGRATED_VASU', 'MIGRATED_LEOPS')
-        )
+    val type =
+        createQuery {
+                sql(
+                    """
+        SELECT dt.type 
+        FROM child_document cd
+        JOIN document_template dt ON dt.id = cd.template_id
+        WHERE cd.id = ${bind(id)}
     """
-            )
+                )
+            }
+            .exactlyOneOrNull<DocumentType>()
+
+    when (type) {
+        null -> return // no document found
+        DocumentType.MIGRATED_VASU,
+        DocumentType.MIGRATED_LEOPS -> {
+            execute {
+                sql(
+                    """
+                DELETE FROM archived_process ap
+                WHERE id = (SELECT process_id FROM child_document cd WHERE cd.id = ${bind(id)});
+                
+                DELETE FROM child_document cd WHERE id = ${bind(id)};
+            """
+                )
+            }
         }
-        .execute()
+        else -> throw IllegalArgumentException("document $id is not a migrated document")
+    }
 }
 
 private fun Database.Transaction.insertMigratedChildDocument(
@@ -143,13 +234,14 @@ private fun Database.Transaction.insertMigratedChildDocument(
     templateId: DocumentTemplateId,
     content: DocumentContent,
     modifiedAt: HelsinkiDateTime,
-    publishedAt: HelsinkiDateTime
+    publishedAt: HelsinkiDateTime,
+    processId: ArchivedProcessId
 ) {
     createUpdate {
             sql(
                 """
-INSERT INTO child_document(id, child_id, template_id, status, content, published_content, modified_at, published_at, content_modified_at, content_modified_by, created_by)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(content)}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null, null)
+INSERT INTO child_document(id, child_id, template_id, status, content, published_content, modified_at, published_at, content_modified_at, content_modified_by, created_by, process_id)
+VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(content)}, ${bind(content)}, ${bind(modifiedAt)}, ${bind(publishedAt)}, ${bind(modifiedAt)}, null, null, ${bind(processId)})
 """
             )
         }

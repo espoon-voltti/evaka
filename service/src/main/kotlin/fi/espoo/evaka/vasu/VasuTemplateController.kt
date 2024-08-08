@@ -206,20 +206,25 @@ class VasuTemplateController(
         Audit.VasuTemplateUpdate.log(targetId = AuditId(id))
     }
 
-    data class MigrateVasuRequest(
-        val processDefinitionNumber: String
-    )
+    data class MigrateVasuRequest(val processDefinitionNumber: String)
+
     @PutMapping("/{id}/migrate")
     fun migrateVasuDocuments(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VasuTemplateId
+        @PathVariable id: VasuTemplateId,
+        @RequestBody body: MigrateVasuRequest
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.VasuTemplate.COPY, id)
-                vasuMigratorService.planMigrationJobs(tx, clock.now(), id)
+                vasuMigratorService.planMigrationJobs(
+                    tx,
+                    clock.now(),
+                    id,
+                    body.processDefinitionNumber
+                )
             }
         }
         Audit.VasuTemplateMigrate.log(targetId = AuditId(id))

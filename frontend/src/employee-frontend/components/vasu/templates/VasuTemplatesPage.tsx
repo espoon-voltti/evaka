@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,9 +7,9 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import { VasuTemplateSummary } from 'lib-common/generated/api-types/vasu'
+import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import { AsyncIconOnlyButton } from 'lib-components/atoms/buttons/AsyncIconOnlyButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
@@ -22,17 +22,16 @@ import { faPen, faTrash } from 'lib-icons'
 
 import {
   deleteTemplate,
-  getTemplates,
-  migrateVasuDocuments
+  getTemplates
 } from '../../../generated/api-clients/vasu'
 import { useTranslation } from '../../../state/i18n'
 
 import CopyTemplateModal from './CopyTemplateModal'
 import CreateTemplateModal from './CreateOrEditTemplateModal'
+import MigrateTemplateModal from './MigrateTemplateModal'
 
 const getTemplatesResult = wrapResult(getTemplates)
 const deleteTemplateResult = wrapResult(deleteTemplate)
-const migrateVasuDocumentsResult = wrapResult(migrateVasuDocuments)
 
 export default React.memo(function VasuTemplatesPage() {
   const { i18n } = useTranslation()
@@ -46,6 +45,7 @@ export default React.memo(function VasuTemplatesPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [templateToCopy, setTemplateToCopy] = useState<VasuTemplateSummary>()
   const [templateToEdit, setTemplateToEdit] = useState<VasuTemplateSummary>()
+  const [templateToMigrate, setTemplateToMigrate] = useState<UUID | null>(null)
 
   const loadTemplates = useRestApi(getTemplatesResult, setTemplates)
   useEffect(() => {
@@ -91,13 +91,10 @@ export default React.memo(function VasuTemplatesPage() {
                     <Td>{template.documentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
-                        <AsyncIconOnlyButton
+                        <IconOnlyButton
                           icon={faFileExport}
-                          aria-label="lol"
-                          onClick={() =>
-                            migrateVasuDocumentsResult({ id: template.id })
-                          }
-                          onSuccess={() => undefined}
+                          aria-label=""
+                          onClick={() => setTemplateToMigrate(template.id)}
                         />
                         <IconOnlyButton
                           icon={faPen}
@@ -146,6 +143,13 @@ export default React.memo(function VasuTemplatesPage() {
             template={templateToCopy}
             onSuccess={(id) => navigate(`/vasu-templates/${id}`)}
             onCancel={() => setTemplateToCopy(undefined)}
+          />
+        )}
+
+        {!!templateToMigrate && (
+          <MigrateTemplateModal
+            templateId={templateToMigrate}
+            onClose={() => setTemplateToMigrate(null)}
           />
         )}
       </ContentArea>

@@ -93,6 +93,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
                 SELECT
                     cd.id,
                     cd.child_id,
+                    cd.created,
                     cd.modified_at,
                     cd.basics,
                     ct.id AS template_id,
@@ -141,6 +142,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
                     cd.id,
                     cd.child_id,
                     cd.basics,
+                    cd.created,
                     cd.modified_at,
                     ct.id AS template_id,
                     ct.name AS template_name,
