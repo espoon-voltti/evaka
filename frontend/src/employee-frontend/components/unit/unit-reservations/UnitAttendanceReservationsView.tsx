@@ -184,6 +184,32 @@ export default React.memo(function UnitAttendanceReservationsView({
               selectedDate={selectedDate}
               selectedGroup={selectedGroup}
             />
+            <div>
+              <Gap size="s" />
+              <FixedSpaceRow alignItems="center">
+                <Label id="legend-title-label">
+                  {i18n.absences.legendTitle}
+                </Label>
+                <IconOnlyButton
+                  icon={legendVisible ? faChevronUp : faChevronDown}
+                  onClick={() => setLegendVisible(!legendVisible)}
+                  aria-labelledby="legend-title-label"
+                />
+              </FixedSpaceRow>
+              {legendVisible && (
+                <FixedSpaceRow alignItems="flex-start" spacing="XL">
+                  <LabelValueList
+                    spacing="small"
+                    horizontalSpacing="small"
+                    labelWidth="fit-content(40%)"
+                    contents={legendTimeLabels}
+                  />
+                  <FixedSpaceColumn spacing="xs">
+                    <AbsenceLegend icons showAdditionalLegendItems />
+                  </FixedSpaceColumn>
+                </FixedSpaceRow>
+              )}
+            </div>
             {realtimeStaffAttendanceEnabled &&
             selectedGroup.type === 'group' ? (
               <StaffAttendanceTable
@@ -200,31 +226,6 @@ export default React.memo(function UnitAttendanceReservationsView({
           </>
         )}
       </FixedSpaceColumn>
-
-      <div>
-        <Gap size="s" />
-        <FixedSpaceRow alignItems="center">
-          <Label id="legend-title-label">{i18n.absences.legendTitle}</Label>
-          <IconOnlyButton
-            icon={legendVisible ? faChevronUp : faChevronDown}
-            onClick={() => setLegendVisible(!legendVisible)}
-            aria-labelledby="legend-title-label"
-          />
-        </FixedSpaceRow>
-        {legendVisible && (
-          <FixedSpaceRow alignItems="flex-start" spacing="XL">
-            <LabelValueList
-              spacing="small"
-              horizontalSpacing="small"
-              labelWidth="fit-content(40%)"
-              contents={legendTimeLabels}
-            />
-            <FixedSpaceColumn spacing="xs">
-              <AbsenceLegend icons showAdditionalLegendItems />
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
-        )}
-      </div>
     </>
   ))
 })
