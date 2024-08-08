@@ -82,6 +82,14 @@ COPY --from=builder-authenticator /project/target/evaka-review-profile.jar \
 COPY --from=builder-logger /project/target/evaka-logging.jar \
           /opt/keycloak/providers/
 
+## Datadog ##
+
+ADD --chmod=0644 \
+    'https://dtdg.co/latest-java-tracer' /opt/keycloak/dd-java-agent.jar
+
+ENV JAVA_OPTS_APPEND=-javaagent:/opt/keycloak/dd-java-agent.jar
+ENV DD_SERVICE_NAME=keycloak
+
 RUN /opt/keycloak/bin/kc.sh build
 
 USER 1000
