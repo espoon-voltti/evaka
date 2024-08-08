@@ -5,6 +5,7 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.EmailEnv
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.services.ses.SesClient
@@ -12,11 +13,11 @@ import software.amazon.awssdk.services.ses.SesClient
 @Configuration
 class EmailConfig {
     @Bean
-    fun emailClient(client: SesClient, env: EmailEnv): EmailClient =
+    fun emailClient(client: ObjectProvider<SesClient>, env: EmailEnv): EmailClient =
         when (env.enabled) {
             true ->
                 SESEmailClient(
-                    client = client,
+                    client = client.getObject(),
                     whitelist = env.whitelist,
                     subjectPostfix = env.subjectPostfix
                 )

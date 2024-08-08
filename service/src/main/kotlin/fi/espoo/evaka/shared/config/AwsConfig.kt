@@ -8,6 +8,7 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
@@ -76,20 +77,17 @@ class AwsConfig {
     @Bean
     @Profile("production")
     fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client =
-        S3Client.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
+        S3Client.builder().credentialsProvider(credentialsProvider).build()
 
     @Bean
     @Profile("production")
     fun amazonS3PresignerProd(
         env: EvakaEnv,
         credentialsProvider: AwsCredentialsProvider
-    ): S3Presigner =
-        S3Presigner.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
+    ): S3Presigner = S3Presigner.builder().credentialsProvider(credentialsProvider).build()
 
+    @Lazy
     @Bean
     fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient =
-        SesClient.builder()
-            .credentialsProvider(awsCredentialsProvider)
-            .region(env.awsRegion)
-            .build()
+        SesClient.builder().credentialsProvider(awsCredentialsProvider).build()
 }
