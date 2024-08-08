@@ -75,10 +75,6 @@ const getThreadResult = wrapResult(getThread)
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
-export type CancelableMessage = {
-  accountId: UUID
-  sentAt: HelsinkiDateTime
-} & ({ messageId: UUID } | { contentId: UUID })
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>

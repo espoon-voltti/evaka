@@ -386,48 +386,6 @@ export async function replyToThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.undoMessage
-*/
-export async function undoMessage(
-  request: {
-    accountId: UUID,
-    contentId: UUID
-  }
-): Promise<UUID> {
-  const params = createUrlSearchParams(
-    ['contentId', request.contentId]
-  )
-  const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/messages/${request.accountId}/undo-message`.toString(),
-    method: 'POST',
-    params
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.undoReply
-*/
-export async function undoReply(
-  request: {
-    accountId: UUID,
-    messageId: UUID
-  }
-): Promise<void> {
-  const params = createUrlSearchParams(
-    ['messageId', request.messageId]
-  )
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/messages/${request.accountId}/undo-reply`.toString(),
-    method: 'POST',
-    params
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.messaging.MessageController.updateDraftMessage
 */
 export async function updateDraftMessage(

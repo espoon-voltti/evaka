@@ -276,9 +276,4 @@ fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,
     messageContentId: MessageContentId,
     now: HelsinkiDateTime
-) =
-    this.plan(
-        tx,
-        listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)),
-        runAt = now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
-    )
+) = this.plan(tx, listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)), runAt = now)

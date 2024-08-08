@@ -667,38 +667,6 @@ class MessageController(
             }
     }
 
-    @PostMapping("/{accountId}/undo-message")
-    fun undoMessage(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestParam contentId: MessageContentId
-    ): MessageDraftId {
-        return db.connect { dbc ->
-                requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction { it.undoNewMessages(clock.now(), accountId, contentId) }
-            }
-            .also {
-                Audit.MessagingUndoMessage.log(targetId = AuditId(listOf(accountId, contentId)))
-            }
-    }
-
-    @PostMapping("/{accountId}/undo-reply")
-    fun undoReply(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @RequestParam messageId: MessageId
-    ) {
-        db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
-        }
-        Audit.MessagingUndoMessageReply.log(targetId = AuditId(listOf(accountId, messageId)))
-    }
-
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser,
