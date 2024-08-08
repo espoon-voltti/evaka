@@ -5,7 +5,6 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.EmailEnv
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -78,14 +77,6 @@ WHERE m.id = ANY(${bind(messageIds)})
             retryInterval = Duration.ofMinutes(5),
             runAt = runAt
         )
-    }
-
-    private fun getLanguage(languageStr: String?): Language {
-        return when (languageStr?.lowercase()) {
-            "sv" -> Language.sv
-            "en" -> Language.en
-            else -> Language.fi
-        }
     }
 
     fun sendMessageNotification(

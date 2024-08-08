@@ -11,7 +11,6 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -133,9 +132,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             user = employee,
             clock
         )
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -171,9 +168,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             clock,
             type = MessageType.BULLETIN
         )
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -196,46 +191,6 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             getEmailFor(testPersonEn).fromAddress
-        )
-    }
-
-    @Test
-    fun `a notification is not sent when the message has been undone`() {
-        val employeeAccount =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee,
-                            clock,
-                            Action.MessageAccount.ACCESS
-                        )
-                    )
-                    .first()
-            }
-
-        val contentId =
-            postNewThread(
-                sender = employeeAccount,
-                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-                user = employee,
-                clock = clock
-            )
-        assertNotNull(contentId)
-        undoMessage(employeeAccount, contentId, employee, clock)
-
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        )
-
-        assertTrue(MockEmailClient.emails.isEmpty())
-
-        // threads are also deleted
-        assertEquals(
-            0,
-            db.read {
-                it.createQuery { sql("SELECT count(*) FROM message_thread") }.exactlyOne<Int>()
-            }
         )
     }
 
@@ -265,9 +220,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         markAllRecipientMessagesRead(testPersonFi, clock)
 
-        asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
-        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
         assertEquals(3, MockEmailClient.emails.size)
         assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
@@ -295,13 +248,6 @@ class MessageNotificationEmailServiceIntegrationTest :
                 sensitive = false
             )
         )
-
-    private fun undoMessage(
-        sender: MessageAccountId,
-        contentId: MessageContentId,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock
-    ) = messageController.undoMessage(dbInstance(), user, clock, sender, contentId)
 
     private fun getEmailFor(person: DevPerson): Email {
         val address = person.email ?: throw Error("$person has no email")

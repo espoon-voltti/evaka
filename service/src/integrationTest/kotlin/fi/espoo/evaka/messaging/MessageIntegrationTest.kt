@@ -855,7 +855,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `message sent by employee should not be visible to citizen before the undo time has passed (and asyncjob run)`() {
+    fun `message sent by employee should not be visible to citizen before the asyncjob has been executed`() {
         disableAsyncJobRunning {
             postNewThread(
                 title = "Juhannus",
@@ -867,11 +867,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = sendTime,
             )
         }
-
-        // Message is not visible to citizen before undo time has passed
-        val beforeUndo = sendTime.plusSeconds(5)
-        assertEquals(0, unreadMessagesCount(person1, now = beforeUndo))
-        assertTrue(getUnreadReceivedMessages(person1Account, person1, now = beforeUndo).isEmpty())
 
         // Message is still not visible to citizen if the async job hasn't run
         assertEquals(0, unreadMessagesCount(person1, now = readTime))
@@ -908,14 +903,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = sendReplyTime,
             )
         }
-
-        // Reply is not visible to citizen before undo time has passed
-        val beforeReplyUndo = sendReplyTime.plusSeconds(5)
-        assertEquals(1, unreadMessagesCount(person1, now = beforeReplyUndo))
-        assertEquals(
-            1,
-            getUnreadReceivedMessages(person1Account, person1, now = beforeReplyUndo).size
-        )
 
         // Reply is still not visible to citizen if the async job hasn't run
         val readReplyTime = sendReplyTime.plusSeconds(30)
