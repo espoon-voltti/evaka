@@ -9,17 +9,18 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
-import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.holidayperiod.getHolidayPeriodsInRange
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.ScheduleType
-import fi.espoo.evaka.placement.getChildPlacementTypesByRange
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.computeUsedService
 import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -367,20 +368,40 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
     if (irregularDailyServiceTimes.isNotEmpty()) {
         val attendanceDates = tx.getChildAttendanceStartDatesByRange(childId, period)
         val reservationDates = tx.getChildAttendanceReservationStartDatesByRange(childId, period)
-        val placementTypes = tx.getChildPlacementTypesByRange(childId, period)
-        val unitOperationDays = tx.getUnitOperationDays()
+        val placements = tx.getPlacementsForChildDuring(childId, period.start, period.end)
+        val serviceNeeds =
+            tx.getServiceNeedsByChild(childId).filter {
+                FiniteDateRange(it.startDate, it.endDate).overlaps(period)
+            }
+        val unitIds = placements.map { it.unitId }.toSet()
+        val units = tx.getDaycaresById(unitIds)
 
         val absencesToAdd =
             irregularDailyServiceTimes.flatMap dst@{ dailyServiceTimes ->
                 val validityPeriod =
                     period.intersection(dailyServiceTimes.validityPeriod) ?: return@dst listOf()
-                placementTypes.flatMap pt@{ placementType ->
+                placements.flatMap pl@{ placement ->
                     val effectivePeriod =
-                        placementType.period.intersection(validityPeriod) ?: return@pt listOf()
-                    val operationDays = unitOperationDays[placementType.unitId] ?: setOf()
+                        FiniteDateRange(placement.startDate, placement.endDate)
+                            .intersection(validityPeriod) ?: return@pl listOf()
+                    val unit = units[placement.unitId] ?: return@pl listOf()
+
                     effectivePeriod.dates().toList().flatMap date@{ date ->
-                        val dayOfWeek = date.dayOfWeek
-                        if (!operationDays.contains(dayOfWeek)) return@date listOf()
+                        val serviceNeed =
+                            serviceNeeds.find {
+                                FiniteDateRange(it.startDate, it.endDate).includes(date)
+                            }
+                        val effectiveOperationDays =
+                            if (
+                                serviceNeed == null || serviceNeed.shiftCare == ShiftCareType.NONE
+                            ) {
+                                unit.operationDays
+                            } else {
+                                unit.shiftCareOperationDays ?: unit.operationDays
+                            }
+
+                        if (!effectiveOperationDays.contains(date.dayOfWeek.value))
+                            return@date listOf()
 
                         val isIrregularAbsenceDay =
                             dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek) == null
@@ -390,7 +411,7 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
                         val hasReservation = reservationDates.any { it == date }
                         if (hasAttendance || hasReservation) return@date listOf()
 
-                        placementType.placementType.absenceCategories().map { category ->
+                        placement.type.absenceCategories().map { category ->
                             AbsenceUpsert(
                                 childId = childId,
                                 date = date,
