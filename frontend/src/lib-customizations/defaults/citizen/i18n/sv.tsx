@@ -468,12 +468,9 @@ const sv: Translations = {
     nextDay: 'Nästa dag',
     previousMonth: 'Edellinen kuukausi',
     nextMonth: 'Seuraava kuukausi',
-    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
-      `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt från och med ${dateFrom}.`,
-    dailyServiceTimeModifiedDestructivelyModal: {
-      text: (dateFrom: string) =>
-        `En ny daglig bokningstid har uppdaterats till ditt förskolekontrakt. Vänligen gör nya bokningar från och med ${dateFrom}.`,
-      title: 'Gör nya reservationer',
+    dailyServiceTimeModifiedModal: {
+      text: 'Avtalet om tiden för småbarnspedagogik har ändrats, kontrollera att bokningarna motsvarar den nya avtalstiden.',
+      title: 'Kontrollera bokningarna',
       ok: 'Klart!'
     },
     absentEnable: 'Markera som frånvarande',

@@ -12,15 +12,6 @@ import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimeNotification
-*/
-export interface DailyServiceTimeNotification {
-  dateFrom: LocalDate
-  hasDeletedReservations: boolean
-  id: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 */
 export interface DailyServiceTimes {
@@ -92,14 +83,6 @@ export namespace DailyServiceTimesValue {
 */
 export type DailyServiceTimesValue = DailyServiceTimesValue.IrregularTimes | DailyServiceTimesValue.RegularTimes | DailyServiceTimesValue.VariableTimes
 
-
-
-export function deserializeJsonDailyServiceTimeNotification(json: JsonOf<DailyServiceTimeNotification>): DailyServiceTimeNotification {
-  return {
-    ...json,
-    dateFrom: LocalDate.parseIso(json.dateFrom)
-  }
-}
 
 
 export function deserializeJsonDailyServiceTimes(json: JsonOf<DailyServiceTimes>): DailyServiceTimes {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,7 +27,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
-    ): List<DailyServiceTimeNotification> {
+    ): List<DailyServiceTimeNotificationId> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -76,23 +75,17 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     }
 }
 
-data class DailyServiceTimeNotification(
-    val id: DailyServiceTimeNotificationId,
-    val dateFrom: LocalDate,
-    val hasDeletedReservations: Boolean
-)
-
 fun Database.Read.getDailyServiceTimesNotifications(
     userId: PersonId
-): List<DailyServiceTimeNotification> =
+): List<DailyServiceTimeNotificationId> =
     createQuery {
             sql(
                 """
-SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
+SELECT id FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
     """
             )
         }
-        .toList<DailyServiceTimeNotification>()
+        .toList<DailyServiceTimeNotificationId>()
 
 fun Database.Transaction.deleteDailyServiceTimesNotifications(
     notificationIds: List<DailyServiceTimeNotificationId>

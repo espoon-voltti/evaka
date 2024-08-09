@@ -471,12 +471,9 @@ const en: Translations = {
     nextDay: 'Next day',
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
-    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
-      `A new daily service time has been updated to your early childhood education contract starting from ${dateFrom}.`,
-    dailyServiceTimeModifiedDestructivelyModal: {
-      text: (dateFrom: string) =>
-        `A new daily service time has been updated to your early childhood education contract. Please make new reservations starting from ${dateFrom}.`,
-      title: 'Make new reservations',
+    dailyServiceTimeModifiedModal: {
+      text: 'The agreement on your child’s hours of early childhood education has been changed; please check that the attendance bookings correspond to the new agreed hours.',
+      title: 'Check the attendance bookings',
       ok: 'OK'
     },
     absentEnable: 'Mark as absent',

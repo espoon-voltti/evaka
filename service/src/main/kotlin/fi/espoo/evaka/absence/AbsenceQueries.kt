@@ -79,8 +79,22 @@ RETURNING id
 fun Database.Transaction.upsertGeneratedAbsences(
     now: HelsinkiDateTime,
     absences: List<AbsenceUpsert>
-): List<AbsenceId> =
-    prepareBatch(absences) {
+): List<AbsenceId> {
+    if (absences.isEmpty()) return emptyList()
+
+    val childId = absences.map { it.childId }.toSet().also { assert(it.size == 1) }.first()
+
+    // delete reservations
+    execute {
+        sql(
+            """
+        DELETE FROM attendance_reservation
+        WHERE child_id = ${bind(childId)} AND date = ANY (${bind(absences.map { it.date }.distinct())})
+    """
+        )
+    }
+
+    return prepareBatch(absences) {
             sql(
                 """
 INSERT INTO absence AS a (child_id, date, category, absence_type, modified_by, modified_at)
@@ -93,6 +107,7 @@ RETURNING id
         }
         .executeAndReturn()
         .toList()
+}
 
 data class FullDayAbsenseUpsert(
     val childId: ChildId,

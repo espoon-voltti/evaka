@@ -473,12 +473,9 @@ export default {
     nextDay: 'Seuraava päivä',
     previousMonth: 'Edellinen kuukausi',
     nextMonth: 'Seuraava kuukausi',
-    dailyServiceTimeModifiedNotification: (dateFrom: string) =>
-      `Varhaiskasvatussopimukseenne on päivitetty uusi läsnäoloaika ${dateFrom} alkaen.`,
-    dailyServiceTimeModifiedDestructivelyModal: {
-      text: (dateFrom: string) =>
-        `Varhaiskasvatussopimukseenne on päivitetty uusi päivittäinen läsnäoloaika. Teethän uudet läsnäoloilmoitukset ${dateFrom} alkaen.`,
-      title: 'Tee uudet läsnäoloilmoitukset',
+    dailyServiceTimeModifiedModal: {
+      text: 'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.',
+      title: 'Tarkista läsnäoloilmoitukset',
       ok: 'Selvä!'
     },
     absentEnable: 'Merkitse poissaolevaksi',

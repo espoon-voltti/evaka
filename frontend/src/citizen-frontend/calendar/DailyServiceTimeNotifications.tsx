@@ -1,17 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import partition from 'lodash/partition'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import { useQueryResult } from 'lib-common/query'
-import { NotificationsContext } from 'lib-components/Notifications'
+import { UUID } from 'lib-common/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import colors from 'lib-customizations/common'
-import { faExclamation, faInfo } from 'lib-icons'
+import { faExclamation } from 'lib-icons'
 
 import { dismissDailyServiceTimeNotification } from '../generated/api-clients/dailyservicetimes'
 
@@ -26,59 +23,30 @@ export default React.memo(function DailyServiceTimeNotification() {
 
   const notifications = dailyServiceTimeNotifications.getOrElse([])
 
-  const [modalNotificationDates, setModalNotificationDates] = useState<
-    DailyServiceTimeNotification[]
-  >([])
-
-  const { addNotification } = useContext(NotificationsContext)
+  const [notificationIds, setNotificationIds] = useState<UUID[]>([])
 
   useEffect(() => {
     if (notifications.length === 0) return
 
-    const [modalNotifications, toastNotifications] = partition(
-      notifications,
-      (n) => n.hasDeletedReservations
-    )
+    setNotificationIds(notifications)
+  }, [notifications, i18n.calendar])
 
-    for (const notification of toastNotifications) {
-      addNotification({
-        icon: faInfo,
-        iconColor: colors.main.m2,
-        onClose() {
-          void dismissDailyServiceTimeNotification({ body: [notification.id] })
-        },
-        children: i18n.calendar.dailyServiceTimeModifiedNotification(
-          notification.dateFrom.format()
-        ),
-        dataQa: 'daily-service-time-notification'
-      })
-    }
-
-    setModalNotificationDates(modalNotifications)
-  }, [notifications, addNotification, i18n.calendar])
-
-  if (modalNotificationDates.length === 0) {
+  if (notificationIds.length === 0) {
     return null
   }
 
   return (
     <InfoModal
       type="warning"
-      title={i18n.calendar.dailyServiceTimeModifiedDestructivelyModal.title}
-      text={i18n.calendar.dailyServiceTimeModifiedDestructivelyModal.text(
-        modalNotificationDates
-          .map(({ dateFrom }) => dateFrom.format())
-          .join(', ')
-      )}
+      title={i18n.calendar.dailyServiceTimeModifiedModal.title}
+      text={i18n.calendar.dailyServiceTimeModifiedModal.text}
       icon={faExclamation}
       resolve={{
         async action() {
-          await dismissDailyServiceTimeNotification({
-            body: modalNotificationDates.map(({ id }) => id)
-          })
-          setModalNotificationDates([])
+          await dismissDailyServiceTimeNotification({ body: notificationIds })
+          setNotificationIds([])
         },
-        label: i18n.calendar.dailyServiceTimeModifiedDestructivelyModal.ok
+        label: i18n.calendar.dailyServiceTimeModifiedModal.ok
       }}
       data-qa="daily-service-time-notification-modal"
     />

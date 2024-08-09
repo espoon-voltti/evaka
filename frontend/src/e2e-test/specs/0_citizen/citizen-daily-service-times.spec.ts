@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -13,11 +13,7 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
-import {
-  DevDailyServiceTimes,
-  DevDaycare,
-  DevPerson
-} from '../../generated/api-types'
+import { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { waitUntilEqual } from '../../utils'
@@ -29,7 +25,6 @@ let page: Page
 const child = testChild
 let daycare: DevDaycare
 let guardian: DevPerson
-let dailyServiceTime: DevDailyServiceTimes
 
 beforeEach(async () => {
   await resetServiceState()
@@ -53,47 +48,15 @@ beforeEach(async () => {
     startDate: LocalDate.of(2020, 1, 1),
     endDate: LocalDate.of(2036, 6, 30)
   }).save()
-  dailyServiceTime = await Fixture.dailyServiceTime({
+  await Fixture.dailyServiceTime({
     childId: child1.id
   }).save()
 })
 
 describe('Daily service times', () => {
-  test('toast notifications are shown when non-destructive notifications exist', async () => {
+  test('modal notification is shown when notification exists', async () => {
     await Fixture.dailyServiceTimeNotification({
-      guardianId: guardian.id,
-      dailyServiceTimeId: dailyServiceTime.id,
-      dateFrom: LocalDate.of(2021, 3, 5),
-      hasDeletedReservations: false
-    }).save()
-
-    await Fixture.dailyServiceTimeNotification({
-      guardianId: guardian.id,
-      dailyServiceTimeId: dailyServiceTime.id,
-      dateFrom: LocalDate.of(2021, 8, 11),
-      hasDeletedReservations: false
-    }).save()
-
-    await enduserLogin(page, testAdult)
-    await new CitizenHeader(page).selectTab('calendar')
-    const calendar = new CitizenCalendarPage(page, 'desktop')
-
-    await waitUntilEqual(
-      () => calendar.getDailyServiceTimeNotificationContent(0),
-      'Varhaiskasvatussopimukseenne on päivitetty uusi läsnäoloaika 05.03.2021 alkaen.'
-    )
-    await waitUntilEqual(
-      () => calendar.getDailyServiceTimeNotificationContent(1),
-      'Varhaiskasvatussopimukseenne on päivitetty uusi läsnäoloaika 11.08.2021 alkaen.'
-    )
-  })
-
-  test('modal notification is shown when destructive notification exists', async () => {
-    await Fixture.dailyServiceTimeNotification({
-      guardianId: guardian.id,
-      dailyServiceTimeId: dailyServiceTime.id,
-      dateFrom: LocalDate.of(2021, 3, 5),
-      hasDeletedReservations: true
+      guardianId: guardian.id
     }).save()
 
     await enduserLogin(page, testAdult)
@@ -102,7 +65,7 @@ describe('Daily service times', () => {
 
     await waitUntilEqual(
       () => calendar.getDailyServiceTimeNotificationModalContent(),
-      'Varhaiskasvatussopimukseenne on päivitetty uusi päivittäinen läsnäoloaika. Teethän uudet läsnäoloilmoitukset 05.03.2021 alkaen.'
+      'Varhaiskasvatusaikasopimusta on muutettu, tarkistathan että varaukset vastaavat uutta sopimusaikaa.'
     )
   })
 })

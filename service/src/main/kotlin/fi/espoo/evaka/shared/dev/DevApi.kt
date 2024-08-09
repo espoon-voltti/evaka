@@ -1479,8 +1479,8 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
                 it.createUpdate {
                         sql(
                             """
-INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-VALUES (${bind(body.id)}, ${bind(body.guardianId)}, ${bind(body.dailyServiceTimeId)}, ${bind(body.dateFrom)}, ${bind(body.hasDeletedReservations)})
+INSERT INTO daily_service_time_notification (id, guardian_id)
+VALUES (${bind(body.id)}, ${bind(body.guardianId)})
 """
                         )
                     }
@@ -2255,10 +2255,7 @@ data class DevDailyServiceTimes(
 
 data class DevDailyServiceTimeNotification(
     val id: DailyServiceTimeNotificationId,
-    val guardianId: PersonId,
-    val dailyServiceTimeId: DailyServiceTimesId,
-    val dateFrom: LocalDate,
-    val hasDeletedReservations: Boolean
+    val guardianId: PersonId
 )
 
 data class DevPayment(

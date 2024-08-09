@@ -187,24 +187,6 @@ $it.child_id IN (
         .groupBy { it.childId }
         .mapValues { (_, value) -> value.map { ReservationResponse.from(it) } }
 
-fun Database.Read.getChildAttendanceReservationStartDatesByRange(
-    childId: ChildId,
-    range: DateRange
-): List<LocalDate> {
-    return createQuery {
-            sql(
-                """
-                SELECT date
-                FROM attendance_reservation
-                WHERE between_start_and_end(${bind(range)}, date)
-                AND child_id = ${bind(childId)}
-                AND (start_time IS NULL OR start_time != '00:00'::time)  -- filter out overnight reservations
-                """
-            )
-        }
-        .toList<LocalDate>()
-}
-
 data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
 
 fun Database.Read.getReservationDatesForChildrenInRange(
