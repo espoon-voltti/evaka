@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.OfficialLanguage
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.springframework.stereotype.Service
 
@@ -47,7 +46,8 @@ class VasuMigratorService(
             db.transaction { tx ->
                 migrateVasu(
                     tx = tx,
-                    today = clock.today(),
+                    asyncJobRunner = asyncJobRunner,
+                    now = clock.now(),
                     id = msg.documentId,
                     processDefinitionNumber = msg.processDefinitionNumber,
                     archiveMetadataOrganization = featureConfig.archiveMetadataOrganization
@@ -85,13 +85,14 @@ class VasuMigratorService(
 
 fun migrateVasu(
     tx: Database.Transaction,
-    today: LocalDate,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
     id: VasuDocumentId,
     processDefinitionNumber: String,
-    archiveMetadataOrganization: String
+    archiveMetadataOrganization: String,
 ) {
     val vasuDocument =
-        tx.getLatestPublishedVasuDocument(today, id)?.takeIf {
+        tx.getLatestPublishedVasuDocument(now.toLocalDate(), id)?.takeIf {
             it.documentState == VasuDocumentState.CLOSED && it.publishedAt != null
         } ?: return
 
@@ -119,6 +120,13 @@ fun migrateVasu(
         modifiedAt = vasuDocument.modifiedAt,
         publishedAt = vasuDocument.publishedAt!!,
         processId = processId
+    )
+
+    asyncJobRunner.plan(
+        tx = tx,
+        payloads = listOf(AsyncJob.CreateChildDocumentPdf(documentId)),
+        retryCount = 5,
+        runAt = now
     )
 }
 

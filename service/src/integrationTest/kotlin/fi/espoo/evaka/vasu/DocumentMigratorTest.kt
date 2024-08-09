@@ -4,12 +4,14 @@
 
 package fi.espoo.evaka.vasu
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.document.childdocument.getChildDocuments
 import fi.espoo.evaka.document.getTemplateSummaries
 import fi.espoo.evaka.process.getArchiveProcessByChildDocumentId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -27,12 +29,13 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
-class DocumentMigratorTest : PureJdbiTest(resetDbBeforeEach = true) {
+class DocumentMigratorTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mockToday: LocalDate = LocalDate.of(2023, 5, 22)
     private val clock = MockEvakaClock(HelsinkiDateTime.of(mockToday, LocalTime.of(12, 0)))
 
-    private lateinit var vasuTemplate: VasuTemplate
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Test
     fun `migration smoke test`() {
@@ -85,7 +88,8 @@ class DocumentMigratorTest : PureJdbiTest(resetDbBeforeEach = true) {
             val archiveMetadataOrganization = "Espoo"
             migrateVasu(
                 tx = tx,
-                today = mockToday,
+                asyncJobRunner = asyncJobRunner,
+                now = clock.now(),
                 id = vasuDocumentId,
                 processDefinitionNumber = processDefinitionNumber,
                 archiveMetadataOrganization = archiveMetadataOrganization
