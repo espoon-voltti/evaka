@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
-import java.time.DayOfWeek
 import java.time.LocalDate
 
 data class DaycareFields(
@@ -513,18 +512,3 @@ SELECT EXISTS(
             )
         }
         .exactlyOne<Boolean>()
-
-private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
-
-fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> =
-    createQuery { sql("""
-SELECT id, operation_days
-FROM daycare
-""") }
-        .mapTo<UnitOperationDays>()
-        .useIterable { rows ->
-            rows.fold(mutableMapOf()) { acc, row ->
-                acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
-                acc
-            }
-        }
