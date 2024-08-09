@@ -97,6 +97,7 @@ data class VasuDocumentSummary(
 
 data class VasuDocument(
     val id: VasuDocumentId,
+    val created: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,
     val templateId: VasuTemplateId,
     val templateName: String,

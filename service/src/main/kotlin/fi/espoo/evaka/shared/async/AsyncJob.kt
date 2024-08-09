@@ -320,7 +320,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class MigrateVasuDocument(val documentId: VasuDocumentId) : AsyncJob {
+    data class MigrateVasuDocument(
+        val documentId: VasuDocumentId,
+        val processDefinitionNumber: String?
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

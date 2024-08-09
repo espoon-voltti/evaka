@@ -93,6 +93,13 @@ export const curriculumTypes = [
 export type CurriculumType = typeof curriculumTypes[number]
 
 /**
+* Generated from fi.espoo.evaka.vasu.VasuTemplateController.MigrateVasuRequest
+*/
+export interface MigrateVasuRequest {
+  processDefinitionNumber: string
+}
+
+/**
 * Generated from fi.espoo.evaka.vasu.VasuController.UpdateDocumentRequest
 */
 export interface UpdateDocumentRequest {
@@ -134,6 +141,7 @@ export interface VasuContent {
 export interface VasuDocument {
   basics: VasuBasics
   content: VasuContent
+  created: HelsinkiDateTime
   documentState: VasuDocumentState
   events: VasuDocumentEvent[]
   id: UUID
@@ -340,6 +348,7 @@ export function deserializeJsonVasuDocument(json: JsonOf<VasuDocument>): VasuDoc
     ...json,
     basics: deserializeJsonVasuBasics(json.basics),
     content: deserializeJsonVasuContent(json.content),
+    created: HelsinkiDateTime.parseIso(json.created),
     events: json.events.map(e => deserializeJsonVasuDocumentEvent(e)),
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,

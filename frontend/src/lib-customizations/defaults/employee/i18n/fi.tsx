@@ -4733,7 +4733,12 @@ export const fi = {
       TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa'
     },
     moveUp: 'Siirrä ylemmäs',
-    moveDown: 'Siirrä alemmas'
+    moveDown: 'Siirrä alemmas',
+    migrateModal: {
+      title: 'Migratoi lomakepohjaksi ja asiakirjoiksi',
+      processDefinitionNumber: 'Tehtäväluokka (TOS)',
+      resolve: 'Käynnistä migraatio'
+    }
   },
   settings: {
     key: 'Asetus',

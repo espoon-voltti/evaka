@@ -10,6 +10,7 @@ import { CreateDocumentRequest } from 'lib-common/generated/api-types/vasu'
 import { CreateTemplateRequest } from 'lib-common/generated/api-types/vasu'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MigrateVasuRequest } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
 import { UpdateDocumentRequest } from 'lib-common/generated/api-types/vasu'
 import { VasuContent } from 'lib-common/generated/api-types/vasu'
@@ -222,12 +223,14 @@ export async function getTemplates(
 */
 export async function migrateVasuDocuments(
   request: {
-    id: UUID
+    id: UUID,
+    body: MigrateVasuRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/vasu/templates/${request.id}/migrate`.toString(),
-    method: 'PUT'
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<MigrateVasuRequest>
   })
   return json
 }
