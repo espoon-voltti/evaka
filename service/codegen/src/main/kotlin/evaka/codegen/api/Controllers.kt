@@ -77,6 +77,10 @@ data class EndpointMetadata(
             }
         }
 
+        if (responseBodyType?.isMarkedNullable == true) {
+            fail("It must not have a nullable response body")
+        }
+
         when (httpMethod) {
             RequestMethod.GET,
             RequestMethod.HEAD,
