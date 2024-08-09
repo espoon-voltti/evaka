@@ -21,13 +21,13 @@ private val logger = KotlinLogging.logger {}
 class MockDvvModificationsService {
 
     @GetMapping("/v1/kirjausavain/{date}")
-    fun getApiKey(@PathVariable date: String?): String {
+    fun getApiKey(@PathVariable date: String?): ByteArray {
         logger.info { "Mock dvv GET /kirjausavain/$date called" }
-        return "{\"viimeisinKirjausavain\":100000021}"
+        return "{\"viimeisinKirjausavain\":100000021}".toByteArray()
     }
 
     @PostMapping("/v1/muutokset")
-    fun getModifications(@RequestBody body: ModificationsRequest): String {
+    fun getModifications(@RequestBody body: ModificationsRequest): ByteArray {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
 
         val nextToken = body.viimeisinKirjausavain.toInt() + 1
@@ -38,6 +38,7 @@ class MockDvvModificationsService {
               "ajanTasalla": ${nextToken > 0}
             }
         """
+            .toByteArray()
     }
 }
 
