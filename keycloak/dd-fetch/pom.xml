@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.espoo.keycloak</groupId>
+    <artifactId>datadog-agent-downloader</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <properties>
+        <datadog.version>1.38.0</datadog.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+        <!-- This dependency is here so that Dependabot is able to see the
+        dd-java-agent version we use and notify about updates. The actual
+        fetching is done with copy-dependencies -->
+            <groupId>com.datadoghq</groupId>
+            <artifactId>dd-java-agent</artifactId>
+            <version>${datadog.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.datadoghq</groupId>
+                                    <artifactId>dd-java-agent</artifactId>
+                                    <version>${datadog.version}</version>
+                                    <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                                    <destFileName>dd-java-agent.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
