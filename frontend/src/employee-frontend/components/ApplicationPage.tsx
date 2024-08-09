@@ -241,12 +241,12 @@ export default React.memo(function ApplicationPage() {
     (applicationData: ApplicationResponse) => {
       if (
         messageThread.isSuccess &&
-        messageThread.value !== null &&
-        messageThread.value.messages.length > 0
+        messageThread.value?.thread !== null &&
+        messageThread.value.thread.messages.length > 0
       ) {
         return `${getEmployeeUrlPrefix()}/employee/messages/?applicationId=${
           applicationData.application.id
-        }&messageBox=thread&threadId=${messageThread.value.id}&reply=true`
+        }&messageBox=thread&threadId=${messageThread.value.thread.id}&reply=true`
       }
       return `${getEmployeeUrlPrefix()}/employee/messages/send?recipient=${
         applicationData.application.guardianId

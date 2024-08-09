@@ -5,10 +5,10 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
-import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import { ChildDatePresence } from 'lib-common/generated/api-types/reservations'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ExpectedAbsencesRequest } from 'lib-common/generated/api-types/reservations'
+import { ExpectedAbsencesResponse } from 'lib-common/generated/api-types/reservations'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -52,8 +52,8 @@ export async function getExpectedAbsences(
   request: {
     body: ExpectedAbsencesRequest
   }
-): Promise<AbsenceCategory[] | null> {
-  const { data: json } = await client.request<JsonOf<AbsenceCategory[] | null>>({
+): Promise<ExpectedAbsencesResponse> {
+  const { data: json } = await client.request<JsonOf<ExpectedAbsencesResponse>>({
     url: uri`/attendance-reservations/child-date/expected-absences`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExpectedAbsencesRequest>

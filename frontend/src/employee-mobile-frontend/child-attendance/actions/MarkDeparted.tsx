@@ -156,9 +156,9 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   const formIsValid =
     !timeError &&
     expectedAbsences.isSuccess &&
-    (expectedAbsences.value?.includes('NONBILLABLE') !== true ||
+    (expectedAbsences.value?.categories?.includes('NONBILLABLE') !== true ||
       selectedAbsenceTypeNonbillable !== undefined) &&
-    (expectedAbsences.value?.includes('BILLABLE') !== true ||
+    (expectedAbsences.value?.categories?.includes('BILLABLE') !== true ||
       selectedAbsenceTypeBillable !== undefined)
 
   const basicAbsenceTypes: AbsenceType[] = [
@@ -200,12 +200,13 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
             <Gap size="xs" />
 
             {renderResult(expectedAbsences, (expectedAbsences) =>
-              expectedAbsences && expectedAbsences.length > 0 ? (
+              expectedAbsences?.categories &&
+              expectedAbsences.categories.length > 0 ? (
                 <FixedSpaceColumn>
                   <AbsenceTitle size={2}>
                     {i18n.attendances.absenceTitle}
                   </AbsenceTitle>
-                  {expectedAbsences.includes('NONBILLABLE') && (
+                  {expectedAbsences.categories.includes('NONBILLABLE') && (
                     <FixedSpaceColumn
                       spacing="xs"
                       data-qa="absence-NONBILLABLE"
@@ -238,7 +239,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                       />
                     </FixedSpaceColumn>
                   )}
-                  {expectedAbsences.includes('BILLABLE') && (
+                  {expectedAbsences.categories.includes('BILLABLE') && (
                     <FixedSpaceColumn spacing="xs" data-qa="absence-BILLABLE">
                       <div>
                         {formatCategory('BILLABLE', child.placementType, i18n)}
@@ -286,13 +287,15 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                       childId,
                       body: {
                         absenceTypeNonbillable:
-                          expectedAbsences.value?.includes('NONBILLABLE') &&
-                          selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
+                          expectedAbsences.value?.categories?.includes(
+                            'NONBILLABLE'
+                          ) && selectedAbsenceTypeNonbillable !== 'NO_ABSENCE'
                             ? selectedAbsenceTypeNonbillable ?? null
                             : null,
                         absenceTypeBillable:
-                          expectedAbsences.value?.includes('BILLABLE') &&
-                          selectedAbsenceTypeBillable !== 'NO_ABSENCE'
+                          expectedAbsences.value?.categories?.includes(
+                            'BILLABLE'
+                          ) && selectedAbsenceTypeBillable !== 'NO_ABSENCE'
                             ? selectedAbsenceTypeBillable ?? null
                             : null,
                         departed: LocalTime.parse(time)
@@ -301,7 +304,9 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
                   }}
                   onSuccess={() => {
                     const absenceMarked = expectedAbsences
-                      .map((exp) => exp && exp.length > 0)
+                      .map(
+                        (exp) => exp?.categories && exp.categories.length > 0
+                      )
                       .getOrElse(false)
                     navigate(absenceMarked ? -1 : -2)
                   }}

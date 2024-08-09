@@ -299,6 +299,8 @@ class AttendanceReservationController(
         val attendances: List<TimeRange>
     )
 
+    data class ExpectedAbsencesResponse(val categories: Set<AbsenceCategory>?)
+
     @PostMapping(
         "/attendance-reservations/child-date/expected-absences", // deprecated
         "/employee/attendance-reservations/child-date/expected-absences"
@@ -308,9 +310,9 @@ class AttendanceReservationController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExpectedAbsencesRequest
-    ): Set<AbsenceCategory>? {
+    ): ExpectedAbsencesResponse {
         if (!body.date.isBefore(clock.today())) {
-            return null
+            return ExpectedAbsencesResponse(categories = null)
         }
 
         return db.connect { dbc ->
@@ -323,11 +325,14 @@ class AttendanceReservationController(
                         body.childId
                     )
 
-                    getExpectedAbsenceCategories(
-                        tx = tx,
-                        date = body.date,
-                        childId = body.childId,
-                        attendanceTimes = body.attendances
+                    ExpectedAbsencesResponse(
+                        categories =
+                            getExpectedAbsenceCategories(
+                                tx = tx,
+                                date = body.date,
+                                childId = body.childId,
+                                attendanceTimes = body.attendances
+                            )
                     )
                 }
             }

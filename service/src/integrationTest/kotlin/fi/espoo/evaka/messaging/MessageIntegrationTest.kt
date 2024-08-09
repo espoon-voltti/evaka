@@ -1375,25 +1375,27 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         filters: MessageController.PostMessageFilters? = null,
     ): MessageContentId? {
         val messageContentId =
-            messageController.createMessage(
-                dbInstance(),
-                user,
-                MockEvakaClock(now),
-                sender,
-                MessageController.PostMessageBody(
-                    title = title,
-                    content = message,
-                    type = messageType,
-                    recipients = recipients.toSet(),
-                    recipientNames = recipientNames,
-                    attachmentIds = attachmentIds,
-                    draftId = draftId,
-                    urgent = false,
-                    sensitive = sensitive,
-                    relatedApplicationId = relatedApplicationId,
-                    filters = filters
+            messageController
+                .createMessage(
+                    dbInstance(),
+                    user,
+                    MockEvakaClock(now),
+                    sender,
+                    MessageController.PostMessageBody(
+                        title = title,
+                        content = message,
+                        type = messageType,
+                        recipients = recipients.toSet(),
+                        recipientNames = recipientNames,
+                        attachmentIds = attachmentIds,
+                        draftId = draftId,
+                        urgent = false,
+                        sensitive = sensitive,
+                        relatedApplicationId = relatedApplicationId,
+                        filters = filters
+                    )
                 )
-            )
+                .createdId
         if (asyncJobRunningEnabled) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
         }

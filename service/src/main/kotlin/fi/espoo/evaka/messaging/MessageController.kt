@@ -258,19 +258,21 @@ class MessageController(
             }
     }
 
+    data class ThreadByApplicationResponse(val thread: MessageThread?)
+
     @GetMapping("/application/{applicationId}")
     fun getThreadByApplicationId(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
-    ): MessageThread? {
-        return db.connect { dbc ->
+    ): ThreadByApplicationResponse =
+        db.connect { dbc ->
                 val accountId =
                     dbc.read { it.getServiceWorkerAccountId() }
                         ?: throw NotFound("No account found")
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                val response =
+                val thread =
                     dbc.read {
                         it.getMessageThreadByApplicationId(
                             accountId,
@@ -279,16 +281,15 @@ class MessageController(
                             featureConfig.serviceWorkerMessageAccountName
                         )
                     }
-                accountId to response
+                accountId to thread
             }
-            .let { (accountId, response) ->
+            .let { (accountId, thread) ->
                 Audit.MessagingMessageThreadRead.log(
-                    targetId = AuditId(listOfNotNull(accountId, response?.id)),
+                    targetId = AuditId(listOfNotNull(accountId, thread?.id)),
                     objectId = AuditId(applicationId)
                 )
-                response
+                ThreadByApplicationResponse(thread = thread)
             }
-    }
 
     @GetMapping("/unread")
     fun getUnreadMessages(
@@ -402,6 +403,8 @@ class MessageController(
         val filters: PostMessageFilters? = null
     )
 
+    data class CreateMessageResponse(val createdId: MessageContentId?)
+
     @PostMapping("/{accountId}")
     fun createMessage(
         db: Database,
@@ -409,7 +412,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody
-    ): MessageContentId? {
+    ): CreateMessageResponse {
         if (body.recipients.isEmpty()) {
             throw BadRequest("Message must have at least one recipient")
         }
@@ -466,8 +469,8 @@ class MessageController(
                         }
                     }
 
-                    messageService
-                        .sendMessageAsEmployee(
+                    val createdId =
+                        messageService.sendMessageAsEmployee(
                             tx,
                             user,
                             clock.now(),
@@ -486,17 +489,16 @@ class MessageController(
                             relatedApplication = body.relatedApplicationId,
                             filters = body.filters
                         )
-                        .also {
-                            if (body.draftId != null) {
-                                tx.deleteDraft(accountId = accountId, draftId = body.draftId)
-                            }
-                        }
+                    if (body.draftId != null) {
+                        tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                    }
+                    CreateMessageResponse(createdId)
                 }
             }
             .also {
                 Audit.MessagingNewMessageWrite.log(
                     targetId = AuditId(accountId),
-                    objectId = it?.let(AuditId::invoke)
+                    objectId = it.createdId?.let(AuditId::invoke)
                 )
             }
     }

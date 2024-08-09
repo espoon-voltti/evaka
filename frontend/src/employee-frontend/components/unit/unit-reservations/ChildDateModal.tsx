@@ -421,50 +421,51 @@ export default React.memo(function ChildDateModal({
             otherAbsence={nonBillableAbsence.value()}
           />
         )}
-        {expectedAbsences.isSuccess && expectedAbsences.value !== null && (
-          <FixedSpaceColumn data-qa="absence-warnings">
-            {expectedAbsences.value.includes('NONBILLABLE') &&
-              nonBillableAbsence.value() === undefined && (
-                <AbsenceWarning
-                  data-qa="missing-nonbillable-absence"
-                  message={
-                    i18n.unit.attendanceReservations.childDateModal
-                      .missingNonbillableAbsence
-                  }
-                />
-              )}
-            {!expectedAbsences.value.includes('NONBILLABLE') &&
-              nonBillableAbsence.value() !== undefined && (
-                <AbsenceWarning
-                  data-qa="extra-nonbillable-absence"
-                  message={
-                    i18n.unit.attendanceReservations.childDateModal
-                      .extraNonbillableAbsence
-                  }
-                />
-              )}
-            {expectedAbsences.value.includes('BILLABLE') &&
-              billableAbsence.value() === undefined && (
-                <AbsenceWarning
-                  data-qa="missing-billable-absence"
-                  message={
-                    i18n.unit.attendanceReservations.childDateModal
-                      .missingBillableAbsence
-                  }
-                />
-              )}
-            {!expectedAbsences.value.includes('BILLABLE') &&
-              billableAbsence.value() !== undefined && (
-                <AbsenceWarning
-                  data-qa="extra-billable-absence"
-                  message={
-                    i18n.unit.attendanceReservations.childDateModal
-                      .extraBillableAbsence
-                  }
-                />
-              )}
-          </FixedSpaceColumn>
-        )}
+        {expectedAbsences.isSuccess &&
+          expectedAbsences.value?.categories !== null && (
+            <FixedSpaceColumn data-qa="absence-warnings">
+              {expectedAbsences.value?.categories.includes('NONBILLABLE') &&
+                nonBillableAbsence.value() === undefined && (
+                  <AbsenceWarning
+                    data-qa="missing-nonbillable-absence"
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .missingNonbillableAbsence
+                    }
+                  />
+                )}
+              {!expectedAbsences.value?.categories.includes('NONBILLABLE') &&
+                nonBillableAbsence.value() !== undefined && (
+                  <AbsenceWarning
+                    data-qa="extra-nonbillable-absence"
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .extraNonbillableAbsence
+                    }
+                  />
+                )}
+              {expectedAbsences.value?.categories.includes('BILLABLE') &&
+                billableAbsence.value() === undefined && (
+                  <AbsenceWarning
+                    data-qa="missing-billable-absence"
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .missingBillableAbsence
+                    }
+                  />
+                )}
+              {!expectedAbsences.value?.categories.includes('BILLABLE') &&
+                billableAbsence.value() !== undefined && (
+                  <AbsenceWarning
+                    data-qa="extra-billable-absence"
+                    message={
+                      i18n.unit.attendanceReservations.childDateModal
+                        .extraBillableAbsence
+                    }
+                  />
+                )}
+            </FixedSpaceColumn>
+          )}
       </FixedSpaceColumn>
       {!!mutationError && <AlertBox message={mutationError} />}
     </MutateFormModal>

@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
+import { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
 import { EditRecipientRequest } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
@@ -19,6 +20,7 @@ import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messagi
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
 import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
+import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
@@ -31,6 +33,7 @@ import { deserializeJsonMessageThread } from 'lib-common/generated/api-types/mes
 import { deserializeJsonPagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedSentMessages } from 'lib-common/generated/api-types/messaging'
+import { deserializeJsonThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
 
@@ -95,8 +98,8 @@ export async function createMessage(
     accountId: UUID,
     body: PostMessageBody
   }
-): Promise<UUID | null> {
-  const { data: json } = await client.request<JsonOf<UUID | null>>({
+): Promise<CreateMessageResponse> {
+  const { data: json } = await client.request<JsonOf<CreateMessageResponse>>({
     url: uri`/messages/${request.accountId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostMessageBody>
@@ -300,12 +303,12 @@ export async function getThreadByApplicationId(
   request: {
     applicationId: UUID
   }
-): Promise<MessageThread | null> {
-  const { data: json } = await client.request<JsonOf<MessageThread | null>>({
+): Promise<ThreadByApplicationResponse> {
+  const { data: json } = await client.request<JsonOf<ThreadByApplicationResponse>>({
     url: uri`/messages/application/${request.applicationId}`.toString(),
     method: 'GET'
   })
-  return (json != null) ? deserializeJsonMessageThread(json) : null
+  return deserializeJsonThreadByApplicationResponse(json)
 }
 
 
