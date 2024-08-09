@@ -24,13 +24,15 @@ export interface MessagesState {
   selectedAccount: AuthorizedMessageAccount | undefined
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
+  done: boolean
 }
 
 const defaultState: MessagesState = {
   groupAccounts: [],
   selectedAccount: undefined,
   getReplyContent: () => '',
-  setReplyContent: () => undefined
+  setReplyContent: () => undefined,
+  done: false
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -50,16 +52,13 @@ export const MessageContextProvider = React.memo(
         u && u.pinLoginActive ? u.employeeId ?? undefined : undefined
       )
       .getOrElse(undefined)
+    const shouldFetch = !!unitId && !!pinLoggedEmployeeId
 
-    const { data: groupAccounts = [] } = useQuery(
+    const { data: groupAccounts = [], isFetched } = useQuery(
       queryOrDefault(
         messagingAccountsQuery,
         []
-      )(
-        unitId && pinLoggedEmployeeId
-          ? { unitId, employeeId: pinLoggedEmployeeId }
-          : undefined
-      )
+      )(shouldFetch ? { unitId, employeeId: pinLoggedEmployeeId } : undefined)
     )
 
     const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
@@ -87,9 +86,17 @@ export const MessageContextProvider = React.memo(
         selectedAccount,
         groupAccounts,
         getReplyContent,
-        setReplyContent
+        setReplyContent,
+        done: shouldFetch ? isFetched : true
       }),
-      [groupAccounts, selectedAccount, getReplyContent, setReplyContent]
+      [
+        selectedAccount,
+        groupAccounts,
+        getReplyContent,
+        setReplyContent,
+        shouldFetch,
+        isFetched
+      ]
     )
 
     return (

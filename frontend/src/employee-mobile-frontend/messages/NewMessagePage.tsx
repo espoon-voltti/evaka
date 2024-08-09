@@ -16,24 +16,22 @@ import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
 export default function NewMessagePage({ unitId }: { unitId: UUID }) {
-  const { selectedAccount } = useContext(MessageContext)
+  const { selectedAccount, done } = useContext(MessageContext)
   const recipients = useQueryResult(recipientsQuery(), {
     enabled: selectedAccount !== undefined
   })
   const navigate = useNavigate()
 
-  if (!selectedAccount) {
-    return (
-      <Navigate
-        to={routes.messages({ unitId, type: 'unit' }).value}
-        replace={true}
-      />
-    )
-  }
   const onClose = () => {
     navigate(routes.messages({ unitId, type: 'unit' }).value)
   }
 
+  if (!done) {
+    return null
+  }
+  if (!selectedAccount) {
+    return <Navigate to={routes.messages({ unitId, type: 'unit' }).value} />
+  }
   return renderResult(recipients, (availableRecipients) => (
     <MessageEditor
       unitId={unitId}

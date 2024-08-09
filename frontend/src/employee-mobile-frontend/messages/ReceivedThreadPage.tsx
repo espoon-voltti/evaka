@@ -22,12 +22,15 @@ export default function ReceivedThreadPage({
 }) {
   const { threadId } = useRouteParams(['threadId'])
   const navigate = useNavigate()
-  const { selectedAccount } = useContext(MessageContext)
+  const { selectedAccount, done } = useContext(MessageContext)
 
   const onBack = () => {
     navigate(routes.messages(unitOrGroup).value)
   }
 
+  if (!done) {
+    return null
+  }
   if (!selectedAccount) {
     return <Navigate to={routes.messages(unitOrGroup).value} replace={true} />
   }

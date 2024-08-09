@@ -15,7 +15,6 @@ import styled from 'styled-components'
 
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import {
-  AuthorizedMessageAccount,
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
@@ -95,10 +94,15 @@ export default function MessagesPage({
     setUiState({ type: 'list' })
   }, [unitOrGroup])
 
-  const onSelectThread = (threadId: UUID) =>
+  const onSelectThread = (threadId: UUID) => {
+    if (!selectedAccount) return
     navigate(routes.receivedThread(unitOrGroup, threadId).value)
+  }
 
-  const onNewMessageClick = () => navigate(routes.newMessage(unitOrGroup).value)
+  const onNewMessageClick = () => {
+    if (!selectedAccount) return
+    navigate(routes.newMessage(unitOrGroup).value)
+  }
 
   const selectSentMessage = useCallback(
     (message: SentMessage) => setUiState({ type: 'sentMessage', message }),
@@ -120,106 +124,104 @@ export default function MessagesPage({
     [navigate, unitId]
   )
   const onBack = useCallback(() => setUiState({ type: 'list' }), [])
-
-  return selectedAccount
-    ? ((selectedAccount: AuthorizedMessageAccount) => {
-        switch (uiState.type) {
-          case 'list':
-            return (
-              <PageWithNavigation
-                selected="messages"
-                selectedGroup={
-                  selectedAccount?.daycareGroup
-                    ? {
-                        id: selectedAccount.daycareGroup.id,
-                        name: selectedAccount.daycareGroup.name,
-                        utilization: 0
-                      }
-                    : undefined
+  if (!selectedAccount) {
+    return renderResult(unitInfoResponse, (unit) => (
+      <ContentArea
+        opaque
+        paddingVertical="zero"
+        paddingHorizontal="zero"
+        data-qa="messages-page-content-area"
+      >
+        <TopBar title={unit.name} unitId={unitId} />
+        {groupAccounts.length === 0 ? (
+          <NoAccounts data-qa="info-no-account-access">
+            {i18n.messages.noAccountAccess}
+          </NoAccounts>
+        ) : (
+          <Navigate
+            to={routes.unreadMessages(unitOrGroup).value}
+            replace={true}
+          />
+        )}
+        <BottomNavbar selected="messages" unitOrGroup={unitOrGroup} />
+      </ContentArea>
+    ))
+  }
+  switch (uiState.type) {
+    case 'list':
+      return (
+        <PageWithNavigation
+          selected="messages"
+          selectedGroup={
+            selectedAccount.daycareGroup
+              ? {
+                  id: selectedAccount.daycareGroup.id,
+                  name: selectedAccount.daycareGroup.name,
+                  utilization: 0
                 }
-                unitOrGroup={unitOrGroup}
-                onChangeGroup={changeGroup}
-                allowedGroupIds={groupAccounts.flatMap(
-                  (ga) => ga.daycareGroup?.id || []
-                )}
-                includeSelectAll={false}
-              >
-                <ContentArea
-                  opaque
-                  paddingVertical="zero"
-                  paddingHorizontal="zero"
-                  data-qa="messages-page-content-area"
-                >
-                  <Tabs mobile active={activeTab} tabs={threadListTabs} />
-                  {activeTab === 'received' ? (
-                    <ReceivedThreadsList onSelectThread={onSelectThread} />
-                  ) : activeTab === 'sent' ? (
-                    <SentMessagesList onSelectMessage={selectSentMessage} />
-                  ) : (
-                    <DraftMessagesList onSelectDraft={selectDraftMessage} />
-                  )}
-                  <HoverButton
-                    primary
-                    onClick={onNewMessageClick}
-                    data-qa="new-message-btn"
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                    {i18n.messages.newMessage}
-                  </HoverButton>
-                </ContentArea>
-              </PageWithNavigation>
-            )
-          case 'sentMessage': {
-            return (
-              <ContentArea
-                opaque={false}
-                fullHeight
-                paddingHorizontal="zero"
-                paddingVertical="zero"
-                data-qa="messages-page-content-area"
-              >
-                <SentMessageView
-                  unitId={unitId}
-                  account={selectedAccount.account}
-                  message={uiState.message}
-                  onBack={onBack}
-                />
-              </ContentArea>
-            )
+              : undefined
           }
-          case 'continueDraft':
-            return renderResult(recipients, (availableRecipients) => (
-              <MessageEditor
-                unitId={unitId}
-                availableRecipients={availableRecipients}
-                account={selectedAccount.account}
-                draft={uiState.draft}
-                onClose={() => setUiState({ type: 'list' })}
-              />
-            ))
-        }
-      })(selectedAccount)
-    : renderResult(unitInfoResponse, (unit) => (
+          unitOrGroup={unitOrGroup}
+          onChangeGroup={changeGroup}
+          allowedGroupIds={groupAccounts.flatMap(
+            (ga) => ga.daycareGroup?.id || []
+          )}
+          includeSelectAll={false}
+        >
+          <ContentArea
+            opaque
+            paddingVertical="zero"
+            paddingHorizontal="zero"
+            data-qa="messages-page-content-area"
+          >
+            <Tabs mobile active={activeTab} tabs={threadListTabs} />
+            {activeTab === 'received' ? (
+              <ReceivedThreadsList onSelectThread={onSelectThread} />
+            ) : activeTab === 'sent' ? (
+              <SentMessagesList onSelectMessage={selectSentMessage} />
+            ) : (
+              <DraftMessagesList onSelectDraft={selectDraftMessage} />
+            )}
+            <HoverButton
+              primary
+              onClick={onNewMessageClick}
+              data-qa="new-message-btn"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              {i18n.messages.newMessage}
+            </HoverButton>
+          </ContentArea>
+        </PageWithNavigation>
+      )
+    case 'sentMessage': {
+      return (
         <ContentArea
-          opaque
-          paddingVertical="zero"
+          opaque={false}
+          fullHeight
           paddingHorizontal="zero"
+          paddingVertical="zero"
           data-qa="messages-page-content-area"
         >
-          <TopBar title={unit.name} unitId={unitId} />
-          {groupAccounts.length === 0 ? (
-            <NoAccounts data-qa="info-no-account-access">
-              {i18n.messages.noAccountAccess}
-            </NoAccounts>
-          ) : (
-            <Navigate
-              to={routes.unreadMessages(unitOrGroup).value}
-              replace={true}
-            />
-          )}
-          <BottomNavbar selected="messages" unitOrGroup={unitOrGroup} />
+          <SentMessageView
+            unitId={unitId}
+            account={selectedAccount.account}
+            message={uiState.message}
+            onBack={onBack}
+          />
         </ContentArea>
+      )
+    }
+    case 'continueDraft':
+      return renderResult(recipients, (availableRecipients) => (
+        <MessageEditor
+          unitId={unitId}
+          availableRecipients={availableRecipients}
+          account={selectedAccount.account}
+          draft={uiState.draft}
+          onClose={() => setUiState({ type: 'list' })}
+        />
       ))
+  }
 }
 
 const NoAccounts = styled.div`
