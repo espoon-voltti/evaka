@@ -143,13 +143,11 @@ class ChildDocumentController(
                             clock,
                             documents.map { it.id },
                         )
-                    documents
-                        .mapNotNull { document ->
-                            permittedActions[document.id]
-                                ?.takeIf { it.contains(Action.ChildDocument.READ) }
-                                ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
-                        }
-                        .filter { user.isAdmin || !it.data.type.isMigrated() }
+                    documents.mapNotNull { document ->
+                        permittedActions[document.id]
+                            ?.takeIf { it.contains(Action.ChildDocument.READ) }
+                            ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
+                    }
                 }
             }
             .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
@@ -178,9 +176,8 @@ class ChildDocumentController(
                     )
 
                     val document =
-                        tx.getChildDocument(documentId)?.takeIf {
-                            user.isAdmin || !it.template.type.isMigrated()
-                        } ?: throw NotFound("Document $documentId not found")
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
 
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
