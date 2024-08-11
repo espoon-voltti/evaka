@@ -30,7 +30,6 @@ import {
 import CreateApplicationModal from './applications/create-application-modal'
 import { ChildDocumentPage } from './documents/child-document'
 import { IncomeSection } from './guardian-information'
-import { VasuPage } from './vasu/vasu'
 
 export default class ChildInformationPage {
   #deceased: Element
@@ -401,30 +400,6 @@ export class ChildDocumentsSection extends Section {
       page.findByDataQa('template-select')
     )
     this.modalOk = page.findByDataQa('modal-okBtn')
-  }
-
-  readonly #addNewVasu = this.find('[data-qa="add-new-vasu-button"]')
-
-  async addNewVasu() {
-    return this.#addNewVasu.click()
-  }
-
-  async assertCurriculumDocuments(expectedRows: { id: UUID }[]) {
-    const rows = this.page.findAllByDataQa('curriculum-document-row')
-    await rows.assertCount(expectedRows.length)
-    await Promise.all(
-      expectedRows.map(async (expected, index) => {
-        const row = rows.nth(index)
-        await row
-          .findByDataQa(`curriculum-document-${expected.id}`)
-          .waitUntilVisible()
-      })
-    )
-  }
-
-  async openCurriculumDocument(id: UUID) {
-    await this.page.findByDataQa(`curriculum-document-${id}`).click()
-    return new VasuPage(this.page)
   }
 
   async assertChildDocuments(expectedRows: { id: UUID }[]) {

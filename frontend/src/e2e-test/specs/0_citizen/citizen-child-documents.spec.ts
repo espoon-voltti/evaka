@@ -29,6 +29,8 @@ import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let child: DevPerson
+let templateIdVasu: UUID
+let documentIdVasu: UUID
 let templateIdHojks: UUID
 let documentIdHojks: UUID
 let templateIdPed: UUID
@@ -59,6 +61,32 @@ beforeEach(async () => {
   await createDaycarePlacements({
     body: [createDaycarePlacementFixture(uuidv4(), child.id, unitId)]
   })
+
+  templateIdVasu = (
+    await Fixture.documentTemplate({
+      type: 'VASU',
+      name: 'VASU 2023-2024'
+    })
+      .withPublished(true)
+      .save()
+  ).id
+  documentIdVasu = (
+    await Fixture.childDocument({
+      childId: child.id,
+      templateId: templateIdVasu
+    })
+      .withPublishedAt(mockedNow)
+      .withPublishedContent({
+        answers: [
+          {
+            questionId: 'q1',
+            type: 'TEXT',
+            answer: 'test'
+          }
+        ]
+      })
+      .save()
+  ).id
 
   templateIdHojks = (
     await Fixture.documentTemplate({
@@ -119,6 +147,15 @@ beforeEach(async () => {
 })
 
 describe('Citizen child documents listing page', () => {
+  test('Published vasu is in the list', async () => {
+    await header.openChildPage(child.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('vasu')
+    await childPage.childDocumentLink(documentIdVasu).click()
+    expect(page.url.endsWith(`/child-documents/${documentIdVasu}`)).toBeTruthy()
+    await page.find('h1').assertTextEquals('VASU 2023-2024')
+  })
+
   test('Published hojks is in the list', async () => {
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(page)

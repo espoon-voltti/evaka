@@ -5,7 +5,6 @@
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../utils'
 import {
   AsyncButton,
   Page,
@@ -18,16 +17,12 @@ import { EnvType } from './citizen-header'
 export class CitizenChildPage {
   #placements: ElementCollection
   #terminatedPlacements: ElementCollection
-  #vasuChildContainer: ElementCollection
   constructor(
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
   ) {
     this.#placements = page.findAllByDataQa('placement')
     this.#terminatedPlacements = page.findAllByDataQa('terminated-placement')
-    this.#vasuChildContainer = page.findAll(
-      `[data-qa="vasu-child-container"] >> visible=true`
-    )
   }
 
   async assertChildNameIsShown(name: string) {
@@ -168,31 +163,6 @@ export class CitizenChildPage {
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')
     )
-  }
-
-  readonly #vasuRowStateChip = (vasuId: string) =>
-    this.page.find(`[data-qa="state-chip-${vasuId}"] >> visible=true`)
-  readonly #vasuRowPublishedAt = (vasuId: string) =>
-    this.page.find(`[data-qa="published-at-${vasuId}"] >> visible=true`)
-
-  async assertVasuRow(
-    vasuId: string,
-    expectedStatus: string,
-    expectedPublishedAt: string
-  ) {
-    await this.#vasuRowStateChip(vasuId).assertTextEquals(expectedStatus)
-    await this.#vasuRowPublishedAt(vasuId).assertTextEquals(expectedPublishedAt)
-  }
-
-  async openVasu(vasuId: string) {
-    await this.page
-      .findByDataQa(`vasu-${vasuId}`)
-      .findByDataQa('vasu-link')
-      .click()
-  }
-
-  async assertVasuChildCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }
 
   childDocumentRow = (documentId: UUID) =>

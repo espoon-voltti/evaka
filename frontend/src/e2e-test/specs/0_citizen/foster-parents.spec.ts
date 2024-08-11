@@ -23,9 +23,7 @@ import {
 import {
   createFosterParent,
   createMessageAccounts,
-  createVasuDocument,
   getApplicationDecisions,
-  publishVasuDocument,
   resetServiceState
 } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
@@ -37,7 +35,6 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { VasuPreviewPage } from '../../pages/employee/vasu/vasu'
 import { waitUntilEqual } from '../../utils'
 import { minimalDaycareForm } from '../../utils/application-forms'
 import { Page } from '../../utils/page'
@@ -335,44 +332,6 @@ test('Foster parent can read a pedagogical document', async () => {
     LocalDate.todayInSystemTz().format(),
     document.description
   )
-
-  const { endedRelationshipHeader } = await openEndedRelationshipPage()
-  await endedRelationshipHeader.assertNoChildrenTab()
-})
-
-test('Foster parent can read a daycare curriculum and give permission to share it', async () => {
-  await Fixture.placement({
-    childId: fosterChild.id,
-    unitId: testDaycare.id,
-    startDate: mockedDate,
-    endDate: mockedDate.addYears(1)
-  }).save()
-  const vasuDocId = await createVasuDocument({
-    body: {
-      childId: fosterChild.id,
-      templateId: await Fixture.vasuTemplate().saveAndReturnId()
-    }
-  })
-  await publishVasuDocument({ documentId: vasuDocId })
-  await activeRelationshipPage.reload()
-
-  await activeRelationshipHeader.openChildPage(fosterChild.id)
-  const childPage = new CitizenChildPage(activeRelationshipPage)
-  await childPage.openCollapsible('vasu')
-  await childPage.assertVasuRow(
-    vasuDocId,
-    'Luonnos',
-    LocalDate.todayInSystemTz().format('dd.MM.yyyy')
-  )
-  await childPage.openVasu(vasuDocId)
-  const vasuPage = new VasuPreviewPage(activeRelationshipPage)
-  await activeRelationshipHeader.assertUnreadChildrenCount(1)
-  await vasuPage.assertTitleChildName(
-    `${fosterChild.firstName} ${fosterChild.lastName}`
-  )
-  await vasuPage.givePermissionToShare()
-  await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-  await activeRelationshipHeader.assertUnreadChildrenCount(0)
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoChildrenTab()
