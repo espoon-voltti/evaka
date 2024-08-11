@@ -18,10 +18,10 @@ import { renderResult } from '../async-rendering'
 
 import ChildHeader from './ChildHeader'
 import { childrenQuery } from './queries'
+import ChildDocumentsSection from './sections/ChildDocumentsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
 import ServiceNeedAndDailyServiceTimeSection from './sections/service-need-and-daily-service-time/ServiceNeedAndDailyServiceTimeSection'
-import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
   const { childId } = useRouteParams(['childId'])
@@ -55,7 +55,7 @@ export default React.memo(function ChildPage() {
                   <Gap size="s" />
                   <PedagogicalDocumentsSection childId={childId} />
                   <Gap size="s" />
-                  <VasuAndLeopsSection childId={childId} />
+                  <ChildDocumentsSection childId={childId} />
                 </>
               )}
               <Gap size="s" />

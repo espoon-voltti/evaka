@@ -2546,7 +2546,7 @@ export default {
       previousPage: 'Edellinen sivu',
       pageCount: (current: number, total: number) => `Sivu ${current}/${total}`
     },
-    vasu: {
+    childDocuments: {
       title: 'Pedagogiset asiakirjat',
       plansTitle:
         'Varhaiskasvatussuunnitelmat ja esiopetuksen oppimissuunnitelmat',
@@ -2555,55 +2555,7 @@ export default {
         'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat',
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
-      lastModified: 'Viimeisin muokkauspäivämäärä',
-      lastPublished: 'Viimeksi julkaistu huoltajalle',
-      leavePage: 'Poistu',
-      edited: 'muokattu',
-      eventTypes: {
-        PUBLISHED: 'Julkaistu huoltajalle',
-        MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
-        RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
-        MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
-        RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
-        MOVED_TO_CLOSED: 'Päättynyt'
-      },
-      states: {
-        DRAFT: 'Luonnos',
-        READY: 'Laadittu',
-        REVIEWED: 'Arvioitu',
-        CLOSED: 'Päättynyt'
-      },
-      state: 'Suunnitelman tila',
-      events: {
-        DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
-        PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
-      },
-      confidential: 'Salassapidettävä',
-      noRecord: 'Ei merkintää',
-      givePermissionToShareInfoVasu:
-        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
-      givePermissionToShareInfoVasuInfoText:
-        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi yksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
-      givePermissionToShareTitleVasu:
-        'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
-      givePermissionToShareTitleLeops:
-        'Vahvistus esiopetuksen oppimissuunnitelman luovuttamisesta muille tiedonsaajatahoille',
-      givePermissionToShareVasu:
-        'Vahvistan, että lapsen varhaiskasvatussuunitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
-      givePermissionToShareLeops:
-        'Vahvistan, että lapsen esiopetuksen oppimissuunnitelman saa luovuttaa kohdassa “Tiedonsaajatahot” mainituille tahoille.',
-      givePermissionToShareInfoBase:
-        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan.',
-      givePermissionToShareReminder:
-        'Vahvista tiedonsaajatahot, joille suunnitelman saa luovuttaa',
-      sharingVasuDisclaimer:
-        'Lapsen vaihtaessa toiseen kaupungin varhaiskasvatusyksikköön, lapsen varhaiskasvatussuunnitelma ja muut varhaiskasvatuksen asiakirjat siirtyvät uuteen yksikköön (koskee myös ostopalveluna järjestettävää varhaiskasvatusta). Varhaiskasvatussuunnitelman luovuttamiseen ulkopuoliselle taholle pyydämme huoltajilta luvan. Lapsen siirtyessä yksityisen palveluntuottajan tai toisen kunnan järjestämään varhaiskasvatukseen, on varhaiskasvatussuunnitelma kuitenkin toimitettava uudelle varhaiskasvatuksen järjestäjälle myös ilman huoltajan lupaa, mikäli tiedot ovat välttämättömiä lapsen varhaiskasvatuksen järjestämiseksi (Varhaiskasvatuslaki 41 §:n 3 mom.). Lisäksi varhaiskasvatussuunnitelma on toimitettava esi- tai perusopetuksen järjestäjälle, jos se on välttämätöntä lapsen opetuksen järjestämiseksi (Varhaiskasvatuslaki 41 §, perusopetuslaki 41 §:n 3 mom.). Luovuttamisesta informoidaan huoltajaa etukäteen.',
-      sharingLeopsDisclaimer:
-        'Esiopetuksen oppimissuunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 41§, Perusopetuslaki 41§).',
-      givePermissionToShareVasuBrief:
-        'Tarvittaessa välttämättömät tiedot siirretään. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)',
-      givePermissionToShareLeopsBrief:
-        'Tarvittaessa välttämättömät tiedot siirretään. (Varhaiskasvatuslaki 41 §, Perusopetuslaki 41 §)'
+      confidential: 'Salassapidettävä'
     }
   },
   accessibilityStatement: (

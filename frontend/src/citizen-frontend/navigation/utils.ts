@@ -12,7 +12,6 @@ import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'
-import { unreadVasuDocumentsCountQuery } from '../children/sections/vasu-and-leops/queries'
 
 const empty = {}
 
@@ -20,10 +19,6 @@ export function useUnreadChildNotifications() {
   const loggedIn = useUser() !== undefined
   const { data: unreadPedagogicalDocumentsCount = empty } = useQuery(
     unreadPedagogicalDocumentsCountQuery(),
-    { enabled: loggedIn }
-  )
-  const { data: unreadVasuDocumentsCount = empty } = useQuery(
-    unreadVasuDocumentsCountQuery(),
     { enabled: loggedIn }
   )
   const { data: unreadChildDocumentsCount = empty } = useQuery(
@@ -39,15 +34,10 @@ export function useUnreadChildNotifications() {
       })
 
     addCounts(unreadPedagogicalDocumentsCount)
-    addCounts(unreadVasuDocumentsCount)
     addCounts(unreadChildDocumentsCount)
 
     return counts
-  }, [
-    unreadPedagogicalDocumentsCount,
-    unreadVasuDocumentsCount,
-    unreadChildDocumentsCount
-  ])
+  }, [unreadPedagogicalDocumentsCount, unreadChildDocumentsCount])
 
   const totalUnreadChildNotifications = useMemo(
     () => sum(Object.values(unreadChildNotifications)),

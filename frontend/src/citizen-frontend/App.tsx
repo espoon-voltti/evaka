@@ -31,7 +31,6 @@ import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
-import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import AssistancePreschoolDecisionPage from './decisions/assistance-decision-page/AssistancePreschoolDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -337,16 +336,6 @@ export default createBrowserRouter([
           <RequireAuth strength="WEAK">
             <ScrollToTop>
               <CalendarPage />
-            </ScrollToTop>
-          </RequireAuth>
-        )
-      },
-      {
-        path: '/vasu/:id',
-        element: (
-          <RequireAuth>
-            <ScrollToTop>
-              <VasuPage />
             </ScrollToTop>
           </RequireAuth>
         )
