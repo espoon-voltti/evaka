@@ -12,7 +12,6 @@ import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 
 import ChildDocuments from './ChildDocuments'
-import VasuAndLeops from './VasuAndLeops'
 
 interface Props {
   childId: UUID
@@ -62,7 +61,6 @@ export default React.memo(function ChildDocumentsSection({
         paddingVertical="L"
         data-qa="child-documents-collapsible"
       >
-        {hasVasuPermission && <VasuAndLeops id={childId} />}
         {hasChildDocumentsPermission && <ChildDocuments childId={childId} />}
       </CollapsibleContentArea>
     </div>

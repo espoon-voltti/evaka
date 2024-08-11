@@ -16,7 +16,6 @@ import {
 } from 'lib-common/generated/api-types/document'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import Title from 'lib-components/atoms/Title'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -156,7 +155,7 @@ const CreationModal = React.memo(function CreationModal({
   )
 })
 
-const ChildDocumentsList = React.memo(function ChildDocumentsList({
+export default React.memo(function ChildDocumentsList({
   childId
 }: {
   childId: UUID
@@ -200,20 +199,5 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
         </FixedSpaceColumn>
       )
     }
-  )
-})
-
-export default React.memo(function ChildDocumentsWrapper({
-  childId
-}: {
-  childId: UUID
-}) {
-  const { i18n } = useTranslation()
-
-  return (
-    <div>
-      <Title size={4}>{i18n.childInformation.childDocuments.title}</Title>
-      <ChildDocumentsList childId={childId} />
-    </div>
   )
 })
