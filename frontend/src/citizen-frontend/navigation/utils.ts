@@ -53,9 +53,7 @@ export function useChildrenWithOwnPage() {
     if (!data) return []
     return data.filter(
       (child) =>
-        child.upcomingPlacementType !== null ||
-        child.hasPedagogicalDocuments ||
-        child.hasCurriculums
+        child.upcomingPlacementType !== null || child.hasPedagogicalDocuments
     )
   }, [data])
 }

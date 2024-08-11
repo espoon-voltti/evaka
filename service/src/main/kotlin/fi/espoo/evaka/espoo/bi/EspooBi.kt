@@ -201,28 +201,6 @@ WHERE status NOT IN ('DRAFT', 'IGNORED')
             )
         }
 
-    val getCurriculumTemplates =
-        csvQuery<BiCurriculumTemplate> {
-            sql(
-                """
-SELECT
-    id, created, updated, lower(valid) AS valid_from, upper(valid) - 1 AS valid_to, type, language, name
-FROM curriculum_template
-"""
-            )
-        }
-
-    val getCurriculumDocuments =
-        csvQuery<BiCurriculumDocument> {
-            sql(
-                """
-SELECT
-    id, created, updated, child_id AS child, template_id AS template
-FROM curriculum_document
-"""
-            )
-        }
-
     val getPedagogicalDocuments =
         csvQuery<BiPedagogicalDocument> {
             sql(

@@ -25,7 +25,6 @@ import { CalendarEventType } from 'lib-common/generated/api-types/calendarevent'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildWithDateOfBirth } from 'lib-common/generated/api-types/invoicing'
 import { Coordinate } from 'lib-common/generated/api-types/shared'
-import { CurriculumType } from 'lib-common/generated/api-types/vasu'
 import { DailyServiceTimesType } from 'lib-common/generated/api-types/dailyservicetimes'
 import { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { DaycareDecisionCustomization } from 'lib-common/generated/api-types/daycare'
@@ -98,16 +97,6 @@ export interface Citizen {
   firstName: string
   lastName: string
   ssn: string
-}
-
-/**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.CreateVasuTemplateBody
-*/
-export interface CreateVasuTemplateBody {
-  language: OfficialLanguage
-  name: string
-  type: CurriculumType
-  valid: FiniteDateRange
 }
 
 /**
@@ -1003,14 +992,6 @@ export interface PlacementPlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.PostVasuDocBody
-*/
-export interface PostVasuDocBody {
-  childId: UUID
-  templateId: UUID
-}
-
-/**
 * Generated from fi.espoo.evaka.reservations.ReservationInsert
 */
 export interface ReservationInsert {
@@ -1100,14 +1081,6 @@ export function deserializeJsonCaretaker(json: JsonOf<Caretaker>): Caretaker {
     ...json,
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     startDate: LocalDate.parseIso(json.startDate)
-  }
-}
-
-
-export function deserializeJsonCreateVasuTemplateBody(json: JsonOf<CreateVasuTemplateBody>): CreateVasuTemplateBody {
-  return {
-    ...json,
-    valid: FiniteDateRange.parseJson(json.valid)
   }
 }
 

@@ -218,7 +218,6 @@ val testFeatureConfig =
         unplannedAbsencesAreContractSurplusDays = true,
         maxContractDaySurplusThreshold = null,
         useContractDaysAsDailyFeeDivisor = true,
-        curriculumDocumentPermissionToShareRequired = true,
         assistanceDecisionMakerRoles = null,
         preschoolAssistanceDecisionMakerRoles = null,
         requestedStartUpperLimit = 14,

@@ -56,8 +56,6 @@ import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.VasuDocumentId
-import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
@@ -146,7 +144,6 @@ sealed interface Action {
                 )
                 .inAnyUnit(),
         ),
-        VASU_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         PERSONAL_MOBILE_DEVICE_PAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
@@ -164,11 +161,6 @@ sealed interface Action {
         ),
         CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_DOCUMENT_TEMPLATE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit(),
-        ),
-        CREATE_VASU_TEMPLATE(HasGlobalRole(ADMIN)),
-        READ_VASU_TEMPLATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit(),
         ),
@@ -425,10 +417,6 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
-            READ_VASU_DOCUMENT_SUMMARIES(
-                IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
-            ),
             CREATE_ABSENCE(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
@@ -576,8 +564,6 @@ sealed interface Action {
             READ_UNREAD_ASSISTANCE_NEED_PRESCHOOL_DECISION_COUNT(
                 IsCitizen(allowWeakLogin = true).self()
             ),
-            READ_VASU_SUMMARIES(IsCitizen(allowWeakLogin = false).self()),
-            READ_VASU_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
             READ_CHILD_DOCUMENTS_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
             READ_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
@@ -600,21 +586,6 @@ sealed interface Action {
             override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>
         ) : ScopedAction<ServiceApplicationId> {
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfServiceApplication());
-
-            override fun toString(): String = "${javaClass.name}.$name"
-        }
-
-        enum class VasuDocument(
-            override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>
-        ) : ScopedAction<VasuDocumentId> {
-            READ(
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu(),
-            ),
-            GIVE_PERMISSION_TO_SHARE(
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu(),
-            );
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -1243,24 +1214,6 @@ sealed interface Action {
                 .inPlacementGroupOfChild(),
         ),
         READ_CHILD_DOCUMENT(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild(),
-        ),
-        CREATE_VASU_DOCUMENT(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild(),
-        ),
-        READ_VASU_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
@@ -2345,96 +2298,6 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementGroupOfChildOfChildDocument(deletable = true),
         );
-
-        override fun toString(): String = "${javaClass.name}.$name"
-    }
-
-    enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) :
-        ScopedAction<VasuDocumentId> {
-        READ(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfDuplicateChildOfDaycareCurriculumDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfDuplicateChildOfPreschoolCurriculumDocument(),
-        ),
-        UPDATE(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-        ),
-        DELETE(HasGlobalRole(ADMIN)),
-        EVENT_PUBLISHED(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-        ),
-        EVENT_MOVED_TO_READY(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-        ),
-        EVENT_RETURNED_TO_READY(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-        ),
-        EVENT_MOVED_TO_REVIEWED(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-        ),
-        EVENT_RETURNED_TO_REVIEWED(HasGlobalRole(ADMIN)),
-        EVENT_MOVED_TO_CLOSED(
-            HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument(),
-            HasGroupRole(STAFF)
-                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument(),
-        );
-
-        override fun toString(): String = "${javaClass.name}.$name"
-    }
-
-    enum class VasuTemplate(override vararg val defaultRules: ScopedActionRule<in VasuTemplateId>) :
-        ScopedAction<VasuTemplateId> {
-        READ(HasGlobalRole(ADMIN)),
-        COPY(HasGlobalRole(ADMIN)),
-        UPDATE(HasGlobalRole(ADMIN)),
-        DELETE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

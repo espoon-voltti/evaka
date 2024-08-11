@@ -27,9 +27,7 @@ import {
 } from './citizen'
 import {
   Lang as LangEmployee,
-  Translations as TranslationsEmployee,
-  VasuLang as VasuLangEmployee,
-  VasuTranslations as VasuTranslationsEmployee
+  Translations as TranslationsEmployee
 } from './employee'
 import {
   Lang as LangEmployeeMobile,
@@ -268,10 +266,6 @@ type CityLogo = React.JSX.Element | ImgProps
 export interface EmployeeCustomizations {
   appConfig: BaseAppConfig
   translations: Record<LangEmployee, DeepPartial<TranslationsEmployee>>
-  vasuTranslations: Record<
-    VasuLangEmployee,
-    DeepPartial<VasuTranslationsEmployee>
-  >
   cityLogo: CityLogo
   featureFlags: FeatureFlags
   placementTypes: PlacementType[]

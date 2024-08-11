@@ -435,3 +435,4 @@ V435__archived_process_fix_trigger.sql
 V437__service_application.sql
 V438__service_applications_unit_feature.sql
 V439__income_statement_and_income_indexes.sql
+V440__rename_curriculum_tables_to_backup.sql

@@ -113,10 +113,6 @@ import DiscussionReservationSurveyWrapper from './components/unit/tab-calendar/d
 import DiscussionReservationSurveysPage from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveysPage'
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
-import VasuEditPage from './components/vasu/VasuEditPage'
-import VasuPage from './components/vasu/VasuPage'
-import VasuTemplateEditor from './components/vasu/templates/VasuTemplateEditor'
-import VasuTemplatesPage from './components/vasu/templates/VasuTemplatesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 import { queryClient, QueryClientProvider } from './query'
@@ -894,38 +890,6 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="welcomePage">
               <WelcomePage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/vasu/:id',
-          element: (
-            <EmployeeRoute>
-              <VasuPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/vasu/:id/edit',
-          element: (
-            <EmployeeRoute>
-              <VasuEditPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/vasu-templates',
-          element: (
-            <EmployeeRoute title="vasuTemplates">
-              <VasuTemplatesPage />
-            </EmployeeRoute>
-          )
-        },
-        {
-          path: '/vasu-templates/:id',
-          element: (
-            <EmployeeRoute title="vasuTemplates">
-              <VasuTemplateEditor />
             </EmployeeRoute>
           )
         },

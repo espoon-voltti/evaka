@@ -182,7 +182,6 @@ class EspooConfig {
             unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
             maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
             useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
-            curriculumDocumentPermissionToShareRequired = true,
             assistanceDecisionMakerRoles = null,
             preschoolAssistanceDecisionMakerRoles = null,
             requestedStartUpperLimit = 14,

@@ -39,10 +39,6 @@ const customizations: EmployeeCustomizations = {
     },
     sv: {}
   },
-  vasuTranslations: {
-    FI: {},
-    SV: {}
-  },
   cityLogo: <img src={Logo} alt="Espoo Logo" data-qa="footer-city-logo" />,
   featureFlags,
   placementTypes: [

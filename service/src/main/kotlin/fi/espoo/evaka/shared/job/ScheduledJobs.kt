@@ -36,7 +36,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.new.VardaUpdateServiceNew
 import fi.espoo.evaka.varda.old.VardaResetService
 import fi.espoo.evaka.varda.old.VardaUpdateService
-import fi.espoo.evaka.vasu.closeVasusWithExpiredTemplate
 import java.time.LocalTime
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -48,10 +47,6 @@ enum class ScheduledJob(
     CancelOutdatedTransferApplications(
         ScheduledJobs::cancelOutdatedTransferApplications,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 35))),
-    ),
-    CloseVasusWithExpiredTemplate(
-        ScheduledJobs::closeVasusWithExpiredTemplate,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 40))),
     ),
     CompleteChildDocumentsWithExpiredTemplate(
         ScheduledJobs::completeChildDocumentsWithExpiredTemplate,
@@ -424,10 +419,6 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             val count = newCustomerIncomeNotification.scheduleNotifications(tx, clock)
             logger.info("Scheduled $count notifications for new customer about income")
         }
-    }
-
-    fun closeVasusWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx -> closeVasusWithExpiredTemplate(tx, clock.now()) }
     }
 
     fun completeChildDocumentsWithExpiredTemplate(db: Database.Connection, clock: EvakaClock) {

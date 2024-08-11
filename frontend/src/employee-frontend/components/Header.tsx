@@ -369,15 +369,6 @@ export default React.memo(function Header() {
                   {i18n.documentTemplates.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.vasuTemplates && (
-                <Link
-                  to="/vasu-templates"
-                  onClick={closeUserPopup}
-                  data-qa="user-popup-vasu-templates"
-                >
-                  {i18n.vasuTemplates.title}
-                </Link>
-              )}
               {user?.accessibleFeatures.holidayAndTermPeriods && (
                 <Link
                   to="/holiday-periods"

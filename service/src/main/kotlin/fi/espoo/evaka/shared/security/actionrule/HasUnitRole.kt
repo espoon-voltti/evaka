@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
@@ -744,51 +743,6 @@ FROM child_document
 JOIN document_template ON document_template.id = child_document.template_id
 JOIN person ON person.id = child_document.child_id
 WHERE document_template.type = 'HOJKS'
-            """
-            )
-        }
-
-    fun inPlacementUnitOfChildOfVasuDocument(cfg: ChildAclConfig = ChildAclConfig()) =
-        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT curriculum_document.id, child_id
-FROM curriculum_document
-"""
-            )
-        }
-
-    fun inPlacementUnitOfDuplicateChildOfDaycareCurriculumDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT cd.id AS id, person.id AS child_id
-FROM curriculum_document cd
-JOIN curriculum_template ct ON ct.id = cd.template_id
-JOIN person ON person.duplicate_of = cd.child_id
-WHERE ct.type = 'DAYCARE' AND cd.created = (
-    SELECT max(curriculum_document.created)
-    FROM curriculum_document
-    JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
-    WHERE child_id = cd.child_id AND curriculum_template.type = ct.type
-)
-            """
-            )
-        }
-
-    fun inPlacementUnitOfDuplicateChildOfPreschoolCurriculumDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<VasuDocumentId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT curriculum_document.id AS id, person.duplicate_of AS child_id
-FROM curriculum_document
-JOIN curriculum_template ON curriculum_template.id = curriculum_document.template_id
-JOIN person ON person.id = curriculum_document.child_id
-WHERE curriculum_template.type = 'PRESCHOOL'
             """
             )
         }

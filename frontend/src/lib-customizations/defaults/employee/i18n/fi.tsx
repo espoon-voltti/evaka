@@ -58,7 +58,6 @@ export const fi = {
     systemNotifications: 'Tilapäinen ilmoitus',
     unitFeatures: 'Toimintojen avaukset',
     welcomePage: 'Tervetuloa eVakaan',
-    vasuTemplates: 'Vasu-pohjat',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa',
     assistanceNeedPreschoolDecision: 'Päätös tuesta esiopetuksessa',
     clubTerm: 'Kerhon lukukausi',
@@ -1580,17 +1579,6 @@ export const fi = {
       removeConfirmation: 'Haluatko varmasti poistaa varahakijan?'
     },
     childDocumentsSectionTitle: 'Pedagogiset asiakirjat',
-    vasu: {
-      title: 'Varhaiskasvatussuunnitelma ja esiopetuksen oppimissuunnitelma',
-      createNew: 'Luo uusi suunnitelma',
-      modified: 'Muokattu',
-      published: 'Julkaistu',
-      init: {
-        chooseTemplate: 'Valitse pohja',
-        noTemplates: 'Yhtään pohjaa ei löytynyt',
-        error: 'Suunnitelman luonti epäonnistui'
-      }
-    },
     pedagogicalDocument: {
       title: 'Pedagoginen dokumentointi',
       explanation: '',
@@ -1605,68 +1593,6 @@ export const fi = {
       removeConfirmationText:
         'Haluatko varmasti poistaa pedagogisen dokumentin ja sen kuvaustekstin? Poistoa ei saa peruutettua, ja dokumentti poistetaan näkyvistä myös huoltajalta.'
     }
-  },
-  vasu: {
-    leavePage: 'Poistu',
-    edited: 'muokattu',
-    states: {
-      DRAFT: 'Luonnos',
-      READY: 'Laadittu',
-      REVIEWED: 'Arvioitu',
-      CLOSED: 'Päättynyt'
-    },
-    transitions: {
-      guardiansWillBeNotified:
-        'Suunnitelma julkaistaan huoltajien nähtäväksi eVakassa.',
-      vasuIsPublishedToGuardians: 'Suunnitelma julkaistaan huoltajille',
-      PUBLISHED: {
-        buttonText: 'Julkaise suunnitelma',
-        confirmTitle: 'Haluatko julkaista suunnitelman vaihtamatta tilaa?',
-        confirmAction: 'Julkaise',
-        successTitle: 'Suunnitelma on julkaistu huoltajalle!',
-        successText:
-          'Mikäli muokkaat suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
-      },
-      MOVED_TO_READY: {
-        buttonText: 'Julkaise Laadittu-tilassa',
-        confirmTitle: 'Haluatko julkaista laaditun suunnitelman?',
-        confirmAction: 'Julkaise suunnitelma',
-        successTitle: 'Laadittu suunnitelma on julkaistu huoltajalle!',
-        successText:
-          'Mikäli muokkaat laadittua suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
-      },
-      MOVED_TO_REVIEWED: {
-        buttonText: 'Julkaise Arvioitu-tilassa',
-        confirmTitle: 'Haluatko julkaista arvioinnin?',
-        confirmAction: 'Julkaise arviointi',
-        successTitle: 'Arviointi on julkaistu huoltajalle!',
-        successText:
-          'Mikäli muokkaat arvioitua suunnitelmaa myöhemmin, voit julkaista sen uudelleen. Tällöin vanha versio päivittyy automaattisesti ja huoltajalle/huoltajille lähetetään uusi viesti.'
-      },
-      MOVED_TO_CLOSED: {
-        buttonText: 'Merkitse päättyneeksi',
-        confirmTitle: 'Haluatko siirtää suunnitelman Päättynyt-tilaan?',
-        confirmAction: 'Siirrä',
-        successTitle: 'Suunnitelma on merkitty päättyneeksi.',
-        successText: ''
-      },
-      RETURNED_TO_READY: {
-        buttonText: 'Palauta laadituksi',
-        confirmTitle: 'Haluatko palauttaa suunnitelman Laadittu-tilaan?',
-        confirmAction: 'Siirrä',
-        successTitle: 'Suunnitelma on palautettu Laadittu-tilaan',
-        successText: ''
-      },
-      RETURNED_TO_REVIEWED: {
-        buttonText: 'Palauta arvioiduksi',
-        confirmTitle: 'Haluatko palauttaa suunnitelman Arvioitu-tilaan?',
-        confirmAction: 'Siirrä',
-        successTitle: 'Suunnitelma on palautettu Arvioitu-tilaan',
-        successText: ''
-      }
-    },
-    checkInPreview: 'Tarkista esikatselussa',
-    newFollowUpEntryPlaceholder: 'Kirjoita uusi kirjaus...'
   },
   personSearch: {
     search: 'Etsi henkilötunnuksella',
@@ -3691,7 +3617,7 @@ export const fi = {
         'calendar_event_attendee.child_id': 'Kalenteri- osallis- tujana',
         'child_attendance.child_id': 'Läsnäoloja',
         'child_images.child_id': 'Kuvia',
-        'curriculum_document.child_id': 'Opetussuunnitelemia',
+        'backup_curriculum_document.child_id': 'Vanhoja opetussuunnitelemia',
         'daily_service_time.child_id': 'Varhais- kasvatus- aikoja',
         'daily_service_time_notification.guardian_id':
           'Varhais- kasvatus- aikojen ilmoituksia',
@@ -3723,7 +3649,7 @@ export const fi = {
         'service_application.person_id': 'Palv.tarve hakemuksia (huoltajana)',
         'varda_child.person_id': 'Varda lapsi',
         'varda_service_need.evaka_child_id': 'Varda palvelun -tarpeita',
-        'vasu_document.child_id': 'Vasuja',
+        'backup_vasu_document.child_id': 'Vanhoja vasuja',
         'voucher_value_decision.child_id': 'Arvo- päätös- rivejä',
         'voucher_value_decision.head_of_family_id': 'Arvo- päätöksiä (päämies)',
         'voucher_value_decision.partner_id': 'Arvo- päätöksiä (puoliso)',
@@ -4712,99 +4638,6 @@ export const fi = {
       GROUPED_TEXT_FIELDS: 'Nimettyjä tekstikenttiä'
     },
     ...components.documentTemplates
-  },
-  vasuTemplates: {
-    title: 'Opetussuunnitelmapohjat',
-    name: 'Nimi',
-    valid: 'Käytössä aikavälillä',
-    type: 'Tyyppi',
-    types: {
-      DAYCARE: 'Varhaiskasvatussuunnitelma',
-      PRESCHOOL: 'Esiopetuksen oppimissuunnitelma'
-    },
-    language: 'Kieli',
-    languages: {
-      FI: 'Suomenkielinen',
-      SV: 'Ruotsinkielinen'
-    },
-    documentCount: 'Dokumentteja',
-    migratedDocumentCount: 'Migratoitu',
-    addNewTemplate: 'Lisää uusi pohja',
-    templateModal: {
-      createTitle: 'Uusi pohja',
-      editTitle: 'Muokkaa pohjaa',
-      copyTitle: 'Kopioi pohja',
-      validStart: 'Toimintavuosi alkaa',
-      validEnd: 'Toimintavuosi päättyy'
-    },
-    unsavedWarning: 'Haluatko varmasti poistua tallentamatta?',
-    addNewSection: 'Lisää uusi osio',
-    addNewQuestion: 'Lisää uusi kysymys',
-    addNewParagraph: 'Lisää uusi tekstikappale',
-    hideSectionBeforeReady: 'Osio näytetään vasta laatimisen jälkeen',
-    autoGrowingList: 'Automaattisesti kasvava lista',
-    onlyVisibleWhen: (conditions: string[]) =>
-      `Näkyvissä vain kun ${conditions
-        .slice(0, conditions.length - 1)
-        .join(', ')}${
-        conditions.length > 1
-          ? ` ja ${conditions[conditions.length - 1]}`
-          : conditions[0]
-      }.`,
-    visibilityConditions: {
-      unknownQuestion: 'tuntemattomaan kysymykseen on vastattu',
-      checked: (qn: string) => `kysymys ${qn} on valittuna`,
-      answered: (qn: string) => `kysymykseen ${qn} on vastattu`
-    },
-    questionModal: {
-      title: 'Uusi kysymys',
-      type: 'Kysymyksen tyyppi',
-      name: 'Kysymysteksti',
-      info: 'Ohjeteksti',
-      options: 'Vaihtoehdot',
-      addNewOption: 'Lisää vaihtoehto',
-      multiline: 'Monirivinen',
-      minSelections: 'Valittava vähintään',
-      keys: 'Tekstikenttien nimet',
-      addNewKey: 'Lisää nimetty tekstikenttä',
-      dateIsTrackedInEvents:
-        'Päivämäärä näytetään suunnitelman tapahtumissa nimellä',
-      paragraphTitle: 'Kappaleen otsikko',
-      paragraphText: 'Kappaleen leipäteksti',
-      id: 'Viitetunniste',
-      dependsOn: 'Riippuvuudet',
-      continuesNumbering: 'Jatkaa numerointia',
-      checkboxLabel: 'Kysymyksen otsikko',
-      multifieldSeparateRows: 'Tekstikentät erillisillä riveillä'
-    },
-    questionTypes: {
-      TEXT: 'Tekstimuotoinen',
-      CHECKBOX: 'Rasti',
-      RADIO_GROUP: 'Valitse yksi',
-      MULTISELECT: 'Monivalinta',
-      MULTI_FIELD: 'Nimettyjä tekstikenttiä',
-      MULTI_FIELD_LIST: 'Kasvava lista nimettyjä tekstikenttiä',
-      DATE: 'Päivämäärä',
-      FOLLOWUP: 'Seuranta',
-      STATIC_INFO_SUBSECTION: 'Perustiedot'
-    },
-    errorCodes: {
-      EXPIRED_START: 'Päättyneen pohjan alkupäivää ei voi muuttaa',
-      EXPIRED_END: 'Päättyneen pohjan loppupäivää ei voi aikaistaa',
-      FUTURE_START:
-        'Tulevaisuuden pohjan alkupäivää ei voi siirtää menneisyyteen',
-      CURRENT_START: 'Voimassa olevan pohjan alkupäivää ei voi vaihtaa',
-      CURRENT_END:
-        'Voimassa olevan pohjan loppupäivä voi olla aikaisintaan eilen',
-      TEMPLATE_NAME: 'Käytössä olevan pohjan nimeä ei voi vaihtaa'
-    },
-    moveUp: 'Siirrä ylemmäs',
-    moveDown: 'Siirrä alemmas',
-    migrateModal: {
-      title: 'Migratoi lomakepohjaksi ja asiakirjoiksi',
-      processDefinitionNumber: 'Tehtäväluokka (TOS)',
-      resolve: 'Käynnistä migraatio'
-    }
   },
   settings: {
     key: 'Asetus',

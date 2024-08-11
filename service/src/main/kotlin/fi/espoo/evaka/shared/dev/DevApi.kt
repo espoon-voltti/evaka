@@ -177,8 +177,6 @@ import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
-import fi.espoo.evaka.shared.VasuDocumentId
-import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -202,13 +200,6 @@ import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.specialdiet.resetSpecialDietsNotContainedWithin
 import fi.espoo.evaka.specialdiet.setSpecialDiets
-import fi.espoo.evaka.vasu.CurriculumType
-import fi.espoo.evaka.vasu.getDefaultTemplateContent
-import fi.espoo.evaka.vasu.getVasuTemplate
-import fi.espoo.evaka.vasu.insertVasuDocument
-import fi.espoo.evaka.vasu.insertVasuTemplate
-import fi.espoo.evaka.vasu.publishVasuDocument
-import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
@@ -1187,73 +1178,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
             .key
     }
 
-    data class CreateVasuTemplateBody(
-        val name: String = "testipohja",
-        val valid: FiniteDateRange =
-            FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
-        val type: CurriculumType = CurriculumType.DAYCARE,
-        val language: OfficialLanguage = OfficialLanguage.FI,
-    )
-
-    @PostMapping("/vasu/template")
-    fun createVasuTemplate(
-        db: Database,
-        @RequestBody body: CreateVasuTemplateBody,
-    ): VasuTemplateId {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.insertVasuTemplate(
-                    name = body.name,
-                    valid = body.valid,
-                    type = body.type,
-                    language = body.language,
-                    content = getDefaultTemplateContent(body.type, body.language),
-                )
-            }
-        }
-    }
-
-    @PostMapping("/vasu/revokeSharingPermission/{docId}")
-    fun revokeSharingPermission(db: Database, @PathVariable docId: VasuDocumentId) {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.revokeVasuGuardianHasGivenPermissionToShare(docId) }
-        }
-    }
-
-    @DeleteMapping("/vasu/templates")
-    fun deleteVasuTemplates(db: Database) {
-        db.connect { dbc ->
-            dbc.transaction { it.createUpdate { sql("DELETE FROM curriculum_template") }.execute() }
-        }
-    }
-
-    @PostMapping("/vasu/doc")
-    fun createVasuDocument(
-        db: Database,
-        clock: EvakaClock,
-        @RequestBody body: PostVasuDocBody,
-    ): VasuDocumentId {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val template =
-                    tx.getVasuTemplate(body.templateId)
-                        ?: throw NotFound("Template with id ${body.templateId} not found")
-                tx.insertVasuDocument(clock.now(), body.childId, template)
-            }
-        }
-    }
-
-    @PostMapping("/vasu/doc/publish/{documentId}")
-    fun publishVasuDocument(
-        db: Database,
-        clock: EvakaClock,
-        @PathVariable documentId: VasuDocumentId,
-    ) {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.publishVasuDocument(clock.now(), documentId) }
-        }
-    }
-
     @PostMapping("/document-templates")
     fun createDocumentTemplate(
         db: Database,
@@ -1544,7 +1468,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         assistanceNeedPreschoolDecisionNotification,
         missingReservationsNotification,
         messageNotification,
-        vasuNotification,
         pedagogicalDocumentNotification,
         outdatedIncomeNotification,
         calendarEventNotification,
@@ -1591,8 +1514,6 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             isCopy = false,
                         ),
                     )
-                EmailMessageType.vasuNotification ->
-                    emailMessageProvider.vasuNotification(Language.fi, ChildId(UUID.randomUUID()))
                 EmailMessageType.pedagogicalDocumentNotification ->
                     emailMessageProvider.pedagogicalDocumentNotification(
                         Language.fi,
@@ -2271,8 +2192,6 @@ data class DevServiceApplication(
     val decidedAt: HelsinkiDateTime? = null,
     val rejectedReason: String? = null,
 )
-
-data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
 
 data class DevUpsertStaffOccupancyCoefficient(
     val unitId: DaycareId,

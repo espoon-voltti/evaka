@@ -80,7 +80,6 @@ export interface EmployeeFeatures {
   systemNotifications: boolean
   unitFeatures: boolean
   units: boolean
-  vasuTemplates: boolean
 }
 
 /**

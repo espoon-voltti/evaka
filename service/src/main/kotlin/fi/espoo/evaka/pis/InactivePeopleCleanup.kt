@@ -49,8 +49,6 @@ WITH people_with_no_archive_data AS (
     EXCEPT
     SELECT DISTINCT person_id FROM income_statement
     EXCEPT
-    SELECT DISTINCT child_id FROM curriculum_document
-    EXCEPT
     SELECT DISTINCT child_id FROM absence
     EXCEPT
     SELECT DISTINCT child_id FROM child_attendance

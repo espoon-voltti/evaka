@@ -45,7 +45,7 @@ export class CitizenChildPage {
       | 'service-need-and-daily-service-time'
       | 'termination'
       | 'pedagogical-documents'
-      | 'vasu'
+      | 'child-documents'
   ) {
     await this.page.findByDataQa(`collapsible-${collapsible}`).click()
   }

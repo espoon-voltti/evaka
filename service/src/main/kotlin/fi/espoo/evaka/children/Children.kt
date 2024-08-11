@@ -29,7 +29,6 @@ data class Child(
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
     val hasPedagogicalDocuments: Boolean,
-    val hasCurriculums: Boolean,
 )
 
 data class ChildAndPermittedActions(
@@ -43,7 +42,6 @@ data class ChildAndPermittedActions(
     @Nested("unit") val unit: Unit?,
     val upcomingPlacementType: PlacementType?,
     val hasPedagogicalDocuments: Boolean,
-    val hasCurriculums: Boolean,
     val permittedActions: Set<Action.Citizen.Child>,
 ) {
     companion object {
@@ -59,7 +57,6 @@ data class ChildAndPermittedActions(
                 unit = child.unit,
                 upcomingPlacementType = child.upcomingPlacementType,
                 hasPedagogicalDocuments = child.hasPedagogicalDocuments,
-                hasCurriculums = child.hasCurriculums,
                 permittedActions = permittedActions,
             )
     }
