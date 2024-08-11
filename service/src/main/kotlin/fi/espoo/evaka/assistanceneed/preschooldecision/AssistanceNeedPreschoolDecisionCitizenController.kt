@@ -144,7 +144,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         tx,
                         user,
                         clock,
-                        Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
+                        Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_PRESCHOOL_DECISION_COUNT,
                         user.id
                     )
                     tx.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
