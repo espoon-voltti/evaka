@@ -66,4 +66,9 @@ class DvvModificationsBatchRefreshService(
 }
 
 private fun Database.Read.getPersonSsnsToUpdate(): List<String> =
-    createQuery { sql("SELECT DISTINCT(social_security_number) FROM person") }.toList<String>()
+    createQuery {
+            sql(
+                "SELECT DISTINCT(social_security_number) FROM person WHERE COALESCE(social_security_number, '') <> ''"
+            )
+        }
+        .toList<String>()
