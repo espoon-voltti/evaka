@@ -82,7 +82,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
     }
 
     fun calculateInvoiceData(
-        tx: Database.Transaction,
+        tx: Database.Read,
         range: FiniteDateRange
     ): InvoiceCalculationData {
         val feeThresholds =
@@ -175,7 +175,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
     )
 
     private fun getInvoiceCodebtor(
-        tx: Database.Transaction,
+        tx: Database.Read,
         decisions: List<FeeDecision>,
         dateRange: FiniteDateRange
     ): PersonId? {
