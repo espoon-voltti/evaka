@@ -483,9 +483,11 @@ private fun relevantAbsence(
     val absence =
         (absences.firstOrNull { it.category == AbsenceCategory.BILLABLE } ?: absences.firstOrNull())
             ?: return null
+    val fullDayAbsence = absences.size == placementType.absenceCategories().size
 
-    return if (absence.date.isBefore(today) || !hasReservation) {
-        // Absence should be shown in citizen's calendar (although attendances still take precedence)
+    return if (absence.date.isBefore(today) || fullDayAbsence || !hasReservation) {
+        // Absence should be shown in citizen's calendar (although attendances still take
+        // precedence)
         AbsenceInfo(absence.absenceType, absence.editableByCitizen())
     } else {
         // Absence is not relevant for citizen's calendar

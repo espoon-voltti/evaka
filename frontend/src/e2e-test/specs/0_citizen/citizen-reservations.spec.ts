@@ -940,6 +940,116 @@ describe.each(e)('Calendar day content (%s)', (env) => {
       }
     ])
   })
+
+  it('Reservation + full day absence (daycare)', async () => {
+    await init()
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceType: 'SICKLEAVE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+  })
+
+  it('Reservation + full day absence (preschool + daycare)', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE'
+    }).save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'NONBILLABLE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+  })
+
+  it('Reservation + part-day planned absence', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE',
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: '09:00–13:00'
+      }
+    ])
+  })
+
+  it('Reservation + part-day planned absence (in the past)', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE',
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env, {
+      mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+  })
 })
 
 describe('Citizen calendar child visibility', () => {
