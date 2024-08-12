@@ -606,7 +606,7 @@ class DraftInvoiceGenerator(
                 toTemporaryPlacementInvoiceRows(
                     period,
                     invoiceRowStub.child,
-                    invoiceRowStub.placement,
+                    invoiceRowStub.placement.type,
                     invoiceRowStub.priceBeforeFeeAlterations,
                     unitId,
                     dailyFeeDivisor,
@@ -625,7 +625,7 @@ class DraftInvoiceGenerator(
                     accumulatedRows,
                     period,
                     invoiceRowStub.child,
-                    invoiceRowStub.placement,
+                    invoiceRowStub.placement.type,
                     invoiceRowStub.priceBeforeFeeAlterations,
                     invoiceRowStub.finalPrice,
                     unitId,
@@ -647,7 +647,7 @@ class DraftInvoiceGenerator(
     private fun toTemporaryPlacementInvoiceRows(
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
-        placement: PlacementStub,
+        placementType: PlacementType,
         price: Int,
         unitId: DaycareId,
         dailyFeeDivisor: Int,
@@ -673,7 +673,7 @@ class DraftInvoiceGenerator(
                     amount = amount,
                     unitPrice = price,
                     unitId = unitId,
-                    product = productProvider.mapToProduct(placement.type),
+                    product = productProvider.mapToProduct(placementType),
                     correctionId = null
                 )
             )
@@ -684,7 +684,7 @@ class DraftInvoiceGenerator(
         accumulatedRows: List<InvoiceRow>,
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
-        placement: PlacementStub,
+        placementType: PlacementType,
         price: Int,
         finalPrice: Int,
         unitId: DaycareId,
@@ -710,10 +710,10 @@ class DraftInvoiceGenerator(
 
         val isFullMonth =
             periodAttendanceDates.size == numRelevantOperationalDays ||
-                placement.type ==
+                placementType ==
                     PlacementType.PRESCHOOL_CLUB // always full month regardless attendance
 
-        val product = productProvider.mapToProduct(placement.type)
+        val product = productProvider.mapToProduct(placementType)
         val (amount, unitPrice) =
             if (isFullMonth) {
                 Pair(1, { p: Int -> p })
@@ -771,7 +771,7 @@ class DraftInvoiceGenerator(
                             FullMonthAbsenceType.ABSENCE_FULL_MONTH
                         ),
                     getInvoiceMaxFee,
-                    placement.type
+                    placementType
                 ) +
                 dailyAbsenceRefund(
                     period,
