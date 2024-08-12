@@ -121,7 +121,7 @@ class InvoiceGenerator(
             ) {
                 tx.getFreeJulyChildren(range.start.year)
             } else {
-                emptyList()
+                emptySet()
             }
 
         val codebtors =
@@ -176,7 +176,7 @@ class InvoiceGenerator(
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
         val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
-        val freeChildren: List<ChildId> = listOf(),
+        val freeChildren: Set<ChildId> = setOf(),
         val codebtors: Map<PersonId, PersonId?> = mapOf()
     )
 
@@ -548,17 +548,15 @@ WHERE fridge_child.child_id = ANY(${bind(childIds)})
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> =
     createQuery {
-            sql(
-                """
+            sql("""
 SELECT daycare.id AS unit_id, daycare.care_area_id AS area_id
 FROM daycare
-"""
-            )
+""")
         }
         .toMap { columnPair("unit_id", "area_id") }
 
-fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
-    return createQuery {
+fun Database.Read.getFreeJulyChildren(year: Int): Set<ChildId> =
+    createQuery {
             sql(
                 """
 WITH invoiced_placement AS (
@@ -602,8 +600,7 @@ WHERE
 """
             )
         }
-        .toList<ChildId>()
-}
+        .toSet<ChildId>()
 
 private fun placementOn(year: Int, month: Int): String {
     val firstOfMonth = "'$year-$month-01'"

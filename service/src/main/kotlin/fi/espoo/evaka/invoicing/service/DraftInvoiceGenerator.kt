@@ -92,7 +92,7 @@ class DraftInvoiceGenerator(
         feeThresholds: FeeThresholds,
         absences: List<AbsenceStub>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
-        freeChildren: List<ChildId>,
+        freeChildren: Set<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): List<Invoice> {
         val allServiceNeedOptions = tx.getServiceNeedOptions()
@@ -163,7 +163,7 @@ class DraftInvoiceGenerator(
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
-        freeChildren: List<ChildId>,
+        freeChildren: Set<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val childrenPartialMonth = getPartialMonthChildren(decisions, businessDays)
