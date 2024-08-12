@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { DraftContent } from 'lib-common/generated/api-types/messaging'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import {
+  DraftContent,
+  MessageAccount
+} from 'lib-common/generated/api-types/messaging'
+import { useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MessageTypeChip } from 'lib-components/messages/MessageCharacteristics'
 import {
@@ -22,20 +25,19 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 
 import { draftMessagesQuery } from './queries'
-import { MessageContext } from './state'
 
 interface Props {
+  account: MessageAccount
   onSelectDraft: (draft: DraftContent) => void
 }
 
-export default React.memo(function DraftMessagesList({ onSelectDraft }: Props) {
+export default React.memo(function DraftMessagesList({
+  account,
+  onSelectDraft
+}: Props) {
   const { i18n } = useTranslation()
-  const { selectedAccount } = useContext(MessageContext)
   const draftMessages = useQueryResult(
-    queryOrDefault(
-      draftMessagesQuery,
-      []
-    )(selectedAccount ? { accountId: selectedAccount.account.id } : undefined)
+    draftMessagesQuery({ accountId: account.id })
   )
 
   return renderResult(draftMessages, (messages) => (

@@ -114,109 +114,113 @@ export default function BottomNavbar({
     refetchOnMount: false
   })
   const { groupAccounts } = useContext(MessageContext)
+  const groupAccountIds = groupAccounts.map((accounts) =>
+    accounts.map(({ account }) => account.id)
+  )
 
-  const groupAccountIds = groupAccounts.map(({ account }) => account.id)
-
-  return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (
-    <>
-      {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
-      <ReserveSpace />
-      <Root>
-        <Button data-qa="bottomnav-children">
-          <BottomText
-            text={i18n.common.children}
-            selected={selected === 'child'}
-            onClick={() =>
-              selected !== 'child' &&
-              navigate(routes.childAttendances(unitOrGroup).value)
-            }
-          >
-            <CustomIcon
-              icon={selected === 'child' ? fasChild : faChild}
-              selected={selected === 'child'}
-            />
-          </BottomText>
-        </Button>
-        <Button data-qa="bottomnav-staff">
-          <BottomText
-            text={i18n.common.staff}
-            selected={selected === 'staff'}
-            onClick={() =>
-              selected !== 'staff' &&
-              navigate(
-                (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
-                  ? routes.staffAttendances(unitOrGroup, 'absent')
-                  : routes.staff(unitOrGroup)
-                ).value
-              )
-            }
-          >
-            <CustomIcon
-              icon={selected === 'staff' ? fasUser : faUser}
-              selected={selected === 'staff'}
-            />
-          </BottomText>
-        </Button>
-        {unit.features.includes('MOBILE_MESSAGING') ? (
-          <Button data-qa="bottomnav-messages">
+  return renderResult(
+    combine(unitInfoResponse, groupAccountIds, user),
+    ([unit, groupAccountIds, user]) => (
+      <>
+        {/* Reserve navbar's height from the page, so that the fixed navbar doesn't hide anything */}
+        <ReserveSpace />
+        <Root>
+          <Button data-qa="bottomnav-children">
             <BottomText
-              text={i18n.common.messages}
-              selected={selected === 'messages'}
+              text={i18n.common.children}
+              selected={selected === 'child'}
               onClick={() =>
-                selected !== 'messages' &&
+                selected !== 'child' &&
+                navigate(routes.childAttendances(unitOrGroup).value)
+              }
+            >
+              <CustomIcon
+                icon={selected === 'child' ? fasChild : faChild}
+                selected={selected === 'child'}
+              />
+            </BottomText>
+          </Button>
+          <Button data-qa="bottomnav-staff">
+            <BottomText
+              text={i18n.common.staff}
+              selected={selected === 'staff'}
+              onClick={() =>
+                selected !== 'staff' &&
                 navigate(
-                  (user?.pinLoginActive
-                    ? routes.messages(
-                        toUnitOrGroup({
-                          unitId,
-                          groupId: unit.groups[0]?.id
-                        })
-                      )
-                    : routes.unreadMessages(
-                        toUnitOrGroup({
-                          unitId,
-                          groupId: unit.groups[0]?.id
-                        })
-                      )
+                  (unit.features.includes('REALTIME_STAFF_ATTENDANCE')
+                    ? routes.staffAttendances(unitOrGroup, 'absent')
+                    : routes.staff(unitOrGroup)
                   ).value
                 )
               }
             >
               <CustomIcon
-                icon={selected === 'messages' ? fasEnvelope : faEnvelope}
+                icon={selected === 'staff' ? fasUser : faUser}
+                selected={selected === 'staff'}
+              />
+            </BottomText>
+          </Button>
+          {unit.features.includes('MOBILE_MESSAGING') ? (
+            <Button data-qa="bottomnav-messages">
+              <BottomText
+                text={i18n.common.messages}
                 selected={selected === 'messages'}
-              />
-              {(user?.pinLoginActive && groupAccountIds.length > 0
-                ? unreadCounts.filter(({ accountId }) =>
-                    groupAccountIds.includes(accountId)
+                onClick={() =>
+                  selected !== 'messages' &&
+                  navigate(
+                    (user?.pinLoginActive
+                      ? routes.messages(
+                          toUnitOrGroup({
+                            unitId,
+                            groupId: unit.groups[0]?.id
+                          })
+                        )
+                      : routes.unreadMessages(
+                          toUnitOrGroup({
+                            unitId,
+                            groupId: unit.groups[0]?.id
+                          })
+                        )
+                    ).value
                   )
-                : unreadCounts
-              ).some(({ unreadCount }) => unreadCount > 0) && (
-                <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
-              )}
-            </BottomText>
-          </Button>
-        ) : null}
-        {unit.features.includes('PUSH_NOTIFICATIONS') ? (
-          <Button data-qa="bottomnav-settings">
-            <BottomText
-              text={i18n.common.settings}
-              selected={selected === 'settings'}
-              onClick={() =>
-                selected !== 'settings' &&
-                navigate(routes.settings(unitId).value)
-              }
-            >
-              <CustomIcon
-                icon={selected === 'settings' ? fasGear : faGear}
+                }
+              >
+                <CustomIcon
+                  icon={selected === 'messages' ? fasEnvelope : faEnvelope}
+                  selected={selected === 'messages'}
+                />
+                {(user?.pinLoginActive && groupAccountIds.length > 0
+                  ? unreadCounts.filter(({ accountId }) =>
+                      groupAccountIds.includes(accountId)
+                    )
+                  : unreadCounts
+                ).some(({ unreadCount }) => unreadCount > 0) && (
+                  <UnreadMessagesIndicator data-qa="unread-messages-indicator" />
+                )}
+              </BottomText>
+            </Button>
+          ) : null}
+          {unit.features.includes('PUSH_NOTIFICATIONS') ? (
+            <Button data-qa="bottomnav-settings">
+              <BottomText
+                text={i18n.common.settings}
                 selected={selected === 'settings'}
-              />
-            </BottomText>
-          </Button>
-        ) : null}
-      </Root>
-    </>
-  ))
+                onClick={() =>
+                  selected !== 'settings' &&
+                  navigate(routes.settings(unitId).value)
+                }
+              >
+                <CustomIcon
+                  icon={selected === 'settings' ? fasGear : faGear}
+                  selected={selected === 'settings'}
+                />
+              </BottomText>
+            </Button>
+          ) : null}
+        </Root>
+      </>
+    )
+  )
 }
 
 const UnreadMessagesIndicator = styled.div`

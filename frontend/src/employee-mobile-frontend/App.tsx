@@ -375,7 +375,7 @@ function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
       />
       <Route
         path="new"
-        element={<NewMessagePage unitId={unitOrGroup.unitId} />}
+        element={<NewMessagePage unitOrGroup={unitOrGroup} />}
       />
     </Routes>
   )
