@@ -25,3 +25,20 @@ inline fun <reified T : Enum<T>> enumSetOf(vararg elements: T): EnumSet<T> =
 
 fun <K, V> mapOfNotNullValues(vararg pairs: Pair<K, V?>): Map<K, V> =
     pairs.mapNotNull { if (it.second != null) Pair(it.first, it.second!!) else null }.toMap()
+
+/**
+ * Memoizes a 1-argument function using a *non-thread-safe* cache.
+ *
+ * Nullable result types are not supported to prevent confusion between "not found" and "found but
+ * null".
+ */
+fun <T, R : Any> memoize(f: (T) -> R): (T) -> R = run {
+    val originalThread = Thread.currentThread().threadId()
+    val cache: MutableMap<T, R> = mutableMapOf()
+    return@run { input ->
+        assert(Thread.currentThread().threadId() == originalThread) {
+            "Memoized function accessed from the wrong thread"
+        }
+        cache.getOrPut(input) { f(input) }
+    }
+}

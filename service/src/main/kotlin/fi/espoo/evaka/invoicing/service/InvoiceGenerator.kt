@@ -96,12 +96,6 @@ class InvoiceGenerator(
         val areaIds = tx.getAreaIds()
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
-        val plannedAbsences =
-            allAbsences
-                .filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }
-                .groupBy { it.childId }
-                .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }
-                .toMap()
 
         val freeChildren =
             if (
@@ -126,7 +120,10 @@ class InvoiceGenerator(
                 .toSet() +
                 permanentPlacements.keys +
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
-        val operationalDaysByChild = tx.getOperationalDatesForChildren(range, allChildren)
+        val operationalDaysByChild =
+            tx.getOperationalDatesForChildren(range, allChildren).mapValues {
+                DateSet.of(it.value.map(LocalDate::toFiniteDateRange))
+            }
         val holidays = tx.getHolidays(range)
         val businessDays =
             DateSet.of(
@@ -155,7 +152,6 @@ class InvoiceGenerator(
             businessDays = businessDays,
             feeThresholds = feeThresholds,
             absences = allAbsences,
-            plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
             codebtors = codebtors,
             defaultServiceNeedOptions = defaultServiceNeedOptions,
@@ -168,11 +164,10 @@ class InvoiceGenerator(
         val temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
         val period: FiniteDateRange,
         val areaIds: Map<DaycareId, AreaId>,
-        val operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
+        val operationalDaysByChild: Map<ChildId, DateSet>,
         val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
-        val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
         val freeChildren: Set<ChildId> = setOf(),
         val codebtors: Map<PersonId, PersonId?> = mapOf(),
         val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
