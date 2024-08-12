@@ -3389,7 +3389,7 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.1"
     express: "npm:^4.19.2"
     express-basic-auth: "npm:^1.2.1"
-    express-http-proxy: "npm:^2.0.0"
+    express-http-proxy: "npm:^2.1.1"
     express-session: "npm:^1.18.0"
     fast-xml-parser: "npm:^4.4.1"
     helmet: "npm:^7.1.0"
@@ -3491,14 +3491,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-http-proxy@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "express-http-proxy@npm:2.0.0"
+"express-http-proxy@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "express-http-proxy@npm:2.1.1"
   dependencies:
     debug: "npm:^3.0.1"
     es6-promise: "npm:^4.1.1"
     raw-body: "npm:^2.3.0"
-  checksum: 10/61b204ece1c78795e7d160893d9d0bad97aed12de7d1f6b6301be4c0f152a0cc2243f2d659a623a7bb1af14321b19d342506028eaf818ad5854a4211735196c3
+  checksum: 10/d0670a06109f6d3bd56be81c0c35e7a5c221eb70a4624ff746481ac402cad9dca836cf544d9c9a1294bf30209f83d76988d9c80a463cdeda2737e8bb4cfdc0aa
   languageName: node
   linkType: hard
 
