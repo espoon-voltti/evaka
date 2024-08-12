@@ -923,28 +923,24 @@ class DraftInvoiceGenerator(
         child: ChildWithDateOfBirth,
         absences: List<AbsenceStub>
     ): Int {
-        val forceMajeureAndFreeAbsences =
+        val forceMajeureDays =
             absences
-                .filter {
+                .filter { period.includes(it.date) }
+                .count {
                     it.absenceType == AbsenceType.FORCE_MAJEURE ||
                         (featureConfig.freeAbsenceGivesADailyRefund &&
                             it.absenceType == AbsenceType.FREE_ABSENCE)
                 }
-                .map { it.date }
-        val forceMajeureDays = forceMajeureAndFreeAbsences.filter { period.includes(it) }
 
-        val parentLeaveAbsences =
-            absences.filter { it.absenceType == AbsenceType.PARENTLEAVE }.map { it.date }
         val parentLeaveDays =
-            if (parentLeaveAbsences.isNotEmpty()) {
-                parentLeaveAbsences
-                    .filter { ChronoUnit.YEARS.between(child.dateOfBirth, it) < 2 }
-                    .filter { period.includes(it) }
-            } else {
-                listOf()
-            }
+            absences
+                .filter { period.includes(it.date) }
+                .count {
+                    it.absenceType == AbsenceType.PARENTLEAVE &&
+                        ChronoUnit.YEARS.between(child.dateOfBirth, it.date) < 2
+                }
 
-        return forceMajeureDays.size + parentLeaveDays.size
+        return forceMajeureDays + parentLeaveDays
     }
 
     private fun monthlyAbsenceDiscount(
