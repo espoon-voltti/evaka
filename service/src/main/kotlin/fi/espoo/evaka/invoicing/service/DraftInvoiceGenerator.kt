@@ -114,6 +114,7 @@ class DraftInvoiceGenerator(
                     generateDraftInvoice(
                         tx,
                         headOfFamilyId,
+                        codebtors[headOfFamilyId],
                         headOfFamilyDecisions,
                         feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
                         period,
@@ -125,7 +126,6 @@ class DraftInvoiceGenerator(
                         absencesByChild,
                         plannedAbsences,
                         freeChildren,
-                        codebtors
                     )
                 }
             } catch (e: Exception) {
@@ -153,6 +153,7 @@ class DraftInvoiceGenerator(
     private fun generateDraftInvoice(
         tx: Database.Read,
         headOfFamily: PersonId,
+        codebtor: PersonId?,
         decisions: List<FeeDecision>,
         placements: List<Pair<FiniteDateRange, PlacementStub>>,
         invoicePeriod: FiniteDateRange,
@@ -164,7 +165,6 @@ class DraftInvoiceGenerator(
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: Set<ChildId>,
-        codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
         val childrenPartialMonth = getPartialMonthChildren(decisions, businessDays)
         val childrenFullMonthAbsences =
@@ -447,7 +447,7 @@ class DraftInvoiceGenerator(
             periodEnd = invoicePeriod.end,
             areaId = areaId,
             headOfFamily = headOfFamily,
-            codebtor = codebtors[headOfFamily],
+            codebtor = codebtor,
             rows = rows
         )
     }
