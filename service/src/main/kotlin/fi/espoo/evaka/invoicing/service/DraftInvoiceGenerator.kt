@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.calculateMaxFee
 import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -95,6 +96,7 @@ class DraftInvoiceGenerator(
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): List<Invoice> {
+        val allServiceNeedOptions = tx.getServiceNeedOptions()
         val absencesByChild = absences.groupBy { absence -> absence.childId }
         val headsOfFamily = decisions.keys + temporaryPlacements.keys
         return headsOfFamily.mapNotNull { headOfFamilyId ->
@@ -119,6 +121,7 @@ class DraftInvoiceGenerator(
                         daycareCodes,
                         operationalDaysByChild,
                         businessDays,
+                        allServiceNeedOptions,
                         feeThresholds,
                         absencesByChild,
                         plannedAbsences,
@@ -157,6 +160,7 @@ class DraftInvoiceGenerator(
         areaIds: Map<DaycareId, AreaId>,
         operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         businessDays: Set<LocalDate>,
+        allServiceNeedOptions: List<ServiceNeedOption>,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
@@ -176,7 +180,6 @@ class DraftInvoiceGenerator(
         }
 
         val getInvoiceMaxFee: (ChildId, Boolean) -> Int = { childId, capMaxFeeAtDefault ->
-            val allServiceNeedOptions = tx.getServiceNeedOptions()
             val childDecisions =
                 decisions.mapNotNull { decision ->
                     val childDecisionPart = decision.children.find { it.child.id == childId }
