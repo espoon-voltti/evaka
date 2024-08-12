@@ -18,7 +18,6 @@ import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
-import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -84,7 +83,6 @@ class DraftInvoiceGenerator(
         tx: Database.Read,
         data: InvoiceGenerator.InvoiceCalculationData,
     ): List<Invoice> {
-        val allServiceNeedOptions = tx.getServiceNeedOptions()
         val absencesByChild = data.absences.groupBy { absence -> absence.childId }
         val headsOfFamily = data.decisions.keys + data.temporaryPlacements.keys
         return headsOfFamily.mapNotNull { headOfFamilyId ->
@@ -111,7 +109,7 @@ class DraftInvoiceGenerator(
                         data.areaIds,
                         data.operationalDaysByChild,
                         data.businessDays,
-                        allServiceNeedOptions,
+                        data.serviceNeedOptions,
                         data.feeThresholds,
                         absencesByChild,
                         data.plannedAbsences,

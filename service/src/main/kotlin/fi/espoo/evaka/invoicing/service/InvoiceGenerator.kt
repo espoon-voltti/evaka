@@ -19,6 +19,8 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -134,6 +136,8 @@ class InvoiceGenerator(
                 }
                 .toSet()
 
+        val serviceNeedOptions = tx.getServiceNeedOptions()
+
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
             permanentPlacements = permanentPlacements,
@@ -146,7 +150,8 @@ class InvoiceGenerator(
             absences = allAbsences,
             plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
-            codebtors = codebtors
+            codebtors = codebtors,
+            serviceNeedOptions = serviceNeedOptions
         )
     }
 
@@ -162,7 +167,8 @@ class InvoiceGenerator(
         val absences: List<AbsenceStub> = listOf(),
         val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
         val freeChildren: Set<ChildId> = setOf(),
-        val codebtors: Map<PersonId, PersonId?> = mapOf()
+        val codebtors: Map<PersonId, PersonId?> = mapOf(),
+        val serviceNeedOptions: List<ServiceNeedOption>,
     )
 
     private fun getInvoiceCodebtor(
