@@ -82,29 +82,18 @@ class DraftInvoiceGenerator(
 ) {
     fun generateDraftInvoices(
         tx: Database.Read,
-        decisions: Map<PersonId, List<FeeDecision>>,
-        permanentPlacements: Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
-        period: FiniteDateRange,
-        daycareCodes: Map<DaycareId, AreaId>,
-        operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
-        businessDays: Set<LocalDate>,
-        feeThresholds: FeeThresholds,
-        absences: List<AbsenceStub>,
-        plannedAbsences: Map<ChildId, Set<LocalDate>>,
-        freeChildren: Set<ChildId>,
-        codebtors: Map<PersonId, PersonId?>
+        data: InvoiceGenerator.InvoiceCalculationData,
     ): List<Invoice> {
         val allServiceNeedOptions = tx.getServiceNeedOptions()
-        val absencesByChild = absences.groupBy { absence -> absence.childId }
-        val headsOfFamily = decisions.keys + temporaryPlacements.keys
+        val absencesByChild = data.absences.groupBy { absence -> absence.childId }
+        val headsOfFamily = data.decisions.keys + data.temporaryPlacements.keys
         return headsOfFamily.mapNotNull { headOfFamilyId ->
             try {
-                val headOfFamilyDecisions = decisions[headOfFamilyId] ?: listOf()
+                val headOfFamilyDecisions = data.decisions[headOfFamilyId] ?: listOf()
                 val feeDecisionPlacements =
                     headOfFamilyDecisions.flatMap { decision ->
                         decision.children.flatMap { child ->
-                            permanentPlacements[child.child.id] ?: listOf()
+                            data.permanentPlacements[child.child.id] ?: listOf()
                         }
                     }
                 tracer.withSpan(
@@ -114,18 +103,19 @@ class DraftInvoiceGenerator(
                     generateDraftInvoice(
                         tx,
                         headOfFamilyId,
-                        codebtors[headOfFamilyId],
+                        data.codebtors[headOfFamilyId],
                         headOfFamilyDecisions,
-                        feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
-                        period,
-                        daycareCodes,
-                        operationalDaysByChild,
-                        businessDays,
+                        feeDecisionPlacements +
+                            (data.temporaryPlacements[headOfFamilyId] ?: listOf()),
+                        data.period,
+                        data.areaIds,
+                        data.operationalDaysByChild,
+                        data.businessDays,
                         allServiceNeedOptions,
-                        feeThresholds,
+                        data.feeThresholds,
                         absencesByChild,
-                        plannedAbsences,
-                        freeChildren,
+                        data.plannedAbsences,
+                        data.freeChildren,
                     )
                 }
             } catch (e: Exception) {
