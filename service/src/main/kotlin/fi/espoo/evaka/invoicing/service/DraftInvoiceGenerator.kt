@@ -569,6 +569,9 @@ class DraftInvoiceGenerator(
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int
     ): List<InvoiceRow> {
+        val refundAbsenceDates =
+            invoiceRowStub.placement.type != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
+                featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
         return when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
@@ -581,12 +584,7 @@ class DraftInvoiceGenerator(
                     dailyFeeDivisor,
                     attendanceDates,
                     isDateRefunded =
-                        if (
-                            invoiceRowStub.placement.type !=
-                                PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
-                                featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
-                        )
-                            { date -> absences.containsKey(date) }
+                        if (refundAbsenceDates) { date -> absences.containsKey(date) }
                         else { _ -> false },
                 )
             else ->
