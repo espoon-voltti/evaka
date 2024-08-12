@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -36,6 +37,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import io.opentracing.noop.NoopTracerFactory
@@ -127,14 +129,16 @@ class InvoiceGenerator(
         val operationalDaysByChild = tx.getOperationalDatesForChildren(range, allChildren)
         val holidays = tx.getHolidays(range)
         val businessDays =
-            range
-                .dates()
-                .filter {
-                    it.dayOfWeek != DayOfWeek.SATURDAY &&
-                        it.dayOfWeek != DayOfWeek.SUNDAY &&
-                        !holidays.contains(it)
-                }
-                .toSet()
+            DateSet.of(
+                range
+                    .dates()
+                    .filter {
+                        it.dayOfWeek != DayOfWeek.SATURDAY &&
+                            it.dayOfWeek != DayOfWeek.SUNDAY &&
+                            !holidays.contains(it)
+                    }
+                    .map { it.toFiniteDateRange() }
+            )
 
         val serviceNeedOptions = tx.getServiceNeedOptions()
 
@@ -162,7 +166,7 @@ class InvoiceGenerator(
         val period: FiniteDateRange,
         val areaIds: Map<DaycareId, AreaId>,
         val operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
-        val businessDays: Set<LocalDate>,
+        val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
         val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),

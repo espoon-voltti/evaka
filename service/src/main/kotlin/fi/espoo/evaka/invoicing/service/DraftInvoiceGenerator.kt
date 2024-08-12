@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.Tracing
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -147,13 +148,15 @@ class DraftInvoiceGenerator(
         invoicePeriod: FiniteDateRange,
         areaIds: Map<DaycareId, AreaId>,
         operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
-        businessDays: Set<LocalDate>,
+        businessDays: DateSet,
         allServiceNeedOptions: List<ServiceNeedOption>,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: Set<ChildId>,
     ): Invoice? {
+        val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
+
         val childrenPartialMonth = getPartialMonthChildren(decisions, businessDays)
         val childrenFullMonthAbsences =
             getFullMonthAbsences(decisions, operationalDaysByChild, absences, plannedAbsences)
@@ -224,9 +227,14 @@ class DraftInvoiceGenerator(
             } else {
                 childDecisionMaxFees
                     .map { (dateRange, maxFee) ->
-                        val daysInRange = businessDays.filter { dateRange.includes(it) }.size
+                        val daysInRange =
+                            businessDays
+                                .intersection(sequenceOf(dateRange))
+                                .ranges()
+                                .map { it.durationInDays() }
+                                .sum()
                         (BigDecimal(maxFee) * BigDecimal(daysInRange)).divide(
-                            BigDecimal(businessDays.size),
+                            BigDecimal(businessDayCount),
                             2,
                             RoundingMode.HALF_UP
                         )
@@ -370,7 +378,7 @@ class DraftInvoiceGenerator(
                     val dailyFeeDivisor =
                         contractDaysPerMonth
                             ?: featureConfig.dailyFeeDivisorOperationalDaysOverride
-                            ?: businessDays.size
+                            ?: businessDayCount
 
                     val childOperationalDays =
                         operationalDaysByChild.getOrDefault(child.id, emptySet()).toSet()
@@ -404,7 +412,7 @@ class DraftInvoiceGenerator(
                                     dailyFeeDivisor,
                                     numRelevantOperationalDays =
                                         minOf(
-                                            contractDaysPerMonth ?: businessDays.size,
+                                            contractDaysPerMonth ?: businessDayCount,
                                             dailyFeeDivisor
                                         ),
                                     attendanceDates,
@@ -441,12 +449,15 @@ class DraftInvoiceGenerator(
 
     private fun getPartialMonthChildren(
         decisions: List<FeeDecision>,
-        businessDays: Set<LocalDate>
+        businessDays: DateSet,
     ): Set<ChildId> {
         val children = decisions.flatMap { it.children.map { child -> child.child.id } }.toSet()
         return children
             .filter { childId ->
-                businessDays.any { date -> !childHasFeeDecision(decisions, childId, date) }
+                businessDays
+                    .ranges()
+                    .flatMap { it.dates() }
+                    .any { date -> !childHasFeeDecision(decisions, childId, date) }
             }
             .toSet()
     }
