@@ -35,7 +35,7 @@ import { MessageContext } from '../messages/state'
 import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
-import { UnitOrGroup, toUnitOrGroup } from './unit-or-group'
+import { UnitOrGroup } from './unit-or-group'
 
 export type NavItem = 'child' | 'staff' | 'messages' | 'settings'
 
@@ -168,20 +168,9 @@ export default function BottomNavbar({
                 onClick={() =>
                   selected !== 'messages' &&
                   navigate(
-                    (user?.pinLoginActive
-                      ? routes.messages(
-                          toUnitOrGroup({
-                            unitId,
-                            groupId: unit.groups[0]?.id
-                          })
-                        )
-                      : routes.unreadMessages(
-                          toUnitOrGroup({
-                            unitId,
-                            groupId: unit.groups[0]?.id
-                          })
-                        )
-                    ).value
+                    user?.pinLoginActive
+                      ? routes.messages(unitOrGroup).value
+                      : routes.unreadMessages(unitOrGroup).value
                   )
                 }
               >
