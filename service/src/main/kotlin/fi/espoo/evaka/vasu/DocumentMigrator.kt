@@ -91,10 +91,7 @@ fun migrateVasu(
     processDefinitionNumber: String,
     archiveMetadataOrganization: String,
 ) {
-    val vasuDocument =
-        tx.getLatestPublishedVasuDocument(now.toLocalDate(), id)?.takeIf {
-            it.documentState == VasuDocumentState.CLOSED && it.publishedAt != null
-        } ?: return
+    val vasuDocument = tx.getVasuDocumentMaster(now.toLocalDate(), id) ?: return
 
     val templateBasics = toBasicsRequest(vasuDocument)
     val (templateContent, documentContent) = migrateContents(vasuDocument)
@@ -118,7 +115,7 @@ fun migrateVasu(
         templateId = templateId,
         content = documentContent,
         modifiedAt = vasuDocument.modifiedAt,
-        publishedAt = vasuDocument.publishedAt!!,
+        publishedAt = vasuDocument.publishedAt ?: now,
         processId = processId
     )
 
