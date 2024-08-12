@@ -112,7 +112,7 @@ fun migrateVasu(
 
     tx.insertMigratedChildDocument(
         id = documentId,
-        childId = vasuDocument.basics.child.id,
+        childId = vasuDocument.childId,
         templateId = templateId,
         content = documentContent,
         modifiedAt = vasuDocument.modifiedAt,
@@ -269,7 +269,17 @@ private fun Database.Transaction.insertChildDocumentReads(
 ) {
     if (guardianIds.isEmpty()) return
 
-    executeBatch(guardianIds) {
+    // these come from json and are not guaranteed to exist anymore
+    val validGuardianIds =
+        createQuery {
+                sql("""
+        SELECT id FROM person WHERE id = ANY(${bind(guardianIds)})
+    """)
+            }
+            .toSet<PersonId>()
+    if (validGuardianIds.isEmpty()) return
+
+    executeBatch(validGuardianIds) {
         sql(
             """
             INSERT INTO child_document_read (document_id, person_id) 

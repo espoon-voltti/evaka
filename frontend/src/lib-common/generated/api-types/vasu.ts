@@ -140,6 +140,7 @@ export interface VasuContent {
 */
 export interface VasuDocument {
   basics: VasuBasics
+  childId: UUID
   content: VasuContent
   created: HelsinkiDateTime
   documentState: VasuDocumentState
