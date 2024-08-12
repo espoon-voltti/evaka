@@ -386,7 +386,7 @@ fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonI
 data class AbsenceStub(
     val childId: ChildId,
     val date: LocalDate,
-    var category: AbsenceCategory,
+    val category: AbsenceCategory,
     val absenceType: AbsenceType
 )
 
