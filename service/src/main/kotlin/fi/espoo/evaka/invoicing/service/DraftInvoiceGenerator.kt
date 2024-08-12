@@ -157,7 +157,18 @@ class DraftInvoiceGenerator(
     ): Invoice? {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
 
-        val childrenPartialMonth = getPartialMonthChildren(decisions, businessDays)
+        val feeDecisionRangesByChild =
+            decisions
+                .asSequence()
+                .flatMap { decision ->
+                    decision.children.asSequence().map {
+                        it.child.id to
+                            decision.validDuring.asFiniteDateRange(defaultEnd = LocalDate.MAX)
+                    }
+                }
+                .groupBy({ it.first }, { it.second })
+                .mapValues { DateSet.of(it.value) }
+
         val childrenFullMonthAbsences =
             getFullMonthAbsences(decisions, operationalDaysByChild, absences, plannedAbsences)
         val isFreeMonth: (FeeDecisionChild) -> Boolean = { part ->
@@ -383,12 +394,15 @@ class DraftInvoiceGenerator(
                     val childOperationalDays =
                         operationalDaysByChild.getOrDefault(child.id, emptySet()).toSet()
 
+                    val businessDaysWithoutDecision =
+                        businessDays - (feeDecisionRangesByChild[child.id] ?: DateSet.empty())
+
                     val attendanceDates =
                         getAttendanceDates(
                             invoicePeriod,
                             childOperationalDays,
                             contractDaysPerMonth,
-                            isPartialMonthChild = child.id in childrenPartialMonth,
+                            isPartialMonthChild = businessDaysWithoutDecision.isNotEmpty(),
                             hasPlannedAbsence = { date -> date in childPlannedAbsences }
                         )
 
@@ -445,21 +459,6 @@ class DraftInvoiceGenerator(
             codebtor = codebtor,
             rows = rows
         )
-    }
-
-    private fun getPartialMonthChildren(
-        decisions: List<FeeDecision>,
-        businessDays: DateSet,
-    ): Set<ChildId> {
-        val children = decisions.flatMap { it.children.map { child -> child.child.id } }.toSet()
-        return children
-            .filter { childId ->
-                businessDays
-                    .ranges()
-                    .flatMap { it.dates() }
-                    .any { date -> !childHasFeeDecision(decisions, childId, date) }
-            }
-            .toSet()
     }
 
     private fun getFullMonthAbsences(
