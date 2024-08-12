@@ -420,7 +420,6 @@ class DraftInvoiceGenerator(
                                     accumulatedRows,
                                     period,
                                     rowStub,
-                                    rowStub.placement.unit,
                                     dailyFeeDivisor,
                                     numRelevantOperationalDays =
                                         minOf(
@@ -586,7 +585,6 @@ class DraftInvoiceGenerator(
         accumulatedRows: List<InvoiceRow>,
         period: FiniteDateRange,
         invoiceRowStub: InvoiceRowStub,
-        unitId: DaycareId,
         dailyFeeDivisor: Int,
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
@@ -602,7 +600,7 @@ class DraftInvoiceGenerator(
                     invoiceRowStub.child,
                     invoiceRowStub.placement.type,
                     invoiceRowStub.priceBeforeFeeAlterations,
-                    unitId,
+                    invoiceRowStub.placement.unit,
                     dailyFeeDivisor,
                     attendanceDates,
                     isDateRefunded =
@@ -622,7 +620,7 @@ class DraftInvoiceGenerator(
                     invoiceRowStub.placement.type,
                     invoiceRowStub.priceBeforeFeeAlterations,
                     invoiceRowStub.finalPrice,
-                    unitId,
+                    invoiceRowStub.placement.unit,
                     dailyFeeDivisor,
                     invoiceRowStub.contractDaysPerMonth,
                     numRelevantOperationalDays,
