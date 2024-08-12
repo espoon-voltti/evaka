@@ -444,13 +444,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-rewriter@npm:2.3.1":
-  version: 2.3.1
-  resolution: "@datadog/native-iast-rewriter@npm:2.3.1"
+"@datadog/native-iast-rewriter@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@datadog/native-iast-rewriter@npm:2.4.0"
   dependencies:
     lru-cache: "npm:^7.14.0"
     node-gyp-build: "npm:^4.5.0"
-  checksum: 10/66e62ce0c746d242d94c7952d70f7784fddb9cca61bf2be6c48c7f82ad2fa91b51e34f36e3154f8e01fb3de2709d0980636583e50d2ad545df06138c18671592
+  checksum: 10/94bccf03db5b02b24da0b7bd41182d09112c37b2bbdf7e1a57b90afb136013357aff7b91af769e2cba9ceda5c0cc31e7e2a358ae493333237432617c02c16ac8
   languageName: node
   linkType: hard
 
@@ -2678,12 +2678,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.19.0":
-  version: 5.19.0
-  resolution: "dd-trace@npm:5.19.0"
+"dd-trace@npm:^5.20.0":
+  version: 5.20.0
+  resolution: "dd-trace@npm:5.20.0"
   dependencies:
     "@datadog/native-appsec": "npm:8.0.1"
-    "@datadog/native-iast-rewriter": "npm:2.3.1"
+    "@datadog/native-iast-rewriter": "npm:2.4.0"
     "@datadog/native-iast-taint-tracking": "npm:3.0.0"
     "@datadog/native-metrics": "npm:^2.0.0"
     "@datadog/pprof": "npm:5.3.0"
@@ -2711,7 +2711,7 @@ __metadata:
     semver: "npm:^7.5.4"
     shell-quote: "npm:^1.8.1"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 10/a15e99c7af709b3b114c232abbdc1318b5a5bada796982a24377c9176677a7e6176fab8257ca75bed14faa223a9bc33d2d514800dd4b8a91fd29d44320d7da7d
+  checksum: 10/6442e2c37737498e8b8aa1cee15f96bde6e1c86cb7dcd8fe3e61158e9196eb69b432e918df598d54b6791223356e49ca6c7cab1b98e558791423be8aa5e5c151
   languageName: node
   linkType: hard
 
@@ -3382,7 +3382,7 @@ __metadata:
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^3.6.0"
-    dd-trace: "npm:^5.19.0"
+    dd-trace: "npm:^5.20.0"
     eslint: "npm:^9.9.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:^2.29.1"
