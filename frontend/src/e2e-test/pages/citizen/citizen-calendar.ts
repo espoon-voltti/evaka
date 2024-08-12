@@ -677,18 +677,10 @@ class DayView extends Element {
       .waitUntilVisible()
   }
 
-  async assertReservations(
-    childId: UUID,
-    reservations: FormatterReservation[],
-    formatter: (res: FormatterReservation) => string = (
-      r: FormatterReservation
-    ) => `${r.startTime}–${r.endTime}`
-  ) {
+  async assertReservations(childId: UUID, reservations: string) {
     const reservationsElement =
       this.#childSection(childId).findByDataQa('reservations')
-    await reservationsElement.assertTextEquals(
-      reservations.map(formatter).join(', ')
-    )
+    await reservationsElement.assertTextEquals(reservations)
   }
 
   getServiceUsageWarning(childId: UUID) {

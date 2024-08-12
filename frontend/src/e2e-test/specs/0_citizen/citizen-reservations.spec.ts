@@ -307,7 +307,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await editor.saveButton.click()
 
     await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertReservations(children[1].id, '08:00–16:00')
     await dayView.assertNoReservation(children[2].id)
   })
 
@@ -340,7 +340,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await editor.saveButton.click()
 
     await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertReservations(children[1].id, '09:00–13:00')
     await dayView.assertNoReservation(children[2].id)
 
     // There's no way for the citizen to see that an absence was created, so use DevApi for that
@@ -601,9 +601,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await childSection.reservationEnd.fill('16:00')
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild.id, [
-      { startTime: '08:00', endTime: '16:00' }
-    ])
+    await dayView.assertReservations(testChild.id, '08:00–16:00')
   })
 
   test('Citizen creates a weekly reservation that spans a holiday', async () => {
@@ -1386,7 +1384,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await child.reservationEnd.fill(reservation1.endTime)
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild2.id, [reservation1])
+    await dayView.assertReservations(testChild2.id, '08:00–16:00')
 
     editor = await dayView.edit()
     child = editor.childSection(testChild2.id)
@@ -1395,10 +1393,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await child.reservation2End.fill(reservation2.endTime)
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild2.id, [
-      reservation1,
-      reservation2
-    ])
+    await dayView.assertReservations(testChild2.id, '08:00–16:00, 17:00–19:00')
   })
 
   test(`Citizen creates 2 reservations from reservation modal: ${env}`, async () => {
@@ -1434,9 +1429,6 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
-    await dayView.assertReservations(testChild2.id, [
-      reservation1,
-      reservation2
-    ])
+    await dayView.assertReservations(testChild2.id, '10:00–16:00, 17:00–18:00')
   })
 })
