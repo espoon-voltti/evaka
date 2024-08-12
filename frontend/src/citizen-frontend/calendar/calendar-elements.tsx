@@ -15,7 +15,6 @@ import {
   ReservationResponseDay,
   ReservationResponseDayChild
 } from 'lib-common/generated/api-types/reservations'
-import LocalDate from 'lib-common/local-date'
 import {
   reservationHasTimes,
   reservationsAndAttendancesDiffer
@@ -57,10 +56,9 @@ export const Reservations = React.memo(function Reservations({
     () =>
       groupChildren({
         children: data.children,
-        isPast: data.date.isBefore(LocalDate.todayInHelsinkiTz()),
         i18n
       }),
-    [data.children, data.date, i18n]
+    [data.children, i18n]
   )
 
   return data.children.length === 0 && data.holiday && !isReservable ? (
@@ -171,11 +169,9 @@ const absenceElementType = (absence: AbsenceInfo) =>
 
 const groupChildren = ({
   children,
-  isPast,
   i18n
 }: {
   children: ReservationResponseDayChild[]
-  isPast: boolean
   i18n: Translations
 }): GroupedDailyChildren[] =>
   Object.entries(
@@ -199,10 +195,7 @@ const groupChildren = ({
           }
         }
 
-        if (
-          (isPast || !featureFlags.automaticFixedScheduleAbsences) &&
-          child.absence
-        ) {
+        if (child.absence) {
           const elementType = absenceElementType(child.absence)
           return {
             childId: child.childId,
@@ -234,15 +227,6 @@ const groupChildren = ({
                 formatReservation(reservation, child.reservableTimeRange, i18n)
               )
               .join(', ')
-          }
-        }
-
-        if (child.absence) {
-          const elementType = absenceElementType(child.absence)
-          return {
-            childId: child.childId,
-            type: elementType,
-            text: i18n.calendar[elementType]
           }
         }
 
