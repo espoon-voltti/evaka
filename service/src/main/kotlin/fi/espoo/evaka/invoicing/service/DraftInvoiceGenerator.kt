@@ -393,8 +393,8 @@ class DraftInvoiceGenerator(
                             invoicePeriod,
                             childOperationalDays,
                             contractDaysPerMonth,
-                            childPlannedAbsences,
-                            childrenPartialMonth
+                            childrenPartialMonth,
+                            hasPlannedAbsence = { date -> date in childPlannedAbsences }
                         )
 
                     val relevantAbsences =
@@ -539,15 +539,15 @@ class DraftInvoiceGenerator(
         period: FiniteDateRange,
         childOperationalDays: Set<LocalDate>,
         contractDaysPerMonth: Int?,
-        childPlannedAbsences: Set<LocalDate>,
-        partialMonthChildren: Set<ChildId>
+        partialMonthChildren: Set<ChildId>,
+        hasPlannedAbsence: (date: LocalDate) -> Boolean
     ): List<LocalDate> {
         val attendanceDates =
             operationalDatesByWeek(period, childOperationalDays).flatMap { weekOperationalDates ->
                 if (contractDaysPerMonth != null) {
                     // Use real attendance dates (with no planned absences) for contract day
                     // children
-                    weekOperationalDates.filterNot { date -> childPlannedAbsences.contains(date) }
+                    weekOperationalDates.filterNot(hasPlannedAbsence)
                 } else {
                     // Take at most 5 days per week (for round-the-clock units)
                     weekOperationalDates.take(5)
@@ -611,12 +611,14 @@ class DraftInvoiceGenerator(
                     unitId,
                     dailyFeeDivisor,
                     attendanceDates,
-                    if (
-                        invoiceRowStub.placement.type != PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
-                            featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
-                    )
-                        absences
-                    else emptyList()
+                    isDateRefunded =
+                        if (
+                            invoiceRowStub.placement.type !=
+                                PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
+                                featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
+                        )
+                            { date -> absences.any { it.date == date } }
+                        else { _ -> false },
                 )
             else ->
                 toPermanentPlacementInvoiceRows(
@@ -650,13 +652,13 @@ class DraftInvoiceGenerator(
         unitId: DaycareId,
         dailyFeeDivisor: Int,
         attendanceDates: List<LocalDate>,
-        absences: List<AbsenceStub>
+        isDateRefunded: (date: LocalDate) -> Boolean,
     ): List<InvoiceRow> {
         val amount =
             attendanceDates
                 .take(dailyFeeDivisor)
-                .filter { day -> period.includes(day) }
-                .filter { day -> absences.none { absence -> absence.date == day } }
+                .filter { date -> period.includes(date) }
+                .filterNot { date -> isDateRefunded(date) }
                 .size
 
         return if (amount == 0) {
