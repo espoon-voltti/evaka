@@ -683,6 +683,30 @@ class DayView extends Element {
     await reservationsElement.assertTextEquals(reservations)
   }
 
+  async assertReservationNoTimes(childId: UUID) {
+    await this.#childSection(childId)
+      .findByDataQa('reservation-no-times')
+      .waitUntilVisible()
+  }
+
+  async assertReservationNotRequired(childId: UUID) {
+    await this.#childSection(childId)
+      .findByDataQa('reservation-not-required')
+      .waitUntilVisible()
+  }
+
+  async assertNotYetReservable(childId: UUID) {
+    await this.#childSection(childId)
+      .findByDataQa('not-yet-reservable')
+      .waitUntilVisible()
+  }
+
+  async assertAttendances(childId: UUID, attendances: string[]) {
+    await this.#childSection(childId)
+      .findByDataQa('attendances')
+      .assertTextEquals(attendances.join('\n'))
+  }
+
   getServiceUsageWarning(childId: UUID) {
     return this.#childSection(childId).findByDataQa('service-usage-warning')
   }

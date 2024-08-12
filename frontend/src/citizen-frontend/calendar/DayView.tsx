@@ -868,12 +868,13 @@ const Reservations = React.memo(function Reservations({
         holidayPeriodEffect.period,
         holidayPeriodEffect.reservationsOpenOn
       )}
+      data-qa="not-yet-reservable"
     >
       {i18n.calendar.notYetReservable}
     </ExpandingInfo>
   ) : withoutTimes.length > 0 ? (
     // In theory, we could have reservations with and without times, but this shouldn't happen in practice
-    <ReservationStatus data-qa="reservations-no-times">
+    <ReservationStatus data-qa="reservation-no-times">
       {i18n.calendar.present}
     </ReservationStatus>
   ) : withTimes.length > 0 ? (
