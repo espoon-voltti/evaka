@@ -25,11 +25,16 @@ import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
+import fi.espoo.evaka.shared.withSpan
+import fi.espoo.evaka.shared.withValue
+import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracerFactory
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -72,7 +77,8 @@ private val calculateHalfFee: (Int) -> Int = { fee ->
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
     private val featureConfig: FeatureConfig,
-    private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
+    private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
+    private val tracer: Tracer = NoopTracerFactory.create()
 ) {
     fun generateDraftInvoices(
         tx: Database.Read,
@@ -100,21 +106,26 @@ class DraftInvoiceGenerator(
                             permanentPlacements[child.child.id] ?: listOf()
                         }
                     }
-                generateDraftInvoice(
-                    tx,
-                    headOfFamilyId,
-                    headOfFamilyDecisions,
-                    feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
-                    period,
-                    daycareCodes,
-                    operationalDaysByChild,
-                    businessDays,
-                    feeThresholds,
-                    absencesByChild,
-                    plannedAbsences,
-                    freeChildren,
-                    codebtors
-                )
+                tracer.withSpan(
+                    "generateDraftInvoice",
+                    Tracing.headOfFamilyId withValue headOfFamilyId
+                ) {
+                    generateDraftInvoice(
+                        tx,
+                        headOfFamilyId,
+                        headOfFamilyDecisions,
+                        feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
+                        period,
+                        daycareCodes,
+                        operationalDaysByChild,
+                        businessDays,
+                        feeThresholds,
+                        absencesByChild,
+                        plannedAbsences,
+                        freeChildren,
+                        codebtors
+                    )
+                }
             } catch (e: Exception) {
                 error("Failed to generate invoice for head of family $headOfFamilyId: $e")
             }

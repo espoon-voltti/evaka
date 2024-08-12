@@ -34,6 +34,9 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.withSpan
+import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracerFactory
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -44,12 +47,16 @@ import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
 @Component
-class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
+class InvoiceGenerator(
+    private val draftInvoiceGenerator: DraftInvoiceGenerator,
+    private val tracer: Tracer = NoopTracerFactory.create()
+) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
-        val invoiceCalculationData = calculateInvoiceData(tx, range)
+        val invoiceCalculationData =
+            tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
         val invoices =
             draftInvoiceGenerator.generateDraftInvoices(
                 tx,
@@ -67,7 +74,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 invoiceCalculationData.codebtors
             )
         val invoicesWithCorrections =
-            applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+            tracer.withSpan("applyCorrections") {
+                applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+            }
         tx.deleteDraftInvoicesByDateRange(range)
         tx.insertInvoices(
             invoices = invoicesWithCorrections,
@@ -81,10 +90,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         )
     }
 
-    fun calculateInvoiceData(
-        tx: Database.Read,
-        range: FiniteDateRange
-    ): InvoiceCalculationData {
+    fun calculateInvoiceData(tx: Database.Read, range: FiniteDateRange): InvoiceCalculationData {
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
