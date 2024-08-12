@@ -55,7 +55,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -123,14 +122,14 @@ class FeeDecisionService(
                     val ownDecisions =
                         tx.findFeeDecisionsForHeadOfFamily(
                             it.headOfFamilyId,
-                            DateRange(it.validFrom, it.validTo),
+                            it.validDuring,
                             listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                         )
                     val partnerDecisions =
                         it.partnerId?.let { partnerId ->
                             tx.findFeeDecisionsForHeadOfFamily(
                                 partnerId,
-                                DateRange(it.validFrom, it.validTo),
+                                it.validDuring,
                                 listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
                             )
                         } ?: listOf()

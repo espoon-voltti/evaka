@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
@@ -262,9 +261,7 @@ class DraftInvoiceGenerator(
                                 minOf(orMax(invoicePeriod.end), orMax(placementDateRange.end))
                             )
                         val periodDecisions =
-                            decisions.filter {
-                                placementDateRange.overlaps(DateRange(it.validFrom, it.validTo))
-                            }
+                            decisions.filter { placementDateRange.overlaps(it.validDuring) }
 
                         when (placement.type) {
                             PlacementType.TEMPORARY_DAYCARE,
@@ -290,10 +287,7 @@ class DraftInvoiceGenerator(
                                     .mapNotNull { decision ->
                                         decision.children
                                             .find { part -> part.child == child }
-                                            ?.let {
-                                                DateRange(decision.validFrom, decision.validTo) to
-                                                    it
-                                            }
+                                            ?.let { decision.validDuring to it }
                                     }
                                     .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                     .map { (decisionPeriod, part) ->

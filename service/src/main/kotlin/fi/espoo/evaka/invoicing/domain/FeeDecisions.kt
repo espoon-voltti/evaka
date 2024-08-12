@@ -57,8 +57,7 @@ data class FeeDecision(
         FeeDecisionDifference.getDifference(this, decision).isEmpty()
 
     override fun overlapsWith(other: FeeDecision): Boolean {
-        return DateRange(this.validFrom, this.validTo)
-            .overlaps(DateRange(other.validFrom, other.validTo)) &&
+        return this.validDuring.overlaps(other.validDuring) &&
             (
             // Check if any of the adults are on the other decision
             this.headOfFamilyId == other.headOfFamilyId ||
