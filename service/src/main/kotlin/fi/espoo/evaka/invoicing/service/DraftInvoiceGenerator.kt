@@ -377,11 +377,10 @@ class DraftInvoiceGenerator(
 
                     val attendanceDates =
                         getAttendanceDates(
-                            child,
                             invoicePeriod,
                             childOperationalDays,
                             contractDaysPerMonth,
-                            childrenPartialMonth,
+                            isPartialMonthChild = child.id in childrenPartialMonth,
                             hasPlannedAbsence = { date -> date in childPlannedAbsences }
                         )
 
@@ -523,11 +522,10 @@ class DraftInvoiceGenerator(
         row.placement.type == PlacementType.PRESCHOOL_CLUB
 
     private fun getAttendanceDates(
-        child: ChildWithDateOfBirth,
         period: FiniteDateRange,
         childOperationalDays: Set<LocalDate>,
         contractDaysPerMonth: Int?,
-        partialMonthChildren: Set<ChildId>,
+        isPartialMonthChild: Boolean,
         hasPlannedAbsence: (date: LocalDate) -> Boolean
     ): List<LocalDate> {
         val attendanceDates =
@@ -547,7 +545,7 @@ class DraftInvoiceGenerator(
         // planned absences than they should
         return if (
             contractDaysPerMonth != null &&
-                !partialMonthChildren.contains(child.id) &&
+                !isPartialMonthChild &&
                 attendanceDates.size < contractDaysPerMonth
         ) {
             val extraDatesToAdd = contractDaysPerMonth - attendanceDates.size
