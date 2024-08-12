@@ -26,13 +26,11 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.Tracing
-import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
-import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.utils.memoize
 import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.shared.withValue
@@ -98,6 +96,7 @@ class DraftInvoiceGenerator(
                             data.permanentPlacements[child.child.id] ?: listOf()
                         }
                     }
+
                 tracer.withSpan(
                     "generateDraftInvoice",
                     Tracing.headOfFamilyId withValue headOfFamilyId
@@ -113,7 +112,13 @@ class DraftInvoiceGenerator(
                         data.areaIds,
                         data.businessDays,
                         data.feeThresholds,
-                        absencesByChild,
+                        getChildAbsences =
+                            memoize { child: ChildId ->
+                                (absencesByChild[child] ?: emptyList()).associateBy(
+                                    { it.date },
+                                    { it.absenceType }
+                                )
+                            },
                         getChildOperationalDays = { childId ->
                             data.operationalDaysByChild[childId] ?: DateSet.empty()
                         },
@@ -153,7 +158,7 @@ class DraftInvoiceGenerator(
         areaIds: Map<DaycareId, AreaId>,
         businessDays: DateSet,
         feeThresholds: FeeThresholds,
-        absences: Map<ChildId, List<AbsenceStub>>,
+        getChildAbsences: (child: ChildId) -> Map<LocalDate, AbsenceType>,
         getChildOperationalDays: (child: ChildId) -> DateSet,
         isFreeJulyChild: (child: ChildId) -> Boolean,
         getDefaultServiceNeedOption: (placementType: PlacementType) -> ServiceNeedOption?,
@@ -172,13 +177,6 @@ class DraftInvoiceGenerator(
                 .groupBy({ it.first }, { it.second })
                 .mapValues { DateSet.of(it.value) }
 
-        val getChildAbsences = memoize { child: ChildId ->
-            DateMap.of(
-                (absences[child] ?: emptyList()).asSequence().map {
-                    it.date.toFiniteDateRange() to it.absenceType
-                }
-            )
-        }
         val getChildFullMonthAbsence = memoize { child: ChildId ->
             val childOperationalDays =
                 getChildOperationalDays(child)
@@ -188,7 +186,7 @@ class DraftInvoiceGenerator(
                     .toSet()
             getFullMonthAbsence(
                 childOperationalDays,
-                getAbsence = { date -> getChildAbsences(child).getValue(date) }
+                getAbsence = { date -> getChildAbsences(child)[date] }
             )
         }
 
@@ -298,14 +296,7 @@ class DraftInvoiceGenerator(
                                     feeThresholds.calculatePriceForTemporary(partDay, index + 1)
                                 listOf(
                                     relevantPeriod to
-                                        InvoiceRowStub(
-                                            ChildWithDateOfBirth(child.id, child.dateOfBirth),
-                                            placement,
-                                            fee,
-                                            listOf(),
-                                            fee,
-                                            null
-                                        )
+                                        InvoiceRowStub(child, placement, fee, listOf(), fee, null)
                                 )
                             }
                             else ->
@@ -422,15 +413,12 @@ class DraftInvoiceGenerator(
                             contractDaysPerMonth,
                             isPartialMonthChild = businessDaysWithoutDecision.isNotEmpty(),
                             hasPlannedAbsence = { date ->
-                                getChildAbsences(child.id).getValue(date) ==
-                                    AbsenceType.PLANNED_ABSENCE
+                                getChildAbsences(child.id)[date] == AbsenceType.PLANNED_ABSENCE
                             }
                         )
 
                     val relevantAbsences =
-                        (absences[child.id] ?: listOf()).filter { absence ->
-                            childOperationalDays.contains(absence.date)
-                        }
+                        getChildAbsences(child.id).filter { childOperationalDays.contains(it.key) }
 
                     separatePeriods
                         .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
@@ -577,7 +565,7 @@ class DraftInvoiceGenerator(
         dailyFeeDivisor: Int,
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
-        absences: List<AbsenceStub>,
+        absences: Map<LocalDate, AbsenceType>,
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int
     ): List<InvoiceRow> {
@@ -598,7 +586,7 @@ class DraftInvoiceGenerator(
                                 PlacementType.TEMPORARY_DAYCARE_PART_DAY ||
                                 featureConfig.temporaryDaycarePartDayAbsenceGivesADailyRefund
                         )
-                            { date -> absences.any { it.date == date } }
+                            { date -> absences.containsKey(date) }
                         else { _ -> false },
                 )
             else ->
@@ -674,7 +662,7 @@ class DraftInvoiceGenerator(
         numRelevantOperationalDays: Int,
         attendanceDates: List<LocalDate>,
         feeAlterations: List<Pair<FeeAlterationType, Int>>,
-        absences: List<AbsenceStub>,
+        absences: Map<LocalDate, AbsenceType>,
         fullMonthAbsenceType: FullMonthAbsenceType,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int
     ): List<InvoiceRow> {
@@ -808,14 +796,14 @@ class DraftInvoiceGenerator(
         unitId: DaycareId,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
-        absences: List<AbsenceStub>,
+        absences: Map<LocalDate, AbsenceType>,
         isAbsentFullMonth: Boolean,
         getInvoiceMaxFee: (ChildId, Boolean) -> Int,
         placementType: PlacementType
     ): List<InvoiceRow> {
         if (contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
 
-        fun hasAbsence(date: LocalDate) = absences.any { it.date == date }
+        fun hasAbsence(date: LocalDate) = date in absences
 
         val accumulatedInvoiceRowSum = accumulatedRows.sumOf { it.price } + invoiceRowSum
         val attendancesBeforePeriod =
@@ -824,14 +812,17 @@ class DraftInvoiceGenerator(
             attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
         val unplannedAbsenceSurplusDays =
             if (featureConfig.unplannedAbsencesAreContractSurplusDays) {
-                absences.filter { !plannedAbsenceTypes.contains(it.absenceType) }
+                absences
+                    .asSequence()
+                    .filter { !plannedAbsenceTypes.contains(it.value) }
+                    .map { it.key }
             } else {
-                listOf()
+                sequenceOf()
             }
         val (unplannedAbsencesInPeriod, unplannedAbsencesBeforePeriod) =
             unplannedAbsenceSurplusDays
-                .filter { it.date < period.start || period.includes(it.date) }
-                .partition { period.includes(it.date) }
+                .filter { it < period.start || period.includes(it) }
+                .partition { period.includes(it) }
         val attendanceDays =
             attendancesBeforePeriod +
                 attendancesInPeriod +
@@ -889,7 +880,7 @@ class DraftInvoiceGenerator(
         period: FiniteDateRange,
         rows: List<InvoiceRow>,
         child: ChildWithDateOfBirth,
-        absences: List<AbsenceStub>,
+        absences: Map<LocalDate, AbsenceType>,
         periodAttendanceDates: List<LocalDate>,
         numRelevantOperationalDays: Int,
         isFullMonth: Boolean,
@@ -921,24 +912,22 @@ class DraftInvoiceGenerator(
     private fun getRefundedDays(
         period: FiniteDateRange,
         child: ChildWithDateOfBirth,
-        absences: List<AbsenceStub>
+        absences: Map<LocalDate, AbsenceType>
     ): Int {
         val forceMajeureDays =
-            absences
-                .filter { period.includes(it.date) }
-                .count {
-                    it.absenceType == AbsenceType.FORCE_MAJEURE ||
+            absences.count { (date, type) ->
+                period.includes(date) &&
+                    (type == AbsenceType.FORCE_MAJEURE ||
                         (featureConfig.freeAbsenceGivesADailyRefund &&
-                            it.absenceType == AbsenceType.FREE_ABSENCE)
-                }
+                            type == AbsenceType.FREE_ABSENCE))
+            }
 
         val parentLeaveDays =
-            absences
-                .filter { period.includes(it.date) }
-                .count {
-                    it.absenceType == AbsenceType.PARENTLEAVE &&
-                        ChronoUnit.YEARS.between(child.dateOfBirth, it.date) < 2
-                }
+            absences.count { (date, type) ->
+                period.includes(date) &&
+                    type == AbsenceType.PARENTLEAVE &&
+                    ChronoUnit.YEARS.between(child.dateOfBirth, date) < 2
+            }
 
         return forceMajeureDays + parentLeaveDays
     }
