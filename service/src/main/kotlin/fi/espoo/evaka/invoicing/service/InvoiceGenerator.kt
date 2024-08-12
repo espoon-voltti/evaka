@@ -382,14 +382,14 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: FiniteDateRange): List<F
         .toList<FeeDecision>()
 }
 
-fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): List<PersonId> {
+fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonId> {
     val sent = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
     return createQuery {
             sql(
                 "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
             )
         }
-        .toList<PersonId>()
+        .toSet<PersonId>()
 }
 
 data class AbsenceStub(
