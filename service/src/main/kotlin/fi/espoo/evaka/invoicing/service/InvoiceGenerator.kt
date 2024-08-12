@@ -140,7 +140,10 @@ class InvoiceGenerator(
                     .map { it.toFiniteDateRange() }
             )
 
-        val serviceNeedOptions = tx.getServiceNeedOptions()
+        val defaultServiceNeedOptions =
+            tx.getServiceNeedOptions()
+                .filter { it.defaultOption }
+                .associateBy { it.validPlacementType }
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -155,7 +158,7 @@ class InvoiceGenerator(
             plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
             codebtors = codebtors,
-            serviceNeedOptions = serviceNeedOptions
+            defaultServiceNeedOptions = defaultServiceNeedOptions,
         )
     }
 
@@ -172,7 +175,7 @@ class InvoiceGenerator(
         val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
         val freeChildren: Set<ChildId> = setOf(),
         val codebtors: Map<PersonId, PersonId?> = mapOf(),
-        val serviceNeedOptions: List<ServiceNeedOption>,
+        val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     )
 
     private fun getInvoiceCodebtor(

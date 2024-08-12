@@ -110,11 +110,11 @@ class DraftInvoiceGenerator(
                         data.areaIds,
                         data.operationalDaysByChild,
                         data.businessDays,
-                        data.serviceNeedOptions,
                         data.feeThresholds,
                         absencesByChild,
                         data.plannedAbsences,
                         data.freeChildren,
+                        getDefaultServiceNeedOption = data.defaultServiceNeedOptions::get
                     )
                 }
             } catch (e: Exception) {
@@ -149,11 +149,11 @@ class DraftInvoiceGenerator(
         areaIds: Map<DaycareId, AreaId>,
         operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
         businessDays: DateSet,
-        allServiceNeedOptions: List<ServiceNeedOption>,
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
         freeChildren: Set<ChildId>,
+        getDefaultServiceNeedOption: (placementType: PlacementType) -> ServiceNeedOption?,
     ): Invoice? {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
 
@@ -212,9 +212,7 @@ class DraftInvoiceGenerator(
             }
             val getDefaultMaxFee: (PlacementType, Int) -> Int = { placementType, discountedFee ->
                 val feeCoefficient =
-                    allServiceNeedOptions
-                        .find { it.defaultOption && it.validPlacementType == placementType }
-                        ?.feeCoefficient
+                    getDefaultServiceNeedOption(placementType)?.feeCoefficient
                         ?: throw Exception(
                             "No default service need option found for placement type $placementType"
                         )
