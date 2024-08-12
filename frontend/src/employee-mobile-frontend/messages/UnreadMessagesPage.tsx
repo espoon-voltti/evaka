@@ -24,6 +24,7 @@ import { WideLinkButton } from '../pairing/components'
 import { unitInfoQuery } from '../units/queries'
 
 import { unreadCountsQuery } from './queries'
+import { MessageContext } from './state'
 
 export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
   unitOrGroup
@@ -34,57 +35,67 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const { user } = useContext(UserContext)
+  const { groupAccounts } = useContext(MessageContext)
   const { data: unreadCounts = [] } = useQuery(unreadCountsQuery({ unitId }))
 
-  return renderResult(combine(unitInfoResponse, user), ([unit, user]) => (
-    <ContentArea
-      opaque
-      fullHeight
-      paddingHorizontal="zero"
-      paddingVertical="zero"
-    >
-      <TopBar title={unit.name} unitId={unitId} />
-      <HeaderContainer>
-        <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
-      </HeaderContainer>
-      <UnreadCounts>
-        {unit.groups.map((group) => (
-          <UnreadCountByGroupRow key={group.id}>
-            <LinkToGroupMessages
-              data-qa={`link-to-group-messages-${group.id}`}
-              to={
-                routes.messages(toUnitOrGroup({ unitId, groupId: group.id }))
-                  .value
-              }
+  return renderResult(
+    combine(unitInfoResponse, groupAccounts, user),
+    ([unit, groupAccounts, user]) => (
+      <ContentArea
+        opaque
+        fullHeight
+        paddingHorizontal="zero"
+        paddingVertical="zero"
+      >
+        <TopBar title={unit.name} unitId={unitId} />
+        <HeaderContainer>
+          <H1 noMargin={true}>{i18n.messages.unreadMessages}</H1>
+        </HeaderContainer>
+        <UnreadCounts>
+          {unit.groups.map((group) => (
+            <UnreadCountByGroupRow key={group.id}>
+              {groupAccounts.find((a) => a.daycareGroup?.id === group.id) ? (
+                <LinkToGroupMessages
+                  data-qa={`link-to-group-messages-${group.id}`}
+                  to={
+                    routes.messages(
+                      toUnitOrGroup({ unitId, groupId: group.id })
+                    ).value
+                  }
+                >
+                  {group.name}
+                </LinkToGroupMessages>
+              ) : (
+                // Not authozired to this group => no link
+                <GroupNameWithoutLink>{group.name}</GroupNameWithoutLink>
+              )}
+              <UnreadCountNumber
+                dataQa={`unread-count-by-group-${group.id}`}
+                maybeNumber={
+                  unreadCounts.find((c) => c.groupId === group.id)?.unreadCount
+                }
+              />
+            </UnreadCountByGroupRow>
+          ))}
+        </UnreadCounts>
+        {!user?.pinLoginActive && (
+          <ButtonContainer>
+            <P noMargin={true} centered={true}>
+              {i18n.messages.pinLockInfo}
+            </P>
+            <WideLinkButton
+              $primary
+              data-qa="pin-login-button"
+              to={routes.messages(unitOrGroup).value}
             >
-              {group.name}
-            </LinkToGroupMessages>
-            <UnreadCountNumber
-              dataQa={`unread-count-by-group-${group.id}`}
-              maybeNumber={
-                unreadCounts.find((c) => c.groupId === group.id)?.unreadCount
-              }
-            />
-          </UnreadCountByGroupRow>
-        ))}
-      </UnreadCounts>
-      {!user?.pinLoginActive && (
-        <ButtonContainer>
-          <P noMargin={true} centered={true}>
-            {i18n.messages.pinLockInfo}
-          </P>
-          <WideLinkButton
-            $primary
-            data-qa="pin-login-button"
-            to={routes.messages(unitOrGroup).value}
-          >
-            {i18n.messages.openPinLock}
-          </WideLinkButton>
-        </ButtonContainer>
-      )}
-      <BottomNavBar selected="messages" unitOrGroup={unitOrGroup} />
-    </ContentArea>
-  ))
+              {i18n.messages.openPinLock}
+            </WideLinkButton>
+          </ButtonContainer>
+        )}
+        <BottomNavBar selected="messages" unitOrGroup={unitOrGroup} />
+      </ContentArea>
+    )
+  )
 })
 
 export const HeaderContainer = styled.div`
@@ -111,6 +122,13 @@ const LinkToGroupMessages = styled(Link)`
   font-size: ${fontSizesMobile.h2};
   font-weight: bold;
   color: ${colors.main.m1};
+  margin: ${defaultMargins.xs} 0;
+`
+
+const GroupNameWithoutLink = styled.span`
+  font-size: ${fontSizesMobile.h2};
+  font-weight: bold;
+  color: ${colors.grayscale.g70};
   margin: ${defaultMargins.xs} 0;
 `
 
