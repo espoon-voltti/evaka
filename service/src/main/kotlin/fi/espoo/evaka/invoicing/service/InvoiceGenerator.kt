@@ -546,17 +546,16 @@ WHERE fridge_child.child_id = ANY(${bind(childIds)})
         }
 }
 
-fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
-    return createQuery {
+fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> =
+    createQuery {
             sql(
                 """
-SELECT daycare.id AS unit_id, area.id AS area_id
-FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
+SELECT daycare.id AS unit_id, daycare.care_area_id AS area_id
+FROM daycare
 """
             )
         }
         .toMap { columnPair("unit_id", "area_id") }
-}
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
     return createQuery {
