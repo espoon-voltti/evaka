@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.FeatureConfig
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -117,6 +118,15 @@ fun migrateVasu(
         modifiedAt = vasuDocument.modifiedAt,
         publishedAt = vasuDocument.publishedAt ?: now,
         processId = processId
+    )
+
+    tx.insertChildDocumentReads(
+        childDocumentId = documentId,
+        guardianIds =
+            vasuDocument.basics.guardians
+                .filter { it.hasGivenPermissionToShare }
+                .map { it.id }
+                .toSet()
     )
 
     asyncJobRunner.plan(
@@ -251,6 +261,22 @@ VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(
             )
         }
         .execute()
+}
+
+private fun Database.Transaction.insertChildDocumentReads(
+    childDocumentId: ChildDocumentId,
+    guardianIds: Set<PersonId>
+) {
+    if (guardianIds.isEmpty()) return
+
+    executeBatch(guardianIds) {
+        sql(
+            """
+            INSERT INTO child_document_read (document_id, person_id) 
+            VALUES (${bind(childDocumentId)}, ${bind {it}})
+        """
+        )
+    }
 }
 
 private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
