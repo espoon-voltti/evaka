@@ -1220,9 +1220,9 @@ describe('Citizen calendar child visibility', () => {
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
 
-    const holidayDayModal = await calendarPage.openDayModal(firstReservationDay)
-    await holidayDayModal.childName.assertCount(1)
-    await holidayDayModal.closeModal.click()
+    const holidayDayModal = await calendarPage.openDayView(firstReservationDay)
+    await holidayDayModal.childNames.assertCount(1)
+    await holidayDayModal.close()
 
     const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createIrregularReservation(

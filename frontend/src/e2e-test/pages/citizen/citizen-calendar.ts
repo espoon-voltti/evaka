@@ -72,11 +72,6 @@ export default class CitizenCalendarPage {
   monthlySummaryInfoButton = (year: number, month: number) =>
     this.page.findByDataQa(`monthly-summary-info-button-${month}-${year}`)
 
-  async openDayModal(date: LocalDate) {
-    await this.dayCell(date).click()
-    return new DayModal(this.page)
-  }
-
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="calendar-page"][data-isloading="false"]')
@@ -670,6 +665,7 @@ class DayView extends Element {
 
   #editButton = this.findByDataQa('edit')
   #createAbsenceButton = this.findByDataQa('create-absence')
+  childNames = this.findAllByDataQa('child-name')
 
   #childSection(childId: UUID) {
     return this.findByDataQa(`child-${childId}`)
@@ -853,15 +849,5 @@ class HolidayModal extends Element {
     await this.#childSection(child.id)
       .findByDataQa('not-eligible')
       .waitUntilVisible()
-  }
-}
-
-class DayModal {
-  childName: ElementCollection
-  closeModal: Element
-
-  constructor(readonly page: Page) {
-    this.childName = page.findAllByDataQa('child-name')
-    this.closeModal = page.findByDataQa('day-view-close-button')
   }
 }
