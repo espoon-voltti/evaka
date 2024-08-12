@@ -113,7 +113,7 @@ class DraftInvoiceGenerator(
                         data.feeThresholds,
                         absencesByChild,
                         data.plannedAbsences,
-                        data.freeChildren,
+                        isJulyFreeChild = data.freeChildren::contains,
                         getDefaultServiceNeedOption = data.defaultServiceNeedOptions::get
                     )
                 }
@@ -152,7 +152,7 @@ class DraftInvoiceGenerator(
         feeThresholds: FeeThresholds,
         absences: Map<ChildId, List<AbsenceStub>>,
         plannedAbsences: Map<ChildId, Set<LocalDate>>,
-        freeChildren: Set<ChildId>,
+        isJulyFreeChild: (child: ChildId) -> Boolean,
         getDefaultServiceNeedOption: (placementType: PlacementType) -> ServiceNeedOption?,
     ): Invoice? {
         val businessDayCount = businessDays.ranges().map { it.durationInDays() }.sum().toInt()
@@ -294,7 +294,7 @@ class DraftInvoiceGenerator(
                                             .find { part -> part.child == child }
                                             ?.let { decision.validDuring to it }
                                     }
-                                    .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
+                                    .filterNot { (_, part) -> isJulyFreeChild(part.child.id) }
                                     .map { (decisionPeriod, part) ->
                                         FiniteDateRange(
                                             maxOf(relevantPeriod.start, decisionPeriod.start),
