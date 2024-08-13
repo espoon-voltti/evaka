@@ -35,11 +35,7 @@ export default React.memo(function MobileLander() {
         return (
           <Navigate
             replace
-            to={
-              routes.childAttendances(
-                toUnitOrGroup({ unitId: u.unitIds[0], groupId: undefined })
-              ).value
-            }
+            to={routes.childAttendances(toUnitOrGroup(u.unitIds[0])).value}
           />
         )
       }

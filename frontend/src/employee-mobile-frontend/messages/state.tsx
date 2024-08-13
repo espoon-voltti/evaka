@@ -10,8 +10,9 @@ import React, {
   useState
 } from 'react'
 
+import { Loading, Result } from 'lib-common/api'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { queryOrDefault, useQuery } from 'lib-common/query'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
@@ -20,15 +21,17 @@ import { UnitOrGroup } from '../common/unit-or-group'
 import { messagingAccountsQuery } from './queries'
 
 export interface MessagesState {
-  groupAccounts: AuthorizedMessageAccount[]
-  selectedAccount: AuthorizedMessageAccount | undefined
+  groupAccounts: Result<AuthorizedMessageAccount[]>
+  groupAccount: (
+    groupId: UUID | null
+  ) => Result<AuthorizedMessageAccount | undefined>
   setReplyContent: (threadId: UUID, content: string) => void
   getReplyContent: (threadId: UUID) => string
 }
 
 const defaultState: MessagesState = {
-  groupAccounts: [],
-  selectedAccount: undefined,
+  groupAccounts: Loading.of(),
+  groupAccount: () => Loading.of(),
   getReplyContent: () => '',
   setReplyContent: () => undefined
 }
@@ -50,26 +53,23 @@ export const MessageContextProvider = React.memo(
         u && u.pinLoginActive ? u.employeeId ?? undefined : undefined
       )
       .getOrElse(undefined)
+    const shouldFetch = !!unitId && !!pinLoggedEmployeeId
 
-    const { data: groupAccounts = [] } = useQuery(
+    const groupAccounts = useQueryResult(
       queryOrDefault(
         messagingAccountsQuery,
         []
-      )(
-        unitId && pinLoggedEmployeeId
-          ? { unitId, employeeId: pinLoggedEmployeeId }
-          : undefined
-      )
+      )(shouldFetch ? { unitId, employeeId: pinLoggedEmployeeId } : undefined)
     )
 
-    const selectedAccount: AuthorizedMessageAccount | undefined = useMemo(
-      () =>
-        (unitOrGroup.type === 'unit'
-          ? undefined
-          : groupAccounts.find(
-              ({ daycareGroup }) => daycareGroup?.id === unitOrGroup.id
-            )) ?? groupAccounts[0],
-      [groupAccounts, unitOrGroup]
+    const groupAccount = useCallback(
+      (groupId: UUID | null) =>
+        groupAccounts.map((accounts) =>
+          groupId
+            ? accounts.find((account) => account.daycareGroup?.id === groupId)
+            : undefined
+        ),
+      [groupAccounts]
     )
 
     const [replyContents, setReplyContents] = useState<Record<UUID, string>>({})
@@ -84,12 +84,12 @@ export const MessageContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
-        selectedAccount,
         groupAccounts,
+        groupAccount,
         getReplyContent,
         setReplyContent
       }),
-      [groupAccounts, selectedAccount, getReplyContent, setReplyContent]
+      [groupAccounts, groupAccount, getReplyContent, setReplyContent]
     )
 
     return (

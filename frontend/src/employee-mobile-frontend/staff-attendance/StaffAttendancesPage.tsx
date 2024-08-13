@@ -54,10 +54,7 @@ export default React.memo(function StaffAttendancesPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       navigate(
-        routes.staffAttendances(
-          toUnitOrGroup({ unitId, groupId: group?.id }),
-          tab
-        ).value
+        routes.staffAttendances(toUnitOrGroup(unitId, group?.id), tab).value
       )
     },
     [navigate, tab, unitId]

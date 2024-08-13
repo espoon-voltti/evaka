@@ -8,13 +8,10 @@ export type UnitOrGroup =
   | { type: 'unit'; unitId: UUID }
   | { type: 'group'; unitId: UUID; id: UUID }
 
-export const toUnitOrGroup = ({
-  unitId,
-  groupId
-}: {
-  unitId: UUID
-  groupId: UUID | undefined | null
-}): UnitOrGroup =>
+export const toUnitOrGroup = (
+  unitId: UUID,
+  groupId?: UUID | undefined | null
+): UnitOrGroup =>
   groupId && groupId !== 'all'
     ? { type: 'group', unitId, id: groupId }
     : { type: 'unit', unitId }

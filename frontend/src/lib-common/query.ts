@@ -69,6 +69,21 @@ export function useQueryResult<Data>(
   )
 }
 
+export function useChainedQuery<Data>(
+  query: Result<UseQueryOptions<Data, unknown>>,
+  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+): Result<Data> {
+  const result = useQueryResult(
+    // The result of `constantQuery(null)` is never returned to the caller, because the query is enabled only when the previous query is successful.
+    query.getOrElse(constantQuery(null)) as UseQueryOptions<Data, unknown>,
+    {
+      ...options,
+      enabled: (options?.enabled ?? true) && query.isSuccess
+    }
+  )
+  return query.isFailure ? Failure.of(query) : result
+}
+
 type Paged<T> = {
   data: T[]
   pages: number

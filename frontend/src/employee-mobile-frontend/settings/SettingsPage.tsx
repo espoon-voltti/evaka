@@ -31,7 +31,7 @@ export const SettingsPage = React.memo(function SettingsPage({
   const { i18n } = useTranslation()
   const { groupId } = useContext(RememberContext)
   const unitOrGroup = useMemo(
-    () => toUnitOrGroup({ unitId, groupId }),
+    () => toUnitOrGroup(unitId, groupId),
     [unitId, groupId]
   )
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))

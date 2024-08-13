@@ -50,6 +50,8 @@ import { ServiceWorkerContextProvider } from './common/service-worker'
 import { UnitOrGroup, toUnitOrGroup } from './common/unit-or-group'
 import MessagesPage from './messages/MessagesPage'
 import NewChildMessagePage from './messages/NewChildMessagePage'
+import NewMessagePage from './messages/NewMessagePage'
+import { ReceivedThreadPage } from './messages/ThreadView'
 import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
 import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
@@ -163,7 +165,7 @@ function UnitRouter() {
 function GroupRouter({ unitId }: { unitId: UUID }) {
   const { groupId } = useRouteParams([], ['groupId'])
   const unitOrGroup: UnitOrGroup = useMemo(
-    () => toUnitOrGroup({ unitId, groupId }),
+    () => toUnitOrGroup(unitId, groupId),
     [unitId, groupId]
   )
 
@@ -188,12 +190,7 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
       )
       if (!validGroupId) {
         navigate(
-          routes.childAttendances(
-            toUnitOrGroup({
-              unitId: unitOrGroup.unitId,
-              groupId: undefined
-            })
-          ).value
+          routes.childAttendances(toUnitOrGroup(unitOrGroup.unitId)).value
         )
       }
     }
@@ -367,6 +364,14 @@ function MessagesRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         path="unread-messages"
         element={<UnreadMessagesPage unitOrGroup={unitOrGroup} />}
       />
+      <Route
+        path="thread/:threadId"
+        element={<ReceivedThreadPage unitOrGroup={unitOrGroup} />}
+      />
+      <Route
+        path="new"
+        element={<NewMessagePage unitOrGroup={unitOrGroup} />}
+      />
     </Routes>
   )
 }
@@ -447,5 +452,11 @@ export const routes = {
   },
   unreadMessages(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/messages/unread-messages`
+  },
+  receivedThread(unitOrGroup: UnitOrGroup, threadId: UUID): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/messages/thread/${threadId}`
+  },
+  newMessage(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/messages/new`
   }
 }

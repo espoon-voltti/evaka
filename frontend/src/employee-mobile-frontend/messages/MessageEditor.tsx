@@ -113,7 +113,7 @@ interface Props {
 
 export default React.memo(function MessageEditor({
   unitId,
-  account,
+  account: { id: accountId, name: accountName },
   availableRecipients,
   draft,
   onClose
@@ -130,9 +130,9 @@ export default React.memo(function MessageEditor({
 
   useEffect(() => {
     if (!draftId) {
-      void init({ accountId: account.id }).then(setDraftId)
+      void init({ accountId }).then(setDraftId)
     }
-  }, [account.id, draftId, init])
+  }, [accountId, draftId, init])
 
   const form = useForm(
     messageForm,
@@ -140,7 +140,7 @@ export default React.memo(function MessageEditor({
       draft
         ? {
             recipients: receiversAsSelectorNode(
-              account.id,
+              accountId,
               availableRecipients,
               draft.recipientIds
             ),
@@ -149,10 +149,7 @@ export default React.memo(function MessageEditor({
             content: draft.content
           }
         : {
-            recipients: receiversAsSelectorNode(
-              account.id,
-              availableRecipients
-            ),
+            recipients: receiversAsSelectorNode(accountId, availableRecipients),
             urgent: false,
             title: '',
             content: ''
@@ -164,7 +161,7 @@ export default React.memo(function MessageEditor({
           const result = form.validate(nextState)
           if (result.isValid) {
             debouncedSaveDraft({
-              accountId: account.id,
+              accountId,
               draftId,
               body: result.value.draftContent()
             })
@@ -183,7 +180,7 @@ export default React.memo(function MessageEditor({
   const debouncedRecipients = useDebounce(selectedRecipients, 500)
   const preflightResult = useQueryResult(
     createMessagePreflightCheckQuery({
-      accountId: account.id,
+      accountId,
       body: {
         filters: null, // not supported on mobile
         recipients: debouncedRecipients
@@ -201,7 +198,7 @@ export default React.memo(function MessageEditor({
     cancelSaveDraft()
     const messageContent = form.value().messageContent(draftId)
     return messageContent !== undefined
-      ? { accountId: account.id, body: messageContent }
+      ? { accountId, body: messageContent }
       : cancelMutation
   }
 
@@ -221,7 +218,7 @@ export default React.memo(function MessageEditor({
         <Bold>{i18n.messages.messageEditor.sender}</Bold>
         <Gap size="xs" />
         <P noMargin data-qa="sender-name">
-          {account.name}
+          {accountName}
         </P>
         <Gap size="s" />
 
@@ -295,7 +292,7 @@ export default React.memo(function MessageEditor({
             onClick={() => {
               cancelSaveDraft()
               if (draftId) {
-                return { accountId: account.id, draftId }
+                return { accountId, draftId }
               }
               return cancelMutation
             }}

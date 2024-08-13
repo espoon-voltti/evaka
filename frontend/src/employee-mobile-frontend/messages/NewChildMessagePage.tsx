@@ -6,8 +6,10 @@ import React, { useCallback, useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { combine } from 'lib-common/api'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
+import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -28,27 +30,18 @@ import { MessageContext } from './state'
 
 interface Props {
   unitId: UUID
+  childGroupAccount: AuthorizedMessageAccount | undefined
   child: AttendanceChild
 }
 
 const NewChildMessagePage = React.memo(function NewChildMessagePage({
   unitId,
+  childGroupAccount,
   child
 }: Props) {
   const { i18n } = useTranslation()
 
   const navigate = useNavigate()
-  const { groupAccounts } = useContext(MessageContext)
-  const childGroupAccount = useMemo(
-    () =>
-      child.groupId !== null
-        ? groupAccounts.find(
-            (account) => account.daycareGroup?.id === child.groupId
-          )
-        : undefined,
-    [child.groupId, groupAccounts]
-  )
-
   const messageReceivers = useQueryResult(recipientsQuery())
 
   const receivers = useMemo(() => {
@@ -118,10 +111,22 @@ export default React.memo(function MessageEditorPageWrapper({
   unitId: UUID
 }) {
   const { childId } = useRouteParams(['childId'])
+  const { groupAccount } = useContext(MessageContext)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  return renderResult(child, (child) => (
-    <NewChildMessagePage unitId={unitId} child={child} />
-  ))
+  const childGroupAccount = useMemo(
+    () => child.chain((c) => groupAccount(c.groupId)),
+    [child, groupAccount]
+  )
+  return renderResult(
+    combine(child, childGroupAccount),
+    ([child, childGroupAccount]) => (
+      <NewChildMessagePage
+        unitId={unitId}
+        childGroupAccount={childGroupAccount}
+        child={child}
+      />
+    )
+  )
 })
 
 const PaddedContainer = styled.div`

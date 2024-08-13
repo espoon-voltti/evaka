@@ -2,11 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import { SentMessage } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageAccount,
+  SentMessage
+} from 'lib-common/generated/api-types/messaging'
 import { usePagedInfiniteQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
@@ -22,21 +25,20 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
 
 import { sentMessagesQuery } from './queries'
-import { MessageContext } from './state'
 
 interface Props {
+  account: MessageAccount
   onSelectMessage: (message: SentMessage) => void
 }
 
 export default React.memo(function SentMessagesList({
+  account,
   onSelectMessage
 }: Props) {
   const { i18n } = useTranslation()
-  const { selectedAccount } = useContext(MessageContext)
 
   const { data: sentMessages } = usePagedInfiniteQueryResult(
-    sentMessagesQuery(selectedAccount?.account.id ?? ''),
-    { enabled: selectedAccount !== undefined }
+    sentMessagesQuery(account.id)
   )
 
   return renderResult(sentMessages, (messages) => (

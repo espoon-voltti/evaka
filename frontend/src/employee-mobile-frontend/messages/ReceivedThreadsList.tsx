@@ -6,7 +6,11 @@ import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
 import { formatDateOrTime } from 'lib-common/date'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import {
+  AuthorizedMessageAccount,
+  MessageAccount,
+  MessageThread
+} from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutation, usePagedInfiniteQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -31,26 +35,24 @@ import { markThreadReadMutation, receivedMessagesQuery } from './queries'
 import { MessageContext } from './state'
 
 interface Props {
+  groupAccounts: AuthorizedMessageAccount[]
+  account: MessageAccount
   onSelectThread: (threadId: UUID) => void
 }
 
 export default React.memo(function ReceivedThreadsList({
+  groupAccounts,
+  account,
   onSelectThread
 }: Props) {
   const { i18n } = useTranslation()
-  const { groupAccounts, selectedAccount } = useContext(MessageContext)
 
   const {
     data: threads,
     hasNextPage,
     fetchNextPage,
     transform
-  } = usePagedInfiniteQueryResult(
-    receivedMessagesQuery(selectedAccount?.account.id ?? ''),
-    {
-      enabled: selectedAccount !== undefined
-    }
-  )
+  } = usePagedInfiniteQueryResult(receivedMessagesQuery(account.id))
 
   const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
 
@@ -58,18 +60,15 @@ export default React.memo(function ReceivedThreadsList({
     (thread: MessageThread) => {
       onSelectThread(thread.id)
 
-      if (!selectedAccount) throw new Error('Should never happen')
-      const { id: accountId } = selectedAccount.account
-
       const hasUnreadMessages = thread.messages.some(
-        (m) => !m.readAt && m.sender.id !== accountId
+        (m) => !m.readAt && m.sender.id !== account.id
       )
       if (hasUnreadMessages) {
-        markThreadRead({ accountId, threadId: thread.id })
+        markThreadRead({ accountId: account.id, threadId: thread.id })
         transform((t) => markMatchingThreadRead(t, thread.id))
       }
     },
-    [markThreadRead, onSelectThread, selectedAccount, transform]
+    [markThreadRead, onSelectThread, account.id, transform]
   )
 
   return renderResult(threads, (threads, isReloading) =>
@@ -82,7 +81,7 @@ export default React.memo(function ReceivedThreadsList({
             hasUnreadMessages={thread.messages.some(
               (item) =>
                 !item.readAt &&
-                item.sender.id !== selectedAccount?.account.id &&
+                item.sender.id !== account.id &&
                 !groupAccounts.some((ga) => ga.account.id === item.sender.id)
             )}
             onClick={() => selectThread(thread)}

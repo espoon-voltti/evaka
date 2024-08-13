@@ -13,9 +13,9 @@ import React, {
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { combine } from 'lib-common/api'
 import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import {
-  AuthorizedMessageAccount,
   DraftContent,
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
@@ -40,7 +40,7 @@ import DraftMessagesList from './DraftMessagesList'
 import MessageEditor from './MessageEditor'
 import ReceivedThreadsList from './ReceivedThreadsList'
 import SentMessagesList from './SentMessagesList'
-import { ReceivedThreadView, SentMessageView } from './ThreadView'
+import { SentMessageView } from './ThreadView'
 import { recipientsQuery } from './queries'
 import { MessageContext } from './state'
 
@@ -48,9 +48,8 @@ type Tab = 'received' | 'sent' | 'drafts'
 
 type UiState =
   | { type: 'list' }
-  | { type: 'receivedThread'; threadId: UUID }
   | { type: 'sentMessage'; message: SentMessage }
-  | { type: 'newMessage'; draft: DraftContent | undefined }
+  | { type: 'continueDraft'; draft: DraftContent }
 
 export default function MessagesPage({
   unitOrGroup
@@ -63,10 +62,10 @@ export default function MessagesPage({
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
-  const { groupAccounts, selectedAccount } = useContext(MessageContext)
+  const { groupAccounts, groupAccount } = useContext(MessageContext)
 
   const recipients = useQueryResult(recipientsQuery(), {
-    enabled: selectedAccount !== undefined
+    enabled: unitOrGroup.type === 'group'
   })
 
   const threadListTabs = useMemo(
@@ -96,10 +95,13 @@ export default function MessagesPage({
     setUiState({ type: 'list' })
   }, [unitOrGroup])
 
-  const selectReceivedThread = useCallback(
-    (threadId: UUID) => setUiState({ type: 'receivedThread', threadId }),
-    []
-  )
+  const onSelectThread = (threadId: UUID) => {
+    navigate(routes.receivedThread(unitOrGroup, threadId).value)
+  }
+
+  const onNewMessageClick = () => {
+    navigate(routes.newMessage(unitOrGroup).value)
+  }
 
   const selectSentMessage = useCallback(
     (message: SentMessage) => setUiState({ type: 'sentMessage', message }),
@@ -107,30 +109,57 @@ export default function MessagesPage({
   )
 
   const selectDraftMessage = useCallback(
-    (draft: DraftContent) => setUiState({ type: 'newMessage', draft }),
+    (draft: DraftContent) => setUiState({ type: 'continueDraft', draft }),
     []
   )
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       if (group)
-        navigate(
-          routes.messages(toUnitOrGroup({ unitId, groupId: group.id })).value
-        )
+        navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
     },
     [navigate, unitId]
   )
   const onBack = useCallback(() => setUiState({ type: 'list' }), [])
-
-  return selectedAccount
-    ? ((selectedAccount: AuthorizedMessageAccount) => {
+  if (unitOrGroup.type === 'unit') {
+    return renderResult(
+      combine(unitInfoResponse, groupAccounts),
+      ([unit, groupAccounts]) => (
+        <ContentArea
+          opaque
+          paddingVertical="zero"
+          paddingHorizontal="zero"
+          data-qa="messages-page-content-area"
+        >
+          <TopBar title={unit.name} unitId={unitId} />
+          {groupAccounts.length === 0 ? (
+            <NoAccounts data-qa="info-no-account-access">
+              {i18n.messages.noAccountAccess}
+            </NoAccounts>
+          ) : (
+            <Navigate
+              to={routes.unreadMessages(unitOrGroup).value}
+              replace={true}
+            />
+          )}
+          <BottomNavbar selected="messages" unitOrGroup={unitOrGroup} />
+        </ContentArea>
+      )
+    )
+  } else {
+    return renderResult(
+      combine(groupAccounts, groupAccount(unitOrGroup.id)),
+      ([groupAccounts, selectedAccount]) => {
+        if (!selectedAccount) {
+          return <Navigate to={routes.messages(toUnitOrGroup(unitId)).value} />
+        }
         switch (uiState.type) {
           case 'list':
             return (
               <PageWithNavigation
                 selected="messages"
                 selectedGroup={
-                  selectedAccount?.daycareGroup
+                  selectedAccount.daycareGroup
                     ? {
                         id: selectedAccount.daycareGroup.id,
                         name: selectedAccount.daycareGroup.name,
@@ -154,18 +183,24 @@ export default function MessagesPage({
                   <Tabs mobile active={activeTab} tabs={threadListTabs} />
                   {activeTab === 'received' ? (
                     <ReceivedThreadsList
-                      onSelectThread={selectReceivedThread}
+                      groupAccounts={groupAccounts}
+                      account={selectedAccount.account}
+                      onSelectThread={onSelectThread}
                     />
                   ) : activeTab === 'sent' ? (
-                    <SentMessagesList onSelectMessage={selectSentMessage} />
+                    <SentMessagesList
+                      account={selectedAccount.account}
+                      onSelectMessage={selectSentMessage}
+                    />
                   ) : (
-                    <DraftMessagesList onSelectDraft={selectDraftMessage} />
+                    <DraftMessagesList
+                      account={selectedAccount.account}
+                      onSelectDraft={selectDraftMessage}
+                    />
                   )}
                   <HoverButton
                     primary
-                    onClick={() =>
-                      setUiState({ type: 'newMessage', draft: undefined })
-                    }
+                    onClick={onNewMessageClick}
                     data-qa="new-message-btn"
                   >
                     <FontAwesomeIcon icon={faPlus} />
@@ -174,7 +209,6 @@ export default function MessagesPage({
                 </ContentArea>
               </PageWithNavigation>
             )
-          case 'receivedThread':
           case 'sentMessage': {
             return (
               <ContentArea
@@ -184,25 +218,16 @@ export default function MessagesPage({
                 paddingVertical="zero"
                 data-qa="messages-page-content-area"
               >
-                {uiState.type === 'receivedThread' ? (
-                  <ReceivedThreadView
-                    unitId={unitId}
-                    threadId={uiState.threadId}
-                    onBack={onBack}
-                    accountId={selectedAccount.account.id}
-                  />
-                ) : (
-                  <SentMessageView
-                    unitId={unitId}
-                    account={selectedAccount.account}
-                    message={uiState.message}
-                    onBack={onBack}
-                  />
-                )}
+                <SentMessageView
+                  unitId={unitId}
+                  account={selectedAccount.account}
+                  message={uiState.message}
+                  onBack={onBack}
+                />
               </ContentArea>
             )
           }
-          case 'newMessage':
+          case 'continueDraft':
             return renderResult(recipients, (availableRecipients) => (
               <MessageEditor
                 unitId={unitId}
@@ -213,28 +238,9 @@ export default function MessagesPage({
               />
             ))
         }
-      })(selectedAccount)
-    : renderResult(unitInfoResponse, (unit) => (
-        <ContentArea
-          opaque
-          paddingVertical="zero"
-          paddingHorizontal="zero"
-          data-qa="messages-page-content-area"
-        >
-          <TopBar title={unit.name} unitId={unitId} />
-          {groupAccounts.length === 0 ? (
-            <NoAccounts data-qa="info-no-account-access">
-              {i18n.messages.noAccountAccess}
-            </NoAccounts>
-          ) : (
-            <Navigate
-              to={routes.unreadMessages(unitOrGroup).value}
-              replace={true}
-            />
-          )}
-          <BottomNavbar selected="messages" unitOrGroup={unitOrGroup} />
-        </ContentArea>
-      ))
+      }
+    )
+  }
 }
 
 const NoAccounts = styled.div`
