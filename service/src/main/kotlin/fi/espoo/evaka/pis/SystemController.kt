@@ -166,100 +166,82 @@ class SystemController(
         systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: EmployeeId
-    ): EmployeeUserResponse? {
+    ): EmployeeUserResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    tx.getEmployeeUser(id)?.let { employeeUser ->
-                        val user = AuthenticatedUser.Employee(employeeUser)
-                        val permittedGlobalActions =
-                            accessControl.getPermittedActions<Action.Global>(tx, user, clock)
-                        val accessibleFeatures =
-                            EmployeeFeatures(
-                                applications =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.APPLICATIONS_PAGE
-                                    ),
-                                employees =
-                                    permittedGlobalActions.contains(Action.Global.EMPLOYEES_PAGE),
-                                financeBasics =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.FINANCE_BASICS_PAGE
-                                    ),
-                                finance =
-                                    permittedGlobalActions.contains(Action.Global.FINANCE_PAGE),
-                                holidayAndTermPeriods =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.HOLIDAY_AND_TERM_PERIODS_PAGE
-                                    ),
-                                messages =
-                                    permittedGlobalActions.contains(Action.Global.MESSAGES_PAGE),
-                                personSearch =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.PERSON_SEARCH_PAGE
-                                    ),
-                                reports =
-                                    permittedGlobalActions.contains(Action.Global.REPORTS_PAGE),
-                                settings =
-                                    permittedGlobalActions.contains(Action.Global.SETTINGS_PAGE),
-                                systemNotifications =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.READ_SYSTEM_NOTIFICATIONS
-                                    ),
-                                unitFeatures =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.UNIT_FEATURES_PAGE
-                                    ),
-                                units = permittedGlobalActions.contains(Action.Global.UNITS_PAGE),
-                                createUnits =
-                                    permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
-                                documentTemplates =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.DOCUMENT_TEMPLATES_PAGE
-                                    ),
-                                vasuTemplates =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.VASU_TEMPLATES_PAGE
-                                    ),
-                                personalMobileDevice =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.PERSONAL_MOBILE_DEVICE_PAGE
-                                    ),
-                                pinCode =
-                                    permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
-                                assistanceNeedDecisionsReport =
-                                    accessControl.isPermittedForSomeTarget(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.AssistanceNeedDecision.READ_IN_REPORT
-                                    ),
-                                createDraftInvoices =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.CREATE_DRAFT_INVOICES
-                                    ),
-                                createPlacements =
-                                    accessControl.isPermittedForSomeTarget(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Unit.CREATE_PLACEMENT
-                                    ),
-                                submitPatuReport =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.SUBMIT_PATU_REPORT
-                                    ),
-                            )
-
-                        EmployeeUserResponse(
-                            id = employeeUser.id,
-                            firstName = employeeUser.preferredFirstName ?: employeeUser.firstName,
-                            lastName = employeeUser.lastName,
-                            globalRoles = employeeUser.globalRoles,
-                            allScopedRoles = employeeUser.allScopedRoles,
-                            accessibleFeatures = accessibleFeatures,
-                            permittedGlobalActions = permittedGlobalActions
+                    val employeeUser = tx.getEmployeeUser(id) ?: throw NotFound()
+                    val user = AuthenticatedUser.Employee(employeeUser)
+                    val permittedGlobalActions =
+                        accessControl.getPermittedActions<Action.Global>(tx, user, clock)
+                    val accessibleFeatures =
+                        EmployeeFeatures(
+                            applications =
+                                permittedGlobalActions.contains(Action.Global.APPLICATIONS_PAGE),
+                            employees =
+                                permittedGlobalActions.contains(Action.Global.EMPLOYEES_PAGE),
+                            financeBasics =
+                                permittedGlobalActions.contains(Action.Global.FINANCE_BASICS_PAGE),
+                            finance = permittedGlobalActions.contains(Action.Global.FINANCE_PAGE),
+                            holidayAndTermPeriods =
+                                permittedGlobalActions.contains(
+                                    Action.Global.HOLIDAY_AND_TERM_PERIODS_PAGE
+                                ),
+                            messages = permittedGlobalActions.contains(Action.Global.MESSAGES_PAGE),
+                            personSearch =
+                                permittedGlobalActions.contains(Action.Global.PERSON_SEARCH_PAGE),
+                            reports = permittedGlobalActions.contains(Action.Global.REPORTS_PAGE),
+                            settings = permittedGlobalActions.contains(Action.Global.SETTINGS_PAGE),
+                            systemNotifications =
+                                permittedGlobalActions.contains(
+                                    Action.Global.READ_SYSTEM_NOTIFICATIONS
+                                ),
+                            unitFeatures =
+                                permittedGlobalActions.contains(Action.Global.UNIT_FEATURES_PAGE),
+                            units = permittedGlobalActions.contains(Action.Global.UNITS_PAGE),
+                            createUnits =
+                                permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
+                            documentTemplates =
+                                permittedGlobalActions.contains(
+                                    Action.Global.DOCUMENT_TEMPLATES_PAGE
+                                ),
+                            vasuTemplates =
+                                permittedGlobalActions.contains(Action.Global.VASU_TEMPLATES_PAGE),
+                            personalMobileDevice =
+                                permittedGlobalActions.contains(
+                                    Action.Global.PERSONAL_MOBILE_DEVICE_PAGE
+                                ),
+                            pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
+                            assistanceNeedDecisionsReport =
+                                accessControl.isPermittedForSomeTarget(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.AssistanceNeedDecision.READ_IN_REPORT
+                                ),
+                            createDraftInvoices =
+                                permittedGlobalActions.contains(
+                                    Action.Global.CREATE_DRAFT_INVOICES
+                                ),
+                            createPlacements =
+                                accessControl.isPermittedForSomeTarget(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.CREATE_PLACEMENT
+                                ),
+                            submitPatuReport =
+                                permittedGlobalActions.contains(Action.Global.SUBMIT_PATU_REPORT),
                         )
-                    }
+
+                    EmployeeUserResponse(
+                        id = employeeUser.id,
+                        firstName = employeeUser.preferredFirstName ?: employeeUser.firstName,
+                        lastName = employeeUser.lastName,
+                        globalRoles = employeeUser.globalRoles,
+                        allScopedRoles = employeeUser.allScopedRoles,
+                        accessibleFeatures = accessibleFeatures,
+                        permittedGlobalActions = permittedGlobalActions
+                    )
                 }
             }
             .also { Audit.EmployeeUserDetailsRead.log(targetId = AuditId(id)) }

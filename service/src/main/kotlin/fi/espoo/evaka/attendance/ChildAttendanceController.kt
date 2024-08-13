@@ -256,6 +256,8 @@ class ChildAttendanceController(
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime
     )
 
+    data class ExpectedAbsencesOnDepartureResponse(val categories: Set<AbsenceCategory>?)
+
     @PostMapping("/units/{unitId}/children/{childId}/departure/expected-absences")
     fun getChildExpectedAbsencesOnDeparture(
         db: Database,
@@ -264,7 +266,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestBody body: ExpectedAbsencesOnDepartureRequest
-    ): Set<AbsenceCategory>? {
+    ): ExpectedAbsencesOnDepartureResponse {
         val today = clock.today()
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -281,11 +283,14 @@ class ChildAttendanceController(
                     val attendanceTimesToday =
                         tx.getCompletedChildAttendanceTimes(childId, unitId, today) +
                             ongoingAttendance.toTimeRange(HelsinkiDateTime.of(today, body.departed))
-                    getExpectedAbsenceCategories(
-                        tx = tx,
-                        date = today,
-                        childId = childId,
-                        attendanceTimes = attendanceTimesToday
+                    ExpectedAbsencesOnDepartureResponse(
+                        categories =
+                            getExpectedAbsenceCategories(
+                                tx = tx,
+                                date = today,
+                                childId = childId,
+                                attendanceTimes = attendanceTimesToday
+                            )
                     )
                 }
             }

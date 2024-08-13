@@ -381,8 +381,9 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
-    ) =
-        db.connect { dbc ->
+    ) {
+        val deletedId =
+            db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(
@@ -413,9 +414,8 @@ class AssistanceController(
                         }
                 }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
-            }
+        deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
+    }
 
     @PostMapping(
         "/children/{child}/daycare-assistances", // deprecated
@@ -478,8 +478,9 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DaycareAssistanceId,
-    ) =
-        db.connect { dbc ->
+    ) {
+        val deletedId =
+            db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(
@@ -499,9 +500,8 @@ class AssistanceController(
                         }
                 }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
-            }
+        deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
+    }
 
     @PostMapping(
         "/children/{child}/preschool-assistances", // deprecated
@@ -567,8 +567,9 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PreschoolAssistanceId,
-    ) =
-        db.connect { dbc ->
+    ) {
+        val deletedId =
+            db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
                         .checkPermissionFor(
@@ -588,9 +589,8 @@ class AssistanceController(
                         }
                 }
             }
-            .also { deletedId ->
-                deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
-            }
+        deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
+    }
 
     @PostMapping(
         "/children/{child}/other-assistance-measures", // deprecated
@@ -656,7 +656,7 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: OtherAssistanceMeasureId,
-    ) =
+    ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
@@ -680,4 +680,5 @@ class AssistanceController(
             .also { deletedId ->
                 deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
             }
+    }
 }

@@ -160,6 +160,13 @@ export interface ExpectedAbsencesOnDepartureRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDepartureResponse
+*/
+export interface ExpectedAbsencesOnDepartureResponse {
+  categories: AbsenceCategory[] | null
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.ExternalAttendance
 */
 export interface ExternalAttendance {

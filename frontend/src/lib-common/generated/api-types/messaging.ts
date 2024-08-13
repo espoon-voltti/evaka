@@ -75,6 +75,13 @@ export type CitizenMessageThread = CitizenMessageThread.Redacted | CitizenMessag
 
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.CreateMessageResponse
+*/
+export interface CreateMessageResponse {
+  createdId: UUID | null
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.DraftContent
 */
 export interface DraftContent {
@@ -331,6 +338,13 @@ export interface SentMessage {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageController.ThreadByApplicationResponse
+*/
+export interface ThreadByApplicationResponse {
+  thread: MessageThread | null
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageService.ThreadReply
 */
 export interface ThreadReply {
@@ -464,6 +478,14 @@ export function deserializeJsonSentMessage(json: JsonOf<SentMessage>): SentMessa
   return {
     ...json,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
+  }
+}
+
+
+export function deserializeJsonThreadByApplicationResponse(json: JsonOf<ThreadByApplicationResponse>): ThreadByApplicationResponse {
+  return {
+    ...json,
+    thread: (json.thread != null) ? deserializeJsonMessageThread(json.thread) : null
   }
 }
 

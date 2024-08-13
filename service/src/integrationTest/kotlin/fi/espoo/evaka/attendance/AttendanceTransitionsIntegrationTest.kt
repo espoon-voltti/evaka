@@ -535,14 +535,16 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun getExpectedAbsencesOnDeparture(departed: LocalTime): Set<AbsenceCategory>? {
-        return childAttendanceController.getChildExpectedAbsencesOnDeparture(
-            dbInstance(),
-            mobileUser,
-            mockClock,
-            testDaycare.id,
-            testChild_1.id,
-            ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed)
-        )
+        return childAttendanceController
+            .getChildExpectedAbsencesOnDeparture(
+                dbInstance(),
+                mobileUser,
+                mockClock,
+                testDaycare.id,
+                testChild_1.id,
+                ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed)
+            )
+            .categories
     }
 
     private fun markDeparted(

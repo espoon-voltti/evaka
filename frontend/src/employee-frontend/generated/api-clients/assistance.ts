@@ -134,8 +134,8 @@ export async function deleteAssistanceFactor(
   request: {
     id: UUID
   }
-): Promise<UUID | null> {
-  const { data: json } = await client.request<JsonOf<UUID | null>>({
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/assistance-factors/${request.id}`.toString(),
     method: 'DELETE'
   })
@@ -150,8 +150,8 @@ export async function deleteDaycareAssistance(
   request: {
     id: UUID
   }
-): Promise<UUID | null> {
-  const { data: json } = await client.request<JsonOf<UUID | null>>({
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/daycare-assistances/${request.id}`.toString(),
     method: 'DELETE'
   })
@@ -166,8 +166,8 @@ export async function deleteOtherAssistanceMeasure(
   request: {
     id: UUID
   }
-): Promise<UUID | null> {
-  const { data: json } = await client.request<JsonOf<UUID | null>>({
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/other-assistance-measures/${request.id}`.toString(),
     method: 'DELETE'
   })
@@ -182,8 +182,8 @@ export async function deletePreschoolAssistance(
   request: {
     id: UUID
   }
-): Promise<UUID | null> {
-  const { data: json } = await client.request<JsonOf<UUID | null>>({
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/preschool-assistances/${request.id}`.toString(),
     method: 'DELETE'
   })

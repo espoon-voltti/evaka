@@ -202,6 +202,13 @@ export interface ExpectedAbsencesRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ExpectedAbsencesResponse
+*/
+export interface ExpectedAbsencesResponse {
+  categories: AbsenceCategory[] | null
+}
+
+/**
 * Generated from fi.espoo.evaka.reservations.AttendanceReservationController.GroupReservationStatisticResult
 */
 export interface GroupReservationStatisticResult {

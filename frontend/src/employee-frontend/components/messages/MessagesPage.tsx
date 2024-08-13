@@ -139,8 +139,8 @@ export default React.memo(function MessagesPage({
               view: 'sent',
               unitId: senderAccount.daycareGroup?.unitId ?? null
             })
-            if (res.value) {
-              setSelectedThread(res.value)
+            if (res.value.createdId) {
+              setSelectedThread(res.value.createdId)
             }
           }
           hideEditor()

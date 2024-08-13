@@ -128,14 +128,22 @@ export async function employeeLogin(
 export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
-) {
-  const { data } = await client.get<EmployeeUserResponse | undefined>(
-    `/system/employee/${employeeId}`,
-    {
-      headers: createServiceRequestHeaders(req, machineUser)
+): Promise<EmployeeUserResponse | undefined> {
+  try {
+    const { data } = await client.get<EmployeeUserResponse>(
+      `/system/employee/${employeeId}`,
+      {
+        headers: createServiceRequestHeaders(req, machineUser)
+      }
+    )
+    return data
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      return undefined
+    } else {
+      throw e
     }
-  )
-  return data
+  }
 }
 
 export async function citizenLogin(

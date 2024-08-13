@@ -70,22 +70,22 @@ class MockVardaIntegrationEndpoint {
     }
 
     @GetMapping("/user/apikey/")
-    fun getApiKey(): String =
+    fun getApiKey(): ByteArray =
         lock.withLock {
             logger.info { "Mock varda integration endpoint GET /users/apiKey called" }
-            "{\"token\": \"49921df1b823e6fbaeb14dc23fd42325213187ad\"}"
+            "{\"token\": \"49921df1b823e6fbaeb14dc23fd42325213187ad\"}".toByteArray()
         }
 
     @PostMapping("/v1/toimipaikat/")
     fun createUnit(
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $unit" }
             unitId = unitId.inc()
             units[unitId] = unit
-            getMockUnitResponse(unitId)
+            getMockUnitResponse(unitId).toByteArray()
         }
 
     @PutMapping("/v1/toimipaikat/{vardaId}/")
@@ -93,7 +93,7 @@ class MockVardaIntegrationEndpoint {
         @PathVariable vardaId: Long?,
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint PUT /toimipaikat/$vardaId received body: $unit"
@@ -106,38 +106,38 @@ class MockVardaIntegrationEndpoint {
                     vardaId
                 }
             units.replace(id, unit)
-            getMockUnitResponse(id)
+            getMockUnitResponse(id).toByteArray()
         }
 
     @PostMapping("/v1/henkilot/")
     fun createPerson(
         @RequestBody body: VardaPersonRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info { "Mock varda integration endpoint POST /henkilot received body: $body" }
             personId = personId.inc()
             people[personId] = body
-            getMockPersonResponse(personId)
+            getMockPersonResponse(personId).toByteArray()
         }
 
     @PostMapping("/v1/lapset/")
     fun createChild(
         @RequestBody body: VardaChildRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info { "Mock varda integration endpoint POST /lapset received body: $body" }
             childId = childId.inc()
             this.children[childId] = body
-            getMockChildResponse(childId)
+            getMockChildResponse(childId).toByteArray()
         }
 
     @PostMapping("/v1/varhaiskasvatuspaatokset/")
     fun createDecision(
         @RequestBody body: VardaDecision,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> =
+    ): ResponseEntity<ByteArray> =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint POST /varhaiskasvatuspaatokset received body: $body"
@@ -147,7 +147,7 @@ class MockVardaIntegrationEndpoint {
 
             decisionId = decisionId.inc()
             decisions[decisionId] = body
-            ResponseEntity.ok(getMockDecisionResponse(decisionId))
+            ResponseEntity.ok(getMockDecisionResponse(decisionId).toByteArray())
         }
 
     @PutMapping("/v1/varhaiskasvatuspaatokset/{vardaId}/")
@@ -155,7 +155,7 @@ class MockVardaIntegrationEndpoint {
         @PathVariable vardaId: Long,
         @RequestBody body: VardaDecision,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> =
+    ): ResponseEntity<ByteArray> =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint PUT /varhaiskasvatuspaatokset/$vardaId/ received body: $body"
@@ -164,7 +164,7 @@ class MockVardaIntegrationEndpoint {
             if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
 
             decisions.replace(vardaId, body)
-            ResponseEntity.ok(getMockDecisionResponse(vardaId))
+            ResponseEntity.ok(getMockDecisionResponse(vardaId).toByteArray())
         }
 
     @DeleteMapping("/v1/varhaiskasvatuspaatokset/{vardaId}/")
@@ -183,14 +183,14 @@ class MockVardaIntegrationEndpoint {
     fun createPlacement(
         @RequestBody body: VardaPlacement,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint POST /varhaiskasvatussuhteet received body: $body"
             }
             placementId = placementId.inc()
             placements[placementId] = body
-            getMockPlacementResponse(placementId)
+            getMockPlacementResponse(placementId).toByteArray()
         }
 
     @PutMapping("/v1/varhaiskasvatussuhteet/{vardaId}/")
@@ -198,13 +198,13 @@ class MockVardaIntegrationEndpoint {
         @PathVariable vardaId: Long,
         @RequestBody body: VardaPlacement,
         @RequestHeader(name = "Authorization") auth: String
-    ): String =
+    ): ByteArray =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint PUT /varhaiskasvatussuhteet/$vardaId/ received body: $body"
             }
             placements.replace(vardaId, body)
-            getMockPlacementResponse(vardaId)
+            getMockPlacementResponse(vardaId).toByteArray()
         }
 
     @DeleteMapping("/v1/varhaiskasvatussuhteet/{vardaId}/")
@@ -223,7 +223,7 @@ class MockVardaIntegrationEndpoint {
     fun createFeeData(
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> =
+    ): ResponseEntity<ByteArray> =
         lock.withLock {
             if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
@@ -231,7 +231,7 @@ class MockVardaIntegrationEndpoint {
             this.feeData[feeDataId] = body
             this.feeDataCalls += 1
             logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
-            ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body))
+            ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body).toByteArray())
         }
 
     @PutMapping("/v1/maksutiedot/{vardaId}")
@@ -239,7 +239,7 @@ class MockVardaIntegrationEndpoint {
         @PathVariable vardaId: Long,
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> =
+    ): ResponseEntity<ByteArray> =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint PUT /maksutiedot/$vardaId received body: $body"
@@ -248,14 +248,14 @@ class MockVardaIntegrationEndpoint {
             if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
             this.feeData.replace(vardaId, body)
-            ResponseEntity.ok(getMockFeeDataResponse(vardaId, body))
+            ResponseEntity.ok(getMockFeeDataResponse(vardaId, body).toByteArray())
         }
 
     @DeleteMapping("/v1/maksutiedot/{vardaId}/")
     fun deleteFeeData(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> =
+    ): ResponseEntity<ByteArray> =
         lock.withLock {
             logger.info {
                 "Mock varda integration endpoint DELETE /maksutiedot received id: $vardaId"
@@ -539,11 +539,11 @@ class MockVardaIntegrationEndpoint {
 
     private fun shouldFailRequest(type: VardaCallType) = type == failNextRequest
 
-    private fun failRequest(): ResponseEntity<String> {
+    private fun failRequest(): ResponseEntity<ByteArray> {
         logger.info(
             "MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode"
         )
         failNextRequest = null
-        return ResponseEntity.status(failResponseCode).body(failResponseMessage)
+        return ResponseEntity.status(failResponseCode).body(failResponseMessage.toByteArray())
     }
 }

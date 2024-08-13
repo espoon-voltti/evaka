@@ -5,13 +5,13 @@
 // GENERATED FILE: no manual modifications
 
 import LocalDate from 'lib-common/local-date'
-import { AbsenceCategory } from 'lib-common/generated/api-types/absence'
 import { AbsenceRangeRequest } from 'lib-common/generated/api-types/attendance'
 import { ArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { ChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { DepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { ExpectedAbsencesOnDepartureRequest } from 'lib-common/generated/api-types/attendance'
+import { ExpectedAbsencesOnDepartureResponse } from 'lib-common/generated/api-types/attendance'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
@@ -95,8 +95,8 @@ export async function getChildExpectedAbsencesOnDeparture(
     childId: UUID,
     body: ExpectedAbsencesOnDepartureRequest
   }
-): Promise<AbsenceCategory[] | null> {
-  const { data: json } = await client.request<JsonOf<AbsenceCategory[] | null>>({
+): Promise<ExpectedAbsencesOnDepartureResponse> {
+  const { data: json } = await client.request<JsonOf<ExpectedAbsencesOnDepartureResponse>>({
     url: uri`/attendances/units/${request.unitId}/children/${request.childId}/departure/expected-absences`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExpectedAbsencesOnDepartureRequest>
