@@ -396,6 +396,9 @@ export const routes = {
   childAttendances(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/`
   },
+  childAttendancesToday(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/list/`
+  },
   childAttendanceDaylist(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/child-attendance/daylist`
   },
