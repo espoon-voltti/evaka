@@ -197,7 +197,12 @@ class ReservationControllerCitizen(
                                                                 placementDay.scheduleType,
                                                             shiftCare = placementDay.shiftCare,
                                                             absence =
-                                                                selectSingleAbsence(childAbsences),
+                                                                relevantAbsence(
+                                                                    today,
+                                                                    placementDay.placementType,
+                                                                    childReservations.isNotEmpty(),
+                                                                    childAbsences
+                                                                ),
                                                             reservations =
                                                                 childReservations.sorted(),
                                                             attendances =
@@ -467,13 +472,28 @@ private fun placementDay(
     }
 }
 
-/**
- * Show at most one absence per child per day. Take billable one if available, as it affects
- * invoicing and is more important in that sense.
- */
-private fun selectSingleAbsence(absences: List<Absence>): AbsenceInfo? =
-    (absences.firstOrNull { it.category == AbsenceCategory.BILLABLE } ?: absences.firstOrNull())
-        ?.let { AbsenceInfo(it.absenceType, it.editableByCitizen()) }
+private fun relevantAbsence(
+    today: LocalDate,
+    placementType: PlacementType,
+    hasReservation: Boolean,
+    absences: List<Absence>
+): AbsenceInfo? {
+    // Take billable absence if available, as it affects invoicing and is more important in that
+    // sense
+    val absence =
+        (absences.firstOrNull { it.category == AbsenceCategory.BILLABLE } ?: absences.firstOrNull())
+            ?: return null
+    val fullDayAbsence = absences.size == placementType.absenceCategories().size
+
+    return if (absence.date.isBefore(today) || fullDayAbsence || !hasReservation) {
+        // Absence should be shown in citizen's calendar (although attendances still take
+        // precedence)
+        AbsenceInfo(absence.absenceType, absence.editableByCitizen())
+    } else {
+        // Absence is not relevant for citizen's calendar
+        null
+    }
+}
 
 data class ReservationsResponse(
     val children: List<ReservationChild>,

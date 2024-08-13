@@ -115,7 +115,7 @@ describe('Placement start after deadline end', () => {
     await childView.reservationEnd.fill(reservation.endTime)
     await editor.saveButton.click()
 
-    await dayView.assertReservations(child.id, [reservation])
+    await dayView.assertReservations(child.id, '08:00–16:00')
     await dayView.close()
 
     await calendar.assertDay(startDate, [

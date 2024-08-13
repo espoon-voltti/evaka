@@ -12,7 +12,6 @@ import { Fixture, testChild, testAdult } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage, {
-  FormatterReservation,
   TwoPartReservation
 } from '../../pages/citizen/citizen-calendar'
 import CitizenHeader, { EnvType } from '../../pages/citizen/citizen-header'
@@ -184,8 +183,7 @@ describe.each(e)(
 
       await dayView.assertReservations(
         child.id,
-        [reservation1, reservation2],
-        getFormatterReservationOutput
+        '05:00–10:00 Ilta-/vuorohoito, 10:00–16:00'
       )
     })
   }
@@ -273,11 +271,6 @@ const addTestData = async (date: LocalDate) => {
 
   return { parent, child }
 }
-
-const getFormatterReservationOutput = (res: FormatterReservation) =>
-  res.isOverdraft
-    ? `${res.startTime}–${res.endTime} Ilta-/vuorohoito`
-    : `${res.startTime}–${res.endTime}`
 
 const getTwoPartReservationOutput = (reservations: TwoPartReservation) =>
   reservations

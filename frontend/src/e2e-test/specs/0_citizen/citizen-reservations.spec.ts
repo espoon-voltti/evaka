@@ -307,7 +307,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await editor.saveButton.click()
 
     await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertReservations(children[1].id, '08:00–16:00')
     await dayView.assertNoReservation(children[2].id)
   })
 
@@ -340,7 +340,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await editor.saveButton.click()
 
     await dayView.assertNoReservation(children[0].id)
-    await dayView.assertReservations(children[1].id, [reservation1])
+    await dayView.assertReservations(children[1].id, '09:00–13:00')
     await dayView.assertNoReservation(children[2].id)
 
     // There's no way for the citizen to see that an absence was created, so use DevApi for that
@@ -601,9 +601,7 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     await childSection.reservationEnd.fill('16:00')
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild.id, [
-      { startTime: '08:00', endTime: '16:00' }
-    ])
+    await dayView.assertReservations(testChild.id, '08:00–16:00')
   })
 
   test('Citizen creates a weekly reservation that spans a holiday', async () => {
@@ -675,6 +673,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await init()
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDay(today.subDays(1), [])
+
+    const day = await calendarPage.openDayView(today.subDays(1))
+    await day.assertNoActivePlacementsMsgVisible()
   })
 
   it('Holiday', async () => {
@@ -684,6 +685,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertHoliday(today)
     await calendarPage.assertDay(today, [])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoActivePlacementsMsgVisible()
   })
 
   it('Missing reservation', async () => {
@@ -692,6 +696,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await calendarPage.assertDay(today, [
       { childIds: [testChild2.id], text: 'Ilmoitus puuttuu' }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoReservation(testChild2.id)
   })
 
   it('Reservation', async () => {
@@ -711,6 +718,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: '08:00–16:00'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertReservations(testChild2.id, '08:00–16:00')
   })
 
   it('Two reservations', async () => {
@@ -733,6 +743,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: '08:00–12:00, 18:00–23:59'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertReservations(testChild2.id, '08:00–12:00, 18:00–23:59')
   })
 
   it('Holiday period highlight', async () => {
@@ -745,6 +758,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
 
     const calendarPage = await openCalendarPage(env)
     await calendarPage.assertDayHighlight(today, 'holidayPeriod')
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoReservation(testChild2.id)
   })
 
   it('Holiday period not yet open', async () => {
@@ -762,6 +778,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: `Ilmoittautuminen avataan ${today.addDays(1).format()}`
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNotYetReservable(testChild2.id)
   })
 
   it('Reservation without times', async () => {
@@ -782,6 +801,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await calendarPage.assertDay(today, [
       { childIds: [testChild2.id], text: 'Läsnä' }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertReservationNoTimes(testChild2.id)
   })
 
   it('Fixed schedule', async () => {
@@ -791,6 +813,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
     await calendarPage.assertDay(today, [
       { childIds: [testChild2.id], text: 'Läsnä' }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertReservationNotRequired(testChild2.id)
   })
 
   it('Ongoing attendance', async () => {
@@ -811,6 +836,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: '08:00–'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoReservation(testChild2.id)
+    await day.assertAttendances(testChild2.id, ['08:00–'])
   })
 
   it('Attendance', async () => {
@@ -831,6 +860,10 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: '08:00–15:30'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoReservation(testChild2.id)
+    await day.assertAttendances(testChild2.id, ['08:00–15:30'])
   })
 
   it('Three attendances', async () => {
@@ -858,6 +891,14 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: '08:00–12:00, 14:00–18:00, 20:00–23:00'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertNoReservation(testChild2.id)
+    await day.assertAttendances(testChild2.id, [
+      '08:00–12:00',
+      '14:00–18:00',
+      '20:00–23:00'
+    ])
   })
 
   it('Absent', async () => {
@@ -877,6 +918,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: 'Poissa'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Poissa')
   })
 
   it('Absent (marked by staff)', async () => {
@@ -896,6 +940,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: 'Poissa'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Henkilökunnan merkitsemä poissaolo')
   })
 
   it('Free absence', async () => {
@@ -916,6 +963,9 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: 'Maksuton poissaolo'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Henkilökunnan merkitsemä poissaolo')
   })
 
   it('Planned absence', async () => {
@@ -939,6 +989,163 @@ describe.each(e)('Calendar day content (%s)', (env) => {
         text: 'Vuorotyöpoissaolo'
       }
     ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
+  })
+
+  it('Reservation + full day absence (daycare)', async () => {
+    await init()
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceType: 'SICKLEAVE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Sairauspoissaolo')
+  })
+
+  it('Reservation + full day absence (preschool + daycare)', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE'
+    }).save()
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'NONBILLABLE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Poissa')
+  })
+
+  it('Reservation + part-day planned absence', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE',
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env)
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: '09:00–13:00'
+      }
+    ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertReservations(testChild2.id, '09:00–13:00')
+  })
+
+  it('Reservation + part-day planned absence (in the past)', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE',
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env, {
+      mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
+    })
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Poissa'
+      }
+    ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Poissa')
+  })
+
+  it('Reservation + part-day planned absence (in the past) with citizenAttendanceSummary feature flag', async () => {
+    await init({ placementType: 'PRESCHOOL_DAYCARE' })
+
+    await Fixture.attendanceReservationRaw({
+      childId: testChild2.id,
+      date: today,
+      range: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    }).save()
+
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      modifiedBy: testAdult.id,
+      absenceCategory: 'BILLABLE',
+      absenceType: 'PLANNED_ABSENCE'
+    }).save()
+
+    const calendarPage = await openCalendarPage(env, {
+      mockedTime: today.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0)),
+      featureFlags: { citizenAttendanceSummary: true }
+    })
+    await calendarPage.assertDay(today, [
+      {
+        childIds: [testChild2.id],
+        text: 'Vuorotyöpoissaolo'
+      }
+    ])
+
+    const day = await calendarPage.openDayView(today)
+    await day.assertAbsence(testChild2.id, 'Vuorotyöpoissaolo')
   })
 })
 
@@ -1110,9 +1317,9 @@ describe('Citizen calendar child visibility', () => {
     const calendarPage = await openCalendarPage('desktop')
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
 
-    const holidayDayModal = await calendarPage.openDayModal(firstReservationDay)
-    await holidayDayModal.childName.assertCount(1)
-    await holidayDayModal.closeModal.click()
+    const holidayDayModal = await calendarPage.openDayView(firstReservationDay)
+    await holidayDayModal.childNames.assertCount(1)
+    await holidayDayModal.close()
 
     const reservationsModal = await calendarPage.openReservationModal()
     await reservationsModal.createIrregularReservation(
@@ -1276,7 +1483,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await child.reservationEnd.fill(reservation1.endTime)
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild2.id, [reservation1])
+    await dayView.assertReservations(testChild2.id, '08:00–16:00')
 
     editor = await dayView.edit()
     child = editor.childSection(testChild2.id)
@@ -1285,10 +1492,7 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
     await child.reservation2End.fill(reservation2.endTime)
     await editor.saveButton.click()
 
-    await dayView.assertReservations(testChild2.id, [
-      reservation1,
-      reservation2
-    ])
+    await dayView.assertReservations(testChild2.id, '08:00–16:00, 17:00–19:00')
   })
 
   test(`Citizen creates 2 reservations from reservation modal: ${env}`, async () => {
@@ -1324,9 +1528,6 @@ describe.each(e)('Citizen calendar shift care reservations', (env) => {
 
     const dayView = await calendarPage.openDayView(reservationDay)
 
-    await dayView.assertReservations(testChild2.id, [
-      reservation1,
-      reservation2
-    ])
+    await dayView.assertReservations(testChild2.id, '10:00–16:00, 17:00–18:00')
   })
 })
