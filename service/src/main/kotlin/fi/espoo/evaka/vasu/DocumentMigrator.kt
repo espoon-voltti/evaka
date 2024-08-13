@@ -540,7 +540,9 @@ private fun migrateTemplateQuestion(
             val answer =
                 AnsweredQuestion.GroupedTextFieldsAnswer(
                     questionId = id,
-                    answer = vasuQuestion.value
+                    answer =
+                        vasuQuestion.value.takeIf { it.isNotEmpty() }
+                            ?: listOf(vasuQuestion.keys.map { "" })
                 )
             listOf(question to answer)
         }
