@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -10,8 +10,11 @@ import React, {
   useRef,
   useState
 } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
+import { routes } from 'employee-mobile-frontend/App'
+import { combine } from 'lib-common/api'
 import {
   Message,
   MessageAccount,
@@ -20,12 +23,14 @@ import {
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
-import { useQueryResult } from 'lib-common/query'
+import { queryOrDefault, useChainedQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import useRouteParams from 'lib-common/useRouteParams'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -42,33 +47,62 @@ import { faReply } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
+import { UnitOrGroup } from '../common/unit-or-group'
 
 import { getAttachmentUrl } from './api'
 import { replyToThreadMutation, threadQuery } from './queries'
 import { MessageContext } from './state'
 
-interface ReceivedThreadViewProps {
-  unitId: UUID
-  accountId: UUID
-  threadId: UUID
-  onBack: () => void
-}
+export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
+  unitOrGroup
+}: {
+  unitOrGroup: UnitOrGroup
+}) {
+  const navigate = useNavigate()
+  const { threadId } = useRouteParams(['threadId'])
+  const { groupAccount } = useContext(MessageContext)
 
-export const ReceivedThreadView = React.memo(function ReceivedThreadView({
-  unitId,
-  accountId,
-  threadId,
-  onBack
-}: ReceivedThreadViewProps) {
-  const thread = useQueryResult(threadQuery({ accountId, threadId }))
-  return renderResult(thread, (thread) => (
-    <ReceivedThread
-      accountId={accountId}
-      thread={thread}
-      onBack={onBack}
-      unitId={unitId}
-    />
-  ))
+  const selectedAccount = groupAccount(
+    unitOrGroup.type === 'group' ? unitOrGroup.id : null
+  )
+  const thread = useChainedQuery(
+    selectedAccount.map((selectedAccount) =>
+      queryOrDefault(
+        threadQuery,
+        null
+      )(
+        selectedAccount !== undefined
+          ? { accountId: selectedAccount.account.id, threadId }
+          : undefined
+      )
+    )
+  )
+  return renderResult(
+    combine(selectedAccount, thread),
+    ([selectedAccount, thread]) =>
+      selectedAccount !== undefined && thread !== null ? (
+        <ContentArea
+          opaque={false}
+          fullHeight
+          paddingHorizontal="zero"
+          paddingVertical="zero"
+          data-qa="messages-page-content-area"
+        >
+          <ReceivedThread
+            accountId={selectedAccount.account.id}
+            thread={thread}
+            onBack={() => navigate(routes.messages(unitOrGroup).value)}
+            unitId={unitOrGroup.unitId}
+          />
+        </ContentArea>
+      ) : (
+        <Navigate
+          to={
+            routes.messages({ type: 'unit', unitId: unitOrGroup.unitId }).value
+          }
+        />
+      )
+  )
 })
 
 interface ReceivedThreadProps {
