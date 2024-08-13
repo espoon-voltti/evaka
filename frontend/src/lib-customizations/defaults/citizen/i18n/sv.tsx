@@ -318,38 +318,39 @@ const sv: Translations = {
       PLANNED_ABSENCE: 'Skiftarbete frånvaro'
     },
     discussionTimeReservation: {
-      surveyModalButtonText: 'Siirry ajanvaraukseen',
-      reservationModalButtonText: 'Siirry varaamaan',
-      surveyModalTitle: 'Ajanvaraus',
-      surveyModalSubTitle: 'Keskusteluajat',
+      surveyModalButtonText: 'Gå till tidsbokning',
+      reservationModalButtonText: 'Gå till bokning',
+      surveyModalTitle: 'Boka en tid',
+      surveyModalSubTitle: 'Diskussionstider',
       surveyModalInstruction:
-        'Henkilökunta on pyytänyt sinua varaamaan ajan keskusteluun.',
-      surveyListTitle: 'Varattavat keskustelut',
-      timePreDescriptor: 'klo',
-      reservationLabelText: 'Valitut keskusteluajat:',
-      reservationInfoButtonText: 'Entä jos haluan varata useamman ajan?',
+        'Personalen har bett dig att boka en tid för en diskussion.',
+      surveyListTitle: 'Bokade diskussioner',
+      timePreDescriptor: 'kl',
+      reservationLabelText: 'Valda diskussionstider:',
+      reservationInfoButtonText:
+        'Vad händer om jag vill boka mer än en diskuissiontid?',
       reservationInfoText:
-        'Ota yhteyttä yksikköön, henkilökunta voi varata lisää aikoja puolestasi',
-      freeTimesInfoButtonText: 'Vapaat ajat',
+        'Kontakta enheten, så kan personalen boka fler tider åt dig.',
+      freeTimesInfoButtonText: 'Lediga tider',
       freeTimesInfoText:
-        'Valitse sopiva aika alla näkyvistä vaihtoehdoista. Voit perua ajan eVakan kautta kaksi arkipäivää ennen varattua aikaa.',
+        'Välj en lämplig tid bland alternativen nedan. Du kan avboka din tid via eVaka två arbetsdagar före den bokade tiden.',
       cancellationDeadlineInfoMessage:
-        'Jos haluat perua tämän keskusteluajan, ole yhteydessä henkilökuntaan',
-      reservationChildTitle: 'Lapsi, jota keskustelu koskee:',
-      reservationTime: 'Aika',
-      reservationSelect: 'Valitse',
-      reservationError: 'Valitsemasi aika ei ole enää varattavissa',
+        'Om du vill avboka den här tiden, vänligen kontakta personalen',
+      reservationChildTitle: 'Barn som berörs:',
+      reservationTime: 'Tid',
+      reservationSelect: 'Välj',
+      reservationError: 'Den tid du valde är inte längre tillgänglig',
       reservationErrorInstruction:
-        'Valitsemasi aika oli jo varattu, valitse toinen aika.',
+        'Den tid du valde var redan bokad, välj en annan tid.',
       noReservationsText:
-        'Valitussa kyselyssä ei tällä hetkellä ole vapaita aikoja',
-      backButtonText: 'Palaa',
-      cancelTimeButtonText: 'Peru',
+        'Det finns för närvarande inga lediga tider för den valda förfrågan',
+      backButtonText: 'Återgå',
+      cancelTimeButtonText: 'Avboka',
       surveyToastMessage:
-        'Sinua on pyydetty varaamaan aika lastasi koskevaan keskusteluun.',
+        'Du har blivit ombedd att boka en tid för att diskutera ditt barn.',
       confirmCancel: {
-        title: 'Haluatko perua varauksen?',
-        cancel: 'Alä peru'
+        title: 'Vill du avboka din bokning?',
+        cancel: 'Avboka inte'
       }
     },
     absenceMarkedByEmployee: 'Frånvaro markerad av personal',
@@ -1985,9 +1986,9 @@ const sv: Translations = {
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
       discussionTimeReservationConfirmation:
-        'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
+        'Bekräftelser på bokningar av samtalstid i eVaka',
       discussionTimeReservationConfirmationInfo:
-        'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
+        'Ett bekräftelsemeddelande skickas för en bokad eller avbokad bokning av diskussiontid.',
       outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
