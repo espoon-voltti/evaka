@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

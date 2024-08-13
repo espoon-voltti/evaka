@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import jakarta.servlet.http.HttpServletRequest
 import java.time.ZonedDateTime
 import java.util.UUID

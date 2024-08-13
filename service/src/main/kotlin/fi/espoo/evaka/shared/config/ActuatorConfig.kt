@@ -5,7 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.shared.db.Database
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.beans.factory.annotation.Autowired

@@ -16,10 +16,10 @@ import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.domain.OfficialLanguage
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.shared.withSpan
-import io.opentracing.Tracer
-import io.opentracing.noop.NoopTracerFactory
+import io.opentelemetry.api.trace.Tracer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.math.BigDecimal
@@ -44,7 +44,7 @@ class PdfGenerator(
     private val messageProvider: IMessageProvider,
     private val templateProvider: ITemplateProvider,
     private val templateEngine: ITemplateEngine,
-    private val tracer: Tracer = NoopTracerFactory.create(),
+    private val tracer: Tracer = noopTracer(),
 ) {
     fun render(page: Page): ByteArray =
         tracer.withSpan("render pdf ${page.template.name}") {

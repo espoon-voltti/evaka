@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.randomTracingId
+import fi.espoo.evaka.shared.setAttribute
 import fi.espoo.evaka.shared.withDetachedSpan
 import fi.espoo.evaka.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
@@ -16,8 +17,9 @@ import fi.espoo.voltti.logging.loggers.info
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
-import io.opentracing.Tracer
-import io.opentracing.tag.Tags
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.util.concurrent.FutureTask
@@ -163,7 +165,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                     tracer.withDetachedSpan(
                         "asyncjob.run ${job.jobType.name}",
                         Tracing.asyncJobId withValue job.jobId,
-                        Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
+                        Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts.toLong(),
                     ) {
                         runPendingJob(dbc, clock, job)
                     }
@@ -189,7 +191,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
             val traceId = randomTracingId()
             MdcKey.TRACE_ID.set(traceId)
             MdcKey.SPAN_ID.set(randomTracingId())
-            tracer.activeSpan()?.setTag(Tracing.evakaTraceId, traceId)
+            Span.current().setAttribute(Tracing.evakaTraceId, traceId)
             logger.info(logMeta) { "Running async job $job" }
             val completed =
                 db.transaction { tx ->
@@ -198,7 +200,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                         msg.user?.let {
                             MdcKey.USER_ID.set(it.rawId().toString())
                             MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
-                            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, it.rawIdHash)
+                            Span.current().setAttribute(Tracing.enduserIdHash, it.rawIdHash)
                         }
                         registration.handlerFor(job.jobType).run(Database(jdbi, tracer), clock, msg)
                         tx.completeJob(job, clock.now())
@@ -212,7 +214,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
             }
         } catch (e: Throwable) {
             metrics.get()?.failedJobs?.increment()
-            tracer.activeSpan()?.setTag(Tags.ERROR, true)
+            Span.current().setStatus(StatusCode.ERROR)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {

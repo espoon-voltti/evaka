@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.withDetachedSpan
 import fi.espoo.voltti.logging.loggers.info
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
 import javax.sql.DataSource
 import mu.KotlinLogging

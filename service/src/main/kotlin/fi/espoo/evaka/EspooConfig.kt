@@ -45,7 +45,7 @@ import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory

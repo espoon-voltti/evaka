@@ -24,6 +24,7 @@ if [ "${DD_PROFILING_ENABLED:-false}" = "true" ]; then
   export DD_ENV="${DD_ENV:-$VOLTTI_ENV}"
   export DD_VERSION="${DD_VERSION:-$APP_COMMIT}"
   export DD_SERVICE="${DD_SERVICE:-$APP_NAME}"
+  export DD_TRACE_OTEL_ENABLED=true
 
   if [ "$DD_AGENT_HOST" = "UNAVAILABLE" ]; then
     echo "Invalid DD_AGENT_HOST. Is it unset and not in AWS environment?"

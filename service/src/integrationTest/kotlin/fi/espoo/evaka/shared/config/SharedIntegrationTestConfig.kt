@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
@@ -40,7 +41,6 @@ import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
-import io.opentracing.noop.NoopTracerFactory
 import javax.sql.DataSource
 import org.flywaydb.core.Flyway
 import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension
@@ -98,7 +98,7 @@ fun getTestDataSource(): TestDataSource =
                                 )
                                 .load()
                                 .run { migrate() }
-                            Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
+                            Database(Jdbi.create(it), noopTracer()).connect { db ->
                                 db.transaction { tx ->
                                     tx.runDevScript("reset-database.sql")
                                     tx.resetDatabase()

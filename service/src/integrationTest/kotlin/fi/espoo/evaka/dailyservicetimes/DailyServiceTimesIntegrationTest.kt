@@ -33,10 +33,10 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareFullDay35
-import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -48,10 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val dailyServiceTimesController =
-        DailyServiceTimesController(
-            AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
-        )
-
+        DailyServiceTimesController(AccessControl(EspooActionRuleMapping(), noopTracer()))
     @Autowired
     private lateinit var dailyServiceTimesCitizenController: DailyServiceTimesCitizenController
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen

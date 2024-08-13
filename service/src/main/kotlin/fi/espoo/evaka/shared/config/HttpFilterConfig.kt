@@ -12,7 +12,8 @@ import fi.espoo.evaka.shared.auth.getAuthenticatedUser
 import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.voltti.auth.JwtTokenDecoder
 import fi.espoo.voltti.logging.MdcKey
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.Tracer
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpFilter
 import jakarta.servlet.http.HttpServletRequest
@@ -113,7 +114,7 @@ class HttpFilterConfig {
                 request.getHeader("x-request-id")?.let { Pair(it, randomTracingId()) }
                     ?: randomTracingId().let { Pair(it, it) }
             MdcKey.TRACE_ID.set(traceId)
-            tracer.activeSpan()?.setTag(Tracing.evakaTraceId, traceId)
+            Span.current().setAttribute(Tracing.evakaTraceId, traceId)
             MdcKey.SPAN_ID.set(spanId)
             MdcKey.REQ_IP.set(request.getHeader("x-real-ip") ?: request.remoteAddr)
             try {
