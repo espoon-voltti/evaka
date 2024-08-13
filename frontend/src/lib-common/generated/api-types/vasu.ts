@@ -265,6 +265,7 @@ export interface VasuTemplateSummary {
   documentCount: number
   id: UUID
   language: OfficialLanguage
+  migratedDocumentCount: number
   name: string
   type: CurriculumType
   valid: FiniteDateRange

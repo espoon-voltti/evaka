@@ -74,6 +74,7 @@ export default React.memo(function VasuTemplatesPage() {
                   <Th>{t.type}</Th>
                   <Th>{t.language}</Th>
                   <Th>{t.documentCount}</Th>
+                  <Th>{t.migratedDocumentCount}</Th>
                   <Th />
                 </Tr>
               </Thead>
@@ -89,6 +90,7 @@ export default React.memo(function VasuTemplatesPage() {
                     <Td>{t.types[template.type]}</Td>
                     <Td>{t.languages[template.language]}</Td>
                     <Td>{template.documentCount}</Td>
+                    <Td>{template.migratedDocumentCount}</Td>
                     <Td>
                       <FixedSpaceRow spacing="s">
                         <IconOnlyButton

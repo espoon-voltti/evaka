@@ -55,7 +55,19 @@ fun Database.Read.getVasuTemplates(
                     valid,
                     type,
                     language,
-                    (SELECT count(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
+                    (SELECT count(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count,
+                    (
+                        SELECT count(*)
+                        FROM curriculum_document cud
+                        WHERE cud.template_id = ct.id AND EXISTS(
+                            SELECT FROM child_document chd
+                            JOIN document_template dt ON dt.id = chd.template_id
+                            JOIN archived_process ap ON ap.id = chd.process_id
+                            WHERE chd.id = cud.id 
+                                AND dt.type IN ('MIGRATED_VASU', 'MIGRATED_LEOPS') 
+                                AND chd.document_key IS NOT NULL
+                        )
+                    ) AS migrated_document_count
                 FROM curriculum_template ct
                 ${if (validOnly) "WHERE valid @> ${bind(clock.today())}" else ""}
                 """
@@ -87,7 +99,19 @@ fun Database.Read.getVasuTemplateForUpdate(id: VasuTemplateId): VasuTemplateSumm
                     valid,
                     type,
                     language,
-                    (SELECT COUNT(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count
+                    (SELECT COUNT(*) FROM curriculum_document cd WHERE cd.template_id = ct.id) AS document_count,
+                    (
+                        SELECT count(*)
+                        FROM curriculum_document cud
+                        WHERE cud.template_id = ct.id AND EXISTS(
+                            SELECT FROM child_document chd
+                            JOIN document_template dt ON dt.id = chd.template_id
+                            JOIN archived_process ap ON ap.id = chd.process_id
+                            WHERE chd.id = cud.id 
+                                AND dt.type IN ('MIGRATED_VASU', 'MIGRATED_LEOPS') 
+                                AND chd.document_key IS NOT NULL
+                        )
+                    ) AS migrated_document_count
                 FROM curriculum_template ct
                 WHERE id = ${bind(id)}
                 FOR UPDATE
