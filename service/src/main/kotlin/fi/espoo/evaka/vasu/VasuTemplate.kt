@@ -27,7 +27,8 @@ data class VasuTemplateSummary(
     val valid: FiniteDateRange,
     val type: CurriculumType,
     val language: OfficialLanguage,
-    val documentCount: Int
+    val documentCount: Int,
+    val migratedDocumentCount: Int
 )
 
 data class VasuTemplateUpdate(val name: String, val valid: FiniteDateRange)

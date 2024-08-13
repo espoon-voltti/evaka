@@ -4663,6 +4663,7 @@ export const fi = {
       SV: 'Ruotsinkielinen'
     },
     documentCount: 'Dokumentteja',
+    migratedDocumentCount: 'Migratoitu',
     addNewTemplate: 'Lisää uusi pohja',
     templateModal: {
       createTitle: 'Uusi pohja',

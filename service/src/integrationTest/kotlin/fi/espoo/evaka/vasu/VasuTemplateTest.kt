@@ -24,7 +24,8 @@ class VasuTemplateTest {
             valid = FiniteDateRange(today.minusDays(5), today.plusDays(5)),
             type = CurriculumType.DAYCARE,
             language = OfficialLanguage.FI,
-            documentCount = 5
+            documentCount = 5,
+            migratedDocumentCount = 0
         )
     }
 
