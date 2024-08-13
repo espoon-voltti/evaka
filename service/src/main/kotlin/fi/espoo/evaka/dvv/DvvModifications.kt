@@ -89,7 +89,7 @@ data class SsnDvvInfoGroup(
     val muutosattribuutti: String?,
     val voimassaolo: String,
     val muutettuHenkilotunnus: String,
-    val aktiivinenHenkilotunnus: String,
+    val aktiivinenHenkilotunnus: String?,
     val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
 

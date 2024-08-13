@@ -246,7 +246,12 @@ class DvvModificationsService(
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
                 logger.info("Dvv modification for ${it.id}: ssn change")
-                tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+
+                if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
+                    tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+                } else {
+                    logger.error("Dvv modification for ${it.id}: ssn is set to null or empty")
+                }
             }
         }
 
