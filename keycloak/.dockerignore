@@ -16,3 +16,5 @@ evaka-review-profile/target
 !theme/scripts
 !evaka-logging
 evaka-logging/target
+!dd-fetch
+dd-fetch/target

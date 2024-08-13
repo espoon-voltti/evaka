@@ -10,7 +10,7 @@
 # ===============
 #
 # If you need to target a local service instead you can use
-# a pseudo address docker.for.mac.localhost when running on OXS.
+# a pseudo address docker.for.mac.localhost when running on macOS.
 # E.g. to target local application service set APPLICATION_API_URL: http://docker.for.mac.localhost:8080
 version: '3.5'
 

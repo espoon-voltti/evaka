@@ -52,6 +52,13 @@ ADD ./evaka-logging/ /project/
 RUN mvn --batch-mode clean install
 
 
+FROM maven-builder AS builder-dd
+
+ADD ./dd-fetch/pom.xml /project/pom.xml
+
+RUN mvn --batch-mode clean package
+
+
 FROM node:20 AS builder-theme
 
 WORKDIR /work
@@ -70,6 +77,8 @@ ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_DB=postgres
 ENV KC_HTTP_RELATIVE_PATH=/auth
+ENV JAVA_OPTS_APPEND=-javaagent:/opt/keycloak/dd-java-agent.jar
+ENV DD_SERVICE_NAME=keycloak
 
 ADD --chmod=0644 \
     --checksum=sha256:424a3e03a17df0a2bc2b3ca749d81b04e79d59cb7aeec8876a5a3f308d0caf51 \
@@ -81,6 +90,9 @@ COPY --from=builder-authenticator /project/target/evaka-review-profile.jar \
           /opt/keycloak/providers/
 COPY --from=builder-logger /project/target/evaka-logging.jar \
           /opt/keycloak/providers/
+COPY --from=builder-dd /project/target/libs/dd-java-agent.jar \
+          /opt/keycloak/
+
 
 RUN /opt/keycloak/bin/kc.sh build
 
