@@ -37,11 +37,9 @@ services:
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
       KC_DB_URL_HOST: keycloak-postgres
-      # Hostname v1 (Deprecated)
-      KC_HOSTNAME_URL: "http://localhost:8080/auth"
-      KC_HOSTNAME_ADMIN_URL: "http://localhost:8080/auth"
+      # Hostname v2
+      KC_HOSTNAME: "http://localhost:8080/auth"
       KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
       # HTTP(S)
       KC_HTTP_ENABLED: "true"
       # Logging
