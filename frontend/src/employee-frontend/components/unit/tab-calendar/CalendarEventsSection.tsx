@@ -59,7 +59,6 @@ import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
 import { DayOfWeek } from '../../../types'
 import { renderResult } from '../../async-rendering'
-import { FlexRow } from '../../common/styled/containers'
 import { unitGroupDetailsQuery } from '../queries'
 
 const createCalendarEventResult = wrapResult(createCalendarEvent)
@@ -281,26 +280,27 @@ export default React.memo(function CalendarEventsSection({
           groupId={groupId}
         />
       )}
-
-      <FlexRow justifyContent={groupId ? 'space-between' : 'flex-end'}>
-        {featureFlags.discussionReservations && !!groupId && (
-          <DiscussionLink
-            data-qa="discussion-survey-page-button"
-            to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`}
-          >
-            {
-              i18n.unit.calendar.events.discussionReservation
-                .discussionPageTitle
-            }
-          </DiscussionLink>
-        )}
-        <AddButton
-          flipped
-          text={i18n.unit.calendar.events.createEvent}
-          onClick={() => setCreateEventModalVisible(true)}
-          data-qa="create-new-event-btn"
-        />
-      </FlexRow>
+      <EventButtonRow>
+        <EventButtonColumn>
+          {featureFlags.discussionReservations && !!groupId && (
+            <DiscussionLink
+              data-qa="discussion-survey-page-button"
+              to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys`}
+            >
+              {
+                i18n.unit.calendar.events.discussionReservation
+                  .discussionPageTitle
+              }
+            </DiscussionLink>
+          )}
+          <AddButton
+            text={i18n.unit.calendar.events.createEvent}
+            onClick={() => setCreateEventModalVisible(true)}
+            data-qa="create-new-event-btn"
+          />
+        </EventButtonColumn>
+        <div />
+      </EventButtonRow>
       <Gap size="s" />
       {renderResult(events, (events) => (
         <div>
@@ -357,7 +357,11 @@ export default React.memo(function CalendarEventsSection({
                         key={event.id}
                       >
                         <Link
-                          to={`/units/${unitId}/calendar/events/${event.id}`}
+                          to={
+                            event.eventType === 'DAYCARE_EVENT'
+                              ? `/units/${unitId}/calendar/events/${event.id}`
+                              : `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${event.id}`
+                          }
                           data-qa="event"
                         >
                           <Bold>{specifier.text}:</Bold> {event.title}
@@ -888,3 +892,18 @@ const EditEventModal = React.memo(function EditEventModal({
     </>
   )
 })
+
+const EventButtonColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 16px;
+`
+
+const EventButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+`

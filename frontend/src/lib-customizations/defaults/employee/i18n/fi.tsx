@@ -2319,7 +2319,7 @@ export const fi = {
       previousWeek: 'Edellinen viikko',
       events: {
         title: 'Tapahtumat',
-        createEvent: 'Uusi tapahtuma',
+        createEvent: 'Luo muu tapahtuma',
         edit: {
           title: 'Tapahtuma',
           saveChanges: 'Tallenna muutokset',
@@ -2347,7 +2347,7 @@ export const fi = {
             otherEventSingular: 'muu tapahtuma',
             otherEventPlural: 'muuta tapahtumaa'
           },
-          discussionPageTitle: 'Keskustelut',
+          discussionPageTitle: 'Keskusteluaikojen hallinta',
           discussionPageDescription:
             'Tällä sivulla voit luoda ja seurata kyselyjä, joilla kysytään huoltajille sopivia keskusteluaikoja.',
           surveyCreate: 'Uusi keskustelukysely',
