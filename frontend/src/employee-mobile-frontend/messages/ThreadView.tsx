@@ -47,7 +47,7 @@ import { faReply } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
-import { UnitOrGroup } from '../common/unit-or-group'
+import { toUnitOrGroup, UnitOrGroup } from '../common/unit-or-group'
 
 import { getAttachmentUrl } from './api'
 import { replyToThreadMutation, threadQuery } from './queries'
@@ -97,9 +97,7 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
         </ContentArea>
       ) : (
         <Navigate
-          to={
-            routes.messages({ type: 'unit', unitId: unitOrGroup.unitId }).value
-          }
+          to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value}
         />
       )
   )

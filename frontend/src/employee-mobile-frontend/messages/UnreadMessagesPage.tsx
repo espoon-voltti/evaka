@@ -57,11 +57,7 @@ export const UnreadMessagesPage = React.memo(function UnreadMessagesPage({
               {groupAccounts.find((a) => a.daycareGroup?.id === group.id) ? (
                 <LinkToGroupMessages
                   data-qa={`link-to-group-messages-${group.id}`}
-                  to={
-                    routes.messages(
-                      toUnitOrGroup({ unitId, groupId: group.id })
-                    ).value
-                  }
+                  to={routes.messages(toUnitOrGroup(unitId, group.id)).value}
                 >
                   {group.name}
                 </LinkToGroupMessages>

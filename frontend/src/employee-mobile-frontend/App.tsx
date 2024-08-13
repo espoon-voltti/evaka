@@ -165,7 +165,7 @@ function UnitRouter() {
 function GroupRouter({ unitId }: { unitId: UUID }) {
   const { groupId } = useRouteParams([], ['groupId'])
   const unitOrGroup: UnitOrGroup = useMemo(
-    () => toUnitOrGroup({ unitId, groupId }),
+    () => toUnitOrGroup(unitId, groupId),
     [unitId, groupId]
   )
 
@@ -190,12 +190,7 @@ function GroupRouter({ unitId }: { unitId: UUID }) {
       )
       if (!validGroupId) {
         navigate(
-          routes.childAttendances(
-            toUnitOrGroup({
-              unitId: unitOrGroup.unitId,
-              groupId: undefined
-            })
-          ).value
+          routes.childAttendances(toUnitOrGroup(unitOrGroup.unitId)).value
         )
       }
     }

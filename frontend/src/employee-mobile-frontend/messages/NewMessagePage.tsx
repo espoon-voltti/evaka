@@ -5,7 +5,10 @@
 import React, { useContext } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
-import { UnitOrGroup } from 'employee-mobile-frontend/common/unit-or-group'
+import {
+  toUnitOrGroup,
+  UnitOrGroup
+} from 'employee-mobile-frontend/common/unit-or-group'
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 
@@ -48,9 +51,7 @@ export default function NewMessagePage({
         />
       ) : (
         <Navigate
-          to={
-            routes.messages({ type: 'unit', unitId: unitOrGroup.unitId }).value
-          }
+          to={routes.messages(toUnitOrGroup(unitOrGroup.unitId)).value}
         />
       )
   )

@@ -116,9 +116,7 @@ export default function MessagesPage({
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       if (group)
-        navigate(
-          routes.messages(toUnitOrGroup({ unitId, groupId: group.id })).value
-        )
+        navigate(routes.messages(toUnitOrGroup(unitId, group.id)).value)
     },
     [navigate, unitId]
   )
@@ -153,14 +151,7 @@ export default function MessagesPage({
       combine(groupAccounts, groupAccount(unitOrGroup.id)),
       ([groupAccounts, selectedAccount]) => {
         if (!selectedAccount) {
-          return (
-            <Navigate
-              to={
-                routes.messages(toUnitOrGroup({ unitId, groupId: undefined }))
-                  .value
-              }
-            />
-          )
+          return <Navigate to={routes.messages(toUnitOrGroup(unitId)).value} />
         }
         switch (uiState.type) {
           case 'list':

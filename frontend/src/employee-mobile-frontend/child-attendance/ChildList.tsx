@@ -59,7 +59,7 @@ export default React.memo(function ChildList({
                 child={ac}
                 childAttendanceUrl={
                   routes.childAttendance(
-                    toUnitOrGroup({ unitId, groupId: ac.groupId }),
+                    toUnitOrGroup(unitId, ac.groupId),
                     ac.id
                   ).value
                 }

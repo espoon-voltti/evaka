@@ -180,7 +180,7 @@ export default React.memo(function ChildListItem({
                 <Link
                   to={
                     routes.childNotes(
-                      toUnitOrGroup({ unitId, groupId: child.groupId }),
+                      toUnitOrGroup(unitId, child.groupId),
                       child.id
                     ).value
                   }
@@ -197,7 +197,7 @@ export default React.memo(function ChildListItem({
                 <Link
                   to={
                     routes.childNotes(
-                      toUnitOrGroup({ unitId, groupId: child.groupId }),
+                      toUnitOrGroup(unitId, child.groupId),
                       child.id
                     ).value
                   }

@@ -58,11 +58,7 @@ export default React.memo(function UnitList() {
                 }) => (
                   <UnitContainer
                     key={id}
-                    to={
-                      routes.childAttendances(
-                        toUnitOrGroup({ unitId: id, groupId: undefined })
-                      ).value
-                    }
+                    to={routes.childAttendances(toUnitOrGroup(id)).value}
                     data-qa={`unit-${id}`}
                   >
                     <FixedSpaceColumn spacing="s" fullWidth>
