@@ -82,7 +82,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
             icon={faPen}
             onClick={() => {
               startEditing()
-              if (isOpen) toggle()
+              if (!isOpen) toggle()
             }}
             disabled={!editable}
             data-qa="edit-income-item"
