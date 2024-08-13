@@ -345,7 +345,7 @@ const sv: Translations = {
       noReservationsText:
         'Det finns för närvarande inga lediga tider för den valda förfrågan',
       backButtonText: 'Återgå',
-      cancelTimeButtonText: 'Avbryt',
+      cancelTimeButtonText: 'Avboka',
       surveyToastMessage:
         'Du har blivit ombedd att boka en tid för att diskutera ditt barn.',
       confirmCancel: {
