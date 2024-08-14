@@ -8,7 +8,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
-import { EvakaBrowserContextOptions } from '../../browser'
+import { EvakaBrowserContextOptions, mobileViewport } from '../../browser'
 import {
   testCareArea,
   testDaycare2,
@@ -53,7 +53,10 @@ const group2 = {
 const openPage = async (
   options?: BrowserContextOptions & EvakaBrowserContextOptions
 ) => {
-  page = await Page.open(options ?? { mockedTime: now })
+  page = await Page.open({
+    viewport: mobileViewport,
+    ...(options ?? { mockedTime: now })
+  })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   childAttendancePage = new ChildAttendancePage(page)
