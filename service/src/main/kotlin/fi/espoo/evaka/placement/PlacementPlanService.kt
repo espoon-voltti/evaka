@@ -266,6 +266,9 @@ class PlacementPlanService(
             cancelPlacementsAfterClub = true,
             placeGuarantee = false
         )
+
+        tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())
+
         val timeline = DateSet.of(placementTypePeriods.map { it.first })
         asyncJobRunner.plan(
             tx,

@@ -221,26 +221,6 @@ RETURNING id
         .executeAndReturnGeneratedKeys()
         .toList()
 
-fun Database.Transaction.deleteNonSystemGeneratedAbsencesByCategoryInRange(
-    childId: ChildId,
-    range: DateRange,
-    categories: Set<AbsenceCategory>
-): List<AbsenceId> =
-    createQuery {
-            sql(
-                """
-DELETE FROM absence
-WHERE
-    child_id = ${bind(childId)} AND
-    between_start_and_end(${bind(range)}, date) AND
-    category = ANY (${bind(categories)}::absence_category[]) AND
-    modified_by != ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
-RETURNING id
-"""
-            )
-        }
-        .toList()
-
 fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     now: HelsinkiDateTime,
     childId: ChildId,
