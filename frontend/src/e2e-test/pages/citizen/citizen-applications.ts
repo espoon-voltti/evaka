@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { ServiceNeedOption } from 'lib-common/generated/api-types/application'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -244,6 +246,14 @@ class CitizenApplicationEditor {
     }
   }
 
+  async selectServiceNeedOption(option: ServiceNeedOption) {
+    await new Radio(
+      this.page.findByDataQa(
+        `${this.serviceNeedOptionDataQaPrefix(option.validPlacementType)}${option.id}`
+      )
+    ).click()
+  }
+
   async selectUnit(name: string) {
     await this.#preferredUnitsInput.type(name)
     await this.page.keyboard.press('Enter')
@@ -341,6 +351,8 @@ class CitizenApplicationEditor {
             const [hours, minutes] = value.split(':')
             await this.fillInput(field, hours)
             await this.fillInput(field, minutes, false)
+          } else if (field === 'serviceNeedOption' && value !== null) {
+            await this.selectServiceNeedOption(value as ServiceNeedOption)
           } else if (typeof value === 'string') {
             await this.fillInput(
               field,
@@ -360,6 +372,17 @@ class CitizenApplicationEditor {
     await this.page
       .find('[data-qa="child-street-address"]')
       .assertTextEquals(fullAddress)
+  }
+
+  async assertServiceNeedOptions(
+    placementType: PlacementType,
+    options: ServiceNeedOption[]
+  ) {
+    await this.page
+      .findAll(
+        `[data-qa*="${this.serviceNeedOptionDataQaPrefix(placementType)}"]`
+      )
+      .assertTextsEqual(options.map((option) => option.nameFi))
   }
 
   async assertSelectedPreferredUnits(unitIds: UUID[]) {
@@ -415,5 +438,18 @@ class CitizenApplicationEditor {
         .click()
     ])
     await popup.waitForSelector('img:not([src=""])')
+  }
+
+  private serviceNeedOptionDataQaPrefix(placementType: PlacementType | null) {
+    if (placementType === 'DAYCARE') {
+      return `full-time-option-`
+    }
+    if (placementType === 'DAYCARE_PART_TIME') {
+      return `part-time-option-`
+    }
+    if (placementType === 'PRESCHOOL_DAYCARE') {
+      return `service-need-option-`
+    }
+    throw Error(`Unsupported placement type ${placementType}`)
   }
 }

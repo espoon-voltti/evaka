@@ -5,7 +5,8 @@
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import {
   ApplicationDetails,
-  OtherGuardianAgreementStatus
+  OtherGuardianAgreementStatus,
+  ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'
 
@@ -125,6 +126,76 @@ export const minimalDaycareForm = ({
     )
     assertEquals('09:00', res.form.preferences.serviceNeed?.startTime)
     assertEquals('17:00', res.form.preferences.serviceNeed?.endTime)
+    assertFalse(res.form.preferences.serviceNeed?.shiftCare)
+    assertFalse(res.form.preferences.serviceNeed?.partTime)
+    assertNull(res.form.preferences.siblingBasis)
+    assertFalse(res.form.preferences.preparatory)
+    assertFalse(res.form.preferences.urgent)
+
+    assertBlank(res.form.otherInfo)
+
+    assertNull(res.form.clubDetails)
+  }
+})
+
+export const minimalDaycareFormWithServiceNeedOption = ({
+  serviceNeedOption
+}: {
+  serviceNeedOption: ServiceNeedOption
+}): {
+  form: JsonOf<FormInput>
+  validateResult: (result: ApplicationDetails) => void
+} => ({
+  form: {
+    serviceNeed: {
+      preferredStartDate: '16.08.2021',
+      serviceNeedOption
+    },
+    unitPreference: {
+      preferredUnits: [
+        {
+          id: testDaycare.id,
+          name: testDaycare.name
+        }
+      ]
+    },
+    contactInfo: {
+      guardianPhone: '(+358) 50-1234567',
+      noGuardianEmail: true,
+      otherGuardianAgreementStatus: 'AGREED'
+    }
+  },
+  validateResult: (res) => {
+    assertEquals('SENT', res.status)
+
+    assertNull(res.form.child.futureAddress)
+    assertBlank(res.form.child.allergies)
+    assertBlank(res.form.child.diet)
+    assertFalse(res.form.child.assistanceNeeded)
+    assertBlank(res.form.child.assistanceDescription)
+
+    assertEquals(null, res.form.guardian.futureAddress)
+    assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
+    assertEquals('', res.form.guardian.email)
+
+    assertEquals('AGREED', res.form.secondGuardian?.agreementStatus)
+    assertBlank(res.form.secondGuardian?.phoneNumber)
+    assertBlank(res.form.secondGuardian?.email)
+
+    assertNull(res.form.otherPartner)
+
+    assertEmpty(res.form.otherChildren)
+
+    assertEquals(1, res.form.preferences.preferredUnits.length)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(
+      '16.08.2021',
+      res.form.preferences.preferredStartDate?.format()
+    )
+    assertEquals(
+      serviceNeedOption.nameFi,
+      res.form.preferences.serviceNeed?.serviceNeedOption?.nameFi
+    )
     assertFalse(res.form.preferences.serviceNeed?.shiftCare)
     assertFalse(res.form.preferences.serviceNeed?.partTime)
     assertNull(res.form.preferences.siblingBasis)
@@ -498,6 +569,76 @@ export const minimalPreschoolForm: {
     assertNull(res.form.clubDetails)
   }
 }
+
+export const minimalPreschoolFormWithServiceNeedOption = ({
+  serviceNeedOption
+}: {
+  serviceNeedOption: ServiceNeedOption
+}): {
+  form: JsonOf<FormInput>
+  validateResult: (result: ApplicationDetails) => void
+} => ({
+  form: {
+    serviceNeed: {
+      preferredStartDate: '16.08.2021',
+      connectedDaycare: true,
+      connectedDaycarePreferredStartDate: '16.08.2021',
+      serviceNeedOption
+    },
+    unitPreference: {
+      preferredUnits: [
+        {
+          id: testDaycare.id,
+          name: testDaycare.name
+        }
+      ]
+    },
+    contactInfo: {
+      guardianPhone: '(+358) 50-1234567',
+      noGuardianEmail: true,
+      otherGuardianAgreementStatus: 'AGREED'
+    }
+  },
+  validateResult: (res) => {
+    assertEquals('SENT', res.status)
+
+    assertNull(res.form.child.futureAddress)
+    assertBlank(res.form.child.allergies)
+    assertBlank(res.form.child.diet)
+    assertFalse(res.form.child.assistanceNeeded)
+    assertBlank(res.form.child.assistanceDescription)
+
+    assertEquals(null, res.form.guardian.futureAddress)
+    assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
+    assertEquals('', res.form.guardian.email)
+
+    assertEquals('AGREED', res.form.secondGuardian?.agreementStatus)
+    assertBlank(res.form.secondGuardian?.phoneNumber)
+    assertBlank(res.form.secondGuardian?.email)
+
+    assertNull(res.form.otherPartner)
+
+    assertEmpty(res.form.otherChildren)
+
+    assertEquals(1, res.form.preferences.preferredUnits.length)
+    assertEquals(testDaycare.id, res.form.preferences.preferredUnits[0].id)
+    assertEquals(
+      '16.08.2021',
+      res.form.preferences.preferredStartDate?.format()
+    )
+    assertEquals(
+      serviceNeedOption.nameFi,
+      res.form.preferences.serviceNeed?.serviceNeedOption?.nameFi
+    )
+    assertNull(res.form.preferences.siblingBasis)
+    assertFalse(res.form.preferences.preparatory)
+    assertFalse(res.form.preferences.urgent)
+
+    assertBlank(res.form.otherInfo)
+
+    assertNull(res.form.clubDetails)
+  }
+})
 
 export const fullPreschoolForm: {
   form: JsonOf<FormInput>

@@ -261,6 +261,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                                   onChange={() =>
                                     updateFormData({ serviceNeedOption: opt })
                                   }
+                                  data-qa={`service-need-option-${opt.id}`}
                                 />
                               ))}
                           </FixedSpaceColumn>
