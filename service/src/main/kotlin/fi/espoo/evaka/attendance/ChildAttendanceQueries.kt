@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeInterval
@@ -349,23 +348,6 @@ WHERE p.child_id = ANY(${bind(childIds)}) AND ${bind(today)} BETWEEN p.start_dat
             )
         }
         .toMap { columnPair("child_id", "placement_type") }
-
-fun Database.Read.getChildAttendanceStartDatesByRange(
-    childId: ChildId,
-    period: DateRange
-): List<LocalDate> =
-    createQuery {
-            sql(
-                """
-SELECT date
-FROM child_attendance
-WHERE between_start_and_end(${bind(period)}, date)
-AND child_id = ${bind(childId)}
-AND start_time != '00:00'::time  -- filter out overnight stays
-"""
-            )
-        }
-        .toList()
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: ChildAttendanceId) {
     execute { sql("UPDATE child_attendance SET end_time = NULL WHERE id = ${bind(attendanceId)}") }

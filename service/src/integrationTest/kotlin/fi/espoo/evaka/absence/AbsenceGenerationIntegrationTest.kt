@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
-import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -36,6 +35,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -234,7 +234,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     }
 
     @Test
-    fun `does not override attendances, reservations or existing absences`() {
+    fun `does not override existing absences or reservations on non-absence days`() {
         val existingAbsenceId = AbsenceId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insert(
@@ -258,12 +258,6 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                 )
             )
 
-            tx.insertTestChildAttendance(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                arrived = HelsinkiDateTime.of(mondays[0], LocalTime.of(8, 0)),
-                departed = HelsinkiDateTime.of(mondays[0], LocalTime.of(12, 0))
-            )
             tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
@@ -273,11 +267,20 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
                 )
             )
+            tx.insert(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = tuesdays[1],
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(12, 0),
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+                )
+            )
             // Reservation with no times
             tx.insert(
                 DevReservation(
                     childId = testChild_1.id,
-                    date = mondays[2],
+                    date = tuesdays[2],
                     startTime = null,
                     endTime = null,
                     createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
@@ -300,11 +303,12 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         }
 
         // The absence created above is not overridden, and absences are created for "empty" mondays
-        // only
+        // only. Monday reservations are cleared, tuesdays not.
         val absences = getAllAbsences()
-        assertEquals(2, absences.size)
-        assertEquals(mondays.slice(3..4), absences.map { it.date })
-        assertEquals(existingAbsenceId, absences[0].id)
+        assertEquals(mondays.toSet(), absences.map { it.date }.toSet())
+        assertEquals(mondays, absences.map { it.date })
+        assertTrue(absences.any { it.id == existingAbsenceId })
+        assertEquals(setOf(tuesdays[1], tuesdays[2]), getAllReservationDates())
     }
 
     @Test
@@ -445,6 +449,15 @@ ORDER BY a.date, a.category
                     )
                 }
                 .toList<Absence>()
+        }
+    }
+
+    private fun getAllReservationDates(): Set<LocalDate> {
+        return db.read {
+            it.createQuery { sql("""
+SELECT date FROM attendance_reservation
+""") }
+                .toSet<LocalDate>()
         }
     }
 }

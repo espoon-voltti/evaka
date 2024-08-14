@@ -1,10 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.absence
 
-import fi.espoo.evaka.attendance.getChildAttendanceStartDatesByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getClubTerms
@@ -17,7 +16,6 @@ import fi.espoo.evaka.placement.ScheduleType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.reservations.Reservation
 import fi.espoo.evaka.reservations.computeUsedService
-import fi.espoo.evaka.reservations.getChildAttendanceReservationStartDatesByRange
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
@@ -366,8 +364,6 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
             }
         }
     if (irregularDailyServiceTimes.isNotEmpty()) {
-        val attendanceDates = tx.getChildAttendanceStartDatesByRange(childId, period)
-        val reservationDates = tx.getChildAttendanceReservationStartDatesByRange(childId, period)
         val placements = tx.getPlacementsForChildDuring(childId, period.start, period.end)
         val serviceNeeds =
             tx.getServiceNeedsByChild(childId).filter {
@@ -406,10 +402,6 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
                         val isIrregularAbsenceDay =
                             dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek) == null
                         if (!isIrregularAbsenceDay) return@date listOf()
-
-                        val hasAttendance = attendanceDates.any { it == date }
-                        val hasReservation = reservationDates.any { it == date }
-                        if (hasAttendance || hasReservation) return@date listOf()
 
                         placement.type.absenceCategories().map { category ->
                             AbsenceUpsert(

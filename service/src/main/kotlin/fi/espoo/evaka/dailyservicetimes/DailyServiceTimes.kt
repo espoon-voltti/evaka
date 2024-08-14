@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -314,13 +314,7 @@ WHERE id = ${bind(id)}
     }
 }
 
-fun Database.Transaction.addDailyServiceTimesNotification(
-    today: LocalDate,
-    id: DailyServiceTimesId,
-    childId: ChildId,
-    dateFrom: LocalDate,
-    hasDeletedReservations: Boolean
-) {
+fun Database.Transaction.addDailyServiceTimesNotification(today: LocalDate, childId: ChildId) {
     execute {
         sql(
             """
@@ -329,8 +323,8 @@ WITH recipient AS (
     UNION
     SELECT parent_id AS id FROM foster_parent WHERE child_id = ${bind(childId)} AND valid_during @> ${bind(today)}
 )
-INSERT INTO daily_service_time_notification (guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-SELECT recipient.id, ${bind(id)}, ${bind(dateFrom)}, ${bind(hasDeletedReservations)} FROM recipient
+INSERT INTO daily_service_time_notification (guardian_id)
+SELECT recipient.id FROM recipient
 """
         )
     }

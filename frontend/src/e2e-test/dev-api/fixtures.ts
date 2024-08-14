@@ -922,15 +922,10 @@ export class Fixture {
   }
 
   static dailyServiceTimeNotification(
-    initial: SemiPartial<
-      DevDailyServiceTimeNotification,
-      'guardianId' | 'dailyServiceTimeId'
-    >
+    initial: SemiPartial<DevDailyServiceTimeNotification, 'guardianId'>
   ): DailyServiceTimeNotificationBuilder {
     return new DailyServiceTimeNotificationBuilder({
       id: uuidv4(),
-      dateFrom: LocalDate.of(2020, 4, 3),
-      hasDeletedReservations: false,
       ...initial
     })
   }

@@ -7,7 +7,6 @@ package fi.espoo.evaka.dailyservicetimes
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.espoo.EspooActionRuleMapping
-import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
@@ -31,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
@@ -53,6 +51,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         DailyServiceTimesController(
             AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
         )
+
     @Autowired
     private lateinit var dailyServiceTimesCitizenController: DailyServiceTimesCitizenController
     @Autowired private lateinit var reservationControllerCitizen: ReservationControllerCitizen
@@ -64,13 +63,11 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private val today = LocalDate.of(2022, 2, 7) // Monday
     private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 5, 1))
-    private val placementStart = today.minusDays(30)
-    private val placementEnd = today.plusDays(120)
 
     private val dailyServiceTimesValidity =
         DateRange(
             // Tuesday
-            today.plusDays(99),
+            today.plusDays(92),
             null
         )
     private val tenToNoonRange = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0))
@@ -288,11 +285,9 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
         assertEquals(1, guardian1Notifications.size)
-        assertEquals(false, guardian1Notifications[0].hasDeletedReservations)
 
         val guardian2Notifications = this.getDailyServiceTimeNotifications(guardian2)
         assertEquals(1, guardian2Notifications.size)
-        assertEquals(false, guardian2Notifications[0].hasDeletedReservations)
     }
 
     @Test
@@ -306,85 +301,10 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
-        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0].id)
+        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0])
 
         val guardian2Notifications = this.getDailyServiceTimeNotifications(guardian2)
         assertEquals(1, guardian2Notifications.size)
-        assertEquals(false, guardian2Notifications[0].hasDeletedReservations)
-    }
-
-    @Test
-    fun `adding a new daily service time creates a modal notification when reservations exist during the new period`() {
-        val area = DevCareArea()
-        val daycare =
-            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
-
-        db.transaction { tx ->
-            tx.insert(area)
-            tx.insert(daycare)
-            tx.insert(
-                DevPlacement(
-                    type = PlacementType.PRESCHOOL_DAYCARE,
-                    childId = child.id,
-                    unitId = daycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
-                )
-            )
-        }
-
-        db.transaction { tx ->
-            tx.insertHolidayPeriod(
-                FiniteDateRange(
-                    dailyServiceTimesValidity.start.plusDays(7),
-                    dailyServiceTimesValidity.start.plusDays(13),
-                ),
-                reservationsOpenOn = today,
-                reservationDeadline = today,
-            )
-        }
-        this.postReservations(
-            listOf(
-                // Outside the validity period
-                DailyReservationRequest.Reservations(
-                    child.id,
-                    dailyServiceTimesValidity.start.minusDays(1),
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                ),
-                // Inside the validity period
-                DailyReservationRequest.Reservations(
-                    child.id,
-                    dailyServiceTimesValidity.start,
-                    TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                ),
-                // Inside the validity period AND inside a holiday period
-                DailyReservationRequest.Present(
-                    child.id,
-                    dailyServiceTimesValidity.start.plusDays(7),
-                )
-            )
-        )
-        createDailyServiceTimes(
-            child.id,
-            DailyServiceTimesValue.RegularTimes(
-                validityPeriod = dailyServiceTimesValidity,
-                regularTimes = tenToNoonRange
-            )
-        )
-
-        val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
-        assertEquals(1, guardian1Notifications.size)
-        assertEquals(true, guardian1Notifications[0].hasDeletedReservations)
-
-        // Reservations are cleared from the validity period, except if they are inside a holiday
-        // period
-        assertEquals(
-            listOf(
-                dailyServiceTimesValidity.start.minusDays(1),
-                dailyServiceTimesValidity.start.plusDays(7)
-            ),
-            getReservationDates(),
-        )
     }
 
     @Test
@@ -398,7 +318,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
-        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0].id)
+        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0])
 
         val times = this.getDailyServiceTimes(child.id)
         assertEquals(1, times.size)
@@ -412,7 +332,6 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
         assertEquals(1, newGuardian1Notifications.size)
-        assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
     }
 
     @Test
@@ -427,7 +346,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
-        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0].id)
+        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0])
 
         val times = this.getDailyServiceTimes(child.id)
         assertEquals(1, times.size)
@@ -435,8 +354,6 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
         assertEquals(1, newGuardian1Notifications.size)
-        assertEquals(originalEnd.plusDays(1), newGuardian1Notifications[0].dateFrom)
-        assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
     }
 
     @Test
@@ -470,6 +387,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     ),
             )
 
+        val placementEnd = dailyServiceTimesValidity.start.plusWeeks(3).minusDays(1)
         db.transaction { tx ->
             tx.insert(snDaycareFullDay35)
             tx.insert(area)
@@ -480,7 +398,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = today,
-                        endDate = today.plusWeeks(3).minusDays(1)
+                        endDate = placementEnd
                     )
                 )
                 .also { placementId ->
@@ -489,8 +407,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DevServiceNeed(
                             optionId = snDaycareFullDay35.id,
                             placementId = placementId,
-                            startDate = today,
-                            endDate = today.plusWeeks(1).minusDays(1),
+                            startDate = dailyServiceTimesValidity.start,
+                            endDate = dailyServiceTimesValidity.start.plusWeeks(1).minusDays(1),
                             confirmedBy = admin.evakaUserId,
                             shiftCare = ShiftCareType.NONE,
                         )
@@ -500,8 +418,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DevServiceNeed(
                             optionId = snDaycareFullDay35.id,
                             placementId = placementId,
-                            startDate = today.plusWeeks(1),
-                            endDate = today.plusWeeks(2).minusDays(1),
+                            startDate = dailyServiceTimesValidity.start.plusWeeks(1),
+                            endDate = dailyServiceTimesValidity.start.plusWeeks(2).minusDays(1),
                             confirmedBy = admin.evakaUserId,
                             shiftCare = ShiftCareType.FULL,
                         )
@@ -510,10 +428,16 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 }
         }
 
+        val tuesday = dailyServiceTimesValidity.start
+        val wednesday = tuesday.plusDays(1)
+        val tuesdayBefore = tuesday.minusWeeks(1)
+        val wednesdayBefore = wednesday.minusWeeks(1)
+        addReservations(listOf(tuesdayBefore, wednesdayBefore, tuesday, wednesday))
+
         createDailyServiceTimes(
             child.id,
             DailyServiceTimesValue.IrregularTimes(
-                validityPeriod = DateRange(today.plusDays(1), null),
+                validityPeriod = dailyServiceTimesValidity,
                 monday = tenToNoonRange,
                 tuesday = tenToNoonRange,
                 wednesday = null,
@@ -526,23 +450,21 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val absenceDates =
             db.transaction { tx ->
-                    tx.getAbsencesOfChildByRange(
-                        child.id,
-                        DateRange(today, today.plusWeeks(3).minusDays(1))
-                    )
+                    tx.getAbsencesOfChildByRange(child.id, DateRange(today, placementEnd))
                 }
                 .map { it.date }
                 .sorted()
 
         assertEquals(
             listOf(
-                LocalDate.of(2022, 2, 9), // Wednesday of week 1 (no shift care)
-                LocalDate.of(2022, 2, 16), // Wednesday of week 2 (shift care)
-                LocalDate.of(2022, 2, 19), // Saturday of week 2 (shift care)
-                LocalDate.of(2022, 2, 23), // Wednesday of week 3 (no service need)
+                LocalDate.of(2022, 5, 11), // Wednesday of week 1 (no shift care)
+                LocalDate.of(2022, 5, 18), // Wednesday of week 2 (shift care)
+                LocalDate.of(2022, 5, 21), // Saturday of week 2 (shift care)
+                LocalDate.of(2022, 5, 25), // Wednesday of week 3 (no service need)
             ),
             absenceDates
         )
+        assertEquals(listOf(tuesdayBefore, wednesdayBefore, tuesday), getReservationDates())
     }
 
     private fun createDailyServiceTimes(
@@ -606,7 +528,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getDailyServiceTimeNotifications(
         user: DevPerson,
-    ): List<DailyServiceTimeNotification> {
+    ): List<DailyServiceTimeNotificationId> {
         return dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
             dbInstance(),
             user.user(CitizenAuthLevel.WEAK),
@@ -626,12 +548,18 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun postReservations(request: List<DailyReservationRequest>) {
+    private fun addReservations(dates: List<LocalDate>) {
         reservationControllerCitizen.postReservations(
             dbInstance(),
             AuthenticatedUser.Citizen(guardian1.id, CitizenAuthLevel.STRONG),
             MockEvakaClock(now),
-            request
+            dates.map {
+                DailyReservationRequest.Reservations(
+                    childId = child.id,
+                    date = it,
+                    reservation = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+                )
+            }
         )
     }
 

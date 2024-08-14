@@ -4,12 +4,10 @@
 
 // GENERATED FILE: no manual modifications
 
-import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
-import { deserializeJsonDailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import { uri } from 'lib-common/uri'
 
 
@@ -33,10 +31,10 @@ export async function dismissDailyServiceTimeNotification(
 /**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesCitizenController.getDailyServiceTimeNotifications
 */
-export async function getDailyServiceTimeNotifications(): Promise<DailyServiceTimeNotification[]> {
-  const { data: json } = await client.request<JsonOf<DailyServiceTimeNotification[]>>({
+export async function getDailyServiceTimeNotifications(): Promise<UUID[]> {
+  const { data: json } = await client.request<JsonOf<UUID[]>>({
     url: uri`/citizen/daily-service-time-notifications`.toString(),
     method: 'GET'
   })
-  return json.map(e => deserializeJsonDailyServiceTimeNotification(e))
+  return json
 }

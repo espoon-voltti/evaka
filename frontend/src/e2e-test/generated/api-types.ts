@@ -395,10 +395,7 @@ export interface DevCreateIncomeStatements {
 * Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimeNotification
 */
 export interface DevDailyServiceTimeNotification {
-  dailyServiceTimeId: UUID
-  dateFrom: LocalDate
   guardianId: UUID
-  hasDeletedReservations: boolean
   id: UUID
 }
 
@@ -1236,14 +1233,6 @@ export function deserializeJsonDevCreateIncomeStatements(json: JsonOf<DevCreateI
   return {
     ...json,
     data: json.data.map(e => deserializeJsonIncomeStatementBody(e))
-  }
-}
-
-
-export function deserializeJsonDevDailyServiceTimeNotification(json: JsonOf<DevDailyServiceTimeNotification>): DevDailyServiceTimeNotification {
-  return {
-    ...json,
-    dateFrom: LocalDate.parseIso(json.dateFrom)
   }
 }
 

@@ -695,8 +695,6 @@ export const fi = {
       validFrom: 'Päivittäinen varhaiskasvatusaika voimassa alkaen',
       validUntil: 'Päivittäisen varhaiskasvatusajan voimassaolo päättyy',
       createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika',
-      preferExtensionWarning:
-        'Kaikki voimassaolon alun jälkeiselle ajalle tehdyt läsnäoloilmoitukset poistetaan. Älä luo uutta varhaiskasvatusaikaa jos aika ei ole muuttunut aiemmasta varhaiskasvatusajasta.',
       deleteModal: {
         title: 'Poistetaanko varhaiskasvatusaika?',
         description:
