@@ -409,7 +409,7 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class PlacementTool(
         val data: PlacementToolData,
-        val defaultServiceNeedOption: ServiceNeedOption?,
+        val defaultServiceNeedOption: ServiceNeedOption,
         val nextPreschoolTerm: PreschoolTerm,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null

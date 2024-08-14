@@ -80,6 +80,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -94,6 +96,7 @@ class ApplicationStateService(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val messageProvider: IMessageProvider,
     private val messageService: MessageService,
 ) {
     fun createApplication(
@@ -347,35 +350,8 @@ class ApplicationStateService(
             type = MessageType.MESSAGE,
             msg =
                 NewMessageStub(
-                    title =
-                        "Esitäyttetty hakemus esiopetukseen / Pre-filled application for preschool education", // todo: parametrize
-                    content =
-                        """Hei!
-
-Olemme tehneet lapsellenne esitäytetyn hakemuksen esiopetukseen. Hakemus on tehty lapsen oppilaaksiottoalueen mukaiseen esiopetusyksikköön.
-
-Mikäli haluatte hakeutua muuhun kuin lapsellenne osoitettuun paikkaan, voitte muokata hakemusta eVakassa 1.1.2024-14.1.2024 välisenä aikana.
-
-Jos taas hyväksytte osoitetun esiopetuspaikan, teidän ei tarvitse tehdä mitään. Saatte päätöksen esiopetuspaikasta helmikuun 2024 aikana.
-
-Terveisin
-
-Turun kaupungin Varhaiskasvatus
-
-
-Hello!
-
-We have made a pre-filled application for preschool education for your child. The application has been submitted to the pre-school unit according to the child's pupil enrollment area.
-
-If you want to apply for a place other than the one assigned to your child, you can edit the application in eVaka between January 1, 2024 and January 14, 2024.
-
-If you accept the assigned pre-school place, you don't have to do anything. You will receive a decision about the preschool place during February 2024.
-
-Best regards
-
-Early childhood education in the city of Turku
-                        """
-                            .trimIndent(),
+                    title = messageProvider.getPlacementToolHeader(OfficialLanguage.FI),
+                    content = messageProvider.getPlacementToolContent(OfficialLanguage.FI),
                     urgent = false,
                     sensitive = false
                 ),

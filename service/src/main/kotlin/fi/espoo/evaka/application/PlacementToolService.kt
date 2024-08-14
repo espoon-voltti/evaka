@@ -15,6 +15,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -23,6 +24,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import java.io.InputStream
 import java.util.UUID
 import org.apache.commons.csv.CSVFormat
@@ -82,8 +84,14 @@ class PlacementToolService(
                                 validPlacementType = it.validPlacementType
                             )
                         }
+                if (null == defaultServiceNeedOption) {
+                    throw NotFound("No default service need option found")
+                }
                 val nextPreschoolTerm =
-                    tx.getPreschoolTerms().first { it.finnishPreschool.start > clock.today() }
+                    tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > clock.today() }
+                if (null == nextPreschoolTerm) {
+                    throw NotFound("No next preschool term found")
+                }
                 val placements = parsePlacementToolCsv(file.inputStream)
                 placements
                     .forEach { data ->
@@ -114,7 +122,7 @@ class PlacementToolService(
         nextPreschoolTerm: PreschoolTerm
     ) {
         dbc.transaction { tx ->
-            if (data.childId == null || tx.getChild(data.childId) == null) {
+            if (tx.getChild(data.childId) == null) {
                 throw Exception("Child id is null or child not found")
             }
             val guardianIds =
@@ -171,7 +179,7 @@ class PlacementToolService(
         }
     }
 
-    private fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
+    fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
         CSVFormat.Builder.create(CSVFormat.DEFAULT)
             .setHeader()
             .apply { setIgnoreSurroundingSpaces(true) }
@@ -181,8 +189,8 @@ class PlacementToolService(
                 PlacementToolData(
                     childId =
                         ChildId(UUID.fromString(row.get(PlacementToolCsvField.CHILD_ID.fieldName))),
-                    preschoolGroupId =
-                        GroupId(
+                    preschoolId =
+                        DaycareId(
                             UUID.fromString(
                                 row.get(PlacementToolCsvField.PRESCHOOL_GROUP_ID.fieldName)
                             )
@@ -200,10 +208,9 @@ class PlacementToolService(
         defaultServiceNeedOption: ServiceNeedOption?,
         preschoolTerm: PreschoolTerm
     ) {
-        val preferredGroup = tx.getDaycareGroup(data.preschoolGroupId)!!
-        val preferredUnit = tx.getDaycare(preferredGroup.daycareId)!!
+        val preferredUnit = tx.getDaycare(data.preschoolId)!!
         val partTime =
-            tx.getPlacementsForChildDuring(data.childId!!, clock.today(), null)
+            tx.getPlacementsForChildDuring(data.childId, clock.today(), null)
                 .firstOrNull()
                 ?.type in
                 listOf(
@@ -260,4 +267,4 @@ class PlacementToolService(
     }
 }
 
-data class PlacementToolData(val childId: ChildId?, val preschoolGroupId: GroupId)
+data class PlacementToolData(val childId: ChildId, val preschoolId: DaycareId)

@@ -36,6 +36,9 @@ interface IMessageProvider {
 
     /** Returns address used for fee decisions when person is missing address. */
     fun getDefaultFinancialDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
+
+    fun getPlacementToolHeader(lang: OfficialLanguage): String
+    fun getPlacementToolContent(lang: OfficialLanguage): String
 }
 
 @Deprecated(
