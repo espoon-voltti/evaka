@@ -72,7 +72,7 @@ export default React.memo(function AttendancePageWrapper({
     () => [
       {
         id: 'today',
-        link: routes.childAttendances(unitOrGroup),
+        link: routes.childAttendancesToday(unitOrGroup),
         label: i18n.attendances.views.TODAY
       },
       {
