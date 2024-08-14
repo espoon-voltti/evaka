@@ -6,6 +6,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
+import { mobileViewport } from '../../browser'
 import config from '../../config'
 import { runPendingAsyncJobs } from '../../dev-api'
 import {
@@ -193,7 +194,10 @@ beforeEach(async () => {
     ]
   })
 
-  page = await Page.open({ mockedTime: mockedDateAt11 })
+  page = await Page.open({
+    mockedTime: mockedDateAt11,
+    viewport: mobileViewport
+  })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
@@ -263,7 +267,7 @@ describe('Messages page', () => {
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
-    await nav.selectGroup(daycareGroupId)
+    await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
     await messagesPage.assertThreadsExist()
   })
 
@@ -283,7 +287,7 @@ describe('Messages page', () => {
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
-    await nav.selectGroup(daycareGroupId)
+    await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
@@ -303,7 +307,7 @@ describe('Messages page', () => {
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
-    await nav.selectGroup(daycareGroupId)
+    await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
@@ -326,7 +330,7 @@ describe('Messages page', () => {
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
-    await nav.selectGroup(daycareGroupId)
+    await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
 
     await messagesPage.thread(0).click()
     await waitUntilEqual(() => threadView.singleMessageContents.count(), 1)
@@ -464,11 +468,12 @@ describe('Messages page', () => {
     await unreadMessageCountsPage.pinButtonExists()
   })
 
-  test('Message button goes to messages if user has pin session', async () => {
+  test('Message button goes to unread messages if user has pin session', async () => {
     await employeeLoginsToMessagesPage()
     await nav.children.click()
     await nav.messages.click()
-    await messagesPage.messagesContainer.waitUntilVisible()
+    await unreadMessageCountsPage.groupLinksExist()
+    await unreadMessageCountsPage.pinButtonDoesNotExist()
   })
 
   test("Staff sees citizen's message for group", async () => {
@@ -478,7 +483,7 @@ describe('Messages page', () => {
     await userSeesNewMessagesIndicator()
     await staffLoginsToMessagesPage()
 
-    await nav.selectGroup(daycareGroup.id)
+    await unreadMessageCountsPage.linkToGroup(daycareGroup.id).click()
     await messagesPage.assertThreadsExist()
     await messagesPage.thread(0).click()
 
@@ -497,7 +502,7 @@ describe('Messages page', () => {
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
 
-    await nav.selectGroup(daycareGroup2.id)
+    await unreadMessageCountsPage.linkToGroup(daycareGroup2.id).click()
     await messagesPage.assertThreadsExist()
     await waitUntilEqual(() => messagesPage.getThreadTitle(0), 'Hei ryhmä 2')
 
@@ -548,6 +553,7 @@ describe('Personal mobile device', () => {
     await nav.messages.click()
     await unreadMessageCountsPage.pinLoginButton.click()
     await pinLoginPage.personalDeviceLogin(pin)
+    await unreadMessageCountsPage.linkToGroup(daycareGroup.id).click()
 
     await messagesPage.receivedTab.waitUntilVisible()
     await messagesPage.sentTab.waitUntilVisible()
@@ -614,10 +620,11 @@ async function employeeNavigatesToMessagesSelectingLogin() {
 }
 
 async function employeeNavigatesToMessagesSelectingGroup() {
+  await unreadMessageCountsPage.pinLoginButton.click()
+  await pinLoginPage.login(employeeName, pin)
   const linkToGroup = unreadMessageCountsPage.linkToGroup(daycareGroupId)
   await linkToGroup.waitUntilVisible()
   await linkToGroup.click()
-  await pinLoginPage.login(employeeName, pin)
 }
 
 async function employeeLoginsToMessagesPage() {
@@ -633,8 +640,9 @@ async function employeeLoginsToMessagesPageThroughGroup() {
 async function staffStartsNewMessage(): Promise<MobileMessageEditor> {
   await page.goto(config.mobileUrl)
   await nav.messages.click()
+  await unreadMessageCountsPage.pinLoginButton.click()
+  await pinLoginPage.login(employeeName, pin)
   await unreadMessageCountsPage.linkToGroup(daycareGroupId).click()
-  await pinLoginPage.login(staffName, pin)
   await messagesPage.newMessage.click()
   return new MobileMessageEditor(page)
 }

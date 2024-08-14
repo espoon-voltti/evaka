@@ -24,4 +24,8 @@ export default class UnreadMobileMessagesPage {
   async pinButtonExists() {
     return await this.pinLoginButton.waitUntilVisible()
   }
+
+  async pinButtonDoesNotExist() {
+    return await this.pinLoginButton.waitUntilHidden()
+  }
 }
