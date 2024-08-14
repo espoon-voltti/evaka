@@ -17,11 +17,13 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -221,6 +223,20 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     unitId: DaycareId?,
     noinline mapper: Row.() -> Caretakers<K>
 ): Map<K, List<Caretakers<K>>> {
+    val unitPredicate =
+        Predicate.allNotNull(
+            Predicate {
+                where("daterange($it.opening_date, $it.closing_date, '[]') && ${bind(period)}")
+            },
+            if (areaId != null) Predicate { where("$it.care_area_id = ${bind(areaId)}") } else null,
+            if (unitId != null) Predicate { where("$it.id = ${bind(unitId)}") } else null,
+            unitFilter.toPredicate(),
+            if (providerType != null)
+                Predicate { where("$it.provider_type = ${bind(providerType)}") }
+            else null,
+            if (unitTypes?.isEmpty() == false) Predicate { where("$it.type && ${bind(unitTypes)}") }
+            else null
+        )
     val caretakersSum =
         if (type == OccupancyType.REALIZED) {
             """
@@ -286,14 +302,9 @@ JOIN care_area a ON a.id = u.care_area_id
 $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.shift_care_open_on_holidays
 WHERE date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) AND h.date IS NULL
-AND daterange(u.opening_date, u.closing_date, '[]') && ${bind(period)}
-AND (${bind(areaId)} IS NULL OR u.care_area_id = ${bind(areaId)})
-AND (${bind(unitId)} IS NULL OR u.id = ${bind(unitId)})
-AND ${predicate(unitFilter.forTable("u"))}
-AND (${bind(providerType)} IS NULL OR u.provider_type = ${bind(providerType)})
-AND (${bind(unitTypes?.ifEmpty { null })}::care_types[] IS NULL OR u.type && ${bind(unitTypes)}::care_types[])
+AND ${predicate(unitPredicate.forTable("u"))}
 GROUP BY $groupBy, t
-            """
+"""
             )
         }
         .toList(mapper)
