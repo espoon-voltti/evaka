@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import java.time.LocalDate
 import java.util.Objects
 
@@ -41,6 +42,33 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
         fun of(ranges: Iterable<FiniteDateRange>): DateSet = empty().addAll(ranges)
         /** Returns a new date set containing all the given ranges */
         fun of(ranges: Sequence<FiniteDateRange>): DateSet = empty().addAll(ranges)
+        /**
+         * Returns a new date set containing all the given dates.
+         *
+         * *Note that DateSet is not an efficient data structure for random unconnected dates*. If
+         * you have a large amount of dates that cannot be joined into a smaller amount of ranges,
+         * consider using `Set<LocalDate>` instead.
+         */
+        fun ofDates(vararg dates: LocalDate): DateSet =
+            empty().addAll(dates.asSequence().map { it.toFiniteDateRange() })
+        /**
+         * Returns a new date set containing all the given dates.
+         *
+         * *Note that DateSet is not an efficient data structure for random unconnected dates*. If
+         * you have a large amount of dates that cannot be joined into a smaller amount of ranges,
+         * consider using `Set<LocalDate>` instead.
+         */
+        fun ofDates(dates: Iterable<LocalDate>): DateSet =
+            empty().addAll(dates.asSequence().map { it.toFiniteDateRange() })
+        /**
+         * Returns a new date set containing all the given dates.
+         *
+         * *Note that DateSet is not an efficient data structure for random unconnected dates*. If
+         * you have a large amount of dates that cannot be joined into a smaller amount of ranges,
+         * consider using `Set<LocalDate>` instead.
+         */
+        fun ofDates(dates: Sequence<LocalDate>): DateSet =
+            empty().addAll(dates.map { it.toFiniteDateRange() })
     }
 }
 

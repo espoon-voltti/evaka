@@ -37,7 +37,6 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
-import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.withSpan
 import io.opentracing.Tracer
 import io.opentracing.noop.NoopTracerFactory
@@ -122,19 +121,16 @@ class InvoiceGenerator(
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
         val operationalDaysByChild =
             tx.getOperationalDatesForChildren(range, allChildren).mapValues {
-                DateSet.of(it.value.map(LocalDate::toFiniteDateRange))
+                DateSet.ofDates(it.value)
             }
         val holidays = tx.getHolidays(range)
         val businessDays =
-            DateSet.of(
-                range
-                    .dates()
-                    .filter {
-                        it.dayOfWeek != DayOfWeek.SATURDAY &&
-                            it.dayOfWeek != DayOfWeek.SUNDAY &&
-                            !holidays.contains(it)
-                    }
-                    .map { it.toFiniteDateRange() }
+            DateSet.ofDates(
+                range.dates().filter {
+                    it.dayOfWeek != DayOfWeek.SATURDAY &&
+                        it.dayOfWeek != DayOfWeek.SUNDAY &&
+                        !holidays.contains(it)
+                }
             )
 
         val defaultServiceNeedOptions =
