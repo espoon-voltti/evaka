@@ -6,8 +6,11 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.deleteFutureNonGeneratedAbsencesByCategoryInRange
 import fi.espoo.evaka.application.cancelAllActiveTransferApplications
 import fi.espoo.evaka.daycare.getUnitFeatures
+import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -145,6 +148,25 @@ class PlacementControllerCitizen(
                                     )
                                 }
                         }
+
+                        val terminatedRange =
+                            DateRange(
+                                terminationDate.plusDays(1),
+                                (terminatablePlacementGroup.placements +
+                                        if (body.terminateDaycareOnly == true)
+                                            terminatablePlacementGroup.additionalPlacements
+                                        else emptyList())
+                                    .maxOf { it.endDate }
+                            )
+                        tx.clearReservationsForRangeExceptInHolidayPeriod(childId, terminatedRange)
+                        deleteFutureNonGeneratedAbsencesByCategoryInRange(
+                            tx,
+                            clock,
+                            childId,
+                            terminatedRange,
+                            if (body.terminateDaycareOnly == true) setOf(AbsenceCategory.BILLABLE)
+                            else setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
+                        )
 
                         val cancelableTransferApplicationIds =
                             tx.cancelAllActiveTransferApplications(childId)

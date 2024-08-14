@@ -5,6 +5,8 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.addUnitFeatures
@@ -12,23 +14,27 @@ import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.insertServiceNeed
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
@@ -39,6 +45,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -61,8 +68,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     private val child = testChild_1
     private val parent = testAdult_1
     private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
-    private val admin =
-        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
 
     private val daycareId = testDaycare.id
     private val daycare2Id = testDaycare2.id
@@ -70,7 +76,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     private val daycareGroup = DevDaycareGroup(daycareId = daycareId)
     private val daycareGroup2 = DevDaycareGroup(daycareId = daycare2Id)
 
-    private val today = LocalDate.now()
+    private val today = LocalDate.of(2024, 8, 5)
+    private val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(today, LocalTime.of(15, 0)))
 
     private val placementStart = today.minusMonths(3)
     private val placementEnd = placementStart.plusMonths(6)
@@ -78,6 +85,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     @BeforeEach
     fun setUp() {
         db.transaction { tx ->
+            tx.insert(admin)
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testDaycare2)
@@ -128,26 +136,43 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `citizen can terminate own child's placement starting from tomorrow`() {
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = child.id,
-                    unitId = daycareId,
-                    startDate = placementStart,
-                    endDate = placementEnd
-                )
+        val placement1 =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareId,
+                startDate = placementStart,
+                endDate = placementEnd
             )
-            tx.insert(
-                DevPlacement(
-                    childId = child.id,
-                    unitId = daycare2Id,
-                    startDate = placementEnd.plusDays(1),
-                    endDate = placementEnd.plusMonths(2)
-                )
+        val placement2 =
+            DevPlacement(
+                childId = child.id,
+                unitId = daycare2Id,
+                startDate = placementEnd.plusDays(1),
+                endDate = placementEnd.plusMonths(2)
             )
-        }
-
         val placementTerminationDate = today.plusDays(1)
+        val reservation =
+            DevReservation(
+                childId = child.id,
+                date = today.plusDays(3),
+                startTime = LocalTime.of(9, 0),
+                endTime = LocalTime.of(17, 0),
+                createdBy = admin.evakaUserId
+            )
+        val absence =
+            DevAbsence(
+                childId = child.id,
+                absenceCategory = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                date = today.plusDays(3),
+                modifiedBy = admin.evakaUserId
+            )
+        db.transaction { tx ->
+            tx.insert(placement1)
+            tx.insert(placement2)
+            tx.insert(reservation)
+            tx.insert(absence)
+        }
 
         terminatePlacements(
             child.id,
@@ -175,6 +200,18 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(
             listOf(null),
             childPlacements[1].placements.map { it.terminationRequestedDate }
+        )
+
+        assertEquals(
+            0,
+            db.read {
+                it.createQuery { sql("SELECT count(*) FROM attendance_reservation") }
+                    .exactlyOne<Int>()
+            }
+        )
+        assertEquals(
+            0,
+            db.read { it.createQuery { sql("SELECT count(*) FROM absence") }.exactlyOne<Int>() }
         )
     }
 
@@ -279,6 +316,30 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
+        val reservation =
+            DevReservation(
+                childId = child.id,
+                date = placementTerminationDate.plusDays(1),
+                startTime = LocalTime.of(9, 0),
+                endTime = LocalTime.of(17, 0),
+                createdBy = admin.evakaUserId
+            )
+        val billableAbsence =
+            DevAbsence(
+                childId = child.id,
+                absenceCategory = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.FORCE_MAJEURE,
+                date = placementTerminationDate.plusDays(2),
+                modifiedBy = admin.evakaUserId
+            )
+        val nonbillableAbsence =
+            DevAbsence(
+                childId = child.id,
+                absenceCategory = AbsenceCategory.NONBILLABLE,
+                absenceType = AbsenceType.PLANNED_ABSENCE,
+                date = placementTerminationDate.plusDays(3),
+                modifiedBy = admin.evakaUserId
+            )
         db.transaction {
             val id =
                 it.insert(
@@ -310,6 +371,9 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 null,
                 null
             )
+            it.insert(reservation)
+            it.insert(billableAbsence)
+            it.insert(nonbillableAbsence)
         }
 
         val placementsBefore = getChildPlacements(child.id)
@@ -357,6 +421,18 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(PlacementType.PRESCHOOL, remainderOfPreschool.type)
         assertEquals(placementTerminationDate.plusDays(1), remainderOfPreschool.startDate)
         assertEquals(endPreschool, remainderOfPreschool.endDate)
+
+        assertEquals(
+            0,
+            db.read {
+                it.createQuery { sql("SELECT count(*) FROM attendance_reservation") }
+                    .exactlyOne<Int>()
+            }
+        )
+        assertEquals(
+            setOf(nonbillableAbsence.id),
+            db.read { it.createQuery { sql("SELECT id FROM absence") }.toSet<AbsenceId>() }
+        )
     }
 
     @Test
@@ -973,7 +1049,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         placementControllerCitizen.postPlacementTermination(
             dbInstance(),
             authenticatedParent,
-            RealEvakaClock(),
+            clock,
             childId,
             termination
         )
@@ -981,13 +1057,13 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     private fun getChildPlacements(childId: ChildId): List<TerminatablePlacementGroup> {
         return placementControllerCitizen
-            .getPlacements(dbInstance(), authenticatedParent, RealEvakaClock(), childId)
+            .getPlacements(dbInstance(), authenticatedParent, clock, childId)
             .placements
     }
 
     private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
         return placementController
-            .getPlacements(dbInstance(), admin, RealEvakaClock(), childId = childId)
+            .getPlacements(dbInstance(), admin.user, clock, childId = childId)
             .placements
             .toList()
             .flatMap { it.groupPlacements }
