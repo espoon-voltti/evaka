@@ -5,7 +5,6 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.attendance.StaffAttendanceType
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -16,16 +15,24 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.data.DateMap
+import fi.espoo.evaka.shared.data.DateSet
+import fi.espoo.evaka.shared.data.DateTimeMap
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
-import fi.espoo.evaka.shared.security.actionrule.forTable
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.math.BigDecimal
+import java.math.MathContext
 import java.math.RoundingMode
+import java.time.Duration
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 
@@ -62,6 +69,14 @@ data class UnitGroupKey(
     val groupName: String
 ) : OccupancyGroupingKey {
     override val groupingId = groupId
+
+    fun toUnitKey(): UnitKey =
+        UnitKey(
+            areaId = areaId,
+            areaName = areaName,
+            unitId = unitId,
+            unitName = unitName,
+        )
 }
 
 data class DailyOccupancyValues<K : OccupancyGroupingKey>(
@@ -114,9 +129,13 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) {
-            Caretakers(row<UnitKey>(), column("date"), column("caretaker_count"))
-        }
+        getDailyGroupCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId)
+            .entries
+            // sum per-group data into per-unit data
+            .groupingBy { it.key.toUnitKey() }
+            .fold(DateMap.empty<BigDecimal>()) { acc, (_, unitGroupCounts) ->
+                acc.update(unitGroupCounts) { _, old, new -> old + new }
+            }
 
     val placements =
         when (type) {
@@ -144,9 +163,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) {
-            Caretakers(row<UnitGroupKey>(), column("date"), column("caretaker_count"))
-        }
+        getDailyGroupCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId)
 
     val placements =
         when (type) {
@@ -213,7 +230,175 @@ private fun getAndValidatePeriod(
     return period
 }
 
-private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretakers(
+private fun calculateCaretakers(duration: Duration, coefficient: BigDecimal): BigDecimal {
+    val mathContext = MathContext(12, RoundingMode.HALF_UP)
+    return BigDecimal(duration.toSeconds())
+        .divide(BigDecimal(3600.0), mathContext)
+        .divide(BigDecimal(workingDayHours), mathContext)
+        .multiply(coefficient, mathContext)
+        .divide(BigDecimal(defaultOccupancyCoefficient), mathContext)
+        .setScale(4, RoundingMode.HALF_UP)
+}
+
+/**
+ * Return *date-based* `daycare_caretaker` counts for the given groups and the given date range.
+ *
+ * The resulting DateMap contains data *only* for dates within the given date range.
+ */
+private fun Database.Read.getPlannedCaretakersForGroups(
+    groups: Collection<GroupId>,
+    range: FiniteDateRange
+): Map<GroupId, DateMap<BigDecimal>> {
+    data class RawCaretakers(
+        val groupId: GroupId,
+        val range: FiniteDateRange,
+        val amount: BigDecimal
+    )
+    return createQuery {
+            sql(
+                """
+SELECT dc.group_id, daterange(dc.start_date, dc.end_date, '[]') * ${bind(range)} AS range, dc.amount
+FROM daycare_caretaker dc
+WHERE dc.group_id = ANY(${bind(groups)})
+AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
+"""
+            )
+        }
+        .mapTo<RawCaretakers>()
+        .useSequence { rows ->
+            rows
+                .groupingBy { it.groupId }
+                .fold(DateMap.empty()) { countsForGroup, row ->
+                    countsForGroup.set(row.range, row.amount)
+                }
+        }
+}
+
+/**
+ * Return realtime *timestamp-based* `staff_attendance_realtime` / `staff_attendance_external` sums
+ * for the given groups and the given timestamp range.
+ *
+ * The resulting DateTimeMap contains data *only* for timestamps within the given timestamp range.
+ */
+private fun Database.Read.getRealtimeStaffAttendancesForGroups(
+    groups: Collection<GroupId>,
+    range: HelsinkiDateTimeRange
+): Map<GroupId, DateTimeMap<BigDecimal>> {
+    data class StaffAttendance(
+        val groupId: GroupId,
+        val arrived: HelsinkiDateTime,
+        val departed: HelsinkiDateTime,
+        val occupancyCoefficient: BigDecimal
+    )
+    return createQuery {
+            sql(
+                """
+SELECT group_id, arrived, departed, occupancy_coefficient
+FROM staff_attendance_realtime
+WHERE departed IS NOT NULL
+AND group_id = ANY(${bind(groups)})
+AND tstzrange(arrived, departed) && ${bind(range)}
+AND type = ANY($presentStaffAttendanceTypes)
+
+UNION ALL
+
+SELECT group_id, arrived, departed, occupancy_coefficient
+FROM staff_attendance_external
+WHERE departed IS NOT NULL
+AND group_id = ANY(${bind(groups)})
+AND tstzrange(arrived, departed) && ${bind(range)}
+"""
+            )
+        }
+        .mapTo<StaffAttendance>()
+        .useSequence { rows ->
+            rows
+                .groupingBy { it.groupId }
+                .fold(DateTimeMap.empty()) { countsForGroup, row ->
+                    // This intersection is needed because the raw rows are only guaranteed to
+                    // *overlap*, and may extend outside the input range
+                    HelsinkiDateTimeRange(row.arrived, row.departed).intersection(range)?.let {
+                        countsForGroup.update(it, row.occupancyCoefficient) { _, old, new ->
+                            old + new
+                        }
+                    } ?: countsForGroup
+                }
+        }
+}
+
+/** Return *date-based* `staff_attendance` counts for the given groups and the given date range. */
+private fun Database.Read.getStaffCountsForGroups(
+    groups: Collection<GroupId>,
+    range: FiniteDateRange
+): Map<GroupId, DateMap<BigDecimal>> {
+    data class StaffCount(val groupId: GroupId, val date: LocalDate, val count: BigDecimal)
+    return createQuery {
+            sql(
+                """
+SELECT group_id, date, count
+FROM staff_attendance
+WHERE group_id = ANY(${bind(groups)})
+AND between_start_and_end(${bind(range)}, date)
+"""
+            )
+        }
+        .mapTo<StaffCount>()
+        .useSequence { rows ->
+            rows
+                .groupingBy { it.groupId }
+                .fold(DateMap.empty()) { countsForGroup, row ->
+                    countsForGroup.set(row.date.toFiniteDateRange(), row.count)
+                }
+        }
+}
+
+private fun Database.Read.getRealizedCaretakersForGroups(
+    groups: Collection<GroupId>,
+    range: FiniteDateRange
+): Map<GroupId, DateMap<BigDecimal>> {
+    val occupancyCoefficientSumsPerGroup =
+        getRealtimeStaffAttendancesForGroups(groups, range.asHelsinkiDateTimeRange())
+    val staffCountsByGroup = getStaffCountsForGroups(groups, range)
+    return groups
+        .asSequence()
+        .map { group ->
+            val occupancyCoefficientSums =
+                occupancyCoefficientSumsPerGroup[group] ?: DateTimeMap.empty()
+            val staffCounts = staffCountsByGroup[group] ?: DateMap.empty()
+            val data =
+                DateMap.of(
+                    range.dates().map { date ->
+                        val wholeDate =
+                            HelsinkiDateTimeRange(
+                                HelsinkiDateTime.atStartOfDay(date),
+                                HelsinkiDateTime.atStartOfDay(date.plusDays(1))
+                            )
+                        val occupancyBasedSum =
+                            occupancyCoefficientSums
+                                .entries()
+                                .dropWhile { (range) -> !range.overlaps(wholeDate) }
+                                .takeWhile { (range) -> range.overlaps(wholeDate) }
+                                .mapNotNull { (range, coefficient) ->
+                                    range.intersection(wholeDate)?.let { occupancyDuringDate ->
+                                        calculateCaretakers(
+                                            occupancyDuringDate.getDuration(),
+                                            coefficient
+                                        )
+                                    }
+                                }
+                                .reduceOrNull(BigDecimal::plus)
+
+                        val count =
+                            occupancyBasedSum ?: staffCounts.getValue(date) ?: BigDecimal.ZERO
+                        date.toFiniteDateRange() to count
+                    }
+                )
+            group to data
+        }
+        .toMap()
+}
+
+private fun Database.Read.getDailyGroupCaretakers(
     type: OccupancyType,
     period: FiniteDateRange,
     unitFilter: AccessControlFilter<DaycareId>,
@@ -221,8 +406,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     unitId: DaycareId?,
-    noinline mapper: Row.() -> Caretakers<K>
-): Map<K, List<Caretakers<K>>> {
+): Map<UnitGroupKey, DateMap<BigDecimal>> {
     val unitPredicate =
         Predicate.allNotNull(
             Predicate {
@@ -237,78 +421,63 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             if (unitTypes?.isEmpty() == false) Predicate { where("$it.type && ${bind(unitTypes)}") }
             else null
         )
-    val caretakersSum =
-        if (type == OccupancyType.REALIZED) {
-            """
-            sum(
-                CASE
-                    WHEN sar.arrived IS NOT NULL
-                        THEN ROUND(EXTRACT(EPOCH FROM (
-                            LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
-                        )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient, 4)
-                    ELSE s.count
-                END
-            )
-            """
-        } else {
-            "sum(c.amount)"
-        }
 
-    val presentStaffAttendanceTypes =
-        "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
-    val caretakersJoin =
-        if (type == OccupancyType.REALIZED) {
-            """
-            LEFT JOIN (
-                SELECT group_id, arrived, departed, occupancy_coefficient
-                FROM staff_attendance_realtime
-                WHERE departed IS NOT NULL AND type = ANY($presentStaffAttendanceTypes)
-                UNION ALL
-                SELECT group_id, arrived, departed, occupancy_coefficient
-                FROM staff_attendance_external
-                WHERE departed IS NOT NULL
-            ) sar ON g.id = sar.group_id AND (t = DATE(sar.arrived) OR t = DATE(sar.departed))
-            LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
-            """
-        } else {
-            """
-            LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
-            """
-        }
+    val holidays = getHolidays(period)
 
-    val (keyColumns, groupBy) =
-        when (K::class) {
-            UnitKey::class ->
-                "a.id AS area_id, a.name AS area_name, u.id AS unit_id, u.name AS unit_name" to
-                    "a.id, u.id"
-            UnitGroupKey::class ->
-                "a.id AS area_id, a.name AS area_name, g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to
-                    "a.id, g.id, u.id"
-            else -> error("Unsupported caretakers query class parameter (${K::class})")
-        }
-
-    return createQuery {
-            sql(
-                """
-SELECT $keyColumns, t::date AS date,
-coalesce(
-    $caretakersSum,
-    0.0
-) AS caretaker_count
-FROM generate_series(${bind(period.start)}, ${bind(period.end)}, '1 day') t
-CROSS JOIN daycare_group g
-JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
+    data class OccupancyGroup(
+        @Nested val key: UnitGroupKey,
+        val shiftCareOpenOnHolidays: Boolean,
+        val groupValidity: DateRange,
+        val operationDays: Set<Int>,
+    )
+    fun OccupancyGroup.isOperational(date: LocalDate) =
+        groupValidity.includes(date) &&
+            operationDays.contains(date.dayOfWeek.value) &&
+            (shiftCareOpenOnHolidays || date !in holidays)
+    val groups =
+        createQuery {
+                sql(
+                    """
+SELECT
+    g.id AS group_id, g.name AS group_name,
+    u.id AS unit_id, u.name AS unit_name,
+    a.id AS area_id, a.name AS area_name,
+    daterange(g.start_date, g.end_date, '[]') AS group_validity,
+    u.shift_care_open_on_holidays, coalesce(u.shift_care_operation_days, u.operation_days) AS operation_days
+FROM daycare_group g
+JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') && ${bind(period)}
 JOIN care_area a ON a.id = u.care_area_id
-$caretakersJoin
-LEFT JOIN holiday h ON t = h.date AND NOT u.shift_care_open_on_holidays
-WHERE date_part('isodow', t) = ANY(coalesce(u.shift_care_operation_days, u.operation_days)) AND h.date IS NULL
-AND ${predicate(unitPredicate.forTable("u"))}
-GROUP BY $groupBy, t
+WHERE ${predicate(unitPredicate.forTable("u"))}
 """
-            )
+                )
+            }
+            .toList<OccupancyGroup>()
+
+    val dailyCountsByGroup =
+        when (type) {
+            OccupancyType.PLANNED,
+            OccupancyType.CONFIRMED ->
+                getPlannedCaretakersForGroups(groups.map { it.key.groupId }, period)
+            OccupancyType.REALIZED ->
+                getRealizedCaretakersForGroups(groups.map { it.key.groupId }, period)
         }
-        .toList(mapper)
-        .groupBy { it.key }
+    val defaults = DateMap.of(period to BigDecimal.ZERO)
+    return groups
+        .asSequence()
+        .map { group ->
+            val nonOperational =
+                DateSet.of(
+                    period.dates().filterNot(group::isOperational).map { it.toFiniteDateRange() }
+                )
+            group.key to
+                // start with all zeroes so we have *some value* for every date
+                defaults
+                    // replace default zeroes with actual data for dates that have it
+                    .setAll(dailyCountsByGroup[group.key.groupId] ?: DateMap.empty())
+                    // non-operational days should not contain anything, not even zeroes
+                    .removeAll(nonOperational.ranges())
+        }
+        .toMap()
 }
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacements(
@@ -421,7 +590,7 @@ WHERE daterange(greatest(bc.start_date, p.start_date), least(bc.end_date, p.end_
 }
 
 private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
-    caretakerCounts: Map<K, List<Caretakers<K>>>,
+    caretakerCounts: Map<K, DateMap<BigDecimal>>,
     placements: Iterable<Placement>,
     range: FiniteDateRange,
     type: OccupancyType
@@ -562,56 +731,59 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
 
     val placementsAndPlans = (placements + placementPlans).groupBy { it.groupingId }
 
-    return caretakerCounts.map { (key, values) ->
+    return caretakerCounts.map { (key, countsForKey) ->
         val occupancies =
-            values.associate { caretakers ->
-                val placementsOnDate =
-                    (placementsAndPlans[key.groupingId] ?: listOf())
-                        .filter { it.period.includes(caretakers.date) }
-                        .filterNot {
-                            childWasAbsentWholeDay(
-                                caretakers.date,
-                                it.type,
-                                absences[it.childId] ?: listOf()
-                            )
+            countsForKey
+                .entries()
+                .flatMap { (range, caretakerCount) -> range.dates().map { it to caretakerCount } }
+                .associate { (date, caretakerCount) ->
+                    val placementsOnDate =
+                        (placementsAndPlans[key.groupingId] ?: listOf())
+                            .filter { it.period.includes(date) }
+                            .filterNot {
+                                childWasAbsentWholeDay(
+                                    date,
+                                    it.type,
+                                    absences[it.childId] ?: listOf()
+                                )
+                            }
+
+                    val coefficientSum =
+                        placementsOnDate
+                            .groupBy { it.childId }
+                            .mapNotNull { (_, childPlacements) ->
+                                childPlacements
+                                    .map { getCoefficient(date, it) }
+                                    .maxByOrNull { it.first }
+                            }
+                            .fold(CoefficientSum.ZERO) { sum, (coefficient, under3y) ->
+                                if (under3y) sum.copy(under3y = sum.under3y + coefficient)
+                                else sum.copy(over3y = sum.over3y + coefficient)
+                            }
+
+                    val percentage =
+                        if (caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
+                            null
+                        } else {
+                            coefficientSum.sum
+                                .divide(
+                                    caretakerCount * occupancyCoefficientSeven,
+                                    4,
+                                    RoundingMode.HALF_EVEN
+                                )
+                                .times(BigDecimal(100))
+                                .setScale(1, RoundingMode.HALF_EVEN)
                         }
 
-                val coefficientSum =
-                    placementsOnDate
-                        .groupBy { it.childId }
-                        .mapNotNull { (_, childPlacements) ->
-                            childPlacements
-                                .map { getCoefficient(caretakers.date, it) }
-                                .maxByOrNull { it.first }
-                        }
-                        .fold(CoefficientSum.ZERO) { sum, (coefficient, under3y) ->
-                            if (under3y) sum.copy(under3y = sum.under3y + coefficient)
-                            else sum.copy(over3y = sum.over3y + coefficient)
-                        }
-
-                val percentage =
-                    if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
-                        null
-                    } else {
-                        coefficientSum.sum
-                            .divide(
-                                caretakers.caretakerCount * occupancyCoefficientSeven,
-                                4,
-                                RoundingMode.HALF_EVEN
-                            )
-                            .times(BigDecimal(100))
-                            .setScale(1, RoundingMode.HALF_EVEN)
-                    }
-
-                caretakers.date to
-                    OccupancyValues(
-                        sumUnder3y = coefficientSum.under3y.toDouble(),
-                        sumOver3y = coefficientSum.over3y.toDouble(),
-                        headcount = placementsOnDate.size,
-                        percentage = percentage?.toDouble(),
-                        caretakers = caretakers.caretakerCount.toDouble().takeUnless { it == 0.0 }
-                    )
-            }
+                    date to
+                        OccupancyValues(
+                            sumUnder3y = coefficientSum.under3y.toDouble(),
+                            sumOver3y = coefficientSum.over3y.toDouble(),
+                            headcount = placementsOnDate.size,
+                            percentage = percentage?.toDouble(),
+                            caretakers = caretakerCount.toDouble().takeUnless { it == 0.0 }
+                        )
+                }
 
         DailyOccupancyValues(key = key, occupancies = occupancies)
     }
@@ -706,12 +878,6 @@ private fun childWasAbsentWholeDay(
     val absencesOnDate = childAbsences.filter { it.date == date }.map { it.category }.toSet()
     return absencesOnDate.isNotEmpty() && absencesOnDate == childPlacementType.absenceCategories()
 }
-
-private data class Caretakers<K : OccupancyGroupingKey>(
-    val key: K,
-    val date: LocalDate,
-    val caretakerCount: BigDecimal
-)
 
 data class Placement(
     val groupingId: DaycareId,
