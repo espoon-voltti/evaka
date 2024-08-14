@@ -7,6 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { FeatureFlags } from 'lib-customizations/types'
 
+import { mobileViewport } from '../../browser'
 import {
   testDaycare2,
   testDaycareGroup,
@@ -101,6 +102,7 @@ const initPages = async (
   featureFlags: Partial<FeatureFlags> = {}
 ) => {
   page = await Page.open({
+    viewport: mobileViewport,
     mockedTime,
     employeeMobileCustomizations: { featureFlags }
   })

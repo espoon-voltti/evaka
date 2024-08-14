@@ -269,7 +269,7 @@ class DevApi(
         }
     }
 
-    @GetMapping("/", produces = ["text/plain"])
+    @GetMapping("/")
     fun healthCheck() {
         // HTTP 200
     }

@@ -21,6 +21,7 @@ import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let daycareId: UUID
+let groupId: UUID
 let childId: UUID
 let placementId: UUID
 let unitSupervisor: DevEmployee
@@ -63,6 +64,7 @@ const setupTestData = async ({
   const daycareGroup = await Fixture.daycareGroup({
     daycareId: daycare.id
   }).save()
+  groupId = daycareGroup.id
   const child = await Fixture.person().saveChild()
   childId = child.id
   const placement = await Fixture.placement({
@@ -98,7 +100,7 @@ async function navigateToTestView({
   await employeeLogin(page, unitSupervisor)
   const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycareId)
-  return await unitPage.openWeekCalendar()
+  return await unitPage.openWeekCalendar(groupId)
 }
 
 test('Add two reservations for tomorrow then update one and remove other', async () => {

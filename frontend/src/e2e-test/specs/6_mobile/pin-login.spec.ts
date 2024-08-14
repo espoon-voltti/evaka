@@ -5,6 +5,7 @@
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
+import { mobileViewport } from '../../browser'
 import {
   testChild,
   Fixture,
@@ -74,7 +75,7 @@ beforeEach(async () => {
     endDate: placementFixture.endDate
   }).save()
 
-  page = await Page.open()
+  page = await Page.open({ viewport: mobileViewport })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   pinLoginPage = new PinLoginPage(page)

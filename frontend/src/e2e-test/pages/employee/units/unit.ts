@@ -95,12 +95,10 @@ export class UnitPage {
     return new UnitCalendarPage(this.page)
   }
 
-  async openWeekCalendar(): Promise<UnitWeekCalendarPage> {
-    return await (await this.openCalendarPage()).openWeekCalendar()
-  }
-
-  async openMonthCalendar(): Promise<UnitMonthCalendarPage> {
-    return await (await this.openCalendarPage()).openMonthCalendar()
+  async openWeekCalendar(groupId: UUID): Promise<UnitWeekCalendarPage> {
+    const calendarPage = await this.openCalendarPage()
+    await calendarPage.selectGroup(groupId)
+    return await calendarPage.openWeekCalendar()
   }
 }
 

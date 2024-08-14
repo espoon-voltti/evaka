@@ -233,3 +233,5 @@ export async function captureTextualDownload(
     )
   )
 }
+
+export const mobileViewport = { width: 360, height: 740 }

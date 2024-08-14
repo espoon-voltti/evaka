@@ -141,6 +141,7 @@ beforeEach(async () => {
 
 describe('Calendar events', () => {
   test('Employee can add event for group', async () => {
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
@@ -162,6 +163,7 @@ describe('Calendar events', () => {
     const startDate = mockedToday.addDays(1)
     const endDate = mockedToday.addDays(2)
 
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
@@ -219,6 +221,7 @@ describe('Calendar events', () => {
 
 describe('Discussion surveys', () => {
   test('Employee can see existing discussion survey in survey list', async () => {
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyPage =
@@ -232,6 +235,7 @@ describe('Discussion surveys', () => {
   })
 
   test('Employee can delete a survey', async () => {
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyListPage =
@@ -245,6 +249,7 @@ describe('Discussion surveys', () => {
   })
 
   test('Employee can edit a survey', async () => {
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyListPage =
@@ -266,6 +271,7 @@ describe('Discussion surveys', () => {
 
   test('Employee can add event times for survey', async () => {
     const testDay = mockedToday.addDays(1)
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyListPage =
@@ -298,6 +304,7 @@ describe('Discussion surveys', () => {
 
   test('Employee can delete event time', async () => {
     const testDay = mockedToday.addDays(1)
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyListPage =
@@ -329,6 +336,7 @@ describe('Discussion surveys', () => {
       firstName: 'Antero Onni Leevi Aatu'
     }
     const testDay = mockedToday.addDays(1)
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const surveyListPage =
@@ -363,6 +371,7 @@ describe('Discussion surveys', () => {
 
   test('Employee can create new survey', async () => {
     const testDay = mockedToday.addDays(1)
+    await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
 
     const newSurvey = {

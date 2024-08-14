@@ -120,7 +120,7 @@ const insertTestDataAndLogin = async ({
 async function openWeekCalendar(): Promise<UnitWeekCalendarPage> {
   const unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
-  return await unitPage.openWeekCalendar()
+  return await unitPage.openWeekCalendar(groupId)
 }
 
 describe('Unit group calendar', () => {
@@ -247,25 +247,20 @@ describe('Unit group calendar', () => {
       regularTimes: new TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
     }).save()
 
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
+    await Fixture.attendanceReservationRaw({
       childId: child1Fixture.id,
       date: holidayPeriodStart.subDays(1),
-      reservation: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0)),
-      secondReservation: null
+      range: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0))
     }).save()
 
     // Reservation on the second day
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
+    await Fixture.attendanceReservationRaw({
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(1),
-      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
-      secondReservation: null
+      range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0))
     }).save()
     // Absence on the third day
-    await Fixture.attendanceReservation({
-      type: 'ABSENT',
+    await Fixture.absence({
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(2)
     }).save()
@@ -319,27 +314,22 @@ describe('Unit group calendar', () => {
     }).save()
 
     const attendanceReservationBeforeHolidayDate = holidayPeriodStart.subDays(1) // Monday
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
+    await Fixture.attendanceReservationRaw({
       childId: child1Fixture.id,
       date: attendanceReservationBeforeHolidayDate,
-      reservation: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0)),
-      secondReservation: null
+      range: new TimeRange(LocalTime.of(11, 0), LocalTime.of(13, 0))
     }).save()
 
     const attendanceReservationDuringHolidayDate = holidayPeriodStart.addDays(1)
 
     // Reservation on the second day
-    await Fixture.attendanceReservation({
-      type: 'RESERVATIONS',
+    await Fixture.attendanceReservationRaw({
       childId: child1Fixture.id,
       date: attendanceReservationDuringHolidayDate,
-      reservation: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
-      secondReservation: null
+      range: new TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0))
     }).save()
     // Absence on the third day
-    await Fixture.attendanceReservation({
-      type: 'ABSENT',
+    await Fixture.absence({
       childId: child1Fixture.id,
       date: holidayPeriodStart.addDays(2)
     }).save()

@@ -120,10 +120,10 @@ describe('when placement is ending tomorrow', () => {
     await Fixture.holidayPeriod({
       period: new FiniteDateRange(mockedTomorrow, mockedTomorrow)
     }).save()
-    await Fixture.attendanceReservation({
-      type: 'PRESENT',
+    await Fixture.attendanceReservationRaw({
       childId: child.id,
-      date: mockedTomorrow
+      date: mockedTomorrow,
+      range: null
     }).save()
 
     const page = await loginToMobile(mockedToday, unit.id)

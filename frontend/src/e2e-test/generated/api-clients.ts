@@ -1765,6 +1765,22 @@ export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
 
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.healthCheck
+*/
+export async function healthCheck(): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/`.toString(),
+      method: 'GET'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.insertChild
 */
 export async function insertChild(

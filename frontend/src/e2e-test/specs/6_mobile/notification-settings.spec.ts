@@ -4,6 +4,7 @@
 
 import { PilotFeature } from 'lib-common/generated/api-types/shared'
 
+import { mobileViewport } from '../../browser'
 import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import { DevCareArea, DevDaycare } from '../../generated/api-types'
@@ -30,7 +31,7 @@ beforeEach(async () => {
     enabledPilotFeatures,
     areaId: area.id
   }).save()
-  page = await Page.open()
+  page = await Page.open({ viewport: mobileViewport })
 })
 
 describe('Settings page push permission section', () => {
