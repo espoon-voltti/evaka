@@ -2001,14 +2001,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "axios@npm:1.7.0"
+"axios@npm:^1.7.4":
+  version: 1.7.4
+  resolution: "axios@npm:1.7.4"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/fc97719eb1024626cf3ae716eed136964faea712cd750642c2693c8bf3843d342a9e373704d08319a851931b39ca318d2004f0ab4ca67f434f095754dc4aecee
+  checksum: 10/7a1429be1e3d0c2e1b96d4bba4d113efbfabc7c724bed107beb535c782c7bea447ff634886b0c7c43395a264d085450d009eb1154b5f38a8bae49d469fdcbc61
   languageName: node
   linkType: hard
 
@@ -3377,7 +3377,7 @@ __metadata:
     "@types/tough-cookie": "npm:^4.0.2"
     "@types/uuid": "npm:^10.0.0"
     "@types/xml2js": "npm:^0.4.11"
-    axios: "npm:^1.7.0"
+    axios: "npm:^1.7.4"
     concurrently: "npm:^8.2.0"
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"

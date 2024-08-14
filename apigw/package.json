@@ -21,7 +21,7 @@
   "dependencies": {
     "@node-saml/node-saml": "^5.0.0",
     "@node-saml/passport-saml": "^5.0.0",
-    "axios": "^1.7.0",
+    "axios": "^1.7.4",
     "connect-redis": "^7.1.0",
     "cookie-parser": "^1.4.6",
     "date-fns": "^3.6.0",
