@@ -58,6 +58,12 @@ export class UnitCalendarPageBase {
     await this.waitUntilLoaded()
   }
 
+  async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
+    await this.page
+      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
+      .click()
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   async selectGroup(groupId: UUID | 'no-group' | 'staff'): Promise<void> {
     const select = new Select(
