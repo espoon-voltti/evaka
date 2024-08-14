@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UnitStaffAttendancesTable } from 'e2e-test/pages/employee/units/unit-calendar-page-base'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -19,18 +20,14 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
-import { UnitPage } from '../../pages/employee/units/unit'
-import {
-  UnitStaffAttendancesTable,
-  UnitWeekCalendarPage
-} from '../../pages/employee/units/unit-week-calendar-page'
+import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 let page: Page
 let unitPage: UnitPage
-let attendancesSection: UnitWeekCalendarPage
+let calendarPage: UnitCalendarPage
 let child1Fixture: DevPerson
 let child1DaycarePlacementId: UUID
 let daycare: DevDaycare
@@ -121,10 +118,10 @@ beforeEach(async () => {
   await employeeLogin(page, unitSupervisor)
 })
 
-const openWeekCalendar = async (): Promise<UnitWeekCalendarPage> => {
+const openCalendar = async (): Promise<UnitCalendarPage> => {
   unitPage = new UnitPage(page)
   await unitPage.navigateToUnit(daycare.id)
-  return await unitPage.openWeekCalendar()
+  return await unitPage.openCalendarPage()
 }
 
 describe('Realtime staff attendances', () => {
@@ -136,19 +133,19 @@ describe('Realtime staff attendances', () => {
       departed: null
     }).save()
 
-    attendancesSection = await openWeekCalendar()
-    await attendancesSection.occupancies.assertGraphIsVisible()
-    await attendancesSection.setFilterStartDate(LocalDate.of(2022, 3, 1))
-    await attendancesSection.occupancies.assertGraphHasNoData()
+    calendarPage = await openCalendar()
+    await calendarPage.occupancies.assertGraphIsVisible()
+    await calendarPage.setFilterStartDate(LocalDate.of(2022, 3, 1))
+    await calendarPage.occupancies.assertGraphHasNoData()
   })
 
   describe('Group selection: staff', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     beforeEach(async () => {
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup('staff')
-      staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup('staff')
+      staffAttendances = calendarPage.staffAttendances
     })
 
     test('The staff attendances table shows all unit staff', async () => {
@@ -171,7 +168,7 @@ describe('Realtime staff attendances', () => {
         departed: mockedToday.subDays(3).toHelsinkiDateTime(LocalTime.of(15, 0))
       }).save()
 
-      await attendancesSection.changeWeekToDate(mockedToday.subWeeks(1))
+      await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
       await staffAttendances.assertTableRow({
         rowIx: 0,
         nth: 6,
@@ -197,9 +194,9 @@ describe('Realtime staff attendances', () => {
         departed: null
       }).save()
 
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup(groupId)
-      const staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      const staffAttendances = calendarPage.staffAttendances
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
@@ -225,9 +222,9 @@ describe('Realtime staff attendances', () => {
         departed: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 15))
       }).save()
 
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup(groupId)
-      const staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      const staffAttendances = calendarPage.staffAttendances
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
@@ -254,9 +251,9 @@ describe('Realtime staff attendances', () => {
 
       await employeeLogin(page, groupStaff)
 
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup(groupId)
-      const staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      const staffAttendances = calendarPage.staffAttendances
 
       await staffAttendances.assertTableRow({
         rowIx: 0,
@@ -324,9 +321,9 @@ describe('Realtime staff attendances', () => {
         endTime: yesterday.toHelsinkiDateTime(LocalTime.of(15, 0))
       }).save()
 
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup(groupId)
-      const staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      const staffAttendances = calendarPage.staffAttendances
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
@@ -365,9 +362,9 @@ describe('Realtime staff attendances', () => {
         arrived,
         departed: null
       }).save()
-      attendancesSection = await openWeekCalendar()
-      await attendancesSection.selectGroup('staff')
-      staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup('staff')
+      staffAttendances = calendarPage.staffAttendances
     }
 
     test('An existing entry can be edited', async () => {
@@ -603,15 +600,15 @@ describe('Realtime staff attendances', () => {
         departed: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
       }).save()
 
-      attendancesSection = await openWeekCalendar()
-      staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      staffAttendances = calendarPage.staffAttendances
     })
 
     test('Total staff counts', async () => {
-      await attendancesSection.selectGroup(groupId2)
+      await calendarPage.selectGroup(groupId2)
       await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
 
-      await attendancesSection.selectGroup(groupId)
+      await calendarPage.selectGroup(groupId)
       await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
       await waitUntilEqual(() => staffAttendances.personCountSum(1), '1 hlö')
       await waitUntilEqual(() => staffAttendances.personCountSum(2), '2 hlö')
@@ -624,12 +621,13 @@ describe('Realtime staff attendances', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
     beforeEach(async () => {
-      attendancesSection = await openWeekCalendar()
-      staffAttendances = attendancesSection.staffAttendances
+      calendarPage = await openCalendar()
+      await calendarPage.selectGroup(groupId)
+      staffAttendances = calendarPage.staffAttendances
     })
 
     test('Can an add and modify an external', async () => {
-      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      const addPersonModal = await calendarPage.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.typeName('Sijainen Saija')
@@ -667,7 +665,7 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Can an add multiple entries to an external', async () => {
-      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      const addPersonModal = await calendarPage.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.subDays(2).format())
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.setDepartureTime('13:00')
@@ -710,7 +708,7 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Can an add new external with arrival and departure times', async () => {
-      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      const addPersonModal = await calendarPage.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('11:00')
       await addPersonModal.setDepartureTime('16:00')
@@ -729,7 +727,7 @@ describe('Realtime staff attendances', () => {
     })
 
     test('Cannot add new external with invalid data', async () => {
-      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      const addPersonModal = await calendarPage.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('9:99')
       await addPersonModal.typeName('S')
