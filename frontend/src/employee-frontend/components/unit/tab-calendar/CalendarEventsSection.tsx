@@ -4,25 +4,30 @@
 
 import groupBy from 'lodash/groupBy'
 import omitBy from 'lodash/omitBy'
+import partition from 'lodash/partition'
 import sortBy from 'lodash/sortBy'
 import uniqBy from 'lodash/uniqBy'
 import React, {
+  Fragment,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState
 } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { formatPersonName } from 'employee-frontend/utils'
 import { combine, wrapResult } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   CalendarEvent,
   GroupInfo,
   IndividualChild
 } from 'lib-common/generated/api-types/calendarevent'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -210,6 +215,14 @@ export default React.memo(function CalendarEventsSection({
     [unitId, dateRange]
   )
 
+  const groupData = useQueryResult(
+    unitGroupDetailsQuery({
+      unitId,
+      from: dateRange.start,
+      to: dateRange.end
+    })
+  )
+
   const { calendarEventId } = useParams<{ calendarEventId: UUID }>()
   const navigate = useNavigate()
 
@@ -256,7 +269,7 @@ export default React.memo(function CalendarEventsSection({
 
   return (
     <div>
-      {editingEvent && (
+      {editingEvent && editingEvent.eventType === 'DAYCARE_EVENT' && (
         <EditEventModal
           event={editingEvent}
           onClose={(shouldRefresh) => {
@@ -280,6 +293,22 @@ export default React.memo(function CalendarEventsSection({
           groupId={groupId}
         />
       )}
+
+      {renderResult(groupData, (groups) => {
+        return editingEvent &&
+          !!groupId &&
+          editingEvent.eventType === 'DISCUSSION_SURVEY' ? (
+          <SurveySummaryModal
+            event={editingEvent}
+            unitId={unitId}
+            groupId={groupId}
+            placements={groups.placements}
+            onClose={() => {
+              navigate(`/units/${unitId}/calendar`)
+            }}
+          />
+        ) : null
+      })}
       <EventButtonRow>
         <EventButtonColumn>
           {featureFlags.discussionReservations && !!groupId && (
@@ -351,23 +380,58 @@ export default React.memo(function CalendarEventsSection({
                         ['unit', 'group', 'partial-group'].indexOf(
                           specifier.type
                         )
-                    ).map(({ event, specifier }) => (
-                      <EventLinkContainer
-                        className={`type-${specifier.type}`}
-                        key={event.id}
-                      >
-                        <Link
-                          to={
-                            event.eventType === 'DAYCARE_EVENT'
-                              ? `/units/${unitId}/calendar/events/${event.id}`
-                              : `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${event.id}`
-                          }
-                          data-qa="event"
-                        >
-                          <Bold>{specifier.text}:</Bold> {event.title}
-                        </Link>
-                      </EventLinkContainer>
-                    ))}
+                    ).map(({ event, specifier }) => {
+                      const eventTimesToday = event.times.filter((t) =>
+                        t.date.isEqual(day)
+                      )
+                      const [reservationsToday, freeTimesToday] = partition(
+                        eventTimesToday,
+                        (et) => et.childId
+                      )
+                      if (event.eventType === 'DAYCARE_EVENT') {
+                        return (
+                          <EventLinkContainer
+                            className={`type-${specifier.type}`}
+                            key={event.id}
+                          >
+                            <Link
+                              to={`/units/${unitId}/calendar/events/${event.id}`}
+                              data-qa="event"
+                            >
+                              <p>
+                                <Bold>{specifier.text}:</Bold> {event.title}
+                              </p>
+                            </Link>
+                          </EventLinkContainer>
+                        )
+                      } else if (
+                        event.eventType === 'DISCUSSION_SURVEY' &&
+                        eventTimesToday.length > 0
+                      ) {
+                        return (
+                          <EventLinkContainer
+                            className={`type-${specifier.type}`}
+                            key={event.id}
+                          >
+                            <Link
+                              to={`/units/${unitId}/calendar/events/${event.id}?eventDay=${day.formatIso()}`}
+                              data-qa="event"
+                            >
+                              <P noMargin>
+                                <Bold>{event.title}</Bold>
+                              </P>
+
+                              <P
+                                noMargin
+                              >{`${reservationsToday.length} ${i18n.unit.calendar.events.reservedTimesLabel}`}</P>
+                              <P
+                                noMargin
+                              >{`${freeTimesToday.length} ${i18n.unit.calendar.events.freeTimesLabel}`}</P>
+                            </Link>
+                          </EventLinkContainer>
+                        )
+                      } else return null
+                    })}
                   </FixedSpaceColumn>
                 </EventDay>
               ))}
@@ -893,11 +957,107 @@ const EditEventModal = React.memo(function EditEventModal({
   )
 })
 
+const SurveySummaryModal = React.memo(function SurveySummaryModal({
+  unitId,
+  groupId,
+  event,
+  placements,
+  onClose
+}: {
+  unitId: UUID
+  groupId: UUID
+  event: CalendarEvent
+  placements: DaycarePlacementWithDetails[]
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+  const tr = i18n.unit.calendar.events.discussionReservation
+  const [searchParams] = useSearchParams()
+
+  const eventDay = searchParams.get('eventDay')
+  const date = eventDay ? LocalDate.parseIso(eventDay) : null
+  const times = useMemo(() => {
+    return sortBy(
+      event.times.filter((t) => date && t.date.isEqual(date)),
+      ['startTime', 'endTime', 'id']
+    )
+  }, [event.times, date])
+
+  const placedChildrenToday = date
+    ? placements
+        .filter((p) => new DateRange(p.startDate, p.endDate).includes(date))
+        .map((p) => p.child)
+    : []
+
+  const childrenById = groupBy(placedChildrenToday, (c) => c.id)
+
+  return (
+    <BaseModal
+      title={`${event.title} ${date?.format() ?? ''}`}
+      type="info"
+      width="wide"
+      close={onClose}
+      closeLabel={i18n.common.closeModal}
+      padding="L"
+      data-qa="survey-summary-modal"
+    >
+      <Label>{tr.surveySummaryCalendarLabel}</Label>
+      <p data-qa="survey-description">{event.description}</p>
+
+      <p>
+        {`${tr.calendarSurveySummaryInstruction} `}
+        <Link
+          to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${event.id}`}
+        >
+          {tr.calendarSurveySummaryLinkText}
+        </Link>
+      </p>
+      {times.length > 0 && (
+        <>
+          <Label>{tr.surveyDiscussionTimesTitle}</Label>
+          <Gap size="s" />
+          <EventTimeGrid>
+            {times.map((t) => {
+              const child = t.childId ? childrenById[t.childId][0] : null
+              return (
+                <Fragment key={t.id}>
+                  <span
+                    data-qa={`times-${t.id}`}
+                  >{`${t.startTime.format()} - ${t.endTime.format()}`}</span>
+                  {t.childId ? (
+                    <Bold
+                      data-qa={`reservee-${t.id}`}
+                    >{`${child ? formatPersonName(child, i18n) : tr.reservationModal.reserved}`}</Bold>
+                  ) : (
+                    <span data-qa={`reservee-${t.id}`}>
+                      {tr.reservationModal.unreserved}
+                    </span>
+                  )}
+                </Fragment>
+              )
+            })}
+          </EventTimeGrid>
+        </>
+      )}
+
+      <Gap size="L" />
+      <FixedSpaceRow justifyContent="center">
+        <Button
+          appearance="button"
+          text={i18n.common.close}
+          onClick={onClose}
+          data-qa="close"
+        />
+      </FixedSpaceRow>
+      <Gap size="L" />
+    </BaseModal>
+  )
+})
+
 const EventButtonColumn = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: baseline;
-  justify-content: flex-end;
+  align-items: flex-end;
   gap: 16px;
 `
 
@@ -906,4 +1066,10 @@ const EventButtonRow = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   width: 100%;
+`
+const EventTimeGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: ${defaultMargins.xs};
+  align-items: center;
 `

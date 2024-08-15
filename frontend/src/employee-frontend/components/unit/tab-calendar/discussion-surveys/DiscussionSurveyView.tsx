@@ -341,12 +341,7 @@ export default React.memo(function DiscussionReservationSurveyView({
         />
       )}
       <Container>
-        <ReturnButton
-          label={i18n.common.goBack}
-          onClick={() => {
-            navigate('..', { relative: 'path' })
-          }}
-        />
+        <ReturnButton label={i18n.common.goBack} />
         <ContentArea opaque>
           <FixedSpaceRow alignItems="center" justifyContent="space-between">
             <H2 data-qa="survey-title">{eventData.title}</H2>

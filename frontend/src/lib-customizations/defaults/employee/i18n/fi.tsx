@@ -2356,6 +2356,7 @@ export const fi = {
           surveySubject: 'Keskustelun aihe',
           surveyInvitees: 'Keskustelujen osallistujat',
           surveySummary: 'Lisätietoja huoltajalle',
+          surveySummaryCalendarLabel: 'Lisätietoja',
           surveySummaryInfo:
             'Tämä teksti näytetään huoltajalle kyselyn yhteydessä. Voit kertoa siinä lisätietoja keskusteluista, esimerkiksi saapumisohjeet tai keskusteluun varattavan ajan.',
           surveySubjectPlaceholder: 'Enintään 30 merkkiä',
@@ -2381,6 +2382,9 @@ export const fi = {
           reservedTitle: 'Varanneet',
           reserveButton: 'Varaa',
           unreservedTitle: 'Varaamatta',
+          calendarSurveySummaryInstruction: 'Tarkempia tietoja varten',
+          calendarSurveySummaryLinkText:
+            'siirry keskustelukyselyn tarkastelunäkymään',
           reservationModal: {
             reservationStatus: 'Varaustilanne',
             reserved: 'Varattu',
@@ -2405,7 +2409,9 @@ export const fi = {
             addError: 'Keskusteluajan lisääminen epäonnistui',
             deleteError: 'Keskusteluajan poistaminen epäonnistui'
           }
-        }
+        },
+        reservedTimesLabel: 'varattua',
+        freeTimesLabel: 'vapaata'
       }
     },
     groups: {
