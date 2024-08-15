@@ -9,7 +9,6 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsences
 import fi.espoo.evaka.attendance.ChildAttendanceRow
 import fi.espoo.evaka.attendance.getChildAttendances
-import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getGroupPlacementsByChildren
 import fi.espoo.evaka.reservations.ReservationRow
@@ -22,11 +21,10 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -126,9 +124,6 @@ private fun exceededServiceNeedReport(
 ): List<ExceededServiceNeedReportRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
-    val daycare = tx.getDaycare(unitId) ?: throw BadRequest("Daycare $unitId not found")
-
-    val holidays = tx.getHolidays(range)
     val serviceNeeds = tx.getServiceNeedsByRange(unitId, range)
     val childIds = serviceNeeds.keys
 
@@ -137,6 +132,8 @@ private fun exceededServiceNeedReport(
     val absences = tx.getAbsencesByRange(childIds, range)
     val reservations = tx.getReservationsByRange(childIds, range)
     val attendances = tx.getAttendancesByRange(childIds, range)
+
+    val operationalDates = tx.getOperationalDatesForChildren(range, childIds)
 
     val serviceUsagesByChild =
         range
@@ -153,17 +150,6 @@ private fun exceededServiceNeedReport(
                         }
                     val childAttendances =
                         (attendances[child.id to date] ?: emptyList()).map { it.asTimeInterval() }
-                    val isOperationDayForChild =
-                        when (serviceNeed.shiftCare) {
-                            ShiftCareType.NONE ->
-                                daycare.operationDays.contains(date.dayOfWeek.value) &&
-                                    !holidays.contains(date)
-                            ShiftCareType.INTERMITTENT,
-                            ShiftCareType.FULL ->
-                                (daycare.shiftCareOperationDays ?: daycare.operationDays).contains(
-                                    date.dayOfWeek.value
-                                ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
-                        }
                     child.id to
                         computeUsedService(
                             today = today,
@@ -172,7 +158,7 @@ private fun exceededServiceNeedReport(
                             placementType = serviceNeed.placementType,
                             preschoolTime = serviceNeed.dailyPreschoolTime,
                             preparatoryTime = serviceNeed.dailyPreparatoryTime,
-                            isOperationDay = isOperationDayForChild,
+                            operationDates = operationalDates[child.id] ?: emptySet(),
                             shiftCareType = serviceNeed.shiftCare,
                             absences = childAbsences,
                             reservations = childReservations,
