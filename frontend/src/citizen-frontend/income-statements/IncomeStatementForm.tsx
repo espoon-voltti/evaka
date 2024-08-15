@@ -327,6 +327,11 @@ const IncomeTypeSelection = React.memo(
       [formData.startDate, t]
     )
 
+    const isEndDateRequired = useMemo(
+      () => formData.grossSelected || formData.entrepreneurSelected,
+      [formData.grossSelected, formData.entrepreneurSelected]
+    )
+
     const validateEndDate = useCallback(
       (endDate: LocalDate | null) => {
         if (!formData.startDate) return undefined
@@ -335,7 +340,7 @@ const IncomeTypeSelection = React.memo(
 
         if (formData.highestFeeSelected) return undefined
 
-        if (formData.grossSelected || formData.entrepreneurSelected) {
+        if (isEndDateRequired) {
           if (!endDate) return 'required'
 
           if (endDate > formData.startDate.addYears(1)) return 'dateTooLate'
@@ -343,12 +348,7 @@ const IncomeTypeSelection = React.memo(
 
         return undefined
       },
-      [
-        formData.entrepreneurSelected,
-        formData.grossSelected,
-        formData.highestFeeSelected,
-        formData.startDate
-      ]
+      [formData.highestFeeSelected, formData.startDate, isEndDateRequired]
     )
 
     const endDateInputInfo = useMemo(
@@ -384,6 +384,7 @@ const IncomeTypeSelection = React.memo(
                 info={startDateInputInfo}
                 hideErrorsBeforeTouched={!showFormErrors}
                 locale={lang}
+                required={true}
                 isInvalidDate={(d) =>
                   isValidStartDate(d)
                     ? null
@@ -392,7 +393,7 @@ const IncomeTypeSelection = React.memo(
               />
             </div>
             <div>
-              <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
+              <Label htmlFor="end-date">{`${t.income.incomeType.endDate}${isEndDateRequired ? ' *' : ''}`}</Label>
               <Gap size="xs" />
               <DatePicker
                 id="end-date"
@@ -407,6 +408,7 @@ const IncomeTypeSelection = React.memo(
                   errorToInputInfo(validateEndDate(d), t.validationErrors)
                     ?.text || null
                 }
+                required={isEndDateRequired}
               />
             </div>
           </FixedSpaceRow>

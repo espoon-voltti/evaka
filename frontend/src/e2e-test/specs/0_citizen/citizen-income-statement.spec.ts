@@ -79,7 +79,6 @@ describe('Income statements', () => {
 
       await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
-
       await incomeStatementsPage.submit()
       await assertIncomeStatementCreated(startDate)
     })
