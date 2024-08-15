@@ -130,6 +130,10 @@ export default React.memo(function DiscussionReservationModal({
 
   const [timeAlreadyReserved, setTimeAlreadyReserved] = useState(false)
 
+  const hasReservations = useMemo(() => {
+    return eventTimeDays.some((d) => d.times.some((t) => t.childId !== null))
+  }, [eventTimeDays])
+
   const queryClient = useQueryClient()
   const invalidateEvents = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -186,7 +190,7 @@ export default React.memo(function DiscussionReservationModal({
                     <div />
                     <FixedSpaceRow justifyContent="space-between" />
                   </FixedSpaceRow>
-                  {eventTimeDays.length > 0 ? (
+                  {eventTimeDays.length > 0 && !hasReservations ? (
                     <>
                       <div>
                         <FixedSpaceRow gap="m" alignItems="center">
@@ -238,9 +242,9 @@ export default React.memo(function DiscussionReservationModal({
                         ))}
                       </ReservationGrid>
                     </>
-                  ) : (
+                  ) : !hasReservations ? (
                     <P>{t.noReservationsText}</P>
-                  )}
+                  ) : null}
                 </FixedSpaceColumn>
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
