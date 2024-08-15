@@ -42,6 +42,8 @@ abstract class RangeBasedSet<
 
     /** Returns true if the set is empty. */
     fun isEmpty(): Boolean = this.ranges.isEmpty()
+    /** Returns true if the set is not empty. */
+    fun isNotEmpty(): Boolean = this.ranges.isNotEmpty()
 
     /** Returns a new set containing the given range and all currently contained ranges. */
     fun add(range: Range): This = add(this.ranges, range).toThis()

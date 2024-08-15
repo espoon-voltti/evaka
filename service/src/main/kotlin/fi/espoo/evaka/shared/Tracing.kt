@@ -23,6 +23,7 @@ object Tracing {
     val evakaTraceId = StringTag("evaka.traceid")
     val asyncJobId = ToStringTag<UUID>("asyncjob.id")
     val asyncJobRemainingAttempts = IntTag("asyncjob.remainingattempts")
+    val headOfFamilyId = ToStringTag<PersonId>("headoffamily.id")
 }
 
 @Suppress("NOTHING_TO_INLINE")

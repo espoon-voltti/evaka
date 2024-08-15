@@ -187,7 +187,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
                 )
             assertEquals(1, result.size)
-            assertEquals(listOf(testInvoices[0].headOfFamily), result)
+            assertEquals(setOf(testInvoices[0].headOfFamily), result)
         }
     }
 

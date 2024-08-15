@@ -19,6 +19,8 @@ import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -26,6 +28,7 @@ import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -34,6 +37,9 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.withSpan
+import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracerFactory
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -44,30 +50,21 @@ import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 
 @Component
-class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
+class InvoiceGenerator(
+    private val draftInvoiceGenerator: DraftInvoiceGenerator,
+    private val tracer: Tracer = NoopTracerFactory.create()
+) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
-        val invoiceCalculationData = calculateInvoiceData(tx, range)
-        val invoices =
-            draftInvoiceGenerator.generateDraftInvoices(
-                tx,
-                invoiceCalculationData.decisions,
-                invoiceCalculationData.permanentPlacements,
-                invoiceCalculationData.temporaryPlacements,
-                invoiceCalculationData.period,
-                invoiceCalculationData.areaIds,
-                invoiceCalculationData.operationalDaysByChild,
-                invoiceCalculationData.businessDays,
-                invoiceCalculationData.feeThresholds,
-                invoiceCalculationData.absences,
-                invoiceCalculationData.plannedAbsences,
-                invoiceCalculationData.freeChildren,
-                invoiceCalculationData.codebtors
-            )
+        val invoiceCalculationData =
+            tracer.withSpan("calculateInvoiceData") { calculateInvoiceData(tx, range) }
+        val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
         val invoicesWithCorrections =
-            applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+            tracer.withSpan("applyCorrections") {
+                applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+            }
         tx.deleteDraftInvoicesByDateRange(range)
         tx.insertInvoices(
             invoices = invoicesWithCorrections,
@@ -81,10 +78,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         )
     }
 
-    fun calculateInvoiceData(
-        tx: Database.Transaction,
-        range: FiniteDateRange
-    ): InvoiceCalculationData {
+    fun calculateInvoiceData(tx: Database.Read, range: FiniteDateRange): InvoiceCalculationData {
         val feeThresholds =
             tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
                 ?: error(
@@ -101,12 +95,6 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val areaIds = tx.getAreaIds()
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
-        val plannedAbsences =
-            allAbsences
-                .filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }
-                .groupBy { it.childId }
-                .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }
-                .toMap()
 
         val freeChildren =
             if (
@@ -115,7 +103,7 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             ) {
                 tx.getFreeJulyChildren(range.start.year)
             } else {
-                emptyList()
+                emptySet()
             }
 
         val codebtors =
@@ -131,17 +119,24 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
                 .toSet() +
                 permanentPlacements.keys +
                 temporaryPlacements.values.flatMap { pairs -> pairs.map { it.second.child.id } }
-        val operationalDaysByChild = tx.getOperationalDatesForChildren(range, allChildren)
+        val operationalDaysByChild =
+            tx.getOperationalDatesForChildren(range, allChildren).mapValues {
+                DateSet.ofDates(it.value)
+            }
         val holidays = tx.getHolidays(range)
         val businessDays =
-            range
-                .dates()
-                .filter {
+            DateSet.ofDates(
+                range.dates().filter {
                     it.dayOfWeek != DayOfWeek.SATURDAY &&
                         it.dayOfWeek != DayOfWeek.SUNDAY &&
                         !holidays.contains(it)
                 }
-                .toSet()
+            )
+
+        val defaultServiceNeedOptions =
+            tx.getServiceNeedOptions()
+                .filter { it.defaultOption }
+                .associateBy { it.validPlacementType }
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -153,9 +148,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             businessDays = businessDays,
             feeThresholds = feeThresholds,
             absences = allAbsences,
-            plannedAbsences = plannedAbsences,
             freeChildren = freeChildren,
-            codebtors = codebtors
+            codebtors = codebtors,
+            defaultServiceNeedOptions = defaultServiceNeedOptions,
         )
     }
 
@@ -165,17 +160,17 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val temporaryPlacements: Map<PersonId, List<Pair<FiniteDateRange, PlacementStub>>>,
         val period: FiniteDateRange,
         val areaIds: Map<DaycareId, AreaId>,
-        val operationalDaysByChild: Map<ChildId, Set<LocalDate>>,
-        val businessDays: Set<LocalDate>,
+        val operationalDaysByChild: Map<ChildId, DateSet>,
+        val businessDays: DateSet,
         val feeThresholds: FeeThresholds,
         val absences: List<AbsenceStub> = listOf(),
-        val plannedAbsences: Map<ChildId, Set<LocalDate>> = mapOf(),
-        val freeChildren: List<ChildId> = listOf(),
-        val codebtors: Map<PersonId, PersonId?> = mapOf()
+        val freeChildren: Set<ChildId> = setOf(),
+        val codebtors: Map<PersonId, PersonId?> = mapOf(),
+        val defaultServiceNeedOptions: Map<PlacementType, ServiceNeedOption>,
     )
 
     private fun getInvoiceCodebtor(
-        tx: Database.Transaction,
+        tx: Database.Read,
         decisions: List<FeeDecision>,
         dateRange: FiniteDateRange
     ): PersonId? {
@@ -376,20 +371,20 @@ fun Database.Read.getInvoiceableFeeDecisions(dateRange: FiniteDateRange): List<F
         .toList<FeeDecision>()
 }
 
-fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): List<PersonId> {
+fun Database.Read.getInvoicedHeadsOfFamily(period: FiniteDateRange): Set<PersonId> {
     val sent = listOf(InvoiceStatus.SENT, InvoiceStatus.WAITING_FOR_SENDING)
     return createQuery {
             sql(
                 "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = ${bind(period.start)} AND period_end = ${bind(period.end)} AND status = ANY(${bind(sent)}::invoice_status[])"
             )
         }
-        .toList<PersonId>()
+        .toSet<PersonId>()
 }
 
 data class AbsenceStub(
     val childId: ChildId,
     val date: LocalDate,
-    var category: AbsenceCategory,
+    val category: AbsenceCategory,
     val absenceType: AbsenceType
 )
 
@@ -540,20 +535,17 @@ WHERE fridge_child.child_id = ANY(${bind(childIds)})
         }
 }
 
-fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
-    return createQuery {
-            sql(
-                """
-SELECT daycare.id AS unit_id, area.id AS area_id
-FROM daycare INNER JOIN care_area AS area ON daycare.care_area_id = area.id
-"""
-            )
+fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> =
+    createQuery {
+            sql("""
+SELECT daycare.id AS unit_id, daycare.care_area_id AS area_id
+FROM daycare
+""")
         }
         .toMap { columnPair("unit_id", "area_id") }
-}
 
-fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
-    return createQuery {
+fun Database.Read.getFreeJulyChildren(year: Int): Set<ChildId> =
+    createQuery {
             sql(
                 """
 WITH invoiced_placement AS (
@@ -597,8 +589,7 @@ WHERE
 """
             )
         }
-        .toList<ChildId>()
-}
+        .toSet<ChildId>()
 
 private fun placementOn(year: Int, month: Int): String {
     val firstOfMonth = "'$year-$month-01'"
