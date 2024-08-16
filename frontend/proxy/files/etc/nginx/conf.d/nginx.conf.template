@@ -134,6 +134,7 @@ log_format json_access escape=json
     '"httpMethod":"$request_method",'
     '"path":"$uri",'
     '"queryString":"$query_string",'
+    '"userAgent":"$http_user_agent",'
     '"responseTime":$request_time_ms,'
     '"spanId":"$request_id",'
     '"statusCode":"$status",'
