@@ -103,7 +103,9 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         }
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 1), LocalTime.of(12, 0))
         assertOkResponse(
-            http.get("/reports/family-contacts?unitId=${testDaycare.id}").withMockedTime(now)
+            http
+                .get("/reports/family-contacts?unitId=${testDaycare.id}&date=${now.toLocalDate()}")
+                .withMockedTime(now)
         )
     }
 
