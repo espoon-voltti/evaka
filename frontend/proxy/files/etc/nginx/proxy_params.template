@@ -16,8 +16,3 @@ proxy_set_header X-User "";
 # Actual caching headers should be set by downstream API Gateways;
 # this is just to prevent caching at the proxy level.
 proxy_no_cache 1;
-
-{{ if eq (env.Getenv "DD_PROFILING_ENABLED" "false") "true" }}
-opentracing_operation_name "$request_method $uri";
-opentracing_propagate_context;
-{{ end }}
