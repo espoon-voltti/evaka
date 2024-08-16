@@ -3,8 +3,6 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG NGINX_VERSION=1.26.2-otel
-
 FROM node:20.17.0-bookworm-slim AS builder
 ARG CACHE_BUST
 
@@ -45,7 +43,7 @@ ENV APP_COMMIT="$commit"
 RUN export NODE_OPTIONS="--max-old-space-size=4096" \
  && yarn build
 
-FROM nginx:${NGINX_VERSION}
+FROM nginx:1.26.2-otel
 ARG CACHE_BUST
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
