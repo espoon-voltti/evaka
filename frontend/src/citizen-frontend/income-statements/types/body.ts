@@ -50,7 +50,7 @@ export function fromBody(
     }
     return { type: 'HIGHEST_FEE', startDate, endDate: formData.endDate }
   } else {
-    if (!formData.endDate) return null
+    if (personType === 'adult' && !formData.endDate) return null
   }
 
   if (formData.childIncome) {

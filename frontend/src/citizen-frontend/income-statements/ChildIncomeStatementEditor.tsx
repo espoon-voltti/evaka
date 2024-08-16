@@ -56,7 +56,11 @@ function useInitialEditorState(
       startDates,
       formData:
         incomeStatement === null
-          ? { ...emptyIncomeStatementForm, childIncome: true }
+          ? {
+              ...emptyIncomeStatementForm,
+              childIncome: true,
+              highestFee: false
+            }
           : Form.fromIncomeStatement(incomeStatement)
     })
   )
