@@ -503,7 +503,7 @@ SELECT pcd.child_id,
                'start', s.start_time,
                'end', s.end_time,
                'staffCreated', s.staff_created)), '[]'::jsonb)
-        FROM (select ar.start_time, ar.end_time, eu.type = 'EMPLOYEE' as staff_created
+        FROM (select ar.start_time, ar.end_time, eu.type <> 'CITIZEN' as staff_created
                 FROM attendance_reservation ar
                 JOIN evaka_user eu ON ar.created_by = eu.id
               WHERE ar.child_id = pcd.child_id
