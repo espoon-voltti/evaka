@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-ARG NGINX_VERSION=1.26.0
+ARG NGINX_VERSION=1.26.2-otel
 
 FROM node:20.17.0-bookworm-slim AS builder
 ARG CACHE_BUST
@@ -71,23 +71,6 @@ RUN apt-get update \
  && chmod +x /bin/s3download \
  && echo "${S3_DOWNLOADER_SHA256}  /bin/s3download" | sha256sum -c - \
  && rm -rf /var/lib/apt/lists/*
-
-
-# https://docs.datadoghq.com/tracing/setup_overview/proxy_setup/?tab=nginx # update version using get_latest_release
-ARG OPENTRACING_NGINX_VERSION=v0.35.1
-ARG OPENTRACING_NGINX_SHA256="34e0fa9f110a6052a4f75451bc93e4de8d1a32229b523fb4748feee6bfb1d3ba"
-ARG DD_OPENTRACING_CPP_VERSION=v1.3.7
-ARG DD_OPENTRACING_CPP_SHA256="df9a8097c3d6f6e5a96f96db0f3919b5b7b35df3d10c5fcc530707a878e2dd00"
-
-RUN cd /tmp \
- && curl -sSfLO "https://github.com/opentracing-contrib/nginx-opentracing/releases/download/${OPENTRACING_NGINX_VERSION}/linux-amd64-nginx-${NGINX_VERSION}-ngx_http_module.so.tgz" \
- && echo "${OPENTRACING_NGINX_SHA256}  linux-amd64-nginx-${NGINX_VERSION}-ngx_http_module.so.tgz" | sha256sum -c - \
- && tar zxf "linux-amd64-nginx-${NGINX_VERSION}-ngx_http_module.so.tgz" -C /usr/lib/nginx/modules \
- && rm "linux-amd64-nginx-${NGINX_VERSION}-ngx_http_module.so.tgz" \
- && curl -sSfLO https://github.com/DataDog/dd-opentracing-cpp/releases/download/${DD_OPENTRACING_CPP_VERSION}/linux-amd64-libdd_opentracing_plugin.so.gz \
- && echo "${DD_OPENTRACING_CPP_SHA256}  linux-amd64-libdd_opentracing_plugin.so.gz" | sha256sum -c - \
- && gunzip linux-amd64-libdd_opentracing_plugin.so.gz -c > /usr/local/lib/libdd_opentracing_plugin.so \
- && rm linux-amd64-libdd_opentracing_plugin.so.gz
 
 COPY ./proxy/files/bin/ /bin/
 COPY ./proxy/files/internal/ /internal/
