@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.6.0
+# syntax=docker/dockerfile:1.7-labs
 # SPDX-FileCopyrightText: 2017-2023 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
@@ -21,7 +21,7 @@ COPY ./.yarn ./.yarn
 COPY ./package.json ./yarn.lock ./.yarnrc.yml ./
 RUN yarn install --immutable
 
-COPY . .
+COPY --exclude=proxy/ . .
 
 ARG EVAKA_CUSTOMIZATIONS=espoo
 COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}
