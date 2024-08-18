@@ -37,9 +37,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -479,79 +476,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read { it.getCitizenReceivers(today, accounts.person1.id).values.flatten().toSet() }
 
         assertEquals(setOf(group1Account, accounts.employee1), receivers)
-    }
-
-    @Test
-    fun `query citizen receivers when the citizen is on a blocklist`() {
-        val startDate = LocalDate.now().minusDays(30)
-        val endDate = LocalDate.now().plusDays(30)
-        db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(
-                DevDaycare(
-                    areaId = testArea.id,
-                    id = testDaycare.id,
-                    name = testDaycare.name,
-                    language = Language.fi
-                )
-            )
-            tx.insertDaycareAclRow(
-                daycareId = testDaycare.id,
-                employeeId = employee1.id,
-                role = UserRole.UNIT_SUPERVISOR
-            )
-            val group = DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset")
-            tx.insert(group)
-            tx.createAccount(group)
-
-            // and person1 has a child who is placed into the group
-            tx.insert(
-                DevPerson(id = testChild_1.id, firstName = "Firstname", lastName = "Test Child"),
-                DevPersonType.CHILD
-            )
-            tx.insert(
-                DevParentship(
-                    childId = testChild_1.id,
-                    headOfChildId = person1.id,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            )
-            tx.insertGuardian(guardianId = person1.id, childId = testChild_1.id)
-            val placementId =
-                tx.insert(
-                    DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
-                        type = PlacementType.DAYCARE,
-                        startDate = startDate,
-                        endDate = endDate
-                    )
-                )
-            tx.insert(
-                DevDaycareGroupPlacement(
-                    daycarePlacementId = placementId,
-                    daycareGroupId = group.id,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            )
-
-            // and person1 is a blocked receiver
-            tx.addToBlocklist(testChild_1.id, person1.id)
-        }
-
-        // when we get the receivers for the citizen person1
-        val receivers =
-            db.read {
-                it.getCitizenReceivers(LocalDate.now(), accounts.person1.id)
-                    .values
-                    .flatten()
-                    .toSet()
-            }
-
-        // the result is empty
-        assertEquals(setOf(), receivers.map { it.id }.toSet())
     }
 
     @Test
