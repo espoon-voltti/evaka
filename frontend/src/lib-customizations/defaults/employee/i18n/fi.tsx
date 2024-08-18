@@ -1530,12 +1530,6 @@ export const fi = {
       endDate: 'Päättyen',
       status: 'Tila'
     },
-    messaging: {
-      title: 'Lapseen liittyvä viestintä (vastaanottajat)',
-      info: 'Lapseen liittyvät viestit lähetetään merkityille huoltajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta. Viestejä ei lähetetä päämiehille.',
-      name: 'Vastaanottajan nimi',
-      notBlocklisted: 'Saa vastaanottaa'
-    },
     backupCares: {
       title: 'Varasijoitukset',
       remove: 'Haluatko poistaa varasijoituksen?',
@@ -3657,8 +3651,6 @@ export const fi = {
           'Laskun korjausrivejä (päämies)',
         'invoice_row.child': 'Lasku- rivejä',
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
-        'messaging_blocklist.blocked_recipient': 'Estettynä viestin saajana',
-        'messaging_blocklist.child_id': 'Estettyjä viestin saajia',
         'pedagogical_document.child_id': 'Pedagogisia dokumentteja',
         'placement.child_id': 'Sijoituksia',
         'varda_child.person_id': 'Varda lapsi',

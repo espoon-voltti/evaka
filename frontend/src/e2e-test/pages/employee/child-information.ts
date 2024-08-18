@@ -1140,22 +1140,6 @@ class OtherAssistanceMeasureRow extends InlineAssistanceRow {
   type = this.findByDataQa('type')
 }
 
-class MessageBlocklistSection extends Section {
-  async addParentToBlockList(parentId: string) {
-    const checkbox = new Checkbox(
-      this.find(
-        `[data-qa="recipient-${parentId}"] [data-qa="blocklist-checkbox"]`
-      )
-    )
-
-    // This causes a request to backend
-    await checkbox.click()
-
-    // It gets unchecked when the request is finished
-    await checkbox.waitUntilChecked(false)
-  }
-}
-
 class FeeAlterationEditorPage {
   startDateInput: DatePickerDeprecated
   endDateInput: DatePickerDeprecated
@@ -1262,10 +1246,6 @@ const collapsibles = {
   assistance: {
     selector: '[data-qa="assistance-collapsible"]',
     section: AssistanceSection
-  },
-  messageBlocklist: {
-    selector: '[data-qa="child-message-blocklist-collapsible"]',
-    section: MessageBlocklistSection
   },
   applications: {
     selector: '[data-qa="applications-collapsible"]',

@@ -32,7 +32,6 @@ import {
 } from '../../generated/api-clients'
 import { DevCareArea, DevEmployee } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
-import ChildInformationPage from '../../pages/employee/child-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
 import { KeycloakRealmClient } from '../../utils/keycloak'
@@ -372,37 +371,6 @@ describe('Sending and receiving messages', () => {
         await messagesPage.discardMessageButton.waitUntilHidden()
         await messagesPage.openReplyEditor()
         await messagesPage.assertReplyContentIsEmpty()
-      })
-
-      test('Admin sends a message and blocked guardian does not get it', async () => {
-        const title = 'Kielletty viesti'
-        const content = 'Tämän ei pitäisi mennä perille'
-
-        // Add child's guardian to block list
-        const admin = await Fixture.employee().admin().save()
-        const adminPage = await Page.open()
-        await employeeLogin(adminPage, admin)
-
-        await adminPage.goto(
-          `${config.employeeUrl}/child-information/${childId}`
-        )
-
-        const childInformationPage = new ChildInformationPage(adminPage)
-        const blocklistSection =
-          await childInformationPage.openCollapsible('messageBlocklist')
-        await blocklistSection.addParentToBlockList(testAdult.id)
-
-        await openSupervisorPage(mockedDateAt10)
-        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
-        const messageEditor = await messagesPage.openMessageEditor()
-        await messageEditor.sendNewMessage({ title, content })
-        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
-
-        await openCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-        await citizenMessagesPage.assertInboxIsEmpty()
       })
 
       test('Citizen sends a message to the unit supervisor', async () => {
