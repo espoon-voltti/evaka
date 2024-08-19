@@ -52,7 +52,7 @@ export class ConfirmPage {
   sendButton: Element
 
   constructor(page: Page) {
-    this.email = new TextInput(page.findTextExact('Sähköposti'))
+    this.email = new TextInput(page.findTextExact('Sähköpostiosoite'))
     this.confirmEmail = new TextInput(page.findTextExact('Vahvista sähköposti'))
     this.sendButton = page.findTextExact('Lähetä')
   }
