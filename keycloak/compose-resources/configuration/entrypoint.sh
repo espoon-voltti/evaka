@@ -17,4 +17,4 @@ if test -f /configuration/evaka.json; then
     /opt/keycloak/bin/kc.sh import --file=/configuration/evaka.json
 fi
 
-/opt/keycloak/bin/kc.sh "$@"
+exec /opt/keycloak/bin/kc.sh "$@"
