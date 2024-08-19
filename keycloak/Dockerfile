@@ -30,17 +30,6 @@ COPY --from=ubi-maven /mnt/rootfs /
 
 ## Builder containers ##
 
-FROM maven-builder AS builder-authenticator
-
-ADD ./evaka-review-profile/pom.xml /project/pom.xml
-
-RUN mvn --batch-mode dependency:go-offline dependency:resolve clean package
-
-ADD ./evaka-review-profile/ /project
-
-RUN mvn --batch-mode clean install
-
-
 FROM maven-builder AS builder-logger
 
 ADD ./evaka-logging/pom.xml /project/pom.xml
@@ -86,8 +75,6 @@ ADD --chmod=0644 \
     /opt/keycloak/data/password-blacklists/default.txt
 
 COPY --from=builder-theme /work/evaka /opt/keycloak/themes/evaka
-COPY --from=builder-authenticator /project/target/evaka-review-profile.jar \
-          /opt/keycloak/providers/
 COPY --from=builder-logger /project/target/evaka-logging.jar \
           /opt/keycloak/providers/
 COPY --from=builder-dd /project/target/libs/dd-java-agent.jar \
