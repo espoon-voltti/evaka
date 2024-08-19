@@ -17,6 +17,7 @@ import {
   KeycloakLoginPage,
   UpdatePasswordPage
 } from '../../pages/citizen/citizen-keycloak'
+import { waitUntilEqual } from '../../utils'
 import {
   createSuomiFiUser,
   deleteAllSuomiFiUsers
@@ -140,6 +141,11 @@ test('Registration via suomi.fi', async () => {
   await suomiFiConfirmPage.proceedButton.click()
 
   const confirmPage = new ConfirmPage(page)
+  // double-check we don't have any extra fields that shouldn't be there
+  await waitUntilEqual(
+    () => confirmPage.allLabels.allTexts(),
+    ['Sähköpostiosoite', 'Vahvista sähköposti']
+  )
   await confirmPage.email.fill(email)
   await confirmPage.confirmEmail.fill(email)
   await confirmPage.sendButton.click()
