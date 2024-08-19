@@ -374,7 +374,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         createIncomeStatement(
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = LocalDate.of(2022, 4, 1),
                 gross =
                     Gross(
                         incomeSource = IncomeSource.ATTACHMENTS,
@@ -399,7 +399,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     firstName = testAdult_1.firstName,
                     lastName = testAdult_1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
-                    endDate = null,
+                    endDate = LocalDate.of(2022, 4, 1),
                     gross =
                         Gross(
                             incomeSource = IncomeSource.ATTACHMENTS,
@@ -570,7 +570,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
             incomeStatement.id,
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 6, 11),
-                endDate = null,
+                endDate = LocalDate.of(2022, 6, 1),
                 gross = null,
                 entrepreneur =
                     Entrepreneur(
@@ -607,7 +607,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
                 startDate = LocalDate.of(2021, 6, 11),
-                endDate = null,
+                endDate = LocalDate.of(2022, 6, 1),
                 gross = null,
                 entrepreneur =
                     Entrepreneur(
