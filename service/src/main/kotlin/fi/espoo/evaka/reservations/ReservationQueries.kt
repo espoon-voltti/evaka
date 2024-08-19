@@ -74,10 +74,7 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
         .execute()
 }
 
-fun Database.Transaction.clearReservationsForRangeAlsoInHolidayPeriod(
-    childId: ChildId,
-    range: DateRange
-): Int {
+fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange): Int {
     return createUpdate {
             sql(
                 """
