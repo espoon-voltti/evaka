@@ -247,6 +247,8 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val wednesday = monday.plusDays(2)
         val thursday = monday.plusDays(3)
         val friday = monday.plusDays(4)
+        val saturday = monday.plusDays(5)
+        val previousSunday = monday.minusDays(1)
 
         return db.transaction { tx ->
             tx.insert(admin)
@@ -514,6 +516,21 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 HelsinkiDateTime.of(friday, LocalTime.of(11, 0))
             )
 
+            // Saturday
+
+            // absence outside unit operation days shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    saturday,
+                    AbsenceType.UNKNOWN_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(saturday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE
+                )
+            )
+
             // next monday
             // unfinished attendance shouldn't show up
             tx.insertTestChildAttendance(
@@ -521,6 +538,20 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 preschoolAId,
                 HelsinkiDateTime.of(monday.plusWeeks(1), LocalTime.of(11, 0)),
                 null
+            )
+
+            // previous sunday
+            // absence outside unit operation days shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    previousSunday,
+                    AbsenceType.UNKNOWN_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(previousSunday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE
+                )
             )
 
             PreschoolAbsenceReportTestData(
