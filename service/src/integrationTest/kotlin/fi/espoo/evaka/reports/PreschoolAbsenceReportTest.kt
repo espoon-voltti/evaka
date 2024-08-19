@@ -449,6 +449,19 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
 
+            // billable absence shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    monday,
+                    AbsenceType.UNKNOWN_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(monday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.BILLABLE
+                )
+            )
+
             // Tuesday
 
             tx.insertTestChildAttendance(

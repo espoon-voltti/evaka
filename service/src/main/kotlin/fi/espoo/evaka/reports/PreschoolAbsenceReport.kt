@@ -217,6 +217,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
                      left join absence ab on ppc.examination_range @> ab.date and
                                              ppc.id = ab.child_id and
                                              ab.absence_type = types.absence_type and
+                                             ab.category = 'NONBILLABLE' and
                                              extract(isodow from ab.date) = ANY(coalesce(ppc.shift_care_operation_days, ppc.operation_days))
             group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
         """
@@ -268,6 +269,7 @@ from preschool_group_placement_children pgpc
          left join absence ab on pgpc.examination_range @> ab.date and
                                  pgpc.id = ab.child_id and
                                  ab.absence_type = types.absence_type and
+                                 ab.category = 'NONBILLABLE' and
                                  extract(isodow from ab.date) = ANY(coalesce(pgpc.shift_care_operation_days, pgpc.operation_days))
 group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
         """
