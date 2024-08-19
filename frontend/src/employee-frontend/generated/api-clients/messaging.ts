@@ -7,7 +7,6 @@
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
 import { DraftContent } from 'lib-common/generated/api-types/messaging'
-import { EditRecipientRequest } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
@@ -18,7 +17,6 @@ import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
-import { Recipient } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
@@ -36,41 +34,6 @@ import { deserializeJsonPagedSentMessages } from 'lib-common/generated/api-types
 import { deserializeJsonThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.ChildRecipientsController.editRecipient
-*/
-export async function editRecipient(
-  request: {
-    childId: UUID,
-    personId: UUID,
-    body: EditRecipientRequest
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child/${request.childId}/recipients/${request.personId}`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<EditRecipientRequest>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.ChildRecipientsController.getRecipients
-*/
-export async function getRecipients(
-  request: {
-    childId: UUID
-  }
-): Promise<Recipient[]> {
-  const { data: json } = await client.request<JsonOf<Recipient[]>>({
-    url: uri`/child/${request.childId}/recipients`.toString(),
-    method: 'GET'
-  })
-  return json
-}
 
 
 /**

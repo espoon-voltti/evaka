@@ -35,7 +35,6 @@ import DailyServiceTimesSection from './child-information/DailyServiceTimesSecti
 import FamilyContacts from './child-information/FamilyContacts'
 import FeeAlteration from './child-information/FeeAlteration'
 import GuardiansAndParents from './child-information/GuardiansAndParents'
-import MessageBlocklist from './child-information/MessageBlocklist'
 import PedagogicalDocuments from './child-information/PedagogicalDocuments'
 import Placements from './child-information/Placements'
 import CircularLabel from './common/CircularLabel'
@@ -128,10 +127,6 @@ const components = {
   applications: requireOneOfPermittedActions(
     ChildApplications,
     'READ_APPLICATION'
-  ),
-  'message-blocklist': requireOneOfPermittedActions(
-    MessageBlocklist,
-    'READ_CHILD_RECIPIENTS'
   )
 }
 
@@ -139,7 +134,6 @@ const layouts: Layouts<typeof components> = {
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
-    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -156,7 +150,6 @@ const layouts: Layouts<typeof components> = {
   ['DIRECTOR']: [
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
-    { component: 'message-blocklist', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
@@ -178,8 +171,6 @@ const layouts: Layouts<typeof components> = {
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'family-contacts', open: false },
-
-    { component: 'message-blocklist', open: false },
     { component: 'childDocuments', open: false },
     {
       component: 'pedagogicalDocuments',
@@ -194,9 +185,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
-
     { component: 'family-contacts', open: false },
-    { component: 'message-blocklist', open: false },
     { component: 'childDocuments', open: false },
     {
       component: 'pedagogicalDocuments',
@@ -223,8 +212,6 @@ const layouts: Layouts<typeof components> = {
       component: 'pedagogicalDocuments',
       open: false
     },
-
-    { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
   ],
@@ -238,9 +225,7 @@ const layouts: Layouts<typeof components> = {
       component: 'pedagogicalDocuments',
       open: false
     },
-
     { component: 'guardiansAndParents', open: false },
-    { component: 'message-blocklist', open: false },
     { component: 'assistance', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
@@ -256,9 +241,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },
-
     { component: 'guardiansAndParents', open: false },
-    { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
   ],
@@ -274,8 +257,6 @@ const layouts: Layouts<typeof components> = {
       component: 'pedagogicalDocuments',
       open: false
     },
-
-    { component: 'message-blocklist', open: false },
     { component: 'applications', open: false },
     { component: 'fee-alterations', open: false }
   ]

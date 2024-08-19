@@ -332,8 +332,6 @@ enum class Audit(
     InvoicesUpdate,
     ManualDuplicationReportRead,
     MealReportRead,
-    MessagingBlocklistEdit,
-    MessagingBlocklistRead,
     MessagingMyAccountsRead,
     MessagingUnreadMessagesRead,
     MessagingMarkMessagesReadWrite,

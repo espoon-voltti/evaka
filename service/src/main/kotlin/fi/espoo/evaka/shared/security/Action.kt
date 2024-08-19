@@ -1210,14 +1210,6 @@ sealed interface Action {
         READ_BLOCKED_GUARDIANS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_FEE_ALTERATION(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_FEE_ALTERATIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
-        READ_CHILD_RECIPIENTS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()
-        ),
-        UPDATE_CHILD_RECIPIENT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
-        ),
         CREATE_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)

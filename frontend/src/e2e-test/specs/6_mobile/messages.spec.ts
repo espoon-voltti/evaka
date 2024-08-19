@@ -15,7 +15,6 @@ import {
   testChild2,
   Fixture,
   uuidv4,
-  testAdult2,
   testAdult,
   testCareArea
 } from '../../dev-api/fixtures'
@@ -26,12 +25,10 @@ import {
 } from '../../generated/api-clients'
 import { DevDaycareGroup, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
-import ChildInformationPage from '../../pages/employee/child-information'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MessageEditor from '../../pages/mobile/message-editor'
 import MobileMessageEditor from '../../pages/mobile/message-editor'
-import MessageEditorPage from '../../pages/mobile/message-editor-page'
 import MobileMessagesPage from '../../pages/mobile/messages'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
@@ -40,14 +37,13 @@ import UnreadMobileMessagesPage from '../../pages/mobile/unread-message-counts'
 import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice, pairPersonalMobileDevice } from '../../utils/mobile'
 import { Page } from '../../utils/page'
-import { employeeLogin, enduserLogin } from '../../utils/user'
+import { enduserLogin } from '../../utils/user'
 
 let page: Page
 let listPage: MobileListPage
 let childPage: MobileChildPage
 let citizenPage: Page
 let messageEditor: MessageEditor
-let messageEditorPage: MessageEditorPage
 let messagesPage: MobileMessagesPage
 let threadView: ThreadViewPage
 let pinLoginPage: PinLoginPage
@@ -203,7 +199,6 @@ beforeEach(async () => {
   unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
   pinLoginPage = new PinLoginPage(page)
   messageEditor = new MessageEditor(page)
-  messageEditorPage = new MessageEditorPage(page)
   messagesPage = new MobileMessagesPage(page)
   threadView = new ThreadViewPage(page)
   nav = new MobileNav(page)
@@ -514,32 +509,6 @@ describe('Messages page', () => {
   test('Staff without group access sees info that no accounts were found', async () => {
     await staff2LoginsToMessagesPage()
     await messagesPage.noAccountInfo.waitUntilVisible()
-  })
-
-  test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
-    await Fixture.person(testAdult2).saveAdult({
-      updateMockVtjWithDependants: [testChild]
-    })
-
-    // Add child's guardians to block list
-    const admin = await Fixture.employee().admin().save()
-    const adminPage = await Page.open({
-      mockedTime: mockedDateAt10
-    })
-    await employeeLogin(adminPage, admin)
-    await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
-    const childInformationPage = new ChildInformationPage(adminPage)
-    await childInformationPage.waitUntilLoaded()
-
-    const blocklistSection =
-      await childInformationPage.openCollapsible('messageBlocklist')
-    await blocklistSection.addParentToBlockList(testAdult.id)
-    await blocklistSection.addParentToBlockList(testAdult2.id)
-
-    await listPage.selectChild(child.id)
-    await childPage.messageEditorLink.click()
-    await pinLoginPage.login(employeeName, pin)
-    await messageEditorPage.noReceiversInfo.waitUntilVisible()
   })
 })
 

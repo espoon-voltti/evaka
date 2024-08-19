@@ -51,13 +51,9 @@ SELECT EXISTS (
     JOIN daycare u ON pl.unit_id = u.id
     WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     AND 'MESSAGING' = ANY(u.enabled_pilot_features)
-    AND NOT EXISTS (
-        SELECT 1
-        FROM messaging_blocklist
-        WHERE child_id = c.child_id
-        AND blocked_recipient = c.parent_id
-    )
+    
     UNION 
+    
     SELECT 1
     FROM person p 
     JOIN message_account ma ON p.id = ma.person_id

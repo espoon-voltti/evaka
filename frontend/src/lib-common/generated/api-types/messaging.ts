@@ -98,13 +98,6 @@ export interface DraftContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.ChildRecipientsController.EditRecipientRequest
-*/
-export interface EditRecipientRequest {
-  blocklisted: boolean
-}
-
-/**
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
@@ -302,16 +295,6 @@ export interface PostMessagePreflightBody {
 */
 export interface PostMessagePreflightResponse {
   numberOfRecipientAccounts: number
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.Recipient
-*/
-export interface Recipient {
-  blocklisted: boolean
-  firstName: string
-  lastName: string
-  personId: UUID
 }
 
 /**

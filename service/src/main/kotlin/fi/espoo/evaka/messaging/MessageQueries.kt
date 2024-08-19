@@ -741,14 +741,12 @@ WITH user_account AS (
     SELECT g.child_id, g.guardian_id AS parent_id, true AS guardian_relationship
     FROM user_account acc
     JOIN guardian g ON acc.person_id = g.guardian_id
-    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
 
     UNION ALL
 
     SELECT fp.child_id, fp.parent_id, false AS guardian_relationship
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> ${bind(today)}
-    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
 ), backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM children c
@@ -807,9 +805,7 @@ citizen_accounts AS (
     JOIN guardian g ON c.child_id = g.child_id
     JOIN message_account acc ON g.guardian_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
-    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
-    AND acc.id != ${bind(accountId)}
-    AND c.guardian_relationship
+    WHERE acc.id != ${bind(accountId)} AND c.guardian_relationship
 
     UNION ALL
 
@@ -818,9 +814,7 @@ citizen_accounts AS (
     JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> ${bind(today)}
     JOIN message_account acc ON fp.parent_id = acc.person_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
-    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
-    AND acc.id != ${bind(accountId)}
-    AND NOT c.guardian_relationship
+    WHERE acc.id != ${bind(accountId)} AND NOT c.guardian_relationship
 ),
 mixed_accounts AS (
     SELECT id, name, type, child_id FROM personal_accounts
@@ -1103,15 +1097,13 @@ fun Database.Read.getReceiversForNewMessage(
         WHERE EXISTS (
             SELECT 1
             FROM guardian g
-            LEFT JOIN messaging_blocklist bl ON g.guardian_id = bl.blocked_recipient AND c.child_id = bl.child_id
-            WHERE g.child_id = c.child_id AND bl.id IS NULL
+            WHERE g.child_id = c.child_id
 
             UNION ALL
 
             SELECT 1
             FROM foster_parent fp
-            LEFT JOIN messaging_blocklist bl ON fp.parent_id = bl.blocked_recipient AND fp.child_id = bl.child_id
-            WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} AND bl.id IS NULL
+            WHERE fp.child_id = c.child_id AND fp.valid_during @> ${bind(today)} 
         )
         ORDER BY c.unit_name, c.group_name
         """
@@ -1280,11 +1272,6 @@ SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN guardian g ON g.child_id = c.child_id
 JOIN message_account acc ON g.guardian_id = acc.person_id
-WHERE NOT EXISTS (
-    SELECT 1 FROM messaging_blocklist bl
-    WHERE bl.child_id = c.child_id
-    AND bl.blocked_recipient = g.guardian_id
-)
 
 UNION
 
@@ -1292,11 +1279,6 @@ SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> ${bind(date)}
 JOIN message_account acc ON fp.parent_id = acc.person_id
-WHERE NOT EXISTS (
-    SELECT 1 FROM messaging_blocklist bl
-    WHERE bl.child_id = c.child_id
-    AND bl.blocked_recipient = fp.parent_id
-)
 
 UNION
 

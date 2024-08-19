@@ -46,9 +46,7 @@ SELECT DISTINCT
 FROM pedagogical_document doc 
 JOIN guardian g ON doc.child_id = g.child_id
 JOIN person p on g.guardian_id = p.id
-WHERE doc.id = ${bind(id)}
-  AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = doc.child_id AND bl.blocked_recipient = p.id)
-  AND p.email IS NOT NULL
+WHERE doc.id = ${bind(id)} AND p.email IS NOT NULL
 """
                 )
             }
