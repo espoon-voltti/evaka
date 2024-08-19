@@ -16,7 +16,9 @@ export default class CitizenIncomePage {
   rows: ElementCollection
   assureCheckBox: Checkbox
   #entrepreneurDate: TextInput
-  #startDate: TextInput
+  validFromDate: TextInput
+  validToDate: TextInput
+  incomeEndDateInfo: Element
   constructor(private readonly page: Page) {
     this.requiredAttachments = page.findByDataQa('required-attachments')
     this.rows = page.findAll('tbody tr')
@@ -24,7 +26,9 @@ export default class CitizenIncomePage {
     this.#entrepreneurDate = new TextInput(
       page.findByDataQa('entrepreneur-start-date')
     )
-    this.#startDate = new TextInput(page.find('#start-date'))
+    this.validFromDate = new TextInput(page.findByDataQa('income-start-date'))
+    this.validToDate = new TextInput(page.findByDataQa('income-end-date'))
+    this.incomeEndDateInfo = page.findByDataQa('income-end-date-info')
   }
 
   async createNewIncomeStatement() {
@@ -34,12 +38,18 @@ export default class CitizenIncomePage {
   async selectIncomeStatementType(
     type: 'highest-fee' | 'gross-income' | 'entrepreneur-income'
   ) {
-    await this.page.findByDataQa(`${type}-checkbox`).click()
+    await new Checkbox(this.page.findByDataQa(`highest-fee-checkbox`)).uncheck()
+    await new Checkbox(this.page.findByDataQa(`${type}-checkbox`)).check()
   }
 
   async setValidFromDate(date: string) {
-    await this.#startDate.fill(date)
-    await this.#startDate.press('Enter')
+    await this.validFromDate.fill(date)
+    await this.validFromDate.press('Enter')
+  }
+
+  async setValidToDate(date: string) {
+    await this.validToDate.fill(date)
+    await this.validToDate.press('Enter')
   }
 
   async submit() {

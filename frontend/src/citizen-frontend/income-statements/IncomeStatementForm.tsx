@@ -176,11 +176,16 @@ export default React.memo(
       [onChange]
     )
 
-    const saveButtonEnabled =
-      (formData.highestFee ||
-        formData.gross.selected ||
-        formData.entrepreneur.selected) &&
-      formData.assure
+    const saveButtonEnabled = useMemo(
+      () =>
+        formData.startDate &&
+        (formData.highestFee ||
+          ((formData.gross.selected || formData.entrepreneur.selected) &&
+            formData.endDate &&
+            formData.endDate <= formData.startDate.addYears(1))) &&
+        formData.assure,
+      [formData]
+    )
 
     return (
       <>
@@ -322,6 +327,36 @@ const IncomeTypeSelection = React.memo(
       [formData.startDate, t]
     )
 
+    const isEndDateRequired = useMemo(
+      () => formData.grossSelected || formData.entrepreneurSelected,
+      [formData.grossSelected, formData.entrepreneurSelected]
+    )
+
+    const validateEndDate = useCallback(
+      (endDate: LocalDate | null) => {
+        if (!formData.startDate) return undefined
+
+        if (endDate && formData.startDate > endDate) return 'validDate'
+
+        if (formData.highestFeeSelected) return undefined
+
+        if (isEndDateRequired) {
+          if (!endDate) return 'required'
+
+          if (endDate > formData.startDate.addYears(1)) return 'dateTooLate'
+        }
+
+        return undefined
+      },
+      [formData.highestFeeSelected, formData.startDate, isEndDateRequired]
+    )
+
+    const endDateInputInfo = useMemo(
+      () =>
+        errorToInputInfo(validateEndDate(formData.endDate), t.validationErrors),
+      [formData, validateEndDate, t]
+    )
+
     return (
       <ContentArea opaque paddingVertical="L" ref={ref}>
         <FixedSpaceColumn spacing="zero">
@@ -343,11 +378,13 @@ const IncomeTypeSelection = React.memo(
               <Gap size="xs" />
               <DatePicker
                 id="start-date"
+                data-qa="income-start-date"
                 date={formData.startDate}
                 onChange={useFieldDispatch(onChange, 'startDate')}
                 info={startDateInputInfo}
                 hideErrorsBeforeTouched={!showFormErrors}
                 locale={lang}
+                required={true}
                 isInvalidDate={(d) =>
                   isValidStartDate(d)
                     ? null
@@ -356,15 +393,22 @@ const IncomeTypeSelection = React.memo(
               />
             </div>
             <div>
-              <Label htmlFor="end-date">{t.income.incomeType.endDate}</Label>
+              <Label htmlFor="end-date">{`${t.income.incomeType.endDate}${isEndDateRequired ? ' *' : ''}`}</Label>
               <Gap size="xs" />
               <DatePicker
                 id="end-date"
+                data-qa="income-end-date"
                 date={formData.endDate}
                 onChange={useFieldDispatch(onChange, 'endDate')}
                 minDate={formData.startDate ?? undefined}
-                hideErrorsBeforeTouched
+                hideErrorsBeforeTouched={false}
                 locale={lang}
+                info={endDateInputInfo}
+                isInvalidDate={(d) =>
+                  errorToInputInfo(validateEndDate(d), t.validationErrors)
+                    ?.text || null
+                }
+                required={isEndDateRequired}
               />
             </div>
           </FixedSpaceRow>

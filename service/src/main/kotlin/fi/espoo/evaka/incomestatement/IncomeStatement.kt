@@ -123,6 +123,8 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
         is IncomeStatementBody.Income ->
             if (body.gross == null && body.entrepreneur == null) {
                 false
+            } else if (body.endDate == null) {
+                false
             } else {
                 body.entrepreneur.let { entrepreneur ->
                     entrepreneur == null ||

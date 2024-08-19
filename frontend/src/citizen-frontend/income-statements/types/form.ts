@@ -70,7 +70,7 @@ export interface Accountant {
 export const emptyIncomeStatementForm: IncomeStatementForm = {
   startDate: null,
   endDate: null,
-  highestFee: false,
+  highestFee: true,
   childIncome: false,
   gross: {
     selected: false,

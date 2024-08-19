@@ -179,6 +179,7 @@ const ChildIncomeTimeRangeSelection = React.memo(
                 isValidStartDate(d) ? null : t.validationErrors.unselectableDate
               }
               data-qa="start-date"
+              required={true}
             />
           </div>
           <div>
