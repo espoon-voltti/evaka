@@ -221,7 +221,7 @@ class PlacementController(
                             placeGuarantee = body.placeGuarantee
                         )
                         .also {
-                            tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+                            tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                                 body.childId,
                                 now.toLocalDate()
                             )
@@ -289,7 +289,7 @@ class PlacementController(
                         useFiveYearsOldDaycare
                     )
 
-                tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+                tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                     oldPlacement.childId,
                     now.toLocalDate()
                 )
@@ -336,7 +336,7 @@ class PlacementController(
                         tx.getPlacement(placementId)
                             ?: throw NotFound("Placement $placementId not found")
                     tx.cancelPlacement(placementId).also {
-                        tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             it.childId,
                             now.toLocalDate()
                         )

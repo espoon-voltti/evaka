@@ -267,7 +267,7 @@ class PlacementPlanService(
             placeGuarantee = false
         )
 
-        tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())
+        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())
 
         val timeline = DateSet.of(placementTypePeriods.map { it.first })
         asyncJobRunner.plan(

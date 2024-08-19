@@ -32,8 +32,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val daycare = DevDaycare(areaId = area.id)
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for club placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for club placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.CLUB,
             hasReservations = false,
             hasBillableAbsences = false,
@@ -42,8 +42,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for daycare placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for daycare placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
@@ -52,8 +52,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for preschool placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for preschool placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.PRESCHOOL,
             hasReservations = false,
             hasBillableAbsences = false,
@@ -62,8 +62,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for preschool_daycare placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for preschool_daycare placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.PRESCHOOL_DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
@@ -72,8 +72,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for preparatory placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for preparatory placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.PREPARATORY,
             hasReservations = false,
             hasBillableAbsences = false,
@@ -82,8 +82,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for preparatory_daycare placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for preparatory_daycare placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.PREPARATORY_DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
@@ -92,8 +92,8 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements for daycare_five_year_olds placement`() {
-        `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements for daycare_five_year_olds placement`() {
+        `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
             placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
             hasReservations = true,
             hasBillableAbsences = true,
@@ -101,7 +101,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun `cleanupFutureReservationsAndAbsencesOutsideValidPlacements works`(
+    private fun `deleteFutureReservationsAndAbsencesOutsideValidPlacements works`(
         placementType: PlacementType,
         hasReservations: Boolean,
         hasBillableAbsences: Boolean,
@@ -204,7 +204,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
 
         db.transaction { tx ->
-            tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(child.id, today)
+            tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(child.id, today)
         }
 
         val reservationIds =

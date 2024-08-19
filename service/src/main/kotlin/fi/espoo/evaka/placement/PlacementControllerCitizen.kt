@@ -149,7 +149,7 @@ class PlacementControllerCitizen(
                         val cancelableTransferApplicationIds =
                             tx.cancelAllActiveTransferApplications(childId)
 
-                        tx.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             childId,
                             clock.today()
                         )

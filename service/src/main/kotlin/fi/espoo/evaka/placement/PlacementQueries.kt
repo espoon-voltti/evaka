@@ -843,7 +843,7 @@ WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '
         }
         .exactlyOneOrNull<Language>()
 
-fun Database.Transaction.cleanupFutureReservationsAndAbsencesOutsideValidPlacements(
+fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
     childId: ChildId,
     today: LocalDate
 ) {
