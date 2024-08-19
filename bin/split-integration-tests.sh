@@ -28,6 +28,6 @@ fi
 
 cd "$( dirname "${BASH_SOURCE[0]}")/../service"
 
-for test in $(find src/integrationTest/kotlin/fi/espoo/evaka/ -iname '*Test.kt' | sed 's/^src\/integrationTest\/kotlin\///g' | sed 's/.kt$//g' | tr / . | shuf --random-source=<(openssl enc -aes-256-ctr -pass pass:"$SPLIT_SEED" -nosalt </dev/zero 2>/dev/null) | split --suffix-length=1 --numeric-suffixes=1 --number="r/${SPLIT_NUMBER}/${SPLIT_MAX}"); do
+for test in $(find src/integrationTest/kotlin/fi/espoo/evaka/ -type f \( -iname '*Test.kt' -o -iname '*Tests.kt' \) | sed 's/^src\/integrationTest\/kotlin\///g' | sed 's/.kt$//g' | tr / . | shuf --random-source=<(openssl enc -aes-256-ctr -pass pass:"$SPLIT_SEED" -nosalt </dev/zero 2>/dev/null) | split --suffix-length=1 --numeric-suffixes=1 --number="r/${SPLIT_NUMBER}/${SPLIT_MAX}"); do
     echo -n " --tests=$test"
 done
