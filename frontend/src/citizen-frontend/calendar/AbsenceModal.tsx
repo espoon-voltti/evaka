@@ -237,7 +237,9 @@ export default React.memo(function AbsenceModal({
                 <HorizontalLine dashed hiddenOnMobile slim />
               </LineContainer>
               <CalendarModalSection>
-                <H2>{i18n.calendar.absenceModal.absenceType}</H2>
+                <H2 id="absence-type-heading">
+                  {i18n.calendar.absenceModal.absenceType}
+                </H2>
                 <FixedSpaceFlexWrap verticalSpacing="xs">
                   <ChoiceChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
@@ -274,7 +276,11 @@ export default React.memo(function AbsenceModal({
                   ) : null}
                 </FixedSpaceFlexWrap>
                 {showAllErrors && !absenceType.isValid() ? (
-                  <Warning data-qa="modal-absence-type-required-error">
+                  <Warning
+                    data-qa="modal-absence-type-required-error"
+                    role="alert"
+                    aria-labelledby="absence-type-heading"
+                  >
                     {i18n.validationErrors.requiredSelection}
                   </Warning>
                 ) : null}
