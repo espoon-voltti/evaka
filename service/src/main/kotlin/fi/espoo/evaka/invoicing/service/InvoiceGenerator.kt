@@ -24,6 +24,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Component
 @Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
+    private val featureConfig: FeatureConfig,
     private val tracer: Tracer = NoopTracerFactory.create()
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
@@ -101,7 +103,7 @@ class InvoiceGenerator(
                 range.start.month == Month.JULY &&
                     (range.end.month == Month.JULY && range.start.year == range.end.year)
             ) {
-                tx.getFreeJulyChildren(range.start.year)
+                tx.getFreeJulyChildren(range.start.year, featureConfig.freeJulyStartOnSeptember)
             } else {
                 emptySet()
             }
@@ -544,10 +546,11 @@ FROM daycare
         }
         .toMap { columnPair("unit_id", "area_id") }
 
-fun Database.Read.getFreeJulyChildren(year: Int): Set<ChildId> =
+fun Database.Read.getFreeJulyChildren(year: Int, freeJulyStartOnSeptember: Boolean): Set<ChildId> =
     createQuery {
             val where =
                 Predicate.allNotNull(
+                    placementOn(year - 1, 8).takeUnless { freeJulyStartOnSeptember },
                     placementOn(year - 1, 9),
                     placementOn(year - 1, 10),
                     placementOn(year - 1, 11),

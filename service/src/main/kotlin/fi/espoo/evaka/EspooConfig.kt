@@ -193,6 +193,7 @@ class EspooConfig {
             applyPlacementUnitFromDecision = false,
             preferredStartRelativeApplicationDueDate = false,
             fiveYearsOldDaycareEnabled = true,
+            freeJulyStartOnSeptember = true,
             archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
             archiveMetadataConfigs =
                 mapOf(
