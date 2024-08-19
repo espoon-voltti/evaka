@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
-import { Result } from 'lib-common/api'
+import { Failure, Result, Success } from 'lib-common/api'
+import { Attachment } from 'lib-common/api-types/attachment'
 import { ChildAndPermittedActions } from 'lib-common/generated/api-types/children'
 import {
   AccountType,
@@ -17,6 +18,7 @@ import {
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatFirstName } from 'lib-common/names'
+import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -26,6 +28,7 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
+import FileUpload from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -33,14 +36,17 @@ import colors from 'lib-customizations/common'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
+import { getAttachmentUrl, saveMessageAttachment } from '../attachments'
 import { useUser } from '../auth/state'
+import { deleteAttachment } from '../generated/api-clients/attachment'
 import { useTranslation } from '../localization'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
   content: '',
   recipients: [],
-  children: []
+  children: [],
+  attachmentIds: []
 }
 
 export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
@@ -82,6 +88,40 @@ export default React.memo(function MessageEditor({
       : emptyMessage
   )
   const title = message.title || i18n.messages.messageEditor.newMessage
+
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+
+  const handleAttachmentUpload = useCallback(
+    async (file: File, onUploadProgress: (percentage: number) => void) =>
+      (await saveMessageAttachment(file, onUploadProgress)).map((id) => {
+        setAttachments((prev) => [
+          ...prev,
+          { id, name: file.name, contentType: file.type }
+        ])
+        return id
+      }),
+    []
+  )
+
+  const handleAttachmentDelete = useCallback(
+    async (id: UUID) =>
+      deleteAttachment({ attachmentId: id })
+        .then(() => {
+          setAttachments((prev) => prev.filter((a) => a.id !== id))
+          return Success.of()
+        })
+        .catch((e) => Failure.fromError<void>(e)),
+    []
+  )
+
+  useEffect(
+    () =>
+      setMessage((prev) => ({
+        ...prev,
+        attachmentIds: attachments.map((a) => a.id)
+      })),
+    [attachments]
+  )
 
   const send = useCallback(() => onSend(message), [message, onSend])
 
@@ -310,6 +350,15 @@ export default React.memo(function MessageEditor({
                 data-qa="input-content"
               />
             </TextAreaLabel>
+
+            <Gap size="s" />
+            <FileUpload
+              slimSingleFile
+              files={attachments}
+              onUpload={handleAttachmentUpload}
+              onDelete={handleAttachmentDelete}
+              getDownloadUrl={getAttachmentUrl}
+            />
 
             <Gap size="s" />
             {displaySendError && (

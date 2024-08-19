@@ -1408,6 +1408,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         message: String,
         recipients: List<MessageAccountId>,
         children: List<ChildId>,
+        attachmentIds: List<AttachmentId> = emptyList(),
         now: HelsinkiDateTime = sendTime,
     ): MessageThreadId {
         val messageThreadId =
@@ -1420,6 +1421,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     children = children.toSet(),
                     title = title,
                     content = message,
+                    attachmentIds = attachmentIds,
                 ),
             )
         if (asyncJobRunningEnabled) {

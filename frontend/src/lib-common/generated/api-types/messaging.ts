@@ -32,6 +32,7 @@ export interface AuthorizedMessageAccount {
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
+  attachmentIds: UUID[]
   children: UUID[]
   content: string
   recipients: UUID[]

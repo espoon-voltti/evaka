@@ -46,6 +46,17 @@ export async function saveIncomeStatementAttachment(
   )
 }
 
+export async function saveMessageAttachment(
+  file: File,
+  onUploadProgress: (percentage: number) => void
+): Promise<Result<UUID>> {
+  return doSaveAttachment(
+    '/citizen/attachments/messages',
+    file,
+    onUploadProgress
+  )
+}
+
 export async function saveApplicationAttachment(
   applicationId: UUID,
   file: File,

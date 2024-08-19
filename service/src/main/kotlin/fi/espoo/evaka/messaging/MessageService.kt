@@ -53,6 +53,12 @@ class MessageService(
         }
     }
 
+    data class CitizenMessageSent(
+        val messageId: MessageId,
+        val threadId: MessageThreadId,
+        val contentId: MessageContentId,
+    )
+
     fun sendMessageAsCitizen(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
@@ -60,7 +66,7 @@ class MessageService(
         msg: NewMessageStub,
         recipients: Set<MessageAccountId>,
         children: Set<ChildId>,
-    ): MessageThreadId {
+    ): CitizenMessageSent {
         val contentId = tx.insertMessageContent(msg.content, sender)
         val threadId =
             tx.insertThread(
@@ -86,7 +92,7 @@ class MessageService(
         tx.insertMessageThreadChildren(listOf(children to threadId))
         tx.insertRecipients(listOf(messageId to recipients))
         asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
-        return threadId
+        return CitizenMessageSent(messageId, threadId, contentId)
     }
 
     fun sendMessageAsEmployee(

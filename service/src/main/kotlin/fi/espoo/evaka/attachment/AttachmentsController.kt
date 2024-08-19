@@ -336,6 +336,22 @@ class AttachmentsController(
             }
     }
 
+    @PostMapping("/citizen/attachments/messages", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadMessageAttachmentCitizen(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        return db.connect { dbc -> handleFileUpload(dbc, user, clock, AttachmentParent.None, file) }
+            .also { attachmentId ->
+                Audit.AttachmentsUploadForMessage.log(
+                    targetId = attachmentId.let(AuditId::invoke),
+                    meta = mapOf("size" to file.size),
+                )
+            }
+    }
+
     @PostMapping(
         "/attachments/fee-alteration/{feeAlterationId}", // deprecated
         "/attachments/fee-alteration", // deprecated

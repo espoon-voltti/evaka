@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,7 +6,10 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
+import fi.espoo.evaka.attachment.AttachmentParent
+import fi.espoo.evaka.attachment.associateOrphanAttachments
 import fi.espoo.evaka.children.getChildrenByParent
+import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
@@ -33,6 +36,7 @@ data class CitizenMessageBody(
     val children: Set<ChildId>,
     val content: String,
     val title: String,
+    val attachmentIds: List<AttachmentId>,
 )
 
 @RestController
@@ -235,7 +239,7 @@ class MessageControllerCitizen(
                     selectedChildren.asSequence().map { it.unit?.id }.toSet().size == 1
                 if (allRecipientsValid && selectedChildrenInSameUnit) {
                     dbc.transaction { tx ->
-                        val messageThreadId =
+                        val sentMessage =
                             messageService.sendMessageAsCitizen(
                                 tx,
                                 now,
@@ -249,7 +253,14 @@ class MessageControllerCitizen(
                                 body.recipients,
                                 body.children,
                             )
-                        senderId to messageThreadId
+
+                        tx.associateOrphanAttachments(
+                            user.evakaUserId,
+                            AttachmentParent.MessageContent(sentMessage.contentId),
+                            body.attachmentIds,
+                        )
+
+                        senderId to sentMessage.threadId
                     }
                 } else {
                     throw BadRequest("Invalid recipients")
@@ -257,7 +268,8 @@ class MessageControllerCitizen(
             }
             .let { (senderId, messageThreadId) ->
                 Audit.MessagingCitizenSendMessage.log(
-                    targetId = AuditId(listOf(senderId, messageThreadId))
+                    targetId = AuditId(listOf(senderId, messageThreadId)),
+                    meta = mapOf("attachments" to body.attachmentIds),
                 )
                 messageThreadId
             }
