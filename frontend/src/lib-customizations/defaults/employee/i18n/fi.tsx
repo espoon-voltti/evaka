@@ -2382,9 +2382,14 @@ export const fi = {
           reservedTitle: 'Varanneet',
           reserveButton: 'Varaa',
           unreservedTitle: 'Varaamatta',
-          calendarSurveySummaryInstruction: 'Tarkempia tietoja varten',
-          calendarSurveySummaryLinkText:
-            'siirry keskustelukyselyn tarkastelunäkymään',
+          calendarSurveySummary: (
+            link: (text: string) => React.ReactNode
+          ): React.ReactNode => (
+            <>
+              Tarkempia tietoja varten{' '}
+              {link('siirry keskustelukyselyn tarkastelunäkymään')}
+            </>
+          ),
           reservationModal: {
             reservationStatus: 'Varaustilanne',
             reserved: 'Varattu',

@@ -1003,14 +1003,14 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
     >
       <Label>{tr.surveySummaryCalendarLabel}</Label>
       <p data-qa="survey-description">{event.description}</p>
-
       <p>
-        {`${tr.calendarSurveySummaryInstruction} `}
-        <Link
-          to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${event.id}`}
-        >
-          {tr.calendarSurveySummaryLinkText}
-        </Link>
+        {tr.calendarSurveySummary((linkText) => (
+          <Link
+            to={`/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${event.id}`}
+          >
+            {linkText}
+          </Link>
+        ))}
       </p>
       {times.length > 0 && (
         <>
