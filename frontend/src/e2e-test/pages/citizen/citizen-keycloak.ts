@@ -47,11 +47,13 @@ export class UpdatePasswordPage {
 }
 
 export class ConfirmPage {
+  heading: Element
   email: TextInput
   sendButton: Element
   allLabels: ElementCollection
 
   constructor(page: Page) {
+    this.heading = page.find('.evaka-info-text')
     this.email = new TextInput(page.findTextExact('Sähköpostiosoite'))
     this.sendButton = page.findTextExact('Lähetä')
     this.allLabels = page.findAll('label')

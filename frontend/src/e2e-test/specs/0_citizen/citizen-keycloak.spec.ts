@@ -141,6 +141,7 @@ test('Registration via suomi.fi', async () => {
   await suomiFiConfirmPage.proceedButton.click()
 
   const confirmPage = new ConfirmPage(page)
+  await confirmPage.heading.assertTextEquals('Luo uusi eVaka-tunnus')
   // double-check we don't have any extra fields that shouldn't be there
   await waitUntilEqual(
     () => confirmPage.allLabels.allTexts(),
