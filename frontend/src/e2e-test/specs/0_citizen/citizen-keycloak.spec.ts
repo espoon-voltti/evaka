@@ -144,10 +144,9 @@ test('Registration via suomi.fi', async () => {
   // double-check we don't have any extra fields that shouldn't be there
   await waitUntilEqual(
     () => confirmPage.allLabels.allTexts(),
-    ['Sähköpostiosoite', 'Vahvista sähköposti']
+    ['Sähköpostiosoite']
   )
   await confirmPage.email.fill(email)
-  await confirmPage.confirmEmail.fill(email)
   await confirmPage.sendButton.click()
 
   await page.findByDataQa('header-city-logo').waitUntilVisible()
