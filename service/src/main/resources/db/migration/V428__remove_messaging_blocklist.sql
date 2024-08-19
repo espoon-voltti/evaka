@@ -1,1 +1,1 @@
-DROP TABLE messaging_blocklist;
+ALTER TABLE messaging_blocklist RENAME TO backup_messaging_blocklist;
