@@ -74,6 +74,19 @@ fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
         .execute()
 }
 
+fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange): Int {
+    return createUpdate {
+            sql(
+                """
+                DELETE FROM attendance_reservation
+                WHERE child_id = ${bind(childId)}
+                AND between_start_and_end(${bind(range)}, date)
+                """
+            )
+        }
+        .execute()
+}
+
 fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
     createUpdate {
             sql(

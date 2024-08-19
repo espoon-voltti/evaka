@@ -440,7 +440,7 @@ class AttendanceReservationController(
 
                     body
                         .map { DateRange(it.date, it.date) }
-                        .forEach { tx.clearReservationsForRangeExceptInHolidayPeriod(childId, it) }
+                        .forEach { tx.deleteReservationsInRange(childId, it) }
                     tx.insertValidReservations(
                         user.evakaUserId,
                         body.flatMap {
