@@ -1007,7 +1007,7 @@ SELECT
             'date', ar.date,
             'startTime', ar.start_time,
             'endTime', ar.end_time,
-            'staffCreated', eu.type = 'EMPLOYEE'
+            'staffCreated', eu.type <> 'CITIZEN'
         ) ORDER BY ar.date, ar.start_time)
         FROM attendance_reservation ar 
         JOIN evaka_user eu ON ar.created_by = eu.id
@@ -1027,7 +1027,7 @@ SELECT
             'category', a.category,
             'absenceTypeResponse', json_build_object(
                 'absenceType', a.absence_type,
-                'staffCreated', eu.type = 'EMPLOYEE'
+                'staffCreated', eu.type <> 'CITIZEN'
             )
         ) ORDER BY a.date)
         FROM absence a
