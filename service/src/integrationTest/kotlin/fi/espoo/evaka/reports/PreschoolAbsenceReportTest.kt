@@ -531,7 +531,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
 
             // Saturday
 
-            // absence outside unit operation days shouldn't show up
+            // absence on the weekend shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
@@ -554,7 +554,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
             )
 
             // previous sunday
-            // absence outside unit operation days shouldn't show up
+            // absence on the weekend shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
