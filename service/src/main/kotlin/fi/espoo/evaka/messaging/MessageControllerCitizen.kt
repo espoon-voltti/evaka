@@ -47,10 +47,16 @@ class MessageControllerCitizen(
     private val messageService: MessageService,
 ) {
 
+    data class MyAccountResponse(val accountId: MessageAccountId)
+
     @GetMapping("/my-account")
-    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
-        return db.connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
-            .also { Audit.MessagingMyAccountsRead.log(targetId = AuditId(it)) }
+    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MyAccountResponse {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    MyAccountResponse(accountId = tx.getCitizenMessageAccount(user.id))
+                }
+            }
+            .also { Audit.MessagingMyAccountsRead.log(targetId = AuditId(it.accountId)) }
     }
 
     @GetMapping("/unread-count")

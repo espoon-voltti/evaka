@@ -11,7 +11,10 @@ import React, {
 } from 'react'
 
 import { Loading, Result } from 'lib-common/api'
-import { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
+import {
+  CitizenMessageThread,
+  MyAccountResponse
+} from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import {
   useMutation,
@@ -29,7 +32,7 @@ import {
 } from './queries'
 
 export interface MessagePageState {
-  accountId: Result<UUID>
+  messageAccount: Result<MyAccountResponse>
   threads: Result<CitizenMessageThread[]>
   hasMoreThreads: boolean
   loadMoreThreads: () => void
@@ -40,7 +43,7 @@ export interface MessagePageState {
 }
 
 const defaultState: MessagePageState = {
-  accountId: Loading.of(),
+  messageAccount: Loading.of(),
   threads: Loading.of(),
   loadMoreThreads: () => undefined,
   hasMoreThreads: false,
@@ -76,7 +79,7 @@ const markMessagesReadByThreadId = (
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
     const isLoggedIn = useUser() !== undefined
-    const accountId = useQueryResult(messageAccountQuery(), {
+    const messageAccount = useQueryResult(messageAccountQuery(), {
       enabled: isLoggedIn,
       staleTime: 24 * 60 * 60 * 1000
     })
@@ -87,7 +90,7 @@ export const MessageContextProvider = React.memo(
       hasNextPage,
       transform
     } = usePagedInfiniteQueryResult(receivedMessagesQuery(10), {
-      enabled: accountId.isSuccess
+      enabled: messageAccount.isSuccess
     })
 
     const [selectedThreadId, setSelectedThreadId] = useState<UUID>()
@@ -113,23 +116,29 @@ export const MessageContextProvider = React.memo(
 
     const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
     useEffect(() => {
-      if (!accountId.isSuccess) return
+      if (!messageAccount.isSuccess) return
       if (!selectedThreadId || !selectedThread) return
 
       if (isRegularThread(selectedThread)) {
         const hasUnreadMessages = selectedThread.messages.some(
-          (m) => !m.readAt && m.sender.id !== accountId.value
+          (m) => !m.readAt && m.sender.id !== messageAccount.value.accountId
         )
         if (hasUnreadMessages) {
           markThreadRead({ threadId: selectedThread.id })
           transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
         }
       }
-    }, [accountId, markThreadRead, selectedThread, selectedThreadId, transform])
+    }, [
+      messageAccount,
+      markThreadRead,
+      selectedThread,
+      selectedThreadId,
+      transform
+    ])
 
     const value = useMemo(
       () => ({
-        accountId,
+        messageAccount,
         threads,
         getReplyContent,
         setReplyContent,
@@ -143,7 +152,7 @@ export const MessageContextProvider = React.memo(
         setSelectedThread: setSelectedThreadId
       }),
       [
-        accountId,
+        messageAccount,
         fetchNextPage,
         getReplyContent,
         hasNextPage,

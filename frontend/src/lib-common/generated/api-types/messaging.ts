@@ -221,6 +221,13 @@ export type MessageType =
   | 'BULLETIN'
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.MyAccountResponse
+*/
+export interface MyAccountResponse {
+  accountId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.PagedCitizenMessageThreads
 */
 export interface PagedCitizenMessageThreads {
