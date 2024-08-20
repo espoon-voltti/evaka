@@ -38,10 +38,14 @@ class ChildImageController(
 ) {
     private val bucket = env.data
 
-    @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PutMapping(
+        "/children/{childId}/image", // deprecated
+        "/employee-mobile/children/{childId}/image",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
     fun putImage(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile,
@@ -75,10 +79,13 @@ class ChildImageController(
         )
     }
 
-    @DeleteMapping("/children/{childId}/image")
+    @DeleteMapping(
+        "/children/{childId}/image", // deprecated
+        "/employee-mobile/children/{childId}/image",
+    )
     fun deleteImage(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ) {
@@ -107,14 +114,21 @@ class ChildImageController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable imageId: ChildImageId,
-    ): ResponseEntity<Any> = getImage(db, user, clock, imageId)
+    ): ResponseEntity<Any> = getImageInternal(db, user, clock, imageId)
 
-    @GetMapping("/child-images/{imageId}")
+    @GetMapping("/child-images/{imageId}", "/employee-mobile/child-images/{imageId}")
     fun getImage(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable imageId: ChildImageId,
+    ): ResponseEntity<Any> = getImageInternal(db, user, clock, imageId)
+
+    private fun getImageInternal(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable imageId: ChildImageId,
+        imageId: ChildImageId,
     ): ResponseEntity<Any> {
         db.connect { dbc ->
             dbc.read {

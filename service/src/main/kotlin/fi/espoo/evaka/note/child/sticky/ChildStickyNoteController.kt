@@ -25,7 +25,27 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ChildStickyNoteController(private val ac: AccessControl) {
-    @PostMapping("/children/{childId}/child-sticky-notes")
+    @PostMapping("/employee/children/{childId}/child-sticky-notes")
+    fun createChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: ChildStickyNoteBody,
+    ): ChildStickyNoteId =
+        createChildStickyNote(db, user as AuthenticatedUser, clock, childId, body)
+
+    @PostMapping("/employee-mobile/children/{childId}/child-sticky-notes")
+    fun createChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: ChildStickyNoteBody,
+    ): ChildStickyNoteId =
+        createChildStickyNote(db, user as AuthenticatedUser, clock, childId, body)
+
+    @PostMapping("/children/{childId}/child-sticky-notes") // deprecated
     fun createChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
@@ -55,6 +75,24 @@ class ChildStickyNoteController(private val ac: AccessControl) {
             }
     }
 
+    @PutMapping("/employee/child-sticky-notes/{noteId}")
+    fun updateChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildStickyNoteId,
+        @RequestBody body: ChildStickyNoteBody,
+    ): ChildStickyNote = updateChildStickyNote(db, user as AuthenticatedUser, clock, noteId, body)
+
+    @PutMapping("/employee-mobile/child-sticky-notes/{noteId}")
+    fun updateChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildStickyNoteId,
+        @RequestBody body: ChildStickyNoteBody,
+    ): ChildStickyNote = updateChildStickyNote(db, user as AuthenticatedUser, clock, noteId, body)
+
     @PutMapping("/child-sticky-notes/{noteId}")
     fun updateChildStickyNote(
         db: Database,
@@ -74,7 +112,23 @@ class ChildStickyNoteController(private val ac: AccessControl) {
             .also { Audit.ChildStickyNoteUpdate.log(targetId = AuditId(noteId)) }
     }
 
-    @DeleteMapping("/child-sticky-notes/{noteId}")
+    @DeleteMapping("/employee/child-sticky-notes/{noteId}")
+    fun deleteChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildStickyNoteId,
+    ) = deleteChildStickyNote(db, user as AuthenticatedUser, clock, noteId)
+
+    @DeleteMapping("/employee-mobile/child-sticky-notes/{noteId}")
+    fun deleteChildStickyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildStickyNoteId,
+    ) = deleteChildStickyNote(db, user as AuthenticatedUser, clock, noteId)
+
+    @DeleteMapping("/child-sticky-notes/{noteId}") // deprecated
     fun deleteChildStickyNote(
         db: Database,
         user: AuthenticatedUser,

@@ -11,46 +11,24 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import { PagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { PagedSentMessages } from 'lib-common/generated/api-types/messaging'
 import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightBody } from 'lib-common/generated/api-types/messaging'
 import { PostMessagePreflightResponse } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
-import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
-import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
 import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDraftContent } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonMessageThread } from 'lib-common/generated/api-types/messaging'
-import { deserializeJsonPagedMessageCopies } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonPagedSentMessages } from 'lib-common/generated/api-types/messaging'
-import { deserializeJsonThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
 import { deserializeJsonThreadReply } from 'lib-common/generated/api-types/messaging'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.archiveThread
-*/
-export async function archiveThread(
-  request: {
-    accountId: UUID,
-    threadId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/messages/${request.accountId}/threads/${request.threadId}/archive`.toString(),
-    method: 'PUT'
-  })
-  return json
-}
 
 
 /**
@@ -123,29 +101,6 @@ export async function getAccountsByDevice(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getArchivedMessages
-*/
-export async function getArchivedMessages(
-  request: {
-    accountId: UUID,
-    pageSize: number,
-    page: number
-  }
-): Promise<PagedMessageThreads> {
-  const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
-    ['page', request.page.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
-    url: uri`/messages/${request.accountId}/archived`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonPagedMessageThreads(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.messaging.MessageController.getDraftMessages
 */
 export async function getDraftMessages(
@@ -158,29 +113,6 @@ export async function getDraftMessages(
     method: 'GET'
   })
   return json.map(e => deserializeJsonDraftContent(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.getMessageCopies
-*/
-export async function getMessageCopies(
-  request: {
-    accountId: UUID,
-    pageSize: number,
-    page: number
-  }
-): Promise<PagedMessageCopies> {
-  const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
-    ['page', request.page.toString()]
-  )
-  const { data: json } = await client.request<JsonOf<PagedMessageCopies>>({
-    url: uri`/messages/${request.accountId}/copies`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonPagedMessageCopies(json)
 }
 
 
@@ -256,34 +188,6 @@ export async function getThread(
     method: 'GET'
   })
   return deserializeJsonMessageThread(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.getThreadByApplicationId
-*/
-export async function getThreadByApplicationId(
-  request: {
-    applicationId: UUID
-  }
-): Promise<ThreadByApplicationResponse> {
-  const { data: json } = await client.request<JsonOf<ThreadByApplicationResponse>>({
-    url: uri`/messages/application/${request.applicationId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonThreadByApplicationResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.getUnreadMessages
-*/
-export async function getUnreadMessages(): Promise<UnreadCountByAccount[]> {
-  const { data: json } = await client.request<JsonOf<UnreadCountByAccount[]>>({
-    url: uri`/messages/unread`.toString(),
-    method: 'GET'
-  })
-  return json
 }
 
 

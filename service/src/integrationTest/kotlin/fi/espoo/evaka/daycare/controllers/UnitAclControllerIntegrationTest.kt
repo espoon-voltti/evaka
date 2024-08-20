@@ -55,7 +55,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             hasStaffOccupancyEffect = false,
             active = true,
         )
-    private lateinit var admin: AuthenticatedUser
+    private lateinit var admin: AuthenticatedUser.Employee
 
     private fun getRoleBodyString(body: UnitAclController.FullAclInfo) =
         jsonMapper.writeValueAsString(body)

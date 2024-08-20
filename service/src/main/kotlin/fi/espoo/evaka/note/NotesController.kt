@@ -30,9 +30,12 @@ class NotesController(private val ac: AccessControl) {
         val groupNotes: List<GroupNote>,
     )
 
-    @GetMapping("/daycare-groups/{groupId}/notes")
+    @GetMapping(
+        "/daycare-groups/{groupId}/notes", // deprecated
+        "/employee/daycare-groups/{groupId}/notes",
+    )
     fun getNotesByGroup(
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         db: Database,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,

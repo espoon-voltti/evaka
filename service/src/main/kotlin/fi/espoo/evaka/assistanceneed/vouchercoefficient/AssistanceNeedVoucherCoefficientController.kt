@@ -31,10 +31,13 @@ class AssistanceNeedVoucherCoefficientController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    @PostMapping("/children/{childId}/assistance-need-voucher-coefficients")
+    @PostMapping(
+        "/children/{childId}/assistance-need-voucher-coefficients", // deprecated
+        "/employee/children/{childId}/assistance-need-voucher-coefficients",
+    )
     fun createAssistanceNeedVoucherCoefficient(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest,
@@ -71,10 +74,13 @@ class AssistanceNeedVoucherCoefficientController(
             }
     }
 
-    @GetMapping("/children/{childId}/assistance-need-voucher-coefficients")
+    @GetMapping(
+        "/children/{childId}/assistance-need-voucher-coefficients", // deprecated
+        "/employee/children/{childId}/assistance-need-voucher-coefficients",
+    )
     fun getAssistanceNeedVoucherCoefficients(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<AssistanceNeedVoucherCoefficientResponse> {

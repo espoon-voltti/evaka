@@ -21,11 +21,11 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevParentship
@@ -532,7 +532,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     private fun setChildImage(childId: ChildId) =
         childImageController.putImage(
             dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
+            AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID())),
             RealEvakaClock(),
             childId,
             MockMultipartFile("file", imageName, "image/jpeg", imageData),

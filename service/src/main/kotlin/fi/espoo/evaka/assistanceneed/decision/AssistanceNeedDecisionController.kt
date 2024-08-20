@@ -45,7 +45,10 @@ class AssistanceNeedDecisionController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    @PostMapping("/children/{childId}/assistance-needs/decision")
+    @PostMapping(
+        "/children/{childId}/assistance-needs/decision", // deprecated
+        "/employee/children/{childId}/assistance-needs/decision",
+    )
     fun createAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -339,7 +342,10 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = AuditId(id)) }
     }
 
-    @GetMapping("/children/{childId}/assistance-needs/decisions")
+    @GetMapping(
+        "/children/{childId}/assistance-needs/decisions", // deprecated
+        "/employee/children/{childId}/assistance-needs/decisions",
+    )
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,

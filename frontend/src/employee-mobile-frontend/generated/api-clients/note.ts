@@ -12,30 +12,12 @@ import { GroupNote } from 'lib-common/generated/api-types/note'
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { NotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { deserializeJsonChildDailyNote } from 'lib-common/generated/api-types/note'
 import { deserializeJsonChildStickyNote } from 'lib-common/generated/api-types/note'
 import { deserializeJsonGroupNote } from 'lib-common/generated/api-types/note'
-import { deserializeJsonNotesByGroupResponse } from 'lib-common/generated/api-types/note'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.note.NotesController.getNotesByGroup
-*/
-export async function getNotesByGroup(
-  request: {
-    groupId: UUID
-  }
-): Promise<NotesByGroupResponse> {
-  const { data: json } = await client.request<JsonOf<NotesByGroupResponse>>({
-    url: uri`/daycare-groups/${request.groupId}/notes`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonNotesByGroupResponse(json)
-}
 
 
 /**

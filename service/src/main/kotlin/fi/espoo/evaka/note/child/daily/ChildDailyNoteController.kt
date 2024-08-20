@@ -27,7 +27,25 @@ private val logger = KotlinLogging.logger {}
 
 @RestController
 class ChildDailyNoteController(private val ac: AccessControl) {
-    @PostMapping("/children/{childId}/child-daily-notes")
+    @PostMapping("/employee/children/{childId}/child-daily-notes")
+    fun createChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: ChildDailyNoteBody,
+    ): ChildDailyNoteId = createChildDailyNote(db, user as AuthenticatedUser, clock, childId, body)
+
+    @PostMapping("/employee-mobile/children/{childId}/child-daily-notes")
+    fun createChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: ChildDailyNoteBody,
+    ): ChildDailyNoteId = createChildDailyNote(db, user as AuthenticatedUser, clock, childId, body)
+
+    @PostMapping("/children/{childId}/child-daily-notes") // deprecated
     fun createChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
@@ -62,7 +80,25 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         }
     }
 
-    @PutMapping("/child-daily-notes/{noteId}")
+    @PutMapping("/employee/child-daily-notes/{noteId}")
+    fun updateChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildDailyNoteId,
+        @RequestBody body: ChildDailyNoteBody,
+    ): ChildDailyNote = updateChildDailyNote(db, user as AuthenticatedUser, clock, noteId, body)
+
+    @PutMapping("/employee-mobile/child-daily-notes/{noteId}")
+    fun updateChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildDailyNoteId,
+        @RequestBody body: ChildDailyNoteBody,
+    ): ChildDailyNote = updateChildDailyNote(db, user as AuthenticatedUser, clock, noteId, body)
+
+    @PutMapping("/child-daily-notes/{noteId}") // deprecated
     fun updateChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
@@ -78,6 +114,22 @@ class ChildDailyNoteController(private val ac: AccessControl) {
             }
             .also { Audit.ChildDailyNoteUpdate.log(targetId = AuditId(noteId)) }
     }
+
+    @DeleteMapping("/employee/child-daily-notes/{noteId}")
+    fun deleteChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildDailyNoteId,
+    ) = deleteChildDailyNote(db, user as AuthenticatedUser, clock, noteId)
+
+    @DeleteMapping("/employee-mobile/child-daily-notes/{noteId}")
+    fun deleteChildDailyNote(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @PathVariable noteId: ChildDailyNoteId,
+    ) = deleteChildDailyNote(db, user as AuthenticatedUser, clock, noteId)
 
     @DeleteMapping("/child-daily-notes/{noteId}")
     fun deleteChildDailyNote(

@@ -22,20 +22,21 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/staff-attendances")
 class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
     private val accessControl: AccessControl,
 ) {
-    @GetMapping("/unit/{unitId}")
+    @GetMapping(
+        "/staff-attendances/unit/{unitId}", // deprecated
+        "/employee-mobile/staff-attendances/unit/{unitId}",
+    )
     fun getAttendancesByUnit(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): UnitStaffAttendance {
@@ -54,10 +55,13 @@ class StaffAttendanceController(
             .also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
     }
 
-    @GetMapping("/group/{groupId}")
+    @GetMapping(
+        "/staff-attendances/group/{groupId}", // deprecated
+        "/employee/staff-attendances/group/{groupId}",
+    )
     fun getStaffAttendancesByGroup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -78,7 +82,25 @@ class StaffAttendanceController(
             .also { Audit.StaffAttendanceRead.log(targetId = AuditId(groupId)) }
     }
 
-    @PostMapping("/group/{groupId}")
+    @PostMapping("/employee/staff-attendances/group/{groupId}")
+    fun upsertStaffAttendance(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody staffAttendance: StaffAttendanceUpdate,
+        @PathVariable groupId: GroupId,
+    ) = upsertStaffAttendance(db, user as AuthenticatedUser, clock, staffAttendance, groupId)
+
+    @PostMapping("/employee-mobile/staff-attendances/group/{groupId}")
+    fun upsertStaffAttendance(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @RequestBody staffAttendance: StaffAttendanceUpdate,
+        @PathVariable groupId: GroupId,
+    ) = upsertStaffAttendance(db, user as AuthenticatedUser, clock, staffAttendance, groupId)
+
+    @PostMapping("/staff-attendances/group/{groupId}") // deprecated
     fun upsertStaffAttendance(
         db: Database,
         user: AuthenticatedUser,

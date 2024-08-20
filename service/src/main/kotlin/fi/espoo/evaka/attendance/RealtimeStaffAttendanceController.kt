@@ -34,12 +34,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/staff-attendances/realtime")
+@RequestMapping(
+    "/staff-attendances/realtime", // deprecated
+    "/employee/staff-attendances/realtime",
+)
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
     @GetMapping
     fun getRealtimeStaffAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
@@ -184,7 +187,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @PostMapping("/upsert")
     fun upsertDailyStaffRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: StaffAttendanceBody,
     ) {
@@ -272,7 +275,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @PostMapping("/upsert-external")
     fun upsertDailyExternalRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExternalAttendanceBody,
     ) {
@@ -327,7 +330,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @DeleteMapping("/{unitId}/{attendanceId}")
     fun deleteStaffRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceRealtimeId,
@@ -350,7 +353,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @DeleteMapping("/{unitId}/external/{attendanceId}")
     fun deleteExternalStaffRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceExternalId,

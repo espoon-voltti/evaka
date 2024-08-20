@@ -177,22 +177,6 @@ export async function deleteGroupNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNoteController.getGroupNotes
-*/
-export async function getGroupNotes(
-  request: {
-    groupId: UUID
-  }
-): Promise<GroupNote[]> {
-  const { data: json } = await client.request<JsonOf<GroupNote[]>>({
-    url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
-    method: 'GET'
-  })
-  return json.map(e => deserializeJsonGroupNote(e))
-}
-
-
-/**
 * Generated from fi.espoo.evaka.note.group.GroupNoteController.updateGroupNote
 */
 export async function updateGroupNote(
