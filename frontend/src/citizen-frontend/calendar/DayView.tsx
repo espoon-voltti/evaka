@@ -396,7 +396,11 @@ const DayModal = React.memo(function DayModal({
                       disabled={!dateActions?.navigateToPreviousDate}
                       aria-label={i18n.calendar.previousDay}
                     />
-                    <ModalHeader headingComponent={DayOfWeek}>
+                    <ModalHeader
+                      headingComponent={DayOfWeek}
+                      aria-live="polite"
+                      aria-label={date.formatExotic('cccc do MMMM', lang)}
+                    >
                       {date.format('EEEEEE d.M.yyyy', lang)}
                     </ModalHeader>
                     <IconOnlyButton

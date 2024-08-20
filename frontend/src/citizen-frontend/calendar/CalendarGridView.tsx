@@ -531,7 +531,7 @@ const Day = React.memo(function Day({
         <DayCellDate
           inactive={!dayIsReservable(day.date)}
           holiday={day.holiday}
-          aria-label={day.date.formatExotic('EEEE do MMMM', lang)}
+          aria-label={day.date.formatExotic('cccc do MMMM', lang)}
         >
           {day.date.format('d.M.')}
         </DayCellDate>
