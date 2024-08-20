@@ -6,15 +6,12 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.deleteFutureNonGeneratedAbsencesByCategoryInRange
 import fi.espoo.evaka.absence.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycares
-import fi.espoo.evaka.reservations.clearReservationsForRangeExceptInHolidayPeriod
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -224,40 +221,11 @@ class PlacementController(
                             placeGuarantee = body.placeGuarantee
                         )
                         .also {
+                            tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                                body.childId,
+                                now.toLocalDate()
+                            )
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
-
-                            val future = DateRange(now.toLocalDate().plusDays(1), null)
-                            val range = DateRange(body.startDate, body.endDate).intersection(future)
-
-                            // Only proceed with future absence and reservation deletion if
-                            // placements range is in future
-                            if (range != null) {
-                                // Delete future absences if new absence category is specific
-                                if (
-                                    body.type.absenceCategories().size !=
-                                        AbsenceCategory.values().size
-                                ) {
-                                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                        tx,
-                                        clock,
-                                        body.childId,
-                                        range,
-                                        setOf(
-                                            when (body.type.absenceCategories().single()) {
-                                                AbsenceCategory.BILLABLE ->
-                                                    AbsenceCategory.NONBILLABLE
-                                                AbsenceCategory.NONBILLABLE ->
-                                                    AbsenceCategory.BILLABLE
-                                            }
-                                        )
-                                    )
-                                }
-                                tx.clearReservationsForRangeExceptInHolidayPeriod(
-                                    body.childId,
-                                    range
-                                )
-                            }
-
                             asyncJobRunner.plan(
                                 tx,
                                 listOf(
@@ -320,24 +288,12 @@ class PlacementController(
                         aclAuth,
                         useFiveYearsOldDaycare
                     )
+
+                tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                    oldPlacement.childId,
+                    now.toLocalDate()
+                )
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
-
-                // Clear absences and reservations that are not in range of updated placement period
-                if (
-                    body.endDate.isAfter(now.toLocalDate()) &&
-                        body.endDate.isBefore(oldPlacement.endDate)
-                ) {
-                    val range = DateRange(body.endDate, oldPlacement.endDate)
-                    deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                        tx,
-                        clock,
-                        oldPlacement.childId,
-                        range,
-                        oldPlacement.type.absenceCategories()
-                    )
-                    tx.clearReservationsForRangeExceptInHolidayPeriod(oldPlacement.childId, range)
-                }
-
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -380,28 +336,11 @@ class PlacementController(
                         tx.getPlacement(placementId)
                             ?: throw NotFound("Placement $placementId not found")
                     tx.cancelPlacement(placementId).also {
+                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                            it.childId,
+                            now.toLocalDate()
+                        )
                         generateAbsencesFromIrregularDailyServiceTimes(tx, now, it.childId)
-
-                        // Clear future absences and reservations that are in range of placement
-                        // period
-                        if (placement.endDate.isAfter(now.toLocalDate())) {
-                            val startDate =
-                                if (placement.startDate.isAfter(clock.today())) placement.startDate
-                                else clock.today().plusDays(1)
-                            val range = DateRange(startDate, placement.endDate)
-                            deleteFutureNonGeneratedAbsencesByCategoryInRange(
-                                tx,
-                                clock,
-                                placement.childId,
-                                range,
-                                placement.type.absenceCategories()
-                            )
-                            tx.clearReservationsForRangeExceptInHolidayPeriod(
-                                placement.childId,
-                                range
-                            )
-                        }
-
                         asyncJobRunner.plan(
                             tx,
                             listOf(

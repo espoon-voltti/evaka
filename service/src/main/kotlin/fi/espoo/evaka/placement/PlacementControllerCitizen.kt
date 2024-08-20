@@ -149,6 +149,10 @@ class PlacementControllerCitizen(
                         val cancelableTransferApplicationIds =
                             tx.cancelAllActiveTransferApplications(childId)
 
+                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                            childId,
+                            clock.today()
+                        )
                         asyncJobRunner.plan(
                             tx,
                             listOf(
