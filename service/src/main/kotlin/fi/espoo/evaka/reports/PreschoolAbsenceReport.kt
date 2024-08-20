@@ -216,7 +216,8 @@ fun getPreschoolAbsenceReportRowsForUnit(
                                              ppc.id = ab.child_id and
                                              ab.absence_type = types.absence_type and
                                              ab.category = 'NONBILLABLE' and
-                                             extract(isodow from ab.date) BETWEEN 1 AND 5
+                                             extract(isodow from ab.date) BETWEEN 1 AND 5 and
+                                             not exists (SELECT FROM holiday h WHERE h.date = ab.date)
             group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
         """
                     .trimIndent()
@@ -266,7 +267,8 @@ from preschool_group_placement_children pgpc
                                  pgpc.id = ab.child_id and
                                  ab.absence_type = types.absence_type and
                                  ab.category = 'NONBILLABLE' and
-                                 extract(isodow from ab.date) BETWEEN 1 AND 5
+                                 extract(isodow from ab.date) BETWEEN 1 AND 5 and
+                                 not exists (SELECT FROM holiday h WHERE h.date = ab.date)
 group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
         """
                     .trimIndent()
