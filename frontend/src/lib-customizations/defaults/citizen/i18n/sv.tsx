@@ -541,6 +541,7 @@ const sv: Translations = {
       deleteDraft: 'Ta bort utkast',
       send: 'Skicka',
       discard: 'Kassera',
+      addShiftCareAttachment: 'Bifoga ett arbetsschema',
       search: 'Sök',
       noResults: 'Inga resultat, välj ett barn eller flera barn först',
       messageSendError: 'Misslyckades med att skicka meddelande'

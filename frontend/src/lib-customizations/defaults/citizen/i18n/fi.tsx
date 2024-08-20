@@ -547,6 +547,7 @@ export default {
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
       discard: 'Hylkää',
+      addShiftCareAttachment: 'Liitä työvuorolista',
       search: 'Haku',
       noResults: 'Ei tuloksia, valitse ensin lapsi tai lapsia',
       messageSendError: 'Viestin lähetys epäonnistui'

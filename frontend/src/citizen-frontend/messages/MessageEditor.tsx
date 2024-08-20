@@ -363,6 +363,9 @@ export default React.memo(function MessageEditor({
                   onDelete={handleAttachmentDelete}
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="upload-message-attachment"
+                  buttonText={
+                    i18n.messages.messageEditor.addShiftCareAttachment
+                  }
                 />
               </>
             )}

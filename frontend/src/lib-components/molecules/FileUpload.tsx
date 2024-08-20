@@ -76,6 +76,7 @@ interface FileUploadProps {
   'data-qa'?: string
   slimSingleFile?: boolean
   allowedFileTypes?: FileType[]
+  buttonText?: string
 }
 
 const FileUploadContainer = styled.div<{
@@ -292,7 +293,8 @@ export default React.memo(function FileUpload({
   slim = false,
   disabled = false,
   'data-qa': dataQa,
-  allowedFileTypes = defaultAllowedFileTypes
+  allowedFileTypes = defaultAllowedFileTypes,
+  buttonText
 }: FileUploadProps) {
   const i18n = useTranslations().fileUpload
 
@@ -447,7 +449,7 @@ export default React.memo(function FileUpload({
               className="file-input-button"
               disabled={disabled}
               icon={faPlus}
-              text={i18n.input.title}
+              text={buttonText ?? i18n.input.title}
               onClick={() => inputRef?.current?.click()}
             />
             {fileInput}
@@ -463,7 +465,7 @@ export default React.memo(function FileUpload({
             appearance="inline"
             disabled={disabled}
             icon={faPaperclip}
-            text={i18n.input.title}
+            text={buttonText ?? i18n.input.title}
             onClick={() => inputRef?.current?.click()}
           />
           {fileInput}
@@ -478,7 +480,7 @@ export default React.memo(function FileUpload({
         >
           <span role="button" tabIndex={0}>
             {fileInput}
-            <H4>{i18n.input.title}</H4>
+            <H4>{buttonText ?? i18n.input.title}</H4>
             <P>
               <InformationText>
                 {i18n.input.text(allowedFileTypes)}
