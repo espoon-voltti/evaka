@@ -24,6 +24,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Component
 @Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
+    private val featureConfig: FeatureConfig,
     private val tracer: Tracer = NoopTracerFactory.create()
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
@@ -101,7 +103,7 @@ class InvoiceGenerator(
                 range.start.month == Month.JULY &&
                     (range.end.month == Month.JULY && range.start.year == range.end.year)
             ) {
-                tx.getFreeJulyChildren(range.start.year)
+                tx.getFreeJulyChildren(range.start.year, featureConfig.freeJulyStartOnSeptember)
             } else {
                 emptySet()
             }
@@ -544,54 +546,36 @@ FROM daycare
         }
         .toMap { columnPair("unit_id", "area_id") }
 
-fun Database.Read.getFreeJulyChildren(year: Int): Set<ChildId> =
+fun Database.Read.getFreeJulyChildren(year: Int, freeJulyStartOnSeptember: Boolean): Set<ChildId> =
     createQuery {
-            sql(
-                """
-WITH invoiced_placement AS (
-    SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(${bind(PlacementType.invoiced)}::placement_type[])
-)
-SELECT
-  distinct(p09.child_id)
-FROM
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 9)}) p09,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 10)}) p10,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 11)}) p11,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year - 1, 12)}) p12,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 1)}) p01,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 2)}) p02,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 3)}) p03,
-${if (year != 2020) {
-            """
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
-"""
-        } else {
-            ""
-        }}
-  (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
-WHERE
-  p09.child_id = p10.child_id AND
-  p09.child_id = p11.child_id AND
-  p09.child_id = p12.child_id AND
-  p09.child_id = p01.child_id AND
-  p09.child_id = p02.child_id AND
-  p09.child_id = p03.child_id AND
-  ${if (year != 2020) {
-            """
-  p09.child_id = p04.child_id AND
-  p09.child_id = p05.child_id AND
-"""
-        } else {
-            ""
-        }}
-  p09.child_id = p06.child_id;
-"""
-            )
+            val where =
+                Predicate.allNotNull(
+                    placementOn(year - 1, 8).takeUnless { freeJulyStartOnSeptember },
+                    placementOn(year - 1, 9),
+                    placementOn(year - 1, 10),
+                    placementOn(year - 1, 11),
+                    placementOn(year - 1, 12),
+                    placementOn(year, 1),
+                    placementOn(year, 2),
+                    placementOn(year, 3),
+                    placementOn(year, 4).takeIf { year != 2020 },
+                    placementOn(year, 5).takeIf { year != 2020 },
+                    placementOn(year, 6),
+                )
+            sql("SELECT id FROM child c WHERE ${predicate(where.forTable("c"))}")
         }
         .toSet<ChildId>()
 
-private fun placementOn(year: Int, month: Int): String {
-    val firstOfMonth = "'$year-$month-01'"
-    return "daterange(start_date, end_date, '[]') && daterange($firstOfMonth::date, ($firstOfMonth::date + INTERVAL '1 month -1 day')::date, '[]')"
+private fun placementOn(year: Int, month: Int) = Predicate {
+    where(
+        """
+EXISTS (
+    SELECT 1 FROM placement
+    WHERE
+        child_id = $it.id AND
+        type = ANY(${bind(PlacementType.invoiced)}) AND
+        daterange(start_date, end_date, '[]') && ${bind(FiniteDateRange.ofMonth(year, Month.of(month)))}
+)
+"""
+    )
 }
