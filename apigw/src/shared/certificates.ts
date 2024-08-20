@@ -13,7 +13,8 @@ const names = [
   'espooad-internal-staging.2022.pem',
   'idp.test.espoon-voltti.fi.pem',
   'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem',
-  'saml-signing-testi.apro.tunnistus.fi.2022.pem'
+  'saml-signing-testi.apro.tunnistus.fi.2022.pem',
+  'saml-signing-testi.apro.tunnistus.fi.2024.pem'
 ] as const
 
 export type TrustedCertificates = (typeof names)[number]
