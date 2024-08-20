@@ -40,7 +40,10 @@ export async function saveApplicationAttachment(
   onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
-    { path: `/attachments/applications/${applicationId}`, params: { type } },
+    {
+      path: `/employee/attachments/applications/${applicationId}`,
+      params: { type }
+    },
     file,
     onUploadProgress
   )
@@ -52,7 +55,7 @@ export async function saveIncomeStatementAttachment(
   onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
-    { path: `/attachments/income-statements/${incomeStatementId}` },
+    { path: `/employee/attachments/income-statements/${incomeStatementId}` },
     file,
     onUploadProgress
   )
@@ -65,7 +68,9 @@ export async function saveIncomeAttachment(
 ): Promise<Result<UUID>> {
   return await doSaveAttachment(
     {
-      path: incomeId ? `/attachments/income/${incomeId}` : `/attachments/income`
+      path: incomeId
+        ? `/employee/attachments/income/${incomeId}`
+        : `/employee/attachments/income`
     },
     file,
     onUploadProgress
@@ -80,8 +85,8 @@ export async function saveFeeAlterationAttachment(
   return await doSaveAttachment(
     {
       path: feeAlterationId
-        ? `/attachments/fee-alteration/${feeAlterationId}`
-        : `/attachments/fee-alteration`
+        ? `/employee/attachments/fee-alteration/${feeAlterationId}`
+        : `/employee/attachments/fee-alteration`
     },
     file,
     onUploadProgress
@@ -94,7 +99,7 @@ export const saveMessageAttachment = (
   onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
-    { path: `/attachments/messages/${draftId}` },
+    { path: `/employee/attachments/messages/${draftId}` },
     file,
     onUploadProgress
   )
@@ -105,7 +110,7 @@ export const savePedagogicalDocumentAttachment = (
   onUploadProgress: (percentage: number) => void
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
-    { path: `/attachments/pedagogical-documents/${documentId}` },
+    { path: `/employee/attachments/pedagogical-documents/${documentId}` },
     file,
     onUploadProgress
   )
@@ -115,5 +120,5 @@ export function getAttachmentUrl(
   requestedFilename: string
 ): string {
   const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/attachments/${attachmentId}/download/${encodedFilename}`
+  return `${API_URL}/employee/attachments/${attachmentId}/download/${encodedFilename}`
 }

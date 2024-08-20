@@ -43,7 +43,7 @@ export async function cancelFullDayAbsence(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/full-day-absence`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/full-day-absence`.toString(),
     method: 'DELETE'
   })
   return json
@@ -66,7 +66,7 @@ export async function deleteAbsenceRange(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/absence-range`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/absence-range`.toString(),
     method: 'DELETE',
     params
   })
@@ -83,7 +83,7 @@ export async function getAttendanceStatuses(
   }
 ): Promise<Record<UUID, ChildAttendanceStatusResponse>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>({
-    url: uri`/attendances/units/${request.unitId}/attendances`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/attendances`.toString(),
     method: 'GET'
   })
   return Object.fromEntries(Object.entries(json).map(
@@ -103,7 +103,7 @@ export async function getChildExpectedAbsencesOnDeparture(
   }
 ): Promise<ExpectedAbsencesOnDepartureResponse> {
   const { data: json } = await client.request<JsonOf<ExpectedAbsencesOnDepartureResponse>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/departure/expected-absences`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/departure/expected-absences`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExpectedAbsencesOnDepartureRequest>
   })
@@ -120,7 +120,7 @@ export async function getChildren(
   }
 ): Promise<AttendanceChild[]> {
   const { data: json } = await client.request<JsonOf<AttendanceChild[]>>({
-    url: uri`/attendances/units/${request.unitId}/children`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAttendanceChild(e))
@@ -138,7 +138,7 @@ export async function postAbsenceRange(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/absence-range`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/absence-range`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AbsenceRangeRequest>
   })
@@ -157,7 +157,7 @@ export async function postArrival(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/arrival`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/arrival`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ArrivalRequest>
   })
@@ -176,7 +176,7 @@ export async function postDeparture(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/departure`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/departure`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DepartureRequest>
   })
@@ -195,7 +195,7 @@ export async function postFullDayAbsence(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/full-day-absence`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/full-day-absence`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FullDayAbsenceRequest>
   })
@@ -213,7 +213,7 @@ export async function returnToComing(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/return-to-coming`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/return-to-coming`.toString(),
     method: 'POST'
   })
   return json
@@ -230,7 +230,7 @@ export async function returnToPresent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendances/units/${request.unitId}/children/${request.childId}/return-to-present`.toString(),
+    url: uri`/employee-mobile/attendances/units/${request.unitId}/children/${request.childId}/return-to-present`.toString(),
     method: 'POST'
   })
   return json
@@ -249,7 +249,7 @@ export async function getAttendancesByUnit(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
-    url: uri`/mobile/realtime-staff-attendances`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances`.toString(),
     method: 'GET',
     params
   })
@@ -266,7 +266,7 @@ export async function markArrival(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/arrival`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances/arrival`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffArrivalRequest>
   })
@@ -283,7 +283,7 @@ export async function markDeparture(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/departure`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances/departure`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffDepartureRequest>
   })
@@ -300,7 +300,7 @@ export async function markExternalArrival(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/mobile/realtime-staff-attendances/arrival-external`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances/arrival-external`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExternalStaffArrivalRequest>
   })
@@ -317,7 +317,7 @@ export async function markExternalDeparture(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile/realtime-staff-attendances/departure-external`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances/departure-external`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExternalStaffDepartureRequest>
   })
@@ -338,7 +338,7 @@ export async function setAttendances(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<StaffAttendanceUpdateResponse>>({
-    url: uri`/mobile/realtime-staff-attendances`.toString(),
+    url: uri`/employee-mobile/realtime-staff-attendances`.toString(),
     method: 'PUT',
     params,
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdateRequest>
@@ -356,7 +356,7 @@ export async function getUnitInfo(
   }
 ): Promise<UnitInfo> {
   const { data: json } = await client.request<JsonOf<UnitInfo>>({
-    url: uri`/mobile/units/${request.unitId}`.toString(),
+    url: uri`/employee-mobile/units/${request.unitId}`.toString(),
     method: 'GET'
   })
   return json
@@ -375,7 +375,7 @@ export async function getUnitStats(
     ...(request.unitIds?.map((e): [string, string | null | undefined] => ['unitIds', e]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<UnitStats[]>>({
-    url: uri`/mobile/units/stats`.toString(),
+    url: uri`/employee-mobile/units/stats`.toString(),
     method: 'GET',
     params
   })

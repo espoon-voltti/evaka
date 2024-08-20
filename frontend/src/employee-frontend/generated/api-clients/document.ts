@@ -39,7 +39,7 @@ export async function createTemplate(
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
-    url: uri`/document-templates`.toString(),
+    url: uri`/employee/document-templates`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
@@ -56,7 +56,7 @@ export async function deleteDraftTemplate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -73,7 +73,7 @@ export async function duplicateTemplate(
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
-    url: uri`/document-templates/${request.templateId}/duplicate`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/duplicate`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
@@ -90,7 +90,7 @@ export async function exportTemplate(
   }
 ): Promise<ExportedDocumentTemplate> {
   const { data: json } = await client.request<JsonOf<ExportedDocumentTemplate>>({
-    url: uri`/document-templates/${request.templateId}/export`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/export`.toString(),
     method: 'GET'
   })
   return deserializeJsonExportedDocumentTemplate(json)
@@ -106,7 +106,7 @@ export async function forceUnpublishTemplate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}/force-unpublish`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/force-unpublish`.toString(),
     method: 'PUT'
   })
   return json
@@ -125,7 +125,7 @@ export async function getActiveTemplates(
     ['childId', request.childId]
   )
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
-    url: uri`/document-templates/active`.toString(),
+    url: uri`/employee/document-templates/active`.toString(),
     method: 'GET',
     params
   })
@@ -142,7 +142,7 @@ export async function getTemplate(
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
-    url: uri`/document-templates/${request.templateId}`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonDocumentTemplate(json)
@@ -154,7 +154,7 @@ export async function getTemplate(
 */
 export async function getTemplates(): Promise<DocumentTemplateSummary[]> {
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
-    url: uri`/document-templates`.toString(),
+    url: uri`/employee/document-templates`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonDocumentTemplateSummary(e))
@@ -170,7 +170,7 @@ export async function importTemplate(
   }
 ): Promise<DocumentTemplate> {
   const { data: json } = await client.request<JsonOf<DocumentTemplate>>({
-    url: uri`/document-templates/import`.toString(),
+    url: uri`/employee/document-templates/import`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExportedDocumentTemplate>
   })
@@ -187,7 +187,7 @@ export async function publishTemplate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}/publish`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/publish`.toString(),
     method: 'PUT'
   })
   return json
@@ -204,7 +204,7 @@ export async function updateDraftTemplateBasics(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DocumentTemplateBasicsRequest>
   })
@@ -222,7 +222,7 @@ export async function updateDraftTemplateContent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}/content`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/content`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DocumentTemplateContent>
   })
@@ -240,7 +240,7 @@ export async function updateTemplateValidity(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/document-templates/${request.templateId}/validity`.toString(),
+    url: uri`/employee/document-templates/${request.templateId}/validity`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DateRange>
   })
@@ -257,7 +257,7 @@ export async function createDocument(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/child-documents`.toString(),
+    url: uri`/employee/child-documents`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDocumentCreateRequest>
   })
@@ -274,7 +274,7 @@ export async function deleteDraftDocument(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -290,7 +290,7 @@ export async function getDocument(
   }
 ): Promise<ChildDocumentWithPermittedActions> {
   const { data: json } = await client.request<JsonOf<ChildDocumentWithPermittedActions>>({
-    url: uri`/child-documents/${request.documentId}`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonChildDocumentWithPermittedActions(json)
@@ -309,7 +309,7 @@ export async function getDocuments(
     ['childId', request.childId]
   )
   const { data: json } = await client.request<JsonOf<ChildDocumentSummaryWithPermittedActions[]>>({
-    url: uri`/child-documents`.toString(),
+    url: uri`/employee/child-documents`.toString(),
     method: 'GET',
     params
   })
@@ -327,7 +327,7 @@ export async function nextDocumentStatus(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}/next-status`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}/next-status`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<StatusChangeRequest>
   })
@@ -345,7 +345,7 @@ export async function prevDocumentStatus(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}/prev-status`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}/prev-status`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<StatusChangeRequest>
   })
@@ -362,7 +362,7 @@ export async function publishDocument(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}/publish`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}/publish`.toString(),
     method: 'PUT'
   })
   return json
@@ -378,7 +378,7 @@ export async function takeDocumentWriteLock(
   }
 ): Promise<DocumentLockResponse> {
   const { data: json } = await client.request<JsonOf<DocumentLockResponse>>({
-    url: uri`/child-documents/${request.documentId}/lock`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}/lock`.toString(),
     method: 'PUT'
   })
   return deserializeJsonDocumentLockResponse(json)
@@ -395,7 +395,7 @@ export async function updateDocumentContent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-documents/${request.documentId}/content`.toString(),
+    url: uri`/employee/child-documents/${request.documentId}/content`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DocumentContent>
   })

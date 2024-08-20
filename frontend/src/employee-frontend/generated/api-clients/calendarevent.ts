@@ -31,7 +31,7 @@ export async function addCalendarEventTime(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/calendar-event/${request.id}/time`.toString(),
+    url: uri`/employee/calendar-event/${request.id}/time`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventTimeForm>
   })
@@ -48,7 +48,7 @@ export async function createCalendarEvent(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/calendar-event`.toString(),
+    url: uri`/employee/calendar-event`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventForm>
   })
@@ -65,7 +65,7 @@ export async function deleteCalendarEvent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/calendar-event/${request.id}`.toString(),
+    url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -81,7 +81,7 @@ export async function deleteCalendarEventTime(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/calendar-event-time/${request.id}`.toString(),
+    url: uri`/employee/calendar-event-time/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -97,7 +97,7 @@ export async function getCalendarEvent(
   }
 ): Promise<CalendarEvent> {
   const { data: json } = await client.request<JsonOf<CalendarEvent>>({
-    url: uri`/calendar-event/${request.id}`.toString(),
+    url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonCalendarEvent(json)
@@ -120,7 +120,7 @@ export async function getGroupDiscussionReservationDays(
     ['end', request.end.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<DiscussionReservationDay[]>>({
-    url: uri`/units/${request.unitId}/groups/${request.groupId}/discussion-reservation-days`.toString(),
+    url: uri`/employee/units/${request.unitId}/groups/${request.groupId}/discussion-reservation-days`.toString(),
     method: 'GET',
     params
   })
@@ -138,7 +138,7 @@ export async function getGroupDiscussionSurveys(
   }
 ): Promise<CalendarEvent[]> {
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
-    url: uri`/units/${request.unitId}/groups/${request.groupId}/discussion-surveys`.toString(),
+    url: uri`/employee/units/${request.unitId}/groups/${request.groupId}/discussion-surveys`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonCalendarEvent(e))
@@ -160,7 +160,7 @@ export async function getUnitCalendarEvents(
     ['end', request.end.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<CalendarEvent[]>>({
-    url: uri`/units/${request.unitId}/calendar-events`.toString(),
+    url: uri`/employee/units/${request.unitId}/calendar-events`.toString(),
     method: 'GET',
     params
   })
@@ -178,7 +178,7 @@ export async function modifyCalendarEvent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/calendar-event/${request.id}`.toString(),
+    url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'PATCH',
     data: request.body satisfies JsonCompatible<CalendarEventUpdateForm>
   })
@@ -195,7 +195,7 @@ export async function setCalendarEventTimeReservation(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/calendar-event/reservation`.toString(),
+    url: uri`/employee/calendar-event/reservation`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CalendarEventTimeEmployeeReservationForm>
   })
@@ -213,7 +213,7 @@ export async function updateCalendarEvent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/calendar-event/${request.id}`.toString(),
+    url: uri`/employee/calendar-event/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<CalendarEventUpdateForm>
   })

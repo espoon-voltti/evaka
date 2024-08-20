@@ -27,7 +27,7 @@ export async function createHolidayPeriod(
   }
 ): Promise<HolidayPeriod> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
-    url: uri`/holiday-period`.toString(),
+    url: uri`/employee/holiday-period`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<HolidayPeriodCreate>
   })
@@ -44,7 +44,7 @@ export async function deleteHolidayPeriod(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -60,7 +60,7 @@ export async function getHolidayPeriod(
   }
 ): Promise<HolidayPeriod> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonHolidayPeriod(json)
@@ -72,7 +72,7 @@ export async function getHolidayPeriod(
 */
 export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod[]>>({
-    url: uri`/holiday-period`.toString(),
+    url: uri`/employee/holiday-period`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonHolidayPeriod(e))
@@ -89,7 +89,7 @@ export async function updateHolidayPeriod(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<HolidayPeriodUpdate>
   })
@@ -106,7 +106,7 @@ export async function createHolidayQuestionnaire(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/questionnaire`.toString(),
+    url: uri`/employee/holiday-period/questionnaire`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
   })
@@ -123,7 +123,7 @@ export async function deleteHolidayQuestionnaire(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -139,7 +139,7 @@ export async function getQuestionnaire(
   }
 ): Promise<FixedPeriodQuestionnaire> {
   const { data: json } = await client.request<JsonOf<FixedPeriodQuestionnaire>>({
-    url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonFixedPeriodQuestionnaire(json)
@@ -151,7 +151,7 @@ export async function getQuestionnaire(
 */
 export async function getQuestionnaires(): Promise<FixedPeriodQuestionnaire[]> {
   const { data: json } = await client.request<JsonOf<FixedPeriodQuestionnaire[]>>({
-    url: uri`/holiday-period/questionnaire`.toString(),
+    url: uri`/employee/holiday-period/questionnaire`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFixedPeriodQuestionnaire(e))
@@ -168,7 +168,7 @@ export async function updateHolidayQuestionnaire(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/holiday-period/questionnaire/${request.id}`.toString(),
+    url: uri`/employee/holiday-period/questionnaire/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<FixedPeriodQuestionnaireBody>
   })

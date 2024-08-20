@@ -8,6 +8,7 @@ import React from 'react'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { faFileAlt } from 'lib-icons'
 
+import { API_URL } from '../api-client'
 import { useTranslation } from '../localization'
 
 export const PdfLink = React.memo(function PdfLink({
@@ -19,7 +20,7 @@ export const PdfLink = React.memo(function PdfLink({
 
   return (
     <a
-      href={`/api/application/citizen/decisions/${decisionId}/download`}
+      href={`${API_URL}/citizen/decisions/${decisionId}/download`}
       target="_blank"
       rel="noreferrer"
     >

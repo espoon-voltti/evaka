@@ -19,6 +19,8 @@ import { translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
+import { API_URL } from '../../api-client'
+
 import {
   assistanceNeedPreschoolDecisionQuery,
   markAssistanceNeedPreschoolDecisionAsReadMutation
@@ -50,7 +52,7 @@ export default React.memo(function AssistanceNeedPreschoolDecisionPage() {
               text={i18n.common.download}
               onClick={() => {
                 window.open(
-                  `/api/application/citizen/children/assistance-need-preschool-decisions/${id}/pdf`,
+                  `${API_URL}/citizen/children/assistance-need-preschool-decisions/${id}/pdf`,
                   '_blank',
                   'noopener,noreferrer'
                 )

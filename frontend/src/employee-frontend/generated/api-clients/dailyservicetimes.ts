@@ -24,7 +24,7 @@ export async function deleteDailyServiceTimes(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daily-service-times/${request.id}`.toString(),
+    url: uri`/employee/daily-service-times/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -40,7 +40,7 @@ export async function getDailyServiceTimes(
   }
 ): Promise<DailyServiceTimesResponse[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimesResponse[]>>({
-    url: uri`/children/${request.childId}/daily-service-times`.toString(),
+    url: uri`/employee/children/${request.childId}/daily-service-times`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonDailyServiceTimesResponse(e))
@@ -57,7 +57,7 @@ export async function postDailyServiceTimes(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/children/${request.childId}/daily-service-times`.toString(),
+    url: uri`/employee/children/${request.childId}/daily-service-times`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DailyServiceTimesValue>
   })
@@ -75,7 +75,7 @@ export async function putDailyServiceTimes(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daily-service-times/${request.id}`.toString(),
+    url: uri`/employee/daily-service-times/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DailyServiceTimesValue>
   })
@@ -93,7 +93,7 @@ export async function putDailyServiceTimesEnd(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daily-service-times/${request.id}/end`.toString(),
+    url: uri`/employee/daily-service-times/${request.id}/end`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DailyServiceTimesEndDate>
   })

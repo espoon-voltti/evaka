@@ -19,7 +19,7 @@ export async function deleteImage(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/children/${request.childId}/image`.toString(),
+    url: uri`/employee-mobile/children/${request.childId}/image`.toString(),
     method: 'DELETE'
   })
   return json

@@ -38,7 +38,7 @@ export async function createDocument(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.childId}/vasu`.toString(),
+    url: uri`/employee/children/${request.childId}/vasu`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateDocumentRequest>
   })
@@ -55,7 +55,7 @@ export async function deleteDocument(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/${request.id}`.toString(),
+    url: uri`/employee/vasu/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -71,7 +71,7 @@ export async function getDocument(
   }
 ): Promise<VasuDocumentWithPermittedActions> {
   const { data: json } = await client.request<JsonOf<VasuDocumentWithPermittedActions>>({
-    url: uri`/vasu/${request.id}`.toString(),
+    url: uri`/employee/vasu/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonVasuDocumentWithPermittedActions(json)
@@ -87,7 +87,7 @@ export async function getVasuSummariesByChild(
   }
 ): Promise<VasuDocumentSummaryWithPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<VasuDocumentSummaryWithPermittedActions[]>>({
-    url: uri`/children/${request.childId}/vasu-summaries`.toString(),
+    url: uri`/employee/children/${request.childId}/vasu-summaries`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonVasuDocumentSummaryWithPermittedActions(e))
@@ -104,7 +104,7 @@ export async function putDocument(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/${request.id}`.toString(),
+    url: uri`/employee/vasu/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpdateDocumentRequest>
   })
@@ -122,7 +122,7 @@ export async function updateDocumentState(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/${request.id}/update-state`.toString(),
+    url: uri`/employee/vasu/${request.id}/update-state`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChangeDocumentStateRequest>
   })
@@ -140,7 +140,7 @@ export async function copyTemplate(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/vasu/templates/${request.id}/copy`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}/copy`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CopyTemplateRequest>
   })
@@ -157,7 +157,7 @@ export async function deleteTemplate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/templates/${request.id}`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -174,7 +174,7 @@ export async function editTemplate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/templates/${request.id}`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<VasuTemplateUpdate>
   })
@@ -191,7 +191,7 @@ export async function getTemplate(
   }
 ): Promise<VasuTemplate> {
   const { data: json } = await client.request<JsonOf<VasuTemplate>>({
-    url: uri`/vasu/templates/${request.id}`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonVasuTemplate(json)
@@ -210,7 +210,7 @@ export async function getTemplates(
     ['validOnly', request.validOnly?.toString()]
   )
   const { data: json } = await client.request<JsonOf<VasuTemplateSummary[]>>({
-    url: uri`/vasu/templates`.toString(),
+    url: uri`/employee/vasu/templates`.toString(),
     method: 'GET',
     params
   })
@@ -228,7 +228,7 @@ export async function migrateVasuDocuments(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/templates/${request.id}/migrate`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}/migrate`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<MigrateVasuRequest>
   })
@@ -245,7 +245,7 @@ export async function postTemplate(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/vasu/templates`.toString(),
+    url: uri`/employee/vasu/templates`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateTemplateRequest>
   })
@@ -263,7 +263,7 @@ export async function putTemplateContent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/vasu/templates/${request.id}/content`.toString(),
+    url: uri`/employee/vasu/templates/${request.id}/content`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<VasuContent>
   })

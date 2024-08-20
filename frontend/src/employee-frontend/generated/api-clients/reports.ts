@@ -98,7 +98,7 @@ export async function getApplicationsReport(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<ApplicationsReportRow[]>>({
-    url: uri`/reports/applications`.toString(),
+    url: uri`/employee/reports/applications`.toString(),
     method: 'GET',
     params
   })
@@ -111,7 +111,7 @@ export async function getApplicationsReport(
 */
 export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeedDecisionsReportRow[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionsReportRow[]>>({
-    url: uri`/reports/assistance-need-decisions`.toString(),
+    url: uri`/employee/reports/assistance-need-decisions`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAssistanceNeedDecisionsReportRow(e))
@@ -123,7 +123,7 @@ export async function getAssistanceNeedDecisionsReport(): Promise<AssistanceNeed
 */
 export async function getAssistanceNeedDecisionsReportUnreadCount(): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
-    url: uri`/reports/assistance-need-decisions/unread-count`.toString(),
+    url: uri`/employee/reports/assistance-need-decisions/unread-count`.toString(),
     method: 'GET'
   })
   return json
@@ -142,7 +142,7 @@ export async function getAssistanceNeedsAndActionsReport(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReport>>({
-    url: uri`/reports/assistance-needs-and-actions`.toString(),
+    url: uri`/employee/reports/assistance-needs-and-actions`.toString(),
     method: 'GET',
     params
   })
@@ -162,7 +162,7 @@ export async function getAssistanceNeedsAndActionsReportByChild(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<AssistanceNeedsAndActionsReportByChild>>({
-    url: uri`/reports/assistance-needs-and-actions/by-child`.toString(),
+    url: uri`/employee/reports/assistance-needs-and-actions/by-child`.toString(),
     method: 'GET',
     params
   })
@@ -187,7 +187,7 @@ export async function getAttendanceReservationReportByUnit(
     ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
-    url: uri`/reports/attendance-reservation/${request.unitId}`.toString(),
+    url: uri`/employee/reports/attendance-reservation/${request.unitId}`.toString(),
     method: 'GET',
     params
   })
@@ -212,7 +212,7 @@ export async function getAttendanceReservationReportByUnitAndChild(
     ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportByChildRow[]>>({
-    url: uri`/reports/attendance-reservation/${request.unitId}/by-child`.toString(),
+    url: uri`/employee/reports/attendance-reservation/${request.unitId}/by-child`.toString(),
     method: 'GET',
     params
   })
@@ -232,7 +232,7 @@ export async function getChildAgeLanguageReport(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<ChildAgeLanguageReportRow[]>>({
-    url: uri`/reports/child-age-language`.toString(),
+    url: uri`/employee/reports/child-age-language`.toString(),
     method: 'GET',
     params
   })
@@ -268,7 +268,7 @@ export async function getChildAttendanceReport(
 */
 export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<ChildrenInDifferentAddressReportRow[]>>({
-    url: uri`/reports/children-in-different-address`.toString(),
+    url: uri`/employee/reports/children-in-different-address`.toString(),
     method: 'GET'
   })
   return json
@@ -315,7 +315,7 @@ export async function getDecisionsReport(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<DecisionsReportRow[]>>({
-    url: uri`/reports/decisions`.toString(),
+    url: uri`/employee/reports/decisions`.toString(),
     method: 'GET',
     params
   })
@@ -335,7 +335,7 @@ export async function getDuplicatePeopleReport(
     ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
-    url: uri`/reports/duplicate-people`.toString(),
+    url: uri`/employee/reports/duplicate-people`.toString(),
     method: 'GET',
     params
   })
@@ -357,7 +357,7 @@ export async function getEndedPlacementsReport(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<EndedPlacementsReportRow[]>>({
-    url: uri`/reports/ended-placements`.toString(),
+    url: uri`/employee/reports/ended-placements`.toString(),
     method: 'GET',
     params
   })
@@ -381,7 +381,7 @@ export async function getExceededServiceNeedReportRows(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportRow[]>>({
-    url: uri`/reports/exceeded-service-need/rows`.toString(),
+    url: uri`/employee/reports/exceeded-service-need/rows`.toString(),
     method: 'GET',
     params
   })
@@ -394,7 +394,7 @@ export async function getExceededServiceNeedReportRows(
 */
 export async function getExceededServiceNeedReportUnits(): Promise<ExceededServiceNeedReportUnit[]> {
   const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportUnit[]>>({
-    url: uri`/reports/exceeded-service-need/units`.toString(),
+    url: uri`/employee/reports/exceeded-service-need/units`.toString(),
     method: 'GET'
   })
   return json
@@ -406,7 +406,7 @@ export async function getExceededServiceNeedReportUnits(): Promise<ExceededServi
 */
 export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRow[]> {
   const { data: json } = await client.request<JsonOf<FamilyConflictReportRow[]>>({
-    url: uri`/reports/family-conflicts`.toString(),
+    url: uri`/employee/reports/family-conflicts`.toString(),
     method: 'GET'
   })
   return json
@@ -427,7 +427,7 @@ export async function getFamilyContactsReport(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<FamilyContactReportRow[]>>({
-    url: uri`/reports/family-contacts`.toString(),
+    url: uri`/employee/reports/family-contacts`.toString(),
     method: 'GET',
     params
   })
@@ -449,7 +449,7 @@ export async function getFamilyDaycareMealReport(
     ['endDate', request.endDate.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<FamilyDaycareMealReportResult>>({
-    url: uri`/reports/family-daycare-meal-count`.toString(),
+    url: uri`/employee/reports/family-daycare-meal-count`.toString(),
     method: 'GET',
     params
   })
@@ -462,7 +462,7 @@ export async function getFamilyDaycareMealReport(
 */
 export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
   const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
-    url: uri`/reports/future-preschoolers`.toString(),
+    url: uri`/employee/reports/future-preschoolers`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFuturePreschoolersReportRow(e))
@@ -505,7 +505,7 @@ export async function getInvoiceReport(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<InvoiceReport>>({
-    url: uri`/reports/invoices`.toString(),
+    url: uri`/employee/reports/invoices`.toString(),
     method: 'GET',
     params
   })
@@ -525,7 +525,7 @@ export async function getManualDuplicationReport(
     ['viewMode', request.viewMode?.toString()]
   )
   const { data: json } = await client.request<JsonOf<ManualDuplicationReportRow[]>>({
-    url: uri`/reports/manual-duplication`.toString(),
+    url: uri`/employee/reports/manual-duplication`.toString(),
     method: 'GET',
     params
   })
@@ -546,7 +546,7 @@ export async function getMealReportByUnit(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<MealReportData>>({
-    url: uri`/reports/meal/${request.unitId}`.toString(),
+    url: uri`/employee/reports/meal/${request.unitId}`.toString(),
     method: 'GET',
     params
   })
@@ -570,7 +570,7 @@ export async function getMissingHeadOfFamilyReport(
     ['showIntentionalDuplicates', request.showIntentionalDuplicates?.toString()]
   )
   const { data: json } = await client.request<JsonOf<MissingHeadOfFamilyReportRow[]>>({
-    url: uri`/reports/missing-head-of-family`.toString(),
+    url: uri`/employee/reports/missing-head-of-family`.toString(),
     method: 'GET',
     params
   })
@@ -592,7 +592,7 @@ export async function getMissingServiceNeedReport(
     ['to', request.to?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<MissingServiceNeedReportRow[]>>({
-    url: uri`/reports/missing-service-need`.toString(),
+    url: uri`/employee/reports/missing-service-need`.toString(),
     method: 'GET',
     params
   })
@@ -605,7 +605,7 @@ export async function getMissingServiceNeedReport(
 */
 export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenReportRow[]> {
   const { data: json } = await client.request<JsonOf<NonSsnChildrenReportRow[]>>({
-    url: uri`/reports/non-ssn-children`.toString(),
+    url: uri`/employee/reports/non-ssn-children`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonNonSsnChildrenReportRow(e))
@@ -634,7 +634,7 @@ export async function getOccupancyGroupReport(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<OccupancyGroupReportResultRow[]>>({
-    url: uri`/reports/occupancy-by-group`.toString(),
+    url: uri`/employee/reports/occupancy-by-group`.toString(),
     method: 'GET',
     params
   })
@@ -664,7 +664,7 @@ export async function getOccupancyUnitReport(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<OccupancyUnitReportResultRow[]>>({
-    url: uri`/reports/occupancy-by-unit`.toString(),
+    url: uri`/employee/reports/occupancy-by-unit`.toString(),
     method: 'GET',
     params
   })
@@ -677,7 +677,7 @@ export async function getOccupancyUnitReport(
 */
 export async function getPartnersInDifferentAddressReport(): Promise<PartnersInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<PartnersInDifferentAddressReportRow[]>>({
-    url: uri`/reports/partners-in-different-address`.toString(),
+    url: uri`/employee/reports/partners-in-different-address`.toString(),
     method: 'GET'
   })
   return json
@@ -700,7 +700,7 @@ export async function getPlacementCountReport(
     ...(request.placementTypes?.map((e): [string, string | null | undefined] => ['placementTypes', e.toString()]) ?? [])
   )
   const { data: json } = await client.request<JsonOf<PlacementCountReportResult>>({
-    url: uri`/reports/placement-count`.toString(),
+    url: uri`/employee/reports/placement-count`.toString(),
     method: 'GET',
     params
   })
@@ -722,7 +722,7 @@ export async function getPlacementGuaranteeReport(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<PlacementGuaranteeReportRow[]>>({
-    url: uri`/reports/placement-guarantee`.toString(),
+    url: uri`/employee/reports/placement-guarantee`.toString(),
     method: 'GET',
     params
   })
@@ -750,7 +750,7 @@ export async function getPlacementSketchingReport(
     ['latestApplicationSentDate', request.latestApplicationSentDate?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<PlacementSketchingReportRow[]>>({
-    url: uri`/reports/placement-sketching`.toString(),
+    url: uri`/employee/reports/placement-sketching`.toString(),
     method: 'GET',
     params
   })
@@ -798,7 +798,7 @@ export async function getPresenceReport(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<PresenceReportRow[]>>({
-    url: uri`/reports/presences`.toString(),
+    url: uri`/employee/reports/presences`.toString(),
     method: 'GET',
     params
   })
@@ -820,7 +820,7 @@ export async function getRawReport(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<RawReportRow[]>>({
-    url: uri`/reports/raw`.toString(),
+    url: uri`/employee/reports/raw`.toString(),
     method: 'GET',
     params
   })
@@ -833,7 +833,7 @@ export async function getRawReport(
 */
 export async function getPermittedReports(): Promise<Report[]> {
   const { data: json } = await client.request<JsonOf<Report[]>>({
-    url: uri`/reports`.toString(),
+    url: uri`/employee/reports`.toString(),
     method: 'GET'
   })
   return json
@@ -852,7 +852,7 @@ export async function getServiceNeedReport(
     ['date', request.date.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<ServiceNeedReportRow[]>>({
-    url: uri`/reports/service-need`.toString(),
+    url: uri`/employee/reports/service-need`.toString(),
     method: 'GET',
     params
   })
@@ -876,7 +876,7 @@ export async function getServiceVoucherReportForAllUnits(
     ['areaId', request.areaId]
   )
   const { data: json } = await client.request<JsonOf<ServiceVoucherReport>>({
-    url: uri`/reports/service-voucher-value/units`.toString(),
+    url: uri`/employee/reports/service-voucher-value/units`.toString(),
     method: 'GET',
     params
   })
@@ -899,7 +899,7 @@ export async function getServiceVoucherReportForUnit(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<ServiceVoucherUnitReport>>({
-    url: uri`/reports/service-voucher-value/units/${request.unitId}`.toString(),
+    url: uri`/employee/reports/service-voucher-value/units/${request.unitId}`.toString(),
     method: 'GET',
     params
   })
@@ -921,7 +921,7 @@ export async function getSextetReport(
     ['placementType', request.placementType.toString()]
   )
   const { data: json } = await client.request<JsonOf<SextetReportRow[]>>({
-    url: uri`/reports/sextet`.toString(),
+    url: uri`/employee/reports/sextet`.toString(),
     method: 'GET',
     params
   })
@@ -943,7 +943,7 @@ export async function getStartingPlacementsReport(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<StartingPlacementsRow[]>>({
-    url: uri`/reports/starting-placements`.toString(),
+    url: uri`/employee/reports/starting-placements`.toString(),
     method: 'GET',
     params
   })
@@ -956,7 +956,7 @@ export async function getStartingPlacementsReport(
 */
 export async function getUnitsReport(): Promise<UnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<UnitsReportRow[]>>({
-    url: uri`/reports/units`.toString(),
+    url: uri`/employee/reports/units`.toString(),
     method: 'GET'
   })
   return json
@@ -968,7 +968,7 @@ export async function getUnitsReport(): Promise<UnitsReportRow[]> {
 */
 export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaChildErrorReportRow[]>>({
-    url: uri`/reports/varda-child-errors`.toString(),
+    url: uri`/employee/reports/varda-child-errors`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonVardaChildErrorReportRow(e))
@@ -980,7 +980,7 @@ export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReport
 */
 export async function getVardaUnitErrorsReport(): Promise<VardaUnitErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaUnitErrorReportRow[]>>({
-    url: uri`/reports/varda-unit-errors`.toString(),
+    url: uri`/employee/reports/varda-unit-errors`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonVardaUnitErrorReportRow(e))
@@ -1001,7 +1001,7 @@ export async function sendPatuReport(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/patu-report`.toString(),
+    url: uri`/employee/patu-report`.toString(),
     method: 'POST',
     params
   })

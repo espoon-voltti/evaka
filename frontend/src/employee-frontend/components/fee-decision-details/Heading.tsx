@@ -26,7 +26,7 @@ import { formatName } from '../../utils'
 import { TypeSelect } from './TypeSelect'
 
 function getFeeDecisionPdfUrl(decisionId: string): string {
-  return `${API_URL}/fee-decisions/pdf/${decisionId}`
+  return `${API_URL}/employee/fee-decisions/pdf/${decisionId}`
 }
 
 interface Props {

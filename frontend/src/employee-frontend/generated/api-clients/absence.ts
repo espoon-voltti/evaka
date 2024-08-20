@@ -29,7 +29,7 @@ export async function addPresences(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/absences/${request.groupId}/present`.toString(),
+    url: uri`/employee/absences/${request.groupId}/present`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<Presence[]>
   })
@@ -47,7 +47,7 @@ export async function deleteHolidayReservations(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/absences/${request.groupId}/delete-holiday-reservations`.toString(),
+    url: uri`/employee/absences/${request.groupId}/delete-holiday-reservations`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<HolidayReservationsDelete[]>
   })
@@ -70,7 +70,7 @@ export async function getAbsencesOfChild(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<Absence[]>>({
-    url: uri`/absences/by-child/${request.childId}`.toString(),
+    url: uri`/employee/absences/by-child/${request.childId}`.toString(),
     method: 'GET',
     params
   })
@@ -93,7 +93,7 @@ export async function groupMonthCalendar(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<GroupMonthCalendar>>({
-    url: uri`/absences/${request.groupId}`.toString(),
+    url: uri`/employee/absences/${request.groupId}`.toString(),
     method: 'GET',
     params
   })
@@ -111,7 +111,7 @@ export async function upsertAbsences(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/absences/${request.groupId}`.toString(),
+    url: uri`/employee/absences/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AbsenceUpsert[]>
   })

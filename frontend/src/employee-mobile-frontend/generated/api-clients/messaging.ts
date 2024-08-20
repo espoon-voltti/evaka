@@ -41,7 +41,7 @@ export async function createMessage(
   }
 ): Promise<CreateMessageResponse> {
   const { data: json } = await client.request<JsonOf<CreateMessageResponse>>({
-    url: uri`/messages/${request.accountId}`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostMessageBody>
   })
@@ -59,7 +59,7 @@ export async function createMessagePreflightCheck(
   }
 ): Promise<PostMessagePreflightResponse> {
   const { data: json } = await client.request<JsonOf<PostMessagePreflightResponse>>({
-    url: uri`/messages/${request.accountId}/preflight-check`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/preflight-check`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostMessagePreflightBody>
   })
@@ -77,7 +77,7 @@ export async function deleteDraftMessage(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -93,7 +93,7 @@ export async function getAccountsByDevice(
   }
 ): Promise<AuthorizedMessageAccount[]> {
   const { data: json } = await client.request<JsonOf<AuthorizedMessageAccount[]>>({
-    url: uri`/messages/mobile/my-accounts/${request.unitId}`.toString(),
+    url: uri`/employee-mobile/messages/my-accounts/${request.unitId}`.toString(),
     method: 'GET'
   })
   return json
@@ -109,7 +109,7 @@ export async function getDraftMessages(
   }
 ): Promise<DraftContent[]> {
   const { data: json } = await client.request<JsonOf<DraftContent[]>>({
-    url: uri`/messages/${request.accountId}/drafts`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/drafts`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonDraftContent(e))
@@ -131,7 +131,7 @@ export async function getReceivedMessages(
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
-    url: uri`/messages/${request.accountId}/received`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/received`.toString(),
     method: 'GET',
     params
   })
@@ -144,7 +144,7 @@ export async function getReceivedMessages(
 */
 export async function getReceiversForNewMessage(): Promise<MessageReceiversResponse[]> {
   const { data: json } = await client.request<JsonOf<MessageReceiversResponse[]>>({
-    url: uri`/messages/receivers`.toString(),
+    url: uri`/employee-mobile/messages/receivers`.toString(),
     method: 'GET'
   })
   return json
@@ -166,7 +166,7 @@ export async function getSentMessages(
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedSentMessages>>({
-    url: uri`/messages/${request.accountId}/sent`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/sent`.toString(),
     method: 'GET',
     params
   })
@@ -184,7 +184,7 @@ export async function getThread(
   }
 ): Promise<MessageThread> {
   const { data: json } = await client.request<JsonOf<MessageThread>>({
-    url: uri`/messages/${request.accountId}/thread/${request.threadId}`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/thread/${request.threadId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonMessageThread(json)
@@ -200,7 +200,7 @@ export async function getUnreadMessagesByUnit(
   }
 ): Promise<UnreadCountByAccountAndGroup[]> {
   const { data: json } = await client.request<JsonOf<UnreadCountByAccountAndGroup[]>>({
-    url: uri`/messages/unread/${request.unitId}`.toString(),
+    url: uri`/employee-mobile/messages/unread/${request.unitId}`.toString(),
     method: 'GET'
   })
   return json
@@ -216,7 +216,7 @@ export async function initDraftMessage(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/messages/${request.accountId}/drafts`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/drafts`.toString(),
     method: 'POST'
   })
   return json
@@ -233,7 +233,7 @@ export async function markThreadRead(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/messages/${request.accountId}/threads/${request.threadId}/read`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/threads/${request.threadId}/read`.toString(),
     method: 'PUT'
   })
   return json
@@ -251,7 +251,7 @@ export async function replyToThread(
   }
 ): Promise<ThreadReply> {
   const { data: json } = await client.request<JsonOf<ThreadReply>>({
-    url: uri`/messages/${request.accountId}/${request.messageId}/reply`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/${request.messageId}/reply`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ReplyToMessageBody>
   })
@@ -270,7 +270,7 @@ export async function updateDraftMessage(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
+    url: uri`/employee-mobile/messages/${request.accountId}/drafts/${request.draftId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpdatableDraftContent>
   })

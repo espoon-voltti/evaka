@@ -314,7 +314,7 @@ export default React.memo(function PersonDetails({
         uiMode !== 'person-details-editing' ? (
           <ButtonSpacer>
             <a
-              href={`${API_URL}/person/${person.id}/address-page/download`}
+              href={`${API_URL}/employee/person/${person.id}/address-page/download`}
               target="_blank"
               rel="noreferrer"
             >

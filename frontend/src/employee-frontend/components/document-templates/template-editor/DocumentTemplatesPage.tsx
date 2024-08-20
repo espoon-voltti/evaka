@@ -46,7 +46,7 @@ import TemplateImportModal from './TemplateImportModal'
 import TemplateModal, { TemplateModalMode } from './TemplateModal'
 
 function exportDocumentTemplateUrl(id: UUID): string {
-  return `${API_URL}/document-templates/${encodeURIComponent(id)}/export`
+  return `${API_URL}/employee/document-templates/${encodeURIComponent(id)}/export`
 }
 
 const validityForm = required(openEndedLocalDateRange())

@@ -19,7 +19,7 @@ export async function deleteAttachment(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attachments/${request.attachmentId}`.toString(),
+    url: uri`/employee/attachments/${request.attachmentId}`.toString(),
     method: 'DELETE'
   })
   return json

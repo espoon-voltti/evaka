@@ -39,7 +39,7 @@ export async function getOccupancyPeriodsSpeculated(
     ['preschoolDaycareTo', request.preschoolDaycareTo?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<OccupancyResponseSpeculated>>({
-    url: uri`/occupancy/by-unit/${request.unitId}/speculated/${request.applicationId}`.toString(),
+    url: uri`/employee/occupancy/by-unit/${request.unitId}/speculated/${request.applicationId}`.toString(),
     method: 'GET',
     params
   })
@@ -64,7 +64,7 @@ export async function getUnitOccupancies(
     ['groupId', request.groupId]
   )
   const { data: json } = await client.request<JsonOf<UnitOccupancies>>({
-    url: uri`/occupancy/units/${request.unitId}`.toString(),
+    url: uri`/employee/occupancy/units/${request.unitId}`.toString(),
     method: 'GET',
     params
   })

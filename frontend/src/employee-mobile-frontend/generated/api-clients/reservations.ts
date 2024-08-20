@@ -34,7 +34,7 @@ export async function getChildReservationsForDay(
     ['examinationDate', request.examinationDate.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<DailyChildReservationResult>>({
-    url: uri`/attendance-reservations/confirmed-days/daily`.toString(),
+    url: uri`/employee-mobile/attendance-reservations/confirmed-days/daily`.toString(),
     method: 'GET',
     params
   })
@@ -51,7 +51,7 @@ export async function getConfirmedRangeData(
   }
 ): Promise<ConfirmedRangeDate[]> {
   const { data: json } = await client.request<JsonOf<ConfirmedRangeDate[]>>({
-    url: uri`/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
+    url: uri`/employee-mobile/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonConfirmedRangeDate(e))
@@ -70,7 +70,7 @@ export async function getReservationStatisticsForConfirmedDays(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<DayReservationStatisticsResult[]>>({
-    url: uri`/attendance-reservations/confirmed-days/stats`.toString(),
+    url: uri`/employee-mobile/attendance-reservations/confirmed-days/stats`.toString(),
     method: 'GET',
     params
   })
@@ -88,7 +88,7 @@ export async function setConfirmedRangeReservations(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
+    url: uri`/employee-mobile/attendance-reservations/by-child/${request.childId}/confirmed-range`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ConfirmedRangeDateUpdate[]>
   })

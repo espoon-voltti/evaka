@@ -23,7 +23,7 @@ export async function createPedagogicalDocument(
   }
 ): Promise<PedagogicalDocument> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument>>({
-    url: uri`/pedagogical-document`.toString(),
+    url: uri`/employee/pedagogical-document`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PedagogicalDocumentPostBody>
   })
@@ -40,7 +40,7 @@ export async function deletePedagogicalDocument(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/pedagogical-document/${request.documentId}`.toString(),
+    url: uri`/employee/pedagogical-document/${request.documentId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -56,7 +56,7 @@ export async function getChildPedagogicalDocuments(
   }
 ): Promise<PedagogicalDocument[]> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument[]>>({
-    url: uri`/pedagogical-document/child/${request.childId}`.toString(),
+    url: uri`/employee/pedagogical-document/child/${request.childId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPedagogicalDocument(e))
@@ -73,7 +73,7 @@ export async function updatePedagogicalDocument(
   }
 ): Promise<PedagogicalDocument> {
   const { data: json } = await client.request<JsonOf<PedagogicalDocument>>({
-    url: uri`/pedagogical-document/${request.documentId}`.toString(),
+    url: uri`/employee/pedagogical-document/${request.documentId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PedagogicalDocumentPostBody>
   })

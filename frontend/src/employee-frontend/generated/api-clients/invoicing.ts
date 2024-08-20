@@ -75,7 +75,7 @@ export async function createFeeAlteration(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-alterations`.toString(),
+    url: uri`/employee/fee-alterations`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeAlteration>
   })
@@ -92,7 +92,7 @@ export async function deleteFeeAlteration(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-alterations/${request.feeAlterationId}`.toString(),
+    url: uri`/employee/fee-alterations/${request.feeAlterationId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -111,7 +111,7 @@ export async function getFeeAlterations(
     ['personId', request.personId]
   )
   const { data: json } = await client.request<JsonOf<FeeAlterationWithPermittedActions[]>>({
-    url: uri`/fee-alterations`.toString(),
+    url: uri`/employee/fee-alterations`.toString(),
     method: 'GET',
     params
   })
@@ -129,7 +129,7 @@ export async function updateFeeAlteration(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-alterations/${request.feeAlterationId}`.toString(),
+    url: uri`/employee/fee-alterations/${request.feeAlterationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<FeeAlteration>
   })
@@ -150,7 +150,7 @@ export async function confirmFeeDecisionDrafts(
     ['decisionHandlerId', request.decisionHandlerId]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/confirm`.toString(),
+    url: uri`/employee/fee-decisions/confirm`.toString(),
     method: 'POST',
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
@@ -169,7 +169,7 @@ export async function generateRetroactiveFeeDecisions(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
+    url: uri`/employee/fee-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateRetroactiveFeeDecisionsBody>
   })
@@ -186,7 +186,7 @@ export async function getFeeDecision(
   }
 ): Promise<FeeDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<FeeDecisionDetailed>>({
-    url: uri`/fee-decisions/${request.id}`.toString(),
+    url: uri`/employee/fee-decisions/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonFeeDecisionDetailed(json)
@@ -202,7 +202,7 @@ export async function getHeadOfFamilyFeeDecisions(
   }
 ): Promise<FeeDecision[]> {
   const { data: json } = await client.request<JsonOf<FeeDecision[]>>({
-    url: uri`/fee-decisions/head-of-family/${request.id}`.toString(),
+    url: uri`/employee/fee-decisions/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFeeDecision(e))
@@ -218,7 +218,7 @@ export async function ignoreFeeDecisionDrafts(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/ignore`.toString(),
+    url: uri`/employee/fee-decisions/ignore`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -235,7 +235,7 @@ export async function searchFeeDecisions(
   }
 ): Promise<PagedFeeDecisionSummaries> {
   const { data: json } = await client.request<JsonOf<PagedFeeDecisionSummaries>>({
-    url: uri`/fee-decisions/search`.toString(),
+    url: uri`/employee/fee-decisions/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchFeeDecisionRequest>
   })
@@ -252,7 +252,7 @@ export async function setFeeDecisionSent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/mark-sent`.toString(),
+    url: uri`/employee/fee-decisions/mark-sent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -270,7 +270,7 @@ export async function setFeeDecisionType(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/set-type/${request.id}`.toString(),
+    url: uri`/employee/fee-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeDecisionTypeRequest>
   })
@@ -287,7 +287,7 @@ export async function unignoreFeeDecisionDrafts(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decisions/unignore`.toString(),
+    url: uri`/employee/fee-decisions/unignore`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -304,7 +304,7 @@ export async function generateDecisions(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/fee-decision-generator/generate`.toString(),
+    url: uri`/employee/fee-decision-generator/generate`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GenerateDecisionsBody>
   })
@@ -321,7 +321,7 @@ export async function createFeeThresholds(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/finance-basics/fee-thresholds`.toString(),
+    url: uri`/employee/finance-basics/fee-thresholds`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FeeThresholds>
   })
@@ -338,7 +338,7 @@ export async function createVoucherValue(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/finance-basics/voucher-values`.toString(),
+    url: uri`/employee/finance-basics/voucher-values`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
   })
@@ -355,7 +355,7 @@ export async function deleteVoucherValue(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/finance-basics/voucher-values/${request.id}`.toString(),
+    url: uri`/employee/finance-basics/voucher-values/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -367,7 +367,7 @@ export async function deleteVoucherValue(
 */
 export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
   const { data: json } = await client.request<JsonOf<FeeThresholdsWithId[]>>({
-    url: uri`/finance-basics/fee-thresholds`.toString(),
+    url: uri`/employee/finance-basics/fee-thresholds`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFeeThresholdsWithId(e))
@@ -379,7 +379,7 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
 */
 export async function getVoucherValues(): Promise<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>> {
   const { data: json } = await client.request<JsonOf<Record<UUID, ServiceNeedOptionVoucherValueRangeWithId[]>>>({
-    url: uri`/finance-basics/voucher-values`.toString(),
+    url: uri`/employee/finance-basics/voucher-values`.toString(),
     method: 'GET'
   })
   return Object.fromEntries(Object.entries(json).map(
@@ -398,7 +398,7 @@ export async function updateFeeThresholds(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/finance-basics/fee-thresholds/${request.id}`.toString(),
+    url: uri`/employee/finance-basics/fee-thresholds/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<FeeThresholds>
   })
@@ -416,7 +416,7 @@ export async function updateVoucherValue(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/finance-basics/voucher-values/${request.id}`.toString(),
+    url: uri`/employee/finance-basics/voucher-values/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ServiceNeedOptionVoucherValueRange>
   })
@@ -429,7 +429,7 @@ export async function updateVoucherValue(
 */
 export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/finance-decisions/selectable-handlers`.toString(),
+    url: uri`/employee/finance-decisions/selectable-handlers`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -445,7 +445,7 @@ export async function createIncome(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/incomes`.toString(),
+    url: uri`/employee/incomes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<IncomeRequest>
   })
@@ -462,7 +462,7 @@ export async function deleteIncome(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/incomes/${request.incomeId}`.toString(),
+    url: uri`/employee/incomes/${request.incomeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -474,7 +474,7 @@ export async function deleteIncome(
 */
 export async function getIncomeMultipliers(): Promise<Record<IncomeCoefficient, number>> {
   const { data: json } = await client.request<JsonOf<Record<IncomeCoefficient, number>>>({
-    url: uri`/incomes/multipliers`.toString(),
+    url: uri`/employee/incomes/multipliers`.toString(),
     method: 'GET'
   })
   return json
@@ -493,7 +493,7 @@ export async function getIncomeNotifications(
     ['personId', request.personId]
   )
   const { data: json } = await client.request<JsonOf<IncomeNotification[]>>({
-    url: uri`/incomes/notifications`.toString(),
+    url: uri`/employee/incomes/notifications`.toString(),
     method: 'GET',
     params
   })
@@ -506,7 +506,7 @@ export async function getIncomeNotifications(
 */
 export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
   const { data: json } = await client.request<JsonOf<IncomeTypeOptions>>({
-    url: uri`/incomes/types`.toString(),
+    url: uri`/employee/incomes/types`.toString(),
     method: 'GET'
   })
   return json
@@ -525,7 +525,7 @@ export async function getPersonIncomes(
     ['personId', request.personId]
   )
   const { data: json } = await client.request<JsonOf<IncomeWithPermittedActions[]>>({
-    url: uri`/incomes`.toString(),
+    url: uri`/employee/incomes`.toString(),
     method: 'GET',
     params
   })
@@ -543,7 +543,7 @@ export async function updateIncome(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/incomes/${request.incomeId}`.toString(),
+    url: uri`/employee/incomes/${request.incomeId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<IncomeRequest>
   })
@@ -556,7 +556,7 @@ export async function updateIncome(
 */
 export async function createDraftInvoices(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/create-drafts`.toString(),
+    url: uri`/employee/invoices/create-drafts`.toString(),
     method: 'POST'
   })
   return json
@@ -572,7 +572,7 @@ export async function deleteDraftInvoices(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/delete-drafts`.toString(),
+    url: uri`/employee/invoices/delete-drafts`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -589,7 +589,7 @@ export async function getHeadOfFamilyInvoices(
   }
 ): Promise<Invoice[]> {
   const { data: json } = await client.request<JsonOf<Invoice[]>>({
-    url: uri`/invoices/head-of-family/${request.id}`.toString(),
+    url: uri`/employee/invoices/head-of-family/${request.id}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonInvoice(e))
@@ -605,7 +605,7 @@ export async function getInvoice(
   }
 ): Promise<InvoiceDetailedResponse> {
   const { data: json } = await client.request<JsonOf<InvoiceDetailedResponse>>({
-    url: uri`/invoices/${request.id}`.toString(),
+    url: uri`/employee/invoices/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonInvoiceDetailedResponse(json)
@@ -617,7 +617,7 @@ export async function getInvoice(
 */
 export async function getInvoiceCodes(): Promise<InvoiceCodes> {
   const { data: json } = await client.request<JsonOf<InvoiceCodes>>({
-    url: uri`/invoices/codes`.toString(),
+    url: uri`/employee/invoices/codes`.toString(),
     method: 'GET'
   })
   return json
@@ -633,7 +633,7 @@ export async function markInvoicesSent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/mark-sent`.toString(),
+    url: uri`/employee/invoices/mark-sent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -650,7 +650,7 @@ export async function searchInvoices(
   }
 ): Promise<PagedInvoiceSummaryResponses> {
   const { data: json } = await client.request<JsonOf<PagedInvoiceSummaryResponses>>({
-    url: uri`/invoices/search`.toString(),
+    url: uri`/employee/invoices/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchInvoicesRequest>
   })
@@ -673,7 +673,7 @@ export async function sendInvoices(
     ['dueDate', request.dueDate?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/send`.toString(),
+    url: uri`/employee/invoices/send`.toString(),
     method: 'POST',
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
@@ -691,7 +691,7 @@ export async function sendInvoicesByDate(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/send/by-date`.toString(),
+    url: uri`/employee/invoices/send/by-date`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<InvoicePayload>
   })
@@ -708,7 +708,7 @@ export async function createInvoiceCorrection(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoice-corrections`.toString(),
+    url: uri`/employee/invoice-corrections`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NewInvoiceCorrection>
   })
@@ -725,7 +725,7 @@ export async function deleteInvoiceCorrection(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoice-corrections/${request.id}`.toString(),
+    url: uri`/employee/invoice-corrections/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -741,7 +741,7 @@ export async function getPersonInvoiceCorrections(
   }
 ): Promise<InvoiceCorrectionWithPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<InvoiceCorrectionWithPermittedActions[]>>({
-    url: uri`/invoice-corrections/${request.personId}`.toString(),
+    url: uri`/employee/invoice-corrections/${request.personId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonInvoiceCorrectionWithPermittedActions(e))
@@ -758,7 +758,7 @@ export async function updateInvoiceCorrectionNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoice-corrections/${request.id}/note`.toString(),
+    url: uri`/employee/invoice-corrections/${request.id}/note`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NoteUpdateBody>
   })
@@ -788,7 +788,7 @@ export async function confirmDraftPayments(
 */
 export async function createPaymentDrafts(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/payments/create-drafts`.toString(),
+    url: uri`/employee/payments/create-drafts`.toString(),
     method: 'POST'
   })
   return json
@@ -804,7 +804,7 @@ export async function deleteDraftPayments(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/payments/delete-drafts`.toString(),
+    url: uri`/employee/payments/delete-drafts`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -838,7 +838,7 @@ export async function searchPayments(
   }
 ): Promise<PagedPayments> {
   const { data: json } = await client.request<JsonOf<PagedPayments>>({
-    url: uri`/payments/search`.toString(),
+    url: uri`/employee/payments/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchPaymentsRequest>
   })
@@ -855,7 +855,7 @@ export async function sendPayments(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/payments/send`.toString(),
+    url: uri`/employee/payments/send`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SendPaymentsRequest>
   })
@@ -873,7 +873,7 @@ export async function generateRetroactiveVoucherValueDecisions(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
+    url: uri`/employee/value-decisions/head-of-family/${request.id}/create-retroactive`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateRetroactiveFeeDecisionsBody>
   })
@@ -890,7 +890,7 @@ export async function getHeadOfFamilyVoucherValueDecisions(
   }
 ): Promise<VoucherValueDecisionSummary[]> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionSummary[]>>({
-    url: uri`/value-decisions/head-of-family/${request.headOfFamilyId}`.toString(),
+    url: uri`/employee/value-decisions/head-of-family/${request.headOfFamilyId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonVoucherValueDecisionSummary(e))
@@ -906,7 +906,7 @@ export async function getVoucherValueDecision(
   }
 ): Promise<VoucherValueDecisionDetailed> {
   const { data: json } = await client.request<JsonOf<VoucherValueDecisionDetailed>>({
-    url: uri`/value-decisions/${request.id}`.toString(),
+    url: uri`/employee/value-decisions/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonVoucherValueDecisionDetailed(json)
@@ -922,7 +922,7 @@ export async function ignoreVoucherValueDecisionDrafts(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/ignore`.toString(),
+    url: uri`/employee/value-decisions/ignore`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -939,7 +939,7 @@ export async function markVoucherValueDecisionSent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/mark-sent`.toString(),
+    url: uri`/employee/value-decisions/mark-sent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })
@@ -956,7 +956,7 @@ export async function searchVoucherValueDecisions(
   }
 ): Promise<PagedVoucherValueDecisionSummaries> {
   const { data: json } = await client.request<JsonOf<PagedVoucherValueDecisionSummaries>>({
-    url: uri`/value-decisions/search`.toString(),
+    url: uri`/employee/value-decisions/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchVoucherValueDecisionRequest>
   })
@@ -977,7 +977,7 @@ export async function sendVoucherValueDecisionDrafts(
     ['decisionHandlerId', request.decisionHandlerId]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/send`.toString(),
+    url: uri`/employee/value-decisions/send`.toString(),
     method: 'POST',
     params,
     data: request.body satisfies JsonCompatible<UUID[]>
@@ -996,7 +996,7 @@ export async function setVoucherValueDecisionType(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/set-type/${request.id}`.toString(),
+    url: uri`/employee/value-decisions/set-type/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<VoucherValueDecisionTypeRequest>
   })
@@ -1013,7 +1013,7 @@ export async function unignoreVoucherValueDecisionDrafts(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/value-decisions/unignore`.toString(),
+    url: uri`/employee/value-decisions/unignore`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UUID[]>
   })

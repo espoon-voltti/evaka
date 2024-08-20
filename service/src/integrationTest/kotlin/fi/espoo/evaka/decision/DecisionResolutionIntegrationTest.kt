@@ -361,7 +361,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         requestedStartDate: LocalDate,
     ) {
         val path =
-            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/v2"}/applications/$applicationId/actions/accept-decision"
+            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/employee"}/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) =
             http
@@ -391,7 +391,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         decisionId: DecisionId,
     ) {
         val path =
-            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/v2"}/applications/$applicationId/actions/reject-decision"
+            "${if (user is AuthenticatedUser.Citizen) "/citizen" else "/employee"}/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) =
             http

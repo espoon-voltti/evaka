@@ -30,7 +30,7 @@ export async function getTimeline(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<Timeline>>({
-    url: uri`/timeline`.toString(),
+    url: uri`/employee/timeline`.toString(),
     method: 'GET',
     params
   })

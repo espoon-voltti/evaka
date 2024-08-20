@@ -18,6 +18,7 @@ import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
 import { faFilePdf, faGavel, fasExclamationTriangle } from 'lib-icons'
 
+import { API_URL } from '../../api/client'
 import DecisionResponse from '../../components/application-page/DecisionResponse'
 import { useTranslation } from '../../state/i18n'
 
@@ -72,7 +73,7 @@ export default React.memo(function ApplicationDecisionsSection({
                 <span>{i18n.application.decisions.types[decision.type]}</span>
                 {isDownloadAvailable(decision) ? (
                   <a
-                    href={`/api/internal/decisions2/${decision.id}/download`}
+                    href={`${API_URL}/employee/decisions/${decision.id}/download`}
                     target="_blank"
                     rel="noreferrer"
                     data-qa="application-decision-download-available"

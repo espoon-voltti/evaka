@@ -30,7 +30,7 @@ export async function createChildDailyNote(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.childId}/child-daily-notes`.toString(),
+    url: uri`/employee-mobile/children/${request.childId}/child-daily-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
   })
@@ -47,7 +47,7 @@ export async function deleteChildDailyNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-daily-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/child-daily-notes/${request.noteId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -64,7 +64,7 @@ export async function updateChildDailyNote(
   }
 ): Promise<ChildDailyNote> {
   const { data: json } = await client.request<JsonOf<ChildDailyNote>>({
-    url: uri`/child-daily-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/child-daily-notes/${request.noteId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ChildDailyNoteBody>
   })
@@ -82,7 +82,7 @@ export async function createChildStickyNote(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.childId}/child-sticky-notes`.toString(),
+    url: uri`/employee-mobile/children/${request.childId}/child-sticky-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
   })
@@ -99,7 +99,7 @@ export async function deleteChildStickyNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/child-sticky-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/child-sticky-notes/${request.noteId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -116,7 +116,7 @@ export async function updateChildStickyNote(
   }
 ): Promise<ChildStickyNote> {
   const { data: json } = await client.request<JsonOf<ChildStickyNote>>({
-    url: uri`/child-sticky-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/child-sticky-notes/${request.noteId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ChildStickyNoteBody>
   })
@@ -134,7 +134,7 @@ export async function createGroupNote(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
+    url: uri`/employee-mobile/daycare-groups/${request.groupId}/group-notes`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupNoteBody>
   })
@@ -151,7 +151,7 @@ export async function deleteGroupNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/group-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/group-notes/${request.noteId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -167,7 +167,7 @@ export async function getGroupNotes(
   }
 ): Promise<GroupNote[]> {
   const { data: json } = await client.request<JsonOf<GroupNote[]>>({
-    url: uri`/daycare-groups/${request.groupId}/group-notes`.toString(),
+    url: uri`/employee-mobile/daycare-groups/${request.groupId}/group-notes`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonGroupNote(e))
@@ -184,7 +184,7 @@ export async function updateGroupNote(
   }
 ): Promise<GroupNote> {
   const { data: json } = await client.request<JsonOf<GroupNote>>({
-    url: uri`/group-notes/${request.noteId}`.toString(),
+    url: uri`/employee-mobile/group-notes/${request.noteId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<GroupNoteBody>
   })

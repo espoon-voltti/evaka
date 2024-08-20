@@ -31,7 +31,7 @@ export async function createAssistanceAction(
   }
 ): Promise<AssistanceAction> {
   const { data: json } = await client.request<JsonOf<AssistanceAction>>({
-    url: uri`/children/${request.childId}/assistance-actions`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-actions`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceActionRequest>
   })
@@ -49,7 +49,7 @@ export async function createAssistanceFactor(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.child}/assistance-factors`.toString(),
+    url: uri`/employee/children/${request.child}/assistance-factors`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceFactorUpdate>
   })
@@ -67,7 +67,7 @@ export async function createDaycareAssistance(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.child}/daycare-assistances`.toString(),
+    url: uri`/employee/children/${request.child}/daycare-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycareAssistanceUpdate>
   })
@@ -85,7 +85,7 @@ export async function createOtherAssistanceMeasure(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.child}/other-assistance-measures`.toString(),
+    url: uri`/employee/children/${request.child}/other-assistance-measures`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<OtherAssistanceMeasureUpdate>
   })
@@ -103,7 +103,7 @@ export async function createPreschoolAssistance(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/children/${request.child}/preschool-assistances`.toString(),
+    url: uri`/employee/children/${request.child}/preschool-assistances`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolAssistanceUpdate>
   })
@@ -120,7 +120,7 @@ export async function deleteAssistanceAction(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-actions/${request.id}`.toString(),
+    url: uri`/employee/assistance-actions/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -136,7 +136,7 @@ export async function deleteAssistanceFactor(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-factors/${request.id}`.toString(),
+    url: uri`/employee/assistance-factors/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -152,7 +152,7 @@ export async function deleteDaycareAssistance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycare-assistances/${request.id}`.toString(),
+    url: uri`/employee/daycare-assistances/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -168,7 +168,7 @@ export async function deleteOtherAssistanceMeasure(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/other-assistance-measures/${request.id}`.toString(),
+    url: uri`/employee/other-assistance-measures/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -184,7 +184,7 @@ export async function deletePreschoolAssistance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-assistances/${request.id}`.toString(),
+    url: uri`/employee/preschool-assistances/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -196,7 +196,7 @@ export async function deletePreschoolAssistance(
 */
 export async function getAssistanceActionOptions(): Promise<AssistanceActionOption[]> {
   const { data: json } = await client.request<JsonOf<AssistanceActionOption[]>>({
-    url: uri`/assistance-action-options`.toString(),
+    url: uri`/employee/assistance-action-options`.toString(),
     method: 'GET'
   })
   return json
@@ -212,7 +212,7 @@ export async function getChildAssistance(
   }
 ): Promise<AssistanceResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceResponse>>({
-    url: uri`/children/${request.child}/assistance`.toString(),
+    url: uri`/employee/children/${request.child}/assistance`.toString(),
     method: 'GET'
   })
   return deserializeJsonAssistanceResponse(json)
@@ -229,7 +229,7 @@ export async function updateAssistanceAction(
   }
 ): Promise<AssistanceAction> {
   const { data: json } = await client.request<JsonOf<AssistanceAction>>({
-    url: uri`/assistance-actions/${request.id}`.toString(),
+    url: uri`/employee/assistance-actions/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AssistanceActionRequest>
   })
@@ -247,7 +247,7 @@ export async function updateAssistanceFactor(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-factors/${request.id}`.toString(),
+    url: uri`/employee/assistance-factors/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceFactorUpdate>
   })
@@ -265,7 +265,7 @@ export async function updateDaycareAssistance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycare-assistances/${request.id}`.toString(),
+    url: uri`/employee/daycare-assistances/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycareAssistanceUpdate>
   })
@@ -283,7 +283,7 @@ export async function updateOtherAssistanceMeasure(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/other-assistance-measures/${request.id}`.toString(),
+    url: uri`/employee/other-assistance-measures/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<OtherAssistanceMeasureUpdate>
   })
@@ -301,7 +301,7 @@ export async function updatePreschoolAssistance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-assistances/${request.id}`.toString(),
+    url: uri`/employee/preschool-assistances/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolAssistanceUpdate>
   })

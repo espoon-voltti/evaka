@@ -24,7 +24,7 @@ export async function createBackupPickup(
   }
 ): Promise<ChildBackupPickupCreateResponse> {
   const { data: json } = await client.request<JsonOf<ChildBackupPickupCreateResponse>>({
-    url: uri`/children/${request.childId}/backup-pickups`.toString(),
+    url: uri`/employee/children/${request.childId}/backup-pickups`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildBackupPickupContent>
   })
@@ -41,7 +41,7 @@ export async function deleteBackupPickup(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/backup-pickups/${request.id}`.toString(),
+    url: uri`/employee/backup-pickups/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -57,7 +57,7 @@ export async function getBackupPickups(
   }
 ): Promise<ChildBackupPickup[]> {
   const { data: json } = await client.request<JsonOf<ChildBackupPickup[]>>({
-    url: uri`/children/${request.childId}/backup-pickups`.toString(),
+    url: uri`/employee/children/${request.childId}/backup-pickups`.toString(),
     method: 'GET'
   })
   return json
@@ -74,7 +74,7 @@ export async function updateBackupPickup(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/backup-pickups/${request.id}`.toString(),
+    url: uri`/employee/backup-pickups/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ChildBackupPickupContent>
   })

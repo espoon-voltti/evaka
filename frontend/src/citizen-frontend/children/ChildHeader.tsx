@@ -13,6 +13,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { farUser } from 'lib-icons'
 
+import { API_URL } from '../api-client'
 import { useTranslation } from '../localization'
 
 const ChildHeaderContainer = styled.div`
@@ -43,9 +44,7 @@ export default React.memo(function ChildHeader({
     <ChildHeaderContainer>
       <RoundImage
         size="XXL"
-        src={
-          imageId ? `/api/application/citizen/child-images/${imageId}` : null
-        }
+        src={imageId ? `${API_URL}/citizen/child-images/${imageId}` : null}
         fallbackContent={farUser}
         fallbackColor={colors.grayscale.g15}
         alt={t.children.childPicture}

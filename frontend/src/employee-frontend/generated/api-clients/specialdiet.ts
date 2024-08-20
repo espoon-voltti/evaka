@@ -30,7 +30,7 @@ export async function getMealTextures(): Promise<MealTexture[]> {
 */
 export async function getDiets(): Promise<SpecialDiet[]> {
   const { data: json } = await client.request<JsonOf<SpecialDiet[]>>({
-    url: uri`/diets`.toString(),
+    url: uri`/employee/diets`.toString(),
     method: 'GET'
   })
   return json
@@ -46,7 +46,7 @@ export async function putDiets(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/diets`.toString(),
+    url: uri`/employee/diets`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<JamixSpecialDiet[]>
   })

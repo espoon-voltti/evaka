@@ -16,7 +16,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getSettings(): Promise<Record<SettingType, string>> {
   const { data: json } = await client.request<JsonOf<Record<SettingType, string>>>({
-    url: uri`/settings`.toString(),
+    url: uri`/employee/settings`.toString(),
     method: 'GET'
   })
   return json
@@ -32,7 +32,7 @@ export async function putSettings(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/settings`.toString(),
+    url: uri`/employee/settings`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<Record<SettingType, string>>
   })
