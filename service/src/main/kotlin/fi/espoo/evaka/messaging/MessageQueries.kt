@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.messaging
 
+import fi.espoo.evaka.application.getCitizenChildren
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -18,9 +19,11 @@ import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PagedFactory
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
@@ -1361,4 +1364,27 @@ WHERE id = ${bind(id)}
 fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
     createQuery { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
         .exactlyOneOrNull<Int>()
+}
+
+// has a child in shift care during next two weeks
+fun Database.Read.messageAttachmentsAllowedForCitizen(
+    personId: PersonId,
+    today: LocalDate
+): Boolean {
+    val childIds = getCitizenChildren(today, personId).map { it.id }.toSet()
+    val nearFuture = FiniteDateRange(today, today.plusWeeks(2))
+    return createQuery {
+            sql(
+                """
+        SELECT EXISTS(
+            SELECT FROM service_need sn
+            JOIN placement pl ON sn.placement_id = pl.id
+            WHERE pl.child_id = ANY(${bind(childIds)})
+                AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(nearFuture)}
+                AND sn.shift_care IN ('FULL', 'INTERMITTENT')
+        )
+    """
+            )
+        }
+        .exactlyOne()
 }

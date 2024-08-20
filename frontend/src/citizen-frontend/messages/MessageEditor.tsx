@@ -55,6 +55,7 @@ export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
 interface Props {
   children_: ChildAndPermittedActions[]
   receiverOptions: GetReceiversResponse
+  messageAttachmentsAllowed: boolean
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
   onSuccess: () => void
   onFailure: () => void
@@ -65,6 +66,7 @@ interface Props {
 export default React.memo(function MessageEditor({
   children_,
   receiverOptions,
+  messageAttachmentsAllowed,
   onSend,
   onSuccess,
   onFailure,
@@ -351,14 +353,18 @@ export default React.memo(function MessageEditor({
               />
             </TextAreaLabel>
 
-            <Gap size="s" />
-            <FileUpload
-              slimSingleFile
-              files={attachments}
-              onUpload={handleAttachmentUpload}
-              onDelete={handleAttachmentDelete}
-              getDownloadUrl={getAttachmentUrl}
-            />
+            {messageAttachmentsAllowed && (
+              <>
+                <Gap size="xs" />
+                <FileUpload
+                  slimSingleFile
+                  files={attachments}
+                  onUpload={handleAttachmentUpload}
+                  onDelete={handleAttachmentDelete}
+                  getDownloadUrl={getAttachmentUrl}
+                />
+              </>
+            )}
 
             <Gap size="s" />
             {displaySendError && (

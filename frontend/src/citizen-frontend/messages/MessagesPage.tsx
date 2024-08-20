@@ -135,6 +135,9 @@ export default React.memo(function MessagesPage() {
                   <MessageEditor
                     children_={children}
                     receiverOptions={receiverOptions}
+                    messageAttachmentsAllowed={
+                      messageAccount.messageAttachmentsAllowed
+                    }
                     onSend={(body) => sendMessage({ body })}
                     onSuccess={() => {
                       changeEditorVisibility(false)

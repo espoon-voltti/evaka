@@ -12,6 +12,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
 import fi.espoo.evaka.messaging.getMessageAccountIdsByContentId
+import fi.espoo.evaka.messaging.messageAttachmentsAllowedForCitizen
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentTypePattern
 import fi.espoo.evaka.s3.DocumentService
@@ -343,7 +344,14 @@ class AttachmentsController(
         clock: EvakaClock,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
-        return db.connect { dbc -> handleFileUpload(dbc, user, clock, AttachmentParent.None, file) }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    if (!tx.messageAttachmentsAllowedForCitizen(user.id, clock.today())) {
+                        throw Forbidden("Message attachments not allowed")
+                    }
+                }
+                handleFileUpload(dbc, user, clock, AttachmentParent.None, file)
+            }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForMessage.log(
                     targetId = attachmentId.let(AuditId::invoke),

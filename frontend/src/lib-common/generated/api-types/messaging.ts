@@ -225,6 +225,7 @@ export type MessageType =
 */
 export interface MyAccountResponse {
   accountId: UUID
+  messageAttachmentsAllowed: boolean
 }
 
 /**

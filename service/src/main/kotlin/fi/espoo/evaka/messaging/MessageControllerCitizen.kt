@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.GetMapping
@@ -47,13 +48,24 @@ class MessageControllerCitizen(
     private val messageService: MessageService,
 ) {
 
-    data class MyAccountResponse(val accountId: MessageAccountId)
+    data class MyAccountResponse(
+        val accountId: MessageAccountId,
+        val messageAttachmentsAllowed: Boolean
+    )
 
     @GetMapping("/my-account")
-    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MyAccountResponse {
+    fun getMyAccount(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): MyAccountResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    MyAccountResponse(accountId = tx.getCitizenMessageAccount(user.id))
+                    MyAccountResponse(
+                        accountId = tx.getCitizenMessageAccount(user.id),
+                        messageAttachmentsAllowed =
+                            tx.messageAttachmentsAllowedForCitizen(user.id, clock.today())
+                    )
                 }
             }
             .also { Audit.MessagingMyAccountsRead.log(targetId = AuditId(it.accountId)) }
@@ -260,11 +272,16 @@ class MessageControllerCitizen(
                                 body.children,
                             )
 
-                        tx.associateOrphanAttachments(
-                            user.evakaUserId,
-                            AttachmentParent.MessageContent(sentMessage.contentId),
-                            body.attachmentIds,
-                        )
+                        if (body.attachmentIds.isNotEmpty()) {
+                            if (!tx.messageAttachmentsAllowedForCitizen(user.id, today)) {
+                                throw Forbidden("Message attachments not allowed")
+                            }
+                            tx.associateOrphanAttachments(
+                                user.evakaUserId,
+                                AttachmentParent.MessageContent(sentMessage.contentId),
+                                body.attachmentIds
+                            )
+                        }
 
                         senderId to sentMessage.threadId
                     }
