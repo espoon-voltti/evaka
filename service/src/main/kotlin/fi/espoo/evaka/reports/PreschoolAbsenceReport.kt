@@ -194,7 +194,9 @@ fun getPreschoolAbsenceReportRowsForUnit(
                      (select child.id,
                              child.first_name,
                              child.last_name,
-                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
+                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range,
+                             d.shift_care_operation_days,
+                             d.operation_days
                       from placement p
                                join person child on p.child_id = child.id
                                join daycare d
@@ -214,7 +216,9 @@ fun getPreschoolAbsenceReportRowsForUnit(
                      left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
                      left join absence ab on ppc.examination_range @> ab.date and
                                              ppc.id = ab.child_id and
-                                             ab.absence_type = types.absence_type
+                                             ab.absence_type = types.absence_type and
+                                             ab.category = 'NONBILLABLE' and
+                                             extract(isodow from ab.date) = ANY(coalesce(ppc.shift_care_operation_days, ppc.operation_days))
             group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
         """
                     .trimIndent()
@@ -237,7 +241,9 @@ fun getPreschoolAbsenceReportRowsForGroup(
          (select child.id,
                  child.first_name,
                  child.last_name,
-                 daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
+                 daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} as examination_range,
+                 d.shift_care_operation_days,
+                 d.operation_days
           from placement p
                    join person child on p.child_id = child.id
                    join daycare d
@@ -262,7 +268,9 @@ from preschool_group_placement_children pgpc
          left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
          left join absence ab on pgpc.examination_range @> ab.date and
                                  pgpc.id = ab.child_id and
-                                 ab.absence_type = types.absence_type
+                                 ab.absence_type = types.absence_type and
+                                 ab.category = 'NONBILLABLE' and
+                                 extract(isodow from ab.date) = ANY(coalesce(pgpc.shift_care_operation_days, pgpc.operation_days))
 group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
         """
                     .trimIndent()

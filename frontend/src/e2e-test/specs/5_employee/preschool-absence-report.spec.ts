@@ -51,6 +51,7 @@ beforeEach(async () => {
 
   await Fixture.absence({
     absenceType: 'SICKLEAVE',
+    absenceCategory: 'NONBILLABLE',
     date: mockedToday,
     childId: child.id
   }).save()
