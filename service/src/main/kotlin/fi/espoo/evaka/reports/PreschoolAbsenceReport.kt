@@ -57,6 +57,7 @@ class PreschoolAbsenceReport(
                             when (it) {
                                 AbsenceType.OTHER_ABSENCE,
                                 AbsenceType.SICKLEAVE,
+                                AbsenceType.PLANNED_ABSENCE,
                                 AbsenceType.UNKNOWN_ABSENCE -> true
                                 else -> false
                             }
@@ -208,7 +209,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
             select ppc.id            as child_id,
                    ppc.first_name,
                    ppc.last_name,
-                   types.absence_type as absence_type,
+                   CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
                    count(ab.id)       as absence_count
             from preschool_placement_children ppc
                      left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
@@ -218,7 +219,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
                                              ab.category = 'NONBILLABLE' and
                                              extract(isodow from ab.date) BETWEEN 1 AND 5 and
                                              not exists (SELECT FROM holiday h WHERE h.date = ab.date)
-            group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
+            group by 1, 2, 3, 4;
         """
                     .trimIndent()
             )
@@ -259,7 +260,7 @@ fun getPreschoolAbsenceReportRowsForGroup(
 select pgpc.id            as child_id,
        pgpc.first_name,
        pgpc.last_name,
-       types.absence_type as absence_type,
+       CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
        count(ab.id)       as absence_count
 from preschool_group_placement_children pgpc
          left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
@@ -269,7 +270,7 @@ from preschool_group_placement_children pgpc
                                  ab.category = 'NONBILLABLE' and
                                  extract(isodow from ab.date) BETWEEN 1 AND 5 and
                                  not exists (SELECT FROM holiday h WHERE h.date = ab.date)
-group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
+group by 1, 2, 3, 4;
         """
                     .trimIndent()
             )

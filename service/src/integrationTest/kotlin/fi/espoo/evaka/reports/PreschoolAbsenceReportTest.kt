@@ -424,7 +424,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     id = AbsenceId(UUID.randomUUID()),
                     testChildAapo.id,
                     monday,
-                    AbsenceType.OTHER_ABSENCE,
+                    AbsenceType.PLANNED_ABSENCE,
                     HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE
