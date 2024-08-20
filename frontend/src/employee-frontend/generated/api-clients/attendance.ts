@@ -18,40 +18,6 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteExternalStaffRealtimeAttendances
-*/
-export async function deleteExternalStaffRealtimeAttendances(
-  request: {
-    unitId: UUID,
-    attendanceId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/${request.unitId}/external/${request.attendanceId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteStaffRealtimeAttendances
-*/
-export async function deleteStaffRealtimeAttendances(
-  request: {
-    unitId: UUID,
-    attendanceId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/${request.unitId}/${request.attendanceId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getRealtimeStaffAttendances
 */
 export async function getRealtimeStaffAttendances(

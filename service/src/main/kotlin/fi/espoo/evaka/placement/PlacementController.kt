@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -141,39 +140,6 @@ class PlacementController(
                     targetId = daycareId?.let(AuditId::invoke) ?: childId?.let(AuditId::invoke),
                     meta =
                         mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size),
-                )
-            }
-    }
-
-    @GetMapping(
-        "/placements/plans", // deprecated
-        "/employee/placements/plans",
-    )
-    fun getPlacementPlans(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestParam daycareId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-    ): List<PlacementPlanDetails> {
-        return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_PLACEMENT_PLAN,
-                        daycareId,
-                    )
-
-                    it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, from, to)
-                }
-            }
-            .also {
-                Audit.PlacementPlanSearch.log(
-                    targetId = AuditId(daycareId),
-                    meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size),
                 )
             }
     }

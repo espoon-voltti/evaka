@@ -8,7 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -16,14 +15,11 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
 import fi.espoo.evaka.testArea
@@ -32,7 +28,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
@@ -142,64 +137,6 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unit = BackupCareUnit(id = testDaycare.id, name = testDaycare.name),
                     group = BackupCareGroup(id = groupId, name = groupName),
                     period = FiniteDateRange(backupCareStart, backupCareEnd),
-                )
-            ),
-            backupCares,
-        )
-    }
-
-    @Test
-    fun testUnitBackupCare() {
-        val groupName = "Test Group"
-        val period = FiniteDateRange(backupCareStart, backupCareEnd)
-        val serviceNeedPeriod = FiniteDateRange(period.start.plusDays(1), period.end)
-        val groupId =
-            db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-            }
-        db.transaction { tx ->
-            tx.insert(snDefaultDaycare)
-            tx.insert(
-                DevServiceNeed(
-                    placementId = placementId,
-                    startDate = serviceNeedPeriod.start,
-                    endDate = serviceNeedPeriod.end,
-                    optionId = snDefaultDaycare.id,
-                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now(),
-                )
-            )
-        }
-        val id = createBackupCareAndAssert(groupId = groupId)
-        val backupCares =
-            backupCareController
-                .getUnitBackupCares(
-                    dbInstance(),
-                    serviceWorker,
-                    clock,
-                    testDaycare.id,
-                    startDate = period.start.plusDays(1),
-                    endDate = period.end.minusDays(1),
-                )
-                .backupCares
-
-        assertEquals(
-            listOf(
-                UnitBackupCare(
-                    id = id,
-                    child =
-                        BackupCareChild(
-                            id = testChild_1.id,
-                            firstName = testChild_1.firstName,
-                            lastName = testChild_1.lastName,
-                            birthDate = testChild_1.dateOfBirth,
-                        ),
-                    group = BackupCareGroup(id = groupId, name = groupName),
-                    period = period,
-                    fromUnits = listOf(testDaycare2.name),
-                    serviceNeeds = setOf(),
-                    missingServiceNeedDays =
-                        ChronoUnit.DAYS.between(backupCareStart, serviceNeedPeriod.start).toInt(),
                 )
             ),
             backupCares,

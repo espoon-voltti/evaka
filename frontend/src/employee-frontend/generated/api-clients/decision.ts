@@ -27,46 +27,6 @@ export async function getDecisionUnits(): Promise<DecisionUnit[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.getDecisionsByApplication
-*/
-export async function getDecisionsByApplication(
-  request: {
-    id: UUID
-  }
-): Promise<DecisionListResponse> {
-  const params = createUrlSearchParams(
-    ['id', request.id]
-  )
-  const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
-    url: uri`/decisions2/by-application`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonDecisionListResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.decision.DecisionController.getDecisionsByChild
-*/
-export async function getDecisionsByChild(
-  request: {
-    id: UUID
-  }
-): Promise<DecisionListResponse> {
-  const params = createUrlSearchParams(
-    ['id', request.id]
-  )
-  const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
-    url: uri`/decisions2/by-child`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonDecisionListResponse(json)
-}
-
-
-/**
 * Generated from fi.espoo.evaka.decision.DecisionController.getDecisionsByGuardian
 */
 export async function getDecisionsByGuardian(

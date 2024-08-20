@@ -100,13 +100,6 @@ export interface UnitBackupCare {
   serviceNeeds: ServiceNeed[]
 }
 
-/**
-* Generated from fi.espoo.evaka.backupcare.UnitBackupCaresResponse
-*/
-export interface UnitBackupCaresResponse {
-  backupCares: UnitBackupCare[]
-}
-
 
 export function deserializeJsonBackupCareChild(json: JsonOf<BackupCareChild>): BackupCareChild {
   return {
@@ -162,13 +155,5 @@ export function deserializeJsonUnitBackupCare(json: JsonOf<UnitBackupCare>): Uni
     child: deserializeJsonBackupCareChild(json.child),
     period: FiniteDateRange.parseJson(json.period),
     serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e))
-  }
-}
-
-
-export function deserializeJsonUnitBackupCaresResponse(json: JsonOf<UnitBackupCaresResponse>): UnitBackupCaresResponse {
-  return {
-    ...json,
-    backupCares: json.backupCares.map(e => deserializeJsonUnitBackupCare(e))
   }
 }

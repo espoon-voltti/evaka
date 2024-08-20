@@ -11,7 +11,6 @@ import fi.espoo.evaka.placement.clearCalendarEventAttendees
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -21,15 +20,12 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import java.time.LocalDate
 import org.jdbi.v3.core.JdbiException
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -260,44 +256,9 @@ class BackupCareController(private val accessControl: AccessControl) {
         }
         Audit.BackupCareDelete.log(targetId = AuditId(id))
     }
-
-    @GetMapping(
-        "/daycares/{daycareId}/backup-cares", // deprecated
-        "/employee/daycares/{daycareId}/backup-cares",
-    )
-    fun getUnitBackupCares(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable daycareId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-    ): UnitBackupCaresResponse {
-        val backupCares =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_BACKUP_CARE,
-                        daycareId,
-                    )
-                    it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate))
-                }
-            }
-        Audit.DaycareBackupCareRead.log(
-            targetId = AuditId(daycareId),
-            meta =
-                mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size),
-        )
-        return UnitBackupCaresResponse(backupCares)
-    }
 }
 
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCareResponse>)
-
-data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
 
 data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
 

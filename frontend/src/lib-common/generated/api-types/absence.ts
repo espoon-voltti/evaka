@@ -91,13 +91,6 @@ export interface ChildServiceNeedInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.DeleteChildAbsenceBody
-*/
-export interface DeleteChildAbsenceBody {
-  date: LocalDate
-}
-
-/**
 * Generated from fi.espoo.evaka.absence.GroupMonthCalendar
 */
 export interface GroupMonthCalendar {
@@ -214,14 +207,6 @@ export function deserializeJsonChildServiceNeedInfo(json: JsonOf<ChildServiceNee
   return {
     ...json,
     validDuring: FiniteDateRange.parseJson(json.validDuring)
-  }
-}
-
-
-export function deserializeJsonDeleteChildAbsenceBody(json: JsonOf<DeleteChildAbsenceBody>): DeleteChildAbsenceBody {
-  return {
-    ...json,
-    date: LocalDate.parseIso(json.date)
   }
 }
 
