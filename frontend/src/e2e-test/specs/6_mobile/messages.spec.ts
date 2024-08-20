@@ -537,7 +537,13 @@ async function citizenSendsMessageToGroup() {
   const content = 'Testiviestin sisältö'
   const childIds = [child.id]
   const receivers = [daycareGroup.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(title, content, childIds, receivers)
+  await citizenMessagesPage.sendNewMessage(
+    title,
+    content,
+    childIds,
+    receivers,
+    false
+  )
 }
 
 async function citizenSendsMessageToGroup2() {
@@ -547,7 +553,13 @@ async function citizenSendsMessageToGroup2() {
   const content = 'Testiviestin sisältö'
   const childIds = [child2.id]
   const receivers = [daycareGroup2.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(title, content, childIds, receivers)
+  await citizenMessagesPage.sendNewMessage(
+    title,
+    content,
+    childIds,
+    receivers,
+    false
+  )
 }
 
 async function citizenSeesMessage(message: {

@@ -362,6 +362,7 @@ export default React.memo(function MessageEditor({
                   onUpload={handleAttachmentUpload}
                   onDelete={handleAttachmentDelete}
                   getDownloadUrl={getAttachmentUrl}
+                  data-qa="upload-message-attachment"
                 />
               </>
             )}
