@@ -949,6 +949,10 @@ export class UnitCalendarEventsSection {
     return new EventEditModal(this.page.findByDataQa('modal'))
   }
 
+  get surveySummaryModal() {
+    return new SurveySummaryModal(this.page.findByDataQa('modal'))
+  }
+
   get eventDeleteModal() {
     return new EventDeleteModal(
       this.page.findByDataQa('deletion-modal').findByDataQa('modal')
@@ -974,6 +978,24 @@ export class EventEditModal extends Modal {
 
   async delete() {
     await this.findByDataQa('delete').click()
+  }
+}
+
+export class SurveySummaryModal extends Modal {
+  async close() {
+    await this.findByDataQa('close-button').click()
+  }
+
+  async assertDescription(description: string) {
+    await this.findByDataQa('survey-description').assertTextEquals(description)
+  }
+
+  async assertEventTime(id: string, timeString: string) {
+    await this.findByDataQa(`times-${id}`).assertTextEquals(timeString)
+  }
+
+  async assertReservee(id: string, reservee: string) {
+    await this.findByDataQa(`reservee-${id}`).assertTextEquals(reservee)
   }
 }
 

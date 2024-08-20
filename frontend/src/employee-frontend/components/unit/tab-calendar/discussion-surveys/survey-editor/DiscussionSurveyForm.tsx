@@ -185,7 +185,8 @@ export default React.memo(function DiscussionSurveyForm({
             disabled={!isBasicInfoValid}
             onSuccess={() =>
               navigate(
-                `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`
+                `/units/${unitId}/groups/${groupId}/discussion-reservation-surveys/${eventData.id}`,
+                { replace: true }
               )
             }
             onClick={() =>

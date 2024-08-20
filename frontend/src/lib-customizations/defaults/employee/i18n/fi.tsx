@@ -2319,7 +2319,7 @@ export const fi = {
       previousWeek: 'Edellinen viikko',
       events: {
         title: 'Tapahtumat',
-        createEvent: 'Uusi tapahtuma',
+        createEvent: 'Luo muu tapahtuma',
         edit: {
           title: 'Tapahtuma',
           saveChanges: 'Tallenna muutokset',
@@ -2347,7 +2347,7 @@ export const fi = {
             otherEventSingular: 'muu tapahtuma',
             otherEventPlural: 'muuta tapahtumaa'
           },
-          discussionPageTitle: 'Keskustelut',
+          discussionPageTitle: 'Keskusteluaikojen hallinta',
           discussionPageDescription:
             'Tällä sivulla voit luoda ja seurata kyselyjä, joilla kysytään huoltajille sopivia keskusteluaikoja.',
           surveyCreate: 'Uusi keskustelukysely',
@@ -2356,6 +2356,7 @@ export const fi = {
           surveySubject: 'Keskustelun aihe',
           surveyInvitees: 'Keskustelujen osallistujat',
           surveySummary: 'Lisätietoja huoltajalle',
+          surveySummaryCalendarLabel: 'Lisätietoja',
           surveySummaryInfo:
             'Tämä teksti näytetään huoltajalle kyselyn yhteydessä. Voit kertoa siinä lisätietoja keskusteluista, esimerkiksi saapumisohjeet tai keskusteluun varattavan ajan.',
           surveySubjectPlaceholder: 'Enintään 30 merkkiä',
@@ -2381,6 +2382,14 @@ export const fi = {
           reservedTitle: 'Varanneet',
           reserveButton: 'Varaa',
           unreservedTitle: 'Varaamatta',
+          calendarSurveySummary: (
+            link: (text: string) => React.ReactNode
+          ): React.ReactNode => (
+            <>
+              Tarkempia tietoja varten{' '}
+              {link('siirry keskustelukyselyn tarkastelunäkymään')}
+            </>
+          ),
           reservationModal: {
             reservationStatus: 'Varaustilanne',
             reserved: 'Varattu',
@@ -2405,7 +2414,9 @@ export const fi = {
             addError: 'Keskusteluajan lisääminen epäonnistui',
             deleteError: 'Keskusteluajan poistaminen epäonnistui'
           }
-        }
+        },
+        reservedTimesLabel: 'varattua',
+        freeTimesLabel: 'vapaata'
       }
     },
     groups: {

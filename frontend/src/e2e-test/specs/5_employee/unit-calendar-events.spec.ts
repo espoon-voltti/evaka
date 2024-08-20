@@ -220,6 +220,26 @@ describe('Calendar events', () => {
 })
 
 describe('Discussion surveys', () => {
+  test('Employee can see existing discussion survey in week calendar and summary modal', async () => {
+    await calendarPage.selectGroup(groupId)
+    await calendarPage.weekModeButton.click()
+
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(mockedToday, 0)
+      .click()
+    await calendarPage.calendarEventsSection.surveySummaryModal.assertDescription(
+      'Survey description'
+    )
+    await calendarPage.calendarEventsSection.surveySummaryModal.assertEventTime(
+      eventTimeId,
+      '08:00 - 08:30'
+    )
+    await calendarPage.calendarEventsSection.surveySummaryModal.assertReservee(
+      eventTimeId,
+      'Vapaa'
+    )
+  })
+
   test('Employee can see existing discussion survey in survey list', async () => {
     await calendarPage.selectGroup(groupId)
     await calendarPage.weekModeButton.click()
