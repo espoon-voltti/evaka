@@ -176,6 +176,20 @@ export default React.memo(function ReservationModal({
     [calendarDays]
   )
 
+  const overlappingClosedHolidayPeriods = useMemo(
+    () =>
+      dateRange.isValid()
+        ? holidayPeriods
+            .filter(
+              (hp) =>
+                hp.period.overlaps(dateRange.value()) &&
+                hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
+            )
+            .map((hp) => hp.period)
+        : [],
+    [holidayPeriods, dateRange]
+  )
+
   return (
     <ModalAccessibilityWrapper>
       <PlainModal mobileFullScreen margin="auto" data-qa="reservation-modal">
@@ -268,6 +282,17 @@ export default React.memo(function ReservationModal({
                     scrollIntoViewSoftKeyboard(ev.target, 'start')
                   }}
                 />
+
+                {overlappingClosedHolidayPeriods.length > 0 && (
+                  <InfoBox
+                    title={i18n.calendar.closedHolidayPeriodAbsenceInfo.title(
+                      overlappingClosedHolidayPeriods
+                    )}
+                    message={
+                      i18n.calendar.closedHolidayPeriodAbsenceInfo.message
+                    }
+                  />
+                )}
 
                 <Gap size="m" />
 

@@ -38,6 +38,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
@@ -63,7 +64,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
@@ -91,6 +92,7 @@ import { formatReservation } from './calendar-elements'
 import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
 import {
   deleteCalendarEventTimeReservationMutation,
+  holidayPeriodsQuery,
   postReservationsMutation
 } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
@@ -240,6 +242,7 @@ function Edit({
   onCancel: () => void
 }) {
   const i18n = useTranslation()
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
 
   const form = useForm(editorForm, () => initialFormState(modalData), {
     ...i18n.validationErrors,
@@ -276,6 +279,18 @@ function Edit({
     />
   )
 
+  const inClosedHolidayPeriod = useMemo(
+    () =>
+      holidayPeriods
+        .getOrElse([])
+        .some(
+          (hp) =>
+            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
+            hp.period.includes(modalData.response.date)
+        ),
+    [holidayPeriods, modalData.response.date]
+  )
+
   return (
     <DayModal
       date={modalData.response.date}
@@ -287,10 +302,27 @@ function Edit({
     >
       {(childIndex) => {
         const bind = formElems[childIndex]
+        const closedHolidayPeriodAbsence =
+          inClosedHolidayPeriod &&
+          bind.state.day.branch === 'reservation' &&
+          bind.state.day.state.reservation.branch === 'absent'
+
         return (
-          <div>
-            <EditReservation showAllErrors={showAllErrors} bind={bind} />
-          </div>
+          <>
+            <div>
+              <EditReservation showAllErrors={showAllErrors} bind={bind} />
+            </div>
+            {closedHolidayPeriodAbsence && (
+              <TwoSpanGridItem>
+                <AlertBox
+                  title={i18n.calendar.closedHolidayPeriodAbsenceWarning.title}
+                  message={
+                    i18n.calendar.closedHolidayPeriodAbsenceWarning.message
+                  }
+                />
+              </TwoSpanGridItem>
+            )}
+          </>
         )
       }}
     </DayModal>
@@ -1030,4 +1062,8 @@ const DiscussionReservationContainer = styled.div`
 
 export const WordBreakContainer = styled.div`
   word-break: break-word;
+`
+
+const TwoSpanGridItem = styled.div`
+  grid-column-end: span 2;
 `

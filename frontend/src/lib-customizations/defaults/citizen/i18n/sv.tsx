@@ -433,6 +433,17 @@ const sv: Translations = {
         NON_RESERVABLE_DAYS: 'Alla valda dagar kan inte reserveras.'
       }
     },
+    closedHolidayPeriodAbsenceWarning: {
+      title: 'Loma-ajan poissaolo',
+      message:
+        'Olet merkitsemässä poissaoloa loma-ajalle. Tämän voi perua vain olemalla yhteydessä henkilökuntaan.'
+    },
+    closedHolidayPeriodAbsenceInfo: {
+      title: (periods: FiniteDateRange[]) =>
+        `Loma-aika ${periods.map((p) => p.format()).join(', ')}`,
+      message:
+        'Loma-ajalle merkittävät poissaolot voi perua vain olemalla yhteydessä henkilökuntaan.'
+    },
     absenceModal: {
       title: 'Anmäl frånvaro',
       selectedChildren: 'Utvalda barn',

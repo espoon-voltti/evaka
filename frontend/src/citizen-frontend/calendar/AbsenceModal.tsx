@@ -20,6 +20,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
@@ -51,7 +52,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from './CalendarModal'
-import { postAbsencesMutation } from './queries'
+import { holidayPeriodsQuery, postAbsencesMutation } from './queries'
 
 const absenceForm = mapped(
   object({
@@ -103,6 +104,8 @@ export default React.memo(function AbsenceModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
+
   const showShiftCareAbsenceType = useMemo(
     () =>
       featureFlags.citizenShiftCareAbsence
@@ -140,6 +143,17 @@ export default React.memo(function AbsenceModal({
         new DateRange(reservationsResponse.reservableRange.start, null)
       )
       .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
+
+  const closedHolidayPeriods =
+    holidayPeriods.isSuccess && range.isValid()
+      ? holidayPeriods.value
+          .filter(
+            (hp) =>
+              hp.period.overlaps(range.value()) &&
+              hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
+          )
+          .map((hp) => hp.period)
+      : []
 
   const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
     useState(false)
@@ -209,7 +223,7 @@ export default React.memo(function AbsenceModal({
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
-                {absencesWarning && (
+                {absencesWarning ? (
                   <AlertBox
                     title={
                       i18n.calendar.absenceModal.lockedAbsencesWarningTitle
@@ -218,7 +232,16 @@ export default React.memo(function AbsenceModal({
                       i18n.calendar.absenceModal.lockedAbsencesWarningText
                     }
                   />
-                )}
+                ) : closedHolidayPeriods.length > 0 ? (
+                  <AlertBox
+                    title={
+                      i18n.calendar.closedHolidayPeriodAbsenceWarning.title
+                    }
+                    message={
+                      i18n.calendar.closedHolidayPeriodAbsenceWarning.message
+                    }
+                  />
+                ) : null}
                 {attendanceAlreadyExistsError && (
                   <AlertBox
                     title={
