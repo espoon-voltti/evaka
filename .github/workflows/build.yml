@@ -71,7 +71,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS_ROLE: ${{ secrets.AWS_ROLE_NEW }}
 
       - name: Build keycloak image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -198,7 +198,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS_ROLE: ${{ secrets.AWS_ROLE_NEW }}
 
       - name: Build frontend image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -282,7 +282,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS_ROLE: ${{ secrets.AWS_ROLE_NEW }}
 
       - name: Build and run API-gateway tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -340,7 +340,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS_ROLE: ${{ secrets.AWS_ROLE_NEW }}
 
       - name: Build Evaka Service image
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -401,7 +401,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS_ROLE: ${{ secrets.AWS_ROLE_NEW }}
 
       - name: Build and run Evaka Service tests
         if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
@@ -443,7 +443,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-to-assume: ${{ secrets.AWS_ROLE_NEW }}
           role-duration-seconds: 1200
 
       - name: Login to Amazon ECR
@@ -637,7 +637,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-to-assume: ${{ secrets.AWS_ROLE_NEW }}
           role-duration-seconds: 1200
 
       - name: Login to Amazon ECR
@@ -678,7 +678,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-to-assume: ${{ secrets.AWS_ROLE_NEW }}
           role-duration-seconds: 1200
 
       - name: Login to GitHub Container Registry
