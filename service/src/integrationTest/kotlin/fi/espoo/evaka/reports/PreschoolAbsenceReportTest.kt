@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevHoliday
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -243,18 +244,23 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun initTestData(monday: LocalDate): PreschoolAbsenceReportTestData {
+        val previousFriday = monday.minusDays(3)
+        val previousSunday = monday.minusDays(1)
         val tuesday = monday.plusDays(1)
         val wednesday = monday.plusDays(2)
         val thursday = monday.plusDays(3)
         val friday = monday.plusDays(4)
         val saturday = monday.plusDays(5)
-        val previousSunday = monday.minusDays(1)
+        val nextTuesday = tuesday.plusWeeks(1)
 
         return db.transaction { tx ->
             tx.insert(admin)
 
             val testTerm = FiniteDateRange(monday.minusMonths(6), monday.plusMonths(6))
             tx.insertPreschoolTerm(testTerm, testTerm, testTerm, testTerm, DateSet.empty())
+
+            tx.insert(DevHoliday(date = previousFriday))
+            tx.insert(DevHoliday(date = nextTuesday))
 
             val areaAId = tx.insert(DevCareArea(name = "Area A", shortName = "Area A"))
             val areaBId = tx.insert(DevCareArea(name = "Area B", shortName = "Area B"))
@@ -418,7 +424,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     id = AbsenceId(UUID.randomUUID()),
                     testChildAapo.id,
                     monday,
-                    AbsenceType.OTHER_ABSENCE,
+                    AbsenceType.PLANNED_ABSENCE,
                     HelsinkiDateTime.atStartOfDay(monday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE
@@ -531,7 +537,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
 
             // Saturday
 
-            // absence outside unit operation days shouldn't show up
+            // absence on the weekend shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),
@@ -553,8 +559,36 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                 null
             )
 
+            // next tuesday
+            // absence on holiday shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    nextTuesday,
+                    AbsenceType.OTHER_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(nextTuesday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE
+                )
+            )
+
+            // previous friday
+            // absence on holiday shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    previousFriday,
+                    AbsenceType.OTHER_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(previousFriday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE
+                )
+            )
+
             // previous sunday
-            // absence outside unit operation days shouldn't show up
+            // absence on the weekend shouldn't show up
             tx.insert(
                 DevAbsence(
                     id = AbsenceId(UUID.randomUUID()),

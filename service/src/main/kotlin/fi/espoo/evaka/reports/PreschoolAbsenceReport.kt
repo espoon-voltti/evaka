@@ -57,6 +57,7 @@ class PreschoolAbsenceReport(
                             when (it) {
                                 AbsenceType.OTHER_ABSENCE,
                                 AbsenceType.SICKLEAVE,
+                                AbsenceType.PLANNED_ABSENCE,
                                 AbsenceType.UNKNOWN_ABSENCE -> true
                                 else -> false
                             }
@@ -194,9 +195,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
                      (select child.id,
                              child.first_name,
                              child.last_name,
-                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range,
-                             d.shift_care_operation_days,
-                             d.operation_days
+                             daterange(p.start_date, p.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
                       from placement p
                                join person child on p.child_id = child.id
                                join daycare d
@@ -210,7 +209,7 @@ fun getPreschoolAbsenceReportRowsForUnit(
             select ppc.id            as child_id,
                    ppc.first_name,
                    ppc.last_name,
-                   types.absence_type as absence_type,
+                   CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
                    count(ab.id)       as absence_count
             from preschool_placement_children ppc
                      left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
@@ -218,8 +217,9 @@ fun getPreschoolAbsenceReportRowsForUnit(
                                              ppc.id = ab.child_id and
                                              ab.absence_type = types.absence_type and
                                              ab.category = 'NONBILLABLE' and
-                                             extract(isodow from ab.date) = ANY(coalesce(ppc.shift_care_operation_days, ppc.operation_days))
-            group by ppc.id, ppc.first_name, ppc.last_name, types.absence_type;
+                                             extract(isodow from ab.date) BETWEEN 1 AND 5 and
+                                             not exists (SELECT FROM holiday h WHERE h.date = ab.date)
+            group by 1, 2, 3, 4;
         """
                     .trimIndent()
             )
@@ -241,9 +241,7 @@ fun getPreschoolAbsenceReportRowsForGroup(
          (select child.id,
                  child.first_name,
                  child.last_name,
-                 daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} as examination_range,
-                 d.shift_care_operation_days,
-                 d.operation_days
+                 daterange(dgp.start_date, dgp.end_date, '[]') * ${bind(preschoolTerm)} as examination_range
           from placement p
                    join person child on p.child_id = child.id
                    join daycare d
@@ -262,7 +260,7 @@ fun getPreschoolAbsenceReportRowsForGroup(
 select pgpc.id            as child_id,
        pgpc.first_name,
        pgpc.last_name,
-       types.absence_type as absence_type,
+       CASE types.absence_type WHEN 'PLANNED_ABSENCE' THEN 'OTHER_ABSENCE' ELSE types.absence_type END as absence_type,
        count(ab.id)       as absence_count
 from preschool_group_placement_children pgpc
          left join unnest(${bind(absenceTypes)}::absence_type[]) as types (absence_type) on true
@@ -270,8 +268,9 @@ from preschool_group_placement_children pgpc
                                  pgpc.id = ab.child_id and
                                  ab.absence_type = types.absence_type and
                                  ab.category = 'NONBILLABLE' and
-                                 extract(isodow from ab.date) = ANY(coalesce(pgpc.shift_care_operation_days, pgpc.operation_days))
-group by pgpc.id, pgpc.first_name, pgpc.last_name, types.absence_type;
+                                 extract(isodow from ab.date) BETWEEN 1 AND 5 and
+                                 not exists (SELECT FROM holiday h WHERE h.date = ab.date)
+group by 1, 2, 3, 4;
         """
                     .trimIndent()
             )
