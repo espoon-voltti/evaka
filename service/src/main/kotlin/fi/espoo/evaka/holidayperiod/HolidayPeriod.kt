@@ -6,6 +6,7 @@ package fi.espoo.evaka.holidayperiod
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
+import fi.espoo.evaka.reservations.ReservationEnabledPlacementRange
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -42,16 +43,34 @@ data class HolidayPeriod(
      */
     fun effect(
         today: LocalDate,
-        reservationEnabledPlacementRanges: List<FiniteDateRange>
+        reservationEnabledPlacementRanges: List<ReservationEnabledPlacementRange>
     ): HolidayPeriodEffect? =
         when {
             reservationEnabledPlacementRanges.none {
-                it.overlaps(FiniteDateRange(reservationsOpenOn, reservationDeadline))
+                it.range.overlaps(FiniteDateRange(reservationsOpenOn, reservationDeadline))
             } -> null
             today < reservationsOpenOn ->
                 HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn)
             today in reservationsOpenOn..reservationDeadline -> HolidayPeriodEffect.ReservationsOpen
-            else -> HolidayPeriodEffect.ReservationsClosed
+            // Reservation period is over and a placement was active when it was still open
+            else -> {
+                val holidayPeriodPlacements =
+                    reservationEnabledPlacementRanges
+                        .filter { it.range.overlaps(period) }
+                        .sortedBy { it.range.start }
+                val hasRelevantGap =
+                    holidayPeriodPlacements.zipWithNext().any { (first, second) ->
+                        val hasGap = first.range.end.plusDays(1) != second.range.start
+                        hasGap && second.created > reservationDeadline
+                    }
+                if (hasRelevantGap) {
+                    // Gap between placements AND the later placement was created after reservation
+                    // period => no effect
+                    null
+                } else {
+                    HolidayPeriodEffect.ReservationsClosed
+                }
+            }
         }
 }
 
