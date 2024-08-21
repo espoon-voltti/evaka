@@ -181,7 +181,7 @@ fun Database.Read.getDaycares(
         if (includeClosed) Predicate.alwaysTrue()
         else
             Predicate {
-                where("$it.closing_date IS NULL OR $it.closing_date > ${bind(clock.today())}")
+                where("$it.closing_date IS NULL OR $it.closing_date >= ${bind(clock.today())}")
             }
     return createQuery { daycaresQuery(filter.toPredicate().and(predicate)) }.toList<Daycare>()
 }
@@ -406,7 +406,7 @@ SELECT
     daycare_apply_period,
     preschool_apply_period
 FROM daycare
-WHERE daterange(null, closing_date) @> ${bind(today)} AND
+WHERE daterange(null, closing_date, '[]') @> ${bind(today)} AND
     ($applyPeriod && daterange(${bind(today)}, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name
     """
@@ -445,7 +445,7 @@ fun Database.Read.getUnitFeatures(today: LocalDate): List<UnitFeatures> =
                 """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
-WHERE closing_date IS NULL OR closing_date > ${bind(today)}
+WHERE closing_date IS NULL OR closing_date >= ${bind(today)}
 ORDER BY name
 """
             )
