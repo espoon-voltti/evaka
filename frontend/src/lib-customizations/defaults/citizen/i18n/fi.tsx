@@ -1998,6 +1998,14 @@ export default {
         'Vahvistukset eVakaan tehdyistä keskusteluaikavarauksista',
       discussionTimeReservationConfirmationInfo:
         'Vahvistusviesti lähetetään varatusta tai perutusta keskusteluaikavarauksesta',
+      discussionTimeReservationReminder:
+        'Muistutukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationReminderInfo:
+        'Muistutusviesti lähetetään ennen varattua aikaa',
+      discussionSurveyCreationNotification:
+        'Ilmoitus eVakaan avatuista keskustelukyselyistä',
+      discussionSurveyCreationNotificationInfo:
+        'Ilmoitus lähetetään kun lapsesi on kutsuttu uuteen keskustelukyselyyn',
       outdatedIncome: 'Muistutukset tulotietojen päivittämisestä',
       outdatedIncomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',

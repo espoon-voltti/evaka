@@ -6,6 +6,8 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
+import fi.espoo.evaka.emailclient.DiscussionSurveyCreationNotificationData
+import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildId
@@ -470,12 +472,85 @@ data class ParentWithEvents(
     val events: List<CalendarEventNotificationData>,
 )
 
+data class ParentWithEventTimes(
+    val parentId: PersonId,
+    val eventTimeId: CalendarEventTimeId,
+    val language: Language,
+)
+
+data class ParentWithDiscussionSurveys(
+    val parentId: PersonId,
+    val language: Language,
+    val surveys: List<DiscussionSurveyCreationNotificationData>
+)
+
+fun Database.Read.getRecipientsForEventTimeRemindersAt(
+    date: LocalDate
+): List<ParentWithEventTimes> {
+    return createQuery {
+            sql(
+                """
+SELECT par.parent_id,
+       par.language,
+       cet.id as event_time_id
+FROM calendar_event_time cet
+JOIN LATERAL (
+    SELECT g.guardian_id AS parent_id, p.language
+    FROM guardian g
+             JOIN person p ON p.id = g.guardian_id
+    WHERE cet.child_id = g.child_id
+
+    UNION
+
+    SELECT fp.parent_id, p.language
+    FROM foster_parent fp
+             JOIN person p ON p.id = fp.parent_id
+    WHERE cet.child_id = fp.child_id
+      AND fp.valid_during @> ${bind(date)}
+    ) par ON TRUE
+WHERE cet.date = ${bind(date)}
+  AND cet.child_id IS NOT NULL
+"""
+            )
+        }
+        .toList {
+            ParentWithEventTimes(
+                parentId = column("parent_id"),
+                language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
+                eventTimeId = column("event_time_id"),
+            )
+        }
+}
+
+fun Database.Read.getEventTimeReminderInfo(
+    eventTimeId: CalendarEventTimeId
+): DiscussionTimeReminderData? {
+    return createQuery {
+            sql(
+                """
+SELECT p.id as child_id, 
+      ce.title,
+      p.first_name,
+      p.last_name,
+      cet.date,
+      cet.start_time,
+      cet.end_time
+FROM calendar_event_time cet
+JOIN person p on cet.child_id = p.id
+JOIN calendar_event ce ON cet.calendar_event_id = ce.id
+WHERE cet.id = ${bind(eventTimeId)}
+"""
+            )
+        }
+        .exactlyOneOrNull<DiscussionTimeReminderData>()
+}
+
 fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
     return createQuery {
             sql(
                 """
 WITH matching_events AS (
-    SELECT id, period FROM calendar_event WHERE created_at >= ${bind(cutoff)}
+    SELECT id, period FROM calendar_event WHERE created_at >= ${bind(cutoff)} AND event_type = 'DAYCARE_EVENT'
 ), matching_children AS (
     SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
     FROM matching_events ce
@@ -565,6 +640,74 @@ GROUP BY mp.parent_id, p.language
         }
 }
 
+fun Database.Read.getParentsWithNewDiscussionSurveysAfter(
+    cutoff: HelsinkiDateTime
+): List<ParentWithDiscussionSurveys> {
+    return createQuery {
+            sql(
+                """
+WITH matching_events AS (
+    SELECT id, period FROM calendar_event WHERE created_at >= ${bind(cutoff)} AND event_type = 'DISCUSSION_SURVEY'
+), matching_children AS (
+    SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
+    FROM matching_events ce
+             JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+             JOIN placement pl ON pl.unit_id = cea.unit_id AND daterange(pl.start_date, pl.end_date, '[]') && ce.period
+    WHERE
+      -- Affects a single group
+        cea.group_id IS NOT NULL AND
+        cea.child_id IS NULL
+
+    UNION ALL
+
+    SELECT ce.id AS event_id, ce.period, cea.child_id
+    FROM matching_events ce
+             JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
+    WHERE
+      -- Affects a single child (in a single group)
+        cea.group_id IS NOT NULL AND
+        cea.child_id IS NOT NULL
+
+), matching_parents AS (
+    -- List each event at most once per parent
+
+    SELECT DISTINCT g.guardian_id AS parent_id, mc.event_id
+    FROM matching_children mc
+             JOIN guardian g ON g.child_id = mc.child_id
+
+    UNION
+
+    SELECT DISTINCT fp.parent_id, mc.event_id
+    FROM matching_children mc
+             JOIN foster_parent fp ON fp.child_id = mc.child_id AND fp.valid_during && mc.period
+)
+SELECT
+    mp.parent_id,
+    p.language,
+    jsonb_agg(
+            json_build_object(
+                    'eventId', ce.id,
+                    'eventTitle', ce.title,
+                    'eventDescription', ce.description
+            )
+            ORDER BY lower(ce.period)
+    ) AS surveys
+FROM matching_parents mp
+         JOIN person p ON p.id = mp.parent_id
+         JOIN calendar_event ce ON ce.id = mp.event_id
+GROUP BY mp.parent_id, p.language
+"""
+            )
+        }
+        .toList {
+            ParentWithDiscussionSurveys(
+                parentId = column("parent_id"),
+                language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
+                surveys = jsonColumn<List<DiscussionSurveyCreationNotificationData>>("surveys")
+            )
+        }
+}
+
 fun Database.Transaction.updateCalendarEventPeriod(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
@@ -584,18 +727,16 @@ WHERE id = ${bind(eventId)}
 data class DiscussionTimeDetailsRow(
     @Nested("et") val eventTime: CalendarEventTime,
     val title: String,
-    val unitName: String,
 )
 
 fun Database.Read.getDiscussionTimeDetailsByEventTimeId(id: CalendarEventTimeId) =
     createQuery {
             sql(
                 """
-SELECT distinct cet.id as et_id, cet.date as et_date, cet.start_time as et_start_time, cet.end_time as et_end_time, cet.child_id as et_child_id, ce.title, d.name as unit_name
+SELECT distinct cet.id as et_id, cet.date as et_date, cet.start_time as et_start_time, cet.end_time as et_end_time, cet.child_id as et_child_id, ce.title
 FROM calendar_event_time cet
 JOIN calendar_event ce ON cet.calendar_event_id = ce.id 
 JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
-JOIN daycare d ON d.id = cea.unit_id
 WHERE cet.id = ${bind(id)}
         
         """

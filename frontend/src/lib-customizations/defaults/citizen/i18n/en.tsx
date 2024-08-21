@@ -1754,6 +1754,14 @@ const en: Translations = {
         'Confirmations of discussion time reservations in eVaka',
       discussionTimeReservationConfirmationInfo:
         'An email confirmation is sent on reservation or cancellation of discussion times',
+      discussionTimeReservationReminder:
+        'Reminders for reserved discussion times',
+      discussionTimeReservationReminderInfo:
+        'Reminder is sent before the reserved time',
+      discussionSurveyCreationNotification:
+        'Notification for new discussion surveys opened in eVakaan',
+      discussionSurveyCreationNotificationInfo:
+        'Notification is sent when a new discussion survey concerning your child has been created',
       outdatedIncome: 'Reminders about updating your income information',
       outdatedIncomeInfo:
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',

@@ -9,8 +9,11 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.messaging.MessageThreadStub
+import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.time.LocalDate
+import java.time.LocalTime
 import org.jsoup.Jsoup
 
 data class EmailContent(
@@ -109,13 +112,39 @@ interface IEmailMessageProvider {
         notificationDetails: DiscussionSurveyReservationNotificationData,
     ): EmailContent
 
+    fun discussionSurveyCreationNotification(
+        language: Language,
+        notificationDetails: DiscussionSurveyCreationNotificationData
+    ): EmailContent
+
+    fun discussionTimeReservationReminder(
+        language: Language,
+        reminderData: DiscussionTimeReminderData
+    ): EmailContent
+
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
 data class CalendarEventNotificationData(val title: String, val period: FiniteDateRange)
 
+data class DiscussionTimeReminderData(
+    val title: String,
+    val firstName: String,
+    val lastName: String,
+    val date: LocalDate,
+    val startTime: LocalTime,
+    val endTime: LocalTime,
+    val childId: ChildId,
+)
+
 data class DiscussionSurveyReservationNotificationData(
     val title: String,
-    val unitName: String,
+    val childName: String,
     val calendarEventTime: CalendarEventTime,
+)
+
+data class DiscussionSurveyCreationNotificationData(
+    val eventTitle: String,
+    val eventDescription: String,
+    val eventId: CalendarEventId
 )

@@ -17,6 +17,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H2, P, Strong } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../localization'
@@ -33,7 +34,9 @@ const notificationSettingsForm = object({
   document: boolean(),
   informalDocument: boolean(),
   missingAttendanceReservation: boolean(),
-  discussionTimeReservationConfirmation: boolean()
+  discussionTimeReservationConfirmation: boolean(),
+  discussionTimeReservationReminder: boolean(),
+  discussionSurveyCreationNotification: boolean()
 })
 
 export interface Props {
@@ -61,7 +64,9 @@ export default React.memo(
       document,
       informalDocument,
       missingAttendanceReservation,
-      discussionTimeReservationConfirmation
+      discussionTimeReservationConfirmation,
+      discussionTimeReservationReminder,
+      discussionSurveyCreationNotification
     } = useFormFields(form)
 
     return (
@@ -170,23 +175,61 @@ export default React.memo(
           />
         </ExpandingInfo>
         <Gap size="s" />
-        <ExpandingInfo
-          info={
-            t.personalDetails.notificationsSection
-              .discussionTimeReservationConfirmationInfo
-          }
-        >
-          <CheckboxF
-            bind={discussionTimeReservationConfirmation}
-            label={
-              t.personalDetails.notificationsSection
-                .discussionTimeReservationConfirmation
-            }
-            disabled={!editing}
-            data-qa="discussion-time-reservation-confirmation"
-          />
-        </ExpandingInfo>
-        <Gap size="s" />
+        {featureFlags.discussionReservations && (
+          <>
+            <ExpandingInfo
+              info={
+                t.personalDetails.notificationsSection
+                  .discussionTimeReservationConfirmationInfo
+              }
+            >
+              <CheckboxF
+                bind={discussionTimeReservationConfirmation}
+                label={
+                  t.personalDetails.notificationsSection
+                    .discussionTimeReservationConfirmation
+                }
+                disabled={!editing}
+                data-qa="discussion-time-reservation-confirmation"
+              />
+            </ExpandingInfo>
+            <Gap size="s" />
+            <ExpandingInfo
+              info={
+                t.personalDetails.notificationsSection
+                  .discussionTimeReservationReminderInfo
+              }
+            >
+              <CheckboxF
+                bind={discussionTimeReservationReminder}
+                label={
+                  t.personalDetails.notificationsSection
+                    .discussionTimeReservationReminder
+                }
+                disabled={!editing}
+                data-qa="discussion-time-reservation-reminder"
+              />
+            </ExpandingInfo>
+            <Gap size="s" />
+            <ExpandingInfo
+              info={
+                t.personalDetails.notificationsSection
+                  .discussionSurveyCreationNotificationInfo
+              }
+            >
+              <CheckboxF
+                bind={discussionSurveyCreationNotification}
+                label={
+                  t.personalDetails.notificationsSection
+                    .discussionSurveyCreationNotification
+                }
+                disabled={!editing}
+                data-qa="discussion-survey-creation-notification"
+              />
+            </ExpandingInfo>
+            <Gap size="s" />
+          </>
+        )}
         {editing ? (
           <FixedSpaceRow justifyContent="flex-end">
             <LegacyButton

@@ -1994,6 +1994,14 @@ const sv: Translations = {
         'Bekräftelser på bokningar av samtalstid i eVaka',
       discussionTimeReservationConfirmationInfo:
         'Ett bekräftelsemeddelande skickas för en bokad eller avbokad bokning av diskussiontid.',
+      discussionTimeReservationReminder:
+        'Muistutukset eVakaan tehdyistä keskusteluaikavarauksista',
+      discussionTimeReservationReminderInfo:
+        'Muistutusviesti lähetetään ennen varattua aikaa',
+      discussionSurveyCreationNotification:
+        'Ilmoitus eVakaan avatuista keskustelukyselyistä',
+      discussionSurveyCreationNotificationInfo:
+        'Ilmoitus lähetetään kun eVakaan on luotu uusi lastasi koskeva keskustelukysely',
       outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',

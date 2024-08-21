@@ -472,7 +472,6 @@ class CalendarEventController(
                                     childId = preUpdateEventTimeDetails.eventTime.childId,
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                    unitName = preUpdateEventTimeDetails.unitName,
                                     recipientId = it.id,
                                 )
                             },
@@ -532,7 +531,6 @@ class CalendarEventController(
                                         childId = body.childId,
                                         language = Language.fi,
                                         calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                        unitName = preUpdateEventTimeDetails.unitName,
                                         recipientId = it.id,
                                     )
                                 },
@@ -554,7 +552,6 @@ class CalendarEventController(
                                     childId = preUpdateEventTimeDetails.eventTime.childId,
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
-                                    unitName = preUpdateEventTimeDetails.unitName,
                                     recipientId = it.id,
                                 )
                             },
@@ -774,7 +771,6 @@ class CalendarEventController(
                                     childId = body.childId,
                                     language = Language.fi,
                                     calendarEventTime = finalEventTime,
-                                    unitName = eventTimeDetails.unitName,
                                     recipientId = it.id,
                                 )
                             },
@@ -822,7 +818,6 @@ class CalendarEventController(
                                 childId = body.childId,
                                 language = Language.fi,
                                 calendarEventTime = eventTimeDetails.eventTime,
-                                unitName = eventTimeDetails.unitName,
                                 recipientId = it.id,
                             )
                         },

@@ -41,6 +41,8 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = true,
                 discussionTimeReservationConfirmation = true,
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
             ),
             settings,
         )
@@ -64,7 +66,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = false,
                 discussionTimeReservationConfirmation = true,
-            ),
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
+            )
         )
 
         val settings =
@@ -84,6 +88,8 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = false,
                 discussionTimeReservationConfirmation = true,
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
             ),
             settings,
         )

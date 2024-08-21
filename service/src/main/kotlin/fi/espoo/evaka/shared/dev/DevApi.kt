@@ -54,7 +54,9 @@ import fi.espoo.evaka.document.DocumentType
 import fi.espoo.evaka.document.childdocument.DocumentContent
 import fi.espoo.evaka.document.childdocument.DocumentStatus
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
+import fi.espoo.evaka.emailclient.DiscussionSurveyCreationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
+import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -1537,6 +1539,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         financeDecisionNotification,
         discussionTimeReservation,
         discussionTimeCancellation,
+        discussionSurveyCreation,
+        discussionTimeReservationReminder,
     }
 
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
@@ -1612,7 +1616,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            unitName = "Testiyksikkö A",
+                            childName = "Terttu Testaaja",
                             title = "Testikeskustelun otsikko",
                             calendarEventTime =
                                 CalendarEventTime(
@@ -1628,7 +1632,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            unitName = "Testiyksikkö A",
+                            childName = "Terttu Testaaja",
                             title = "Testikeskustelun otsikko",
                             calendarEventTime =
                                 CalendarEventTime(
@@ -1639,6 +1643,29 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     childId = null,
                                 ),
                         ),
+                    )
+                EmailMessageType.discussionTimeReservationReminder ->
+                    emailMessageProvider.discussionTimeReservationReminder(
+                        Language.fi,
+                        DiscussionTimeReminderData(
+                            date = LocalDate.now(),
+                            firstName = "Terttu",
+                            lastName = "Testaaja",
+                            startTime = LocalTime.of(12, 20),
+                            endTime = LocalTime.of(12, 50),
+                            childId = PersonId(UUID.randomUUID()),
+                            title = "VASU-keskustelut 2029 syksy"
+                        )
+                    )
+                EmailMessageType.discussionSurveyCreation ->
+                    emailMessageProvider.discussionSurveyCreationNotification(
+                        Language.fi,
+                        DiscussionSurveyCreationNotificationData(
+                            eventId = CalendarEventId(UUID.randomUUID()),
+                            eventTitle = "VASU-keskustelut 2029 syksy",
+                            eventDescription =
+                                "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
+                        )
                     )
             }
         val content =
