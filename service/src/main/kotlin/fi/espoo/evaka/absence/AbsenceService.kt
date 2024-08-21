@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.PilotFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -68,6 +69,12 @@ fun getGroupMonthCalendar(
 
     val holidays = tx.getHolidays(range)
     val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+
+    val childIdsWithHourBasedServiceNeed =
+        actualServiceNeeds
+            .filterValues { serviceNeeds -> serviceNeeds.any { it.daycareHoursPerMonth != null } }
+            .keys
+    val operationDates = tx.getOperationalDatesForChildren(range, childIdsWithHourBasedServiceNeed)
 
     val usedServiceByChild = mutableMapOf<ChildId, UsedServiceData>()
 
@@ -124,13 +131,7 @@ fun getGroupMonthCalendar(
                                             placementType = placement.type,
                                             preschoolTime = placement.preschoolTime,
                                             preparatoryTime = placement.preparatoryTime,
-                                            isOperationDay =
-                                                when (shiftCare) {
-                                                    ShiftCareType.NONE -> isOperationDay
-                                                    ShiftCareType.FULL,
-                                                    ShiftCareType.INTERMITTENT ->
-                                                        isShiftCareOperationDay
-                                                },
+                                            operationDates = operationDates[child.id] ?: emptySet(),
                                             shiftCareType = shiftCare,
                                             absences =
                                                 childAbsences.map { it.absenceType to it.category },

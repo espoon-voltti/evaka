@@ -8,8 +8,10 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.isWeekend
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.roundToLong
@@ -33,7 +35,8 @@ class UsedServiceTests {
         placementType: PlacementType = PlacementType.DAYCARE,
         dailyPreschoolTimes: TimeRange? = null,
         dailyPreparatoryTimes: TimeRange? = null,
-        isOperationDay: Boolean = true,
+        operationDates: Set<LocalDate> =
+            FiniteDateRange.ofMonth(date).dates().filter { !it.isWeekend() }.toSet(),
         shiftCareType: ShiftCareType = ShiftCareType.NONE,
         absences: List<Pair<AbsenceType, AbsenceCategory>> = listOf(),
         reservations: List<TimeRange> = listOf(),
@@ -46,7 +49,7 @@ class UsedServiceTests {
             placementType,
             dailyPreschoolTimes,
             dailyPreparatoryTimes,
-            isOperationDay,
+            operationDates,
             shiftCareType,
             absences,
             reservations,
@@ -55,7 +58,8 @@ class UsedServiceTests {
 
     @Test
     fun `computes only reserved minutes for future days`() {
-        val today = LocalDate.of(2021, 1, 1)
+        // Monday
+        val today = LocalDate.of(2021, 1, 4)
 
         compute(today = today, date = today.plusDays(1), reservations = listOf(range(9, 12))).also {
             assertEquals(180, it.reservedMinutes)
@@ -317,7 +321,7 @@ class UsedServiceTests {
     fun `children without intermittent shift care do not use service on non-operation days`() {
         listOf(ShiftCareType.NONE, ShiftCareType.FULL).forEach { shiftCareType ->
             compute(
-                    isOperationDay = false,
+                    operationDates = emptySet(),
                     shiftCareType = shiftCareType,
                     reservations = listOf(range(8, 16)),
                     attendances = listOf(interval(9, 17))
@@ -333,7 +337,7 @@ class UsedServiceTests {
     @Test
     fun `children with intermittent use service on non-operation days`() {
         compute(
-                isOperationDay = false,
+                operationDates = emptySet(),
                 shiftCareType = ShiftCareType.INTERMITTENT,
                 reservations = listOf(range(8, 16)),
                 attendances = listOf(interval(9, 17))
@@ -348,7 +352,7 @@ class UsedServiceTests {
     @Test
     fun `children with intermittent do not get hours divided by 21 on non-operation days`() {
         compute(
-                isOperationDay = false,
+                operationDates = emptySet(),
                 shiftCareType = ShiftCareType.INTERMITTENT,
                 reservations = emptyList(),
                 attendances = emptyList()
@@ -357,6 +361,47 @@ class UsedServiceTests {
                 assertEquals(0, it.reservedMinutes)
                 assertEquals(0, it.usedServiceMinutes)
                 assertEquals(emptyList(), it.usedServiceRanges)
+            }
+    }
+
+    @Test
+    fun `average for free absence types is divided by the number of operation days`() {
+        val date = today.minusDays(1)
+
+        val operationDatesWithCount = { n: Int ->
+            (FiniteDateRange.ofMonth(date).dates().take(n - 1) + date).toSet()
+        }
+
+        listOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
+            .forEach { absenceType ->
+                compute(
+                        date = date,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeedHours = 120,
+                        absences = listOf(absenceType to AbsenceCategory.BILLABLE),
+                        operationDates = operationDatesWithCount(23)
+                    )
+                    .also {
+                        assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
+                        assertEquals(emptyList(), it.usedServiceRanges)
+                    }
+
+                compute(
+                        date = date,
+                        placementType = PlacementType.PRESCHOOL_DAYCARE,
+                        shiftCareType = ShiftCareType.FULL,
+                        serviceNeedHours = 120,
+                        absences =
+                            listOf(
+                                absenceType to AbsenceCategory.BILLABLE,
+                                absenceType to AbsenceCategory.NONBILLABLE
+                            ),
+                        operationDates = operationDatesWithCount(31)
+                    )
+                    .also {
+                        assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)
+                        assertEquals(emptyList(), it.usedServiceRanges)
+                    }
             }
     }
 }

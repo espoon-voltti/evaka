@@ -5,7 +5,11 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.absence.AbsenceCategory
+import fi.espoo.evaka.absence.AbsenceType
+import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChildAttendance
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -22,6 +26,7 @@ import fi.espoo.evaka.shared.dev.insertServiceNeedOption
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.isWeekend
 import fi.espoo.evaka.snDaycareHours120
 import java.time.LocalDate
@@ -43,9 +48,17 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
         val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
         val area = DevCareArea()
         val daycare = DevDaycare(areaId = area.id)
+        val shiftDaycare =
+            DevDaycare(
+                areaId = area.id,
+                shiftCareOperationTimes =
+                    (1..7).map { TimeRange(LocalTime.of(6, 0), LocalTime.of(22, 0)) }
+            )
 
         val child1 = DevPerson()
         val child2 = DevPerson()
+        val child3 = DevPerson()
+        val child4 = DevPerson()
 
         val daycareGroup = DevDaycareGroup(daycareId = daycare.id, startDate = start, endDate = end)
 
@@ -54,8 +67,11 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(admin)
             tx.insert(area)
             tx.insert(daycare)
+            tx.insert(shiftDaycare)
             tx.insert(child1, DevPersonType.CHILD)
             tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child3, DevPersonType.CHILD)
+            tx.insert(child4, DevPersonType.CHILD)
 
             tx.insert(DevHoliday(LocalDate.of(2024, 1, 1)))
 
@@ -113,6 +129,51 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                     )
                 }
 
+            tx.insert(
+                    DevPlacement(
+                        childId = child3.id,
+                        unitId = daycare.id,
+                        startDate = start,
+                        endDate = end
+                    )
+                )
+                .also { placementId ->
+                    val period = FiniteDateRange(start, end)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            confirmedBy = admin.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                }
+
+            tx.insert(
+                    DevPlacement(
+                        childId = child4.id,
+                        unitId = daycare.id,
+                        startDate = start,
+                        endDate = end
+                    )
+                )
+                .also { placementId ->
+                    val period = FiniteDateRange(start, end)
+                    tx.insert(
+                        DevServiceNeed(
+                            placementId = placementId,
+                            startDate = period.start,
+                            endDate = period.end,
+                            optionId = snDaycareHours120.id,
+                            shiftCare = ShiftCareType.FULL,
+                            confirmedBy = admin.evakaUserId,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                    )
+                }
+
             // 22 operation days
             FiniteDateRange(start, end)
                 .dates()
@@ -138,7 +199,27 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             LocalTime.of(12, 0)
                         )
                     )
+                    // child3: free absence on all weekdays -> no excess hours
+                    tx.insert(
+                        DevAbsence(
+                            childId = child3.id,
+                            date = date,
+                            absenceCategory = AbsenceCategory.BILLABLE,
+                            absenceType = AbsenceType.FORCE_MAJEURE
+                        )
+                    )
                 }
+            FiniteDateRange(start, end).dates().forEach { date ->
+                // child4: shift care + free absence on all days -> no excess hours
+                tx.insert(
+                    DevAbsence(
+                        childId = child4.id,
+                        date = date,
+                        absenceCategory = AbsenceCategory.BILLABLE,
+                        absenceType = AbsenceType.FORCE_MAJEURE
+                    )
+                )
+            }
         }
 
         val rows =

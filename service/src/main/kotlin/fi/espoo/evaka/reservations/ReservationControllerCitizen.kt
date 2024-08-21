@@ -44,6 +44,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -118,6 +119,21 @@ class ReservationControllerCitizen(
                             .mapValues { (_, attendances) ->
                                 attendances.map { TimeInterval(it.startTime, it.endTime) }
                             }
+
+                    val childIdsWithHourBasedServiceNeed =
+                        placements
+                            .filter { (_, placements) ->
+                                placements.any { pl ->
+                                    pl.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null }
+                                }
+                            }
+                            .keys
+                    val operationDays =
+                        tx.getOperationalDatesForChildren(
+                            requestedRange,
+                            childIdsWithHourBasedServiceNeed
+                        )
+
                     val reservableRange =
                         getReservableRange(
                             clock.now(),
@@ -178,7 +194,8 @@ class ReservationControllerCitizen(
                                                                         placementDay.preschoolTime,
                                                                         placementDay
                                                                             .preparatoryTime,
-                                                                        placementDay.isOperationDay,
+                                                                        operationDays[child.id]
+                                                                            ?: emptySet(),
                                                                         placementDay.shiftCareType,
                                                                         childAbsences.map {
                                                                             it.absenceType to
@@ -406,7 +423,6 @@ class ReservationControllerCitizen(
 data class PlacementDay(
     val placementType: PlacementType,
     val scheduleType: ScheduleType,
-    val isOperationDay: Boolean,
     val shiftCare: Boolean,
     val shiftCareType: ShiftCareType,
     val daycareHoursPerMonth: Int?,
@@ -453,7 +469,6 @@ private fun placementDay(
         PlacementDay(
             placementType = placement.type,
             scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
-            isOperationDay = operationTime != null,
             shiftCare = shiftCare,
             shiftCareType = shiftCareType,
             daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,

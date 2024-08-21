@@ -585,7 +585,7 @@ fun computeUsedService(
     placementType: PlacementType,
     preschoolTime: TimeRange?,
     preparatoryTime: TimeRange?,
-    isOperationDay: Boolean,
+    operationDates: Set<LocalDate>,
     shiftCareType: ShiftCareType,
     absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
@@ -599,7 +599,7 @@ fun computeUsedService(
 
     val endedAttendances = attendances.mapNotNull { it.asTimeRange() }
 
-    if (!isOperationDay && shiftCareType != ShiftCareType.INTERMITTENT) {
+    if (!operationDates.contains(date) && shiftCareType != ShiftCareType.INTERMITTENT) {
         return UsedServiceResult(
             reservedMinutes = 0,
             usedServiceMinutes = 0,
@@ -634,12 +634,16 @@ fun computeUsedService(
         )
     }
 
-    val isPlannedAbsence = run {
-        val absenceTypes = absences.map { it.first }.toSet()
-        val absenceCategories = absences.map { it.second }.toSet()
+    val absenceTypes = absences.map { it.first }.toSet()
+    val absenceCategories = absences.map { it.second }.toSet()
+    val isPlannedAbsence =
         absenceTypes == setOf(AbsenceType.PLANNED_ABSENCE) &&
             absenceCategories == placementType.absenceCategories()
-    }
+    val isRefundedAbsence =
+        absenceTypes.intersect(
+            setOf(AbsenceType.FORCE_MAJEURE, AbsenceType.FREE_ABSENCE, AbsenceType.PARENTLEAVE)
+        ) == absenceTypes && absenceCategories == placementType.absenceCategories()
+
     if (endedAttendances.isEmpty() && isPlannedAbsence) {
         return UsedServiceResult(
             reservedMinutes = 0,
@@ -648,8 +652,14 @@ fun computeUsedService(
         )
     }
 
-    if (isOperationDay && reservations.isEmpty() && endedAttendances.isEmpty()) {
-        val daysInMonth = 21
+    if (operationDates.contains(date) && reservations.isEmpty() && endedAttendances.isEmpty()) {
+        val daysInMonth =
+            if (isRefundedAbsence) {
+                val range = FiniteDateRange.ofMonth(date)
+                operationDates.count { range.includes(it) }
+            } else {
+                21
+            }
         val dailyAverage = serviceNeedHours.toDouble() * 60 / daysInMonth
         return UsedServiceResult(
             reservedMinutes = 0,
