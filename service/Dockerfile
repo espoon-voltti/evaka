@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM azul/zulu-openjdk:21-latest as builder
+FROM azul/zulu-openjdk:21-latest AS builder
 ARG CACHE_BUST
 
 ENV LC_ALL C.UTF-8
