@@ -18,11 +18,11 @@ RUN mkdir -p /mnt/rootfs \
 
 ## Base containers ##
 
-FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} as base
+FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} AS base
 
 USER root
 
-FROM base as maven-builder
+FROM base AS maven-builder
 
 WORKDIR /project/
 
