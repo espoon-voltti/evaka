@@ -31,6 +31,8 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     private val firstOfAugust2021 =
         HelsinkiDateTime.of(LocalDate.of(2021, 8, 1), LocalTime.of(3, 15))
 
+    private val daysToDeactivation: Long = 8 * 7 + 1
+
     @Test
     fun `global roles are not reset when last_login is now`() {
         val employeeId =
@@ -51,7 +53,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
             db.transaction {
                 it.insert(
                     DevEmployee(
-                        lastLogin = firstOfAugust2021.minusDays(46),
+                        lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
                         roles = setOf(UserRole.ADMIN)
                     )
                 )
@@ -89,7 +91,10 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `scoped roles are reset when last_login is over 45 days ago`() {
         val employeeId =
             db.transaction {
-                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(46)))
+                val employeeId =
+                    it.insert(
+                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
+                    )
                 val areaId = it.insert(DevCareArea())
                 val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
@@ -97,7 +102,11 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     employeeId = employeeId,
                     role = UserRole.STAFF
                 )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(46))
+                it.setDaycareAclUpdated(
+                    unitId,
+                    employeeId,
+                    firstOfAugust2021.minusDays(daysToDeactivation)
+                )
                 employeeId
             }
 
@@ -167,7 +176,10 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `pin code is reset when last_login is over 45 days ago`() {
         val employeeId =
             db.transaction {
-                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(46)))
+                val employeeId =
+                    it.insert(
+                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
+                    )
                 val areaId = it.insert(DevCareArea())
                 val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
@@ -175,7 +187,11 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     employeeId = employeeId,
                     role = UserRole.STAFF
                 )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(46))
+                it.setDaycareAclUpdated(
+                    unitId,
+                    employeeId,
+                    firstOfAugust2021.minusDays(daysToDeactivation)
+                )
                 it.upsertPinCode(userId = employeeId, pinCode = PinCode("6712"))
                 employeeId
             }
@@ -190,7 +206,10 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `personal mobile pairing is removed when last_login is over 45 days ago`() {
         val employeeId =
             db.transaction {
-                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(46)))
+                val employeeId =
+                    it.insert(
+                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
+                    )
                 val areaId = it.insert(DevCareArea())
                 val unitId = it.insert(DevDaycare(areaId = areaId))
                 it.insertDaycareAclRow(
@@ -198,7 +217,11 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                     employeeId = employeeId,
                     role = UserRole.STAFF
                 )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(46))
+                it.setDaycareAclUpdated(
+                    unitId,
+                    employeeId,
+                    firstOfAugust2021.minusDays(daysToDeactivation)
+                )
                 it.insert(DevPersonalMobileDevice(employeeId = employeeId))
                 employeeId
             }
