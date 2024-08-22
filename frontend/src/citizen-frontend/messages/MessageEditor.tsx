@@ -371,6 +371,7 @@ export default React.memo(function MessageEditor({
                     i18n.messages.messageEditor.addShiftCareAttachment
                   }
                 />
+                <Gap size="m" />
               </>
             )}
 
