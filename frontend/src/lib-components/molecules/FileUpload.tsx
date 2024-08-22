@@ -511,7 +511,7 @@ export default React.memo(function FileUpload({
                         {file.name}
                       </span>
                     )}
-                    {!inProgress(file) && (
+                    {(!inProgress(file) || file.error) && (
                       <FileDeleteButton
                         icon={faTimes}
                         disabled={file.deleteInProgress}
