@@ -28,7 +28,10 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
 import { ToggleableRecipient } from 'lib-components/messages/ToggleableRecipient'
-import FileUpload from 'lib-components/molecules/FileUpload'
+import FileUpload, {
+  initialUploadStatus,
+  UploadStatus
+} from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -92,6 +95,8 @@ export default React.memo(function MessageEditor({
   const title = message.title || i18n.messages.messageEditor.newMessage
 
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [uploadStatus, setUploadStatus] =
+    useState<UploadStatus>(initialUploadStatus)
 
   const handleAttachmentUpload = useCallback(
     async (file: File, onUploadProgress: (percentage: number) => void) =>
@@ -168,11 +173,9 @@ export default React.memo(function MessageEditor({
   }, [message.recipients, validAccounts])
 
   const showSecondaryRecipientSelection = validAccounts.secondary.length > 0
-  const sendEnabled = !!(
-    recipients.primary.length > 0 &&
-    message.content &&
-    message.title
-  )
+  const sendEnabled =
+    !!(recipients.primary.length > 0 && message.content && message.title) &&
+    uploadStatus.inProgress === 0
 
   const required = (text: string) => `${text}*`
 
@@ -361,6 +364,7 @@ export default React.memo(function MessageEditor({
                   files={attachments}
                   onUpload={handleAttachmentUpload}
                   onDelete={handleAttachmentDelete}
+                  onStateChange={setUploadStatus}
                   getDownloadUrl={getAttachmentUrl}
                   data-qa="upload-message-attachment"
                   buttonText={

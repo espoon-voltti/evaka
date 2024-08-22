@@ -4,7 +4,7 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
@@ -63,6 +63,17 @@ const isErrorCode = (code: string | undefined): code is FileUploadError =>
 const getErrorCode = (res: Failure<string>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
+export interface UploadStatus {
+  success: number
+  inProgress: number
+  error: number
+}
+export const initialUploadStatus: UploadStatus = {
+  success: 0,
+  inProgress: 0,
+  error: 0
+}
+
 interface FileUploadProps {
   files: Attachment[]
   onUpload: (
@@ -70,6 +81,7 @@ interface FileUploadProps {
     onUploadProgress: (percentage: number) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+  onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: UUID, fileName: string) => string
   disabled?: boolean
   slim?: boolean
@@ -288,6 +300,7 @@ export default React.memo(function FileUpload({
   files,
   onUpload,
   onDelete,
+  onStateChange,
   getDownloadUrl,
   slimSingleFile = false,
   slim = false,
@@ -304,6 +317,20 @@ export default React.memo(function FileUpload({
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
     files.map(attachmentToFile)
   )
+
+  useEffect(() => {
+    if (!onStateChange) return
+
+    onStateChange({
+      success: uploadedFiles.filter(
+        (f) => f.uploaded && !f.error && !f.deleteInProgress
+      ).length,
+      inProgress: uploadedFiles.filter(
+        (f) => (!f.uploaded && !f.error) || f.deleteInProgress
+      ).length,
+      error: uploadedFiles.filter((f) => f.error).length
+    })
+  }, [onStateChange, uploadedFiles])
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
