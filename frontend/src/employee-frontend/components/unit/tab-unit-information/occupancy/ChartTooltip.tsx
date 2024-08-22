@@ -76,8 +76,8 @@ export const ChartTooltip = React.memo(function ChartTooltip({
   )
 })
 
-const tooltipWidth = 275
-const tooltipHeight = 150
+const tooltipWidth = 380
+const tooltipHeight = 170
 const PositionedDiv = styled.div<{ pos: Position; opacity: number }>`
   position: absolute;
   pointer-events: none;

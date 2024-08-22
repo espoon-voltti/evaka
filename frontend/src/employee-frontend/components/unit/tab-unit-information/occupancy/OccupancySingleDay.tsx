@@ -27,6 +27,13 @@ const Value = styled.div`
   margin-bottom: 30px;
 `
 
+export const LegendSquare = styled.div<{ color: string; small?: boolean }>`
+  height: ${(p) => (p.small ? '10px' : '20px')};
+  width: ${(p) => (p.small ? '10px' : '20px')};
+  background-color: ${(p) => p.color};
+  border-radius: 2px;
+`
+
 interface Props {
   queryDate: LocalDate
   occupancies: OccupancyResponse
@@ -48,13 +55,11 @@ const OccupancySingleDay = React.memo(function OccupancySingleDay({
 
   if (realtimeOccupancies) {
     return (
-      <Container>
-        <OccupancyDayGraph
-          queryDate={queryDate}
-          occupancy={realtimeOccupancies}
-          shiftCareUnit={shiftCareUnit}
-        />
-      </Container>
+      <OccupancyDayGraph
+        queryDate={queryDate}
+        occupancy={realtimeOccupancies}
+        shiftCareUnit={shiftCareUnit}
+      />
     )
   }
 
