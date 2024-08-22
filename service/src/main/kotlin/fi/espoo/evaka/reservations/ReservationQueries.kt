@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -638,20 +639,26 @@ GROUP BY a.date, a.affected_group_id
         .groupBy { it.date }
 }
 
+data class ReservationEnabledPlacementRange(val created: LocalDate, val range: FiniteDateRange)
+
 fun Database.Read.getReservationEnabledPlacementRangesByChild(
     childIds: Set<PersonId>
-): Map<ChildId, List<FiniteDateRange>> {
-    data class ResultRow(val childId: ChildId, val range: FiniteDateRange)
-    return createQuery {
+): Map<ChildId, List<ReservationEnabledPlacementRange>> =
+    createQuery {
             sql(
                 """
-                    SELECT pl.child_id, daterange(pl.start_date, pl.end_date, '[]') AS range 
-                    FROM placement pl
-                    JOIN daycare d ON pl.unit_id = d.id
-                    WHERE pl.child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
+                SELECT pl.child_id, pl.created, daterange(pl.start_date, pl.end_date, '[]') AS range
+                FROM placement pl
+                JOIN daycare d ON pl.unit_id = d.id
+                WHERE pl.child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
                 """
             )
         }
-        .toList<ResultRow>()
-        .groupBy(keySelector = { it.childId }, valueTransform = { it.range })
-}
+        .map {
+            column<ChildId>("child_id") to
+                ReservationEnabledPlacementRange(
+                    column<HelsinkiDateTime>("created").toLocalDate(),
+                    column("range")
+                )
+        }
+        .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }
