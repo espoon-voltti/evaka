@@ -24,7 +24,10 @@ import {
   CitizenCalendarEvent,
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  HolidayPeriod,
+  HolidayPeriodEffect
+} from 'lib-common/generated/api-types/holidayperiod'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   AbsenceInfo,
@@ -38,7 +41,6 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
 import { reservationHasTimes } from 'lib-common/reservations'
 import TimeInterval from 'lib-common/time-interval'
 import { UUID } from 'lib-common/types'
@@ -92,7 +94,6 @@ import { formatReservation } from './calendar-elements'
 import { ConfirmModalState } from './discussion-reservation-modal/DiscussionSurveyModal'
 import {
   deleteCalendarEventTimeReservationMutation,
-  holidayPeriodsQuery,
   postReservationsMutation
 } from './queries'
 import { Day } from './reservation-modal/TimeInputs'
@@ -109,6 +110,7 @@ interface Props {
   onClose: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
+  holidayPeriods: HolidayPeriod[]
 }
 
 export default React.memo(function DayView({
@@ -117,7 +119,8 @@ export default React.memo(function DayView({
   selectDate,
   onClose,
   openAbsenceModal,
-  events
+  events,
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
 
@@ -154,7 +157,12 @@ export default React.memo(function DayView({
       rightButton={undefined}
     />
   ) : editing ? (
-    <Edit modalData={modalData} onClose={onClose} onCancel={edit.off} />
+    <Edit
+      modalData={modalData}
+      onClose={onClose}
+      onCancel={edit.off}
+      holidayPeriods={holidayPeriods}
+    />
   ) : (
     <View
       modalData={modalData}
@@ -235,14 +243,15 @@ function View({
 function Edit({
   modalData,
   onClose,
-  onCancel
+  onCancel,
+  holidayPeriods
 }: {
   modalData: ModalData
   onClose: () => void
   onCancel: () => void
+  holidayPeriods: HolidayPeriod[]
 }) {
   const i18n = useTranslation()
-  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
 
   const form = useForm(editorForm, () => initialFormState(modalData), {
     ...i18n.validationErrors,
@@ -281,13 +290,11 @@ function Edit({
 
   const inClosedHolidayPeriod = useMemo(
     () =>
-      holidayPeriods
-        .getOrElse([])
-        .some(
-          (hp) =>
-            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
-            hp.period.includes(modalData.response.date)
-        ),
+      holidayPeriods.some(
+        (hp) =>
+          hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
+          hp.period.includes(modalData.response.date)
+      ),
     [holidayPeriods, modalData.response.date]
   )
 

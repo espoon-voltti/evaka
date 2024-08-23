@@ -13,6 +13,7 @@ import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
+import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import {
   AbsenceRequest,
   ReservationChild,
@@ -20,7 +21,6 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
-import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
@@ -52,7 +52,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from './CalendarModal'
-import { holidayPeriodsQuery, postAbsencesMutation } from './queries'
+import { postAbsencesMutation } from './queries'
 
 const absenceForm = mapped(
   object({
@@ -93,18 +93,18 @@ interface Props {
   onReturn: () => void
   reservationsResponse: ReservationsResponse
   initialDate: LocalDate | undefined
+  holidayPeriods: HolidayPeriod[]
 }
 
 export default React.memo(function AbsenceModal({
   close,
   onReturn,
   reservationsResponse,
-  initialDate
+  initialDate,
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
-
-  const holidayPeriods = useQueryResult(holidayPeriodsQuery())
 
   const showShiftCareAbsenceType = useMemo(
     () =>
@@ -144,16 +144,15 @@ export default React.memo(function AbsenceModal({
       )
       .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
 
-  const closedHolidayPeriods =
-    holidayPeriods.isSuccess && range.isValid()
-      ? holidayPeriods.value
-          .filter(
-            (hp) =>
-              hp.period.overlaps(range.value()) &&
-              hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
-          )
-          .map((hp) => hp.period)
-      : []
+  const closedHolidayPeriods = range.isValid()
+    ? holidayPeriods
+        .filter(
+          (hp) =>
+            hp.period.overlaps(range.value()) &&
+            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
+        )
+        .map((hp) => hp.period)
+    : []
 
   const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
     useState(false)
