@@ -216,6 +216,7 @@ export default React.memo(function AttendanceReservationByChild() {
               }
               getItemLabel={(item) => item.name}
               placeholder={i18n.filters.unitPlaceholder}
+              data-qa="unit-select"
             />
           </FlexRow>
         </FilterRow>
@@ -237,6 +238,7 @@ export default React.memo(function AttendanceReservationByChild() {
               getOptionLabel={(group) => group.name}
               placeholder=""
               isClearable={true}
+              data-qa="group-select"
             />
           </div>
         </FilterRow>
@@ -337,7 +339,7 @@ const getTableBody = (
   const components: React.ReactNode[] = []
   rows.forEach((row, rowIndex) => {
     components.push(
-      <Tr key={`row-${rowIndex}`}>
+      <Tr key={`row-${rowIndex}`} data-qa="child-attendance-reservation-row">
         {getTableRow(row, rowIndex, dates, i18n, theme)}
       </Tr>
     )
@@ -373,7 +375,10 @@ const getTableRow = (
               {column.isBackupCare && (
                 <StaticChip color={theme.colors.main.m1}>v</StaticChip>
               )}
-              <Link to={`/child-information/${column.childId}`}>
+              <Link
+                to={`/child-information/${column.childId}`}
+                data-qa="child-name"
+              >
                 {getChildName(column)}
               </Link>
             </>
@@ -400,6 +405,7 @@ const getTableRow = (
                   borderEdge={isToday && isFirstRow ? ['top'] : []}
                   isToday={isToday}
                   isFuture={isFuture}
+                  data-qa="attendance-reservation-start"
                 >
                   {column.reservationStartTime?.format(timeFormat)}
                 </AttendanceReservationReportTd>
@@ -410,6 +416,7 @@ const getTableRow = (
                   ]}
                   isToday={isToday}
                   isFuture={isFuture}
+                  data-qa="attendance-reservation-end"
                 >
                   {column.reservationEndTime?.format(timeFormat)}
                 </AttendanceReservationReportTd>
