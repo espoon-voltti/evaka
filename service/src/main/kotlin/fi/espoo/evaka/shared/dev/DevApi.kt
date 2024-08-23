@@ -221,9 +221,7 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.jdbi.v3.json.Json
 import org.springframework.context.annotation.Profile
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -1541,11 +1539,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         discussionTimeCancellation
     }
 
-    @GetMapping("/email-content")
+    @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
     fun getEmails(
         @RequestParam message: EmailMessageType = EmailMessageType.pendingDecisionNotification,
         @RequestParam format: String = "html"
-    ): ResponseEntity<Any> {
+    ): ByteArray {
         val emailContent =
             when (message) {
                 EmailMessageType.pendingDecisionNotification ->
@@ -1674,7 +1672,7 @@ $form
 <div style="max-width: 900px">$content</div>
 </body>
 """
-        return ResponseEntity.status(HttpStatus.OK).header("Content-Type", "text/html").body(body)
+        return body.toByteArray()
     }
 
     @PutMapping("/diets")
