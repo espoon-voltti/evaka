@@ -127,6 +127,12 @@ export class CitizenNotificationSettingsSection extends Element {
     ),
     discussionTimeReservationConfirmation: new Checkbox(
       this.findByDataQa('discussion-time-reservation-confirmation')
+    ),
+    discussionTimeReservationReminder: new Checkbox(
+      this.findByDataQa('discussion-time-reservation-reminder')
+    ),
+    discussionSurveyCreationNotificaiton: new Checkbox(
+      this.findByDataQa('discussion-survey-creation-notification')
     )
   }
 
