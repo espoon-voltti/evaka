@@ -425,3 +425,4 @@ V425__application_archive_metadata.sql
 V426__holiday_period_reservations_open_on.sql
 V427__less_columns_in_daily_service_time_notifications.sql
 V428__remove_messaging_blocklist.sql
+V429__placement_created_updated_not_null.sql

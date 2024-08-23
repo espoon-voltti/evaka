@@ -1,0 +1,3 @@
+ALTER TABLE placement
+    ALTER COLUMN created SET NOT NULL,
+    ALTER COLUMN updated SET NOT NULL;
