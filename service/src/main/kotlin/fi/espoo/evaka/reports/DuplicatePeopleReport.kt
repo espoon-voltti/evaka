@@ -93,29 +93,29 @@ private fun Database.Read.getDuplicatePeople(
             jsonb_build_array(
                 ${personReferences.joinToString(separator = ", ") { (table, column) ->
                     """
-                    json_build_object(
+                    jsonb_build_object(
                         'table', '$table',
                         'column', '$column',
                         'count', (SELECT count(*) FROM $table WHERE $column = p.id)
                     )
                     """
                 }},
-                json_build_object(
+                jsonb_build_object(
                     'table', 'message',
                     'column', 'sender_id',
                     'count', (SELECT count(*) FROM message WHERE sender_id = (SELECT id FROM message_account WHERE person_id = p.id))
                 ),
-                json_build_object(
+                jsonb_build_object(
                     'table', 'message_content',
                     'column', 'author_id',
                     'count', (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = p.id))
                 ),
-                json_build_object(
+                jsonb_build_object(
                     'table', 'message_recipients',
                     'column', 'recipient_id',
                     'count', (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = p.id))
                 ),
-                json_build_object(
+                jsonb_build_object(
                     'table', 'message_draft',
                     'column', 'account_id',
                     'count', (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = p.id))

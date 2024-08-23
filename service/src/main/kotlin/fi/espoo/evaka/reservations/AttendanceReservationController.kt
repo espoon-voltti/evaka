@@ -1022,10 +1022,10 @@ SELECT
         FROM child_attendance att WHERE att.child_id = p.id AND between_start_and_end(${bind(dateRange)}, att.date)
     ), '[]'::jsonb) AS attendances,
     coalesce((
-        SELECT jsonb_agg(json_build_object(
+        SELECT jsonb_agg(jsonb_build_object(
             'date', a.date,
             'category', a.category,
-            'absenceTypeResponse', json_build_object(
+            'absenceTypeResponse', jsonb_build_object(
                 'absenceType', a.absence_type,
                 'staffCreated', eu.type <> 'CITIZEN'
             )

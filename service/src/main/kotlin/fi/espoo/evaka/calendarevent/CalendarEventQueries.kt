@@ -540,9 +540,9 @@ SELECT
     mp.parent_id,
     p.language,
     jsonb_agg(
-        json_build_object(
+        jsonb_build_object(
             'title', ce.title,
-            'period', json_build_object(
+            'period', jsonb_build_object(
                 'start', lower(ce.period),
                 'end', upper(ce.period) - 1
             )

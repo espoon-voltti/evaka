@@ -65,7 +65,7 @@ SELECT
     ist.updated,
     handler_id IS NOT NULL AS handled,
     handler_note,
-    (SELECT coalesce(jsonb_agg(json_build_object(
+    (SELECT coalesce(jsonb_agg(jsonb_build_object(
         'id', id, 
         'name', name,
         'contentType', content_type,
