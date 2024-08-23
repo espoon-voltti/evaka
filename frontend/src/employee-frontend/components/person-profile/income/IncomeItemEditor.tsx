@@ -208,8 +208,16 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
     Partial<{ [K in keyof Income | 'dates']: boolean }>
   >({})
   const retroactive = useMemo(() => {
-    const editedContent = omit(editedIncome, ['validFrom', 'validTo'])
-    const initialContent = omit(initialForm, ['validFrom', 'validTo'])
+    const editedContent = omit(editedIncome, [
+      'validFrom',
+      'validTo',
+      'attachments'
+    ])
+    const initialContent = omit(initialForm, [
+      'validFrom',
+      'validTo',
+      'attachments'
+    ])
     const editedRange = editedIncome.validFrom
       ? new DateRange(editedIncome.validFrom, editedIncome.validTo)
       : null
