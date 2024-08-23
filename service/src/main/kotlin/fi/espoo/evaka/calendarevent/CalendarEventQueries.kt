@@ -685,7 +685,7 @@ SELECT
     mp.parent_id,
     p.language,
     jsonb_agg(
-            json_build_object(
+            jsonb_build_object(
                     'eventId', ce.id,
                     'eventTitle', ce.title,
                     'eventDescription', ce.description

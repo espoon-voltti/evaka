@@ -1930,7 +1930,6 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `reminders not sent outside notification window for discussion time reservations`() {
-        val email = "example@example.com"
         db.transaction { tx ->
             // Email address is needed
             tx.updatePersonalDetails(

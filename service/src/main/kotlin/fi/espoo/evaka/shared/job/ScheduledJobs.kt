@@ -188,7 +188,7 @@ enum class ScheduledJob(
         ScheduledJobs::scheduleDiscussionSurveyDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
     ),
-    SendDiscussionTimeReservationReminders(
+    ScheduleDiscussionTimeReservationReminders(
         ScheduledJobs::scheduleDiscussionTimeReservationReminders,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(19, 0)))
     ),
