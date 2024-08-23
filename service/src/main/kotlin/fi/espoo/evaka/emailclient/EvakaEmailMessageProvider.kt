@@ -665,7 +665,7 @@ $unsubscribeEn
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
 $unsubscribeFi
 <hr>
-<p>Diskussionstiden som har reserverats för ditt barn har avbokads</p>
+<p>Den diskussionstid som bokats för ditt barn har avbokats</p>
 <p>${notificationDetails.title}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
@@ -690,7 +690,7 @@ $unsubscribeEn
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
-                "Varaa keskusteluaika varhaiskasvatukseen / Boka en diskussionstid för förskoleundervisning / Reserve a discussion time for early childhood education ",
+                "Varaa keskusteluaika varhaiskasvatukseen / Boka en diskussionstid för småbarnspedagogik / Reserve a discussion time for early childhood education ",
             html =
                 """
 <p>${notificationDetails.eventTitle}</p>
@@ -700,12 +700,12 @@ $unsubscribeFi
 <hr>
 <p>${notificationDetails.eventTitle}</p>
 <p>${notificationDetails.eventDescription}</p>
-<p>Du kan boka tid i eVakas kalendervy</p>
+<p>Tiden kan bokas från eVakas kalendervy</p>
 $unsubscribeSv
 <hr>
 <p>${notificationDetails.eventTitle}</p>
 <p>${notificationDetails.eventDescription}</p>
-<p>You can reserve a time using the eVaka calendar view</p>
+<p>You can reserve a time using eVaka calendar view</p>
 $unsubscribeEn
 <hr>
             """
@@ -730,12 +730,12 @@ $unsubscribeEn
 <p>Varauksen voi peruuttaa 2 arkipäivää ennen varattua aikaa suoraan eVakan kalenterinäkymästä. Myöhempää peruutusta varten ota yhteyttä henkilökuntaan.</p>
 $unsubscribeFi
 <hr>
-<p>En diskussionstid har reserverats för ditt barn</p>
+<p>En diskussionstid har bokats för ditt barn</p>
 <p>${reminderData.title}</p>
 <p>${reminderData.firstName} ${reminderData.lastName}</p>
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${reminderData.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
-<p>Bokningen kan avbokas 2 arbetsdagar före bokad tid direkt från eVakas kalendervy. För senare avbokning, vänligen kontakta personalen.</p><hr>
+<p>Bokningen kan avbokas 2 arbetsdagar före den bokade tiden direkt från eVakas kalendervy. För senare avbokningar, vänligen kontakta personalen.</p>
 $unsubscribeSv
 <hr>
 <p>New discussion time reserved for your child</p>
