@@ -50,12 +50,14 @@ export async function getUnitOccupancies(
   request: {
     unitId: UUID,
     from: LocalDate,
-    to: LocalDate
+    to: LocalDate,
+    groupId?: UUID | null
   }
 ): Promise<UnitOccupancies> {
   const params = createUrlSearchParams(
     ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()]
+    ['to', request.to.formatIso()],
+    ['groupId', request.groupId]
   )
   const { data: json } = await client.request<JsonOf<UnitOccupancies>>({
     url: uri`/occupancy/units/${request.unitId}`.toString(),

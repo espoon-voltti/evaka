@@ -2190,6 +2190,8 @@ export const fi = {
       }
     },
     occupancy: {
+      group: 'Ryhmä',
+      fullUnit: 'Koko yksikkö',
       title: 'Yksikön täyttöaste',
       subtitles: {
         confirmed: 'Vahvistettu täyttöaste',

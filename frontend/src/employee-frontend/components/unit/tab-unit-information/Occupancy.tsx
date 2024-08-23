@@ -5,9 +5,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import styled from 'styled-components'
 
-import { Caretakers } from 'lib-common/generated/api-types/daycare'
+import {
+  Caretakers,
+  DaycareGroupResponse
+} from 'lib-common/generated/api-types/daycare'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -63,6 +67,7 @@ type Props = {
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   realtimeStaffAttendanceEnabled: boolean
   shiftCareUnit: boolean
+  groups: DaycareGroupResponse[]
 }
 
 export default React.memo(function OccupancyContainer({
@@ -70,13 +75,15 @@ export default React.memo(function OccupancyContainer({
   filters,
   setFilters,
   realtimeStaffAttendanceEnabled,
-  shiftCareUnit
+  shiftCareUnit,
+  groups
 }: Props) {
   const { startDate, endDate } = filters
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
+  const [groupId, setGroupId] = useState<UUID | null>(null)
   const occupancies = useQueryResult(
-    unitOccupanciesQuery({ unitId, from: startDate, to: endDate })
+    unitOccupanciesQuery({ unitId, from: startDate, to: endDate, groupId })
   )
   const [selections, setSelections] = useState<SelectionsState>({
     confirmed: true,
@@ -106,6 +113,19 @@ export default React.memo(function OccupancyContainer({
           </span>
         </div>
       </DataList>
+      <Gap size="s" />
+      <FixedSpaceRow alignItems="center">
+        <Label>{i18n.unit.occupancy.group}</Label>
+        <Select
+          items={[null, ...groups]}
+          selectedItem={
+            groupId ? groups.find((g) => g.id === groupId) ?? null : null
+          }
+          onChange={(g) => setGroupId(g ? g.id : null)}
+          getItemValue={(g: DaycareGroupResponse | null) => (g ? g.id : '')}
+          getItemLabel={(g) => (g ? g.name : i18n.unit.occupancy.fullUnit)}
+        />
+      </FixedSpaceRow>
       <Gap />
       <Container data-qa="occupancies">
         {startDate.isEqual(endDate) ? (
