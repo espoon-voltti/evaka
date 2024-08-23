@@ -433,6 +433,14 @@ const sv: Translations = {
         NON_RESERVABLE_DAYS: 'Alla valda dagar kan inte reserveras.'
       }
     },
+    closedHolidayPeriodAbsence: {
+      title: (periods: FiniteDateRange[]) =>
+        `Semesterperiod ${periods.map((p) => p.format()).join(', ')}`,
+      warningMessage:
+        'Du håller på att markera frånvaro under semesterperioden. Detta kan endast avbokas genom att kontakta personalen.',
+      infoMessage:
+        'Frånvaro som markerats under semesterperioden kan endast avbokas genom att kontakta personalen.'
+    },
     absenceModal: {
       title: 'Anmäl frånvaro',
       selectedChildren: 'Utvalda barn',

@@ -13,6 +13,7 @@ import { array, mapped, object, required, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
+import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
 import {
   AbsenceRequest,
   ReservationChild,
@@ -92,13 +93,15 @@ interface Props {
   onReturn: () => void
   reservationsResponse: ReservationsResponse
   initialDate: LocalDate | undefined
+  holidayPeriods: HolidayPeriod[]
 }
 
 export default React.memo(function AbsenceModal({
   close,
   onReturn,
   reservationsResponse,
-  initialDate
+  initialDate,
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -140,6 +143,16 @@ export default React.memo(function AbsenceModal({
         new DateRange(reservationsResponse.reservableRange.start, null)
       )
       .reduce((sum, r) => sum + r.durationInDays(), 0) > 1
+
+  const closedHolidayPeriods = range.isValid()
+    ? holidayPeriods
+        .filter(
+          (hp) =>
+            hp.period.overlaps(range.value()) &&
+            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz())
+        )
+        .map((hp) => hp.period)
+    : []
 
   const [attendanceAlreadyExistsError, setAttendanceAlreadyExistsError] =
     useState(false)
@@ -209,7 +222,7 @@ export default React.memo(function AbsenceModal({
                 />
                 <Gap size="s" />
                 <P noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
-                {absencesWarning && (
+                {absencesWarning ? (
                   <AlertBox
                     title={
                       i18n.calendar.absenceModal.lockedAbsencesWarningTitle
@@ -218,7 +231,16 @@ export default React.memo(function AbsenceModal({
                       i18n.calendar.absenceModal.lockedAbsencesWarningText
                     }
                   />
-                )}
+                ) : closedHolidayPeriods.length > 0 ? (
+                  <AlertBox
+                    title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                      closedHolidayPeriods
+                    )}
+                    message={
+                      i18n.calendar.closedHolidayPeriodAbsence.warningMessage
+                    }
+                  />
+                ) : null}
                 {attendanceAlreadyExistsError && (
                   <AlertBox
                     title={

@@ -24,7 +24,10 @@ import {
   CitizenCalendarEvent,
   CitizenCalendarEventTime
 } from 'lib-common/generated/api-types/calendarevent'
-import { HolidayPeriodEffect } from 'lib-common/generated/api-types/holidayperiod'
+import {
+  HolidayPeriod,
+  HolidayPeriodEffect
+} from 'lib-common/generated/api-types/holidayperiod'
 import { ScheduleType } from 'lib-common/generated/api-types/placement'
 import {
   AbsenceInfo,
@@ -63,7 +66,7 @@ import {
   InfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
-import { InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import {
   ModalCloseButton,
   ModalHeader,
@@ -107,6 +110,7 @@ interface Props {
   onClose: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
+  holidayPeriods: HolidayPeriod[]
 }
 
 export default React.memo(function DayView({
@@ -115,7 +119,8 @@ export default React.memo(function DayView({
   selectDate,
   onClose,
   openAbsenceModal,
-  events
+  events,
+  holidayPeriods
 }: Props) {
   const i18n = useTranslation()
 
@@ -152,7 +157,12 @@ export default React.memo(function DayView({
       rightButton={undefined}
     />
   ) : editing ? (
-    <Edit modalData={modalData} onClose={onClose} onCancel={edit.off} />
+    <Edit
+      modalData={modalData}
+      onClose={onClose}
+      onCancel={edit.off}
+      holidayPeriods={holidayPeriods}
+    />
   ) : (
     <View
       modalData={modalData}
@@ -233,11 +243,13 @@ function View({
 function Edit({
   modalData,
   onClose,
-  onCancel
+  onCancel,
+  holidayPeriods
 }: {
   modalData: ModalData
   onClose: () => void
   onCancel: () => void
+  holidayPeriods: HolidayPeriod[]
 }) {
   const i18n = useTranslation()
 
@@ -276,6 +288,18 @@ function Edit({
     />
   )
 
+  const closedHolidayPeriods = useMemo(
+    () =>
+      holidayPeriods
+        .filter(
+          (hp) =>
+            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
+            hp.period.includes(modalData.response.date)
+        )
+        .map((hp) => hp.period),
+    [holidayPeriods, modalData.response.date]
+  )
+
   return (
     <DayModal
       date={modalData.response.date}
@@ -287,10 +311,29 @@ function Edit({
     >
       {(childIndex) => {
         const bind = formElems[childIndex]
+        const closedHolidayPeriodAbsence =
+          closedHolidayPeriods.length > 0 &&
+          bind.state.day.branch === 'reservation' &&
+          bind.state.day.state.reservation.branch === 'absent'
+
         return (
-          <div>
-            <EditReservation showAllErrors={showAllErrors} bind={bind} />
-          </div>
+          <>
+            <div>
+              <EditReservation showAllErrors={showAllErrors} bind={bind} />
+            </div>
+            {closedHolidayPeriodAbsence && (
+              <TwoSpanGridItem>
+                <AlertBox
+                  title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                    closedHolidayPeriods
+                  )}
+                  message={
+                    i18n.calendar.closedHolidayPeriodAbsence.warningMessage
+                  }
+                />
+              </TwoSpanGridItem>
+            )}
+          </>
         )
       }}
     </DayModal>
@@ -1030,4 +1073,8 @@ const DiscussionReservationContainer = styled.div`
 
 export const WordBreakContainer = styled.div`
   word-break: break-word;
+`
+
+const TwoSpanGridItem = styled.div`
+  grid-column-end: span 2;
 `
