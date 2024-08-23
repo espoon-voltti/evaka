@@ -233,11 +233,11 @@ export default React.memo(function AbsenceModal({
                   />
                 ) : closedHolidayPeriods.length > 0 ? (
                   <AlertBox
-                    title={
-                      i18n.calendar.closedHolidayPeriodAbsenceWarning.title
-                    }
+                    title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                      closedHolidayPeriods
+                    )}
                     message={
-                      i18n.calendar.closedHolidayPeriodAbsenceWarning.message
+                      i18n.calendar.closedHolidayPeriodAbsence.warningMessage
                     }
                   />
                 ) : null}

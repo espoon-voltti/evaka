@@ -285,11 +285,11 @@ export default React.memo(function ReservationModal({
 
                 {overlappingClosedHolidayPeriods.length > 0 && (
                   <InfoBox
-                    title={i18n.calendar.closedHolidayPeriodAbsenceInfo.title(
+                    title={i18n.calendar.closedHolidayPeriodAbsence.title(
                       overlappingClosedHolidayPeriods
                     )}
                     message={
-                      i18n.calendar.closedHolidayPeriodAbsenceInfo.message
+                      i18n.calendar.closedHolidayPeriodAbsence.infoMessage
                     }
                   />
                 )}

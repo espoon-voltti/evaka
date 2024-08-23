@@ -288,13 +288,15 @@ function Edit({
     />
   )
 
-  const inClosedHolidayPeriod = useMemo(
+  const closedHolidayPeriods = useMemo(
     () =>
-      holidayPeriods.some(
-        (hp) =>
-          hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
-          hp.period.includes(modalData.response.date)
-      ),
+      holidayPeriods
+        .filter(
+          (hp) =>
+            hp.reservationDeadline.isBefore(LocalDate.todayInHelsinkiTz()) &&
+            hp.period.includes(modalData.response.date)
+        )
+        .map((hp) => hp.period),
     [holidayPeriods, modalData.response.date]
   )
 
@@ -310,7 +312,7 @@ function Edit({
       {(childIndex) => {
         const bind = formElems[childIndex]
         const closedHolidayPeriodAbsence =
-          inClosedHolidayPeriod &&
+          closedHolidayPeriods.length > 0 &&
           bind.state.day.branch === 'reservation' &&
           bind.state.day.state.reservation.branch === 'absent'
 
@@ -322,9 +324,11 @@ function Edit({
             {closedHolidayPeriodAbsence && (
               <TwoSpanGridItem>
                 <AlertBox
-                  title={i18n.calendar.closedHolidayPeriodAbsenceWarning.title}
+                  title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                    closedHolidayPeriods
+                  )}
                   message={
-                    i18n.calendar.closedHolidayPeriodAbsenceWarning.message
+                    i18n.calendar.closedHolidayPeriodAbsence.warningMessage
                   }
                 />
               </TwoSpanGridItem>

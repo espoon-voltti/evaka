@@ -436,16 +436,13 @@ const en: Translations = {
         NON_RESERVABLE_DAYS: 'Some of the selected days cannot be reserved'
       }
     },
-    closedHolidayPeriodAbsenceWarning: {
-      title: 'Loma-ajan poissaolo',
-      message:
-        'Olet merkitsemässä poissaoloa loma-ajalle. Tämän voi perua vain olemalla yhteydessä henkilökuntaan.'
-    },
-    closedHolidayPeriodAbsenceInfo: {
+    closedHolidayPeriodAbsence: {
       title: (periods: FiniteDateRange[]) =>
-        `Loma-aika ${periods.map((p) => p.format()).join(', ')}`,
-      message:
-        'Loma-ajalle merkittävät poissaolot voi perua vain olemalla yhteydessä henkilökuntaan.'
+        `Holiday period ${periods.map((p) => p.format()).join(', ')}`,
+      warningMessage:
+        'You are marking an absence during the holiday period. This can only be canceled by contacting the staff.',
+      infoMessage:
+        'Absences marked for the holiday period can only be canceled by contacting the staff.'
     },
     absenceModal: {
       title: 'Report absence',

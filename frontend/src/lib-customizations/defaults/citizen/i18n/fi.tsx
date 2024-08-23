@@ -438,15 +438,12 @@ export default {
         NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'
       }
     },
-    closedHolidayPeriodAbsenceWarning: {
-      title: 'Loma-ajan poissaolo',
-      message:
-        'Olet merkitsemässä poissaoloa loma-ajalle. Tämän voi perua vain olemalla yhteydessä henkilökuntaan.'
-    },
-    closedHolidayPeriodAbsenceInfo: {
+    closedHolidayPeriodAbsence: {
       title: (periods: FiniteDateRange[]) =>
         `Loma-aika ${periods.map((p) => p.format()).join(', ')}`,
-      message:
+      warningMessage:
+        'Olet merkitsemässä poissaoloa loma-ajalle. Tämän voi perua vain olemalla yhteydessä henkilökuntaan.',
+      infoMessage:
         'Loma-ajalle merkittävät poissaolot voi perua vain olemalla yhteydessä henkilökuntaan.'
     },
     absenceModal: {
