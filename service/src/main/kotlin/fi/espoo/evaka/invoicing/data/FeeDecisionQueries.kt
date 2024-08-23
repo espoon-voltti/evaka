@@ -59,16 +59,16 @@ SELECT
     decision.sent_at,
     decision.difference,
     COALESCE((
-        SELECT jsonb_agg(json_build_object(
-            'child', json_build_object(
+        SELECT jsonb_agg(jsonb_build_object(
+            'child', jsonb_build_object(
                 'id', part.child_id,
                 'dateOfBirth', part.child_date_of_birth
             ),
-            'placement', json_build_object(
+            'placement', jsonb_build_object(
                 'unitId', part.placement_unit_id,
                 'type', part.placement_type
             ),
-            'serviceNeed', json_build_object(
+            'serviceNeed', jsonb_build_object(
                 'optionId', part.service_need_option_id,
                 'feeCoefficient', part.service_need_fee_coefficient,
                 'contractDaysPerMonth', part.service_need_contract_days_per_month,
@@ -137,8 +137,8 @@ SELECT
     coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
     finance_decision_handler.last_name AS finance_decision_handler_last_name,
     COALESCE((
-        SELECT jsonb_agg(json_build_object(
-            'child', json_build_object( 
+        SELECT jsonb_agg(jsonb_build_object(
+            'child', jsonb_build_object(
                 'id', part.child_id,
                 'dateOfBirth', part.child_date_of_birth,
                 'firstName', child.first_name,
@@ -150,7 +150,7 @@ SELECT
                 'restrictedDetailsEnabled', child.restricted_details_enabled
             ),
             'placementType', part.placement_type,
-            'placementUnit', json_build_object(
+            'placementUnit', jsonb_build_object(
                 'id', part.placement_unit_id,
                 'name', daycare.name,
                 'areaId', care_area.id,
@@ -567,7 +567,7 @@ fun Database.Read.searchFeeDecisions(
             head.social_security_number AS head_ssn,
             head.force_manual_fee_decisions AS head_force_manual_fee_decisions,
             COALESCE((
-                SELECT jsonb_agg(json_build_object(
+                SELECT jsonb_agg(jsonb_build_object(
                     'id', part.child_id,
                     'dateOfBirth', part.child_date_of_birth,
                     'firstName', child.first_name,

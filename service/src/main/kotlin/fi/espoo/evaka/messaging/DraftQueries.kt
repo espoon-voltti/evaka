@@ -14,7 +14,7 @@ fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
                 """
 SELECT
     draft.*,
-    (SELECT coalesce(jsonb_agg(json_build_object(
+    (SELECT coalesce(jsonb_agg(jsonb_build_object(
             'id', id,
             'name', name,
             'contentType', content_type

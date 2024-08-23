@@ -55,7 +55,7 @@ SELECT
     pdr.read_at is not null is_read,
     (
         SELECT
-            coalesce(jsonb_agg(json_build_object(
+            coalesce(jsonb_agg(jsonb_build_object(
                 'id', a.id,
                 'name', a.name,
                 'contentType', a.content_type

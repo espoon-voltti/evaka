@@ -103,7 +103,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
                     ct.language,
                     vc.content,
                     vc.published_at,
-                    (SELECT jsonb_agg(json_build_object(
+                    (SELECT jsonb_agg(jsonb_build_object(
                            'id', event.id,
                            'created', event.created,
                            'eventType', event.event_type,
@@ -151,7 +151,7 @@ fun Database.Read.getLatestPublishedVasuDocument(
                     ct.language,
                     vc.content,
                     vc.published_at,
-                    (SELECT jsonb_agg(json_build_object(
+                    (SELECT jsonb_agg(jsonb_build_object(
                            'id', event.id,
                            'created', event.created,
                            'eventType', event.event_type,

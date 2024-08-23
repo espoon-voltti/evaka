@@ -513,7 +513,7 @@ SELECT pcd.child_id,
        pcd.placement_unit_id,
         pcd.placement_type,
         -- reservation roll up
-        (SELECT coalesce(jsonb_agg(json_build_object(
+        (SELECT coalesce(jsonb_agg(jsonb_build_object(
                'start', s.start_time,
                'end', s.end_time,
                'staffCreated', s.staff_created)), '[]'::jsonb)
@@ -524,7 +524,7 @@ SELECT pcd.child_id,
                 AND ar.date = ${bind(day)}) s)
            AS reservations,
        -- absence roll up
-       (SELECT coalesce(jsonb_agg(json_build_object(
+       (SELECT coalesce(jsonb_agg(jsonb_build_object(
                'category', s.category)), '[]'::jsonb)
         FROM (SELECT ab.category
               FROM absence ab
