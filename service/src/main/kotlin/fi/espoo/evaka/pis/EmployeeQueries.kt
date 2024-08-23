@@ -525,7 +525,7 @@ fun Database.Read.getInactiveEmployees(now: HelsinkiDateTime): List<EmployeeId> 
     WHERE (
         SELECT max(ts)
         FROM unnest(ARRAY[e.last_login, d.updated, dg.updated]) ts
-    ) < ${bind(now)} - interval '45 days'
+    ) < ${bind(now)} - interval '56 days'
 """
             )
         }
