@@ -403,11 +403,16 @@ fun Database.Read.calculateOccupancyPeriods(
             )
             .flatMap { (_, values) -> values }
     } else {
-        // TODO: performance could be improved
-        //  this now calculates occupancy for all groups and then picks only one
         val valueMap =
             reduceDailyOccupancyValues(
-                calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+                calculateDailyGroupOccupancyValues(
+                    today,
+                    period,
+                    type,
+                    unitFilter,
+                    unitId = unitId,
+                    groupId = groupId
+                )
             )
         val key = valueMap.keys.find { it.groupId == groupId } ?: return emptyList()
         return valueMap.getOrDefault(key, emptyList())
