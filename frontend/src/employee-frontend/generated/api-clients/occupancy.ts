@@ -7,10 +7,12 @@
 import LocalDate from 'lib-common/local-date'
 import { JsonOf } from 'lib-common/json'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
+import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import { UUID } from 'lib-common/types'
 import { UnitOccupancies } from 'lib-common/generated/api-types/occupancy'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonRealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import { deserializeJsonUnitOccupancies } from 'lib-common/generated/api-types/occupancy'
 import { uri } from 'lib-common/uri'
 
@@ -65,4 +67,27 @@ export async function getUnitOccupancies(
     params
   })
   return deserializeJsonUnitOccupancies(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.occupancy.OccupancyController.getUnitRealizedOccupanciesForDay
+*/
+export async function getUnitRealizedOccupanciesForDay(
+  request: {
+    unitId: UUID,
+    date: LocalDate,
+    groupId?: UUID | null
+  }
+): Promise<RealtimeOccupancy> {
+  const params = createUrlSearchParams(
+    ['date', request.date.formatIso()],
+    ['groupId', request.groupId]
+  )
+  const { data: json } = await client.request<JsonOf<RealtimeOccupancy>>({
+    url: uri`/employee/occupancy/units/${request.unitId}/day/realized`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonRealtimeOccupancy(json)
 }

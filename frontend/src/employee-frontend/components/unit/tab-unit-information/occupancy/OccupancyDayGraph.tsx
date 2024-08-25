@@ -36,7 +36,7 @@ import colors from 'lib-customizations/common'
 import { Translations, useTranslation } from '../../../../state/i18n'
 
 import { ChartTooltip } from './ChartTooltip'
-import { LegendSquare } from './OccupancySingleDay'
+import { LegendSquare } from './OccupanciesForSingleDay'
 
 type DatePoint = { x: Date; y: number | null }
 

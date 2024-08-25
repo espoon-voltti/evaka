@@ -216,6 +216,42 @@ class OccupancyController(
         return occupancies
     }
 
+    @GetMapping("/employee/occupancy/units/{unitId}/day/realized")
+    fun getUnitRealizedOccupanciesForDay(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam groupId: GroupId?
+    ): RealtimeOccupancy {
+        val occupancies =
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId
+                    )
+                    val queryTimeRange =
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.of(date, LocalTime.MIN),
+                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.MIN)
+                        )
+                    RealtimeOccupancy(
+                        childAttendances =
+                            tx.getChildOccupancyAttendances(unitId, queryTimeRange, groupId),
+                        staffAttendances =
+                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId)
+                    )
+                }
+            }
+        Audit.OccupancyRead.log(targetId = AuditId(unitId))
+        return occupancies
+    }
+
     @GetMapping(
         "/occupancy/by-unit/{unitId}/groups", // deprecated
         "/employee-mobile/occupancy/by-unit/{unitId}/groups",
@@ -282,8 +318,7 @@ data class UnitOccupancies(
     val planned: OccupancyResponse,
     val confirmed: OccupancyResponse,
     val realized: OccupancyResponse,
-    val realtime: RealtimeOccupancy?,
-    val caretakers: Caretakers,
+    val caretakers: Caretakers
 )
 
 private fun getUnitOccupancies(
@@ -328,27 +363,7 @@ private fun getUnitOccupancies(
                     groupId
                 )
             ),
-        realtime =
-            if (period.start == period.end) {
-                val queryTimeRange =
-                    if (period.start == now.toLocalDate()) {
-                        HelsinkiDateTimeRange(now.minusHours(16), now)
-                    } else {
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0)),
-                        )
-                    }
-                RealtimeOccupancy(
-                    childAttendances =
-                        tx.getChildOccupancyAttendances(unitId, queryTimeRange, groupId),
-                    staffAttendances =
-                        tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId)
-                )
-            } else {
-                null
-            },
-        caretakers = tx.getUnitStats(unitId, period.start, period.end),
+        caretakers = tx.getUnitStats(unitId, period.start, period.end)
     )
 }
 

@@ -132,7 +132,6 @@ export interface UnitOccupancies {
   confirmed: OccupancyResponse
   planned: OccupancyResponse
   realized: OccupancyResponse
-  realtime: RealtimeOccupancy | null
 }
 
 
@@ -221,7 +220,6 @@ export function deserializeJsonUnitOccupancies(json: JsonOf<UnitOccupancies>): U
     ...json,
     confirmed: deserializeJsonOccupancyResponse(json.confirmed),
     planned: deserializeJsonOccupancyResponse(json.planned),
-    realized: deserializeJsonOccupancyResponse(json.realized),
-    realtime: (json.realtime != null) ? deserializeJsonRealtimeOccupancy(json.realtime) : null
+    realized: deserializeJsonOccupancyResponse(json.realized)
   }
 }
