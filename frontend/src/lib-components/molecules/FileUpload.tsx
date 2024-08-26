@@ -4,7 +4,7 @@
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure, Result, Success } from 'lib-common/api'
@@ -318,19 +318,20 @@ export default React.memo(function FileUpload({
     files.map(attachmentToFile)
   )
 
-  useEffect(() => {
-    if (!onStateChange) return
-
-    onStateChange({
-      success: uploadedFiles.filter(
-        (f) => f.uploaded && !f.error && !f.deleteInProgress
-      ).length,
-      inProgress: uploadedFiles.filter(
-        (f) => (!f.uploaded && !f.error) || f.deleteInProgress
-      ).length,
-      error: uploadedFiles.filter((f) => f.error).length
-    })
-  }, [onStateChange, uploadedFiles])
+  const setUploadedFilesAndNotify = (files: FileObject[]) => {
+    setUploadedFiles(files)
+    if (onStateChange) {
+      onStateChange({
+        success: files.filter(
+          (f) => f.uploaded && !f.error && !f.deleteInProgress
+        ).length,
+        inProgress: files.filter(
+          (f) => (!f.uploaded && !f.error) || f.deleteInProgress
+        ).length,
+        error: files.filter((f) => f.error).length
+      })
+    }
+  }
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -355,8 +356,8 @@ export default React.memo(function FileUpload({
   const errorMessage = ({ error }: FileObject) => error && i18n.error[error]
 
   const deleteFile = async (file: FileObject) => {
-    setUploadedFiles((old) =>
-      old.map((item) =>
+    setUploadedFilesAndNotify(
+      uploadedFiles.map((item) =>
         item.id === file.id ? { ...item, deleteInProgress: true } : item
       )
     )
@@ -365,12 +366,14 @@ export default React.memo(function FileUpload({
         ? Success.of(true)
         : await onDelete(file.id)
       if (isSuccess) {
-        setUploadedFiles((old) => old.filter((item) => item.id !== file.id))
+        setUploadedFilesAndNotify(
+          uploadedFiles.filter((item) => item.id !== file.id)
+        )
       }
     } catch (e) {
       console.error(e)
-      setUploadedFiles((old) =>
-        old.map((item) =>
+      setUploadedFilesAndNotify(
+        uploadedFiles.map((item) =>
           item.id === file.id ? { ...item, deleteInProgress: false } : item
         )
       )
@@ -380,11 +383,10 @@ export default React.memo(function FileUpload({
   const updateUploadedFile = (
     file: FileObject,
     id: UUID | undefined = undefined
-  ) =>
-    setUploadedFiles((old) => {
-      const others = old.filter((item) => item.id !== (id ?? file.id))
-      return [...others, file]
-    })
+  ) => {
+    const others = uploadedFiles.filter((item) => item.id !== (id ?? file.id))
+    setUploadedFilesAndNotify([...others, file])
+  }
 
   const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25 MB
 
