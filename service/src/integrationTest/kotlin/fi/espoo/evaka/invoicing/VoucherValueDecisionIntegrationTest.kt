@@ -97,7 +97,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testAdult_4,
                     testAdult_5,
                     testAdult_6,
-                    testAdult_7
+                    testAdult_7,
                 )
                 .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2).forEach { tx.insert(it, DevPersonType.CHILD) }
@@ -109,7 +109,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = testChild_1.dateOfBirth,
-                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
             tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
@@ -241,7 +241,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(1, decisions.size)
             assertEquals(
                 VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                decisions.first().status
+                decisions.first().status,
             )
             assertEquals(financeWorker.id.raw, decisions.first().decisionHandler)
         }
@@ -259,7 +259,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 1,
                 decisions.count {
                     it.id == initialDecisionDraft.id && it.created == initialDecisionDraft.created
-                }
+                },
             )
         }
     }
@@ -366,16 +366,16 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, searchValueDecisions(status = "DRAFT").total)
         assertEquals(
             1,
-            searchValueDecisions(status = "DRAFT", searchTerms = "Ricky").total
+            searchValueDecisions(status = "DRAFT", searchTerms = "Ricky").total,
         ) // child
         assertEquals(1, searchValueDecisions(status = "DRAFT", searchTerms = "John").total) // head
         assertEquals(
             1,
-            searchValueDecisions(status = "DRAFT", searchTerms = "Joan").total
+            searchValueDecisions(status = "DRAFT", searchTerms = "Joan").total,
         ) // partner
         assertEquals(
             0,
-            searchValueDecisions(status = "DRAFT", searchTerms = "Foobar").total
+            searchValueDecisions(status = "DRAFT", searchTerms = "Foobar").total,
         ) // no match
         assertEquals(0, searchValueDecisions(status = "SENT").total)
 
@@ -436,7 +436,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_2.id,
                     headOfChildId = testAdult_7.id,
                     startDate = testChild_2.dateOfBirth,
-                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
@@ -458,7 +458,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = "010617A125W",
-                restrictedDetailsEnabled = true
+                restrictedDetailsEnabled = true,
             )
 
         db.transaction {
@@ -468,7 +468,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChildRestricted.id,
                     headOfChildId = testAdult_3.id,
                     startDate = testChildRestricted.dateOfBirth,
-                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
         }
@@ -488,7 +488,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_2.id,
                     headOfChildId = testAdult_7.id,
                     startDate = testChild_2.dateOfBirth,
-                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
@@ -505,7 +505,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = "010617A125W",
-                restrictedDetailsEnabled = true
+                restrictedDetailsEnabled = true,
             )
 
         db.transaction {
@@ -515,7 +515,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChildRestricted.id,
                     headOfChildId = testAdult_3.id,
                     startDate = testChildRestricted.dateOfBirth,
-                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChildRestricted.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
         }
@@ -534,7 +534,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_2.id,
                     headOfChildId = testAdult_7.id,
                     startDate = testChild_2.dateOfBirth,
-                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChild_2.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
             it.insertTestPartnership(adult1 = testAdult_7.id, adult2 = testAdult_3.id)
@@ -567,7 +567,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 email = "optin@test.com",
                 forceManualFeeDecisions = false,
                 ssn = "291090-9986",
-                enabledEmailTypes = listOf(EmailMessageType.DECISION_NOTIFICATION)
+                enabledEmailTypes = listOf(EmailMessageType.DECISION_NOTIFICATION),
             )
         db.transaction {
             it.insert(optInAdult, DevPersonType.RAW_ROW)
@@ -578,7 +578,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     optInAdult.id,
                     testChild_2.dateOfBirth,
                     testChild_2.dateOfBirth.plusYears(18).minusDays(1),
-                    HelsinkiDateTime.now()
+                    HelsinkiDateTime.now(),
                 )
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = testAdult_7.id)
@@ -596,12 +596,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             setOfNotNull(optInAdult.email),
-            MockEmailClient.emails.map { it.toAddress }.toSet()
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
         )
         assertEquals(emailContent.subject, getEmailFor(optInAdult).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(optInAdult).fromAddress
+            getEmailFor(optInAdult).fromAddress,
         )
     }
 
@@ -616,7 +616,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testAdult_3.id,
                     testChild_2.dateOfBirth,
                     testChild_2.dateOfBirth.plusYears(18).minusDays(1),
-                    HelsinkiDateTime.now()
+                    HelsinkiDateTime.now(),
                 )
             )
             it.insertTestPartnership(adult1 = testAdult_3.id, adult2 = testAdult_4.id)
@@ -640,12 +640,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             setOfNotNull(testAdult_3.email),
-            MockEmailClient.emails.map { it.toAddress }.toSet()
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
         )
         assertEquals(emailContent.subject, getEmailFor(testAdult_3).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(testAdult_3).fromAddress
+            getEmailFor(testAdult_3).fromAddress,
         )
     }
 
@@ -671,7 +671,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     optOutAdult.id,
                     testChild_2.dateOfBirth,
                     testChild_2.dateOfBirth.plusYears(18).minusDays(1),
-                    HelsinkiDateTime.now()
+                    HelsinkiDateTime.now(),
                 )
             )
             it.insertTestPartnership(adult1 = optOutAdult.id, adult2 = testAdult_7.id)
@@ -703,7 +703,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testDecisionMaker_1.id,
                 HelsinkiDateTime.now(),
                 null,
-                forceDaycareHandler
+                forceDaycareHandler,
             )
         }
 
@@ -722,7 +722,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         endDate: LocalDate,
         unitId: DaycareId = testVoucherDaycare.id,
         childId: ChildId = testChild_1.id,
-        type: PlacementType = PlacementType.DAYCARE
+        type: PlacementType = PlacementType.DAYCARE,
     ): PlacementId {
         val body =
             PlacementCreateRequestBody(
@@ -731,7 +731,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 unitId = unitId,
                 startDate = startDate,
                 endDate = endDate,
-                placeGuarantee = false
+                placeGuarantee = false,
             )
 
         http
@@ -786,7 +786,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 childId = child.id,
                 headOfChildId = headOfFamilyId,
                 startDate = child.dateOfBirth,
-                endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+                endDate = child.dateOfBirth.plusYears(18).minusDays(1),
             )
 
         http
@@ -802,7 +802,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun searchValueDecisions(
         status: String,
         searchTerms: String = "",
-        distinctionsString: String = "[]"
+        distinctionsString: String = "[]",
     ): PagedVoucherValueDecisionSummaries {
         val (_, _, data) =
             http
@@ -818,7 +818,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun sendAllValueDecisions(
         expectedStatusCode: Int = 200,
-        expectedErrorCode: String? = null
+        expectedErrorCode: String? = null,
     ): List<VoucherValueDecisionId> {
         val (_, _, data) =
             http
@@ -859,7 +859,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     private fun getPdfStatus(
         decisionId: VoucherValueDecisionId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ): Int {
         val (_, response, _) = http.get("/value-decisions/pdf/$decisionId").asUser(user).response()
         return response.statusCode

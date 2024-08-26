@@ -49,8 +49,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         questions =
                             listOf(
                                 Question.TextQuestion(id = "q1", label = "kysymys 1"),
-                                Question.CheckboxQuestion(id = "q2", label = "kysymys 2")
-                            )
+                                Question.CheckboxQuestion(id = "q2", label = "kysymys 2"),
+                            ),
                     )
                 )
         )
@@ -64,7 +64,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             legalBasis = "§42",
             validity = DateRange(LocalDate.of(2022, 7, 1), null),
             processDefinitionNumber = "123.456.789",
-            archiveDurationMonths = 120
+            archiveDurationMonths = 120,
         )
 
     @BeforeEach
@@ -82,7 +82,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = now.today(),
-                    endDate = now.today().plusDays(5)
+                    endDate = now.today().plusDays(5),
                 )
             )
         }
@@ -112,10 +112,10 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = created.type,
                     language = created.language,
                     validity = created.validity,
-                    published = false
+                    published = false,
                 )
             ),
-            summaries
+            summaries,
         )
 
         controller.updateDraftTemplateBasics(
@@ -130,8 +130,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 confidential = false,
                 legalBasis = "$42b",
                 processDefinitionNumber = "123.456.789b",
-                archiveDurationMonths = 132
-            )
+                archiveDurationMonths = 132,
+            ),
         )
 
         controller.updateDraftTemplateContent(
@@ -139,7 +139,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             employeeUser,
             now,
             created.id,
-            testContent
+            testContent,
         )
         val newValidity = DateRange(LocalDate.of(2022, 5, 1), LocalDate.of(2022, 9, 1))
         controller.updateTemplateValidity(dbInstance(), employeeUser, now, created.id, newValidity)
@@ -155,9 +155,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 content = testContent,
                 validity = newValidity,
                 processDefinitionNumber = "123.456.789b",
-                archiveDurationMonths = 132
+                archiveDurationMonths = 132,
             ),
-            fetched
+            fetched,
         )
 
         controller.deleteDraftTemplate(dbInstance(), employeeUser, now, created.id)
@@ -178,7 +178,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             employeeUser,
             now,
             created.id,
-            testContent
+            testContent,
         )
         controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
 
@@ -190,7 +190,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 created.id,
-                testCreationRequest.copy(name = "changed")
+                testCreationRequest.copy(name = "changed"),
             )
         }
 
@@ -200,7 +200,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 employeeUser,
                 now,
                 created.id,
-                testContent
+                testContent,
             )
         }
 
@@ -214,7 +214,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             employeeUser,
             now,
             created.id,
-            DateRange(LocalDate.of(2000, 1, 1), null)
+            DateRange(LocalDate.of(2000, 1, 1), null),
         )
     }
 
@@ -227,7 +227,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             employeeUser,
             now,
             created.id,
-            testContent
+            testContent,
         )
         controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
 
@@ -246,8 +246,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     legalBasis = "",
                     validity = newValidity,
                     processDefinitionNumber = "123.456.789b",
-                    archiveDurationMonths = 1200
-                )
+                    archiveDurationMonths = 1200,
+                ),
             )
 
         assertNotEquals(created.id, copy.id)
@@ -273,8 +273,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     language = OfficialLanguage.SV,
-                    validity = DateRange(now.today(), null)
-                )
+                    validity = DateRange(now.today(), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
@@ -291,8 +291,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             now,
             testCreationRequest.copy(
                 language = OfficialLanguage.SV,
-                validity = DateRange(now.today(), null)
-            )
+                validity = DateRange(now.today(), null),
+            ),
         )
 
         val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
@@ -308,8 +308,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     language = OfficialLanguage.SV,
-                    validity = DateRange(now.today().plusDays(1), null)
-                )
+                    validity = DateRange(now.today().plusDays(1), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
@@ -326,8 +326,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     language = OfficialLanguage.SV,
-                    validity = DateRange(now.today().minusDays(10), now.today().minusDays(1))
-                )
+                    validity = DateRange(now.today().minusDays(10), now.today().minusDays(1)),
+                ),
             )
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
@@ -344,8 +344,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     language = OfficialLanguage.FI,
-                    validity = DateRange(now.today(), null)
-                )
+                    validity = DateRange(now.today(), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
@@ -365,7 +365,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         childId = childId,
                         unitId = daycareId,
                         startDate = now.today(),
-                        endDate = now.today().plusDays(5)
+                        endDate = now.today().plusDays(5),
                     )
                 )
                 childId
@@ -377,8 +377,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 now,
                 testCreationRequest.copy(
                     language = OfficialLanguage.SV,
-                    validity = DateRange(now.today(), null)
-                )
+                    validity = DateRange(now.today(), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
@@ -401,9 +401,9 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     sections =
                         listOf(
                             Section(id = "s1", label = "foo", questions = emptyList()),
-                            Section(id = "s1", label = "bar", questions = emptyList())
+                            Section(id = "s1", label = "bar", questions = emptyList()),
                         )
-                )
+                ),
             )
         }
     }
@@ -429,10 +429,10 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     listOf(
                                         Question.TextQuestion(id = "q1", label = "foo"),
                                         Question.CheckboxQuestion(id = "q1", label = "bar"),
-                                    )
+                                    ),
                             )
                         )
-                )
+                ),
             )
         }
     }

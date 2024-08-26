@@ -9,11 +9,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.json.JsonMapper
+import java.io.PrintWriter
+import java.io.StringWriter
 import mu.KLogger
 import net.logstash.logback.argument.StructuredArgument
 import org.json.JSONObject
-import java.io.PrintWriter
-import java.io.StringWriter
 
 const val appenderName = "TestAppender"
 
@@ -40,22 +40,26 @@ class TestAppender : AppenderBase<ILoggingEvent>() {
 
     fun getJson(): JSONObject = JSONObject(getJsonString())
 
-    fun getJsonString(): String = events.first().argumentArray.first()
-        .let { it as StructuredArgument }
-        .let { args ->
-            StringWriter().use { sw ->
-                val pw = PrintWriter(sw, true)
-                JsonFactory().createGenerator(pw).use { generator ->
-                    generator.run {
-                        codec = JsonMapper()
-                        writeStartObject()
-                        args.writeTo(this)
-                        writeEndObject()
+    fun getJsonString(): String =
+        events
+            .first()
+            .argumentArray
+            .first()
+            .let { it as StructuredArgument }
+            .let { args ->
+                StringWriter().use { sw ->
+                    val pw = PrintWriter(sw, true)
+                    JsonFactory().createGenerator(pw).use { generator ->
+                        generator.run {
+                            codec = JsonMapper()
+                            writeStartObject()
+                            args.writeTo(this)
+                            writeEndObject()
+                        }
                     }
+                    sw.buffer.toString()
                 }
-                sw.buffer.toString()
             }
-        }
 }
 
 fun KLogger.setupTestAppender() {

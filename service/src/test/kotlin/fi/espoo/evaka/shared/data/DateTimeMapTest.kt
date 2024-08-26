@@ -80,12 +80,7 @@ class DateTimeMapTest {
         // +    BB_
         // +       C_
         // =  AABB_C_
-        val result =
-            listOf(
-                testEntry(1 to 3, "A"),
-                testEntry(3 to 5, "B"),
-                testEntry(6 to 7, "C"),
-            )
+        val result = listOf(testEntry(1 to 3, "A"), testEntry(3 to 5, "B"), testEntry(6 to 7, "C"))
         val set =
             DateTimeMap.of(testEntry(1 to 4, "A"))
                 .set(testEntry(3 to 5, "B"))
@@ -101,16 +96,9 @@ class DateTimeMapTest {
         // +      AA_
         // =  AAAAAA_
         val entries =
-            listOf(
-                    testEntry(1 to 3, "A"),
-                    testEntry(3 to 5, "A"),
-                    testEntry(5 to 7, "A"),
-                )
+            listOf(testEntry(1 to 3, "A"), testEntry(3 to 5, "A"), testEntry(5 to 7, "A"))
                 .shuffled()
-        val result =
-            listOf(
-                testEntry(1 to 7, "A"),
-            )
+        val result = listOf(testEntry(1 to 7, "A"))
         val set = DateTimeMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(result, set.entries().toList())
@@ -124,18 +112,9 @@ class DateTimeMapTest {
         // +      CC_
         // =  AABBCC_
         val entries =
-            listOf(
-                    testEntry(1 to 3, "A"),
-                    testEntry(3 to 5, "B"),
-                    testEntry(5 to 7, "C"),
-                )
+            listOf(testEntry(1 to 3, "A"), testEntry(3 to 5, "B"), testEntry(5 to 7, "C"))
                 .shuffled()
-        val result =
-            listOf(
-                testEntry(1 to 3, "A"),
-                testEntry(3 to 5, "B"),
-                testEntry(5 to 7, "C"),
-            )
+        val result = listOf(testEntry(1 to 3, "A"), testEntry(3 to 5, "B"), testEntry(5 to 7, "C"))
         val set = DateTimeMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(result, set.entries().toList())
@@ -159,7 +138,7 @@ class DateTimeMapTest {
                     testEntry(4 to 7, 1),
                     testEntry(2 to 6, 1),
                     testEntry(5 to 7, 1),
-                    testEntry(1 to 4, 1)
+                    testEntry(1 to 4, 1),
                 )
                 .shuffled()
         val set = DateTimeMap.empty<Int>().update(entries, resolve)
@@ -171,7 +150,7 @@ class DateTimeMapTest {
                 testEntry(3 to 6, 3),
                 testEntry(6 to 7, 2),
             ),
-            set.entries().toList()
+            set.entries().toList(),
         )
     }
 

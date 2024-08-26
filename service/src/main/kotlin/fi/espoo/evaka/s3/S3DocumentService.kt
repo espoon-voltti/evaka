@@ -27,7 +27,7 @@ private const val INTERNAL_REDIRECT_PREFIX = "/internal_redirect/"
 class S3DocumentService(
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
-    private val env: BucketEnv
+    private val env: BucketEnv,
 ) : DocumentService {
     override fun get(bucketName: String, key: String): Document {
         val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
@@ -36,7 +36,7 @@ class S3DocumentService(
             Document(
                 name = key,
                 bytes = it.readAllBytes(),
-                contentType = it.response().contentType()
+                contentType = it.response().contentType(),
             )
         }
     }
@@ -56,7 +56,7 @@ class S3DocumentService(
     override fun response(
         bucketName: String,
         key: String,
-        contentDisposition: ContentDisposition
+        contentDisposition: ContentDisposition,
     ): ResponseEntity<Any> {
         val presignedUrl = presignedGetUrl(bucketName, key)
 

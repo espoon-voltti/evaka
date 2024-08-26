@@ -83,7 +83,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             actualServiceNeeds = listOf(),
             reservationTotalHours = 0,
             attendanceTotalHours = 0,
-            usedService = null
+            usedService = null,
         )
 
     private val emptyDayChild =
@@ -96,7 +96,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             missingHolidayReservation = false,
             absences = listOf(),
             reservations = listOf(),
-            dailyServiceTimes = null
+            dailyServiceTimes = null,
         )
 
     @BeforeEach
@@ -116,7 +116,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     daycareId = testDaycare.id,
                     id = testDaycareGroup.id,
                     name = testDaycareGroup.name,
-                    startDate = placementStart
+                    startDate = placementStart,
                 )
             )
         }
@@ -127,13 +127,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val today = now.toLocalDate()
         val result =
             db.read {
-                getGroupMonthCalendar(
-                    it,
-                    today,
-                    testDaycareGroup.id,
-                    today.year,
-                    today.monthValue,
-                )
+                getGroupMonthCalendar(it, today, testDaycareGroup.id, today.year, today.monthValue)
             }
 
         assertEquals(
@@ -152,12 +146,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 date = it,
                                 isOperationDay = !it.isWeekend(),
                                 isInHolidayPeriod = false,
-                                children = emptyList()
+                                children = emptyList(),
                             )
                         }
-                        .toList()
+                        .toList(),
             ),
-            result
+            result,
         )
     }
 
@@ -167,12 +161,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             testChild_1.id,
             serviceNeedOptionId = snDefaultDaycare.id,
             placementPeriod =
-                FiniteDateRange(placementStart, placementStart.plusWeeks(2).minusDays(1))
+                FiniteDateRange(placementStart, placementStart.plusWeeks(2).minusDays(1)),
         )
         insertGroupPlacement(
             testChild_1.id,
             serviceNeedOptionId = snDaycareContractDays15.id,
-            placementPeriod = FiniteDateRange(placementStart.plusWeeks(2), placementEnd)
+            placementPeriod = FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
         )
         val result =
             db.read {
@@ -181,7 +175,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -196,7 +190,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     validDuring =
                                         FiniteDateRange(
                                             placementStart,
-                                            placementStart.plusWeeks(2).minusDays(1)
+                                            placementStart.plusWeeks(2).minusDays(1),
                                         ),
                                     shiftCare = ShiftCareType.NONE,
                                     partWeek = false,
@@ -213,11 +207,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     optionName = snDaycareContractDays15.nameFi,
                                     hasContractDays = true,
                                     daycareHoursPerMonth = null,
-                                )
+                                ),
                             )
                     )
             ),
-            result.children
+            result.children,
         )
     }
 
@@ -233,8 +227,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     regularTimes = TimeRange(LocalTime.of(10, 0), LocalTime.of(15, 0)),
-                    validityPeriod =
-                        DateRange(firstOfMonth, firstOfMonth.plusWeeks(1).minusDays(1)),
+                    validityPeriod = DateRange(firstOfMonth, firstOfMonth.plusWeeks(1).minusDays(1)),
                 )
             )
 
@@ -284,13 +277,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfMonth,
                     testDaycareGroup.id,
                     firstOfMonth.year,
-                    firstOfMonth.monthValue
+                    firstOfMonth.monthValue,
                 )
             }
 
         assertEquals(
             listOf(child(testChild_1).copy(reservationTotalHours = 36, attendanceTotalHours = 7)),
-            result.children
+            result.children,
         )
     }
 
@@ -303,13 +296,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     swedishPreschool = FiniteDateRange(placementStart, placementEnd),
                     extendedTerm = FiniteDateRange(placementStart, placementEnd),
                     applicationPeriod = FiniteDateRange(placementStart, placementEnd),
-                    termBreaks = DateSet.empty()
+                    termBreaks = DateSet.empty(),
                 )
                 tx.insert(
                     DevDaycareGroup(
                         daycareId = testRoundTheClockDaycare.id,
                         startDate = placementStart,
-                        name = "testiryhmä"
+                        name = "testiryhmä",
                     )
                 )
             }
@@ -317,13 +310,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId = testChild_1.id,
             placementType = PlacementType.PRESCHOOL,
             unitId = testRoundTheClockDaycare.id,
-            groupId = roundTheClockGroupId
+            groupId = roundTheClockGroupId,
         )
         insertGroupPlacement(
             childId = testChild_2.id,
             placementType = PlacementType.PRESCHOOL_DAYCARE,
             unitId = testRoundTheClockDaycare.id,
-            groupId = roundTheClockGroupId
+            groupId = roundTheClockGroupId,
         )
         insertGroupPlacement(
             testChild_3.id,
@@ -331,7 +324,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             unitId = testRoundTheClockDaycare.id,
             groupId = roundTheClockGroupId,
             serviceNeedOptionId = snDaycareFullDay35.id,
-            shiftCareType = ShiftCareType.FULL
+            shiftCareType = ShiftCareType.FULL,
         )
 
         val placementDate = placementStart
@@ -342,7 +335,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate,
                     roundTheClockGroupId,
                     placementDate.year,
-                    placementDate.monthValue
+                    placementDate.monthValue,
                 )
             }
 
@@ -370,7 +363,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                             validDuring =
                                                 FiniteDateRange(placementStart, placementEnd),
                                             shiftCare = ShiftCareType.FULL,
-                                            partWeek = false
+                                            partWeek = false,
                                         )
                                     )
                             ),
@@ -399,22 +392,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                     absenceCategories =
                                                         setOf(
                                                             AbsenceCategory.BILLABLE,
-                                                            AbsenceCategory.NONBILLABLE
+                                                            AbsenceCategory.NONBILLABLE,
                                                         ),
                                                 )
                                                 .takeIf { !date.isWeekend() },
                                             emptyDayChild.copy(
                                                 childId = testChild_3.id,
                                                 absenceCategories = setOf(AbsenceCategory.BILLABLE),
-                                                shiftCare = ShiftCareType.FULL
-                                            ) // shift care child, include weekends
+                                                shiftCare = ShiftCareType.FULL,
+                                            ), // shift care child, include weekends
                                         )
-                                        .sortedBy { it.childId }
+                                        .sortedBy { it.childId },
                             )
                         }
-                        .toList()
+                        .toList(),
             ),
-            result
+            result,
         )
     }
 
@@ -428,7 +421,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 applicationPeriod = FiniteDateRange(placementStart, placementEnd),
 
                 // First day is in a term break
-                termBreaks = DateSet.of(FiniteDateRange(placementStart, placementStart))
+                termBreaks = DateSet.of(FiniteDateRange(placementStart, placementStart)),
             )
         }
         insertGroupPlacement(testChild_1.id, PlacementType.PRESCHOOL)
@@ -440,7 +433,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -472,13 +465,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 absenceCategories =
                                                     setOf(AbsenceCategory.NONBILLABLE),
                                             )
-                                            .takeIf { !date.isWeekend() },
-                                    )
+                                            .takeIf { !date.isWeekend() }
+                                    ),
                             )
                         }
-                        .toList()
+                        .toList(),
             ),
-            result
+            result,
         )
     }
 
@@ -507,7 +500,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -520,12 +513,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         children =
                             listOfNotNull(
                                 emptyDayChild
-                                    .copy(
-                                        childId = testChild_1.id,
-                                        backupCare = true,
-                                    )
+                                    .copy(childId = testChild_1.id, backupCare = true)
                                     .takeIf { !date.isWeekend() }
-                            )
+                            ),
                     )
                 } +
                     normalPeriod.dates().map { date ->
@@ -536,12 +526,9 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             children =
                                 listOfNotNull(
                                     emptyDayChild
-                                        .copy(
-                                            childId = testChild_1.id,
-                                            backupCare = false,
-                                        )
+                                        .copy(childId = testChild_1.id, backupCare = false)
                                         .takeIf { !date.isWeekend() }
-                                )
+                                ),
                         )
                     })
                 .toList(),
@@ -559,7 +546,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.insertHolidayPeriod(
                 period = holidayPeriod,
                 reservationsOpenOn = placementStart,
-                reservationDeadline = placementStart // doesn't matter for group month calendar
+                reservationDeadline = placementStart, // doesn't matter for group month calendar
             )
             tx.insert(
                 DevReservation(
@@ -598,7 +585,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val normalPeriod =
             FiniteDateRange(
                 holidayPeriod.end.plusDays(1),
-                placementStart.plusMonths(1).minusDays(1)
+                placementStart.plusMonths(1).minusDays(1),
             )
 
         val result =
@@ -608,7 +595,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -624,10 +611,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 emptyDayChild
                                     .copy(
                                         childId = testChild_1.id,
-                                        missingHolidayReservation = true
+                                        missingHolidayReservation = true,
                                     )
                                     .takeIf { !date.isWeekend() }
-                            )
+                            ),
                     )
                 } +
                     // reservations and absences
@@ -649,7 +636,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                         created =
                                                             HelsinkiDateTime.of(
                                                                 placementStart,
-                                                                LocalTime.of(8, 0)
+                                                                LocalTime.of(8, 0),
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
@@ -657,7 +644,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 ),
                                         )
                                         .takeIf { !holidayPeriod.end.minusDays(2).isWeekend() }
-                                )
+                                ),
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end.minusDays(1),
@@ -676,13 +663,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                             Reservation.Times(
                                                                 TimeRange(
                                                                     LocalTime.of(8, 0),
-                                                                    LocalTime.of(16, 0)
+                                                                    LocalTime.of(16, 0),
                                                                 )
                                                             ),
                                                         created =
                                                             HelsinkiDateTime.of(
                                                                 placementStart,
-                                                                LocalTime.of(9, 0)
+                                                                LocalTime.of(9, 0),
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
@@ -690,7 +677,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                 ),
                                         )
                                         .takeIf { !holidayPeriod.end.minusDays(1).isWeekend() }
-                                )
+                                ),
                         ),
                         GroupMonthCalendarDay(
                             date = holidayPeriod.end,
@@ -711,13 +698,13 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                         modifiedAt =
                                                             HelsinkiDateTime.of(
                                                                 placementStart,
-                                                                LocalTime.of(10, 0)
-                                                            )
+                                                                LocalTime.of(10, 0),
+                                                            ),
                                                     )
                                                 ),
                                         )
                                         .takeIf { !holidayPeriod.end.isWeekend() }
-                                )
+                                ),
                         ),
                     ) +
                     // empty days
@@ -734,7 +721,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                             missingHolidayReservation = false,
                                         )
                                         .takeIf { !date.isWeekend() }
-                                )
+                                ),
                         )
                     })
                 .toList(),
@@ -760,7 +747,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.insertHolidayPeriod(
                 period = isInHolidayPeriod,
                 reservationsOpenOn = placementStart,
-                reservationDeadline = placementStart // doesn't matter for group month calendar
+                reservationDeadline = placementStart, // doesn't matter for group month calendar
             )
         }
 
@@ -771,7 +758,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -790,14 +777,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         childId = testChild_1.id,
                                         missingHolidayReservation = false,
                                         absenceCategories = setOf(AbsenceCategory.BILLABLE),
-                                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                                     )
                                     .takeIf { !date.isWeekend() }
-                            )
+                            ),
                     )
                 }
                 .toList(),
-            result.days
+            result.days,
         )
     }
 
@@ -811,7 +798,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.insertHolidayPeriod(
                 period = isInHolidayPeriod,
                 reservationsOpenOn = placementStart,
-                reservationDeadline = placementStart // doesn't matter for group month calendar
+                reservationDeadline = placementStart, // doesn't matter for group month calendar
             )
         }
 
@@ -822,7 +809,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -841,14 +828,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         childId = testChild_1.id,
                                         missingHolidayReservation = false,
                                         absenceCategories = setOf(AbsenceCategory.NONBILLABLE),
-                                        scheduleType = ScheduleType.TERM_BREAK
+                                        scheduleType = ScheduleType.TERM_BREAK,
                                     )
                                     .takeIf { !date.isWeekend() }
-                            )
+                            ),
                     )
                 }
                 .toList(),
-            result.days
+            result.days,
         )
     }
 
@@ -865,14 +852,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod1.asDateRange(),
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = dailyServiceTimesPeriod2.asDateRange(),
-                    regularTimes = TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
+                    regularTimes = TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
                 )
             )
         }
@@ -884,7 +871,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementStart,
                     testDaycareGroup.id,
                     placementStart.year,
-                    placementStart.monthValue
+                    placementStart.monthValue,
                 )
             }
 
@@ -900,10 +887,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                     .copy(
                                         childId = testChild_1.id,
                                         dailyServiceTimes =
-                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                                     )
                                     .takeIf { !date.isWeekend() }
-                            )
+                            ),
                     )
                 } +
                     dailyServiceTimesPeriod2.dates().map { date ->
@@ -917,10 +904,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                         .copy(
                                             childId = testChild_1.id,
                                             dailyServiceTimes =
-                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0))
+                                                TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
                                         )
                                         .takeIf { !date.isWeekend() }
-                                )
+                                ),
                         )
                     })
                 .toList(),
@@ -950,7 +937,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue
+                    absenceDate.monthValue,
                 )
             }
         val child =
@@ -1001,7 +988,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue
+                    absenceDate.monthValue,
                 )
             }
 
@@ -1024,7 +1011,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 testChild_1.id,
                 absenceDate,
                 AbsenceCategory.BILLABLE,
-                AbsenceType.SICKLEAVE
+                AbsenceType.SICKLEAVE,
             )
         val initialAbsenceList = listOf(initialAbsence)
 
@@ -1036,7 +1023,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue
+                    absenceDate.monthValue,
                 )
             }
 
@@ -1053,7 +1040,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 childId = testChild_1.id,
                 date = absenceDate,
                 category = absence.category,
-                absenceType = newAbsenceType
+                absenceType = newAbsenceType,
             )
 
         result =
@@ -1064,7 +1051,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     absenceDate,
                     testDaycareGroup.id,
                     absenceDate.year,
-                    absenceDate.monthValue
+                    absenceDate.monthValue,
                 )
             }
 
@@ -1088,14 +1075,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 testChild_1.id,
                 absenceDate,
                 AbsenceCategory.BILLABLE,
-                AbsenceType.SICKLEAVE
+                AbsenceType.SICKLEAVE,
             )
         val initialAbsence2 =
             AbsenceUpsert(
                 testChild_1.id,
                 absenceDate,
                 AbsenceCategory.NONBILLABLE,
-                AbsenceType.SICKLEAVE
+                AbsenceType.SICKLEAVE,
             )
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
@@ -1106,7 +1093,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     tx,
                     testChild_1.id,
                     absenceDate.year,
-                    absenceDate.monthValue
+                    absenceDate.monthValue,
                 )
             }
         assertEquals(initialAbsenceList.size, absences.size)
@@ -1119,7 +1106,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction {
             it.insert(
                 DevPerson(id = childId2, dateOfBirth = LocalDate.of(2013, 1, 1)),
-                DevPersonType.CHILD
+                DevPersonType.CHILD,
             )
         }
 
@@ -1189,7 +1176,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020,
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue
+                    firstOfJanuary2020.monthValue,
                 )
             }
 
@@ -1213,7 +1200,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     firstOfJanuary2020,
                     testDaycareGroup.id,
                     firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue
+                    firstOfJanuary2020.monthValue,
                 )
             }
 
@@ -1245,11 +1232,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `reservation sums - placement changes mid reservation`() {
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1))
+            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1)),
         )
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd)
+            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd),
         )
         val reservations =
             generateSequence(placementStart) { it.plusDays(1) }
@@ -1277,7 +1264,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1296,7 +1283,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1311,14 +1298,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val placementDate = LocalDate.of(2019, 8, 15)
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementDate, placementDate)
+            placementPeriod = FiniteDateRange(placementDate, placementDate),
         )
         insertReservations(
             testChild_1.id,
             listOf(
                 HelsinkiDateTime.of(placementDate.minusDays(1), LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1333,14 +1320,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val placementDate = LocalDate.of(2019, 8, 15)
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementDate, placementDate)
+            placementPeriod = FiniteDateRange(placementDate, placementDate),
         )
         insertReservations(
             testChild_1.id,
             listOf(
                 HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(placementDate.plusDays(1), LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1404,7 +1391,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = placementStart,
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
             tx.insert(
@@ -1413,7 +1400,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = placementStart.plusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
         }
@@ -1433,7 +1420,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1445,7 +1432,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     date = placementStart.plusDays(1),
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
         }
@@ -1462,7 +1449,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `reservation sums - irregular daily service times are applied according to operational days`() {
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 11))
+            placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 11)),
         )
         val dailyServiceTimes =
             DailyServiceTimesValue.IrregularTimes(
@@ -1473,7 +1460,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 friday = null,
                 saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
                 sunday = null,
-                validityPeriod = DateRange(placementStart, null)
+                validityPeriod = DateRange(placementStart, null),
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1501,7 +1488,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0))
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1526,7 +1513,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0))
+                regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1583,7 +1570,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val dailyServiceTimes =
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, null),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
             )
         insertDailyServiceTimes(testChild_1.id, dailyServiceTimes)
 
@@ -1603,22 +1590,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(10, 0)) to
                     HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(12, 0))
-            )
+            ),
         )
 
         insertDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, LocalDate.of(2019, 8, 10)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
-            )
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            ),
         )
         insertDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(LocalDate.of(2019, 8, 13), LocalDate.of(2019, 8, 20)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
-            )
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)),
+            ),
         )
         insertDailyServiceTimes(
             testChild_1.id,
@@ -1630,8 +1617,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 friday = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0)),
                 saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
                 sunday = null,
-                validityPeriod = DateRange(LocalDate.of(2019, 8, 21), LocalDate.of(2019, 8, 29))
-            )
+                validityPeriod = DateRange(LocalDate.of(2019, 8, 21), LocalDate.of(2019, 8, 29)),
+            ),
         )
 
         val result =
@@ -1651,7 +1638,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     7 +
                     7 // irregular times
             ),
-            result.children.map { it.reservationTotalHours }
+            result.children.map { it.reservationTotalHours },
         )
     }
 
@@ -1679,11 +1666,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `attendance sums - placement changes mid attendance`() {
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1))
+            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1)),
         )
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd)
+            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd),
         )
         val attendances =
             generateSequence(placementStart) { it.plusDays(1) }
@@ -1712,7 +1699,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1732,7 +1719,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1747,7 +1734,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val placementDate = LocalDate.of(2019, 8, 15)
         insertGroupPlacement(
             testChild_1.id,
-            placementPeriod = FiniteDateRange(placementDate, placementDate)
+            placementPeriod = FiniteDateRange(placementDate, placementDate),
         )
         insertAttendances(
             testChild_1.id,
@@ -1755,7 +1742,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             listOf(
                 HelsinkiDateTime.of(placementDate.minusDays(5), LocalTime.of(12, 0)) to
                     HelsinkiDateTime.of(placementDate.plusDays(5), LocalTime.of(12, 0))
-            )
+            ),
         )
 
         val result =
@@ -1834,7 +1821,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         HelsinkiDateTime.of(it, LocalTime.of(16, 0))
                 }
                 .take(31)
-                .toList()
+                .toList(),
         )
         insertAttendances(
             testChild_1.id,
@@ -1845,7 +1832,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         HelsinkiDateTime.of(it, LocalTime.of(17, 0))
                 }
                 .take(31)
-                .toList()
+                .toList(),
         )
 
         val result =
@@ -1860,7 +1847,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 reservedHours = 22 * 8,
                 usedServiceHours = 22 * 9,
             ),
-            result.children.first().usedService
+            result.children.first().usedService,
         )
     }
 
@@ -1874,7 +1861,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -1882,7 +1869,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     groupId = testDaycareGroup.id,
-                    period = FiniteDateRange(placementStart, placementEnd)
+                    period = FiniteDateRange(placementStart, placementEnd),
                 )
             )
 
@@ -1894,7 +1881,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
         }
 
@@ -1906,7 +1893,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     placementDate,
                     testDaycareGroup.id,
                     placementDate.year,
-                    placementDate.monthValue
+                    placementDate.monthValue,
                 )
             }
 
@@ -1923,10 +1910,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     optionName = snDaycareContractDays15.nameFi,
                     validDuring = FiniteDateRange(placementStart, placementEnd),
                     shiftCare = ShiftCareType.NONE,
-                    partWeek = false
+                    partWeek = false,
                 )
             ),
-            result.children.find { it.id == testChild_1.id }?.actualServiceNeeds!!
+            result.children.find { it.id == testChild_1.id }?.actualServiceNeeds!!,
         )
     }
 
@@ -1937,7 +1924,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         serviceNeedOptionId: ServiceNeedOptionId? = null,
         shiftCareType: ShiftCareType = ShiftCareType.NONE,
         unitId: DaycareId = testDaycare.id,
-        groupId: GroupId = testDaycareGroup.id
+        groupId: GroupId = testDaycareGroup.id,
     ) {
         db.transaction { tx ->
             tx.insert(
@@ -1946,7 +1933,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                         unitId = unitId,
                         type = placementType,
                         startDate = placementPeriod.start,
-                        endDate = placementPeriod.end
+                        endDate = placementPeriod.end,
                     )
                 )
                 .let { placementId ->
@@ -1959,7 +1946,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                 optionId = serviceNeedOptionId,
                                 shiftCare = shiftCareType,
                                 confirmedBy = EvakaUserId(employeeId.raw),
-                                confirmedAt = HelsinkiDateTime.now()
+                                confirmedAt = HelsinkiDateTime.now(),
                             )
                         )
                     }
@@ -1968,7 +1955,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             daycarePlacementId = placementId,
                             daycareGroupId = groupId,
                             startDate = placementPeriod.start,
-                            endDate = placementPeriod.end
+                            endDate = placementPeriod.end,
                         )
                     )
                 }
@@ -1986,7 +1973,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         childId: ChildId,
         unitId: DaycareId,
         groupId: GroupId,
-        placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
+        placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd),
     ) {
         db.transaction {
             it.insert(
@@ -1994,7 +1981,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = childId,
                     unitId = unitId,
                     groupId = groupId,
-                    period = placementPeriod
+                    period = placementPeriod,
                 )
             )
         }
@@ -2002,7 +1989,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun insertReservations(
         childId: ChildId,
-        reservations: List<Pair<HelsinkiDateTime, HelsinkiDateTime>>
+        reservations: List<Pair<HelsinkiDateTime, HelsinkiDateTime>>,
     ) {
         db.transaction { tx ->
             reservations
@@ -2010,7 +1997,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     if (start.toLocalDate().plusDays(1) == end.toLocalDate()) {
                         listOf(
                             start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
-                            HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end
+                            HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end,
                         )
                     } else {
                         listOf(start to end)
@@ -2023,7 +2010,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                             date = start.toLocalDate(),
                             startTime = start.toLocalTime(),
                             endTime = end.toLocalTime(),
-                            createdBy = EvakaUserId(employeeId.raw)
+                            createdBy = EvakaUserId(employeeId.raw),
                         )
                     )
                 }
@@ -2033,7 +2020,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun insertAttendances(
         childId: ChildId,
         unitId: DaycareId,
-        attendances: List<Pair<HelsinkiDateTime, HelsinkiDateTime?>>
+        attendances: List<Pair<HelsinkiDateTime, HelsinkiDateTime?>>,
     ) {
         db.transaction { tx ->
             attendances.forEach {
@@ -2041,7 +2028,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = childId,
                     unitId = unitId,
                     arrived = it.first,
-                    departed = it.second
+                    departed = it.second,
                 )
             }
         }
@@ -2049,7 +2036,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun insertDailyServiceTimes(
         childId: ChildId,
-        dailyServiceTimes: DailyServiceTimesValue
+        dailyServiceTimes: DailyServiceTimesValue,
     ) {
         db.transaction { tx -> tx.createChildDailyServiceTimes(childId, dailyServiceTimes) }
     }

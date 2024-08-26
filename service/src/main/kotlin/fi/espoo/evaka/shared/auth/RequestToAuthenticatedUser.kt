@@ -26,7 +26,7 @@ class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
     override fun doFilter(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        chain: FilterChain
+        chain: FilterChain,
     ) {
         val decodedJwt = request.getDecodedJwt()
         if (decodedJwt != null) {

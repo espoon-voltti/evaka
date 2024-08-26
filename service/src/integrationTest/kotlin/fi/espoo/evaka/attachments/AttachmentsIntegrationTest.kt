@@ -60,7 +60,7 @@ class AttachmentsIntegrationTest {
                     checkFileContentTypeAndExtension(
                         stream,
                         extension,
-                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
+                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG),
                     )
                 }
             }
@@ -76,7 +76,7 @@ class AttachmentsIntegrationTest {
                     checkFileContentTypeAndExtension(
                         stream,
                         extension,
-                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG)
+                        listOf(ContentTypePattern.JPEG, ContentTypePattern.PNG),
                     )
                 }
             }

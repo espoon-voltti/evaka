@@ -57,7 +57,7 @@ sealed interface TsImport {
     data class NamedAs(
         override val file: TsFile,
         val originalName: String,
-        override val name: String
+        override val name: String,
     ) : TsImport
 }
 
@@ -68,9 +68,7 @@ sealed interface TsImport {
 data class TsCode(val text: String, val imports: Set<TsImport>) {
     constructor(text: String, vararg imports: TsImport) : this(text, imports.toSet())
 
-    constructor(
-        import: TsImport,
-    ) : this(import.name, setOf(import))
+    constructor(import: TsImport) : this(import.name, setOf(import))
 
     operator fun plus(other: String): TsCode = TsCode(this.text + other, this.imports)
 
@@ -88,7 +86,7 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
             code: Collection<TsCode>,
             separator: String,
             prefix: String = "",
-            postfix: String = ""
+            postfix: String = "",
         ): TsCode = TsCode { join(code, separator = separator, prefix = prefix, postfix = postfix) }
     }
 
@@ -109,7 +107,7 @@ data class TsCode(val text: String, val imports: Set<TsImport>) {
             code: Collection<TsCode>,
             separator: String,
             prefix: String = "",
-            postfix: String = ""
+            postfix: String = "",
         ): String {
             this.imports += code.flatMap { it.imports }
             return code.joinToString(separator, prefix = prefix, postfix = postfix) { it.text }

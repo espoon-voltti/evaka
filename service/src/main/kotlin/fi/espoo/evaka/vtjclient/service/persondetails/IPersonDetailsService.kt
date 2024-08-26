@@ -17,6 +17,6 @@ interface IPersonDetailsService {
 
     data class DetailsQuery(
         val requestingUser: EvakaUserId,
-        val targetIdentifier: ExternalIdentifier.SSN
+        val targetIdentifier: ExternalIdentifier.SSN,
     )
 }

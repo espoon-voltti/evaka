@@ -25,13 +25,13 @@ import org.springframework.web.bind.annotation.RestController
 class InvoiceReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/invoices", // deprecated
-        "/employee/reports/invoices"
+        "/employee/reports/invoices",
     )
     fun getInvoiceReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): InvoiceReport {
         return db.connect { dbc ->
                 dbc.read {
@@ -39,7 +39,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_INVOICE_REPORT
+                        Action.Global.READ_INVOICE_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getInvoiceReportWithRows(FiniteDateRange.ofMonth(date))
@@ -66,7 +66,7 @@ private fun Database.Read.getInvoiceReportWithRows(period: FiniteDateRange): Inv
                     totalSumCents = invoices.sumOf { it.totalPrice },
                     amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
                     amountWithoutAddress = invoices.count { withoutAddress(it) },
-                    amountWithZeroPrice = invoices.count { it.totalPrice == 0 }
+                    amountWithZeroPrice = invoices.count { it.totalPrice == 0 },
                 )
             }
             .sortedBy { it.areaCode }
@@ -78,12 +78,12 @@ private fun withoutAddress(invoice: InvoiceDetailed): Boolean =
     !addressUsable(
         invoice.headOfFamily.streetAddress,
         invoice.headOfFamily.postalCode,
-        invoice.headOfFamily.postOffice
+        invoice.headOfFamily.postOffice,
     ) &&
         !addressUsable(
             invoice.headOfFamily.invoicingStreetAddress,
             invoice.headOfFamily.invoicingPostalCode,
-            invoice.headOfFamily.invoicingPostOffice
+            invoice.headOfFamily.invoicingPostOffice,
         )
 
 data class InvoiceReportRow(
@@ -92,7 +92,7 @@ data class InvoiceReportRow(
     val totalSumCents: Int,
     val amountWithoutSSN: Int,
     val amountWithoutAddress: Int,
-    val amountWithZeroPrice: Int
+    val amountWithZeroPrice: Int,
 )
 
 data class InvoiceReport(val reportRows: List<InvoiceReportRow>) {

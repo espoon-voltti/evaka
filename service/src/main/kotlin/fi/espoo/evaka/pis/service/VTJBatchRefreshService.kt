@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 @Service
 class VTJBatchRefreshService(
     private val fridgeFamilyService: FridgeFamilyService,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     init {

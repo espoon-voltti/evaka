@@ -44,7 +44,7 @@ fun Database.Read.getPartnership(id: PartnershipId): Partnership? {
 
 fun Database.Read.getPartnershipsForPerson(
     personId: PersonId,
-    includeConflicts: Boolean = false
+    includeConflicts: Boolean = false,
 ): List<Partnership> {
     return createQuery {
             sql(
@@ -75,7 +75,7 @@ AND (${bind(includeConflicts)} OR fp1.conflict = false)
 fun Database.Read.getPartnersForPerson(
     personId: PersonId,
     includeConflicts: Boolean,
-    period: DateRange? = null
+    period: DateRange? = null,
 ): List<Partner> {
     return createQuery {
             sql(
@@ -107,7 +107,7 @@ fun Database.Transaction.createPartnership(
     endDate: LocalDate?,
     conflict: Boolean = false,
     creator: Creator,
-    createDate: HelsinkiDateTime
+    createDate: HelsinkiDateTime,
 ): Partnership {
     val createSource = creator.source
     val (creatorId, applicationId) =
@@ -158,7 +158,7 @@ fun Database.Transaction.updatePartnershipDuration(
     endDate: LocalDate?,
     modifySource: ModifySource,
     modifiedAt: HelsinkiDateTime,
-    modifiedBy: EvakaUserId?
+    modifiedBy: EvakaUserId?,
 ): Boolean {
     return createQuery {
             sql(
@@ -176,7 +176,7 @@ fun Database.Transaction.updatePartnershipDuration(
 fun Database.Transaction.retryPartnership(
     id: PartnershipId,
     modifiedById: EvakaUserId,
-    modificationDate: HelsinkiDateTime
+    modificationDate: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -207,7 +207,7 @@ private val toPartnership: (String, String) -> Row.() -> Partnership =
                 partners = setOf(toPersonJSON(partner1Alias), toPersonJSON(partner2Alias)),
                 startDate = column("start_date"),
                 endDate = column("end_date"),
-                conflict = column("conflict")
+                conflict = column("conflict"),
             )
         }
     }
@@ -232,8 +232,8 @@ private val toPartner: (String) -> Row.() -> Partner = { tableAlias ->
                     modifiedByName = column("modified_by_name"),
                     createdFromApplication = column("created_from_application"),
                     createdFromApplicationType = column("created_from_application_type"),
-                    createdFromApplicationCreated = column("created_from_application_created")
-                )
+                    createdFromApplicationCreated = column("created_from_application_created"),
+                ),
         )
     }
 }

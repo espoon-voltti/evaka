@@ -74,7 +74,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
         )
 
         assertNull(db.transaction { it.fetchApplicationDetails(application.id) }!!.dueDate)
@@ -100,7 +100,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
         )
 
         val result = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -127,7 +127,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
         )
 
         // then
@@ -164,7 +164,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(application.form)),
         )
 
         // then
@@ -188,8 +188,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             application.id,
             ApplicationUpdate(
                 form = ApplicationFormUpdate.from(application.form),
-                dueDate = manuallySetDueDate
-            )
+                dueDate = manuallySetDueDate,
+            ),
         )
 
         // then
@@ -202,7 +202,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         ?: throw Error("dueDateSetManuallyAt should have been set")
                 )
                 .seconds <= 5,
-            "dueDateSetManuallyAt should have been about now"
+            "dueDateSetManuallyAt should have been about now",
         )
 
         // when
@@ -222,12 +222,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.URGENCY
+            type = AttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.EXTENDED_CARE
+            type = AttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -248,7 +248,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             citizen,
             clock,
             application.id,
-            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false)
+            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false),
         )
 
         // then
@@ -256,11 +256,11 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size,
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size,
         )
     }
 
@@ -274,12 +274,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.URGENCY
+            type = AttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.EXTENDED_CARE
+            type = AttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -299,7 +299,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
         )
 
         // then
@@ -307,11 +307,11 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
         assertEquals(
             0,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.URGENCY }.size,
         )
         assertEquals(
             1,
-            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size
+            afterClearingUrgency.attachments.filter { it.type == AttachmentType.EXTENDED_CARE }.size,
         )
     }
 
@@ -325,12 +325,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.URGENCY
+            type = AttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = citizen,
-            type = AttachmentType.EXTENDED_CARE
+            type = AttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -356,7 +356,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             citizen,
             clock,
             application.id,
-            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false)
+            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false),
         )
 
         // then
@@ -364,13 +364,13 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
+            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size,
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
                 .filter { it.type == AttachmentType.EXTENDED_CARE }
-                .size
+                .size,
         )
     }
 
@@ -384,12 +384,12 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.URGENCY
+            type = AttachmentType.URGENCY,
         )
         uploadAttachment(
             applicationId = application.id,
             user = serviceWorker,
-            type = AttachmentType.EXTENDED_CARE
+            type = AttachmentType.EXTENDED_CARE,
         )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
@@ -415,7 +415,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             serviceWorker,
             clock,
             application.id,
-            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))
+            ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
         )
 
         // then
@@ -423,13 +423,13 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
         assertEquals(
             1,
-            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size
+            afterClearingShiftCare.attachments.filter { it.type == AttachmentType.URGENCY }.size,
         )
         assertEquals(
             0,
             afterClearingShiftCare.attachments
                 .filter { it.type == AttachmentType.EXTENDED_CARE }
-                .size
+                .size,
         )
     }
 
@@ -438,7 +438,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         sentDate: LocalDate,
         dueDate: LocalDate?,
         urgent: Boolean,
-        shiftCare: Boolean = false
+        shiftCare: Boolean = false,
     ): ApplicationDetails =
         db.transaction { tx ->
             val applicationId =
@@ -453,7 +453,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         DaycareFormV0.fromApplication2(
                                 getValidDaycareApplication(shiftCare = shiftCare)
                             )
-                            .copy(urgent = urgent)
+                            .copy(urgent = urgent),
                 )
             tx.fetchApplicationDetails(applicationId)!!
         }

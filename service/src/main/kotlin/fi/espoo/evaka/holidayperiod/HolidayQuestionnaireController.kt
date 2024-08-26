@@ -30,7 +30,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     fun getQuestionnaires(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<FixedPeriodQuestionnaire> {
         return db.connect { dbc ->
                 dbc.read {
@@ -38,7 +38,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_HOLIDAY_QUESTIONNAIRES
+                        Action.Global.READ_HOLIDAY_QUESTIONNAIRES,
                     )
                     it.getHolidayQuestionnaires()
                 }
@@ -51,7 +51,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable id: HolidayQuestionnaireId
+        @PathVariable id: HolidayQuestionnaireId,
     ): FixedPeriodQuestionnaire {
         return db.connect { dbc ->
                 dbc.read {
@@ -59,7 +59,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_HOLIDAY_QUESTIONNAIRE
+                        Action.Global.READ_HOLIDAY_QUESTIONNAIRE,
                     )
                     it.getFixedPeriodQuestionnaire(id) ?: throw NotFound()
                 }
@@ -72,7 +72,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: FixedPeriodQuestionnaireBody
+        @RequestBody body: FixedPeriodQuestionnaireBody,
     ) {
         val id =
             db.connect { dbc ->
@@ -81,7 +81,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE
+                        Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE,
                     )
                     try {
                         it.createFixedPeriodQuestionnaire(body)
@@ -99,7 +99,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
-        @RequestBody body: FixedPeriodQuestionnaireBody
+        @RequestBody body: FixedPeriodQuestionnaireBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -107,7 +107,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     it,
                     user,
                     clock,
-                    Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE
+                    Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE,
                 )
                 try {
                     it.updateFixedPeriodQuestionnaire(id, body)
@@ -124,7 +124,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable id: HolidayQuestionnaireId
+        @PathVariable id: HolidayQuestionnaireId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -132,7 +132,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     it,
                     user,
                     clock,
-                    Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE
+                    Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE,
                 )
                 it.deleteHolidayQuestionnaire(id)
             }

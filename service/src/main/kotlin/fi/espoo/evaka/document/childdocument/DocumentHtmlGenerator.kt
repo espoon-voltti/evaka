@@ -114,13 +114,13 @@ private fun generateBody(document: ChildDocumentDetails): HtmlElement {
                         (document.child.dateOfBirth?.let {
                             "(s. ${it.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})"
                         } ?: ""),
-                className = "child-info"
+                className = "child-info",
             ),
             div(className = "sections") {
                 document.template.content.sections.map {
                     generateSectionHtml(it, document.content.answers, document.template.language)
                 }
-            }
+            },
         )
     }
 }
@@ -135,9 +135,9 @@ private fun generateHeader(template: DocumentTemplate): HtmlElement {
                         .takeIf { it.isNotBlank() }
                         ?.let { div(text = it, className = "legal-basis") },
                     if (template.confidential) div(getTranslations(template.language).confidential)
-                    else null
+                    else null,
                 )
-            }
+            },
         )
     }
 }
@@ -145,14 +145,14 @@ private fun generateHeader(template: DocumentTemplate): HtmlElement {
 private fun generateSectionHtml(
     section: Section,
     answers: List<AnsweredQuestion<*>>,
-    language: OfficialLanguage
+    language: OfficialLanguage,
 ): HtmlElement {
     return HtmlBuilder.div(className = "section") {
         listOf(
             h2(section.label),
             div(className = "questions") {
                 section.questions.map { generateQuestionHtml(it, answers, language) }
-            }
+            },
         )
     }
 }
@@ -160,11 +160,11 @@ private fun generateSectionHtml(
 private fun generateQuestionHtml(
     question: Question,
     answers: List<AnsweredQuestion<*>>,
-    language: OfficialLanguage
+    language: OfficialLanguage,
 ): HtmlElement {
     return question.generateHtml(
         answeredQuestion = answers.find { it.questionId == question.id },
-        language = language
+        language = language,
     )
 }
 

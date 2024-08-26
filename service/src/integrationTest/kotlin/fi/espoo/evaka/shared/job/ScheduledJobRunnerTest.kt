@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     enum class TestScheduledJob {
-        TestJob,
+        TestJob
     }
 
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
@@ -32,7 +32,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     ScheduledJobDefinition(
                         TestScheduledJob.TestJob,
-                        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(testTime))
+                        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(testTime)),
                     ) { _, _ ->
                         val previous = jobExecuted.getAndSet(true)
                         assertFalse(previous)

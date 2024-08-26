@@ -31,7 +31,7 @@ data class NewEmployee(
     val employeeNumber: String?,
     val roles: Set<UserRole> = setOf(),
     val temporaryInUnitId: DaycareId?,
-    val active: Boolean
+    val active: Boolean,
 )
 
 data class EmployeeUser(
@@ -41,12 +41,12 @@ data class EmployeeUser(
     val lastName: String,
     val globalRoles: Set<UserRole> = setOf(),
     val allScopedRoles: Set<UserRole> = setOf(),
-    val active: Boolean
+    val active: Boolean,
 )
 
 data class EmployeeRoles(
     val globalRoles: Set<UserRole> = setOf(),
-    val allScopedRoles: Set<UserRole> = setOf()
+    val allScopedRoles: Set<UserRole> = setOf(),
 )
 
 data class DaycareRole(val daycareId: DaycareId, val daycareName: String, val role: UserRole)
@@ -55,7 +55,7 @@ data class DaycareGroupRole(
     val daycareId: DaycareId,
     val daycareName: String,
     val groupId: GroupId,
-    val groupName: String
+    val groupName: String,
 )
 
 data class EmployeeWithDaycareRoles(
@@ -73,7 +73,7 @@ data class EmployeeWithDaycareRoles(
     @Json val daycareGroupRoles: List<DaycareGroupRole> = listOf(),
     @Json val personalMobileDevices: List<MobileDevice> = listOf(),
     val temporaryUnitName: String?,
-    val active: Boolean
+    val active: Boolean,
 )
 
 data class EmployeeIdWithName(val id: EmployeeId, val name: String)
@@ -93,7 +93,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
 
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
-    externalId: ExternalId
+    externalId: ExternalId,
 ) =
     createUpdate {
             sql(
@@ -140,17 +140,21 @@ WHERE id = ${bind(id)}
         .exactlyOne<EmployeeRoles>()
 
 fun Database.Read.getEmployeeNumber(id: EmployeeId): String? =
-    createQuery { sql("""
+    createQuery {
+            sql(
+                """
 SELECT employee_number
 FROM employee
 WHERE id = ${bind(id)}
-""") }
+"""
+            )
+        }
         .exactlyOneOrNull<String>()
 
 private fun Database.Read.searchEmployees(
     id: EmployeeId? = null,
     externalId: ExternalId? = null,
-    temporaryInUnitId: DaycareId? = null
+    temporaryInUnitId: DaycareId? = null,
 ): Database.Result<Employee> =
     createQuery {
             sql(
@@ -280,7 +284,7 @@ fun Database.Transaction.updateEmployeeActive(id: EmployeeId, active: Boolean) =
 fun Database.Transaction.upsertEmployeeDaycareRoles(
     id: EmployeeId,
     daycareIds: List<DaycareId>,
-    role: UserRole
+    role: UserRole,
 ) {
     executeBatch(daycareIds) {
         sql(
@@ -349,13 +353,13 @@ fun getEmployeesPaged(
     tx: Database.Read,
     page: Int,
     pageSize: Int,
-    searchTerm: String = ""
+    searchTerm: String = "",
 ): PagedEmployeesWithDaycareRoles {
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQueryForColumns(
             listOf("employee"),
             listOf("first_name", "last_name"),
-            searchTerm
+            searchTerm,
         )
 
     val params =
@@ -547,7 +551,7 @@ WHERE id = ANY(${bind(employeeIds)})
 
 fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
-    preferredFirstName: String?
+    preferredFirstName: String?,
 ) =
     createUpdate {
             sql(

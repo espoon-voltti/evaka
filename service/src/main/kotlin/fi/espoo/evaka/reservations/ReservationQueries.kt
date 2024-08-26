@@ -33,7 +33,7 @@ import org.jdbi.v3.json.Json
 
 fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
     questionnaireId: HolidayQuestionnaireId,
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
 ) {
     createUpdate {
             sql(
@@ -60,7 +60,7 @@ RETURNING id
 
 fun Database.Transaction.clearReservationsForRangeExceptInHolidayPeriod(
     childId: ChildId,
-    range: DateRange
+    range: DateRange,
 ): Int {
     return createUpdate {
             sql(
@@ -118,7 +118,7 @@ data class ReservationInsert(val childId: ChildId, val date: LocalDate, val rang
 
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
-    reservations: List<ReservationInsert>
+    reservations: List<ReservationInsert>,
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
         createQuery {
@@ -176,13 +176,13 @@ WHERE ${predicate(where.forTable("ar"))}
                 column("date"),
                 column("child_id"),
                 Reservation.of(column("start_time"), column("end_time")),
-                column("staff_created")
+                column("staff_created"),
             )
         }
 
 fun Database.Read.getUnitReservations(
     unitId: DaycareId,
-    date: LocalDate
+    date: LocalDate,
 ): Map<ChildId, List<ReservationResponse>> =
     getReservations(
             Predicate {
@@ -205,7 +205,7 @@ data class ChildReservationDateRow(val childId: ChildId, val date: LocalDate)
 
 fun Database.Read.getReservationDatesForChildrenInRange(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<ChildId, Set<LocalDate>> {
     return createQuery {
             sql(
@@ -224,7 +224,7 @@ fun Database.Read.getReservationDatesForChildrenInRange(
 
 fun Database.Read.getReservationsForChildInRange(
     childId: ChildId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<LocalDate, List<ReservationResponse>> =
     getReservations(
             Predicate {
@@ -242,7 +242,7 @@ AND ar.child_id = ${bind(childId)}
 fun Database.Read.getReservationsCitizen(
     today: LocalDate,
     guardianId: PersonId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ReservationRow> =
     getReservations(
         Predicate {
@@ -270,7 +270,7 @@ data class ReservationChildRow(
 
 fun Database.Read.getReservationChildren(
     guardianId: PersonId,
-    today: LocalDate
+    today: LocalDate,
 ): List<ReservationChildRow> {
     return createQuery {
             sql(
@@ -307,13 +307,13 @@ data class ReservationPlacement(
     val shiftCareOpenOnHolidays: Boolean,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
-    val serviceNeeds: List<ReservationServiceNeed>
+    val serviceNeeds: List<ReservationServiceNeed>,
 )
 
 data class ReservationServiceNeed(
     val range: FiniteDateRange,
     val shiftCareType: ShiftCareType,
-    val daycareHoursPerMonth: Int?
+    val daycareHoursPerMonth: Int?,
 )
 
 data class ReservationPlacementRow(
@@ -334,7 +334,7 @@ data class ReservationPlacementRow(
 
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
-    range: DateRange
+    range: DateRange,
 ): Map<ChildId, List<ReservationPlacement>> =
     createQuery {
             sql(
@@ -385,11 +385,11 @@ WHERE
                                 ReservationServiceNeed(
                                     range = it.serviceNeedRange,
                                     shiftCareType = it.shiftCareType,
-                                    daycareHoursPerMonth = it.daycareHoursPerMonth
+                                    daycareHoursPerMonth = it.daycareHoursPerMonth,
                                 )
                         }
                         .sortedBy { it.range.start }
-                        .toList()
+                        .toList(),
             )
         }
         .groupBy { it.childId }
@@ -400,12 +400,12 @@ data class ReservationBackupPlacement(
     val range: FiniteDateRange,
     val operationTimes: List<TimeRange>,
     val shiftCareOperationTimes: List<TimeRange?>?,
-    val shiftCareOpenOnHolidays: Boolean
+    val shiftCareOpenOnHolidays: Boolean,
 )
 
 fun Database.Read.getReservationBackupPlacements(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<ChildId, List<ReservationBackupPlacement>> {
     return createQuery {
             sql(
@@ -434,7 +434,7 @@ WHERE
 fun Database.Read.getPlannedAbsenceEnabledRanges(
     childIds: Set<PersonId>,
     range: FiniteDateRange,
-    enabledForHourBasedServiceNeeds: Boolean
+    enabledForHourBasedServiceNeeds: Boolean,
 ): Map<ChildId, DateSet> {
     val enabledForHourBasedServiceNeedsPredicate =
         if (enabledForHourBasedServiceNeeds) {
@@ -483,7 +483,7 @@ data class DailyChildReservationInfoRow(
     val absenceType: AbsenceType?,
     val unitId: DaycareId,
     val placementUnitId: DaycareId,
-    val placementType: PlacementType
+    val placementType: PlacementType,
 )
 
 data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
@@ -491,12 +491,12 @@ data class ConfirmedDayAbsenceInfo(val category: AbsenceCategory)
 data class ConfirmedDayReservationInfo(
     val start: LocalTime?,
     val end: LocalTime?,
-    val staffCreated: Boolean
+    val staffCreated: Boolean,
 )
 
 fun Database.Read.getChildReservationsOfUnitForDay(
     day: LocalDate,
-    unitId: DaycareId
+    unitId: DaycareId,
 ): List<DailyChildReservationInfoRow> {
     return createQuery {
             sql(
@@ -549,12 +549,12 @@ data class GroupReservationStatisticsRow(
     val groupId: GroupId,
     val calculatedPresent: BigDecimal,
     val absent: Int,
-    val present: Int
+    val present: Int,
 )
 
 fun Database.Read.getReservationStatisticsForUnit(
     confirmedDays: List<LocalDate>,
-    unitId: DaycareId
+    unitId: DaycareId,
 ): Map<LocalDate, List<GroupReservationStatisticsRow>> {
     return createQuery {
             sql(
@@ -658,7 +658,7 @@ fun Database.Read.getReservationEnabledPlacementRangesByChild(
             column<ChildId>("child_id") to
                 ReservationEnabledPlacementRange(
                     column<HelsinkiDateTime>("created").toLocalDate(),
-                    column("range")
+                    column("range"),
                 )
         }
         .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }

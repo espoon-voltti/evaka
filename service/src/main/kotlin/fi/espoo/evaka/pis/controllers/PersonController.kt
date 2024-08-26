@@ -70,13 +70,13 @@ class PersonController(
     private val accessControl: AccessControl,
     private val fridgeFamilyService: FridgeFamilyService,
     private val pdfGenerator: PdfGenerator,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
 ) {
     @PostMapping
     fun createEmpty(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): PersonIdentityResponseJSON {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -93,7 +93,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ): PersonResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -102,12 +102,12 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.READ,
-                        personId
+                        personId,
                     )
                     tx.getPersonById(personId)?.let {
                         PersonResponse(
                             PersonJSON.from(it),
-                            accessControl.getPermittedActions(tx, user, clock, personId)
+                            accessControl.getPermittedActions(tx, user, clock, personId),
                         )
                     }
                 } ?: throw NotFound("Person $personId not found")
@@ -120,7 +120,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ): PersonId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -129,7 +129,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.DUPLICATE,
-                        personId
+                        personId,
                     )
 
                     if (tx.getPersonDuplicateOf(personId) != null) {
@@ -141,7 +141,7 @@ class PersonController(
                     tx.getChild(personId)?.let { child ->
                         tx.upsertAdditionalInformation(
                             childId = duplicateId,
-                            data = child.additionalInformation
+                            data = child.additionalInformation,
                         )
                     }
 
@@ -150,14 +150,14 @@ class PersonController(
                             CreateFosterParentRelationshipBody(
                                 childId = duplicateId,
                                 parentId = guardianId,
-                                DateRange(clock.today(), null)
+                                DateRange(clock.today(), null),
                             )
                         } +
                             tx.getFosterParents(personId).map { relationship ->
                                 CreateFosterParentRelationshipBody(
                                     childId = duplicateId,
                                     parentId = relationship.parent.id,
-                                    validDuring = relationship.validDuring
+                                    validDuring = relationship.validDuring,
                                 )
                             }
                     parentRelationships.forEach { relationship ->
@@ -169,7 +169,7 @@ class PersonController(
                         if (vardaPersonOids.isNotEmpty()) {
                             tx.updateOphPersonOid(
                                 duplicateId,
-                                vardaPersonOids.sorted().joinToString(",")
+                                vardaPersonOids.sorted().joinToString(","),
                             )
                         }
                     }
@@ -185,7 +185,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ): PersonJSON {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -194,7 +194,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.READ,
-                        personId
+                        personId,
                     )
                     (tx.getPersonById(personId) ?: throw NotFound())
                         .hideNonPermittedPersonData(
@@ -204,7 +204,7 @@ class PersonController(
                                     user,
                                     clock,
                                     Action.Person.READ_INVOICE_ADDRESS,
-                                    personId
+                                    personId,
                                 ),
                             includeOphOid =
                                 accessControl.hasPermissionFor(
@@ -212,8 +212,8 @@ class PersonController(
                                     user,
                                     clock,
                                     Action.Person.READ_OPH_OID,
-                                    personId
-                                )
+                                    personId,
+                                ),
                         )
                         .let { PersonJSON.from(it) }
                 }
@@ -226,7 +226,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ): List<PersonWithChildrenDTO> {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -235,7 +235,7 @@ class PersonController(
                             user,
                             clock,
                             Action.Person.READ_DEPENDANTS,
-                            personId
+                            personId,
                         )
                         personService.getPersonWithChildren(it, user, personId)
                     }
@@ -244,7 +244,7 @@ class PersonController(
             .also {
                 Audit.PersonDependantRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -254,7 +254,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: ChildId
+        @PathVariable personId: ChildId,
     ): List<PersonJSON> {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -263,7 +263,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Child.READ_GUARDIANS,
-                        personId
+                        personId,
                     )
                     personService.getGuardians(it, user, personId)
                 }
@@ -272,7 +272,7 @@ class PersonController(
             .also {
                 Audit.PersonGuardianRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -282,7 +282,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable(value = "personId") personId: ChildId
+        @PathVariable(value = "personId") personId: ChildId,
     ): List<PersonJSON> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -291,7 +291,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Child.READ_BLOCKED_GUARDIANS,
-                        personId
+                        personId,
                     )
                     tx.getBlockedGuardians(personId).mapNotNull { tx.getPersonById(it) }
                 }
@@ -300,7 +300,7 @@ class PersonController(
             .also {
                 Audit.PersonBlockedGuardiansRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -310,7 +310,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchPersonBody
+        @RequestBody body: SearchPersonBody,
     ): List<PersonSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -325,8 +325,8 @@ class PersonController(
                                 it,
                                 user,
                                 clock,
-                                Action.Global.SEARCH_PEOPLE_UNRESTRICTED
-                            )
+                                Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
+                            ),
                     )
                 }
             }
@@ -339,7 +339,7 @@ class PersonController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-        @RequestBody data: PersonPatch
+        @RequestBody data: PersonPatch,
     ): PersonJSON {
         return db.connect { dbc ->
                 val userEditablePersonData =
@@ -349,7 +349,7 @@ class PersonController(
                             user,
                             clock,
                             Action.Person.UPDATE,
-                            personId
+                            personId,
                         )
                         data
                             .let {
@@ -359,7 +359,7 @@ class PersonController(
                                         user,
                                         clock,
                                         Action.Person.UPDATE_PERSONAL_DETAILS,
-                                        personId
+                                        personId,
                                     )
                                 ) {
                                     it
@@ -370,7 +370,7 @@ class PersonController(
                                         dateOfBirth = null,
                                         streetAddress = null,
                                         postalCode = null,
-                                        postOffice = null
+                                        postOffice = null,
                                     )
                                 }
                             }
@@ -381,7 +381,7 @@ class PersonController(
                                         user,
                                         clock,
                                         Action.Person.UPDATE_INVOICE_ADDRESS,
-                                        personId
+                                        personId,
                                     )
                                 ) {
                                     it
@@ -391,7 +391,7 @@ class PersonController(
                                         invoicingStreetAddress = null,
                                         invoicingPostalCode = null,
                                         invoicingPostOffice = null,
-                                        forceManualFeeDecisions = null
+                                        forceManualFeeDecisions = null,
                                     )
                                 }
                             }
@@ -402,7 +402,7 @@ class PersonController(
                                         user,
                                         clock,
                                         Action.Person.UPDATE_OPH_OID,
-                                        personId
+                                        personId,
                                     )
                                 ) {
                                     it
@@ -425,7 +425,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -442,7 +442,7 @@ class PersonController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-        @RequestBody body: AddSsnRequest
+        @RequestBody body: AddSsnRequest,
     ): PersonJSON {
         return db.connect { dbc ->
                 val person =
@@ -452,7 +452,7 @@ class PersonController(
                             user,
                             clock,
                             Action.Person.ADD_SSN,
-                            personId
+                            personId,
                         )
 
                         it.getPersonById(personId)
@@ -465,7 +465,7 @@ class PersonController(
                             user,
                             clock,
                             Action.Person.ENABLE_SSN_ADDING,
-                            personId
+                            personId,
                         )
                     }
                 }
@@ -480,7 +480,7 @@ class PersonController(
                             it,
                             user,
                             personId,
-                            ExternalIdentifier.SSN.getInstance(body.ssn)
+                            ExternalIdentifier.SSN.getInstance(body.ssn),
                         )
                     }
                 )
@@ -494,7 +494,7 @@ class PersonController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-        @RequestBody body: DisableSsnRequest
+        @RequestBody body: DisableSsnRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -504,7 +504,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.ENABLE_SSN_ADDING,
-                        personId
+                        personId,
                     )
                 } else {
                     accessControl.requirePermissionFor(
@@ -512,7 +512,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.DISABLE_SSN_ADDING,
-                        personId
+                        personId,
                     )
                 }
 
@@ -527,7 +527,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: GetOrCreatePersonBySsnRequest
+        @RequestBody body: GetOrCreatePersonBySsnRequest,
     ): PersonJSON {
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
@@ -537,14 +537,14 @@ class PersonController(
                         it,
                         user,
                         clock,
-                        Action.Global.CREATE_PERSON_FROM_VTJ
+                        Action.Global.CREATE_PERSON_FROM_VTJ,
                     )
 
                     personService.getOrCreatePerson(
                         it,
                         user,
                         ExternalIdentifier.SSN.getInstance(body.ssn),
-                        body.readonly
+                        body.readonly,
                     )
                 } ?: throw NotFound()
             }
@@ -557,7 +557,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: MergeRequest
+        @RequestBody body: MergeRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -566,13 +566,13 @@ class PersonController(
                     user,
                     clock,
                     Action.Person.MERGE,
-                    setOf(body.master, body.duplicate)
+                    setOf(body.master, body.duplicate),
                 )
                 mergeService.mergePeople(
                     tx,
                     clock,
                     master = body.master,
-                    duplicate = body.duplicate
+                    duplicate = body.duplicate,
                 )
             }
         }
@@ -584,7 +584,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: CreatePersonBody
+        @RequestBody body: CreatePersonBody,
     ): PersonId {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -600,7 +600,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ) {
         return db.connect { dbc ->
                 dbc.read {
@@ -609,7 +609,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.UPDATE_FROM_VTJ,
-                        personId
+                        personId,
                     )
                 }
                 fridgeFamilyService.updateGuardianOrChildFromVtj(dbc, user, clock, personId)
@@ -625,7 +625,7 @@ class PersonController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: EvakaRightsRequest
+        @RequestBody body: EvakaRightsRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -634,7 +634,7 @@ class PersonController(
                     user,
                     clock,
                     Action.Person.UPDATE_EVAKA_RIGHTS,
-                    childId
+                    childId,
                 )
                 if (body.denied) {
                     tx.blockGuardian(childId, body.guardianId)
@@ -647,7 +647,7 @@ class PersonController(
         Audit.PersonUpdateEvakaRights.log(
             targetId = AuditId(childId),
             objectId = AuditId(body.guardianId),
-            meta = mapOf("denied" to body.denied)
+            meta = mapOf("denied" to body.denied),
         )
     }
 
@@ -656,7 +656,7 @@ class PersonController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable guardianId: PersonId
+        @PathVariable guardianId: PersonId,
     ): ResponseEntity<*> =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -665,7 +665,7 @@ class PersonController(
                         user,
                         clock,
                         Action.Person.DOWNLOAD_ADDRESS_PAGE,
-                        guardianId
+                        guardianId,
                     )
                     val personData =
                         tx.getPersonById(guardianId) ?: throw NotFound("Person not found")
@@ -674,7 +674,7 @@ class PersonController(
                             pdfGenerator,
                             clock.today(),
                             evakaEnv.personAddressEnvelopeWindowPosition,
-                            personData
+                            personData,
                         )
                     val resource = ByteArrayResource(doc.bytes)
                     ResponseEntity.ok()
@@ -682,7 +682,7 @@ class PersonController(
                         .contentType(MediaType.APPLICATION_PDF)
                         .header(
                             HttpHeaders.CONTENT_DISPOSITION,
-                            ContentDisposition.attachment().filename(doc.name).build().toString()
+                            ContentDisposition.attachment().filename(doc.name).build().toString(),
                         )
                         .body(resource)
                 }
@@ -702,7 +702,7 @@ class PersonController(
             fun from(person: PersonDTO): PersonIdentityResponseJSON =
                 PersonIdentityResponseJSON(
                     id = person.id,
-                    socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn
+                    socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn,
                 )
         }
     }
@@ -718,7 +718,7 @@ data class CreatePersonBody(
     val postalCode: String,
     val postOffice: String,
     val phone: String,
-    val email: String?
+    val email: String?,
 )
 
 data class GetOrCreatePersonBySsnRequest(val ssn: String, val readonly: Boolean = false)

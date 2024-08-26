@@ -40,7 +40,7 @@ data class FixedPeriodQuestionnaire(
 
     // fixed period specific
     val periodOptions: List<FiniteDateRange>,
-    @Json val periodOptionLabel: Translatable
+    @Json val periodOptionLabel: Translatable,
 )
 
 data class FixedPeriodQuestionnaireBody(
@@ -52,11 +52,11 @@ data class FixedPeriodQuestionnaireBody(
     @Json val descriptionLink: Translatable,
     val conditions: QuestionnaireConditions,
     val periodOptions: List<FiniteDateRange>,
-    @Json val periodOptionLabel: Translatable
+    @Json val periodOptionLabel: Translatable,
 )
 
 data class HolidayQuestionnaireAnswer(
     val questionnaireId: HolidayQuestionnaireId,
     val childId: ChildId,
-    val fixedPeriod: FiniteDateRange?
+    val fixedPeriod: FiniteDateRange?,
 )

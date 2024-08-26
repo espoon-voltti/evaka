@@ -63,7 +63,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     protected fun createTestEmployee(
         globalRoles: Set<UserRole>,
-        unitRoles: Map<DaycareId, UserRole> = emptyMap()
+        unitRoles: Map<DaycareId, UserRole> = emptyMap(),
     ) =
         db.transaction { tx ->
             assert(globalRoles.all { it.isGlobalRole() })

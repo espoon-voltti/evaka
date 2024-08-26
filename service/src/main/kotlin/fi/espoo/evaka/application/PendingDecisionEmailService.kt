@@ -30,7 +30,7 @@ class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::doSendPendingDecisionsEmail)
@@ -39,7 +39,7 @@ class PendingDecisionEmailService(
     fun doSendPendingDecisionsEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendPendingDecisionEmail
+        msg: AsyncJob.SendPendingDecisionEmail,
     ) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
         sendPendingDecisionEmail(db, clock, msg)
@@ -99,12 +99,12 @@ GROUP BY application.guardian_id
                                                 AsyncJob.SendPendingDecisionEmail(
                                                     guardianId = pendingDecision.guardianId,
                                                     language = guardian.language,
-                                                    decisionIds = pendingDecision.decisionIds
+                                                    decisionIds = pendingDecision.decisionIds,
                                                 )
                                             ),
                                         runAt = clock.now(),
                                         retryCount = 3,
-                                        retryInterval = Duration.ofHours(1)
+                                        retryInterval = Duration.ofHours(1),
                                     )
                                     count + 1
                                 }
@@ -124,7 +124,7 @@ GROUP BY application.guardian_id
     fun sendPendingDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        pendingDecision: AsyncJob.SendPendingDecisionEmail
+        pendingDecision: AsyncJob.SendPendingDecisionEmail,
     ) {
         logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
         val lang = getLanguage(pendingDecision.language)

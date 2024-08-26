@@ -72,7 +72,7 @@ $unsubscribeSv
 <p>The person who submitted the application can accept or reject an unanswered decision by logging in to ${frontPageLink(Language.en)} or by sending the completed form on the last page of the decision to the address specified on the page.</p>
 <p>You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -92,7 +92,7 @@ $unsubscribeEn
 <p>Kerhoihin voi hakea myös hakuajan jälkeen koko toimintavuoden ajan mahdollisesti vapautuville paikoille.</p>
 <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä ${frontPageLink(Language.fi)}.</p>
 <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
-"""
+""",
         )
 
     override fun daycareApplicationReceived(language: Language): EmailContent =
@@ -138,12 +138,12 @@ $unsubscribeEn
 <p>When applying for a <strong>transfer</strong> to a different <strong>municipal early childhood education unit</strong>, your application will not have a specific application period. Your application will be valid for one (1) year from the date on which it was received. If your child’s current place is terminated, your transfer application will be deleted from the system.</p>
 <p>How to apply for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education">espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>.</p>
-"""
+""",
         )
 
     override fun preschoolApplicationReceived(
         language: Language,
-        withinApplicationPeriod: Boolean
+        withinApplicationPeriod: Boolean,
     ): EmailContent =
         if (withinApplicationPeriod) {
             EmailContent.fromHtml(
@@ -181,7 +181,7 @@ $unsubscribeEn
 <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
 <p>Information about applying for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher">Service voucher</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-"""
+""",
             )
         } else {
             EmailContent.fromHtml(
@@ -225,13 +225,13 @@ $unsubscribeEn
 <p>When applying for a transfer to a different pre-primary education unit by submitting a new application; the new pre-primary education decision will be made when the situation with the applicants and the available places so permit. If your child’s current pre-primary education place is terminated, your transfer application will be deleted from the system.</p>
 <p>Information about applying for a service voucher: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher">Service Voucher</a></p>
 <p>Information about applying to private early childhood education units: <a href="https://espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-"""
+""",
             )
         }
 
     override fun missingReservationsNotification(
         language: Language,
-        checkedRange: FiniteDateRange
+        checkedRange: FiniteDateRange,
     ): EmailContent {
         val start =
             checkedRange.start.format(
@@ -251,7 +251,7 @@ $unsubscribeSv
 <hr>
 <p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible: ${calendarLink(Language.en)}</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -269,7 +269,7 @@ $unsubscribeSv
 <hr>
 <p>Two days left to submit a holiday notification. If you have not submitted a notification for each day, please submit them through the eVaka calendar as soon as possible: ${calendarLink(Language.en)}</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -292,7 +292,7 @@ $unsubscribeSv
 <p>A decision has been made regarding your child.</p>
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
-"""
+""",
         )
 
     override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
@@ -304,7 +304,7 @@ $unsubscribeEn
     override fun messageNotification(
         language: Language,
         thread: MessageThreadStub,
-        isSenderMunicipalAccount: Boolean
+        isSenderMunicipalAccount: Boolean,
     ): EmailContent {
         val (typeFi, typeSv, typeEn) =
             when (thread.type) {
@@ -313,7 +313,7 @@ $unsubscribeEn
                         Triple(
                             "kiireellinen viesti",
                             "brådskande personligt meddelande",
-                            "urgent message"
+                            "urgent message",
                         )
                     else Triple("viesti", "personligt meddelande", "message")
                 MessageType.BULLETIN ->
@@ -321,7 +321,7 @@ $unsubscribeEn
                         Triple(
                             "kiireellinen tiedote",
                             "brådskande allmänt meddelande",
-                            "urgent bulletin"
+                            "urgent bulletin",
                         )
                     else Triple("tiedote", "allmänt meddelande", "bulletin")
             }
@@ -343,7 +343,7 @@ $unsubscribeSv
 <p>You have received a new $typeEn in eVaka${if (showSubjectInBody) " with title \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -363,7 +363,7 @@ $unsubscribeSv
 <p>You have received a new/updated eVaka document. Read the document here: ${childLink(Language.en, childId)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -373,7 +373,7 @@ $unsubscribeEn
 
     override fun pedagogicalDocumentNotification(
         language: Language,
-        childId: ChildId
+        childId: ChildId,
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
@@ -391,13 +391,13 @@ $unsubscribeSv
 <p>You have received a new eVaka pedagogical document. Read the document here: ${childLink(Language.en, childId)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
     override fun incomeNotification(
         notificationType: IncomeNotificationType,
-        language: Language
+        language: Language,
     ): EmailContent {
         return when (notificationType) {
             IncomeNotificationType.INITIAL_EMAIL -> outdatedIncomeNotificationInitial()
@@ -442,7 +442,7 @@ $unsubscribeSv
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -481,7 +481,7 @@ $unsubscribeSv
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -508,7 +508,7 @@ $unsubscribeSv
 <p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -539,13 +539,13 @@ $unsubscribeSv
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 
     override fun calendarEventNotification(
         language: Language,
-        events: List<CalendarEventNotificationData>
+        events: List<CalendarEventNotificationData>,
     ): EmailContent {
         val format =
             DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale.of("fi", "FI"))
@@ -578,7 +578,7 @@ $unsubscribeSv
 $eventsHtml
 <p>See more in the calendar: ${calendarLink(Language.en)}</p>
 $unsubscribeEn
-"""
+""",
         )
     }
 
@@ -607,13 +607,13 @@ $unsubscribeSv
 <p>The decision can be viewed on eVaka at ${frontPageLink(Language.en)}.</p>
 $unsubscribeEn
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 
     override fun discussionSurveyReservationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyReservationNotificationData
+        notificationDetails: DiscussionSurveyReservationNotificationData,
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
@@ -630,13 +630,13 @@ $unsubscribeSv
 $unsubscribeEn
 <hr>
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 
     override fun discussionSurveyReservationCancellationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyReservationNotificationData
+        notificationDetails: DiscussionSurveyReservationNotificationData,
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
@@ -653,7 +653,7 @@ $unsubscribeSv
 $unsubscribeEn
 <hr>
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 }

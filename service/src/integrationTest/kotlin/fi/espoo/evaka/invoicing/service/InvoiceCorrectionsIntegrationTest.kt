@@ -45,7 +45,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         InvoiceService(
             InvoiceIntegrationClient.MockClient(defaultJsonMapperBuilder().build()),
             TestInvoiceProductProvider(),
-            featureConfig
+            featureConfig,
         )
     private val clock = RealEvakaClock()
 
@@ -89,12 +89,12 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                     it,
                     AuthenticatedUser.Employee(
                         testDecisionMaker_1.id,
-                        setOf(UserRole.FINANCE_ADMIN)
+                        setOf(UserRole.FINANCE_ADMIN),
                     ),
                     clock,
                     invoices.map { it.id },
                     null,
-                    null
+                    null,
                 )
                 invoices
             }
@@ -113,19 +113,19 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                 val invoices =
                     it.applyCorrections(
                         listOf(createTestInvoice(100_00, month.plus(1))),
-                        month.plus(1)
+                        month.plus(1),
                     )
                 it.insertInvoices(invoices)
                 invoiceService.sendInvoices(
                     it,
                     AuthenticatedUser.Employee(
                         testDecisionMaker_1.id,
-                        setOf(UserRole.FINANCE_ADMIN)
+                        setOf(UserRole.FINANCE_ADMIN),
                     ),
                     clock,
                     invoices.map { it.id },
                     null,
-                    null
+                    null,
                 )
                 invoices
             }
@@ -150,12 +150,12 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                     it,
                     AuthenticatedUser.Employee(
                         testDecisionMaker_1.id,
-                        setOf(UserRole.FINANCE_ADMIN)
+                        setOf(UserRole.FINANCE_ADMIN),
                     ),
                     clock,
                     invoices.map { it.id },
                     null,
-                    null
+                    null,
                 )
                 invoices
             }
@@ -174,19 +174,19 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                 val invoices =
                     it.applyCorrections(
                         listOf(createTestInvoice(100_00, month.plus(1))),
-                        month.plus(1)
+                        month.plus(1),
                     )
                 it.insertInvoices(invoices)
                 invoiceService.sendInvoices(
                     it,
                     AuthenticatedUser.Employee(
                         testDecisionMaker_1.id,
-                        setOf(UserRole.FINANCE_ADMIN)
+                        setOf(UserRole.FINANCE_ADMIN),
                     ),
                     clock,
                     invoices.map { it.id },
                     null,
-                    null
+                    null,
                 )
                 invoices
             }
@@ -481,7 +481,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                 clock,
                 invoices.map { it.id },
                 null,
-                null
+                null,
             )
         }
 
@@ -510,7 +510,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                 clock,
                 invoices.map { it.id },
                 null,
-                null
+                null,
             )
         }
 
@@ -554,7 +554,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
     private fun Database.Read.applyCorrections(
         invoices: List<Invoice>,
-        month: Month
+        month: Month,
     ): List<Invoice> {
         val period = FiniteDateRange.ofMonth(2020, month)
         return generator
@@ -575,9 +575,9 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         amount = 1,
-                        unitPrice = total
+                        unitPrice = total,
                     )
-                )
+                ),
         )
     }
 
@@ -585,7 +585,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
         amount: Int,
         unitPrice: Int,
         month: Month,
-        year: Int = 2020
+        year: Int = 2020,
     ): InvoiceCorrectionId {
         val period = FiniteDateRange.ofMonth(year, month)
         return db.transaction {
@@ -599,7 +599,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
                     unitId = testDaycare.id,
                     product = productProvider.mapToProduct(PlacementType.DAYCARE),
                     description = "",
-                    note = ""
+                    note = "",
                 )
             )
         }

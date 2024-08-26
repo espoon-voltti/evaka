@@ -94,7 +94,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id, testChild_3.id),
-            period
+            period,
         )
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
@@ -141,7 +141,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         childId: ChildId,
         period: DateRange,
         type: PlacementType,
-        daycareId: DaycareId
+        daycareId: DaycareId,
     ): PlacementId {
         return db.transaction { tx ->
             tx.insert(
@@ -150,7 +150,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                     childId = childId,
                     unitId = daycareId,
                     startDate = period.start,
-                    endDate = period.end!!
+                    endDate = period.end!!,
                 )
             )
         }
@@ -159,7 +159,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
         childIds: List<ChildId>,
-        period: DateRange
+        period: DateRange,
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
@@ -168,7 +168,7 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
                         childId = childId,
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
-                        endDate = period.end!!
+                        endDate = period.end!!,
                     )
                 )
             }

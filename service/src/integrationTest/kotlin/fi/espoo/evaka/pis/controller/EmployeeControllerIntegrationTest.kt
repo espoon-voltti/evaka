@@ -104,14 +104,14 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(daycare3)
             tx.insert(
                 employee,
-                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF)
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF, daycare2.id to UserRole.STAFF),
             )
         }
 
         upsertEmployeeDaycareRoles(
             employee.id,
             listOf(daycare2.id, daycare3.id),
-            UserRole.SPECIAL_EDUCATION_TEACHER
+            UserRole.SPECIAL_EDUCATION_TEACHER,
         )
 
         assertEquals(
@@ -120,7 +120,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 DaycareRole(daycare2.id, daycare2.name, UserRole.SPECIAL_EDUCATION_TEACHER),
                 DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER),
             ),
-            getEmployeeDetails(employee.id).daycareRoles.toSet()
+            getEmployeeDetails(employee.id).daycareRoles.toSet(),
         )
         db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
     }
@@ -145,8 +145,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 groupAcl =
                     mapOf(
                         daycare1.id to listOf(daycare1Group.id),
-                        daycare2.id to listOf(daycare2Group.id)
-                    )
+                        daycare2.id to listOf(daycare2Group.id),
+                    ),
             )
             tx.upsertEmployeeMessageAccount(employee.id)
         }
@@ -156,13 +156,13 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val updated = getEmployeeDetails(employee.id)
         assertEquals(
             listOf(DaycareRole(daycare2.id, daycare2.name, UserRole.STAFF)),
-            updated.daycareRoles
+            updated.daycareRoles,
         )
         assertEquals(
             listOf(
                 DaycareGroupRole(daycare2.id, daycare2.name, daycare2Group.id, daycare2Group.name)
             ),
-            updated.daycareGroupRoles
+            updated.daycareGroupRoles,
         )
         db.read { assertTrue(it.hasActiveMessagingAccount(employee.id)) }
     }
@@ -187,8 +187,8 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 groupAcl =
                     mapOf(
                         daycare1.id to listOf(daycare1Group.id),
-                        daycare2.id to listOf(daycare2Group.id)
-                    )
+                        daycare2.id to listOf(daycare2Group.id),
+                    ),
             )
             tx.upsertEmployeeMessageAccount(employee.id)
         }
@@ -217,7 +217,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             adminUser,
             clock,
             id,
-            EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role)
+            EmployeeController.UpsertEmployeeDaycareRolesRequest(daycareIds, role),
         )
 
     fun updateEmployeeGlobalRoles(id: EmployeeId, roles: List<UserRole>) =
@@ -240,7 +240,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             externalId = employee.externalId,
             employeeNumber = null,
             temporaryInUnitId = null,
-            active = true
+            active = true,
         )
 
     val employee1 =
@@ -255,7 +255,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             updated = HelsinkiDateTime.now(),
             id = EmployeeId(UUID.randomUUID()),
             temporaryInUnitId = null,
-            active = true
+            active = true,
         )
 
     val employee2 =
@@ -270,7 +270,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             updated = HelsinkiDateTime.now(),
             id = EmployeeId(UUID.randomUUID()),
             temporaryInUnitId = null,
-            active = true
+            active = true,
         )
 
     private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =

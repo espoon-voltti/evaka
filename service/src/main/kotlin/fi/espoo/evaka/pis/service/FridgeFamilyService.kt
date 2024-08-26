@@ -24,14 +24,14 @@ private val logger = KotlinLogging.logger {}
 @Service
 class FridgeFamilyService(
     private val personService: PersonService,
-    private val parentshipService: ParentshipService
+    private val parentshipService: ParentshipService,
 ) {
     fun doVTJRefresh(db: Database.Connection, msg: AsyncJob.VTJRefresh, clock: EvakaClock) {
         updateGuardianAndFamilyFromVtj(
             db,
             AuthenticatedUser.SystemInternalUser,
             clock,
-            msg.personId
+            msg.personId,
         )
     }
 
@@ -39,7 +39,7 @@ class FridgeFamilyService(
         db: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        personId: PersonId
+        personId: PersonId,
     ) {
         val person = db.read { tx -> tx.getPersonById(personId) } ?: return
         val age = Period.between(person.dateOfBirth, clock.today()).years
@@ -64,7 +64,7 @@ class FridgeFamilyService(
         db: Database.Connection,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        personId: PersonId
+        personId: PersonId,
     ) {
         logger.info("Refreshing $personId from VTJ")
         val targetPerson =
@@ -73,7 +73,7 @@ class FridgeFamilyService(
                     it,
                     user = user,
                     id = personId,
-                    forceRefresh = true
+                    forceRefresh = true,
                 )
             }
         if (targetPerson != null) {
@@ -88,7 +88,7 @@ class FridgeFamilyService(
                                 it,
                                 user = user,
                                 id = partnerId,
-                                forceRefresh = true
+                                forceRefresh = true,
                             )
                         }
                     }
@@ -132,7 +132,7 @@ class FridgeFamilyService(
                         if (
                             childShouldBeAddedToFamilyStartingFromBirthday(
                                 clock.today(),
-                                child.dateOfBirth
+                                child.dateOfBirth,
                             )
                         ) {
                             child.dateOfBirth
@@ -147,7 +147,7 @@ class FridgeFamilyService(
                             headOfChildId = head.id,
                             startDate = startDate,
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1),
-                            Creator.DVV
+                            Creator.DVV,
                         )
                     }
                     logger.info("Child ${child.id} added to head of child ${head.id}")
@@ -175,7 +175,7 @@ WHERE p1.person_id = ${bind(personId)} AND daterange(p1.start_date, p1.end_date,
     private fun getCurrentFridgeChildren(
         tx: Database.Read,
         clock: EvakaClock,
-        personId: PersonId
+        personId: PersonId,
     ): Set<ChildId> {
         return tx.createQuery {
                 sql(
@@ -190,7 +190,7 @@ WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]'
 
     private fun livesInSameAddress(
         address1: PersonAddressDTO,
-        address2: PersonAddressDTO
+        address2: PersonAddressDTO,
     ): Boolean {
         val sameResidencyCode = address1.residenceCode == address2.residenceCode
         val sameStreetAddress = address1.streetAddress == address2.streetAddress
@@ -200,6 +200,6 @@ WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]'
     // 3 months is arbitrary
     private fun childShouldBeAddedToFamilyStartingFromBirthday(
         today: LocalDate,
-        birthday: LocalDate
+        birthday: LocalDate,
     ) = today <= birthday.plusMonths(3)
 }

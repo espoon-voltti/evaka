@@ -69,7 +69,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 testDaycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
-                preschoolDaycarePeriod = null
+                preschoolDaycarePeriod = null,
             )
 
         assertEquals(OccupancyResponseSpeculated(null, null, null, null), occupancies)
@@ -84,7 +84,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     groupId = groupId,
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -95,7 +95,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 testDaycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
-                preschoolDaycarePeriod = null
+                preschoolDaycarePeriod = null,
             )
 
         assertEquals(
@@ -106,7 +106,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 0,
                         caretakers = 1.0,
-                        percentage = 0.0
+                        percentage = 0.0,
                     ),
                 max6Months =
                     OccupancyValues(
@@ -114,7 +114,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 0,
                         caretakers = 1.0,
-                        percentage = 0.0
+                        percentage = 0.0,
                     ),
                 max3MonthsSpeculated =
                     OccupancyValues(
@@ -122,7 +122,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 1,
                         caretakers = 1.0,
-                        percentage = 25.0
+                        percentage = 25.0,
                     ),
                 max6MonthsSpeculated =
                     OccupancyValues(
@@ -130,10 +130,10 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 1,
                         caretakers = 1.0,
-                        percentage = 25.0
-                    )
+                        percentage = 25.0,
+                    ),
             ),
-            occupancies
+            occupancies,
         )
     }
 
@@ -146,7 +146,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     groupId = groupId,
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -156,7 +156,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -166,7 +166,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusMonths(4),
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -179,7 +179,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 testDaycare.id,
                 applicationId,
                 period = FiniteDateRange(startDate, endDate),
-                preschoolDaycarePeriod = null
+                preschoolDaycarePeriod = null,
             )
 
         assertEquals(
@@ -190,7 +190,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 1,
                         caretakers = 1.0,
-                        percentage = 25.0
+                        percentage = 25.0,
                     ),
                 max6Months =
                     OccupancyValues(
@@ -198,7 +198,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
+                        percentage = 39.3,
                     ),
                 max3MonthsSpeculated =
                     OccupancyValues(
@@ -206,7 +206,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 50.0
+                        percentage = 50.0,
                     ),
                 max6MonthsSpeculated =
                     OccupancyValues(
@@ -214,10 +214,10 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 3,
                         caretakers = 1.0,
-                        percentage = 64.3
-                    )
+                        percentage = 64.3,
+                    ),
             ),
-            occupancies
+            occupancies,
         )
     }
 
@@ -230,7 +230,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     groupId = groupId,
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -240,7 +240,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -250,7 +250,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -260,7 +260,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             createApplication(
                 testChild_2.id,
                 type = ApplicationType.PRESCHOOL,
-                connectedDaycare = false
+                connectedDaycare = false,
             )
 
         val occupancies =
@@ -268,7 +268,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 testDaycare.id,
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
-                preschoolDaycarePeriod = null
+                preschoolDaycarePeriod = null,
             )
 
         assertEquals(
@@ -279,7 +279,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 1,
                         caretakers = 1.0,
-                        percentage = 25.0
+                        percentage = 25.0,
                     ),
                 max6Months =
                     OccupancyValues(
@@ -287,7 +287,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
+                        percentage = 39.3,
                     ),
                 max3MonthsSpeculated =
                     OccupancyValues(
@@ -295,7 +295,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.5,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 32.1
+                        percentage = 32.1,
                     ),
                 max6MonthsSpeculated =
                     OccupancyValues(
@@ -303,10 +303,10 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
-                    )
+                        percentage = 39.3,
+                    ),
             ),
-            occupancies
+            occupancies,
         )
     }
 
@@ -319,7 +319,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     groupId = groupId,
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -329,7 +329,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -339,7 +339,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -349,7 +349,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             createApplication(
                 testChild_2.id,
                 type = ApplicationType.PRESCHOOL,
-                connectedDaycare = true
+                connectedDaycare = true,
             )
 
         val occupancies =
@@ -358,7 +358,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
                 preschoolDaycarePeriod =
-                    FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 7, 31))
+                    FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 7, 31)),
             )
 
         assertEquals(
@@ -369,7 +369,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.0,
                         headcount = 1,
                         caretakers = 1.0,
-                        percentage = 25.0
+                        percentage = 25.0,
                     ),
                 max6Months =
                     OccupancyValues(
@@ -377,7 +377,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
+                        percentage = 39.3,
                     ),
                 // preschool only
                 max3MonthsSpeculated =
@@ -386,7 +386,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 0.5,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 32.1
+                        percentage = 32.1,
                     ),
                 // preschool+daycare
                 max6MonthsSpeculated =
@@ -395,10 +395,10 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 2.0,
                         headcount = 3,
                         caretakers = 1.0,
-                        percentage = 53.6
-                    )
+                        percentage = 53.6,
+                    ),
             ),
-            occupancies
+            occupancies,
         )
     }
 
@@ -411,7 +411,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     groupId = groupId,
                     amount = 1.0.toBigDecimal(),
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -421,7 +421,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -431,7 +431,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2021, 7, 1),
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -441,7 +441,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -450,7 +450,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             createApplication(
                 testChild_2.id,
                 type = ApplicationType.PRESCHOOL,
-                connectedDaycare = true
+                connectedDaycare = true,
             )
 
         val occupancies =
@@ -459,7 +459,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 applicationId,
                 period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
                 preschoolDaycarePeriod =
-                    FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 7, 31))
+                    FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 7, 31)),
             )
 
         assertEquals(
@@ -470,7 +470,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
+                        percentage = 39.3,
                     ),
                 max6Months =
                     OccupancyValues(
@@ -478,7 +478,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 2.0,
                         headcount = 3,
                         caretakers = 1.0,
-                        percentage = 53.6
+                        percentage = 53.6,
                     ),
                 // Same occupancy values as above, because the child already had a placement in this
                 // unit
@@ -488,7 +488,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 1.0,
                         headcount = 2,
                         caretakers = 1.0,
-                        percentage = 39.3
+                        percentage = 39.3,
                     ),
                 max6MonthsSpeculated =
                     OccupancyValues(
@@ -496,17 +496,17 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         sumOver3y = 2.0,
                         headcount = 3,
                         caretakers = 1.0,
-                        percentage = 53.6
-                    )
+                        percentage = 53.6,
+                    ),
             ),
-            occupancies
+            occupancies,
         )
     }
 
     private fun createApplication(
         childId: PersonId,
         type: ApplicationType = ApplicationType.DAYCARE,
-        connectedDaycare: Boolean = false
+        connectedDaycare: Boolean = false,
     ): ApplicationId =
         db.transaction { tx ->
             tx.createParentship(
@@ -514,7 +514,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 headOfChildId = testAdult_1.id,
                 startDate = startDate,
                 endDate = endDate,
-                creator = Creator.DVV
+                creator = Creator.DVV,
             )
             tx.insertTestApplication(
                 status = ApplicationStatus.WAITING_PLACEMENT,
@@ -523,7 +523,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 type = type,
                 document =
                     DaycareFormV0.fromApplication2(validDaycareApplication)
-                        .copy(type = type, connectedDaycare = connectedDaycare)
+                        .copy(type = type, connectedDaycare = connectedDaycare),
             )
         }
 
@@ -531,7 +531,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         unitId: DaycareId,
         applicationId: ApplicationId,
         period: FiniteDateRange,
-        preschoolDaycarePeriod: FiniteDateRange?
+        preschoolDaycarePeriod: FiniteDateRange?,
     ): OccupancyResponseSpeculated {
         val user =
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))

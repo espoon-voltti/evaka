@@ -23,5 +23,5 @@ data class ChildSensitiveInformation(
     val medication: String,
     val additionalInfo: String,
     val contacts: List<ContactInfo>,
-    val backupPickups: List<ContactInfo>
+    val backupPickups: List<ContactInfo>,
 )

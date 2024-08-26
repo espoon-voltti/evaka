@@ -28,18 +28,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/pedagogical-document", // deprecated
-    "/employee/pedagogical-document"
+    "/employee/pedagogical-document",
 )
 class PedagogicalDocumentController(
     private val accessControl: AccessControl,
-    private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService
+    private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService,
 ) {
     @PostMapping
     fun createPedagogicalDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PedagogicalDocumentPostBody
+        @RequestBody body: PedagogicalDocumentPostBody,
     ): PedagogicalDocument {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -48,12 +48,12 @@ class PedagogicalDocumentController(
                         user,
                         clock,
                         Action.Child.CREATE_PEDAGOGICAL_DOCUMENT,
-                        body.childId
+                        body.childId,
                     )
                     tx.createDocument(user, body).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
-                            it.id
+                            it.id,
                         )
                     }
                 }
@@ -61,7 +61,7 @@ class PedagogicalDocumentController(
             .also {
                 Audit.PedagogicalDocumentCreate.log(
                     targetId = AuditId(body.childId),
-                    objectId = AuditId(it.id)
+                    objectId = AuditId(it.id),
                 )
             }
     }
@@ -72,7 +72,7 @@ class PedagogicalDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
-        @RequestBody body: PedagogicalDocumentPostBody
+        @RequestBody body: PedagogicalDocumentPostBody,
     ): PedagogicalDocument {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -81,12 +81,12 @@ class PedagogicalDocumentController(
                         user,
                         clock,
                         Action.PedagogicalDocument.UPDATE,
-                        documentId
+                        documentId,
                     )
                     tx.updateDocument(user, body, documentId).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
-                            it.id
+                            it.id,
                         )
                     }
                 }
@@ -99,7 +99,7 @@ class PedagogicalDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<PedagogicalDocument> {
         return db.connect { dbc ->
                 dbc.read {
@@ -108,7 +108,7 @@ class PedagogicalDocumentController(
                         user,
                         clock,
                         Action.Child.READ_PEDAGOGICAL_DOCUMENTS,
-                        childId
+                        childId,
                     )
                     it.findPedagogicalDocumentsByChild(childId)
                 }
@@ -116,7 +116,7 @@ class PedagogicalDocumentController(
             .also {
                 Audit.PedagogicalDocumentRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -126,7 +126,7 @@ class PedagogicalDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: PedagogicalDocumentId
+        @PathVariable documentId: PedagogicalDocumentId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -135,7 +135,7 @@ class PedagogicalDocumentController(
                     user,
                     clock,
                     Action.PedagogicalDocument.DELETE,
-                    documentId
+                    documentId,
                 )
                 it.deleteDocument(documentId)
             }
@@ -147,7 +147,7 @@ class PedagogicalDocumentController(
 data class Attachment(
     @PropagateNull val id: AttachmentId,
     val name: String,
-    val contentType: String
+    val contentType: String,
 )
 
 data class PedagogicalDocument(
@@ -156,14 +156,14 @@ data class PedagogicalDocument(
     val description: String,
     val attachments: List<Attachment> = emptyList(),
     val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime
+    val updated: HelsinkiDateTime,
 )
 
 data class PedagogicalDocumentPostBody(val childId: ChildId, val description: String)
 
 private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
-    body: PedagogicalDocumentPostBody
+    body: PedagogicalDocumentPostBody,
 ): PedagogicalDocument {
     return createUpdate {
             sql(
@@ -181,7 +181,7 @@ RETURNING *
 private fun Database.Transaction.updateDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody,
-    documentId: PedagogicalDocumentId
+    documentId: PedagogicalDocumentId,
 ): PedagogicalDocument {
     return createUpdate {
             sql(

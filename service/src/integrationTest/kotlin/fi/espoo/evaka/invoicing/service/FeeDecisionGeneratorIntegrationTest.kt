@@ -171,7 +171,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -188,7 +188,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -206,7 +206,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -300,7 +300,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     siblingDiscount2 = BigDecimal("0.4"),
                     siblingFee2 = 8000,
                     siblingDiscount2Plus = BigDecimal("0.4"),
-                    siblingFee2Plus = 8000
+                    siblingFee2Plus = 8000,
                 )
             )
         }
@@ -311,10 +311,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testChild_1.id,
                 placementPeriod.asDateRange(),
                 PRESCHOOL_CLUB,
-                testDaycare.id
+                testDaycare.id,
             ),
             placementPeriod,
-            snPreschoolClub45.id
+            snPreschoolClub45.id,
         )
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod.asDateRange())
 
@@ -338,7 +338,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     siblingDiscount2 = BigDecimal("0.4"),
                     siblingFee2 = 8000,
                     siblingDiscount2Plus = BigDecimal("0.4"),
-                    siblingFee2Plus = 8000
+                    siblingFee2Plus = 8000,
                 )
             )
         }
@@ -350,25 +350,25 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testChild_1.id,
                 placementPeriod.asDateRange(),
                 PRESCHOOL_CLUB,
-                testDaycare.id
+                testDaycare.id,
             ),
             placementPeriod,
-            serviceNeed.id
+            serviceNeed.id,
         )
         insertServiceNeed(
             insertPlacement(
                 testChild_2.id,
                 placementPeriod.asDateRange(),
                 PRESCHOOL_CLUB,
-                testDaycare.id
+                testDaycare.id,
             ),
             placementPeriod,
-            serviceNeed.id
+            serviceNeed.id,
         )
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod.asDateRange()
+            placementPeriod.asDateRange(),
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -451,7 +451,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.id,
             placementPeriod,
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            testDaycare.id
+            testDaycare.id,
         )
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
@@ -476,7 +476,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, original.size)
         assertEquals(
             snDefaultDaycare.toFeeDecisionServiceNeed(),
-            original[0].children[0].serviceNeed
+            original[0].children[0].serviceNeed,
         )
 
         val serviceNeed = snDaycareFullDayPartWeek25
@@ -500,7 +500,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(1, original.size)
         assertEquals(
             snDefaultDaycare.toFeeDecisionServiceNeed(),
-            original[0].children[0].serviceNeed
+            original[0].children[0].serviceNeed,
         )
 
         val serviceNeedPeriod =
@@ -514,11 +514,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         updated[0].let { decision ->
             assertEquals(
                 placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)),
-                decision.validDuring
+                decision.validDuring,
             )
             assertEquals(
                 snDefaultDaycare.toFeeDecisionServiceNeed(),
-                decision.children[0].serviceNeed
+                decision.children[0].serviceNeed,
             )
         }
         updated[1].let { decision ->
@@ -544,11 +544,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         original[0].let { decision ->
             assertEquals(
                 placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)),
-                decision.validDuring
+                decision.validDuring,
             )
             assertEquals(
                 snDefaultDaycare.toFeeDecisionServiceNeed(),
-                decision.children[0].serviceNeed
+                decision.children[0].serviceNeed,
             )
         }
         original[1].let { decision ->
@@ -566,7 +566,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(placementPeriod, updated[0].validDuring)
         assertEquals(
             snDefaultDaycare.toFeeDecisionServiceNeed(),
-            updated[0].children[0].serviceNeed
+            updated[0].children[0].serviceNeed,
         )
     }
 
@@ -600,9 +600,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -634,9 +634,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -661,7 +661,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -684,7 +684,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -704,7 +704,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -727,7 +727,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -747,7 +747,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -771,7 +771,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -788,7 +788,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -804,7 +804,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -824,7 +824,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -847,7 +847,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -867,7 +867,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -890,7 +890,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -910,7 +910,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -933,7 +933,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -950,7 +950,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -966,7 +966,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
                 assertEquals(
                     snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
-                    child.serviceNeed
+                    child.serviceNeed,
                 )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
@@ -982,7 +982,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A902X"
+                ssn = "010117A902X",
             )
 
         // Older
@@ -990,7 +990,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_2.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A901W"
+                ssn = "010117A901W",
             )
 
         db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
@@ -1025,7 +1025,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id),
-            placementPeriod
+            placementPeriod,
         )
 
         // Adult minimal income
@@ -1073,7 +1073,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, childTurning18Id),
-            placementPeriod
+            placementPeriod,
         )
         insertIncome(testAdult_1.id, 330000, placementPeriod)
 
@@ -1129,9 +1129,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -1159,7 +1159,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id)
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
             )
     }
 
@@ -1180,7 +1180,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.partnerId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_2.id),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.GUARDIANS), testAdult_3.id)
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.GUARDIANS), testAdult_3.id),
             )
     }
 
@@ -1203,7 +1203,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id)
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
             )
     }
 
@@ -1219,7 +1219,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_2.id,
             listOf(testChild_1.id),
-            secondPeriod.copy(end = LocalDate.of(2036, 2, 7))
+            secondPeriod.copy(end = LocalDate.of(2036, 2, 7)),
         )
 
         val firstPlacementPeriod = DateRange(LocalDate.of(2021, 1, 11), LocalDate.of(2023, 1, 8))
@@ -1228,12 +1228,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val secondPlacementPeriod = DateRange(LocalDate.of(2023, 1, 9), LocalDate.of(2023, 7, 31))
         insertPlacement(testChild_1.id, secondPlacementPeriod, DAYCARE, testDaycare.id)
 
-        db.transaction { tx ->
-            generator.generateNewDecisionsForChild(
-                tx,
-                testChild_1.id,
-            )
-        }
+        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, testChild_1.id) }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1269,7 +1264,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             listOf(Tuple(subPeriod1, testAdult_1.id)),
-            getAllFeeDecisions().map { Tuple(it.validDuring, it.headOfFamilyId) }
+            getAllFeeDecisions().map { Tuple(it.validDuring, it.headOfFamilyId) },
         )
     }
 
@@ -1288,7 +1283,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
             )
     }
 
@@ -1309,7 +1304,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
             )
     }
 
@@ -1328,7 +1323,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
             )
     }
 
@@ -1350,8 +1345,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Tuple(
                     subPeriod2,
                     setOf(FeeDecisionDifference.FAMILY_SIZE, FeeDecisionDifference.FEE_THRESHOLDS),
-                    3
-                )
+                    3,
+                ),
             )
     }
 
@@ -1370,11 +1365,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting(
                 { it.validDuring },
                 { it.difference },
-                { it.children.map { child -> child.placement.unitId } }
+                { it.children.map { child -> child.placement.unitId } },
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id)),
             )
     }
 
@@ -1393,11 +1388,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting(
                 { it.validDuring },
                 { it.difference },
-                { it.children.map { child -> child.placement.type } }
+                { it.children.map { child -> child.placement.type } },
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(DAYCARE)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME)),
             )
     }
 
@@ -1418,19 +1413,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting(
                 { it.validDuring },
                 { it.difference },
-                { it.children.map { child -> child.serviceNeed } }
+                { it.children.map { child -> child.serviceNeed } },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1.asDateRange(),
                     emptySet<FeeDecisionDifference>(),
-                    listOf(snDaycareFullDay35.toFeeDecisionServiceNeed())
+                    listOf(snDaycareFullDay35.toFeeDecisionServiceNeed()),
                 ),
                 Tuple(
                     subPeriod2.asDateRange(),
                     setOf(FeeDecisionDifference.SERVICE_NEED),
-                    listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed())
-                )
+                    listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed()),
+                ),
             )
     }
 
@@ -1454,19 +1449,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     it.children
                         .map { child -> Pair(child.child.dateOfBirth, child.siblingDiscount) }
                         .sortedBy { pair -> pair.first }
-                }
+                },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<FeeDecisionDifference>(),
-                    listOf(Pair(testChild_2.dateOfBirth, 0))
+                    listOf(Pair(testChild_2.dateOfBirth, 0)),
                 ),
                 Tuple(
                     subPeriod2,
                     setOf(FeeDecisionDifference.CHILDREN, FeeDecisionDifference.SIBLING_DISCOUNT),
-                    listOf(Pair(testChild_2.dateOfBirth, 50), Pair(testChild_1.dateOfBirth, 0))
-                )
+                    listOf(Pair(testChild_2.dateOfBirth, 50), Pair(testChild_1.dateOfBirth, 0)),
+                ),
             )
     }
 
@@ -1485,7 +1480,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_ALTERATIONS))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_ALTERATIONS)),
             )
     }
 
@@ -1529,7 +1524,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     temporaryFee = 2900,
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
-                    temporaryFeeSiblingPartDay = 800
+                    temporaryFeeSiblingPartDay = 800,
                 )
             )
         }
@@ -1540,7 +1535,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_THRESHOLDS))
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_THRESHOLDS)),
             )
     }
 
@@ -1563,23 +1558,23 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Tuple(
                     LocalDate.of(2022, 1, 1),
                     LocalDate.of(2022, 3, 31),
-                    emptySet<FeeDecisionDifference>()
+                    emptySet<FeeDecisionDifference>(),
                 ),
                 Tuple(
                     LocalDate.of(2022, 4, 1),
                     LocalDate.of(2022, 6, 30),
-                    setOf(FeeDecisionDifference.INCOME)
+                    setOf(FeeDecisionDifference.INCOME),
                 ),
                 Tuple(
                     LocalDate.of(2022, 7, 1),
                     LocalDate.of(2022, 9, 1),
-                    setOf(FeeDecisionDifference.PLACEMENT)
+                    setOf(FeeDecisionDifference.PLACEMENT),
                 ),
                 Tuple(
                     LocalDate.of(2022, 9, 2),
                     LocalDate.of(2022, 12, 31),
-                    setOf(FeeDecisionDifference.INCOME)
-                )
+                    setOf(FeeDecisionDifference.INCOME),
+                ),
             )
     }
 
@@ -1602,7 +1597,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
             )
     }
 
@@ -1628,7 +1623,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .containsExactlyInAnyOrder(
                 Tuple(period, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
                 Tuple(subPeriod1, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
             )
     }
 
@@ -1647,7 +1642,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>())
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>()),
             )
     }
 
@@ -1670,7 +1665,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, emptySet<FeeDecisionDifference>())
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, emptySet<FeeDecisionDifference>()),
             )
     }
 
@@ -1694,9 +1689,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.SENT,
@@ -1710,10 +1705,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             )
 
@@ -1748,9 +1743,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -1817,9 +1812,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.DRAFT,
@@ -1833,9 +1828,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = serviceNeed.toFeeDecisionServiceNeed()
+                                    serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.DRAFT,
@@ -1849,10 +1844,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             )
 
@@ -1890,20 +1885,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id, testChild_3.id),
-            period
+            period,
         )
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(
             testChild_2.id,
             period.copy(start = period.start.plusMonths(1)),
             DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
         insertPlacement(
             testChild_3.id,
             period.copy(start = period.start.plusMonths(2)),
             DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -1995,7 +1990,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(
             testAdult_1.id,
             listOf(testChild_1.id, testChild_2.id, testChild_3.id),
-            period_1.copy(end = period_3.end)
+            period_1.copy(end = period_3.end),
         )
         insertPlacement(testChild_1.id, period_1, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period_2, DAYCARE, testDaycare.id)
@@ -2383,7 +2378,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 listOf(0, 50, 80),
                 decision.children
                     .sortedByDescending { it.child.dateOfBirth }
-                    .map { it.siblingDiscount }
+                    .map { it.siblingDiscount },
             )
         }
     }
@@ -2464,18 +2459,18 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(setOf(3, 2), decisions.map { it.familySize }.toSet())
         assertEquals(
             setOf(testAdult_1.id, testAdult_2.id),
-            decisions.map { it.headOfFamilyId }.toSet()
+            decisions.map { it.headOfFamilyId }.toSet(),
         )
 
         val decisionForAdult1 = decisions.find { it.headOfFamilyId == testAdult_1.id }
         val decisionForAdult2 = decisions.find { it.headOfFamilyId == testAdult_2.id }
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
-            decisionForAdult1?.children?.map { it.child.id }?.toSet()
+            decisionForAdult1?.children?.map { it.child.id }?.toSet(),
         )
         assertEquals(
             setOf(testChild_8.id),
-            decisionForAdult2?.children?.map { it.child.id }?.toSet()
+            decisionForAdult2?.children?.map { it.child.id }?.toSet(),
         )
 
         assertEquals(
@@ -2483,14 +2478,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decisionForAdult1
                 ?.children
                 ?.sortedByDescending { it.child.dateOfBirth }
-                ?.map { it.siblingDiscount }
+                ?.map { it.siblingDiscount },
         )
         assertEquals(
             listOf(0),
             decisionForAdult2
                 ?.children
                 ?.sortedByDescending { it.child.dateOfBirth }
-                ?.map { it.siblingDiscount }
+                ?.map { it.siblingDiscount },
         )
     }
 
@@ -2687,9 +2682,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         testChild_1.dateOfBirth,
                         testDaycare.id,
                         DAYCARE,
-                        snDefaultDaycare.toFeeDecisionServiceNeed()
+                        snDefaultDaycare.toFeeDecisionServiceNeed(),
                     )
-                )
+                ),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision)) }
 
@@ -2736,7 +2731,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.id,
             originalPlacementPeriod.copy(start = originalPlacementPeriod.start.plusMonths(6)),
             DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
         db.transaction { tx ->
             tx.upsertFeeDecisions(
@@ -2753,9 +2748,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                     dateOfBirth = testChild_1.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = DAYCARE,
-                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -2797,7 +2792,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         totalIncome = 0,
                         totalExpenses = 0,
                         total = 0,
-                        worksAtECHA = false
+                        worksAtECHA = false,
                     ),
                 children =
                     listOf(
@@ -2808,9 +2803,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             placementType = DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 0,
-                            fee = 0
+                            fee = 0,
                         )
-                    )
+                    ),
             )
             .let { fixture ->
                 db.transaction { tx ->
@@ -2847,13 +2842,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testChild_1.id,
             period.copy(end = period.start.plusMonths(1)),
             DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
         insertPlacement(
             testChild_1.id,
             period.copy(start = period.start.plusMonths(1).plusDays(1)),
             DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -2911,7 +2906,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(
             testAdult_1.id,
             400000,
-            period.copy(start = period.start.plusMonths(6).plusDays(1))
+            period.copy(start = period.start.plusMonths(6).plusDays(1)),
         )
         val sentDecision =
             createFeeDecisionFixture(
@@ -2928,9 +2923,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             placementType = DAYCARE,
                             serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                             baseFee = 0,
-                            fee = 0
+                            fee = 0,
                         )
-                    )
+                    ),
             )
         db.transaction { it.upsertFeeDecisions(listOf(sentDecision)) }
 
@@ -2972,9 +2967,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
                                 siblingDiscount = 0,
-                                fee = 28900
+                                fee = 28900,
                             )
-                        )
+                        ),
                 )
             }
 
@@ -3007,7 +3002,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
             listOf(decisions.get(0).id),
-            null
+            null,
         )
 
         asyncJobRunner.runPendingJobsSync(clock)
@@ -3062,7 +3057,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
             listOf(firstDecision.id),
-            null
+            null,
         )
 
         asyncJobRunner.runPendingJobsSync(clock)
@@ -3096,8 +3091,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 headOfChildId = testAdult_1.id,
                 childId = testChild_1.id,
                 startDate = period.start,
-                endDate = period.end
-            )
+                endDate = period.end,
+            ),
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -3115,7 +3110,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 admin,
                 clock,
                 decisions.map { it.id },
-                null
+                null,
             )
         }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -3130,8 +3125,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             parentshipId,
             ParentshipController.ParentshipUpdateRequest(
                 startDate = period.start,
-                endDate = dateOfChange.minusDays(1)
-            )
+                endDate = dateOfChange.minusDays(1),
+            ),
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -3154,8 +3149,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 person1Id = testAdult_1.id,
                 person2Id = testAdult_2.id,
                 startDate = dateOfChange,
-                endDate = null
-            )
+                endDate = null,
+            ),
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -3167,8 +3162,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 headOfChildId = testAdult_2.id,
                 childId = testChild_1.id,
                 startDate = dateOfChange,
-                endDate = period.end
-            )
+                endDate = period.end,
+            ),
         )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -3215,7 +3210,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             clock,
             listOf(decisions.get(0).id),
-            null
+            null,
         )
 
         asyncJobRunner.runPendingJobsSync(clock)
@@ -3234,7 +3229,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
                 expected.copy(id = uuid, created = createdAt),
-                actual.copy(id = uuid, created = createdAt)
+                actual.copy(id = uuid, created = createdAt),
             )
         }
     }
@@ -3244,7 +3239,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
             assertEquals(
                 expected.map { it.copy(id = uuid, created = createdAt) },
-                actual.map { it.copy(id = uuid, created = createdAt) }
+                actual.map { it.copy(id = uuid, created = createdAt) },
             )
         }
     }
@@ -3253,7 +3248,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         childId: ChildId,
         period: DateRange,
         type: fi.espoo.evaka.placement.PlacementType,
-        daycareId: DaycareId
+        daycareId: DaycareId,
     ): PlacementId {
         return db.transaction { tx ->
             tx.insert(
@@ -3262,7 +3257,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = childId,
                     unitId = daycareId,
                     startDate = period.start,
-                    endDate = period.end!!
+                    endDate = period.end!!,
                 )
             )
         }
@@ -3271,7 +3266,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
         childIds: List<ChildId>,
-        period: DateRange
+        period: DateRange,
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
@@ -3280,7 +3275,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = childId,
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
-                        endDate = period.end!!
+                        endDate = period.end!!,
                     )
                 )
             }
@@ -3297,7 +3292,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         adultId1: PersonId,
         adultId2: PersonId,
         period: DateRange,
-        createdAt: HelsinkiDateTime
+        createdAt: HelsinkiDateTime,
     ) {
         db.transaction { tx ->
             tx.insertTestPartnership(
@@ -3305,7 +3300,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 adultId2,
                 startDate = period.start,
                 endDate = period.end,
-                createdAt = createdAt
+                createdAt = createdAt,
             )
         }
     }
@@ -3313,7 +3308,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun insertServiceNeed(
         placementId: PlacementId,
         period: FiniteDateRange,
-        optionId: ServiceNeedOptionId
+        optionId: ServiceNeedOptionId,
     ) {
         db.transaction { tx ->
             tx.insert(
@@ -3325,7 +3320,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -3335,7 +3330,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         adultId: PersonId,
         amount: Int,
         period: DateRange,
-        effect: IncomeEffect = IncomeEffect.INCOME
+        effect: IncomeEffect = IncomeEffect.INCOME,
     ) {
         db.transaction { tx ->
             tx.insert(
@@ -3355,11 +3350,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                         amount,
                                         coefficientMultiplierProvider.multiplier(
                                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                        )
-                                    )
+                                        ),
+                                    ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -3375,7 +3370,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     effect = IncomeEffect.MAX_FEE_ACCEPTED,
                     data = mapOf(),
                     worksAtEcha = true,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -3396,7 +3391,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     isAbsolute = false,
                     validFrom = period.start,
                     validTo = period.end,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

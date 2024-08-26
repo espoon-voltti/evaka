@@ -60,7 +60,7 @@ class PdfGenerationTest {
                     streetAddress = "Kamreerintie 2",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 ),
             partner =
                 PersonDetailed(
@@ -71,7 +71,7 @@ class PdfGenerationTest {
                     streetAddress = "Kamreerintie 2",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 ),
             headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
             partnerIncome = testDecisionIncome.copy(total = 413195),
@@ -88,7 +88,7 @@ class PdfGenerationTest {
                                 dateOfBirth = LocalDate.of(2017, 1, 1),
                                 firstName = "Johnny_$index",
                                 lastName = "Doe",
-                                restrictedDetailsEnabled = false
+                                restrictedDetailsEnabled = false,
                             ),
                         placementType = it.placement.type,
                         placementUnit =
@@ -97,7 +97,7 @@ class PdfGenerationTest {
                                 name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
                                 language = "fi",
                                 areaId = AreaId(UUID.randomUUID()),
-                                areaName = "Test Area"
+                                areaName = "Test Area",
                             ),
                         serviceNeedOptionId = it.serviceNeed.optionId,
                         serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
@@ -110,12 +110,12 @@ class PdfGenerationTest {
                         feeAlterations = it.feeAlterations,
                         finalFee = it.finalFee,
                         childIncome =
-                            if (index == 0) testDecisionIncome.copy(total = 123456) else null
+                            if (index == 0) testDecisionIncome.copy(total = 123456) else null,
                     )
                 },
             financeDecisionHandlerFirstName = null,
             financeDecisionHandlerLastName = null,
-            documentContainsContactInfo = false
+            documentContainsContactInfo = false,
         )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
@@ -137,7 +137,7 @@ class PdfGenerationTest {
                     streetAddress = "Huhdannevanpolku 24 A 3",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 ),
             partner =
                 PersonDetailed(
@@ -148,7 +148,7 @@ class PdfGenerationTest {
                     streetAddress = "Huhdannevanpolku 24 A 3",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 ),
             validFrom = LocalDate.of(2020, 1, 1),
             validTo = null,
@@ -167,7 +167,7 @@ class PdfGenerationTest {
                     dateOfBirth = LocalDate.of(2017, 1, 1),
                     firstName = "Iisakki Anselminpoika",
                     lastName = "Guggenheim",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 ),
             childAge = 3,
             placement =
@@ -177,9 +177,9 @@ class PdfGenerationTest {
                         name = "Test Daycare",
                         language = "fi",
                         areaId = AreaId(UUID.randomUUID()),
-                        areaName = "Test Area"
+                        areaName = "Test Area",
                     ),
-                    PlacementType.DAYCARE
+                    PlacementType.DAYCARE,
                 ),
             serviceNeed =
                 VoucherValueDecisionServiceNeed(
@@ -189,7 +189,7 @@ class PdfGenerationTest {
                     feeDescriptionSv = "vårdbehovet saknas, högsta avgift",
                     voucherValueDescriptionFi = "yli 25h/viikko",
                     voucherValueDescriptionSv = "mer än 25 h/vecka",
-                    missing = false
+                    missing = false,
                 ),
             voucherValue = 120000,
             assistanceNeedCoefficient = BigDecimal("1"),
@@ -199,7 +199,7 @@ class PdfGenerationTest {
             feeAlterations = emptyList(),
             finalCoPayment = 12000,
             siblingDiscount = 0,
-            documentContainsContactInfo = false
+            documentContainsContactInfo = false,
         )
 
     @Test
@@ -208,7 +208,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = normalDecision,
                 settings = mapOf(),
-                lang = OfficialLanguage.FI
+                lang = OfficialLanguage.FI,
             )
 
         val simpleVariables =
@@ -221,7 +221,7 @@ class PdfGenerationTest {
                 "Espoo",
                 "Kamreerintie 2",
                 "02770 Espoo",
-                ""
+                "",
             )
 
         val expected =
@@ -254,7 +254,7 @@ class PdfGenerationTest {
                 "decisionMakerTitle" to "",
                 "showTotalIncome" to true,
                 "partnerIsCodebtor" to false,
-                "hasChildIncome" to true
+                "hasChildIncome" to true,
             )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
@@ -265,7 +265,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = reliefDecision,
                 settings = mapOf(),
-                lang = OfficialLanguage.FI
+                lang = OfficialLanguage.FI,
             )
 
         val simpleVariables =
@@ -278,7 +278,7 @@ class PdfGenerationTest {
                 "Espoo",
                 "Kamreerintie 2",
                 "02770 Espoo",
-                ""
+                "",
             )
 
         val expected =
@@ -311,7 +311,7 @@ class PdfGenerationTest {
                 "decisionMakerTitle" to "",
                 "showTotalIncome" to true,
                 "partnerIsCodebtor" to false,
-                "hasChildIncome" to true
+                "hasChildIncome" to true,
             )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
@@ -322,7 +322,7 @@ class PdfGenerationTest {
             FeeDecisionPdfData(
                 decision = normalDecision,
                 settings = mapOf(),
-                lang = OfficialLanguage.FI
+                lang = OfficialLanguage.FI,
             )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
@@ -338,7 +338,7 @@ class PdfGenerationTest {
             VoucherValueDecisionPdfData(
                 decision = normalVoucherValueDecision,
                 settings = mapOf(),
-                lang = OfficialLanguage.FI
+                lang = OfficialLanguage.FI,
             )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
 

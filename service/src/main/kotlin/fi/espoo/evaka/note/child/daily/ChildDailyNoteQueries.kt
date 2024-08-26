@@ -30,13 +30,13 @@ fun Database.Read.getChildDailyNoteForChild(childId: ChildId): ChildDailyNote? =
     getChildDailyNotes(Predicate { where("$it.child_id = ${bind(childId)}") }).exactlyOneOrNull()
 
 fun Database.Read.getChildDailyNotesForChildren(
-    children: Collection<ChildId>,
+    children: Collection<ChildId>
 ): List<ChildDailyNote> =
     getChildDailyNotes(Predicate { where("$it.child_id = ANY(${bind(children)})") }).toList()
 
 fun Database.Read.getChildDailyNotesForGroup(
     groupId: GroupId,
-    today: LocalDate
+    today: LocalDate,
 ): List<ChildDailyNote> =
     getChildDailyNotes(
             Predicate {
@@ -55,7 +55,7 @@ $it.child_id IN (
 
 fun Database.Transaction.createChildDailyNote(
     childId: ChildId,
-    note: ChildDailyNoteBody
+    note: ChildDailyNoteBody,
 ): ChildDailyNoteId {
     return createUpdate {
             sql(
@@ -73,7 +73,7 @@ RETURNING id
 fun Database.Transaction.updateChildDailyNote(
     clock: EvakaClock,
     id: ChildDailyNoteId,
-    note: ChildDailyNoteBody
+    note: ChildDailyNoteBody,
 ): ChildDailyNote {
     val now = clock.now()
     return createUpdate {

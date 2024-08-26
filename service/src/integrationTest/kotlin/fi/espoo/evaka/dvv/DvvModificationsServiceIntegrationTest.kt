@@ -37,11 +37,7 @@ class DvvModificationsServiceIntegrationTest :
     @Test
     fun `get modification token for today`() {
         val caretaker =
-            testPerson.copy(
-                firstName = "Harri",
-                lastName = "Huoltaja",
-                ssn = "010579-9999",
-            )
+            testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999")
         MockPersonDetailsService.addPersons(caretaker)
 
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
@@ -76,7 +72,7 @@ class DvvModificationsServiceIntegrationTest :
         updatePeopleFromDvv(listOf("010180-999A"))
         assertEquals(
             LocalDate.parse("2019-07-30"),
-            db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath
+            db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath,
         )
     }
 
@@ -90,7 +86,7 @@ class DvvModificationsServiceIntegrationTest :
                 postalCode = "",
                 postOffice = "",
                 restrictedDetailsEnabled = true,
-                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1)
+                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
             )
         )
         updatePeopleFromDvv(listOf("020180-999Y"))
@@ -109,7 +105,7 @@ class DvvModificationsServiceIntegrationTest :
                 restrictedDetailsEnabled = true,
                 streetAddress = "",
                 postalCode = "",
-                postOffice = ""
+                postOffice = "",
             )
         )
         MockPersonDetailsService.addPersons(
@@ -118,7 +114,7 @@ class DvvModificationsServiceIntegrationTest :
                 streetAddress = "Uusitie 17 A 2",
                 postalCode = "02940",
                 postOffice = "ESPOO",
-                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1)
+                restrictedDetailsEndDate = LocalDate.of(2030, 1, 1),
             )
         )
         updatePeopleFromDvv(listOf("030180-999L"))
@@ -139,7 +135,7 @@ class DvvModificationsServiceIntegrationTest :
                 streetAddress = "Uusitie 17 A 2",
                 postalCode = "02940",
                 postOffice = "ESPOO",
-                residenceCode = "abc123"
+                residenceCode = "abc123",
             )
         )
         updatePeopleFromDvv(listOf("040180-9998"))
@@ -187,11 +183,7 @@ class DvvModificationsServiceIntegrationTest :
     fun `new caretaker added`() {
         val custodian: DevPerson = testPerson.copy(ssn = "060118A999J")
         val caretaker =
-            testPerson.copy(
-                firstName = "Harri",
-                lastName = "Huoltaja",
-                ssn = "060180-999J",
-            )
+            testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "060180-999J")
 
         createTestPerson(custodian)
         MockPersonDetailsService.addPersons(caretaker, custodian)
@@ -282,7 +274,7 @@ class DvvModificationsServiceIntegrationTest :
                 assertEquals("1", it.getNextDvvModificationToken())
                 assertEquals(
                     LocalDate.parse("2019-07-30"),
-                    it.getPersonBySSN("010180-999A")?.dateOfDeath
+                    it.getPersonBySSN("010180-999A")?.dateOfDeath,
                 )
             }
         } finally {
@@ -312,7 +304,7 @@ class DvvModificationsServiceIntegrationTest :
             val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
             assertEquals(
                 listOf(child.ssn to childDateOfBirth),
-                children.map { it.child.socialSecurityNumber to it.startDate }
+                children.map { it.child.socialSecurityNumber to it.startDate },
             )
         }
     }
@@ -340,7 +332,7 @@ class DvvModificationsServiceIntegrationTest :
             val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
             assertEquals(
                 listOf(child.ssn to childDateOfBirth),
-                children.map { it.child.socialSecurityNumber to it.startDate }
+                children.map { it.child.socialSecurityNumber to it.startDate },
             )
         }
     }
@@ -368,7 +360,7 @@ class DvvModificationsServiceIntegrationTest :
             val children = tx.getParentships(headOfChildId = person!!.id, childId = null)
             assertEquals(
                 listOf(child.ssn to currentDate),
-                children.map { it.child.socialSecurityNumber to it.startDate }
+                children.map { it.child.socialSecurityNumber to it.startDate },
             )
         }
     }
@@ -383,7 +375,7 @@ class DvvModificationsServiceIntegrationTest :
             testPerson.copy(
                 id = PersonId(UUID.randomUUID()),
                 dateOfBirth = childDateOfBirth,
-                ssn = "010120A123K"
+                ssn = "010120A123K",
             )
 
         createTestPerson(personWithoutChildren)
@@ -397,7 +389,7 @@ class DvvModificationsServiceIntegrationTest :
                 parent.id,
                 child.dateOfBirth,
                 child.dateOfBirth.plusYears(18).minusDays(1),
-                Creator.DVV
+                Creator.DVV,
             )
         }
 
@@ -416,7 +408,7 @@ class DvvModificationsServiceIntegrationTest :
 
     private fun updatePeopleFromDvv(
         ssns: List<String>,
-        currentDate: LocalDate = LocalDate.of(2020, 1, 1)
+        currentDate: LocalDate = LocalDate.of(2020, 1, 1),
     ): Int {
         val clock = MockEvakaClock(HelsinkiDateTime.of(currentDate, LocalTime.of(3, 0)))
         val updatedCount = dvvModificationsService.updatePersonsFromDvv(db, clock, ssns)
@@ -437,7 +429,7 @@ class DvvModificationsServiceIntegrationTest :
             streetAddress = "Katuosoite",
             postalCode = "02230",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private fun createTestPerson(devPerson: DevPerson): PersonId =

@@ -31,7 +31,7 @@ fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
 
 fun Database.Read.getAssistanceFactorsByChildId(
     childId: ChildId,
-    filter: AccessControlFilter<AssistanceFactorId>
+    filter: AccessControlFilter<AssistanceFactorId>,
 ): List<AssistanceFactor> =
     createQuery {
             sql(
@@ -70,7 +70,7 @@ fun Database.Transaction.updateAssistanceFactor(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: AssistanceFactorId,
-    update: AssistanceFactorUpdate
+    update: AssistanceFactorUpdate,
 ) =
     createUpdate {
             sql(
@@ -125,7 +125,7 @@ WHERE adjacent_placement.child_id = assistance_factor.child_id
 
 fun Database.Read.getDaycareAssistanceByChildId(
     child: ChildId,
-    filter: AccessControlFilter<DaycareAssistanceId>
+    filter: AccessControlFilter<DaycareAssistanceId>,
 ): List<DaycareAssistance> =
     createQuery {
             sql(
@@ -160,7 +160,7 @@ fun Database.Transaction.updateDaycareAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: DaycareAssistanceId,
-    update: DaycareAssistanceUpdate
+    update: DaycareAssistanceUpdate,
 ) =
     createUpdate {
             sql(
@@ -194,7 +194,7 @@ WHERE child_id = ${bind(child)}
 
 fun Database.Read.getPreschoolAssistanceByChildId(
     child: ChildId,
-    filter: AccessControlFilter<PreschoolAssistanceId>
+    filter: AccessControlFilter<PreschoolAssistanceId>,
 ): List<PreschoolAssistance> =
     createQuery {
             sql(
@@ -229,7 +229,7 @@ fun Database.Transaction.updatePreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: PreschoolAssistanceId,
-    update: PreschoolAssistanceUpdate
+    update: PreschoolAssistanceUpdate,
 ) =
     createUpdate {
             sql(
@@ -263,7 +263,7 @@ WHERE child_id = ${bind(child)}
 
 fun Database.Read.getOtherAssistanceMeasuresByChildId(
     child: ChildId,
-    filter: AccessControlFilter<OtherAssistanceMeasureId>
+    filter: AccessControlFilter<OtherAssistanceMeasureId>,
 ): List<OtherAssistanceMeasure> =
     createQuery {
             sql(
@@ -298,7 +298,7 @@ fun Database.Transaction.updateOtherAssistanceMeasure(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: OtherAssistanceMeasureId,
-    update: OtherAssistanceMeasureUpdate
+    update: OtherAssistanceMeasureUpdate,
 ) =
     createUpdate {
             sql(
@@ -320,7 +320,7 @@ fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasure
 
 fun Database.Read.getAssistanceActionsByChildId(
     childId: ChildId,
-    filter: AccessControlFilter<AssistanceActionId>
+    filter: AccessControlFilter<AssistanceActionId>,
 ): List<AssistanceAction> =
     createQuery {
             sql(

@@ -45,7 +45,7 @@ enum class ApplicationSortColumn {
     DUE_DATE,
     START_DATE,
     STATUS,
-    UNIT_NAME
+    UNIT_NAME,
 }
 
 enum class ApplicationBasis {
@@ -57,12 +57,12 @@ enum class ApplicationBasis {
     EXTENDED_CARE,
     DUPLICATE_APPLICATION,
     URGENT,
-    HAS_ATTACHMENTS
+    HAS_ATTACHMENTS,
 }
 
 enum class ApplicationSortDirection {
     ASC,
-    DESC
+    DESC,
 }
 
 fun Database.Transaction.insertApplication(
@@ -75,7 +75,7 @@ fun Database.Transaction.insertApplication(
     hideFromGuardian: Boolean,
     sentDate: LocalDate?,
     allowOtherGuardianAccess: Boolean,
-    document: DatabaseForm
+    document: DatabaseForm,
 ): ApplicationId =
     createUpdate {
             sql(
@@ -92,7 +92,7 @@ RETURNING id
 fun Database.Read.duplicateApplicationExists(
     childId: ChildId,
     guardianId: PersonId,
-    type: ApplicationType
+    type: ApplicationType,
 ): Boolean =
     createQuery {
             sql(
@@ -115,7 +115,7 @@ SELECT EXISTS(
 fun Database.Read.activePlacementExists(
     childId: ChildId,
     type: ApplicationType,
-    today: LocalDate
+    today: LocalDate,
 ): Boolean {
     val placementTypes =
         when (type) {
@@ -127,7 +127,7 @@ fun Database.Read.activePlacementExists(
                     PlacementType.PREPARATORY_DAYCARE,
                     PlacementType.PRESCHOOL,
                     PlacementType.PRESCHOOL_DAYCARE,
-                    PlacementType.PRESCHOOL_CLUB
+                    PlacementType.PRESCHOOL_CLUB,
                 )
             else -> listOf()
         }
@@ -160,7 +160,7 @@ fun Database.Read.fetchApplicationSummaries(
     params: SearchApplicationRequest,
     readWithAssistanceNeed: AccessControlFilter<ApplicationId>?,
     readWithoutAssistanceNeed: AccessControlFilter<ApplicationId>?,
-    canReadServiceWorkerNotes: Boolean
+    canReadServiceWorkerNotes: Boolean,
 ): PagedApplicationSummaries {
     val page = params.page ?: 1
     val pageSize = params.pageSize ?: 100
@@ -247,7 +247,7 @@ fun Database.Read.fetchApplicationSummaries(
                     val preparatory: Boolean?,
                     val connectedDaycare: Boolean,
                     val additionalDaycareApplication: Boolean,
-                    val serviceNeedOptionType: PlacementType? = null
+                    val serviceNeedOptionType: PlacementType? = null,
                 )
                 PredicateSql.any(
                     preschoolType.map {
@@ -256,39 +256,39 @@ fun Database.Read.fetchApplicationSummaries(
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = false,
-                                    additionalDaycareApplication = false
+                                    additionalDaycareApplication = false,
                                 )
                             PRESCHOOL_DAYCARE ->
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = false,
-                                    serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE
+                                    serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE,
                                 )
                             PRESCHOOL_CLUB ->
                                 PreschoolFlags(
                                     preparatory = false,
                                     connectedDaycare = true,
                                     additionalDaycareApplication = false,
-                                    serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB
+                                    serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB,
                                 )
                             PREPARATORY_ONLY ->
                                 PreschoolFlags(
                                     preparatory = true,
                                     connectedDaycare = false,
-                                    additionalDaycareApplication = false
+                                    additionalDaycareApplication = false,
                                 )
                             PREPARATORY_DAYCARE ->
                                 PreschoolFlags(
                                     preparatory = true,
                                     connectedDaycare = true,
-                                    additionalDaycareApplication = false
+                                    additionalDaycareApplication = false,
                                 )
                             DAYCARE_ONLY ->
                                 PreschoolFlags(
                                     preparatory = null,
                                     connectedDaycare = true,
-                                    additionalDaycareApplication = true
+                                    additionalDaycareApplication = true,
                                 )
                         }.run {
                             PredicateSql.all(
@@ -328,7 +328,7 @@ fun Database.Read.fetchApplicationSummaries(
                                                 "Unsupported preschool type: $serviceNeedOptionType"
                                             )
                                     }
-                                } ?: PredicateSql.alwaysTrue()
+                                } ?: PredicateSql.alwaysTrue(),
                             )
                         }
                     }
@@ -395,7 +395,7 @@ fun Database.Read.fetchApplicationSummaries(
                         )
                     }
                 null -> null
-            }
+            },
         )
 
     val orderBy =
@@ -526,7 +526,7 @@ fun Database.Read.fetchApplicationSummaries(
                                 column("serviceNeedNameFi"),
                                 column("serviceNeedNameSv"),
                                 column("serviceNeedNameEn"),
-                                column("serviceNeedValidPlacementType")
+                                column("serviceNeedValidPlacementType"),
                             )
                         },
                     dueDate = column("duedate"),
@@ -535,7 +535,7 @@ fun Database.Read.fetchApplicationSummaries(
                         jsonColumn<List<String>>("preferredUnits").map {
                             PreferredUnit(
                                 id = DaycareId(UUID.fromString(it)),
-                                name = "" // filled afterwards
+                                name = "", // filled afterwards
                             )
                         },
                     origin = column("origin"),
@@ -561,7 +561,7 @@ fun Database.Read.fetchApplicationSummaries(
                                 PlacementProposalStatus(
                                     unitConfirmationStatus = it,
                                     unitRejectReason = column("unit_reject_reason"),
-                                    unitRejectOtherReason = column("unit_reject_other_reason")
+                                    unitRejectOtherReason = column("unit_reject_other_reason"),
                                 )
                             },
                     placementPlanStartDate = column("placement_plan_start_date"),
@@ -569,7 +569,7 @@ fun Database.Read.fetchApplicationSummaries(
                     currentPlacementUnit =
                         column<DaycareId?>("current_placement_unit_id")?.let {
                             PreferredUnit(it, column("current_placement_unit_name"))
-                        }
+                        },
                 )
             }
 
@@ -632,7 +632,7 @@ fun Database.Read.fetchApplicationSummariesForGuardian(
 
 fun Database.Read.fetchApplicationSummariesForChild(
     childId: ChildId,
-    filter: AccessControlFilter<ApplicationId>
+    filter: AccessControlFilter<ApplicationId>,
 ): List<PersonApplicationSummary> =
     createQuery {
             sql(
@@ -664,10 +664,7 @@ fun Database.Read.fetchApplicationSummariesForCitizen(
 ): List<CitizenApplicationSummary> =
     createQuery {
             val useDecisionDateAsStartDate =
-                listOf(
-                    ApplicationStatus.ACTIVE,
-                    ApplicationStatus.WAITING_CONFIRMATION,
-                )
+                listOf(ApplicationStatus.ACTIVE, ApplicationStatus.WAITING_CONFIRMATION)
             sql(
                 """
 SELECT
@@ -739,7 +736,7 @@ fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): Lis
 
 fun Database.Read.fetchApplicationDetails(
     applicationId: ApplicationId,
-    includeCitizenAttachmentsOnly: Boolean = false
+    includeCitizenAttachmentsOnly: Boolean = false,
 ): ApplicationDetails? {
     val attachmentWhereClause =
         if (includeCitizenAttachmentsOnly) "WHERE eu.type = 'CITIZEN'" else ""
@@ -831,7 +828,7 @@ fun Database.Read.fetchApplicationDetails(
                     hideFromGuardian = column("hidefromguardian"),
                     allowOtherGuardianAccess = column("allow_other_guardian_access"),
                     attachments = jsonColumn("attachments"),
-                    hasOtherGuardian = column("has_other_guardian")
+                    hasOtherGuardian = column("has_other_guardian"),
                 )
             }
 
@@ -858,7 +855,7 @@ fun Database.Read.fetchApplicationDetails(
                                 application.form.preferences.preferredUnits.map {
                                     PreferredUnit(
                                         id = it.id,
-                                        name = unitMap.getOrDefault(it.id, "")
+                                        name = unitMap.getOrDefault(it.id, ""),
                                     )
                                 }
                         )
@@ -926,13 +923,13 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                             column("serviceNeedNameFi"),
                             column("serviceNeedNameSv"),
                             column("serviceNeedNameEn"),
-                            column("serviceNeedValidPlacementType")
+                            column("serviceNeedValidPlacementType"),
                         )
                     },
                 preferredStartDate = column("preferred_start_date"),
                 extendedCare = column("extended_care"),
                 preferenceOrder = column("preference_order"),
-                status = column("status")
+                status = column("status"),
             )
         }
 }
@@ -979,7 +976,7 @@ fun Database.Transaction.updateForm(
     formType: ApplicationType,
     childRestricted: Boolean,
     guardianRestricted: Boolean,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
@@ -1015,7 +1012,7 @@ fun Database.Transaction.updateApplicationStatus(id: ApplicationId, status: Appl
 fun Database.Transaction.updateApplicationDates(
     id: ApplicationId,
     sentDate: LocalDate,
-    dueDate: LocalDate?
+    dueDate: LocalDate?,
 ) {
     execute {
         sql(
@@ -1026,7 +1023,7 @@ fun Database.Transaction.updateApplicationDates(
 
 fun Database.Transaction.updateApplicationFlags(
     id: ApplicationId,
-    applicationFlags: ApplicationFlags
+    applicationFlags: ApplicationFlags,
 ) = execute {
     sql(
         """
@@ -1041,7 +1038,7 @@ fun Database.Transaction.updateApplicationFlags(
 
 fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
     id: ApplicationId,
-    allowOtherGuardianAccess: Boolean
+    allowOtherGuardianAccess: Boolean,
 ) = execute {
     sql(
         """
@@ -1146,7 +1143,7 @@ fun Database.Transaction.cancelOutdatedSentTransferApplications(
             PlacementType.PREPARATORY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            PlacementType.SCHOOL_SHIFT_CARE
+            PlacementType.SCHOOL_SHIFT_CARE,
         )
     val notPreschoolPlacements =
         arrayOf(
@@ -1157,7 +1154,7 @@ fun Database.Transaction.cancelOutdatedSentTransferApplications(
             PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            PlacementType.SCHOOL_SHIFT_CARE
+            PlacementType.SCHOOL_SHIFT_CARE,
         )
     val notClubPlacements =
         arrayOf(
@@ -1172,7 +1169,7 @@ fun Database.Transaction.cancelOutdatedSentTransferApplications(
             PlacementType.PREPARATORY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE,
             PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            PlacementType.SCHOOL_SHIFT_CARE
+            PlacementType.SCHOOL_SHIFT_CARE,
         )
     return createUpdate { // only include applications that don't have decisions
             // placement type checks are doing in inverse so that the addition and accidental
@@ -1260,7 +1257,7 @@ AND a.status = 'WAITING_CONFIRMATION'
 
 fun Database.Read.personHasSentApplicationWithId(
     citizenId: PersonId,
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): Boolean =
     createQuery {
             sql(

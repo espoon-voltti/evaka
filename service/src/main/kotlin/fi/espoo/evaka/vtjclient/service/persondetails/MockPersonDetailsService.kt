@@ -31,7 +31,7 @@ data class MockVtjPerson(
     val nativeLanguage: NativeLanguage? = null,
     val nationalities: List<Nationality> = emptyList(),
     val dateOfDeath: LocalDate? = null,
-    val residenceCode: String? = null
+    val residenceCode: String? = null,
 ) {
     fun toVtjPerson(): VtjPerson =
         VtjPerson(
@@ -57,7 +57,7 @@ data class MockVtjPerson(
                 restrictedDetails =
                     RestrictedDetails(
                         enabled = person.restrictedDetailsEnabled,
-                        endDate = person.restrictedDetailsEndDate
+                        endDate = person.restrictedDetailsEndDate,
                     ),
                 address =
                     if (person.streetAddress.isBlank()) {
@@ -68,7 +68,7 @@ data class MockVtjPerson(
                             postalCode = person.postalCode,
                             postOffice = person.postOffice,
                             postOfficeSe = person.postOffice,
-                            streetAddressSe = person.streetAddress
+                            streetAddressSe = person.streetAddress,
                         )
                     },
                 residenceCode = person.residenceCode,
@@ -88,12 +88,12 @@ data class MockVtjPerson(
                         postalCode = dto.postalCode,
                         postOffice = dto.postOffice,
                         streetAddressSe = null,
-                        postOfficeSe = null
+                        postOfficeSe = null,
                     ),
                 nativeLanguage = NativeLanguage(code = dto.language ?: ""),
                 nationalities = dto.nationalities.map { Nationality(it, it) },
                 dateOfDeath = dto.dateOfDeath,
-                residenceCode = dto.residenceCode
+                residenceCode = dto.residenceCode,
             )
     }
 }
@@ -123,7 +123,7 @@ class MockPersonDetailsService : IPersonDetailsService {
                 it.toVtjPerson()
                     .copy(
                         guardians = getGuardians(it.socialSecurityNumber),
-                        dependants = getDependants(it.socialSecurityNumber)
+                        dependants = getDependants(it.socialSecurityNumber),
                     )
             }
 

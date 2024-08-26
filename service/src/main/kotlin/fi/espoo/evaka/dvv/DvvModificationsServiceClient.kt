@@ -35,7 +35,7 @@ class DvvModificationsServiceClient(
     private val jsonMapper: JsonMapper,
     private val customizers: List<DvvModificationRequestCustomizer>,
     xroadEnv: VtjXroadEnv,
-    env: DvvModificationsEnv
+    env: DvvModificationsEnv,
 ) {
     private val serviceUrl: String = env.url
     private val dvvUserId = env.userId
@@ -73,7 +73,7 @@ class DvvModificationsServiceClient(
                         init(
                             keyManagerFactory.keyManagers,
                             trustManagerFactory.trustManagers,
-                            java.security.SecureRandom()
+                            java.security.SecureRandom(),
                         )
                     }
                     .socketFactory

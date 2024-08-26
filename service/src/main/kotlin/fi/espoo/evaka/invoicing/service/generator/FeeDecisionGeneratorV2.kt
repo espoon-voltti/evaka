@@ -49,7 +49,7 @@ fun generateAndInsertFeeDecisionsV2(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
     headOfFamilyId: PersonId,
-    retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
+    retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ) {
     val existingDecisions =
         tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
@@ -71,7 +71,7 @@ fun generateAndInsertFeeDecisionsV2(
             ignoredDrafts = ignoredDrafts,
             minDate =
                 if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate
+                else financeMinDate,
         )
 
     tx.deleteFeeDecisions(existingDrafts.map { it.id })
@@ -87,7 +87,7 @@ fun generateFeeDecisionsDrafts(
     activeDecisions: List<FeeDecision>,
     existingDrafts: List<FeeDecision>,
     ignoredDrafts: List<FeeDecision>,
-    minDate: LocalDate
+    minDate: LocalDate,
 ): List<FeeDecision> {
     val feeBases =
         getFeeBases(
@@ -97,7 +97,7 @@ fun generateFeeDecisionsDrafts(
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = targetAdultId,
             activeDecisions = activeDecisions,
-            minDate = minDate
+            minDate = minDate,
         )
 
     val newDrafts = feeBases.map { it.toFeeDecision() }
@@ -106,7 +106,7 @@ fun generateFeeDecisionsDrafts(
             newDrafts = newDrafts,
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
-            minDate = minDate
+            minDate = minDate,
         )
         .map { it.withMetadataFromExisting(existingDrafts) }
         .map {
@@ -115,7 +115,7 @@ fun generateFeeDecisionsDrafts(
                     it.getDifferencesToPrevious(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
-                        getDifferences = FeeDecisionDifference::getDifference
+                        getDifferences = FeeDecisionDifference::getDifference,
                     )
             )
         }
@@ -128,7 +128,7 @@ private fun getFeeBases(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
     activeDecisions: List<FeeDecision>,
-    minDate: LocalDate
+    minDate: LocalDate,
 ): List<FeeBasis> {
     val familyRelations =
         getFamilyRelations(tx, targetAdultId).filter { it.range.overlaps(DateRange(minDate, null)) }
@@ -142,16 +142,16 @@ private fun getFeeBases(
                 incomeTypesProvider,
                 coefficientMultiplierProvider,
                 allPersonIds,
-                minDate
+                minDate,
             )
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
                     IncomeRange(
                         range = DateRange(it.validFrom, it.validTo),
-                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider)
+                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider),
                     )
-                }
+                },
             )
 
     val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
@@ -162,9 +162,9 @@ private fun getFeeBases(
                 valueTransform = {
                     FeeAlterationRange(
                         range = DateRange(it.validFrom, it.validTo),
-                        feeAlteration = it
+                        feeAlteration = it,
                     )
-                }
+                },
             )
     val allFeeThresholds =
         tx.getFeeThresholds().map { FeeThresholdsRange(it.thresholds.validDuring, it.thresholds) }
@@ -178,7 +178,7 @@ private fun getFeeBases(
             *placementDetailsByChild.flatMap { it.value }.toTypedArray(),
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
-            *allServiceNeedOptionFees.toTypedArray()
+            *allServiceNeedOptionFees.toTypedArray(),
         ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
@@ -255,11 +255,11 @@ private fun getFeeBases(
                             placement = placement,
                             serviceNeedOptionFee = serviceNeedOptionFee,
                             income = income,
-                            feeAlterations = feeAlterations + listOfNotNull(echaAlteration)
+                            feeAlterations = feeAlterations + listOfNotNull(echaAlteration),
                         )
                     },
             familySize = familySize,
-            feeThresholds = feeThresholds
+            feeThresholds = feeThresholds,
         )
     }
 }
@@ -272,7 +272,7 @@ data class FeeBasis(
     val partnerIncome: DecisionIncome?,
     val children: List<ChildFeeBasis>,
     val familySize: Int,
-    val feeThresholds: FeeThresholds
+    val feeThresholds: FeeThresholds,
 ) : WithRange {
     fun toFeeDecision(): FeeDecision {
         return FeeDecision(
@@ -293,10 +293,10 @@ data class FeeBasis(
                         familySize = familySize,
                         parentIncomes =
                             if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
-                            else listOf(headOfFamilyIncome)
+                            else listOf(headOfFamilyIncome),
                     )
                 },
-            difference = emptySet()
+            difference = emptySet(),
         )
     }
 }
@@ -307,12 +307,12 @@ data class ChildFeeBasis(
     val placement: PlacementDetails,
     val serviceNeedOptionFee: ServiceNeedOptionFee?,
     val income: DecisionIncome?,
-    val feeAlterations: List<FeeAlteration>
+    val feeAlterations: List<FeeAlteration>,
 ) {
     fun toFeeDecisionChild(
         feeThresholds: FeeThresholds,
         familySize: Int,
-        parentIncomes: List<DecisionIncome?>
+        parentIncomes: List<DecisionIncome?>,
     ): FeeDecisionChild? {
         if (placement.financeDecisionType != FinanceDecisionType.FEE_DECISION) {
             return null
@@ -327,7 +327,7 @@ data class ChildFeeBasis(
                 ?: calculateBaseFee(
                     feeThresholds,
                     familySize,
-                    parentIncomes + listOfNotNull(income)
+                    parentIncomes + listOfNotNull(income),
                 )
 
         val feeBeforeAlterations =
@@ -335,7 +335,7 @@ data class ChildFeeBasis(
                 baseFee,
                 placement.serviceNeedOption.feeCoefficient,
                 siblingDiscount,
-                feeThresholds.minFee
+                feeThresholds.minFee,
             )
 
         val feeAlterationsWithEffects =
@@ -352,14 +352,14 @@ data class ChildFeeBasis(
                 contractDaysPerMonth = placement.serviceNeedOption.contractDaysPerMonth,
                 descriptionFi = placement.serviceNeedOption.feeDescriptionFi,
                 descriptionSv = placement.serviceNeedOption.feeDescriptionSv,
-                missing = !placement.hasServiceNeed
+                missing = !placement.hasServiceNeed,
             ),
             baseFee,
             siblingDiscount.percent,
             feeBeforeAlterations,
             feeAlterationsWithEffects,
             finalFee,
-            income
+            income,
         )
     }
 }
@@ -367,7 +367,7 @@ data class ChildFeeBasis(
 private data class FamilyRelations(
     override val finiteRange: FiniteDateRange,
     val partner: PersonId?,
-    val children: List<Child>
+    val children: List<Child>,
 ) : WithFiniteRange
 
 private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List<FamilyRelations> {
@@ -378,7 +378,7 @@ private fun getFamilyRelations(tx: Database.Read, targetAdultId: PersonId): List
     val ranges =
         buildFiniteDateRanges(
             *partnerRelations.toTypedArray(),
-            *childRelationsByParent.flatMap { it.value }.toTypedArray()
+            *childRelationsByParent.flatMap { it.value }.toTypedArray(),
         )
 
     return ranges.map { range ->

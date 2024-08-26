@@ -29,17 +29,17 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/vasu/templates", // deprecated
-    "/employee/vasu/templates"
+    "/employee/vasu/templates",
 )
 class VasuTemplateController(
     private val accessControl: AccessControl,
-    private val vasuMigratorService: VasuMigratorService
+    private val vasuMigratorService: VasuMigratorService,
 ) {
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
         val type: CurriculumType,
-        val language: OfficialLanguage
+        val language: OfficialLanguage,
     )
 
     @PostMapping
@@ -47,7 +47,7 @@ class VasuTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: CreateTemplateRequest
+        @RequestBody body: CreateTemplateRequest,
     ): VasuTemplateId {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -55,7 +55,7 @@ class VasuTemplateController(
                         it,
                         user,
                         clock,
-                        Action.Global.CREATE_VASU_TEMPLATE
+                        Action.Global.CREATE_VASU_TEMPLATE,
                     )
 
                     it.insertVasuTemplate(
@@ -63,7 +63,7 @@ class VasuTemplateController(
                         valid = body.valid,
                         type = body.type,
                         language = body.language,
-                        content = getDefaultTemplateContent(body.type, body.language)
+                        content = getDefaultTemplateContent(body.type, body.language),
                     )
                 }
             }
@@ -78,7 +78,7 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
-        @RequestBody body: VasuTemplateUpdate
+        @RequestBody body: VasuTemplateUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -101,7 +101,7 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
-        @RequestBody body: CopyTemplateRequest
+        @RequestBody body: CopyTemplateRequest,
     ): VasuTemplateId {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -110,7 +110,7 @@ class VasuTemplateController(
                         user,
                         clock,
                         Action.VasuTemplate.COPY,
-                        id
+                        id,
                     )
 
                     val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
@@ -119,7 +119,7 @@ class VasuTemplateController(
                         valid = body.valid,
                         type = template.type,
                         language = template.language,
-                        content = copyTemplateContentWithCurrentlyValidOphSections(template)
+                        content = copyTemplateContentWithCurrentlyValidOphSections(template),
                     )
                 }
             }
@@ -131,7 +131,7 @@ class VasuTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam validOnly: Boolean = false
+        @RequestParam validOnly: Boolean = false,
     ): List<VasuTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -139,7 +139,7 @@ class VasuTemplateController(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_VASU_TEMPLATE
+                        Action.Global.READ_VASU_TEMPLATE,
                     )
                     tx.getVasuTemplates(clock, validOnly)
                 }
@@ -152,7 +152,7 @@ class VasuTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VasuTemplateId
+        @PathVariable id: VasuTemplateId,
     ): VasuTemplate {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -161,7 +161,7 @@ class VasuTemplateController(
                         user,
                         clock,
                         Action.VasuTemplate.READ,
-                        id
+                        id,
                     )
                     tx.getVasuTemplate(id)
                 } ?: throw NotFound("template $id not found")
@@ -174,7 +174,7 @@ class VasuTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VasuTemplateId
+        @PathVariable id: VasuTemplateId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -191,7 +191,7 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
-        @RequestBody content: VasuContent
+        @RequestBody content: VasuContent,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -214,7 +214,7 @@ class VasuTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId,
-        @RequestBody body: MigrateVasuRequest
+        @RequestBody body: MigrateVasuRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -223,7 +223,7 @@ class VasuTemplateController(
                     tx,
                     clock.now(),
                     id,
-                    body.processDefinitionNumber
+                    body.processDefinitionNumber,
                 )
             }
         }

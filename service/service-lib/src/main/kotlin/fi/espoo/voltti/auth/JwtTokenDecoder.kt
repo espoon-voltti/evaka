@@ -22,14 +22,20 @@ private fun HttpServletRequest.getBearerToken(): String? =
 private const val ATTR_JWT = "evaka.jwt"
 
 fun HttpServletRequest.getDecodedJwt(): DecodedJWT? = getAttribute(ATTR_JWT) as DecodedJWT?
+
 fun HttpServletRequest.setDecodedJwt(jwt: DecodedJWT) = setAttribute(ATTR_JWT, jwt)
 
 class JwtTokenDecoder(private val jwtVerifier: JWTVerifier) : HttpFilter() {
     private val logger = KotlinLogging.logger {}
 
-    override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
+    override fun doFilter(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain,
+    ) {
         try {
-            request.getBearerToken()
+            request
+                .getBearerToken()
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { request.setDecodedJwt(jwtVerifier.verify(it)) }
         } catch (e: JWTVerificationException) {

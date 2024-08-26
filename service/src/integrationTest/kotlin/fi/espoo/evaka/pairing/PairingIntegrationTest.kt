@@ -135,7 +135,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         postPairingChallenge(pairing.challengeKey)
@@ -155,7 +155,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_CHALLENGE,
                 challengeKey = "foo",
                 responseKey = null,
-                expires = clock.now().minusMinutes(1)
+                expires = clock.now().minusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingChallenge(pairing.challengeKey) }
@@ -170,7 +170,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingChallenge(pairing.challengeKey) }
@@ -185,7 +185,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         postPairingResponse(pairing.id, pairing.challengeKey, pairing.responseKey!!)
@@ -200,14 +200,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
             postPairingResponse(
                 PairingId(UUID.randomUUID()),
                 pairing.challengeKey,
-                pairing.responseKey!!
+                pairing.responseKey!!,
             )
         }
     }
@@ -221,7 +221,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingResponse(pairing.id, "wrong", pairing.responseKey!!) }
@@ -236,7 +236,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingResponse(pairing.id, pairing.challengeKey, "wrong") }
@@ -251,7 +251,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.READY,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
@@ -268,7 +268,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().plusMinutes(1)
+                expires = clock.now().plusMinutes(1),
             )
         givenPairing(pairing, attempts = 101)
         assertThrows<NotFound> {
@@ -285,7 +285,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 status = PairingStatus.WAITING_RESPONSE,
                 challengeKey = "foo",
                 responseKey = "bar",
-                expires = clock.now().minusMinutes(1)
+                expires = clock.now().minusMinutes(1),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
@@ -303,7 +303,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         postPairingValidation(pairing.id, pairing.challengeKey, pairing.responseKey!!)
@@ -319,14 +319,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
             postPairingValidation(
                 PairingId(UUID.randomUUID()),
                 pairing.challengeKey,
-                pairing.responseKey!!
+                pairing.responseKey!!,
             )
         }
     }
@@ -341,7 +341,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingValidation(pairing.id, "wrong", pairing.responseKey!!) }
@@ -357,7 +357,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         assertThrows<NotFound> { postPairingValidation(pairing.id, pairing.challengeKey, "wrong") }
@@ -373,7 +373,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
@@ -391,7 +391,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().plusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing, attempts = 101)
         assertThrows<NotFound> {
@@ -409,7 +409,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 challengeKey = "foo",
                 responseKey = "bar",
                 expires = clock.now().minusMinutes(1),
-                mobileDeviceId = MobileDeviceId(UUID.randomUUID())
+                mobileDeviceId = MobileDeviceId(UUID.randomUUID()),
             )
         givenPairing(pairing)
         assertThrows<NotFound> {
@@ -460,20 +460,20 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             user,
             clock,
-            PairingsController.PostPairingReq.Unit(unitId = unitId)
+            PairingsController.PostPairingReq.Unit(unitId = unitId),
         )
 
     private fun postPairingChallenge(challengeKey: String): Pairing =
         pairingsController.postPairingChallenge(
             dbInstance(),
             clock,
-            PairingsController.PostPairingChallengeReq(challengeKey = challengeKey)
+            PairingsController.PostPairingChallengeReq(challengeKey = challengeKey),
         )
 
     private fun postPairingResponse(
         id: PairingId,
         challengeKey: String,
-        responseKey: String
+        responseKey: String,
     ): Pairing =
         pairingsController.postPairingResponse(
             dbInstance(),
@@ -482,14 +482,14 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id,
             PairingsController.PostPairingResponseReq(
                 challengeKey = challengeKey,
-                responseKey = responseKey
-            )
+                responseKey = responseKey,
+            ),
         )
 
     private fun postPairingValidation(
         id: PairingId,
         challengeKey: String,
-        responseKey: String
+        responseKey: String,
     ): MobileDeviceIdentity =
         pairingsController.postPairingValidation(
             dbInstance(),
@@ -498,8 +498,8 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             id,
             PairingsController.PostPairingValidationReq(
                 challengeKey = challengeKey,
-                responseKey = responseKey
-            )
+                responseKey = responseKey,
+            ),
         )
 
     private fun getPairingStatus(id: PairingId): PairingStatus =
@@ -514,7 +514,7 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user,
             clock,
             id,
-            MobileDevicesController.RenameRequest(name)
+            MobileDevicesController.RenameRequest(name),
         )
 
     private fun deleteMobileDevice(id: MobileDeviceId) =
@@ -526,6 +526,6 @@ class PairingIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             AuthenticatedUser.SystemInternalUser,
             clock,
             id,
-            SystemController.MobileDeviceTracking(userAgent = "007")
+            SystemController.MobileDeviceTracking(userAgent = "007"),
         )
 }

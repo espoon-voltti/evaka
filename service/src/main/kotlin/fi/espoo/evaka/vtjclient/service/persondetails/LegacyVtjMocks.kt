@@ -188,7 +188,7 @@ fun legacyMockVtjDataset() =
                         "02230",
                         "Espoo",
                         streetAddressSe = "Andervägen 33",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -222,7 +222,7 @@ fun legacyMockVtjDataset() =
                         "02770",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 2",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -296,7 +296,7 @@ fun legacyMockVtjDataset() =
                         "02770",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 2",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -320,7 +320,7 @@ fun legacyMockVtjDataset() =
                         "02770",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 2",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -385,7 +385,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -457,7 +457,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kankkulaswell 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -531,7 +531,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kankkulaswell 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -680,7 +680,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -720,7 +720,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Aapisväg 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -809,7 +809,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kankkulaswell 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -994,7 +994,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -1034,7 +1034,7 @@ fun legacyMockVtjDataset() =
                         "02770",
                         "Espoo",
                         streetAddressSe = "Kamrersgatan 2",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -1229,7 +1229,7 @@ fun legacyMockVtjDataset() =
                         "00340",
                         "Espoo",
                         streetAddressSe = "Aapisväg 1",
-                        postOfficeSe = "Esbo"
+                        postOfficeSe = "Esbo",
                     ),
                     NativeLanguage.FI,
                     nationalities = listOf(Nationality(countryName = "Suomi", countryCode = "FIN")),
@@ -1310,5 +1310,5 @@ fun legacyMockVtjDataset() =
                 "311299-999E" to listOf("070714A9126"),
                 "311288A999L" to listOf("311218A999J"),
                 "150580-999K" to listOf("150515-999T"),
-            )
+            ),
     )

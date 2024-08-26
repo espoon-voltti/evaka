@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController
 class VardaErrorReport(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/varda-child-errors", // deprecated
-        "/employee/reports/varda-child-errors"
+        "/employee/reports/varda-child-errors",
     )
     fun getVardaChildErrorsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<VardaChildErrorReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -35,7 +35,7 @@ class VardaErrorReport(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_VARDA_REPORT
+                        Action.Global.READ_VARDA_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getVardaChildErrors()
@@ -46,12 +46,12 @@ class VardaErrorReport(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/reports/varda-unit-errors", // deprecated
-        "/employee/reports/varda-unit-errors"
+        "/employee/reports/varda-unit-errors",
     )
     fun getVardaUnitErrorsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<VardaUnitErrorReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -59,7 +59,7 @@ class VardaErrorReport(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_VARDA_REPORT
+                        Action.Global.READ_VARDA_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getVardaUnitErrors()
@@ -119,7 +119,7 @@ data class VardaChildErrorReportRow(
     val updated: HelsinkiDateTime,
     val created: HelsinkiDateTime,
     val errors: List<String>,
-    val resetTimeStamp: HelsinkiDateTime?
+    val resetTimeStamp: HelsinkiDateTime?,
 )
 
 private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
@@ -145,5 +145,5 @@ data class VardaUnitErrorReportRow(
     val unitName: String,
     val createdAt: HelsinkiDateTime,
     val erroredAt: HelsinkiDateTime,
-    val error: String
+    val error: String,
 )

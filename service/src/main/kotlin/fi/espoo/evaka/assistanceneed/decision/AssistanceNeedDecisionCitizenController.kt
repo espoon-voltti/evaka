@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen")
 class AssistanceNeedDecisionCitizenController(
     private val accessControl: AccessControl,
-    private val assistanceNeedDecisionService: AssistanceNeedDecisionService
+    private val assistanceNeedDecisionService: AssistanceNeedDecisionService,
 ) {
     @GetMapping("/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<AssistanceNeedDecisionCitizenListItem> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -38,7 +38,7 @@ class AssistanceNeedDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS,
-                        user.id
+                        user.id,
                     )
 
                     tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id)
@@ -52,7 +52,7 @@ class AssistanceNeedDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ): AssistanceNeedDecision {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -61,7 +61,7 @@ class AssistanceNeedDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedDecision.READ,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
@@ -86,7 +86,7 @@ class AssistanceNeedDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read {
@@ -95,7 +95,7 @@ class AssistanceNeedDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
@@ -108,7 +108,7 @@ class AssistanceNeedDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -117,7 +117,7 @@ class AssistanceNeedDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
-                        id
+                        id,
                     )
                     tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
                 }
@@ -129,7 +129,7 @@ class AssistanceNeedDecisionCitizenController(
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<UnreadAssistanceNeedDecisionItem> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -138,7 +138,7 @@ class AssistanceNeedDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
-                        user.id
+                        user.id,
                     )
                     tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
                 }

@@ -25,7 +25,7 @@ class ScheduledJobConfig {
         tracer: Tracer,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
         dataSource: DataSource,
-        schedules: List<JobSchedule>
+        schedules: List<JobSchedule>,
     ) = ScheduledJobRunner(jdbi, tracer, asyncJobRunner, schedules, dataSource)
 
     @Bean

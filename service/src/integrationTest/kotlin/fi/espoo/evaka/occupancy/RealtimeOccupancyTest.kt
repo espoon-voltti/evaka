@@ -65,7 +65,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -85,7 +85,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child2.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -112,7 +112,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child3.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -121,7 +121,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = testDaycare.id,
                     date = date,
                     arrived = LocalTime.of(8, 15),
-                    departed = null
+                    departed = null,
                 )
             )
 
@@ -132,7 +132,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child4.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             tx.insert(placement4)
             tx.insert(
@@ -141,7 +141,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     optionId = snDaycareContractDays10.id,
                     startDate = date,
                     endDate = date,
-                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
             tx.insert(
@@ -158,7 +158,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 employee,
                 mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId))
+                mapOf(testDaycare.id to listOf(groupId)),
             )
             tx.insert(
                 DevStaffAttendance(
@@ -175,14 +175,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         "Matti",
                         groupId,
                         HelsinkiDateTime.of(date, LocalTime.of(10, 0)),
-                        BigDecimal("3.5")
+                        BigDecimal("3.5"),
                     )
                 )
                 .let { extAttendanceId ->
                     tx.markExternalStaffDeparture(
                         ExternalStaffDeparture(
                             extAttendanceId,
-                            HelsinkiDateTime.of(date, LocalTime.of(18, 0))
+                            HelsinkiDateTime.of(date, LocalTime.of(18, 0)),
                         )
                     )
                 }
@@ -193,14 +193,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         "Nolla Sijainen",
                         groupId,
                         HelsinkiDateTime.of(date, LocalTime.of(11, 0)),
-                        BigDecimal.ZERO
+                        BigDecimal.ZERO,
                     )
                 )
                 .let { extAttendanceId ->
                     tx.markExternalStaffDeparture(
                         ExternalStaffDeparture(
                             extAttendanceId,
-                            HelsinkiDateTime.of(date, LocalTime.of(15, 0))
+                            HelsinkiDateTime.of(date, LocalTime.of(15, 0)),
                         )
                     )
                 }
@@ -240,7 +240,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?.also {
                 assertEquals(
                     (child1Capacity + child2Capacity + child3Capacity) / (7 * 1),
-                    it.occupancyRatio
+                    it.occupancyRatio,
                 )
             } ?: error("data point missing")
 
@@ -250,14 +250,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
-                    it.childCapacity
+                    it.childCapacity,
                 )
             }
             ?.also { assertEquals(7.0, it.staffCapacity) }
             ?.also {
                 assertEquals(
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / (7 * 1),
-                    it.occupancyRatio
+                    it.occupancyRatio,
                 )
             } ?: error("data point missing")
 
@@ -267,14 +267,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
-                    it.childCapacity
+                    it.childCapacity,
                 )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
-                    it.occupancyRatio
+                    it.occupancyRatio,
                 )
             } ?: error("data point missing")
 
@@ -284,14 +284,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
-                    it.childCapacity
+                    it.childCapacity,
                 )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
-                    it.occupancyRatio
+                    it.occupancyRatio,
                 )
             } ?: error("data point missing")
 
@@ -301,14 +301,14 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?.also {
                 assertEquals(
                     child1Capacity + child2Capacity + child3Capacity + child4Capacity,
-                    it.childCapacity
+                    it.childCapacity,
                 )
             }
             ?.also { assertEquals(10.5, it.staffCapacity) }
             ?.also {
                 assertEquals(
                     (child1Capacity + child2Capacity + child3Capacity + child4Capacity) / 10.5,
-                    it.occupancyRatio
+                    it.occupancyRatio,
                 )
             } ?: error("data point missing")
 
@@ -362,13 +362,13 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
         timeRange: HelsinkiDateTimeRange =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
-                HelsinkiDateTime.of(date, LocalTime.of(23, 59))
+                HelsinkiDateTime.of(date, LocalTime.of(23, 59)),
             )
     ): RealtimeOccupancy {
         return db.read { tx ->
             RealtimeOccupancy(
                 childAttendances = tx.getChildOccupancyAttendances(testDaycare.id, timeRange),
-                staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange)
+                staffAttendances = tx.getStaffOccupancyAttendances(testDaycare.id, timeRange),
             )
         }
     }
@@ -384,7 +384,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date.plusMonths(2)
+                    endDate = date.plusMonths(2),
                 )
             )
             listOf(
@@ -401,7 +401,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         date = tomorrow,
                         arrived = LocalTime.of(0, 0),
                         departed = LocalTime.of(8, 15),
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
 
@@ -412,7 +412,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child2.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date.plusMonths(2)
+                    endDate = date.plusMonths(2),
                 )
             )
             listOf(
@@ -429,7 +429,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                         date = tomorrow,
                         arrived = LocalTime.of(0, 0),
                         departed = LocalTime.of(8, 50),
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
 
@@ -437,7 +437,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(
                 employee,
                 mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId))
+                mapOf(testDaycare.id to listOf(groupId)),
             )
             tx.insert(
                 DevStaffAttendance(
@@ -454,7 +454,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             getRealtimeOccupancy(
                 HelsinkiDateTimeRange(
                     HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
-                    HelsinkiDateTime.of(tomorrow, LocalTime.of(23, 59))
+                    HelsinkiDateTime.of(tomorrow, LocalTime.of(23, 59)),
                 )
             )
         val occupancies = result.occupancySeries
@@ -466,9 +466,9 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
                 OccupancyPoint(HelsinkiDateTime.of(date, LocalTime.of(21, 5)), 2.75, 7.0),
                 OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(8, 15)), 1.0, 7.0),
                 OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(8, 50)), 0.0, 7.0),
-                OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)), 0.0, 0.0)
+                OccupancyPoint(HelsinkiDateTime.of(tomorrow, LocalTime.of(9, 0)), 0.0, 0.0),
             ),
-            occupancies
+            occupancies,
         )
     }
 }

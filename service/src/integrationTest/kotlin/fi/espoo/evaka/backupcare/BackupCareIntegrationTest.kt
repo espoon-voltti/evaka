@@ -69,7 +69,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                         childId = testChild_1.id,
                         unitId = testDaycare2.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
         }
@@ -88,7 +88,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             serviceWorker,
             clock,
             id,
-            BackupCareUpdateRequest(groupId = groupId, period = changedPeriod)
+            BackupCareUpdateRequest(groupId = groupId, period = changedPeriod),
         )
 
         db.read { r ->
@@ -115,8 +115,8 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(backupCareStart.plusDays(1), backupCareStart.plusDays(4))
-                )
+                        FiniteDateRange(backupCareStart.plusDays(1), backupCareStart.plusDays(4)),
+                ),
             )
         }
     }
@@ -141,10 +141,10 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     id = id,
                     unit = BackupCareUnit(id = testDaycare.id, name = testDaycare.name),
                     group = BackupCareGroup(id = groupId, name = groupName),
-                    period = FiniteDateRange(backupCareStart, backupCareEnd)
+                    period = FiniteDateRange(backupCareStart, backupCareEnd),
                 )
             ),
-            backupCares
+            backupCares,
         )
     }
 
@@ -166,7 +166,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     endDate = serviceNeedPeriod.end,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -179,7 +179,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     clock,
                     testDaycare.id,
                     startDate = period.start.plusDays(1),
-                    endDate = period.end.minusDays(1)
+                    endDate = period.end.minusDays(1),
                 )
                 .backupCares
 
@@ -192,17 +192,17 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                             id = testChild_1.id,
                             firstName = testChild_1.firstName,
                             lastName = testChild_1.lastName,
-                            birthDate = testChild_1.dateOfBirth
+                            birthDate = testChild_1.dateOfBirth,
                         ),
                     group = BackupCareGroup(id = groupId, name = groupName),
                     period = period,
                     fromUnits = listOf(testDaycare2.name),
                     serviceNeeds = setOf(),
                     missingServiceNeedDays =
-                        ChronoUnit.DAYS.between(backupCareStart, serviceNeedPeriod.start).toInt()
+                        ChronoUnit.DAYS.between(backupCareStart, serviceNeedPeriod.start).toInt(),
                 )
             ),
-            backupCares
+            backupCares,
         )
     }
 
@@ -218,8 +218,8 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     unitId = testDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
-                )
+                        FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2)),
+                ),
             )
         }
         assertEquals(0, db.read { r -> r.getBackupCaresForChild(testChild_1.id).size })
@@ -239,13 +239,13 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 serviceWorker,
                 clock,
                 id,
-                BackupCareUpdateRequest(groupId = groupId, period = newPeriod)
+                BackupCareUpdateRequest(groupId = groupId, period = newPeriod),
             )
         }
 
         assertNotEquals(
             newPeriod,
-            db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period }
+            db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period },
         )
     }
 
@@ -253,7 +253,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         childId: ChildId = testChild_1.id,
         unitId: DaycareId = testDaycare.id,
         groupId: GroupId? = null,
-        period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd)
+        period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd),
     ): BackupCareId {
         val result =
             backupCareController.createBackupCare(
@@ -261,7 +261,7 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 serviceWorker,
                 clock,
                 childId,
-                NewBackupCare(unitId = unitId, groupId = groupId, period = period)
+                NewBackupCare(unitId = unitId, groupId = groupId, period = period),
             )
         val id = result.id
 

@@ -42,7 +42,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         type = PlacementType.DAYCARE,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
         }

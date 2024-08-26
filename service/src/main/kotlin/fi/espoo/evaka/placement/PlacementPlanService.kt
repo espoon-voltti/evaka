@@ -36,14 +36,14 @@ private val logger = KotlinLogging.logger {}
 @Service
 class PlacementPlanService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    featureConfig: FeatureConfig
+    featureConfig: FeatureConfig,
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
     fun getPlacementPlanDraft(
         tx: Database.Read,
         applicationId: ApplicationId,
-        minStartDate: LocalDate
+        minStartDate: LocalDate,
     ): PlacementPlanDraft {
         val application =
             tx.fetchApplicationDetails(applicationId)
@@ -94,17 +94,17 @@ class PlacementPlanService(
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
-                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate
+                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate,
                                 ),
-                                LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31)
+                                LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31),
                             )
                         PlacementType.PRESCHOOL_CLUB ->
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
-                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate
+                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate,
                                 ),
-                                exactTerm.end
+                                exactTerm.end,
                             )
                         else -> null
                     }
@@ -116,7 +116,7 @@ class PlacementPlanService(
                     period = period,
                     preschoolDaycarePeriod = preschoolDaycarePeriod,
                     placements = placements,
-                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails,
                 )
             }
             ApplicationType.DAYCARE -> {
@@ -130,7 +130,7 @@ class PlacementPlanService(
                 val period =
                     FiniteDateRange(
                         startDate,
-                        if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate
+                        if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate,
                     )
                 PlacementPlanDraft(
                     child = child,
@@ -139,7 +139,7 @@ class PlacementPlanService(
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,
-                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails,
                 )
             }
             ApplicationType.CLUB -> {
@@ -154,7 +154,7 @@ class PlacementPlanService(
                     period = period,
                     preschoolDaycarePeriod = null,
                     placements = placements,
-                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails,
                 )
             }
         }
@@ -162,13 +162,13 @@ class PlacementPlanService(
 
     fun softDeleteUnusedPlacementPlanByApplication(
         tx: Database.Transaction,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) = tx.softDeletePlacementPlanIfUnused(applicationId)
 
     fun createPlacementPlan(
         tx: Database.Transaction,
         application: ApplicationDetails,
-        placementPlan: DaycarePlacementPlan
+        placementPlan: DaycarePlacementPlan,
     ) = tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
 
     fun getPlacementTypePeriods(
@@ -176,7 +176,7 @@ class PlacementPlanService(
         childId: ChildId,
         unitId: DaycareId,
         type: PlacementType,
-        extent: PlacementPlanExtent
+        extent: PlacementPlanExtent,
     ): List<Pair<FiniteDateRange, PlacementType>> =
         when (type) {
             PlacementType.PRESCHOOL_DAYCARE,
@@ -190,7 +190,7 @@ class PlacementPlanService(
                         is PlacementPlanExtent.FullDouble ->
                             Pair(
                                 extent.period.complement(extent.preschoolDaycarePeriod),
-                                extent.preschoolDaycarePeriod
+                                extent.preschoolDaycarePeriod,
                             )
                         is PlacementPlanExtent.FullSingle ->
                             error("Single extent not supported for $type")
@@ -224,7 +224,7 @@ class PlacementPlanService(
                             listOf(
                                 FiniteDateRange(period.start, exactTerm.end) to type,
                                 FiniteDateRange(exactTerm.end.plusDays(1), period.end) to
-                                    PlacementType.DAYCARE
+                                    PlacementType.DAYCARE,
                             )
                         } else {
                             listOf(period to type)
@@ -251,7 +251,7 @@ class PlacementPlanService(
         application: ApplicationDetails,
         unitId: DaycareId,
         type: PlacementType,
-        extent: PlacementPlanExtent
+        extent: PlacementPlanExtent,
     ) {
         val childId = application.childId
         val placementTypePeriods = getPlacementTypePeriods(tx, childId, unitId, type, extent)
@@ -264,7 +264,7 @@ class PlacementPlanService(
             placementTypePeriods = placementTypePeriods,
             serviceNeed = serviceNeed,
             cancelPlacementsAfterClub = true,
-            placeGuarantee = false
+            placeGuarantee = false,
         )
 
         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(childId, clock.today())
@@ -276,7 +276,7 @@ class PlacementPlanService(
                 .ranges()
                 .map { AsyncJob.GenerateFinanceDecisions.forChild(childId, it.asDateRange()) }
                 .asIterable(),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
     }
 
@@ -285,7 +285,7 @@ class PlacementPlanService(
         unitId: DaycareId,
         application: ApplicationDetails,
         period: FiniteDateRange,
-        preschoolDaycarePeriod: FiniteDateRange?
+        preschoolDaycarePeriod: FiniteDateRange?,
     ): List<Placement> {
         val placementType = application.derivePlacementType()
 
@@ -301,7 +301,7 @@ class PlacementPlanService(
                     PlacementType.PREPARATORY_DAYCARE ->
                         PlacementPlanExtent.FullDouble(period, preschoolDaycarePeriod!!)
                     else -> PlacementPlanExtent.FullSingle(period)
-                }
+                },
             )
 
         return placementTypePeriods.map { (period, placementType) ->
@@ -314,14 +314,14 @@ class PlacementPlanService(
                 endDate = period.end,
                 terminationRequestedBy = null,
                 terminationRequestedDate = null,
-                placeGuarantee = false
+                placeGuarantee = false,
             )
         }
     }
 
     private fun resolveServiceNeedFromApplication(
         tx: Database.Read,
-        application: ApplicationDetails
+        application: ApplicationDetails,
     ): ApplicationServiceNeed? {
         val serviceNeedOptionId =
             application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
@@ -335,7 +335,7 @@ class PlacementPlanService(
         return ApplicationServiceNeed(
             serviceNeedOptionId,
             application.form.preferences.serviceNeed.shiftCare,
-            serviceNeedOption.validPlacementType
+            serviceNeedOption.validPlacementType,
         )
     }
 

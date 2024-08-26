@@ -49,7 +49,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 recipientIds = recipients,
                 recipientNames = recipientNames,
                 urgent = false,
-                sensitive = false
+                sensitive = false,
             )
         update(id, fullContent)
         assertContent(fullContent)

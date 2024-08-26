@@ -90,7 +90,7 @@ sealed interface Action {
     enum class Global(override vararg val defaultRules: UnscopedActionRule) : UnscopedAction {
         APPLICATIONS_PAGE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
         ),
         DOCUMENT_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         EMPLOYEES_PAGE(HasGlobalRole(ADMIN)),
@@ -103,19 +103,19 @@ sealed interface Action {
                     STAFF,
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .withUnitFeatures(PilotFeature.MESSAGING)
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         PERSON_SEARCH_PAGE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         REPORTS_PAGE(
             HasGlobalRole(
@@ -124,14 +124,14 @@ sealed interface Action {
                 REPORT_VIEWER,
                 SERVICE_WORKER,
                 FINANCE_ADMIN,
-                FINANCE_STAFF
+                FINANCE_STAFF,
             ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         SETTINGS_PAGE(HasGlobalRole(ADMIN)),
         UNIT_FEATURES_PAGE(HasGlobalRole(ADMIN)),
@@ -141,15 +141,15 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         VASU_TEMPLATES_PAGE(HasGlobalRole(ADMIN)),
         PERSONAL_MOBILE_DEVICE_PAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
-            IsEmployee.ownerOfAnyMobileDevice()
+            IsEmployee.ownerOfAnyMobileDevice(),
         ),
         PIN_CODE_PAGE(
             HasGlobalRole(ADMIN, REPORT_VIEWER, DIRECTOR, SERVICE_WORKER),
@@ -157,19 +157,19 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         CREATE_DOCUMENT_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_DOCUMENT_TEMPLATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit(),
         ),
         CREATE_VASU_TEMPLATE(HasGlobalRole(ADMIN)),
         READ_VASU_TEMPLATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inAnyUnit(),
         ),
         FETCH_INCOME_STATEMENTS_AWAITING_HANDLER(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         CREATE_PAPER_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
@@ -182,9 +182,9 @@ sealed interface Action {
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         SEARCH_PEOPLE_UNRESTRICTED(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF, SERVICE_WORKER)
@@ -200,7 +200,7 @@ sealed interface Action {
         SEARCH_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_FINANCE_DECISION_HANDLERS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_SELECTABLE_FINANCE_DECISION_HANDLERS(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)
@@ -208,7 +208,7 @@ sealed interface Action {
         READ_PERSONAL_MOBILE_DEVICES(IsEmployee.any()),
         CREATE_PERSONAL_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
         ),
         SEARCH_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         CREATE_DRAFT_INVOICES(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -220,16 +220,16 @@ sealed interface Action {
                 REPORT_VIEWER,
                 FINANCE_ADMIN,
                 SERVICE_WORKER,
-                FINANCE_STAFF
+                FINANCE_STAFF,
             ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inAnyUnit(),
-            IsMobile(requirePinLogin = false).any()
+            IsMobile(requirePinLogin = false).any(),
         ),
         READ_SERVICE_NEED_OPTIONS(
             HasGlobalRole(
@@ -239,16 +239,16 @@ sealed interface Action {
                 FINANCE_ADMIN,
                 SERVICE_WORKER,
                 FINANCE_STAFF,
-                MESSAGING
+                MESSAGING,
             ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inAnyUnit(),
-            IsMobile(requirePinLogin = false).any()
+            IsMobile(requirePinLogin = false).any(),
         ),
         READ_UNITS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF, REPORT_VIEWER),
@@ -256,15 +256,15 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         CREATE_UNIT(HasGlobalRole(ADMIN)),
         READ_CUSTOMER_FEES_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, REPORT_VIEWER)),
         READ_DECISION_UNITS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_DECISIONS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
         READ_DUPLICATE_PEOPLE_REPORT(HasGlobalRole(ADMIN)),
@@ -283,7 +283,7 @@ sealed interface Action {
         UPDATE_SETTINGS(HasGlobalRole(ADMIN)),
         READ_SPECIAL_DIET_LIST(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
         ),
         UPDATE_SPECIAL_DIET_LIST(HasGlobalRole(ADMIN)),
         READ_INCOME_TYPES(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -308,9 +308,9 @@ sealed interface Action {
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inAnyUnit()
+                .inAnyUnit(),
         ),
         SEARCH_EMPLOYEES(HasGlobalRole(ADMIN)),
         SUBMIT_PATU_REPORT,
@@ -331,11 +331,11 @@ sealed interface Action {
         ) : ScopedAction<ApplicationId> {
             READ(
                 IsCitizen(allowWeakLogin = false).ownerOfApplication(),
-                IsCitizen(allowWeakLogin = false).otherGuardianOfApplication()
+                IsCitizen(allowWeakLogin = false).otherGuardianOfApplication(),
             ),
             READ_DECISIONS(
                 IsCitizen(allowWeakLogin = false).ownerOfApplication(),
-                IsCitizen(allowWeakLogin = false).otherGuardianOfApplication()
+                IsCitizen(allowWeakLogin = false).otherGuardianOfApplication(),
             ),
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             UPDATE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
@@ -349,15 +349,15 @@ sealed interface Action {
         ) : ScopedAction<AssistanceNeedDecisionId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision(),
             ),
             DOWNLOAD(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision(),
             ),
             MARK_AS_READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -370,19 +370,19 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false)
                     .guardianOfChildOfAssistanceNeedPreschoolDecision(),
                 IsCitizen(allowWeakLogin = false)
-                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision()
+                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision(),
             ),
             DOWNLOAD(
                 IsCitizen(allowWeakLogin = false)
                     .guardianOfChildOfAssistanceNeedPreschoolDecision(),
                 IsCitizen(allowWeakLogin = false)
-                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision()
+                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision(),
             ),
             MARK_AS_READ(
                 IsCitizen(allowWeakLogin = false)
                     .guardianOfChildOfAssistanceNeedPreschoolDecision(),
                 IsCitizen(allowWeakLogin = false)
-                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision()
+                    .fosterParentOfChildOfAssistanceNeedPreschoolDecision(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -391,13 +391,13 @@ sealed interface Action {
         enum class FeeDecision(
             override vararg val defaultRules: ScopedActionRule<in FeeDecisionId>
         ) : ScopedAction<FeeDecisionId> {
-            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForFeeDecisionPayment())
         }
 
         enum class VoucherValueDecision(
             override vararg val defaultRules: ScopedActionRule<in VoucherValueDecisionId>
         ) : ScopedAction<VoucherValueDecisionId> {
-            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).liableForVoucherValueDecisionPayment())
         }
 
         enum class CalendarEvent(
@@ -405,7 +405,7 @@ sealed interface Action {
         ) : ScopedAction<CalendarEventId> {
             READ(
                 IsCitizen(allowWeakLogin = true).guardianOfChildOfCalendarEventAttendee(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventAttendee()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventAttendee(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -416,62 +416,62 @@ sealed interface Action {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_DUPLICATE_APPLICATIONS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_VASU_DOCUMENT_SUMMARIES(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             CREATE_ABSENCE(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             CREATE_HOLIDAY_ABSENCE(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             CREATE_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             READ_PLACEMENT(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             CREATE_APPLICATION(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_PEDAGOGICAL_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             READ_SERVICE_NEEDS(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             READ_DAILY_SERVICE_TIMES(),
             READ_ATTENDANCE_SUMMARY(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             READ_CHILD_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
             CREATE_CALENDAR_EVENT_TIME_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             ),
             DELETE_CALENDAR_EVENT_TIME_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChild()
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -482,11 +482,11 @@ sealed interface Action {
         ) : ScopedAction<ChildDocumentId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument(),
             ),
             DOWNLOAD(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPublishedChildDocument(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPublishedChildDocument(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -502,13 +502,13 @@ sealed interface Action {
             ScopedAction<DecisionId> {
             READ(
                 IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision(),
-                IsCitizen(allowWeakLogin = false).otherGuardianOfApplicationOfSentDecision()
+                IsCitizen(allowWeakLogin = false).otherGuardianOfApplicationOfSentDecision(),
             ),
             DOWNLOAD_PDF(
                 IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision(),
                 IsCitizen(allowWeakLogin = false)
-                    .otherGuardianOfApplicationOfSentDecisionWithNoContactInfo()
-            )
+                    .otherGuardianOfApplicationOfSentDecisionWithNoContactInfo(),
+            ),
         }
 
         enum class IncomeStatement(
@@ -516,19 +516,19 @@ sealed interface Action {
         ) : ScopedAction<IncomeStatementId> {
             READ(
                 IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(),
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement(),
             ),
             UPDATE(
                 IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(),
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement(),
             ),
             DELETE(
                 IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(),
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement(),
             ),
             UPLOAD_ATTACHMENT(
                 IsCitizen(allowWeakLogin = false).ownerOfIncomeStatement(),
-                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement()
+                IsCitizen(allowWeakLogin = false).guardianOfChildOfIncomeStatement(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -539,7 +539,7 @@ sealed interface Action {
         ) : ScopedAction<PedagogicalDocumentId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocument()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocument(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -579,7 +579,7 @@ sealed interface Action {
             ScopedAction<PlacementId> {
             TERMINATE(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPlacement()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPlacement(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -590,11 +590,11 @@ sealed interface Action {
         ) : ScopedAction<VasuDocumentId> {
             READ(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu(),
             ),
             GIVE_PERMISSION_TO_SHARE(
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu()
+                IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu(),
             );
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -605,25 +605,23 @@ sealed interface Action {
         ScopedAction<ApplicationId> {
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
         ),
-        READ_METADATA(
-            HasGlobalRole(ADMIN),
-        ),
+        READ_METADATA(HasGlobalRole(ADMIN)),
         READ_IF_HAS_ASSISTANCE_NEED(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementPlanUnitOfApplication(),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
         ),
         UPDATE(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            IsCitizen(allowWeakLogin = false).ownerOfApplication()
+            IsCitizen(allowWeakLogin = false).ownerOfApplication(),
         ),
         CANCEL(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            IsCitizen(allowWeakLogin = false).ownerOfApplication()
+            IsCitizen(allowWeakLogin = false).ownerOfApplication(),
         ),
         MOVE_TO_WAITING_PLACEMENT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         RETURN_TO_SENT(HasGlobalRole(ADMIN, SERVICE_WORKER)),
@@ -638,37 +636,37 @@ sealed interface Action {
         WITHDRAW_PLACEMENT_PROPOSAL(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         RESPOND_TO_PLACEMENT_PROPOSAL(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
         ),
         READ_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(),
         ),
         CONFIRM_DECISIONS_MAILED(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         ACCEPT_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
-            IsCitizen(allowWeakLogin = false).ownerOfApplication()
+            IsCitizen(allowWeakLogin = false).ownerOfApplication(),
         ),
         REJECT_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication(),
-            IsCitizen(allowWeakLogin = false).ownerOfApplication()
+            IsCitizen(allowWeakLogin = false).ownerOfApplication(),
         ),
         READ_NOTES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication(),
         ),
         CREATE_NOTE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication(),
         ),
         READ_SPECIAL_EDUCATION_TEACHER_NOTES(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPreferredUnitOfApplication(),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementPlanUnitOfApplication(),
         ),
         READ_ATTACHMENTS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         UPLOAD_ATTACHMENT(HasGlobalRole(ADMIN, SERVICE_WORKER));
@@ -691,17 +689,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true),
         ),
         READ(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceAction(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true)
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceAction(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -713,17 +711,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceFactor(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true)
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceFactor(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -736,19 +734,19 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
@@ -756,20 +754,20 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
             HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent(),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true)
+            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedDecision(true),
         ),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfAssistanceNeedDecision(true),
         ),
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedDecision()
+                .inSelectedUnitOfAssistanceNeedDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(HasGlobalRole(ADMIN)),
@@ -787,36 +785,36 @@ sealed interface Action {
         READ_DECISION_MAKER_OPTIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasGlobalRole(DIRECTOR).andAssistanceNeedPreschoolDecisionHasBeenSent(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
-            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision()
+            HasUnitRole(STAFF).inPlacementUnitOfChildOfAcceptedAssistanceNeedPreschoolDecision(),
         ),
         SEND(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision()
+                .inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(),
         ),
         REVERT_TO_UNSENT(HasGlobalRole(ADMIN)),
         READ_IN_REPORT(
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inSelectedUnitOfAssistanceNeedPreschoolDecision()
+                .inSelectedUnitOfAssistanceNeedPreschoolDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(HasGlobalRole(ADMIN)),
@@ -825,7 +823,7 @@ sealed interface Action {
         UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
         ANNUL(
             HasGlobalRole(ADMIN),
-            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision()
+            IsEmployee.andIsDecisionMakerForAssistanceNeedPreschoolDecision(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -837,12 +835,12 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement()
+                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement()
+                .inPlacementUnitOfChildOfAssistanceNeedVoucherCoefficientWithServiceVoucherPlacement(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -854,11 +852,11 @@ sealed interface Action {
         READ_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnitOfApplicationAttachment(),
-            IsCitizen(allowWeakLogin = false).uploaderOfAttachment()
+            IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         READ_INCOME_STATEMENT_ATTACHMENT(
             HasGlobalRole(ADMIN, FINANCE_ADMIN),
-            IsCitizen(allowWeakLogin = false).uploaderOfAttachment()
+            IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         READ_INCOME_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
@@ -867,19 +865,19 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
             IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment(),
-            IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment()
+            IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment(),
         ),
         READ_FEE_ALTERATION_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_ORPHAN_ATTACHMENT(IsCitizen(allowWeakLogin = false).uploaderOfAttachment()),
         DELETE_APPLICATION_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andAttachmentWasUploadedByAnyEmployee(),
-            IsCitizen(allowWeakLogin = false).uploaderOfAttachment()
+            IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         DELETE_INCOME_STATEMENT_ATTACHMENT(
             HasGlobalRole(ADMIN),
             HasGlobalRole(FINANCE_ADMIN).andAttachmentWasUploadedByAnyEmployee(),
-            IsCitizen(allowWeakLogin = false).uploaderOfAttachment()
+            IsCitizen(allowWeakLogin = false).uploaderOfAttachment(),
         ),
         DELETE_INCOME_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_MESSAGE_CONTENT_ATTACHMENT(HasGlobalRole(ADMIN)),
@@ -887,7 +885,7 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment()
+                .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
         ),
         DELETE_FEE_ALTERATION_ATTACHMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 
@@ -899,12 +897,12 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfBackupCare()
+                .inPlacementUnitOfChildOfBackupCare(),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfBackupCare()
+                .inPlacementUnitOfChildOfBackupCare(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -914,11 +912,11 @@ sealed interface Action {
         ScopedAction<BackupPickupId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -929,15 +927,15 @@ sealed interface Action {
     ) : ScopedAction<CalendarEventId> {
         READ(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfCalendarEvent(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -949,12 +947,12 @@ sealed interface Action {
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF)
-                .inUnitOfCalendarEventTime()
+                .inUnitOfCalendarEventTime(),
         ),
         UPDATE_RESERVATION(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF)
-                .inUnitOfCalendarEventTime()
+                .inUnitOfCalendarEventTime(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -968,32 +966,32 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_ABSENCE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ABSENCES(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
         ),
         READ_FUTURE_ABSENCES(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         READ_ATTENDANCE_REPORT(HasGlobalRole(ADMIN)),
         DELETE_ABSENCE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         DELETE_ABSENCE_RANGE(
             HasGlobalRole(ADMIN),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         READ_NON_RESERVABLE_RESERVATIONS(
             IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
@@ -1003,7 +1001,7 @@ sealed interface Action {
         ),
         DELETE_HOLIDAY_RESERVATIONS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ADDITIONAL_INFO(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
@@ -1011,17 +1009,17 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         UPDATE_ADDITIONAL_INFO(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_ASSISTANCE(
@@ -1030,113 +1028,113 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_ASSISTANCE_FACTOR(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ASSISTANCE_FACTORS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_DAYCARE_ASSISTANCE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_DAYCARE_ASSISTANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_PRESCHOOL_ASSISTANCE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_PRESCHOOL_ASSISTANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ASSISTANCE_ACTION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_OTHER_ASSISTANCE_MEASURE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_OTHER_ASSISTANCE_MEASURES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    SPECIAL_EDUCATION_TEACHER
+                    SPECIAL_EDUCATION_TEACHER,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_ASSISTANCE_NEED_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ASSISTANCE_NEED_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS(
             HasGlobalRole(ADMIN),
             HasGlobalRole(SERVICE_WORKER).andChildHasServiceVoucherPlacement(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildWithServiceVoucherPlacement()
+                .inPlacementUnitOfChildWithServiceVoucherPlacement(),
         ),
         CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         CREATE_ATTENDANCE_RESERVATION(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
         ),
         UPSERT_CHILD_DATE_PRESENCE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
         ),
         CREATE_BACKUP_CARE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         READ_BACKUP_CARE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -1144,13 +1142,13 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_BACKUP_PICKUP(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_BACKUP_PICKUP(
             HasGlobalRole(ADMIN),
@@ -1158,19 +1156,19 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         CREATE_DAILY_NOTE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         CREATE_STICKY_NOTE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         READ_DAILY_SERVICE_TIMES(),
         CREATE_DAILY_SERVICE_TIME(),
@@ -1180,9 +1178,9 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         READ_FAMILY_CONTACTS(
             HasGlobalRole(ADMIN),
@@ -1190,22 +1188,22 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         UPDATE_FAMILY_CONTACT_DETAILS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         UPDATE_FAMILY_CONTACT_PRIORITY(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
         ),
         READ_GUARDIANS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         READ_BLOCKED_GUARDIANS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_FEE_ALTERATION(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1217,7 +1215,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild()
+                .inPlacementGroupOfChild(),
         ),
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1226,7 +1224,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild()
+                .inPlacementGroupOfChild(),
         ),
         CREATE_VASU_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1235,7 +1233,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild()
+                .inPlacementGroupOfChild(),
         ),
         READ_VASU_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1244,19 +1242,19 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChild()
+                .inPlacementGroupOfChild(),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         READ_PEDAGOGICAL_DOCUMENTS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChild()
+                .inPlacementUnitOfChild(),
         ),
         READ_SENSITIVE_INFO(
             HasGlobalRole(ADMIN),
@@ -1264,20 +1262,20 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = true).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = true).inPlacementUnitOfChild(),
         ),
         UPLOAD_IMAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         ),
         DELETE_IMAGE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inPlacementUnitOfChild(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChild()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChild(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1290,13 +1288,13 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDailyNote(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDailyNote(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildDailyNote(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1310,12 +1308,12 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inPlacementUnitOfChildOfChildImage(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildImage(),
             IsCitizen(allowWeakLogin = true).guardianOfChildOfChildImage(),
-            IsCitizen(allowWeakLogin = true).fosterParentOfChildOfChildImage()
+            IsCitizen(allowWeakLogin = true).fosterParentOfChildOfChildImage(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1328,13 +1326,13 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildStickyNote(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildStickyNote(),
-            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote()
+            IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildStickyNote(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1354,12 +1352,12 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfDailyServiceTime()
+                .inPlacementUnitOfChildOfDailyServiceTime(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfFutureDailyServiceTime()
+                .inPlacementUnitOfChildOfFutureDailyServiceTime(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1371,17 +1369,17 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true),
         ),
         READ(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfDaycareAssistance(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true)
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfDaycareAssistance(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1391,12 +1389,12 @@ sealed interface Action {
         ScopedAction<DecisionId> {
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDecision()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDecision(),
         ),
         DOWNLOAD_PDF(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfDecision()
+                .inPlacementUnitOfChildOfDecision(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1419,7 +1417,7 @@ sealed interface Action {
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, REPORT_VIEWER),
             IsEmployee.self(),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_DETAILS(HasGlobalRole(ADMIN)),
         DELETE(HasGlobalRole(ADMIN)),
@@ -1429,7 +1427,7 @@ sealed interface Action {
         UPDATE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
-            IsEmployee.self()
+            IsEmployee.self(),
         ),
         ACTIVATE(HasGlobalRole(ADMIN)),
         DEACTIVATE(HasGlobalRole(ADMIN));
@@ -1477,23 +1475,23 @@ sealed interface Action {
         ScopedAction<GroupId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
         ),
         CREATE_ABSENCES(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
         ),
         READ_ABSENCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
         ),
         DELETE_ABSENCES(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
         ),
         READ_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN, FINANCE_ADMIN),
@@ -1501,15 +1499,15 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inUnitOfGroup(),
-            IsMobile(requirePinLogin = false).inUnitOfGroup()
+            IsMobile(requirePinLogin = false).inUnitOfGroup(),
         ),
         UPDATE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup(),
-            IsMobile(requirePinLogin = false).inUnitOfGroup()
+            IsMobile(requirePinLogin = false).inUnitOfGroup(),
         ),
         READ_CARETAKERS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
@@ -1517,26 +1515,26 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnitOfGroup()
+                .inUnitOfGroup(),
         ),
         CREATE_CARETAKERS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
         ),
         UPDATE_CARETAKERS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
         ),
         DELETE_CARETAKERS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup(),
         ),
         CREATE_NOTE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
-            IsMobile(requirePinLogin = false).inUnitOfGroup()
+            IsMobile(requirePinLogin = false).inUnitOfGroup(),
         ),
         READ_NOTES(
             HasGlobalRole(ADMIN),
@@ -1544,10 +1542,10 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inUnitOfGroup(),
-            IsMobile(requirePinLogin = false).inUnitOfGroup()
+            IsMobile(requirePinLogin = false).inUnitOfGroup(),
         ),
         MARK_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         MARK_EXTERNAL_DEPARTURE(IsMobile(requirePinLogin = false).inUnitOfGroup()),
@@ -1556,7 +1554,7 @@ sealed interface Action {
         RECEIVE_PUSH_NOTIFICATIONS(IsMobile(requirePinLogin = false).inUnitOfGroup()),
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnitOfGroup(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1567,12 +1565,12 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(),
-            IsMobile(requirePinLogin = false).inUnitOfGroupNote()
+            IsMobile(requirePinLogin = false).inUnitOfGroupNote(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroupNote(),
-            IsMobile(requirePinLogin = false).inUnitOfGroupNote()
+            IsMobile(requirePinLogin = false).inUnitOfGroupNote(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1584,12 +1582,12 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inUnitOfGroupPlacement()
+                .inUnitOfGroupPlacement(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inUnitOfGroupPlacement()
+                .inUnitOfGroupPlacement(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1644,7 +1642,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = true).hasPersonalMessageAccount(),
             IsMobile(requirePinLogin = true).hasDaycareMessageAccount(UNIT_SUPERVISOR),
             IsMobile(requirePinLogin = true).hasDaycareGroupMessageAccount(),
-            IsCitizen(allowWeakLogin = true).hasMessageAccount()
+            IsCitizen(allowWeakLogin = true).hasMessageAccount(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1656,13 +1654,13 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inUnitOfMobileDevice(),
-            IsEmployee.ownerOfMobileDevice()
+            IsEmployee.ownerOfMobileDevice(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inUnitOfMobileDevice(),
-            IsEmployee.ownerOfMobileDevice()
+            IsEmployee.ownerOfMobileDevice(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1675,20 +1673,19 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
         ),
         READ(
             HasGlobalRole(ADMIN),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfOtherAssistanceMeasure(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR)
-                .inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfOtherAssistanceMeasure(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1699,7 +1696,7 @@ sealed interface Action {
         POST_RESPONSE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfPairing(),
-            IsEmployee.ownerOfPairing()
+            IsEmployee.ownerOfPairing(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1710,20 +1707,20 @@ sealed interface Action {
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_CONFLICTED_PARENTSHIP(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfParentship()
+                .inPlacementUnitOfChildOfParentship(),
         ),
         RETRY(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfParentship(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1735,15 +1732,15 @@ sealed interface Action {
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPartnership()
+                .inPlacementUnitOfChildOfPartnership(),
         ),
         RETRY(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPartnership(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1766,19 +1763,19 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfPedagogicalDocument()
+                .inPlacementUnitOfChildOfPedagogicalDocument(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfPedagogicalDocument()
+                .inPlacementUnitOfChildOfPedagogicalDocument(),
         ),
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfPedagogicalDocument()
+                .inPlacementUnitOfChildOfPedagogicalDocument(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1792,11 +1789,11 @@ sealed interface Action {
         CREATE_INVOICE_CORRECTION(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         CREATE_PARENTSHIP(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson(),
         ),
         CREATE_PARTNERSHIP(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson(),
         ),
         DELETE(HasGlobalRole(ADMIN)),
         DOWNLOAD_ADDRESS_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER)),
@@ -1812,21 +1809,21 @@ sealed interface Action {
         READ_CHILD_PLACEMENT_PERIODS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_DECISIONS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
         ),
         READ_FAMILY_OVERVIEW(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ_FEE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         READ_FOSTER_CHILDREN(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild(),
         ),
         READ_FOSTER_PARENTS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild(),
         ),
         READ_INCOME(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_INCOME_STATEMENTS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1837,17 +1834,17 @@ sealed interface Action {
         READ_OPH_OID(
             HasGlobalRole(ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ_PARENTSHIPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ_PARTNERSHIPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -1855,20 +1852,20 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ_DEPENDANTS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPerson()
+                .inPlacementUnitOfChildOfPerson(),
         ),
         READ_TIMELINE(HasGlobalRole(ADMIN), HasGlobalRole(FINANCE_ADMIN)),
         READ_VOUCHER_VALUE_DECISIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         UPDATE(
             HasGlobalRole(ADMIN, FINANCE_ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfPerson()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfPerson(),
         ),
         UPDATE_EVAKA_RIGHTS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         UPDATE_INVOICE_ADDRESS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
@@ -1884,22 +1881,22 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPlacement()
+                .inPlacementUnitOfChildOfPlacement(),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfFuturePlacement()
+                .inPlacementUnitOfChildOfFuturePlacement(),
         ),
         CREATE_GROUP_PLACEMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPlacement()
+                .inPlacementUnitOfChildOfPlacement(),
         ),
         CREATE_SERVICE_NEED(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfPlacement()
+                .inPlacementUnitOfChildOfPlacement(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1912,19 +1909,19 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfPreschoolAssistance(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true),
         ),
         DELETE(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfPreschoolAssistance(false),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true),
         ),
         READ(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfPreschoolAssistance(false),
-            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true)
+            HasUnitRole(STAFF, UNIT_SUPERVISOR).inPlacementUnitOfChildOfPreschoolAssistance(true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1944,11 +1941,11 @@ sealed interface Action {
         UPDATE(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
-                .inPlacementUnitOfChildOfServiceNeed()
+                .inPlacementUnitOfChildOfServiceNeed(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(EARLY_CHILDHOOD_EDUCATION_SECRETARY).inPlacementUnitOfChildOfServiceNeed()
+            HasUnitRole(EARLY_CHILDHOOD_EDUCATION_SECRETARY).inPlacementUnitOfChildOfServiceNeed(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1961,15 +1958,15 @@ sealed interface Action {
             HasGlobalRole(FINANCE_STAFF)
                 .andUnitProviderAndCareTypeEquals(
                     setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
-                    setOf(CareType.CENTRE, CareType.FAMILY, CareType.GROUP_FAMILY)
+                    setOf(CareType.CENTRE, CareType.FAMILY, CareType.GROUP_FAMILY),
                 ),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_GROUP_DETAILS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -1977,9 +1974,9 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_ATTENDANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -1987,13 +1984,13 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ), // marker for ui to toggle attendances-tab
         READ_APPLICATIONS_AND_PLACEMENT_PLANS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         READ_GROUPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -2001,18 +1998,18 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_CHILD_CAPACITY_FACTORS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         UPDATE(HasGlobalRole(ADMIN)),
         READ_CHILD_ATTENDANCES(
@@ -2021,17 +2018,17 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     STAFF,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
                 .inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
+            IsMobile(requirePinLogin = false).inUnit(),
         ),
         READ_CHILD_RESERVATIONS(IsMobile(requirePinLogin = false).inUnit()),
         READ_UNIT_RESERVATION_STATISTICS(IsMobile(requirePinLogin = false).inUnit()),
         UPDATE_CHILD_ATTENDANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
+            IsMobile(requirePinLogin = false).inUnit(),
         ),
         READ_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
@@ -2040,32 +2037,32 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         UPDATE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
+            IsMobile(requirePinLogin = false).inUnit(),
         ),
         DELETE_STAFF_ATTENDANCES(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
         ),
         READ_REALTIME_STAFF_ATTENDANCES(IsMobile(requirePinLogin = false).inUnit()),
         READ_STAFF_OCCUPANCY_COEFFICIENTS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
         ),
         UPSERT_STAFF_OCCUPANCY_COEFFICIENTS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         READ_OCCUPANCIES(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, FINANCE_STAFF),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
+            IsMobile(requirePinLogin = false).inUnit(),
         ),
         READ_ATTENDANCE_RESERVATIONS(
             HasGlobalRole(ADMIN),
@@ -2073,17 +2070,17 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_BACKUP_CARE(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         CREATE_PLACEMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_PLACEMENT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
@@ -2091,35 +2088,35 @@ sealed interface Action {
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
                     STAFF,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_PLACEMENT_PLAN(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         ACCEPT_PLACEMENT_PROPOSAL(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         CREATE_GROUP(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_MOBILE_STATS(IsMobile(requirePinLogin = false).inUnit()),
         READ_MOBILE_INFO(IsMobile(requirePinLogin = false).inUnit()),
         READ_MOBILE_DEVICES(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         CREATE_MOBILE_DEVICE_PAIRING(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_ACL(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         INSERT_ACL_UNIT_SUPERVISOR(HasGlobalRole(ADMIN)),
         DELETE_ACL_UNIT_SUPERVISOR(HasGlobalRole(ADMIN)),
@@ -2129,100 +2126,96 @@ sealed interface Action {
         DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY(HasGlobalRole(ADMIN)),
         INSERT_ACL_STAFF(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         DELETE_ACL_STAFF(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         UPDATE_STAFF_GROUP_ACL(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_APPLICATIONS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_PLACEMENT_GUARANTEE_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
-                .inUnit()
+                .inUnit(),
         ),
         READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD(
             HasGlobalRole(ADMIN, REPORT_VIEWER),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    SPECIAL_EDUCATION_TEACHER,
-                )
-                .inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
         ),
         READ_ATTENDANCE_RESERVATION_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_CHILD_AGE_AND_LANGUAGE_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inUnit()
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inUnit(),
         ),
         READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
         READ_EXCEEDED_SERVICE_NEEDS_REPORT(HasGlobalRole(ADMIN)),
         READ_FAMILY_CONFLICT_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_FAMILY_CONTACT_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_FAMILY_DAYCARE_MEAL_REPORT(
             HasGlobalRole(ADMIN, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
         READ_MISSING_SERVICE_NEED_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_OCCUPANCY_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)
         ),
         READ_SERVICE_NEED_REPORT(
             HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_SERVICE_VOUCHER_REPORT(
             HasGlobalRole(ADMIN, DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_SERVICE_VOUCHER_VALUES_REPORT(
             HasGlobalRole(ADMIN, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         UPDATE_FEATURES(HasGlobalRole(ADMIN)),
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
         READ_TERMINATED_PLACEMENTS(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_MISSING_GROUP_PLACEMENTS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_CALENDAR_EVENTS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
         ),
         CREATE_CALENDAR_EVENT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit(),
         ),
         CREATE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
@@ -2230,11 +2223,11 @@ sealed interface Action {
         DELETE_TEMPORARY_EMPLOYEE(HasGlobalRole(ADMIN), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_MEAL_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
         ),
         READ_PRESCHOOL_ABSENCE_REPORT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit()
+            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -2256,7 +2249,7 @@ sealed interface Action {
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfDuplicateChildOfHojksChildDocument()
+                .inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
         DOWNLOAD(HasGlobalRole(ADMIN)),
@@ -2267,7 +2260,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(editable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(editable = true)
+                .inPlacementGroupOfChildOfChildDocument(editable = true),
         ),
         PUBLISH(
             HasGlobalRole(ADMIN),
@@ -2276,7 +2269,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(publishable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(publishable = true)
+                .inPlacementGroupOfChildOfChildDocument(publishable = true),
         ),
         NEXT_STATUS(
             HasGlobalRole(ADMIN),
@@ -2285,7 +2278,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument()
+                .inPlacementGroupOfChildOfChildDocument(),
         ),
         PREV_STATUS(HasGlobalRole(ADMIN)),
         DELETE(
@@ -2295,7 +2288,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(deletable = true),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfChildDocument(deletable = true)
+                .inPlacementGroupOfChildOfChildDocument(deletable = true),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -2331,7 +2324,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
         ),
         DELETE(HasGlobalRole(ADMIN)),
         EVENT_PUBLISHED(
@@ -2341,7 +2334,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
         ),
         EVENT_MOVED_TO_READY(
             HasGlobalRole(ADMIN),
@@ -2350,13 +2343,13 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
         ),
         EVENT_RETURNED_TO_READY(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementUnitOfChildOfVasuDocument()
+                .inPlacementUnitOfChildOfVasuDocument(),
         ),
         EVENT_MOVED_TO_REVIEWED(
             HasGlobalRole(ADMIN),
@@ -2365,7 +2358,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
         ),
         EVENT_RETURNED_TO_REVIEWED(HasGlobalRole(ADMIN)),
         EVENT_MOVED_TO_CLOSED(
@@ -2375,7 +2368,7 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfVasuDocument(),
             HasGroupRole(STAFF)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
-                .inPlacementGroupOfChildOfVasuDocument()
+                .inPlacementGroupOfChildOfVasuDocument(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

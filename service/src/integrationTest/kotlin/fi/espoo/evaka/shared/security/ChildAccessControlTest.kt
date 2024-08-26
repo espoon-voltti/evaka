@@ -53,7 +53,7 @@ class ChildAccessControlTest : AccessControlTest() {
                     guardianCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
                     clock,
                     action,
-                    childId
+                    childId,
                 )
             )
         }
@@ -71,7 +71,7 @@ class ChildAccessControlTest : AccessControlTest() {
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
                 daycareId
@@ -101,7 +101,7 @@ class ChildAccessControlTest : AccessControlTest() {
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
                 Pair(daycareId, otherDaycareId)

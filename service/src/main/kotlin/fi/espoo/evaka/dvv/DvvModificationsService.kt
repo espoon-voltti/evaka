@@ -28,7 +28,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DvvModificationsService(
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     fun updatePersonsFromDvv(db: Database.Connection, clock: EvakaClock, ssns: List<String>): Int {
@@ -46,19 +46,19 @@ class DvvModificationsService(
                                             db,
                                             clock,
                                             personModifications.henkilotunnus,
-                                            infoGroup
+                                            infoGroup,
                                         )
                                     is RestrictedInfoDvvInfoGroup ->
                                         handleRestrictedInfo(
                                             db,
                                             personModifications.henkilotunnus,
-                                            infoGroup
+                                            infoGroup,
                                         )
                                     is SsnDvvInfoGroup ->
                                         handleSsnDvvInfoGroup(
                                             db,
                                             personModifications.henkilotunnus,
-                                            infoGroup
+                                            infoGroup,
                                         )
                                     is CaretakerLimitedDvvInfoGroup -> {
                                         if (infoGroup.huoltaja.henkilotunnus != null) {
@@ -85,7 +85,7 @@ class DvvModificationsService(
                                     "Could not process dvv modification for ${
                             personModifications.henkilotunnus.substring(
                                 0,
-                                6
+                                6,
                             )
                             }: ${e.message}"
                                 }
@@ -102,7 +102,7 @@ class DvvModificationsService(
                         asyncJobRunner.plan(
                             tx,
                             payloads = ssnsToUpdateFromVtj.map { AsyncJob.UpdateFromVtj(it) },
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
 
@@ -115,7 +115,7 @@ class DvvModificationsService(
                     result.token,
                     result.nextToken,
                     ssns.size,
-                    result.dvvModifications.size
+                    result.dvvModifications.size,
                 )
             }
         }
@@ -127,7 +127,7 @@ class DvvModificationsService(
         db: Database.Connection,
         clock: EvakaClock,
         ssn: String,
-        deathDvvInfoGroup: DeathDvvInfoGroup
+        deathDvvInfoGroup: DeathDvvInfoGroup,
     ) {
         if (deathDvvInfoGroup.kuollut != true || deathDvvInfoGroup.kuolinpv == null) return
 
@@ -143,20 +143,20 @@ class DvvModificationsService(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             person.id,
-                            DateRange(dateOfDeath, null)
+                            DateRange(dateOfDeath, null),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
                 asyncJobRunner.plan(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             person.id,
-                            DateRange(dateOfDeath, null)
+                            DateRange(dateOfDeath, null),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -166,12 +166,12 @@ class DvvModificationsService(
         tx: Database.Transaction,
         personId: PersonId,
         dateOfDeath: LocalDate,
-        clock: EvakaClock
+        clock: EvakaClock,
     ) {
         tx.getPartnersForPerson(
                 personId,
                 includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath)
+                period = DateRange(dateOfDeath, dateOfDeath),
             )
             .forEach {
                 tx.updatePartnershipDuration(
@@ -180,7 +180,7 @@ class DvvModificationsService(
                     dateOfDeath,
                     ModifySource.DVV,
                     clock.now(),
-                    null
+                    null,
                 )
             }
 
@@ -189,13 +189,13 @@ class DvvModificationsService(
                 headOfChildId = personId,
                 childId = null,
                 includeConflicts = true,
-                period = DateRange(dateOfDeath, dateOfDeath)
+                period = DateRange(dateOfDeath, dateOfDeath),
             ) +
                 tx.getParentships(
                     headOfChildId = null,
                     childId = personId,
                     includeConflicts = true,
-                    period = DateRange(dateOfDeath, dateOfDeath)
+                    period = DateRange(dateOfDeath, dateOfDeath),
                 )
 
         parentships.forEach {
@@ -204,7 +204,7 @@ class DvvModificationsService(
                 startDate = it.startDate,
                 endDate = dateOfDeath,
                 now = clock.now(),
-                modifier = Modifier.DVV
+                modifier = Modifier.DVV,
             )
         }
     }
@@ -212,7 +212,7 @@ class DvvModificationsService(
     private fun handleRestrictedInfo(
         db: Database.Connection,
         ssn: String,
-        restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup
+        restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup,
     ) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
@@ -232,7 +232,7 @@ class DvvModificationsService(
                             else it.postalCode,
                         postOffice =
                             if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                            else it.postOffice
+                            else it.postOffice,
                     )
                 )
             }
@@ -241,7 +241,7 @@ class DvvModificationsService(
     private fun handleSsnDvvInfoGroup(
         db: Database.Connection,
         ssn: String,
-        ssnDvvInfoGroup: SsnDvvInfoGroup
+        ssnDvvInfoGroup: SsnDvvInfoGroup,
     ) =
         db.transaction { tx ->
             tx.getPersonBySSN(ssn)?.let {
@@ -258,7 +258,7 @@ class DvvModificationsService(
     data class DvvModificationsWithToken(
         val dvvModifications: List<DvvModification>,
         val token: String,
-        val nextToken: String
+        val nextToken: String,
     )
 
     fun getDvvModifications(tx: Database.Read, ssns: List<String>): DvvModificationsWithToken {
@@ -269,7 +269,7 @@ class DvvModificationsService(
     fun getAllPagesOfDvvModifications(
         ssns: List<String>,
         token: String,
-        alreadyFoundDvvModifications: List<DvvModification>
+        alreadyFoundDvvModifications: List<DvvModification>,
     ): DvvModificationsWithToken {
         logger.debug(
             "Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}"
@@ -282,13 +282,13 @@ class DvvModificationsService(
                 DvvModificationsWithToken(
                     dvvModifications = combinedModifications,
                     token = token,
-                    nextToken = dvvModificationsResponse.viimeisinKirjausavain
+                    nextToken = dvvModificationsResponse.viimeisinKirjausavain,
                 )
             } else {
                 getAllPagesOfDvvModifications(
                     ssns,
                     dvvModificationsResponse.viimeisinKirjausavain,
-                    combinedModifications
+                    combinedModifications,
                 )
             }
         }

@@ -55,19 +55,19 @@ class UnitAccessControlTest : AccessControlTest() {
         val action = Action.Global.READ_UNITS
         rules.add(
             action,
-            HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inAnyUnit()
+            HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inAnyUnit(),
         )
         val deniedSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
                 unitRoles =
-                    mapOf(daycareId to UserRole.UNIT_SUPERVISOR, featureDaycareId to UserRole.STAFF)
+                    mapOf(daycareId to UserRole.UNIT_SUPERVISOR, featureDaycareId to UserRole.STAFF),
             )
         val permittedSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
                 unitRoles =
-                    mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.UNIT_SUPERVISOR)
+                    mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.UNIT_SUPERVISOR),
             )
         db.read { tx ->
             assertFalse(accessControl.hasPermissionFor(tx, deniedSupervisor, clock, action))
@@ -82,12 +82,12 @@ class UnitAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR)
+                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF)
+                unitRoles = mapOf(daycareId to UserRole.STAFF),
             )
         db.read { tx ->
             assertTrue(accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycareId))
@@ -100,7 +100,7 @@ class UnitAccessControlTest : AccessControlTest() {
         val action = Action.Unit.READ
         rules.add(
             action,
-            HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inUnit()
+            HasUnitRole(UserRole.UNIT_SUPERVISOR).withUnitFeatures(unitFeature).inUnit(),
         )
         val unitSupervisor =
             createTestEmployee(
@@ -108,13 +108,13 @@ class UnitAccessControlTest : AccessControlTest() {
                 unitRoles =
                     mapOf(
                         daycareId to UserRole.UNIT_SUPERVISOR,
-                        featureDaycareId to UserRole.UNIT_SUPERVISOR
-                    )
+                        featureDaycareId to UserRole.UNIT_SUPERVISOR,
+                    ),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF)
+                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF),
             )
         db.read { tx ->
             assertFalse(
@@ -170,13 +170,13 @@ class UnitAccessControlTest : AccessControlTest() {
                 unitRoles =
                     mapOf(
                         daycareId to UserRole.UNIT_SUPERVISOR,
-                        featureDaycareId to UserRole.UNIT_SUPERVISOR
-                    )
+                        featureDaycareId to UserRole.UNIT_SUPERVISOR,
+                    ),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF)
+                unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF),
             )
         val serviceWorker = createTestEmployee(globalRoles = setOf(UserRole.SERVICE_WORKER))
 
@@ -184,7 +184,7 @@ class UnitAccessControlTest : AccessControlTest() {
 
         assertEquals(
             setOf(daycareId, featureDaycareId),
-            execute(getFilter(unitSupervisor) as AccessControlFilter.Some)
+            execute(getFilter(unitSupervisor) as AccessControlFilter.Some),
         )
         assertEquals(emptySet(), execute(getFilter(otherEmployee) as AccessControlFilter.Some))
         assertEquals(AccessControlFilter.PermitAll, getFilter(serviceWorker))

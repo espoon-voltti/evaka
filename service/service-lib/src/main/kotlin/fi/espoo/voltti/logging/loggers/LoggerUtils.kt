@@ -5,8 +5,9 @@
 package fi.espoo.voltti.logging.loggers
 
 @Suppress("NOTHING_TO_INLINE", "TooGenericExceptionCaught")
-internal inline fun (() -> Any?).toStringSafe(): String = try {
-    invoke().toString()
-} catch (e: Exception) {
-    "Log message invocation failed: $e"
-}
+internal inline fun (() -> Any?).toStringSafe(): String =
+    try {
+        invoke().toString()
+    } catch (e: Exception) {
+        "Log message invocation failed: $e"
+    }

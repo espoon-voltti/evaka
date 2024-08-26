@@ -13,9 +13,9 @@ class SsnMasker : ValueMasker {
             value.replace(
                 Regex(
                     "(?<!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[-+ABCDEFUVWXY](\\d{3})[\\dA-Z](?!-)",
-                    RegexOption.IGNORE_CASE
+                    RegexOption.IGNORE_CASE,
                 ),
-                "REDACTED-SSN"
+                "REDACTED-SSN",
             )
         } else {
             value ?: "null"

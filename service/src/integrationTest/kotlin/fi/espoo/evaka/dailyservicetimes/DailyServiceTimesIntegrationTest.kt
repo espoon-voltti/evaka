@@ -68,7 +68,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         DateRange(
             // Tuesday
             today.plusDays(92),
-            null
+            null,
         )
     private val tenToNoonRange = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0))
 
@@ -99,7 +99,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = id,
                     childId = child.id,
-                    validityPeriod = DateRange(today, null)
+                    validityPeriod = DateRange(today, null),
                 )
             )
         }
@@ -109,7 +109,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 id,
                 DailyServiceTimesValue.RegularTimes(
                     validityPeriod = DateRange(today.minusDays(1), null),
-                    regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
+                    regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0)),
                 ),
             )
         }
@@ -130,14 +130,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = idFuture,
                     childId = child.id,
-                    validityPeriod = DateRange(today, null)
+                    validityPeriod = DateRange(today, null),
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
                     id = past,
                     childId = child2.id,
-                    validityPeriod = DateRange(today.minusDays(2), today.minusDays(1))
+                    validityPeriod = DateRange(today.minusDays(2), today.minusDays(1)),
                 )
             )
         }
@@ -158,8 +158,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(1), today.plusDays(100)),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         // Add overlapping entry to the start
@@ -167,8 +167,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(1), today.plusDays(10)),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         // Add overlapping entry in the middle -> not allowed
@@ -177,7 +177,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 child.id,
                 DailyServiceTimesValue.RegularTimes(
                     validityPeriod = DateRange(today.plusDays(30), today.plusDays(50)),
-                    regularTimes = tenToNoonRange
+                    regularTimes = tenToNoonRange,
                 ),
             )
         }
@@ -187,8 +187,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(90), null),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         // Add a finite entry to the end when the current is infinite
@@ -196,8 +196,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(100), today.plusDays(120)),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         run {
@@ -210,7 +210,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 assertEquals(
                     expectedValidity,
                     actual.dailyServiceTimes.times.validityPeriod,
-                    "Index $i"
+                    "Index $i",
                 )
             }
         }
@@ -220,8 +220,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(1), null),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         run {
@@ -229,7 +229,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             assertEquals(1, dailyServiceTimes.size)
             assertEquals(
                 dailyServiceTimes[0].dailyServiceTimes.times.validityPeriod,
-                DateRange(today.plusDays(1), null)
+                DateRange(today.plusDays(1), null),
             )
         }
     }
@@ -242,13 +242,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = id,
                     childId = child.id,
-                    validityPeriod = DateRange(today.plusDays(1), today.plusDays(10))
+                    validityPeriod = DateRange(today.plusDays(1), today.plusDays(10)),
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
                     childId = child.id,
-                    validityPeriod = DateRange(today.plusDays(11), null)
+                    validityPeriod = DateRange(today.plusDays(11), null),
                 )
             )
         }
@@ -260,17 +260,12 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 id,
                 DailyServiceTimesValue.RegularTimes(
                     validityPeriod = DateRange(today.plusDays(1), today.plusDays(11)),
-                    regularTimes = tenToNoonRange
+                    regularTimes = tenToNoonRange,
                 ),
             )
         }
 
-        assertThrows<BadRequest> {
-            setDailyServiceTimesEndDate(
-                id,
-                today.plusDays(11),
-            )
-        }
+        assertThrows<BadRequest> { setDailyServiceTimesEndDate(id, today.plusDays(11)) }
     }
 
     @Test
@@ -279,8 +274,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = dailyServiceTimesValidity,
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
@@ -296,8 +291,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = dailyServiceTimesValidity,
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
@@ -313,8 +308,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = dailyServiceTimesValidity,
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
@@ -326,8 +321,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             times[0].dailyServiceTimes.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = dailyServiceTimesValidity,
-                regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
-            )
+                regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0)),
+            ),
         )
 
         val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
@@ -341,8 +336,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             child.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(today.plusDays(5), originalEnd),
-                regularTimes = tenToNoonRange
-            )
+                regularTimes = tenToNoonRange,
+            ),
         )
 
         val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
@@ -372,7 +367,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         TimeRange(LocalTime.parse("07:00"), LocalTime.parse("17:30")),
                         TimeRange(LocalTime.parse("07:00"), LocalTime.parse("17:30")),
                         null,
-                        null
+                        null,
                     ),
                 // Also open on Saturdays for shift care
                 shiftCareOperationTimes =
@@ -383,7 +378,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         TimeRange(LocalTime.parse("07:00"), LocalTime.parse("17:30")),
                         TimeRange(LocalTime.parse("07:00"), LocalTime.parse("17:30")),
                         TimeRange(LocalTime.parse("07:00"), LocalTime.parse("17:30")),
-                        null
+                        null,
                     ),
             )
 
@@ -398,7 +393,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = today,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 .also { placementId ->
@@ -444,8 +439,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 thursday = tenToNoonRange,
                 friday = tenToNoonRange,
                 saturday = null,
-                sunday = null
-            )
+                sunday = null,
+            ),
         )
 
         val absenceDates =
@@ -462,7 +457,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 LocalDate.of(2022, 5, 21), // Saturday of week 2 (shift care)
                 LocalDate.of(2022, 5, 25), // Wednesday of week 3 (no service need)
             ),
-            absenceDates
+            absenceDates,
         )
         assertEquals(listOf(tuesdayBefore, wednesdayBefore, tuesday), getReservationDates())
     }
@@ -476,7 +471,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             admin.user,
             MockEvakaClock(now),
             childId,
-            dailyServiceTime
+            dailyServiceTime,
         )
     }
 
@@ -489,20 +484,17 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             admin.user,
             MockEvakaClock(now),
             id,
-            dailyServiceTime
+            dailyServiceTime,
         )
     }
 
-    private fun setDailyServiceTimesEndDate(
-        id: DailyServiceTimesId,
-        endDate: LocalDate,
-    ) {
+    private fun setDailyServiceTimesEndDate(id: DailyServiceTimesId, endDate: LocalDate) {
         dailyServiceTimesController.putDailyServiceTimesEnd(
             dbInstance(),
             admin.user,
             MockEvakaClock(now),
             id,
-            DailyServiceTimesController.DailyServiceTimesEndDate(endDate)
+            DailyServiceTimesController.DailyServiceTimesEndDate(endDate),
         )
     }
 
@@ -511,7 +503,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             dbInstance(),
             admin.user,
             MockEvakaClock(now),
-            id
+            id,
         )
     }
 
@@ -522,29 +514,29 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             dbInstance(),
             admin.user,
             MockEvakaClock(now),
-            childId
+            childId,
         )
     }
 
     private fun getDailyServiceTimeNotifications(
-        user: DevPerson,
+        user: DevPerson
     ): List<DailyServiceTimeNotificationId> {
         return dailyServiceTimesCitizenController.getDailyServiceTimeNotifications(
             dbInstance(),
             user.user(CitizenAuthLevel.WEAK),
-            MockEvakaClock(now)
+            MockEvakaClock(now),
         )
     }
 
     private fun dismissDailyServiceTimeNotification(
         user: DevPerson,
-        notificationId: DailyServiceTimeNotificationId
+        notificationId: DailyServiceTimeNotificationId,
     ) {
         dailyServiceTimesCitizenController.dismissDailyServiceTimeNotification(
             dbInstance(),
             user.user(CitizenAuthLevel.WEAK),
             MockEvakaClock(now),
-            listOf(notificationId)
+            listOf(notificationId),
         )
     }
 
@@ -557,9 +549,9 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DailyReservationRequest.Reservations(
                     childId = child.id,
                     date = it,
-                    reservation = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))
+                    reservation = TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
                 )
-            }
+            },
         )
     }
 

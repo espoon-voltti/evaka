@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/mobile/units", // deprecated
-    "/employee-mobile/units"
+    "/employee-mobile/units",
 )
 class MobileUnitController(private val accessControl: AccessControl) {
     @GetMapping("/{unitId}")
@@ -38,7 +38,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ): UnitInfo {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -47,7 +47,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_MOBILE_INFO,
-                        unitId
+                        unitId,
                     )
                     tx.fetchUnitInfo(unitId, clock.today())
                 }
@@ -60,7 +60,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestParam unitIds: List<DaycareId> = emptyList()
+        @RequestParam unitIds: List<DaycareId> = emptyList(),
     ): List<UnitStats> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -69,7 +69,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_MOBILE_STATS,
-                        unitIds
+                        unitIds,
                     )
                     tx.fetchUnitStats(unitIds, clock.today())
                 }
@@ -85,7 +85,7 @@ data class UnitInfo(
     val staff: List<Staff>,
     val features: List<PilotFeature>,
     val utilization: Double,
-    val isOperationalDate: Boolean
+    val isOperationalDate: Boolean,
 )
 
 data class GroupInfo(val id: GroupId, val name: String, val utilization: Double)
@@ -96,7 +96,7 @@ data class Staff(
     val lastName: String,
     val pinSet: Boolean,
     val pinLocked: Boolean,
-    val groups: List<GroupId>
+    val groups: List<GroupId>,
 )
 
 fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
@@ -106,7 +106,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val features: List<PilotFeature>,
         val operationDays: Set<Int>,
         val shiftCareOperationDays: Set<Int>?,
-        val shiftCareOpenOnHolidays: Boolean
+        val shiftCareOpenOnHolidays: Boolean,
     )
 
     val unit =
@@ -131,7 +131,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val name: String,
         val utilization: Double,
         val staffCapacity: Double,
-        val childCapacity: Double
+        val childCapacity: Double,
     )
 
     val tmpGroups =
@@ -272,7 +272,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         staff = staff,
         features = unit.features,
         utilization = unitUtilization,
-        isOperationalDate
+        isOperationalDate,
     )
 }
 
@@ -284,7 +284,7 @@ data class UnitStats(
     val presentStaff: Double,
     val presentStaffOther: Double,
     val totalStaff: Double,
-    val utilization: Double
+    val utilization: Double,
 )
 
 fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> =

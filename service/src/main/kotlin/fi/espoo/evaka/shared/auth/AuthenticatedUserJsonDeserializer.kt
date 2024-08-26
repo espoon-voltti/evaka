@@ -18,7 +18,7 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
         val id: UUID? = null,
         val globalRoles: Set<UserRole> = emptySet(),
         val allScopedRoles: Set<UserRole> = emptySet(),
-        val employeeId: EmployeeId? = null
+        val employeeId: EmployeeId? = null,
     )
 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
@@ -31,7 +31,7 @@ class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() 
             AuthenticatedUserType.employee ->
                 AuthenticatedUser.Employee(
                     EmployeeId(user.id!!),
-                    user.globalRoles + user.allScopedRoles
+                    user.globalRoles + user.allScopedRoles,
                 )
             AuthenticatedUserType.mobile ->
                 AuthenticatedUser.MobileDevice(MobileDeviceId(user.id!!), user.employeeId)

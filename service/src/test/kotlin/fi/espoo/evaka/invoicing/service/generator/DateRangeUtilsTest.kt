@@ -27,9 +27,9 @@ class DateRangeUtilsTest {
                 FiniteDateRange(LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 31)),
                 FiniteDateRange(LocalDate.of(2000, 4, 1), LocalDate.of(2000, 4, 30)),
                 FiniteDateRange(LocalDate.of(2000, 5, 1), LocalDate.of(2000, 6, 30)),
-                FiniteDateRange(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 8, 31))
+                FiniteDateRange(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 8, 31)),
             ),
-            buildFiniteDateRanges(datesOfChange)
+            buildFiniteDateRanges(datesOfChange),
         )
     }
 
@@ -52,7 +52,7 @@ class DateRangeUtilsTest {
                 DateRange(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 8, 31)),
                 DateRange(LocalDate.of(2000, 9, 1), null),
             ),
-            buildDateRanges(datesOfChange)
+            buildDateRanges(datesOfChange),
         )
     }
 
@@ -61,13 +61,13 @@ class DateRangeUtilsTest {
         val entities1 =
             listOf(
                 TestEntity(DateRange(LocalDate.of(2000, 5, 1), LocalDate.of(2000, 8, 1)), 0),
-                TestEntity(DateRange(LocalDate.of(2000, 9, 1), null), 4)
+                TestEntity(DateRange(LocalDate.of(2000, 9, 1), null), 4),
             )
         val entities2 =
             listOf(
                 TestEntityFinite(
                     FiniteDateRange(LocalDate.of(2000, 4, 1), LocalDate.of(2000, 10, 1)),
-                    "b"
+                    "b",
                 )
             )
         assertEquals(
@@ -76,9 +76,9 @@ class DateRangeUtilsTest {
                 LocalDate.of(2000, 8, 2),
                 LocalDate.of(2000, 9, 1),
                 LocalDate.of(2000, 4, 1),
-                LocalDate.of(2000, 10, 2)
+                LocalDate.of(2000, 10, 2),
             ),
-            getDatesOfChange(*entities1.toTypedArray(), *entities2.toTypedArray())
+            getDatesOfChange(*entities1.toTypedArray(), *entities2.toTypedArray()),
         )
     }
 
@@ -86,6 +86,6 @@ class DateRangeUtilsTest {
 
     private data class TestEntityFinite(
         override val finiteRange: FiniteDateRange,
-        val value: String
+        val value: String,
     ) : WithFiniteRange
 }

@@ -13,7 +13,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 value class JsonWriter<T> private constructor(private val writer: ObjectWriter) {
     constructor(
         jsonMapper: JsonMapper,
-        rootType: TypeReference<T>
+        rootType: TypeReference<T>,
     ) : this(jsonMapper.writerFor(rootType))
 
     fun writeValueAsString(value: T): String = writer.writeValueAsString(value)

@@ -39,7 +39,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable personId: PersonId
+        @PathVariable personId: PersonId,
     ): List<InvoiceCorrectionWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -48,7 +48,7 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_INVOICE_CORRECTIONS,
-                        personId
+                        personId,
                     )
                     val invoiceCorrections =
                         tx.createQuery {
@@ -74,17 +74,17 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
                     val permittedActions =
                         accessControl.getPermittedActions<
                             InvoiceCorrectionId,
-                            Action.InvoiceCorrection
+                            Action.InvoiceCorrection,
                         >(
                             tx,
                             user,
                             clock,
-                            invoiceCorrections.map { it.id }
+                            invoiceCorrections.map { it.id },
                         )
                     invoiceCorrections.map {
                         InvoiceCorrectionWithPermittedActions(
                             it,
-                            permittedActions[it.id] ?: emptySet()
+                            permittedActions[it.id] ?: emptySet(),
                         )
                     }
                 }
@@ -92,14 +92,14 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
             .also {
                 Audit.InvoiceCorrectionsRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     data class InvoiceCorrectionWithPermittedActions(
         val data: InvoiceCorrection,
-        val permittedActions: Set<Action.InvoiceCorrection>
+        val permittedActions: Set<Action.InvoiceCorrection>,
     )
 
     @PostMapping
@@ -107,7 +107,7 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: NewInvoiceCorrection
+        @RequestBody body: NewInvoiceCorrection,
     ) {
         val invoiceCorrectionId =
             db.connect { dbc ->
@@ -117,7 +117,7 @@ WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
                         user,
                         clock,
                         Action.Person.CREATE_INVOICE_CORRECTION,
-                        body.headOfFamilyId
+                        body.headOfFamilyId,
                     )
                     tx.createUpdate {
                             sql(
@@ -134,7 +134,7 @@ RETURNING id
             }
         Audit.InvoiceCorrectionsCreate.log(
             targetId = AuditId(listOf(body.headOfFamilyId, body.childId)),
-            objectId = AuditId(invoiceCorrectionId)
+            objectId = AuditId(invoiceCorrectionId),
         )
     }
 
@@ -143,7 +143,7 @@ RETURNING id
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: InvoiceCorrectionId
+        @PathVariable id: InvoiceCorrectionId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -152,7 +152,7 @@ RETURNING id
                     user,
                     clock,
                     Action.InvoiceCorrection.DELETE,
-                    id
+                    id,
                 )
                 try {
                     tx.createUpdate {
@@ -171,7 +171,7 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
                         PSQLState.FOREIGN_KEY_VIOLATION.state ->
                             throw BadRequest(
                                 "Cannot delete an already invoiced correction",
-                                cause = e
+                                cause = e,
                             )
                         else -> throw e
                     }
@@ -189,7 +189,7 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId,
-        @RequestBody body: NoteUpdateBody
+        @RequestBody body: NoteUpdateBody,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -198,7 +198,7 @@ DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
                     user,
                     clock,
                     Action.InvoiceCorrection.UPDATE_NOTE,
-                    id
+                    id,
                 )
                 tx.createUpdate {
                         sql(
@@ -224,7 +224,7 @@ data class InvoiceCorrection(
     val description: String,
     val note: String,
     val invoiceId: InvoiceId?,
-    val invoiceStatus: InvoiceStatus?
+    val invoiceStatus: InvoiceStatus?,
 )
 
 data class NewInvoiceCorrection(
@@ -236,5 +236,5 @@ data class NewInvoiceCorrection(
     val amount: Int,
     val unitPrice: Int,
     val description: String,
-    val note: String
+    val note: String,
 )

@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service
 @Service
 class FamilyInitializerService(
     private val personService: PersonService,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -37,7 +37,7 @@ class FamilyInitializerService(
     fun handleInitializeFamilyFromApplication(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.InitializeFamilyFromApplication
+        msg: AsyncJob.InitializeFamilyFromApplication,
     ) {
         val user = msg.user
         val application =
@@ -53,7 +53,7 @@ class FamilyInitializerService(
         tx: Database.Transaction,
         evakaClock: EvakaClock,
         familyFromApplication: FridgeFamilyMembers,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         // If head of family already has a family today, use it OR
         // if application has other partner in same address, and she has a family, use it OR
@@ -62,17 +62,17 @@ class FamilyInitializerService(
             if (
                 !tx.personIsHeadOfFamily(
                     familyFromApplication.headOfFamily.id,
-                    evakaClock.today()
+                    evakaClock.today(),
                 ) &&
                     familyFromApplication.fridgePartner != null &&
                     tx.personIsHeadOfFamily(
                         familyFromApplication.fridgePartner.id,
-                        evakaClock.today()
+                        evakaClock.today(),
                     ) &&
                     personService.personsLiveInTheSameAddress(
                         tx,
                         familyFromApplication.fridgePartner.id,
-                        familyFromApplication.headOfFamily.id
+                        familyFromApplication.headOfFamily.id,
                     )
             ) {
                 familyFromApplication.fridgePartner
@@ -86,7 +86,7 @@ class FamilyInitializerService(
                 evakaClock = evakaClock,
                 child = familyFromApplication.fridgeChild,
                 headOfChildId = headOfFamily.id,
-                applicationId = applicationId
+                applicationId = applicationId,
             )
         }
 
@@ -100,7 +100,7 @@ class FamilyInitializerService(
                     evakaClock,
                     familyFromApplication.headOfFamily.id,
                     familyFromApplication.fridgePartner.id,
-                    applicationId
+                    applicationId,
                 )
             }
         }
@@ -112,7 +112,7 @@ class FamilyInitializerService(
                     evakaClock = evakaClock,
                     child = sibling,
                     headOfChildId = headOfFamily.id,
-                    applicationId = applicationId
+                    applicationId = applicationId,
                 )
             }
         }
@@ -122,14 +122,14 @@ class FamilyInitializerService(
         val headOfFamily: PersonDTO,
         val fridgePartner: PersonDTO?,
         val fridgeChild: PersonDTO,
-        val fridgeSiblings: List<PersonDTO>
+        val fridgeSiblings: List<PersonDTO>,
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
         tx: Database.Transaction,
         clock: EvakaClock,
         user: AuthenticatedUser,
-        application: ApplicationDetails
+        application: ApplicationDetails,
     ): FridgeFamilyMembers {
         val headOfFamily =
             tx.getPersonById(application.guardianId)
@@ -162,7 +162,7 @@ class FamilyInitializerService(
                                     personService.personsLiveInTheSameAddress(
                                         tx,
                                         partner.id,
-                                        application.guardianId
+                                        application.guardianId,
                                     )
                             }
                     }
@@ -173,7 +173,7 @@ class FamilyInitializerService(
                                     personService.personsLiveInTheSameAddress(
                                         tx,
                                         partner.id,
-                                        application.guardianId
+                                        application.guardianId,
                                     )
                             }
                             .socialSecurityNumber
@@ -226,14 +226,14 @@ class FamilyInitializerService(
         evakaClock: EvakaClock,
         child: PersonDTO,
         headOfChildId: PersonId,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
             tx.getParentships(
                     headOfChildId = headOfChildId,
                     childId = child.id,
-                    includeConflicts = true
+                    includeConflicts = true,
                 )
                 .any {
                     (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
@@ -255,7 +255,7 @@ class FamilyInitializerService(
                         startDate = startDate,
                         endDate = endDate,
                         creator = Creator.Application(applicationId),
-                        conflict = false
+                        conflict = false,
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
@@ -272,7 +272,7 @@ class FamilyInitializerService(
                             startDate = startDate,
                             endDate = endDate,
                             creator = Creator.Application(applicationId),
-                            conflict = true
+                            conflict = true,
                         )
                     }
                     else -> throw e
@@ -286,7 +286,7 @@ class FamilyInitializerService(
         evakaClock: EvakaClock,
         personId1: PersonId,
         personId2: PersonId,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         val startDate = evakaClock.today()
         val alreadyExists =
@@ -309,7 +309,7 @@ class FamilyInitializerService(
                         endDate = null,
                         conflict = false,
                         Creator.Application(applicationId),
-                        evakaClock.now()
+                        evakaClock.now(),
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
@@ -327,7 +327,7 @@ class FamilyInitializerService(
                             endDate = null,
                             conflict = true,
                             Creator.Application(applicationId),
-                            evakaClock.now()
+                            evakaClock.now(),
                         )
                     }
                     else -> throw e

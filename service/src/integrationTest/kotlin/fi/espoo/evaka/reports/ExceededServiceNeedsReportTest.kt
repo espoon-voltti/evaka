@@ -52,7 +52,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
             DevDaycare(
                 areaId = area.id,
                 shiftCareOperationTimes =
-                    (1..7).map { TimeRange(LocalTime.of(6, 0), LocalTime.of(22, 0)) }
+                    (1..7).map { TimeRange(LocalTime.of(6, 0), LocalTime.of(22, 0)) },
             )
 
         val child1 = DevPerson()
@@ -82,7 +82,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         childId = child1.id,
                         unitId = daycare.id,
                         startDate = start,
-                        endDate = end
+                        endDate = end,
                     )
                 )
                 .also { placementId ->
@@ -94,7 +94,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             endDate = period.end,
                             optionId = snDaycareHours120.id,
                             confirmedBy = admin.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                     tx.insert(
@@ -102,7 +102,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             daycarePlacementId = placementId,
                             daycareGroupId = daycareGroup.id,
                             startDate = start,
-                            endDate = end
+                            endDate = end,
                         )
                     )
                 }
@@ -112,7 +112,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         childId = child2.id,
                         unitId = daycare.id,
                         startDate = start,
-                        endDate = end
+                        endDate = end,
                     )
                 )
                 .also { placementId ->
@@ -124,7 +124,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             endDate = period.end,
                             optionId = snDaycareHours120.id,
                             confirmedBy = admin.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -134,7 +134,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         childId = child3.id,
                         unitId = daycare.id,
                         startDate = start,
-                        endDate = end
+                        endDate = end,
                     )
                 )
                 .also { placementId ->
@@ -146,7 +146,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             endDate = period.end,
                             optionId = snDaycareHours120.id,
                             confirmedBy = admin.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -156,7 +156,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         childId = child4.id,
                         unitId = daycare.id,
                         startDate = start,
-                        endDate = end
+                        endDate = end,
                     )
                 )
                 .also { placementId ->
@@ -169,7 +169,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             optionId = snDaycareHours120.id,
                             shiftCare = ShiftCareType.FULL,
                             confirmedBy = admin.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -186,7 +186,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             daycare.id,
                             date,
                             LocalTime.of(8, 0),
-                            LocalTime.of(16, 0)
+                            LocalTime.of(16, 0),
                         )
                     )
                     // child2: 22 * 4 = 88 < 120
@@ -196,7 +196,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             daycare.id,
                             date,
                             LocalTime.of(8, 0),
-                            LocalTime.of(12, 0)
+                            LocalTime.of(12, 0),
                         )
                     )
                     // child3: free absence on all weekdays -> no excess hours
@@ -205,7 +205,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                             childId = child3.id,
                             date = date,
                             absenceCategory = AbsenceCategory.BILLABLE,
-                            absenceType = AbsenceType.FORCE_MAJEURE
+                            absenceType = AbsenceType.FORCE_MAJEURE,
                         )
                     )
                 }
@@ -216,7 +216,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                         childId = child4.id,
                         date = date,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                        absenceType = AbsenceType.FORCE_MAJEURE
+                        absenceType = AbsenceType.FORCE_MAJEURE,
                     )
                 )
             }
@@ -229,7 +229,7 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                 MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0))),
                 daycare.id,
                 start.year,
-                start.monthValue
+                start.monthValue,
             )
 
         assertEquals(
@@ -243,10 +243,10 @@ class ExceededServiceNeedsReportTest : FullApplicationTest(resetDbBeforeEach = t
                     groupName = daycareGroup.name,
                     serviceNeedHoursPerMonth = 120,
                     usedServiceHours = 176,
-                    excessHours = 56
+                    excessHours = 56,
                 )
             ),
-            rows
+            rows,
         )
     }
 }

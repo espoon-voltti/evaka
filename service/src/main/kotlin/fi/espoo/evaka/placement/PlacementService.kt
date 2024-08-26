@@ -44,7 +44,7 @@ import org.jdbi.v3.json.Json
 data class ApplicationServiceNeed(
     val optionId: ServiceNeedOptionId,
     val shiftCare: Boolean,
-    val placementType: PlacementType
+    val placementType: PlacementType,
 )
 
 fun createPlacements(
@@ -54,7 +54,7 @@ fun createPlacements(
     placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>,
     serviceNeed: ApplicationServiceNeed? = null,
     cancelPlacementsAfterClub: Boolean? = false,
-    placeGuarantee: Boolean
+    placeGuarantee: Boolean,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
@@ -74,7 +74,7 @@ fun createPlacements(
                 unitId,
                 period.start,
                 period.end,
-                placeGuarantee && firstPlacementTypePeriod == period.start
+                placeGuarantee && firstPlacementTypePeriod == period.start,
             )
 
         if (serviceNeed?.placementType == type) {
@@ -87,7 +87,7 @@ fun createPlacements(
                 ShiftCareType.fromBoolean(serviceNeed.shiftCare),
                 partWeek = partWeek,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
         }
         placement
@@ -102,7 +102,7 @@ fun createPlacement(
     type: PlacementType,
     serviceNeed: ApplicationServiceNeed? = null,
     useFiveYearsOldDaycare: Boolean = false,
-    placeGuarantee: Boolean
+    placeGuarantee: Boolean,
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -116,7 +116,7 @@ fun createPlacement(
         unitId,
         placementTypePeriods,
         serviceNeed,
-        placeGuarantee = placeGuarantee
+        placeGuarantee = placeGuarantee,
     )
 }
 
@@ -125,7 +125,7 @@ fun Database.Transaction.updatePlacement(
     startDate: LocalDate,
     endDate: LocalDate,
     aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All,
-    useFiveYearsOldDaycare: Boolean
+    useFiveYearsOldDaycare: Boolean,
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
@@ -135,7 +135,7 @@ fun Database.Transaction.updatePlacement(
         clearServiceNeedsFromPeriod(
             this,
             old.id,
-            FiniteDateRange(old.startDate, startDate.minusDays(1))
+            FiniteDateRange(old.startDate, startDate.minusDays(1)),
         )
     }
     if (endDate.isBefore(old.endDate)) {
@@ -147,7 +147,7 @@ fun Database.Transaction.updatePlacement(
         from = startDate,
         to = endDate,
         excludePlacement = id,
-        aclAuth = aclAuth
+        aclAuth = aclAuth,
     )
 
     try {
@@ -156,7 +156,7 @@ fun Database.Transaction.updatePlacement(
                 resolveFiveYearOldPlacementPeriods(
                     this,
                     old.childId,
-                    listOf(FiniteDateRange(startDate, endDate) to old.type)
+                    listOf(FiniteDateRange(startDate, endDate) to old.type),
                 )
             } else {
                 listOf(FiniteDateRange(startDate, endDate) to old.type)
@@ -181,7 +181,7 @@ fun Database.Transaction.updatePlacement(
                 old.unitId,
                 period.start,
                 period.end,
-                old.placeGuarantee
+                old.placeGuarantee,
             )
         }
     } catch (e: Exception) {
@@ -195,7 +195,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     daycarePlacementId: PlacementId,
     groupId: GroupId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
 ): GroupPlacementId {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Must not end before even starting")
@@ -252,7 +252,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
 fun Database.Transaction.transferGroup(
     groupPlacementId: GroupPlacementId,
     groupId: GroupId,
-    startDate: LocalDate
+    startDate: LocalDate,
 ) {
     val groupPlacement =
         getDaycareGroupPlacement(groupPlacementId) ?: throw NotFound("Group placement not found")
@@ -281,7 +281,7 @@ fun Database.Transaction.transferGroup(
                 clearCalendarEventAttendees(
                     placement.childId,
                     placement.unitId,
-                    FiniteDateRange(startDate, LocalDate.MAX)
+                    FiniteDateRange(startDate, LocalDate.MAX),
                 )
             }
         }
@@ -297,7 +297,7 @@ fun Database.Transaction.transferGroup(
                 clearCalendarEventAttendees(
                     placement.childId,
                     placement.unitId,
-                    FiniteDateRange(startDate, LocalDate.MAX)
+                    FiniteDateRange(startDate, LocalDate.MAX),
                 )
             }
         }
@@ -307,7 +307,7 @@ fun Database.Transaction.transferGroup(
         groupPlacement.daycarePlacementId,
         groupId,
         startDate,
-        groupPlacement.endDate
+        groupPlacement.endDate,
     )
 }
 
@@ -316,7 +316,7 @@ private fun Database.Transaction.clearOldPlacements(
     from: LocalDate,
     to: LocalDate,
     excludePlacement: PlacementId? = null,
-    aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All
+    aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All,
 ) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
@@ -371,7 +371,7 @@ private fun Database.Transaction.clearFutureNonPreschoolRelatedPlacements(
                         PlacementType.PREPARATORY_DAYCARE,
                         PlacementType.PRESCHOOL,
                         PlacementType.PRESCHOOL_DAYCARE,
-                        PlacementType.PRESCHOOL_CLUB
+                        PlacementType.PRESCHOOL_CLUB,
                     )
                     .contains(it.type)
             }
@@ -394,13 +394,13 @@ fun generateSchoolYearDateRanges(startingFrom: LocalDate) =
         .map {
             FiniteDateRange(
                 it.withMonth(8).withDayOfMonth(1),
-                it.plusYears(1).withMonth(7).withDayOfMonth(31)
+                it.plusYears(1).withMonth(7).withDayOfMonth(31),
             )
         }
 
 fun Database.Transaction.movePlacementStartDateLater(
     placement: Placement,
-    newStartDate: LocalDate
+    newStartDate: LocalDate,
 ) {
     if (newStartDate.isBefore(placement.startDate))
         throw IllegalArgumentException("Use this method only for shortening placement")
@@ -409,7 +409,7 @@ fun Database.Transaction.movePlacementStartDateLater(
     clearServiceNeedsFromPeriod(
         this,
         placement.id,
-        FiniteDateRange(placement.startDate, newStartDate.minusDays(1))
+        FiniteDateRange(placement.startDate, newStartDate.minusDays(1)),
     )
     updatePlacementStartDate(placement.id, newStartDate)
 }
@@ -422,7 +422,7 @@ fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEn
     clearServiceNeedsFromPeriod(
         this,
         placement.id,
-        FiniteDateRange(newEndDate.plusDays(1), placement.endDate)
+        FiniteDateRange(newEndDate.plusDays(1), placement.endDate),
     )
     updatePlacementEndDate(placement.id, newEndDate)
 }
@@ -430,7 +430,7 @@ fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEn
 private fun Database.Transaction.splitPlacementWithGap(
     placement: Placement,
     gapStartInclusive: LocalDate,
-    gapEndInclusive: LocalDate
+    gapEndInclusive: LocalDate,
 ) {
     movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1))
 
@@ -440,7 +440,7 @@ private fun Database.Transaction.splitPlacementWithGap(
         unitId = placement.unitId,
         startDate = gapEndInclusive.plusDays(1),
         endDate = placement.endDate,
-        placeGuarantee = placement.placeGuarantee
+        placeGuarantee = placement.placeGuarantee,
     )
 }
 
@@ -453,12 +453,12 @@ private fun checkAclAuth(aclAuth: AclAuthorization<DaycareId>, placement: Placem
 data class UnitChildrenCapacityFactors(
     val childId: PersonId,
     val assistanceNeedFactor: Double,
-    val serviceNeedFactor: Double
+    val serviceNeedFactor: Double,
 )
 
 fun Database.Read.getUnitChildrenCapacities(
     childIds: Set<ChildId>,
-    date: LocalDate
+    date: LocalDate,
 ): List<UnitChildrenCapacityFactors> {
     return createQuery {
             sql(
@@ -489,7 +489,7 @@ fun Database.Read.getDetailedDaycarePlacements(
     daycareId: DaycareId?,
     childId: ChildId?,
     startDate: LocalDate?,
-    endDate: LocalDate?
+    endDate: LocalDate?,
 ): Set<DaycarePlacementWithDetails> {
     val daycarePlacements = getDaycarePlacements(daycareId, childId, startDate, endDate)
     val minDate = daycarePlacements.map { it.startDate }.minOrNull() ?: return emptySet()
@@ -530,7 +530,7 @@ fun Database.Read.getDetailedDaycarePlacements(
                     defaultServiceNeedOptionNames[daycarePlacement.type],
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
-                placeGuarantee = daycarePlacement.placeGuarantee
+                placeGuarantee = daycarePlacement.placeGuarantee,
             )
         }
         .map(::addMissingGroupPlacements)
@@ -546,7 +546,7 @@ private fun addMissingGroupPlacements(
                 daycarePlacement.startDate,
                 *daycarePlacement.groupPlacements.map { it.startDate }.toTypedArray(),
                 *daycarePlacement.groupPlacements.map { it.endDate.plusDays(1) }.toTypedArray(),
-                daycarePlacement.endDate.plusDays(1)
+                daycarePlacement.endDate.plusDays(1),
             )
             .sorted()
 
@@ -564,7 +564,7 @@ private fun addMissingGroupPlacements(
                     groupName = null,
                     daycarePlacementId = daycarePlacement.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
         groupPlacements.add(groupPlacement)
     }
@@ -664,7 +664,7 @@ data class DaycarePlacement(
     val daycare: DaycareBasics,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val type: PlacementType
+    val type: PlacementType,
 )
 
 data class DaycarePlacementDetails(
@@ -678,7 +678,7 @@ data class DaycarePlacementDetails(
     val terminationRequestedDate: LocalDate?,
     val updated: HelsinkiDateTime?,
     @Nested("terminated_by") val terminatedBy: EvakaUser?,
-    val placeGuarantee: Boolean
+    val placeGuarantee: Boolean,
 )
 
 data class DaycarePlacementWithDetails(
@@ -695,7 +695,7 @@ data class DaycarePlacementWithDetails(
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
-    val placeGuarantee: Boolean
+    val placeGuarantee: Boolean,
 )
 
 data class PlacementResponse(
@@ -710,7 +710,7 @@ data class DaycareGroupPlacement(
     val groupName: String?,
     val daycarePlacementId: PlacementId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 )
 
 data class MissingGroupPlacement(
@@ -725,13 +725,13 @@ data class MissingGroupPlacement(
     @Json val fromUnits: List<String>, // for backup care
     @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val defaultServiceNeedOptionNameFi: String?,
-    val gap: FiniteDateRange
+    val gap: FiniteDateRange,
 )
 
 data class MissingGroupPlacementServiceNeed(
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val nameFi: String
+    val nameFi: String,
 )
 
 data class ChildBasics(
@@ -739,7 +739,7 @@ data class ChildBasics(
     val socialSecurityNumber: String? = null,
     val firstName: String = "",
     val lastName: String = "",
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
 )
 
 data class DaycareBasics(
@@ -748,11 +748,11 @@ data class DaycareBasics(
     val area: String,
     val providerType: ProviderType,
     val enabledPilotFeatures: List<PilotFeature>,
-    val language: Language
+    val language: Language,
 )
 
 data class ChildDaycareGroupPlacement(
     val childId: ChildId,
     val groupId: GroupId,
-    val groupName: String
+    val groupName: String,
 )

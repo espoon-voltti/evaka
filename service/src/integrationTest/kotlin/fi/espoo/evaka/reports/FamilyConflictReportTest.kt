@@ -52,7 +52,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today.plusYears(1),
                     headOfChild = testAdult_1.id,
-                    conflict = true
+                    conflict = true,
                 )
             )
         }
@@ -69,7 +69,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today.plusYears(1),
                     headOfChild = testAdult_1.id,
-                    conflict = true
+                    conflict = true,
                 )
             )
         }
@@ -87,7 +87,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today.plusYears(1),
                     headOfChild = testAdult_1.id,
-                    conflict = false
+                    conflict = false,
                 )
             )
         }
@@ -105,7 +105,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today.plusYears(1),
                     headOfChild = testAdult_1.id,
-                    conflict = true
+                    conflict = true,
                 )
             )
         }
@@ -123,7 +123,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     startDate = today,
                     endDate = today.plusYears(1),
                     headOfChild = testAdult_1.id,
-                    conflict = true
+                    conflict = true,
                 )
             )
         }
@@ -139,7 +139,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getAndAssert(
         from: LocalDate,
         to: LocalDate,
-        expected: List<FamilyConflictReportRow>
+        expected: List<FamilyConflictReportRow>,
     ) {
         val (_, response, result) =
             http
@@ -155,7 +155,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId,
         startDate: LocalDate,
         endDate: LocalDate,
-        unitId: DaycareId = testDaycare.id
+        unitId: DaycareId = testDaycare.id,
     ) =
         db.transaction { tx ->
             tx.insert(
@@ -163,7 +163,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = childId,
                     unitId = unitId,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -172,7 +172,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         person: DevPerson,
         partnerConflictCount: Int,
         childConflictCount: Int,
-        unit: DevDaycare = testDaycare
+        unit: DevDaycare = testDaycare,
     ) =
         FamilyConflictReportRow(
             careAreaName = testArea.name,
@@ -183,6 +183,6 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             lastName = person.lastName,
             socialSecurityNumber = person.ssn,
             partnerConflictCount = partnerConflictCount,
-            childConflictCount = childConflictCount
+            childConflictCount = childConflictCount,
         )
 }

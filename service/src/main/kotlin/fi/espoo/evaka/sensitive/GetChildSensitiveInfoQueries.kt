@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 
 fun Database.Read.getChildSensitiveInfo(
     clock: EvakaClock,
-    childId: ChildId
+    childId: ChildId,
 ): ChildSensitiveInformation? {
     val person = getPersonById(childId) ?: return null
 
@@ -50,7 +50,7 @@ fun Database.Read.getChildSensitiveInfo(
                         phone = it.phone,
                         backupPhone = it.backupPhone,
                         email = it.email ?: "",
-                        priority = it.priority
+                        priority = it.priority,
                     )
                 },
         backupPickups =
@@ -62,8 +62,8 @@ fun Database.Read.getChildSensitiveInfo(
                     phone = it.phone,
                     backupPhone = "",
                     email = "",
-                    priority = 1
+                    priority = 1,
                 )
-            }
+            },
     )
 }

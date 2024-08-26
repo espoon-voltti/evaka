@@ -46,7 +46,7 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
         db.read { tx ->
             assertEquals(
                 notNullable,
-                tx.createQuery { sql("SELECT ${bind(notNullable)}") }.exactlyOne<JsonThing>()
+                tx.createQuery { sql("SELECT ${bind(notNullable)}") }.exactlyOne<JsonThing>(),
             )
             val nullable: JsonThing? = null
             assertNull(tx.createQuery { sql("SELECT ${bind(nullable)}") }.exactlyOne<JsonThing?>())
@@ -60,7 +60,7 @@ class DbTest : PureJdbiTest(resetDbBeforeEach = false) {
             assertEquals(
                 notNullable,
                 tx.createQuery { sql("SELECT ${bindJson(notNullable)}") }
-                    .exactlyOne<Foo>(Json::class)
+                    .exactlyOne<Foo>(Json::class),
             )
             val nullable: Foo? = null
             assertNull(

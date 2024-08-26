@@ -45,15 +45,15 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 25),
                                 LocalDate.of(2021, 3, 26),
                             )
-                    )
+                    ),
             )
         assertEquals(
             PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
-                unknownAbsence = DateSet.of()
+                unknownAbsence = DateSet.of(),
             ),
-            timelines
+            timelines,
         )
     }
 
@@ -83,7 +83,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 26),
                                 LocalDate.of(2021, 3, 29),
                             )
-                    )
+                    ),
             )
         assertEquals(
             PreparatoryAbsences(
@@ -92,9 +92,9 @@ class KoskiTest {
                 unknownAbsence =
                     DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
-                    )
+                    ),
             ),
-            timelines
+            timelines,
         )
     }
 
@@ -124,7 +124,7 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 26),
                                 LocalDate.of(2021, 3, 29),
                             )
-                    )
+                    ),
             )
         assertEquals(
             PreparatoryAbsences(
@@ -133,9 +133,9 @@ class KoskiTest {
                     DateSet.of(
                         FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29))
                     ),
-                unknownAbsence = DateSet.of()
+                unknownAbsence = DateSet.of(),
             ),
-            timelines
+            timelines,
         )
     }
 
@@ -165,15 +165,15 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 31),
                                 LocalDate.of(2021, 4, 1),
                             )
-                    )
+                    ),
             )
         assertEquals(
             PreparatoryAbsences(
                 plannedAbsence = DateSet.of(),
                 sickLeaveAbsence = DateSet.of(),
-                unknownAbsence = DateSet.of()
+                unknownAbsence = DateSet.of(),
             ),
-            timelines
+            timelines,
         )
     }
 
@@ -201,8 +201,8 @@ class KoskiTest {
                                 LocalDate.of(2021, 3, 31),
                                 LocalDate.of(2021, 4, 1),
                             ),
-                        AbsenceType.OTHER_ABSENCE to setOf(LocalDate.of(2021, 4, 6))
-                    )
+                        AbsenceType.OTHER_ABSENCE to setOf(LocalDate.of(2021, 4, 6)),
+                    ),
             )
         assertEquals(
             PreparatoryAbsences(
@@ -211,9 +211,9 @@ class KoskiTest {
                         FiniteDateRange(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))
                     ),
                 sickLeaveAbsence = DateSet.of(),
-                unknownAbsence = DateSet.of()
+                unknownAbsence = DateSet.of(),
             ),
-            timelines
+            timelines,
         )
     }
 }

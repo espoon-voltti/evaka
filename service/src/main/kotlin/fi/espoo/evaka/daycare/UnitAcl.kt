@@ -17,7 +17,7 @@ fun removeDaycareAclForRole(
     tx: Database.Transaction,
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    role: UserRole
+    role: UserRole,
 ) {
     tx.clearDaycareGroupAcl(daycareId, employeeId)
     tx.deleteDaycareAclRow(daycareId, employeeId, role)

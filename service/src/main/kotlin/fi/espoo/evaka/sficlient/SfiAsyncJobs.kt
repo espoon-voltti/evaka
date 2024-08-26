@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 @Service
 class SfiAsyncJobs(
     private val sfiClient: SfiMessagesClient,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler { _, _, payload: AsyncJob.SendMessage ->

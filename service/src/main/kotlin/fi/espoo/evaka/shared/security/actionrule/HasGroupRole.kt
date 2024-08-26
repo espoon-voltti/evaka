@@ -26,7 +26,7 @@ private typealias GetGroupRoles =
 data class HasGroupRole(
     val oneOf: EnumSet<UserRole>,
     val unitFeatures: Set<PilotFeature>,
-    val unitProviderTypes: EnumSet<ProviderType>?
+    val unitProviderTypes: EnumSet<ProviderType>?,
 ) : DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
@@ -54,7 +54,7 @@ data class HasGroupRole(
 
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
-            targets: Set<T>
+            targets: Set<T>,
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> =
             when (ctx.user) {
                 is AuthenticatedUser.Employee -> {
@@ -88,7 +88,7 @@ data class HasGroupRole(
 
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
-            params: HasGroupRole
+            params: HasGroupRole,
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
@@ -141,7 +141,7 @@ WHERE employee_id = ${bind(user.id)}
     fun inPlacementGroupOfChildOfChildDocument(
         editable: Boolean = false,
         deletable: Boolean = false,
-        publishable: Boolean = false
+        publishable: Boolean = false,
     ) =
         rule<ChildDocumentId> { user, now ->
             sql(

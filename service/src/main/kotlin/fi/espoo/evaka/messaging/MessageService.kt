@@ -38,7 +38,7 @@ class MessageService(
     fun handleMarkMessageAsSent(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.MarkMessagesAsSent
+        msg: AsyncJob.MarkMessagesAsSent,
     ) {
         db.transaction { tx ->
             tx.lockMessageContentForUpdate(msg.messageContentId)
@@ -48,7 +48,7 @@ class MessageService(
             asyncJobRunner.plan(
                 tx,
                 messagePushNotifications.getAsyncJobs(tx, messages),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
     }
@@ -68,7 +68,7 @@ class MessageService(
                 msg.title,
                 msg.urgent,
                 sensitive = false,
-                isCopy = false
+                isCopy = false,
             )
         tx.upsertSenderThreadParticipants(sender, listOf(threadId), now)
         val recipientNames =
@@ -81,7 +81,7 @@ class MessageService(
                 sender = sender,
                 recipientNames = recipientNames,
                 municipalAccountName = featureConfig.municipalMessageAccountName,
-                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
             )
         tx.insertMessageThreadChildren(listOf(children to threadId))
         tx.insertRecipients(listOf(messageId to recipients))
@@ -100,7 +100,7 @@ class MessageService(
         recipientNames: List<String>,
         attachments: Set<AttachmentId>,
         relatedApplication: ApplicationId?,
-        filters: MessageController.PostMessageFilters?
+        filters: MessageController.PostMessageFilters?,
     ): MessageContentId? {
         val messageRecipients =
             tx.getMessageAccountsForRecipients(sender, recipients, filters, now.toLocalDate())
@@ -151,7 +151,7 @@ class MessageService(
                 recipientNames = recipientNames,
                 applicationId = relatedApplication,
                 municipalAccountName = featureConfig.municipalMessageAccountName,
-                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
@@ -162,7 +162,7 @@ class MessageService(
         tx.upsertSenderThreadParticipants(
             senderId = sender,
             threadIds = threadAndMessageIds.map { (threadId, _) -> threadId },
-            now = now
+            now = now,
         )
         tx.insertRecipients(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
@@ -185,14 +185,14 @@ class MessageService(
                     recipientNames = recipientNames,
                     applicationId = relatedApplication,
                     municipalAccountName = featureConfig.municipalMessageAccountName,
-                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                 )
             val staffRecipientsWithMessageIds =
                 staffThreadAndMessageIds.zip(other = staffCopyRecipients)
             tx.upsertSenderThreadParticipants(
                 senderId = sender,
                 threadIds = staffThreadAndMessageIds.map { (threadId, _) -> threadId },
-                now = now
+                now = now,
             )
             tx.insertRecipients(
                 staffRecipientsWithMessageIds.map { (ids, recipient) ->
@@ -206,7 +206,7 @@ class MessageService(
                 applicationId = relatedApplication,
                 content = msg.content,
                 createdBy = user.evakaUserId,
-                messageContentId = contentId
+                messageContentId = contentId,
             )
         }
         return contentId
@@ -223,7 +223,7 @@ class MessageService(
         content: String,
         municipalAccountName: String,
         serviceWorkerAccountName: String,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
     ): ThreadReply {
         val (threadId, type, isCopy, senders, recipients, applicationId) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
@@ -254,7 +254,7 @@ class MessageService(
                         repliesToMessageId = replyToMessageId,
                         recipientNames = recipientNames,
                         municipalAccountName = municipalAccountName,
-                        serviceWorkerAccountName = serviceWorkerAccountName
+                        serviceWorkerAccountName = serviceWorkerAccountName,
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
@@ -263,7 +263,7 @@ class MessageService(
                         applicationId = applicationId,
                         content = content,
                         createdBy = user.evakaUserId,
-                        messageContentId = contentId
+                        messageContentId = contentId,
                     )
                 }
                 tx.getSentMessage(senderAccount, messageId, serviceWorkerAccountName)
@@ -275,5 +275,5 @@ class MessageService(
 fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,
     messageContentId: MessageContentId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) = this.plan(tx, listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)), runAt = now)

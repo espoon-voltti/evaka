@@ -33,7 +33,7 @@ data class Message(
     val content: String,
     val readAt: HelsinkiDateTime? = null,
     @Json val attachments: List<MessageAttachment>,
-    val recipientNames: Set<String>? = null
+    val recipientNames: Set<String>? = null,
 )
 
 data class MessageThread(
@@ -44,7 +44,7 @@ data class MessageThread(
     val sensitive: Boolean,
     val isCopy: Boolean,
     val children: List<MessageChild>,
-    @Json val messages: List<Message>
+    @Json val messages: List<Message>,
 )
 
 data class MessageThreadStub(
@@ -53,7 +53,7 @@ data class MessageThreadStub(
     val title: String,
     val urgent: Boolean,
     val sensitive: Boolean,
-    val isCopy: Boolean
+    val isCopy: Boolean,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -67,7 +67,7 @@ sealed interface CitizenMessageThread {
         override val urgent: Boolean,
         val sender: MessageAccount?,
         val lastMessageSentAt: HelsinkiDateTime?,
-        val hasUnreadMessages: Boolean
+        val hasUnreadMessages: Boolean,
     ) : CitizenMessageThread {
         companion object {
             fun fromMessageThread(accountId: MessageAccountId, messageThread: MessageThread) =
@@ -78,7 +78,7 @@ sealed interface CitizenMessageThread {
                     messageThread.messages.lastOrNull()?.sentAt,
                     messageThread.messages
                         .findLast { message -> message.sender.id != accountId }
-                        ?.readAt == null
+                        ?.readAt == null,
                 )
         }
     }
@@ -91,7 +91,7 @@ sealed interface CitizenMessageThread {
         val title: String,
         val sensitive: Boolean,
         val isCopy: Boolean,
-        val messages: List<Message>
+        val messages: List<Message>,
     ) : CitizenMessageThread {
         companion object {
             fun fromMessageThread(messageThread: MessageThread) =
@@ -103,7 +103,7 @@ sealed interface CitizenMessageThread {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
-                    messageThread.messages
+                    messageThread.messages,
                 )
         }
     }
@@ -118,7 +118,7 @@ data class SentMessage(
     val urgent: Boolean,
     val sensitive: Boolean,
     val recipientNames: List<String>,
-    @Json val attachments: List<MessageAttachment>
+    @Json val attachments: List<MessageAttachment>,
 )
 
 enum class MessageType : DatabaseEnum {
@@ -130,7 +130,7 @@ enum class MessageType : DatabaseEnum {
 
 data class MessageReceiversResponse(
     val accountId: MessageAccountId,
-    val receivers: List<MessageReceiver>
+    val receivers: List<MessageReceiver>,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -141,7 +141,7 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
     data class Area(
         override val id: AreaId,
         override val name: String,
-        val receivers: List<UnitInArea>
+        val receivers: List<UnitInArea>,
     ) : MessageReceiver(MessageRecipientType.AREA)
 
     data class UnitInArea(override val id: DaycareId, override val name: String) :
@@ -150,7 +150,7 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
     data class Unit(
         override val id: DaycareId,
         override val name: String,
-        val receivers: List<Group>
+        val receivers: List<Group>,
     ) : MessageReceiver(MessageRecipientType.UNIT)
 
     data class Group(
@@ -191,12 +191,12 @@ data class Group(
     @PropagateNull val id: GroupId,
     val name: String,
     val unitId: DaycareId,
-    val unitName: String
+    val unitName: String,
 )
 
 data class AuthorizedMessageAccount(
     @Nested("account_") val account: MessageAccount,
-    @Nested("group_") val daycareGroup: Group?
+    @Nested("group_") val daycareGroup: Group?,
 )
 
 enum class MessageRecipientType {
@@ -204,7 +204,7 @@ enum class MessageRecipientType {
     UNIT,
     GROUP,
     CHILD,
-    CITIZEN
+    CITIZEN,
 }
 
 data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>) {
@@ -219,12 +219,12 @@ data class MessageChild(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
-    val preferredName: String
+    val preferredName: String,
 )
 
 data class NewMessageStub(
     val title: String,
     val content: String,
     val urgent: Boolean,
-    val sensitive: Boolean
+    val sensitive: Boolean,
 )

@@ -61,18 +61,18 @@ class DocumentMigratorTest : FullApplicationTest(resetDbBeforeEach = true) {
                                                 VasuQuestion.TextQuestion(
                                                     name = "bar",
                                                     multiline = false,
-                                                    value = ""
+                                                    value = "",
                                                 )
-                                            )
+                                            ),
                                     )
-                                )
-                        )
+                                ),
+                        ),
                 )
             val vasuDocumentId =
                 tx.insertVasuDocument(
                     now = clock.now(),
                     childId = childId,
-                    template = tx.getVasuTemplate(templateId)!!
+                    template = tx.getVasuTemplate(templateId)!!,
                 )
             tx.publishVasuDocument(clock.now(), vasuDocumentId)
             tx.freezeVasuPlacements(clock.today(), vasuDocumentId)
@@ -80,7 +80,7 @@ class DocumentMigratorTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insertVasuDocumentEvent(
                 vasuDocumentId,
                 MOVED_TO_REVIEWED,
-                EvakaUserId(employeeId.raw)
+                EvakaUserId(employeeId.raw),
             )
             tx.insertVasuDocumentEvent(vasuDocumentId, MOVED_TO_CLOSED, EvakaUserId(employeeId.raw))
 
@@ -92,7 +92,7 @@ class DocumentMigratorTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = clock.now(),
                 id = vasuDocumentId,
                 processDefinitionNumber = processDefinitionNumber,
-                archiveMetadataOrganization = archiveMetadataOrganization
+                archiveMetadataOrganization = archiveMetadataOrganization,
             )
 
             assertEquals(1, tx.getTemplateSummaries().size)

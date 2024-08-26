@@ -19,12 +19,12 @@ fun Database.Read.getHolidays(range: FiniteDateRange): Set<LocalDate> =
 
 fun Database.Read.getOperationalDatesForChildren(
     range: FiniteDateRange,
-    children: Set<ChildId>
+    children: Set<ChildId>,
 ): Map<ChildId, Set<LocalDate>> {
     data class PlacementRange(
         val range: FiniteDateRange,
         val childId: ChildId,
-        val unitId: DaycareId
+        val unitId: DaycareId,
     )
 
     val placements: Map<ChildId, DateMap<DaycareId>> =
@@ -68,7 +68,7 @@ fun Database.Read.getOperationalDatesForChildren(
         val unitId: DaycareId,
         val operationDays: Set<Int>,
         val shiftCareOperationDays: Set<Int>?,
-        val shiftCareOpenOnHolidays: Boolean
+        val shiftCareOpenOnHolidays: Boolean,
     )
     val operationDaysByDaycareId: Map<DaycareId, DaycareOperationDays> =
         createQuery {
@@ -126,5 +126,5 @@ fun Database.Read.getOperationalDatesForChildren(
 
 fun Database.Read.getOperationalDatesForChild(
     range: FiniteDateRange,
-    childId: ChildId
+    childId: ChildId,
 ): Set<LocalDate> = getOperationalDatesForChildren(range, setOf(childId))[childId] ?: emptySet()

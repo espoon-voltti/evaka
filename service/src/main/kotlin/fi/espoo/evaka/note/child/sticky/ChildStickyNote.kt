@@ -14,7 +14,7 @@ data class ChildStickyNote(
     val childId: ChildId,
     val note: String,
     val modifiedAt: HelsinkiDateTime,
-    val expires: LocalDate
+    val expires: LocalDate,
 )
 
 data class ChildStickyNoteBody(val note: String, val expires: LocalDate)

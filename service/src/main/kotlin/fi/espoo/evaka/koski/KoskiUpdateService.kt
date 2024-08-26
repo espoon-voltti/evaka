@@ -18,12 +18,9 @@ private val logger = KotlinLogging.logger {}
 @Service
 class KoskiUpdateService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val env: EvakaEnv
+    private val env: EvakaEnv,
 ) {
-    fun scheduleKoskiUploads(
-        db: Database.Connection,
-        clock: EvakaClock,
-    ) {
+    fun scheduleKoskiUploads(db: Database.Connection, clock: EvakaClock) {
         if (env.koskiEnabled) {
             db.transaction { tx ->
                 tx.setStatementTimeout(Duration.ofMinutes(2))
@@ -33,7 +30,7 @@ class KoskiUpdateService(
                     tx,
                     requests.map { AsyncJob.UploadToKoski(it) },
                     retryCount = 1,
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }

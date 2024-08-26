@@ -29,7 +29,7 @@ sealed interface AuditId {
 
 enum class Audit(
     private val securityEvent: Boolean = false,
-    private val securityLevel: String = "low"
+    private val securityLevel: String = "low",
 ) {
     AbsenceCitizenCreate,
     AbsenceRead,
@@ -545,7 +545,7 @@ enum class Audit(
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
         targetId: AuditId? = null,
         objectId: AuditId? = null,
-        meta: Map<String, Any?> = emptyMap()
+        meta: Map<String, Any?> = emptyMap(),
     ) {
         logger.audit(
             mapOf(

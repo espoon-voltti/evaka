@@ -71,7 +71,7 @@ class DvvModificationsServiceClientIntegrationTest :
         val response: DvvModificationsResponse =
             dvvModificationsServiceClient.getModifications(
                 "100000000",
-                listOf("yksinhuoltaja-muutos")
+                listOf("yksinhuoltaja-muutos"),
             )
         assertEquals("HUOLLETTAVA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
         assertEquals("010579-9999", response.muutokset[0].henkilotunnus)

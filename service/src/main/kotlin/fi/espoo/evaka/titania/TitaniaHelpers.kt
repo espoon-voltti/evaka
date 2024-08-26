@@ -28,7 +28,7 @@ fun splitOvernight(attendance: RawAttendance): Iterable<RawAttendance> {
                     else HelsinkiDateTime.of(date, LocalTime.MIN),
                 departed =
                     if (date == departedDate) attendance.departed
-                    else HelsinkiDateTime.of(date, LocalTime.MAX)
+                    else HelsinkiDateTime.of(date, LocalTime.MAX),
             )
         }
         .toList()

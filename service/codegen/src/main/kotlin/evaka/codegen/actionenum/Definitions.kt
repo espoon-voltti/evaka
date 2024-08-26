@@ -55,7 +55,7 @@ val generatedFiles =
                     generateEnum<Action.Citizen.Child>(),
                     generateEnum<Action.Citizen.Decision>(),
                 ),
-            )
+            ),
         )
     )
 

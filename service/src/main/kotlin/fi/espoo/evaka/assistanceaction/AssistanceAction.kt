@@ -15,23 +15,23 @@ data class AssistanceAction(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val actions: Set<String>,
-    val otherAction: String
+    val otherAction: String,
 )
 
 data class AssistanceActionRequest(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val actions: Set<String> = emptySet(),
-    val otherAction: String = ""
+    val otherAction: String = "",
 )
 
 data class AssistanceActionResponse(
     val action: AssistanceAction,
-    val permittedActions: Set<Action.AssistanceAction>
+    val permittedActions: Set<Action.AssistanceAction>,
 )
 
 data class AssistanceActionOption(
     val value: String,
     val nameFi: String,
-    val descriptionFi: String?
+    val descriptionFi: String?,
 )

@@ -94,9 +94,7 @@ ORDER BY e.last_name, first_name
         .toList()
 }
 
-fun Database.Read.getExternalStaffAttendance(
-    id: StaffAttendanceExternalId,
-): ExternalStaffMember? =
+fun Database.Read.getExternalStaffAttendance(id: StaffAttendanceExternalId): ExternalStaffMember? =
     createQuery {
             sql(
                 """
@@ -108,9 +106,7 @@ WHERE id = ${bind(id)}
         }
         .exactlyOneOrNull()
 
-fun Database.Read.getExternalStaffAttendances(
-    unitId: DaycareId,
-): List<ExternalStaffMember> =
+fun Database.Read.getExternalStaffAttendances(unitId: DaycareId): List<ExternalStaffMember> =
     createQuery {
             sql(
                 """
@@ -127,7 +123,7 @@ fun Database.Transaction.markStaffArrival(
     employeeId: EmployeeId,
     groupId: GroupId,
     arrivalTime: HelsinkiDateTime,
-    occupancyCoefficient: BigDecimal
+    occupancyCoefficient: BigDecimal,
 ): StaffAttendanceRealtimeId =
     createUpdate {
             sql(
@@ -149,7 +145,7 @@ data class StaffAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
-    val type: StaffAttendanceType
+    val type: StaffAttendanceType,
 )
 
 fun Database.Transaction.upsertStaffAttendance(
@@ -160,7 +156,7 @@ fun Database.Transaction.upsertStaffAttendance(
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal?,
     type: StaffAttendanceType,
-    departedAutomatically: Boolean = false
+    departedAutomatically: Boolean = false,
 ): StaffAttendanceRealtimeId =
     if (attendanceId == null) {
         createUpdate {
@@ -190,17 +186,19 @@ WHERE id = ${bind(attendanceId)}
 
 fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceRealtimeId) {
     createUpdate {
-            sql("""
+            sql(
+                """
 DELETE FROM staff_attendance_realtime
 WHERE id = ${bind(attendanceId)}
-""")
+"""
+            )
         }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.markStaffDeparture(
     attendanceId: StaffAttendanceRealtimeId,
-    departureTime: HelsinkiDateTime
+    departureTime: HelsinkiDateTime,
 ) =
     createUpdate {
             sql(
@@ -217,7 +215,7 @@ data class ExternalStaffArrival(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val occupancyCoefficient: BigDecimal
+    val occupancyCoefficient: BigDecimal,
 )
 
 fun Database.Transaction.markExternalStaffArrival(
@@ -237,7 +235,7 @@ INSERT INTO staff_attendance_external (name, group_id, arrived, occupancy_coeffi
 
 data class ExternalStaffDeparture(
     val id: StaffAttendanceExternalId,
-    val departed: HelsinkiDateTime
+    val departed: HelsinkiDateTime,
 )
 
 fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDeparture) =
@@ -259,7 +257,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(
     arrivalTime: HelsinkiDateTime,
     departureTime: HelsinkiDateTime?,
     occupancyCoefficient: BigDecimal,
-    departedAutomatically: Boolean = false
+    departedAutomatically: Boolean = false,
 ): StaffAttendanceExternalId {
     if (attendanceId == null) {
         return createUpdate {
@@ -291,10 +289,12 @@ WHERE id = ${bind(attendanceId)}
 
 fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttendanceExternalId) {
     createUpdate {
-            sql("""
+            sql(
+                """
 DELETE FROM staff_attendance_external
 WHERE id = ${bind(attendanceId)}
-""")
+"""
+            )
         }
         .updateExactlyOne()
 }
@@ -310,12 +310,12 @@ data class RawAttendance(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
-    val departedAutomatically: Boolean
+    val departedAutomatically: Boolean,
 )
 
 fun Database.Read.getStaffAttendancesForDateRange(
     unitId: DaycareId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<RawAttendance> {
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
@@ -348,7 +348,7 @@ WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && 
 fun Database.Read.getEmployeeAttendancesForDate(
     unitId: DaycareId,
     employeeId: EmployeeId,
-    date: LocalDate
+    date: LocalDate,
 ): List<RawAttendance> {
     val start = HelsinkiDateTime.of(date, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
@@ -380,7 +380,7 @@ WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) AND emp.id = ${
 
 fun Database.Read.getStaffAttendancesWithoutGroup(
     range: FiniteDateRange,
-    employeeIds: Set<EmployeeId>
+    employeeIds: Set<EmployeeId>,
 ): List<RawAttendance> {
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
@@ -416,7 +416,7 @@ data class RawAttendanceEmployee(
 )
 
 fun Database.Read.getCurrentStaffForAttendanceCalendar(
-    unitId: DaycareId,
+    unitId: DaycareId
 ): List<RawAttendanceEmployee> =
     createQuery {
             sql(
@@ -434,7 +434,7 @@ WHERE dacl.daycare_id = ${bind(unitId)} AND (dacl.role IN ('STAFF', 'SPECIAL_EDU
 
 fun Database.Read.getExternalStaffAttendancesByDateRange(
     unitId: DaycareId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ExternalAttendance> {
     val start = HelsinkiDateTime.of(range.start, LocalTime.of(0, 0))
     val end = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0))
@@ -453,7 +453,7 @@ WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) &
 
 fun Database.Read.getGroupsForEmployees(
     unitId: DaycareId,
-    employeeIds: Set<EmployeeId>
+    employeeIds: Set<EmployeeId>,
 ): Map<EmployeeId, List<GroupId>> =
     createQuery {
             sql(
@@ -518,7 +518,7 @@ fun Database.Read.getRealtimeStaffAttendances(): List<StaffMemberAttendance> =
 
 fun Database.Read.getPlannedStaffAttendances(
     employeeId: EmployeeId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): List<PlannedStaffAttendance> {
     val start = now.minusHours(8)
     val end = now.plusHours(8)
@@ -535,7 +535,7 @@ WHERE employee_id = ${bind(employeeId)} AND tstzrange(start_time, end_time) && t
 
 fun Database.Read.getPlannedStaffAttendanceForDays(
     employeeIds: Collection<EmployeeId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<EmployeeId, List<PlannedStaffAttendance>> {
     val startTime = HelsinkiDateTime.of(range.start, LocalTime.MIDNIGHT)
     val endTime = HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.MIDNIGHT)
@@ -564,7 +564,7 @@ FROM staff_attendance_realtime WHERE employee_id = ${bind(employeeId)} AND depar
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): StaffAttendance? =
     createQuery {
             sql(
@@ -583,7 +583,7 @@ fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     unitId: DaycareId,
     employeeId: EmployeeId,
     timeRange: HelsinkiDateTimeRange,
-    exceptIds: List<StaffAttendanceRealtimeId>
+    exceptIds: List<StaffAttendanceRealtimeId>,
 ) = execute {
     sql(
         """
@@ -600,7 +600,7 @@ WHERE
 fun Database.Transaction.deleteExternalAttendancesInRangeExcept(
     name: String,
     timeRange: HelsinkiDateTimeRange,
-    exceptIds: List<StaffAttendanceExternalId>
+    exceptIds: List<StaffAttendanceExternalId>,
 ) = execute {
     sql(
         """

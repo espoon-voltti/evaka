@@ -19,7 +19,7 @@ class StaffAttendanceService {
     fun getUnitAttendancesForDate(
         db: Database.Connection,
         unitId: DaycareId,
-        date: LocalDate
+        date: LocalDate,
     ): UnitStaffAttendance {
         return db.read { tx -> tx.getUnitStaffAttendanceForDate(unitId, date) }
     }
@@ -28,7 +28,7 @@ class StaffAttendanceService {
         db: Database.Connection,
         year: Int,
         month: Int,
-        groupId: GroupId
+        groupId: GroupId,
     ): StaffAttendanceForDates {
         val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -45,7 +45,7 @@ class StaffAttendanceService {
                 groupInfo.groupName,
                 groupInfo.startDate,
                 groupInfo.endDate,
-                attendanceMap
+                attendanceMap,
             )
         }
     }
@@ -67,7 +67,7 @@ data class GroupStaffAttendance(
     val date: LocalDate,
     val count: Double,
     val countOther: Double,
-    val updated: HelsinkiDateTime
+    val updated: HelsinkiDateTime,
 )
 
 data class UnitStaffAttendance(
@@ -75,7 +75,7 @@ data class UnitStaffAttendance(
     val count: Double,
     val countOther: Double,
     val updated: HelsinkiDateTime?,
-    val groups: List<GroupStaffAttendance>
+    val groups: List<GroupStaffAttendance>,
 )
 
 data class StaffAttendanceForDates(
@@ -83,21 +83,21 @@ data class StaffAttendanceForDates(
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val attendances: Map<LocalDate, GroupStaffAttendance>
+    val attendances: Map<LocalDate, GroupStaffAttendance>,
 )
 
 data class GroupInfo(
     val groupId: GroupId,
     val groupName: String,
     val startDate: LocalDate,
-    val endDate: LocalDate?
+    val endDate: LocalDate?,
 )
 
 data class StaffAttendanceUpdate(
     val groupId: GroupId,
     val date: LocalDate,
     val count: Double?,
-    val countOther: Double?
+    val countOther: Double?,
 )
 
 fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? =
@@ -154,7 +154,7 @@ ON CONFLICT (group_id, date) DO UPDATE SET
 
 fun Database.Read.getStaffAttendanceByRange(
     range: FiniteDateRange,
-    groupId: GroupId
+    groupId: GroupId,
 ): List<GroupStaffAttendance> =
     createQuery {
             sql(
@@ -170,7 +170,7 @@ AND between_start_and_end(${bind(range)}, date)
 
 fun Database.Read.getUnitStaffAttendanceForDate(
     unitId: DaycareId,
-    date: LocalDate
+    date: LocalDate,
 ): UnitStaffAttendance {
     val groupAttendances =
         createQuery {
@@ -195,6 +195,6 @@ WHERE dg.daycare_id = ${bind(unitId)}
         count = count,
         countOther = countOther,
         groups = groupAttendances,
-        updated = updated
+        updated = updated,
     )
 }

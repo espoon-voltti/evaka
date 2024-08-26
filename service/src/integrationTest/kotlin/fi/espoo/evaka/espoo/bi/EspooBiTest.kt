@@ -160,14 +160,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getGroupCaretakerAllocations() {
-        val id =
-            db.transaction {
-                it.insert(
-                    DevDaycareCaretaker(
-                        groupId = it.insertTestGroup(),
-                    )
-                )
-            }
+        val id = db.transaction { it.insert(DevDaycareCaretaker(groupId = it.insertTestGroup())) }
         assertSingleRowContainingId(EspooBi.getGroupCaretakerAllocations, id)
     }
 
@@ -215,7 +208,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = period.end,
                         optionId = it.insertTestServiceNeedOption(),
                         confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                        confirmedAt = HelsinkiDateTime.now()
+                        confirmedAt = HelsinkiDateTime.now(),
                     )
                 )
             }
@@ -254,12 +247,9 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.insertTestCurriculumTemplate().let { templateId ->
                     val template = it.getVasuTemplate(templateId)!!
                     it.insertVasuDocument(
-                        HelsinkiDateTime.of(
-                            LocalDate.of(2022, 1, 1),
-                            LocalTime.of(12, 0),
-                        ),
+                        HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 0)),
                         childId = it.insertTestChild(),
-                        template = template
+                        template = template,
                     )
                 }
             }
@@ -274,7 +264,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevPedagogicalDocument(
                         id = PedagogicalDocumentId(UUID.randomUUID()),
                         childId = it.insertTestChild(),
-                        description = "Test"
+                        description = "Test",
                     )
                 )
             }
@@ -307,7 +297,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.insert(
                     DevOtherAssistanceMeasure(
                         childId = it.insertTestChild(),
-                        type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT
+                        type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
                     )
                 )
             }
@@ -322,8 +312,8 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = it.insertTestChild(),
                         AssistanceNeedVoucherCoefficientRequest(
                             coefficient = 2.0,
-                            validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY)
-                        )
+                            validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY),
+                        ),
                     )
                     .id
             }
@@ -366,7 +356,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
-                    )
+                    ),
                 )
             }
         assertSingleRowContainingId(EspooBi.getAssistanceNeedDaycareDecisions, id)
@@ -472,16 +462,13 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     type = ApplicationType.DAYCARE,
                     connectedDaycare = false,
                     urgent = true,
-                    careDetails =
-                        CareDetails(
-                            assistanceNeeded = true,
-                        ),
+                    careDetails = CareDetails(assistanceNeeded = true),
                     extendedCare = true,
                     child = Child(dateOfBirth = null),
                     guardian = Adult(),
                     apply = Apply(preferredUnits = listOf(daycare ?: insertTestDaycare())),
-                    preferredStartDate = LocalDate.of(2019, 1, 1)
-                )
+                    preferredStartDate = LocalDate.of(2019, 1, 1),
+                ),
         )
 
     private fun Database.Transaction.insertTestServiceNeedOption(): ServiceNeedOptionId =
@@ -509,7 +496,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                     voucherValueDescriptionFi = "",
                     voucherValueDescriptionSv = "",
                     validFrom = LocalDate.of(2000, 1, 1),
-                    validTo = null
+                    validTo = null,
                 )
             )
         }
@@ -613,7 +600,7 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
                         baseValue = 1,
                         assistanceNeedCoefficient = BigDecimal.ONE,
                         voucherValue = 1,
-                        difference = setOf(VoucherValueDecisionDifference.PLACEMENT)
+                        difference = setOf(VoucherValueDecisionDifference.PLACEMENT),
                     )
                 )
             )
@@ -625,6 +612,6 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
             valid = FiniteDateRange.ofMonth(2022, Month.JANUARY),
             type = CurriculumType.DAYCARE,
             language = OfficialLanguage.FI,
-            content = getDefaultVasuContent(OfficialLanguage.FI)
+            content = getDefaultVasuContent(OfficialLanguage.FI),
         )
 }

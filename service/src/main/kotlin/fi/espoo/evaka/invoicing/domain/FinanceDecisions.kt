@@ -39,12 +39,12 @@ interface FinanceDecision<Decision : FinanceDecision<Decision>> {
 
 fun <Decision : FinanceDecision<Decision>> decisionContentsAreEqual(
     decision1: Decision,
-    decision2: Decision
+    decision2: Decision,
 ): Boolean = decision1.contentEquals(decision2)
 
 fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecisions(
     newDecisions: List<Decision>,
-    conflicting: List<Decision>
+    conflicting: List<Decision>,
 ): List<Decision> {
     val fixedConflicts =
         newDecisions
@@ -60,7 +60,7 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
                                 conflict.withValidity(
                                     DateRange(
                                         conflict.validFrom,
-                                        newDecision.validFrom.minusDays(1)
+                                        newDecision.validFrom.minusDays(1),
                                     )
                                 )
                             }
@@ -83,5 +83,5 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
 @ConstList("financeDecisionTypes")
 enum class FinanceDecisionType {
     FEE_DECISION,
-    VOUCHER_VALUE_DECISION
+    VOUCHER_VALUE_DECISION,
 }

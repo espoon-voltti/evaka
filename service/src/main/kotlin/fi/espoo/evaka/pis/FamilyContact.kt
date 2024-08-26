@@ -12,7 +12,7 @@ enum class FamilyContactRole {
     LOCAL_ADULT,
     LOCAL_SIBLING,
     REMOTE_GUARDIAN,
-    REMOTE_FOSTER_PARENT
+    REMOTE_FOSTER_PARENT,
 }
 
 data class FamilyContact(
@@ -26,5 +26,5 @@ data class FamilyContact(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
-    val priority: Int?
+    val priority: Int?,
 )

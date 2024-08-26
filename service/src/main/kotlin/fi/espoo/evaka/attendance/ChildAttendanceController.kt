@@ -53,14 +53,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping("/units/{unitId}/children")
     fun getChildren(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ): List<AttendanceChild> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -69,7 +69,7 @@ class ChildAttendanceController(
                         user,
                         clock,
                         Action.Unit.READ_CHILD_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                     val now = clock.now()
                     val today = now.toLocalDate()
@@ -102,7 +102,7 @@ class ChildAttendanceController(
                             dailyNote = dailyNotes[child.id],
                             stickyNotes = stickyNotes[child.id] ?: emptyList(),
                             imageUrl = child.imageUrl,
-                            reservations = reservations[child.id] ?: emptyList()
+                            reservations = reservations[child.id] ?: emptyList(),
                         )
                     }
                 }
@@ -110,7 +110,7 @@ class ChildAttendanceController(
             .also {
                 Audit.ChildAttendanceChildrenRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("childCount" to it.size)
+                    meta = mapOf("childCount" to it.size),
                 )
             }
     }
@@ -118,7 +118,7 @@ class ChildAttendanceController(
     data class ChildAttendanceStatusResponse(
         val absences: List<ChildAbsence>,
         val attendances: List<AttendanceTimes>,
-        val status: AttendanceStatus
+        val status: AttendanceStatus,
     )
 
     @GetMapping("/units/{unitId}/attendances")
@@ -138,7 +138,7 @@ class ChildAttendanceController(
                         user,
                         clock,
                         Action.Unit.READ_CHILD_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
 
                     // Do not return anything for children that have no placement, attendances or
@@ -165,8 +165,8 @@ class ChildAttendanceController(
                                             clock.now(),
                                             placementType,
                                             attendances,
-                                            absences
-                                        )
+                                            absences,
+                                        ),
                                     )
                             }
                         }
@@ -177,7 +177,7 @@ class ChildAttendanceController(
             .also {
                 Audit.ChildAttendanceStatusesRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("childCount" to it.size)
+                    meta = mapOf("childCount" to it.size),
                 )
             }
     }
@@ -193,7 +193,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestBody body: ArrivalRequest
+        @RequestBody body: ArrivalRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -202,7 +202,7 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
                 try {
@@ -210,7 +210,7 @@ class ChildAttendanceController(
                         childId = childId,
                         unitId = unitId,
                         date = clock.today(),
-                        range = TimeInterval(body.arrived, null)
+                        range = TimeInterval(body.arrived, null),
                     )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -219,7 +219,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesArrivalCreate.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -229,7 +229,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -238,7 +238,7 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
@@ -248,7 +248,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesReturnToComing.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -265,7 +265,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestBody body: ExpectedAbsencesOnDepartureRequest
+        @RequestBody body: ExpectedAbsencesOnDepartureRequest,
     ): ExpectedAbsencesOnDepartureResponse {
         val today = clock.today()
         return db.connect { dbc ->
@@ -275,7 +275,7 @@ class ChildAttendanceController(
                         user,
                         clock,
                         Action.Unit.READ_CHILD_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                     val ongoingAttendance =
                         tx.getChildOngoingAttendance(childId, unitId)
@@ -289,7 +289,7 @@ class ChildAttendanceController(
                                 tx = tx,
                                 date = today,
                                 childId = childId,
-                                attendanceTimes = attendanceTimesToday
+                                attendanceTimes = attendanceTimesToday,
                             )
                     )
                 }
@@ -297,7 +297,7 @@ class ChildAttendanceController(
             .also {
                 Audit.ChildAttendancesDepartureRead.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(unitId)
+                    objectId = AuditId(unitId),
                 )
             }
     }
@@ -305,7 +305,7 @@ class ChildAttendanceController(
     data class DepartureRequest(
         @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
         val absenceTypeNonbillable: AbsenceType?,
-        val absenceTypeBillable: AbsenceType?
+        val absenceTypeBillable: AbsenceType?,
     )
 
     @PostMapping("/units/{unitId}/children/{childId}/departure")
@@ -315,7 +315,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestBody body: DepartureRequest
+        @RequestBody body: DepartureRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -324,7 +324,7 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 val now = clock.now()
                 val today = clock.today()
@@ -344,20 +344,20 @@ class ChildAttendanceController(
                     absences =
                         mapOfNotNullValues(
                             AbsenceCategory.NONBILLABLE to body.absenceTypeNonbillable,
-                            AbsenceCategory.BILLABLE to body.absenceTypeBillable
-                        )
+                            AbsenceCategory.BILLABLE to body.absenceTypeBillable,
+                        ),
                 )
 
                 try {
                     if (ongoingAttendance.date == today) {
                         tx.updateAttendanceEnd(
                             attendanceId = ongoingAttendance.id,
-                            endTime = body.departed
+                            endTime = body.departed,
                         )
                     } else {
                         tx.updateAttendanceEnd(
                             attendanceId = ongoingAttendance.id,
-                            endTime = LocalTime.of(23, 59)
+                            endTime = LocalTime.of(23, 59),
                         )
                         generateSequence(ongoingAttendance.date.plusDays(1)) { it.plusDays(1) }
                             .takeWhile { it <= today }
@@ -365,7 +365,7 @@ class ChildAttendanceController(
                                 Triple(
                                     date,
                                     LocalTime.of(0, 0),
-                                    if (date < today) LocalTime.of(23, 59) else body.departed
+                                    if (date < today) LocalTime.of(23, 59) else body.departed,
                                 )
                             }
                             .filter { (_, startTime, endTime) -> startTime != endTime }
@@ -374,7 +374,7 @@ class ChildAttendanceController(
                                     childId,
                                     unitId,
                                     date,
-                                    TimeInterval(startTime, endTime)
+                                    TimeInterval(startTime, endTime),
                                 )
                             }
                     }
@@ -385,7 +385,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesDepartureCreate.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -397,7 +397,7 @@ class ChildAttendanceController(
         childId: ChildId,
         ongoingAttendance: OngoingAttendance,
         departed: LocalTime,
-        absences: Map<AbsenceCategory, AbsenceType>
+        absences: Map<AbsenceCategory, AbsenceType>,
     ) {
         val today = now.toLocalDate()
         val attendanceTimesToday =
@@ -408,7 +408,7 @@ class ChildAttendanceController(
                 tx = tx,
                 date = today,
                 childId = childId,
-                attendanceTimes = attendanceTimesToday
+                attendanceTimes = attendanceTimesToday,
             )
 
         // TODO: once calculation works properly for Tampere special cases this could be
@@ -426,7 +426,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -435,7 +435,7 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
@@ -446,7 +446,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesReturnToPresent.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -459,7 +459,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestBody body: FullDayAbsenceRequest
+        @RequestBody body: FullDayAbsenceRequest,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -471,7 +471,7 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
@@ -496,7 +496,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesFullDayAbsenceCreate.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -506,7 +506,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ) {
         val today = clock.today()
 
@@ -518,7 +518,7 @@ class ChildAttendanceController(
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE,
-                        childId
+                        childId,
                     )
                     val placementType =
                         tx.fetchChildPlacementBasics(childId, unitId, clock.today()).placementType
@@ -536,14 +536,11 @@ class ChildAttendanceController(
         Audit.ChildAttendancesFullDayAbsenceDelete.log(
             targetId = AuditId(childId),
             objectId = AuditId(unitId),
-            meta = mapOf("deletedAbsences" to deletedAbsences, "date" to today)
+            meta = mapOf("deletedAbsences" to deletedAbsences, "date" to today),
         )
     }
 
-    data class AbsenceRangeRequest(
-        val absenceType: AbsenceType,
-        val range: FiniteDateRange,
-    )
+    data class AbsenceRangeRequest(val absenceType: AbsenceType, val range: FiniteDateRange)
 
     @PostMapping("/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
@@ -552,7 +549,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
-        @RequestBody body: AbsenceRangeRequest
+        @RequestBody body: AbsenceRangeRequest,
     ) {
         val now = clock.now()
         db.connect { dbc ->
@@ -562,14 +559,14 @@ class ChildAttendanceController(
                     user,
                     clock,
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 val typeOnDates =
                     tx.fetchChildPlacementTypeDates(
                         childId,
                         unitId,
                         body.range.start,
-                        body.range.end
+                        body.range.end,
                     )
 
                 // Delete reservations from unconfirmed range
@@ -594,7 +591,7 @@ class ChildAttendanceController(
         }
         Audit.ChildAttendancesAbsenceRangeCreate.log(
             targetId = AuditId(childId),
-            objectId = AuditId(unitId)
+            objectId = AuditId(unitId),
         )
     }
 
@@ -606,7 +603,7 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ) {
         val deleted =
             db.connect { dbc ->
@@ -616,7 +613,7 @@ class ChildAttendanceController(
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE_RANGE,
-                        childId
+                        childId,
                     )
                     tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
                 }
@@ -624,7 +621,7 @@ class ChildAttendanceController(
         Audit.AbsenceDeleteRange.log(
             targetId = AuditId(childId),
             objectId = AuditId(deleted),
-            meta = mapOf("from" to from, "to" to to)
+            meta = mapOf("from" to from, "to" to to),
         )
     }
 }
@@ -634,7 +631,7 @@ data class ChildPlacementBasics(val placementType: PlacementType, val dateOfBirt
 private fun Database.Read.fetchChildPlacementBasics(
     childId: ChildId,
     unitId: DaycareId,
-    today: LocalDate
+    today: LocalDate,
 ): ChildPlacementBasics =
     createQuery {
             sql(
@@ -657,7 +654,7 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     childId: ChildId,
     unitId: DaycareId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
 ): List<PlacementTypeDate> =
     createQuery {
             sql(
@@ -675,7 +672,7 @@ private fun getChildAttendanceStatus(
     now: HelsinkiDateTime,
     placementType: PlacementType,
     attendances: List<AttendanceTimes>,
-    absences: List<ChildAbsence>
+    absences: List<ChildAbsence>,
 ): AttendanceStatus {
     if (attendances.any { it.departed == null }) {
         return AttendanceStatus.PRESENT

@@ -26,7 +26,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     fun getDailyServiceTimeNotifications(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<DailyServiceTimeNotificationId> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -35,7 +35,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
                         user,
                         clock,
                         Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS,
-                        user.id
+                        user.id,
                     )
                     tx.getDailyServiceTimesNotifications(user.id)
                 }
@@ -43,7 +43,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
             .also {
                 Audit.ChildDailyServiceTimeNotificationsRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -53,7 +53,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: List<DailyServiceTimeNotificationId>
+        @RequestBody body: List<DailyServiceTimeNotificationId>,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -63,7 +63,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
                             user,
                             clock,
                             Action.Citizen.DailyServiceTimeNotification.DISMISS,
-                            body
+                            body,
                         )
                         .asSequence()
                         .mapNotNull { (id, permission) -> id.takeIf { permission.isPermitted() } }

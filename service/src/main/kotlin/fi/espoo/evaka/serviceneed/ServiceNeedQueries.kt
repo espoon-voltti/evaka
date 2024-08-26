@@ -41,7 +41,7 @@ WHERE pl.child_id = ${bind(childId)}
 fun Database.Read.getServiceNeedsByUnit(
     unitId: DaycareId,
     startDate: LocalDate?,
-    endDate: LocalDate?
+    endDate: LocalDate?,
 ): List<ServiceNeed> {
     return createQuery {
             sql(
@@ -128,7 +128,7 @@ fun Database.Transaction.insertServiceNeed(
     shiftCare: ShiftCareType,
     partWeek: Boolean,
     confirmedBy: EvakaUserId?,
-    confirmedAt: HelsinkiDateTime?
+    confirmedAt: HelsinkiDateTime?,
 ): ServiceNeedId {
     return createQuery {
             sql(
@@ -150,7 +150,7 @@ fun Database.Transaction.updateServiceNeed(
     shiftCare: ShiftCareType,
     partWeek: Boolean,
     confirmedBy: EvakaUserId?,
-    confirmedAt: HelsinkiDateTime?
+    confirmedAt: HelsinkiDateTime?,
 ) {
     createUpdate {
             sql(
@@ -172,7 +172,7 @@ fun Database.Read.getOverlappingServiceNeeds(
     placementId: PlacementId,
     startDate: LocalDate,
     endDate: LocalDate,
-    excluding: ServiceNeedId?
+    excluding: ServiceNeedId?,
 ): List<ServiceNeed> {
     return createQuery {
             sql(
@@ -287,7 +287,7 @@ ORDER BY display_order
 fun Database.Read.getChildServiceNeedInfos(
     unitId: DaycareId,
     childIds: Set<ChildId>,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): List<ChildServiceNeedInfo> {
     return createQuery {
             sql(
@@ -330,7 +330,7 @@ fun Database.Read.getChildServiceNeedInfos(
 
 fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
     groupId: GroupId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ChildServiceNeedInfo> {
     return createQuery {
             sql(

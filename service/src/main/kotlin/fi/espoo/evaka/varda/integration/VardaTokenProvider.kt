@@ -70,9 +70,9 @@ class VardaTempTokenProvider(private val jsonMapper: JsonMapper, env: VardaEnv) 
                 { err ->
                     throw IllegalStateException(
                         "Requesting Varda API token failed: status code ${err.response.statusCode}, error ${String(err.errorData)}. Aborting update",
-                        err
+                        err,
                     )
-                }
+                },
             )
 }
 

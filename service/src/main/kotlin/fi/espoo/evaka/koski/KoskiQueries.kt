@@ -15,12 +15,10 @@ import java.time.LocalDate
 data class KoskiStudyRightKey(
     val childId: ChildId,
     val unitId: DaycareId,
-    val type: OpiskeluoikeudenTyyppiKoodi
+    val type: OpiskeluoikeudenTyyppiKoodi,
 )
 
-fun Database.Read.getPendingStudyRights(
-    today: LocalDate,
-): List<KoskiStudyRightKey> {
+fun Database.Read.getPendingStudyRights(today: LocalDate): List<KoskiStudyRightKey> {
     val dataVersionCheck = Predicate {
         // intentionally doesn't use bind
         where("$it.data_version IS DISTINCT FROM $KOSKI_DATA_VERSION")
@@ -61,7 +59,7 @@ WHERE kvsr.void_date IS NULL
 
 private fun Database.Transaction.refreshStudyRight(
     key: KoskiStudyRightKey,
-    today: LocalDate
+    today: LocalDate,
 ): Pair<KoskiStudyRightId, Boolean> {
     val studyRightQuery = QuerySql {
         when (key.type) {
@@ -119,7 +117,7 @@ fun Database.Transaction.beginKoskiUpload(
     ophOrganizationOid: String,
     ophMunicipalityCode: String,
     key: KoskiStudyRightKey,
-    today: LocalDate
+    today: LocalDate,
 ): KoskiData? {
     val (id, voided) = refreshStudyRight(key, today)
     return if (voided) {
@@ -196,7 +194,7 @@ data class KoskiUploadResponse(
     val studyRightOid: String,
     val personOid: String,
     val version: Int,
-    val payload: String
+    val payload: String,
 )
 
 fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean =

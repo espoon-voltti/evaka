@@ -22,7 +22,7 @@ data class IndividualChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val groupId: GroupId
+    val groupId: GroupId,
 )
 
 data class CalendarEvent(
@@ -35,14 +35,14 @@ data class CalendarEvent(
     val period: FiniteDateRange,
     @Json val times: Set<CalendarEventTime>,
     val contentModifiedAt: HelsinkiDateTime,
-    val eventType: CalendarEventType
+    val eventType: CalendarEventType,
 )
 
 data class DiscussionReservationDay(
     val date: LocalDate,
     val events: Set<CalendarEvent>,
     val isHoliday: Boolean,
-    val isOperationalDay: Boolean
+    val isOperationalDay: Boolean,
 )
 
 data class CalendarEventTime(
@@ -50,19 +50,19 @@ data class CalendarEventTime(
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
-    val childId: ChildId?
+    val childId: ChildId?,
 )
 
 data class AttendingChild(
     val periods: List<FiniteDateRange>,
     val type: AttendanceType,
     val groupName: String?,
-    val unitName: String?
+    val unitName: String?,
 )
 
 data class CitizenCalendarEventResult(
     val daycareEvents: List<CitizenCalendarEvent>,
-    val discussionSurveys: List<CitizenDiscussionSurvey>
+    val discussionSurveys: List<CitizenDiscussionSurvey>,
 )
 
 data class CitizenDiscussionSurvey(
@@ -71,7 +71,7 @@ data class CitizenDiscussionSurvey(
     val description: String,
     val timesByChild: Map<ChildId, List<CalendarEventTime>>,
     val eventType: CalendarEventType,
-    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>
+    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>,
 )
 
 data class CitizenCalendarEvent(
@@ -81,7 +81,7 @@ data class CitizenCalendarEvent(
     val period: FiniteDateRange,
     @Json val timesByChild: Map<ChildId, List<CitizenCalendarEventTime>>,
     val eventType: CalendarEventType,
-    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>
+    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>,
 )
 
 data class CitizenCalendarEventTime(
@@ -90,7 +90,7 @@ data class CitizenCalendarEventTime(
     val startTime: LocalTime,
     val endTime: LocalTime,
     val childId: ChildId?,
-    val isEditable: Boolean
+    val isEditable: Boolean,
 )
 
 data class CalendarEventForm(
@@ -100,23 +100,23 @@ data class CalendarEventForm(
     val description: String,
     val period: FiniteDateRange,
     val times: List<CalendarEventTimeForm>? = null,
-    val eventType: CalendarEventType
+    val eventType: CalendarEventType,
 )
 
 data class CalendarEventTimeForm(val date: LocalDate, val timeRange: TimeRange)
 
 data class CalendarEventTimeEmployeeReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,
-    val childId: ChildId?
+    val childId: ChildId?,
 )
 
 data class CalendarEventTimeCitizenReservationForm(
     val calendarEventTimeId: CalendarEventTimeId,
-    val childId: ChildId
+    val childId: ChildId,
 )
 
 data class CalendarEventUpdateForm(
     val title: String,
     val description: String,
-    val tree: Map<GroupId, Set<ChildId>?>? = null
+    val tree: Map<GroupId, Set<ChildId>?>? = null,
 )

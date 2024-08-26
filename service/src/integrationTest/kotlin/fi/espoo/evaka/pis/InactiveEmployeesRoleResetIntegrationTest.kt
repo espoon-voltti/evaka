@@ -54,7 +54,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insert(
                     DevEmployee(
                         lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
-                        roles = setOf(UserRole.ADMIN)
+                        roles = setOf(UserRole.ADMIN),
                     )
                 )
             }
@@ -75,7 +75,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 employeeId
             }
@@ -100,12 +100,12 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(
                     unitId,
                     employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation)
+                    firstOfAugust2021.minusDays(daysToDeactivation),
                 )
                 employeeId
             }
@@ -128,7 +128,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(5))
                 employeeId
@@ -153,13 +153,13 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(1000))
                 it.insertDaycareGroupAcl(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    groupIds = listOf(groupId)
+                    groupIds = listOf(groupId),
                 )
                 it.setDaycareGroupAclUpdated(groupId, employeeId, firstOfAugust2021.minusDays(5))
                 employeeId
@@ -185,12 +185,12 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(
                     unitId,
                     employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation)
+                    firstOfAugust2021.minusDays(daysToDeactivation),
                 )
                 it.upsertPinCode(userId = employeeId, pinCode = PinCode("6712"))
                 employeeId
@@ -215,12 +215,12 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(
                     unitId,
                     employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation)
+                    firstOfAugust2021.minusDays(daysToDeactivation),
                 )
                 it.insert(DevPersonalMobileDevice(employeeId = employeeId))
                 employeeId
@@ -242,7 +242,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
                 it.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.STAFF
+                    role = UserRole.STAFF,
                 )
                 it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(44))
                 it.insert(DevPersonalMobileDevice(employeeId = employeeId))
@@ -258,7 +258,7 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
     private fun Database.Transaction.setDaycareAclUpdated(
         unitId: DaycareId,
         employeeId: EmployeeId,
-        timestamp: HelsinkiDateTime
+        timestamp: HelsinkiDateTime,
     ) {
         execute {
             sql(
@@ -275,7 +275,7 @@ ALTER TABLE daycare_acl ENABLE TRIGGER USER;
     private fun Database.Transaction.setDaycareGroupAclUpdated(
         groupId: GroupId,
         employeeId: EmployeeId,
-        timestamp: HelsinkiDateTime
+        timestamp: HelsinkiDateTime,
     ) {
         execute {
             sql(

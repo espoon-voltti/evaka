@@ -17,7 +17,7 @@ data class ChildWithDateOfBirth(@PropagateNull val id: ChildId, val dateOfBirth:
 data class EmployeeWithName(
     @PropagateNull val id: EmployeeId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
 )
 
 data class PersonBasic(
@@ -25,7 +25,7 @@ data class PersonBasic(
     override val dateOfBirth: LocalDate,
     val firstName: String,
     val lastName: String,
-    val ssn: String? = null
+    val ssn: String? = null,
 ) : HasDateOfBirth
 
 data class PersonDetailed(
@@ -47,7 +47,7 @@ data class PersonDetailed(
     val invoicingPostalCode: String = "",
     val invoicingPostOffice: String = "",
     val restrictedDetailsEnabled: Boolean,
-    val forceManualFeeDecisions: Boolean = false
+    val forceManualFeeDecisions: Boolean = false,
 )
 
 fun addressUsable(streetAddress: String?, postalCode: String?, city: String?): Boolean =
@@ -57,7 +57,7 @@ data class FridgeFamily(
     val headOfFamily: PersonId,
     val partner: PersonId?,
     val children: List<PersonBasic>,
-    val period: DateRange
+    val period: DateRange,
 ) {
     fun getSize(): Int {
         return 1 + (if (partner != null) 1 else 0) + children.size

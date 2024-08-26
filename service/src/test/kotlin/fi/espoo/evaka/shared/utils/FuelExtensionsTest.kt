@@ -49,7 +49,7 @@ class FuelExtensionsTest {
                 Response(
                     statusCode = 200,
                     url = URI("https://example.com").toURL(),
-                    body = DefaultBody.from({ ByteArrayInputStream("final".toByteArray()) }, null)
+                    body = DefaultBody.from({ ByteArrayInputStream("final".toByteArray()) }, null),
                 )
             )
         FuelManager.instance.client = client
@@ -112,8 +112,8 @@ class FuelExtensionsTest {
                     body =
                         DefaultBody.from(
                             { ByteArrayInputStream("unhandled error".toByteArray()) },
-                            null
-                        )
+                            null,
+                        ),
                 )
             )
         FuelManager.instance.client = client
@@ -134,8 +134,8 @@ class FuelExtensionsTest {
                     body =
                         DefaultBody.from(
                             { ByteArrayInputStream("unhandled error".toByteArray()) },
-                            null
-                        )
+                            null,
+                        ),
                 )
             )
         FuelManager.instance.client = client
@@ -150,10 +150,10 @@ class FuelExtensionsTest {
                         body =
                             DefaultBody.from(
                                 { ByteArrayInputStream("handled error".toByteArray()) },
-                                null
-                            )
+                                null,
+                            ),
                     ),
-                    r.third
+                    r.third,
                 )
             }
         assertEquals(400, response.statusCode)
@@ -162,12 +162,12 @@ class FuelExtensionsTest {
 
     private fun createRetryResponse(
         retryAfter: String,
-        headers: Headers = Headers.from(Headers.RETRY_AFTER to listOf(retryAfter))
+        headers: Headers = Headers.from(Headers.RETRY_AFTER to listOf(retryAfter)),
     ) =
         Response(
             statusCode = 429,
             responseMessage = "RETRY",
             url = URI("https://example.com").toURL(),
-            headers = headers
+            headers = headers,
         )
 }

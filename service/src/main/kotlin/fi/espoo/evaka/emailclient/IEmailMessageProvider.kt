@@ -16,14 +16,14 @@ import org.jsoup.Jsoup
 data class EmailContent(
     val subject: String,
     val text: String,
-    @org.intellij.lang.annotations.Language("html") val html: String
+    @org.intellij.lang.annotations.Language("html") val html: String,
 ) {
     companion object {
         private val TOO_MANY_NEWLINES = Regex("\n{3,}")
 
         fun fromHtml(
             subject: String,
-            @org.intellij.lang.annotations.Language("html") html: String
+            @org.intellij.lang.annotations.Language("html") html: String,
         ) =
             Jsoup.parseBodyFragment(html).let { doc ->
                 val parsedHtml = doc.body().html()
@@ -61,7 +61,7 @@ interface IEmailMessageProvider {
 
     fun preschoolApplicationReceived(
         language: Language,
-        withinApplicationPeriod: Boolean
+        withinApplicationPeriod: Boolean,
     ): EmailContent
 
     fun assistanceNeedDecisionNotification(language: Language): EmailContent
@@ -70,7 +70,7 @@ interface IEmailMessageProvider {
 
     fun missingReservationsNotification(
         language: Language,
-        checkedRange: FiniteDateRange
+        checkedRange: FiniteDateRange,
     ): EmailContent
 
     fun missingHolidayReservationsNotification(language: Language): EmailContent
@@ -80,7 +80,7 @@ interface IEmailMessageProvider {
     fun messageNotification(
         language: Language,
         thread: MessageThreadStub,
-        isSenderMunicipalAccount: Boolean
+        isSenderMunicipalAccount: Boolean,
     ): EmailContent = messageNotification(language, thread)
 
     fun childDocumentNotification(language: Language, childId: ChildId): EmailContent
@@ -91,34 +91,31 @@ interface IEmailMessageProvider {
 
     fun incomeNotification(
         notificationType: IncomeNotificationType,
-        language: Language
+        language: Language,
     ): EmailContent
 
     fun calendarEventNotification(
         language: Language,
-        events: List<CalendarEventNotificationData>
+        events: List<CalendarEventNotificationData>,
     ): EmailContent
 
     fun discussionSurveyReservationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyReservationNotificationData
+        notificationDetails: DiscussionSurveyReservationNotificationData,
     ): EmailContent
 
     fun discussionSurveyReservationCancellationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyReservationNotificationData
+        notificationDetails: DiscussionSurveyReservationNotificationData,
     ): EmailContent
 
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
-data class CalendarEventNotificationData(
-    val title: String,
-    val period: FiniteDateRange,
-)
+data class CalendarEventNotificationData(val title: String, val period: FiniteDateRange)
 
 data class DiscussionSurveyReservationNotificationData(
     val title: String,
     val unitName: String,
-    val calendarEventTime: CalendarEventTime
+    val calendarEventTime: CalendarEventTime,
 )

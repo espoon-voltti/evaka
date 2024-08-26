@@ -58,7 +58,7 @@ fun Database.Read.listPersonalDevices(employeeId: EmployeeId): List<MobileDevice
 fun Database.Transaction.updateDeviceTracking(
     id: MobileDeviceId,
     lastSeen: HelsinkiDateTime,
-    tracking: SystemController.MobileDeviceTracking
+    tracking: SystemController.MobileDeviceTracking,
 ) =
     createUpdate {
             sql(

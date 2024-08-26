@@ -40,7 +40,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 vardaChildId,
                 vardaPersonId,
                 vardaPersonOid,
-                defaultMunicipalOrganizerOid
+                defaultMunicipalOrganizerOid,
             )
         }
 
@@ -51,7 +51,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 childId,
                 defaultMunicipalOrganizerOid,
                 "",
-                ophEnv.organizerOid
+                ophEnv.organizerOid,
             )
         assertEquals(vardaChildId, result)
 
@@ -69,7 +69,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 31415L,
                 31415,
                 "3.1.4.1.5",
-                defaultMunicipalOrganizerOid
+                defaultMunicipalOrganizerOid,
             )
         }
 
@@ -80,7 +80,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 childId,
                 "otherOrganizerOid",
                 "",
-                ophEnv.organizerOid
+                ophEnv.organizerOid,
             )
         assertEquals(1L, result)
 
@@ -98,7 +98,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 childId,
                 "otherOrganizerOid",
                 "",
-                ophEnv.organizerOid
+                ophEnv.organizerOid,
             )
         assertEquals(1L, result)
 
@@ -143,7 +143,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 childId,
                 "otherOrganizerOid",
                 "",
-                ophEnv.organizerOid
+                ophEnv.organizerOid,
             )
         }
 
@@ -173,7 +173,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
             childId,
             "otherOrganizerOid",
             "",
-            ophEnv.organizerOid
+            ophEnv.organizerOid,
         )
 
         assertEquals(1, mockEndpoint.people.values.size)
@@ -202,7 +202,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
             childId,
             "otherOrganizerOid",
             "",
-            ophEnv.organizerOid
+            ophEnv.organizerOid,
         )
 
         assertEquals(1, mockEndpoint.people.values.size)
@@ -222,7 +222,7 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
                 vardaChildId,
                 vardaPersonId,
                 vardaPersonOid,
-                defaultMunicipalOrganizerOid
+                defaultMunicipalOrganizerOid,
             )
         }
 

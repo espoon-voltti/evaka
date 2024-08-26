@@ -25,7 +25,7 @@ import org.springframework.http.HttpStatus
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,
     val ttl: Duration,
-    val payloads: List<WebPushPayload>
+    val payloads: List<WebPushPayload>,
 )
 
 enum class Urgency {
@@ -43,17 +43,9 @@ sealed interface WebPushPayload {
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
 
-class WebPushRequest(
-    val uri: URI,
-    val headers: WebPushRequestHeaders,
-    val body: ByteArray,
-) {
+class WebPushRequest(val uri: URI, val headers: WebPushRequestHeaders, val body: ByteArray) {
     fun withVapid(vapidJwt: VapidJwt) =
-        WebPushRequest(
-            uri,
-            headers.copy(authorization = vapidJwt.toAuthorizationHeader()),
-            body,
-        )
+        WebPushRequest(uri, headers.copy(authorization = vapidJwt.toAuthorizationHeader()), body)
 
     companion object {
         // Message Encryption for Web Push (MEWP)
@@ -84,7 +76,7 @@ class WebPushRequest(
                                 Urgency.Low -> "low"
                                 Urgency.Normal -> "normal"
                                 Urgency.High -> "high"
-                            }
+                            },
                     ),
                 body =
                     httpEncryptedContentEncoding(
@@ -93,7 +85,7 @@ class WebPushRequest(
                         keyId = WebPushCrypto.encode(messageKeyPair.publicKey),
                         salt = salt,
                         data = data,
-                    )
+                    ),
             )
         }
     }
@@ -149,10 +141,10 @@ class WebPush(env: WebPushEnv) {
                 VapidJwt.create(
                     vapidKeyPair,
                     expiresAt = clock.now().plus(VAPID_JWT_NEW_VALID_DURATION),
-                    endpoint
+                    endpoint,
                 ),
             // Avoid using JWT tokens that expire very soon
-            minValidThreshold = clock.now().plus(VAPID_JWT_MIN_VALID_DURATION)
+            minValidThreshold = clock.now().plus(VAPID_JWT_MIN_VALID_DURATION),
         )
 
     fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {
@@ -163,7 +155,7 @@ class WebPush(env: WebPushEnv) {
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
                     data = jsonWriter.writeValueAsBytes(notification.payloads),
-                    urgency = Urgency.Normal
+                    urgency = Urgency.Normal,
                 )
                 .withVapid(vapidJwt)
         val (request, _, result) =

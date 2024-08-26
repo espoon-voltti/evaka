@@ -25,7 +25,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
 }
         """,
             res.get(),
-            false
+            false,
         )
     }
 
@@ -37,7 +37,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val (_, res2, _) = http.get("/daycares").asUser(user).responseString()
         assertEquals(200, res2.statusCode)

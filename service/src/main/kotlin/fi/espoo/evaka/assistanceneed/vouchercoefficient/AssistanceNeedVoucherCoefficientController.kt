@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedVoucherCoefficientController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @PostMapping("/children/{childId}/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficient(
@@ -37,7 +37,7 @@ class AssistanceNeedVoucherCoefficientController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: AssistanceNeedVoucherCoefficientRequest
+        @RequestBody body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -46,7 +46,7 @@ class AssistanceNeedVoucherCoefficientController(
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT,
-                        childId
+                        childId,
                     )
                     adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
                     tx.insertAssistanceNeedVoucherCoefficient(childId, body).also {
@@ -58,7 +58,7 @@ class AssistanceNeedVoucherCoefficientController(
                                     body.validityPeriod.asDateRange(),
                                 )
                             ),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -66,7 +66,7 @@ class AssistanceNeedVoucherCoefficientController(
             .also { coefficient ->
                 Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(coefficient.id)
+                    objectId = AuditId(coefficient.id),
                 )
             }
     }
@@ -76,7 +76,7 @@ class AssistanceNeedVoucherCoefficientController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<AssistanceNeedVoucherCoefficientResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -85,13 +85,13 @@ class AssistanceNeedVoucherCoefficientController(
                         user,
                         clock,
                         Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS,
-                        childId
+                        childId,
                     )
                     tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
                         AssistanceNeedVoucherCoefficientResponse(
                             voucherCoefficient = it,
                             permittedActions =
-                                accessControl.getPermittedActions(tx, user, clock, it.id)
+                                accessControl.getPermittedActions(tx, user, clock, it.id),
                         )
                     }
                 }
@@ -99,21 +99,21 @@ class AssistanceNeedVoucherCoefficientController(
             .also {
                 Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @PutMapping(
         "/assistance-need-voucher-coefficients/{id}", // deprecated
-        "/employee/assistance-need-voucher-coefficients/{id}"
+        "/employee/assistance-need-voucher-coefficients/{id}",
     )
     fun updateAssistanceNeedVoucherCoefficient(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedVoucherCoefficientId,
-        @RequestBody body: AssistanceNeedVoucherCoefficientRequest
+        @RequestBody body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -122,7 +122,7 @@ class AssistanceNeedVoucherCoefficientController(
                         user,
                         clock,
                         Action.AssistanceNeedVoucherCoefficient.UPDATE,
-                        id
+                        id,
                     )
                     val existing = tx.getAssistanceNeedVoucherCoefficientById(id)
                     adjustExistingCoefficients(tx, existing.childId, body.validityPeriod, id)
@@ -137,10 +137,10 @@ class AssistanceNeedVoucherCoefficientController(
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     existing.childId,
-                                    combinedRange
+                                    combinedRange,
                                 )
                             ),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -150,13 +150,13 @@ class AssistanceNeedVoucherCoefficientController(
 
     @DeleteMapping(
         "/assistance-need-voucher-coefficients/{id}", // deprecated
-        "/employee/assistance-need-voucher-coefficients/{id}"
+        "/employee/assistance-need-voucher-coefficients/{id}",
     )
     fun deleteAssistanceNeedVoucherCoefficient(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedVoucherCoefficientId
+        @PathVariable id: AssistanceNeedVoucherCoefficientId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -165,13 +165,13 @@ class AssistanceNeedVoucherCoefficientController(
                     user,
                     clock,
                     Action.AssistanceNeedVoucherCoefficient.DELETE,
-                    id
+                    id,
                 )
                 val existing =
                     tx.deleteAssistanceNeedVoucherCoefficient(id)
                         ?: throw NotFound(
                             "Assistance need voucher coefficient $id cannot found or cannot be deleted",
-                            "VOUCHER_COEFFICIENT_NOT_FOUND"
+                            "VOUCHER_COEFFICIENT_NOT_FOUND",
                         )
                 asyncJobRunner.plan(
                     tx,
@@ -181,7 +181,7 @@ class AssistanceNeedVoucherCoefficientController(
                             existing.validityPeriod.asDateRange(),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -192,12 +192,12 @@ class AssistanceNeedVoucherCoefficientController(
         tx: Database.Transaction,
         childId: ChildId,
         range: FiniteDateRange,
-        ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?
+        ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?,
     ) {
         val overlappingCoefficients =
             tx.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
                     childId = childId,
-                    range = range
+                    range = range,
                 )
                 .filterNot { it.id == ignoreCoefficientId }
 
@@ -224,8 +224,8 @@ class AssistanceNeedVoucherCoefficientController(
                                         it.validityPeriod.copy(start = range.end.plusDays(1))
                                     } else {
                                         it.validityPeriod
-                                    }
-                            )
+                                    },
+                            ),
                     )
                 }
             }

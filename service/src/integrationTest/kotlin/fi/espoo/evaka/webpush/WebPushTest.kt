@@ -49,7 +49,7 @@ class WebPushTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `getValidToken returns the same token for different URIs within the same origin`() {
         assertEquals(
             getValidToken(URI("http://example.com/first")),
-            getValidToken(URI("http://example.com/second"))
+            getValidToken(URI("http://example.com/second")),
         )
     }
 

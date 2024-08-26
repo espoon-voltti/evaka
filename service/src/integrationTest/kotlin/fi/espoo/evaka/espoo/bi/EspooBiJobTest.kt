@@ -32,7 +32,7 @@ class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                 EspooBiEnv(
                     url = "http://localhost:$httpPort/public/mock-espoo-bi",
                     username = "user",
-                    password = Sensitive("password")
+                    password = Sensitive("password"),
                 )
             )
         job = EspooBiJob(client)
@@ -54,9 +54,9 @@ class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
             object : CsvQuery {
                 override fun <R> invoke(
                     tx: Database.Read,
-                    useResults: (records: Sequence<String>) -> R
+                    useResults: (records: Sequence<String>) -> R,
                 ) = useResults(generateSequence { record }.take(recordCount))
-            }
+            },
         )
 
         val request = mockEndpoint.getCapturedRequests().values.single()

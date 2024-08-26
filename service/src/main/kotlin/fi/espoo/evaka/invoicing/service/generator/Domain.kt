@@ -28,18 +28,18 @@ data class PlacementRange(
     val type: PlacementType,
     val unitId: DaycareId,
     val unitProviderType: ProviderType,
-    val invoicedUnit: Boolean
+    val invoicedUnit: Boolean,
 ) : WithFiniteRange
 
 data class ServiceNeedRange(
     val childId: PersonId,
     override val finiteRange: FiniteDateRange,
-    val optionId: ServiceNeedOptionId
+    val optionId: ServiceNeedOptionId,
 ) : WithFiniteRange
 
 data class ServiceNeedOptionFeeRange(
     override val range: DateRange,
-    val serviceNeedOptionFee: ServiceNeedOptionFee
+    val serviceNeedOptionFee: ServiceNeedOptionFee,
 ) : WithRange
 
 data class ServiceNeedOptionVoucherValueRange(
@@ -50,7 +50,7 @@ data class ServiceNeedOptionVoucherValueRange(
     val value: Int,
     val baseValueUnder3y: Int,
     val coefficientUnder3y: BigDecimal,
-    val valueUnder3y: Int
+    val valueUnder3y: Int,
 ) : WithRange
 
 data class PlacementDetails(
@@ -62,7 +62,7 @@ data class PlacementDetails(
     val invoicedUnit: Boolean,
     val hasServiceNeed: Boolean,
     val serviceNeedOption: ServiceNeedOption,
-    val serviceNeedVoucherValues: ServiceNeedOptionVoucherValueRange?
+    val serviceNeedVoucherValues: ServiceNeedOptionVoucherValueRange?,
 ) : WithFiniteRange {
     val financeDecisionType: FinanceDecisionType?
         get() =
@@ -81,7 +81,7 @@ data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn:
 data class ChildRelation(
     val headOfChild: PersonId,
     override val finiteRange: FiniteDateRange,
-    @Nested("child") val child: Child
+    @Nested("child") val child: Child,
 ) : WithFiniteRange
 
 data class PartnerRelation(val partnerId: PersonId, override val range: DateRange) : WithRange

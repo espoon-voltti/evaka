@@ -22,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 class SESEmailClient(
     private val client: SesClient,
     private val whitelist: List<Regex>?,
-    private val subjectPostfix: String?
+    private val subjectPostfix: String?,
 ) : EmailClient {
     private val charset = "UTF-8"
 

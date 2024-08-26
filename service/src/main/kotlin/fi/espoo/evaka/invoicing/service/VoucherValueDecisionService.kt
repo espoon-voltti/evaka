@@ -85,7 +85,7 @@ class VoucherValueDecisionService(
 
     fun getDecisionPdfResponse(
         dbc: Database.Connection,
-        decisionId: VoucherValueDecisionId
+        decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
         val documentKey =
             dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
@@ -96,7 +96,7 @@ class VoucherValueDecisionService(
     fun sendDecision(
         tx: Database.Transaction,
         clock: EvakaClock,
-        decisionId: VoucherValueDecisionId
+        decisionId: VoucherValueDecisionId,
     ): Boolean {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
@@ -109,7 +109,7 @@ class VoucherValueDecisionService(
         if (decision.requiresManualSending) {
             tx.updateVoucherValueDecisionStatus(
                 listOf(decision.id),
-                VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
+                VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             )
             return false
         }
@@ -143,18 +143,18 @@ class VoucherValueDecisionService(
                         postOffice = sendAddress.postOffice,
                         ssn = decision.headOfFamily.ssn!!,
                         messageHeader = messageHeader,
-                        messageContent = messageContent
+                        messageContent = messageContent,
                     )
                 )
             ),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
 
         tx.markVoucherValueDecisionsSent(listOf(decision.id), clock.now())
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = decision.id)),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
         return true
     }
@@ -162,7 +162,7 @@ class VoucherValueDecisionService(
     fun ignoreDrafts(
         tx: Database.Transaction,
         ids: List<VoucherValueDecisionId>,
-        today: LocalDate
+        today: LocalDate,
     ) {
         tx.getValueDecisionsByIds(ids)
             .map { decision ->
@@ -198,7 +198,7 @@ class VoucherValueDecisionService(
 
     private fun getDecision(
         tx: Database.Read,
-        decisionId: VoucherValueDecisionId
+        decisionId: VoucherValueDecisionId,
     ): VoucherValueDecisionDetailed =
         tx.getVoucherValueDecision(decisionId)?.let {
             it.copy(
@@ -207,14 +207,14 @@ class VoucherValueDecisionService(
                         it.headOfFamily.id,
                         it.partner?.id,
                         listOf(it.child.id),
-                        DateRange(it.validFrom, it.validTo)
+                        DateRange(it.validFrom, it.validTo),
                     )
             )
         } ?: error("No voucher value decision found with ID ($decisionId)")
 
     private fun generatePdf(
         decision: VoucherValueDecisionDetailed,
-        settings: Map<SettingType, String>
+        settings: Map<SettingType, String>,
     ): ByteArray {
         val lang =
             if (decision.placement.unit.language == "sv") OfficialLanguage.SV
@@ -228,7 +228,7 @@ class VoucherValueDecisionService(
     fun setType(
         tx: Database.Transaction,
         decisionId: VoucherValueDecisionId,
-        type: VoucherValueDecisionType
+        type: VoucherValueDecisionType,
     ) {
         val decision =
             tx.getVoucherValueDecision(decisionId)
@@ -243,7 +243,7 @@ class VoucherValueDecisionService(
     fun runSendNewVoucherValueDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendNewVoucherValueDecisionEmail
+        msg: AsyncJob.SendNewVoucherValueDecisionEmail,
     ) {
         val voucherValueDecisionId = msg.decisionId
         val decision =

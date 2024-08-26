@@ -33,7 +33,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: ChildDailyNoteBody
+        @RequestBody body: ChildDailyNoteBody,
     ): ChildDailyNoteId {
         try {
             return db.connect { dbc ->
@@ -43,7 +43,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                             user,
                             clock,
                             Action.Child.CREATE_DAILY_NOTE,
-                            childId
+                            childId,
                         )
                         it.createChildDailyNote(childId, body)
                     }
@@ -51,7 +51,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
                 .also { noteId ->
                     Audit.ChildDailyNoteCreate.log(
                         targetId = AuditId(childId),
-                        objectId = AuditId(noteId)
+                        objectId = AuditId(noteId),
                     )
                 }
         } catch (e: Exception) {
@@ -68,7 +68,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable noteId: ChildDailyNoteId,
-        @RequestBody body: ChildDailyNoteBody
+        @RequestBody body: ChildDailyNoteBody,
     ): ChildDailyNote {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -84,7 +84,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable noteId: ChildDailyNoteId
+        @PathVariable noteId: ChildDailyNoteId,
     ) {
         db.connect { dbc ->
             dbc.transaction {

@@ -20,7 +20,7 @@ data class Pairing(
     val responseKey: String?,
     val expires: HelsinkiDateTime,
     val status: PairingStatus,
-    val mobileDeviceId: MobileDeviceId? = null
+    val mobileDeviceId: MobileDeviceId? = null,
 )
 
 enum class PairingStatus : DatabaseEnum {

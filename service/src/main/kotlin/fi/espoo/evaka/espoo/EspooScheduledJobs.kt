@@ -21,22 +21,22 @@ import mu.KotlinLogging
 
 enum class EspooScheduledJob(
     val fn: (EspooScheduledJobs, Database.Connection, EvakaClock) -> Unit,
-    val defaultSettings: ScheduledJobSettings
+    val defaultSettings: ScheduledJobSettings,
 ) {
     SendPatuReport(
         EspooScheduledJobs::sendPatuReport,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 0))),
     ),
     PlanBiJobs(
         EspooScheduledJobs::planBiJobs,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
-    )
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
+    ),
 }
 
 class EspooScheduledJobs(
     private val patuReportingService: PatuReportingService,
     private val espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
-    env: ScheduledJobsEnv<EspooScheduledJob>
+    env: ScheduledJobsEnv<EspooScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -59,7 +59,7 @@ class EspooScheduledJobs(
                 tx,
                 tables.asSequence().map(EspooAsyncJob::SendBiTable),
                 runAt = clock.now(),
-                retryCount = 1
+                retryCount = 1,
             )
         }
     }

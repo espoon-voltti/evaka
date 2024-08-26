@@ -39,7 +39,7 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 parent1.id,
                 startDate1,
                 endDate1,
-                Creator.DVV
+                Creator.DVV,
             )
 
             val startDate2 = endDate1.plusDays(1)
@@ -52,7 +52,7 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 parent2.id,
                 startDate2,
                 endDate2,
-                Creator.DVV
+                Creator.DVV,
             )
 
             val headsByChild = tx.getParentships(headOfChildId = null, childId = child.id)
@@ -78,9 +78,9 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         firstName = firstName,
                         lastName = "Meikäläinen",
                         email = "",
-                        language = "fi"
+                        language = "fi",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
             it.getPersonById(id)!!
         }

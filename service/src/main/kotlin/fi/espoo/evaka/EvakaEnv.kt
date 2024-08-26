@@ -45,7 +45,7 @@ data class EvakaEnv(
                 koskiEnabled =
                     env.lookup(
                         "evaka.integration.koski.enabled",
-                        "fi.espoo.integration.koski.enabled"
+                        "fi.espoo.integration.koski.enabled",
                     ) ?: false,
                 sfiEnabled =
                     env.lookup("evaka.integration.sfi.enabled", "fi.espoo.evaka.message.enabled")
@@ -71,7 +71,7 @@ data class EvakaEnv(
                 maxAttachmentsPerUser =
                     env.lookup(
                         "evaka.max_attachments_per_user",
-                        "fi.espoo.evaka.maxAttachmentsPerUser"
+                        "fi.espoo.evaka.maxAttachmentsPerUser",
                     ),
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
                 nrOfDaysFeeDecisionCanBeSentInAdvance =
@@ -84,7 +84,7 @@ data class EvakaEnv(
                 personAddressEnvelopeWindowPosition =
                     env.lookup<String?>("evaka.person_address_envelope_window_position")?.let {
                         Rectangle.fromString(it)
-                    } ?: Rectangle.iPostWindowPosition
+                    } ?: Rectangle.iPostWindowPosition,
             )
         }
     }
@@ -118,7 +118,7 @@ data class DatabaseEnv(
     val leakDetectionThreshold: Long,
     val defaultStatementTimeout: Duration,
     val maximumPoolSize: Int,
-    val logSql: Boolean
+    val logSql: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -137,7 +137,7 @@ data class DatabaseEnv(
                 leakDetectionThreshold =
                     env.lookup(
                         "evaka.database.leak_detection_threshold",
-                        "spring.datasource.hikari.leak-detection-threshold"
+                        "spring.datasource.hikari.leak-detection-threshold",
                     ) ?: 0,
                 defaultStatementTimeout =
                     env.lookup("evaka.database.default_statement_timeout")
@@ -145,9 +145,9 @@ data class DatabaseEnv(
                 maximumPoolSize =
                     env.lookup(
                         "evaka.database.maximum_pool_size",
-                        "spring.datasource.hikari.maximumPoolSize"
+                        "spring.datasource.hikari.maximumPoolSize",
                     ) ?: 10,
-                logSql = env.lookup("evaka.database.log_sql") ?: false
+                logSql = env.lookup("evaka.database.log_sql") ?: false,
             )
     }
 }
@@ -162,7 +162,7 @@ data class EmailEnv(
     val applicationReceivedSenderAddressFi: String,
     val applicationReceivedSenderAddressSv: String,
     val applicationReceivedSenderNameFi: String,
-    val applicationReceivedSenderNameSv: String
+    val applicationReceivedSenderNameSv: String,
 ) {
     fun sender(language: Language): String =
         when (language) {
@@ -190,13 +190,13 @@ data class EmailEnv(
                 whitelist =
                     env.lookup<List<String>?>(
                             "evaka.email.whitelist",
-                            "application.email.whitelist"
+                            "application.email.whitelist",
                         )
                         ?.map(::Regex),
                 senderAddress =
                     env.lookup(
                         "evaka.email.sender_address",
-                        "fi.espoo.evaka.email.reply_to_address"
+                        "fi.espoo.evaka.email.reply_to_address",
                     ),
                 senderNameFi =
                     env.lookup("evaka.email.sender_name.fi", "fi.espoo.evaka.email.sender_name.fi"),
@@ -206,23 +206,23 @@ data class EmailEnv(
                 applicationReceivedSenderAddressFi =
                     env.lookup(
                         "evaka.email.application_received.sender_address.fi",
-                        "application.email.address.fi"
+                        "application.email.address.fi",
                     ) ?: "",
                 applicationReceivedSenderAddressSv =
                     env.lookup(
                         "evaka.email.application_received.sender_address.sv",
-                        "application.email.address.sv"
+                        "application.email.address.sv",
                     ) ?: "",
                 applicationReceivedSenderNameFi =
                     env.lookup(
                         "evaka.email.application_received.sender_name.fi",
-                        "application.email.name.fi"
+                        "application.email.name.fi",
                     ) ?: "",
                 applicationReceivedSenderNameSv =
                     env.lookup(
                         "evaka.email.application_received.sender_name.sv",
-                        "application.email.name.sv"
-                    ) ?: ""
+                        "application.email.name.sv",
+                    ) ?: "",
             )
     }
 }
@@ -234,7 +234,7 @@ data class BucketEnv(
     val attachments: String,
     val decisions: String,
     val feeDecisions: String,
-    val voucherValueDecisions: String
+    val voucherValueDecisions: String,
 ) {
     fun allBuckets() = listOf(data, attachments, decisions, feeDecisions, voucherValueDecisions)
 
@@ -247,23 +247,23 @@ data class BucketEnv(
                 attachments =
                     env.lookup(
                         "evaka.bucket.attachments",
-                        "fi.espoo.voltti.document.bucket.attachments"
+                        "fi.espoo.voltti.document.bucket.attachments",
                     ),
                 decisions =
                     env.lookup(
                         "evaka.bucket.decisions",
-                        "fi.espoo.voltti.document.bucket.daycaredecision"
+                        "fi.espoo.voltti.document.bucket.daycaredecision",
                     ),
                 feeDecisions =
                     env.lookup(
                         "evaka.bucket.fee_decisions",
-                        "fi.espoo.voltti.document.bucket.paymentdecision"
+                        "fi.espoo.voltti.document.bucket.paymentdecision",
                     ),
                 voucherValueDecisions =
                     env.lookup(
                         "evaka.bucket.voucher_value_decisions",
-                        "fi.espoo.voltti.document.bucket.vouchervaluedecision"
-                    )
+                        "fi.espoo.voltti.document.bucket.vouchervaluedecision",
+                    ),
             )
     }
 }
@@ -273,7 +273,7 @@ data class KoskiEnv(
     val sourceSystem: String,
     val user: String,
     val secret: Sensitive<String>,
-    val municipalityCallerId: String
+    val municipalityCallerId: String,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -282,7 +282,7 @@ data class KoskiEnv(
                 sourceSystem =
                     env.lookup(
                         "evaka.integration.koski.source_system",
-                        "fi.espoo.integration.koski.source_system"
+                        "fi.espoo.integration.koski.source_system",
                     ),
                 user =
                     env.lookup("evaka.integration.koski.user", "fi.espoo.integration.koski.user"),
@@ -290,11 +290,11 @@ data class KoskiEnv(
                     Sensitive(
                         env.lookup(
                             "evaka.integration.koski.secret",
-                            "fi.espoo.integration.koski.secret"
+                            "fi.espoo.integration.koski.secret",
                         )
                     ),
                 municipalityCallerId =
-                    env.lookup("evaka.integration.koski.municipality_caller_id") ?: "espooevaka"
+                    env.lookup("evaka.integration.koski.municipality_caller_id") ?: "espooevaka",
             )
     }
 }
@@ -320,13 +320,13 @@ data class VardaEnv(
                 sourceSystem =
                     env.lookup(
                         "evaka.integration.varda.source_system",
-                        "fi.espoo.integration.varda.source_system"
+                        "fi.espoo.integration.varda.source_system",
                     ),
                 basicAuth =
                     Sensitive(
                         env.lookup(
                             "evaka.integration.varda.basic_auth",
-                            "fi.espoo.integration.varda.basic_auth"
+                            "fi.espoo.integration.varda.basic_auth",
                         ) ?: ""
                     ),
                 startDate = env.lookup("evaka.integration.varda.start_date"),
@@ -337,7 +337,7 @@ data class VardaEnv(
                     env.lookup("evaka.integration.varda.new_integration.migration_speed") ?: 0,
 
                 // Port that's forwarded to Varda for local development
-                localDevPort = env.lookup("evaka.integration.varda.local_dev_port")
+                localDevPort = env.lookup("evaka.integration.varda.local_dev_port"),
             )
     }
 }
@@ -357,19 +357,19 @@ data class DvvModificationsEnv(
                 userId =
                     env.lookup(
                         "evaka.integration.dvv_modifications.user_id",
-                        "fi.espoo.integration.dvv-modifications-service.userId"
+                        "fi.espoo.integration.dvv-modifications-service.userId",
                     ),
                 password =
                     Sensitive(
                         env.lookup(
                             "evaka.integration.dvv_modifications.password",
-                            "fi.espoo.integration.dvv-modifications-service.password"
+                            "fi.espoo.integration.dvv-modifications-service.password",
                         )
                     ),
                 xroadClientId =
                     env.lookup(
                         "evaka.integration.dvv_modifications.xroad_client_id",
-                        "fi.espoo.integration.dvv-modifications-service.xRoadClientId"
+                        "fi.espoo.integration.dvv-modifications-service.xRoadClientId",
                     ),
             )
     }
@@ -382,14 +382,14 @@ data class VtjEnv(val username: String, val password: Sensitive<String>?) {
                 username =
                     env.lookup(
                         "evaka.integration.vtj.username",
-                        "fi.espoo.voltti.vtj.client.username"
+                        "fi.espoo.voltti.vtj.client.username",
                     ),
                 password =
                     env.lookup<String?>(
                             "evaka.integration.vtj.password",
-                            "fi.espoo.voltti.vtj.client.password"
+                            "fi.espoo.voltti.vtj.client.password",
                         )
-                        ?.let(::Sensitive)
+                        ?.let(::Sensitive),
             )
     }
 }
@@ -401,7 +401,7 @@ data class VtjXroadEnv(
     val httpClientCertificateCheck: Boolean,
     val client: VtjXroadClientEnv,
     val service: VtjXroadServiceEnv,
-    val protocolVersion: String
+    val protocolVersion: String,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -409,7 +409,7 @@ data class VtjXroadEnv(
                 trustStore =
                     env.lookup<URI?>(
                             "evaka.integration.vtj.xroad.trust_store.location",
-                            "fi.espoo.voltti.vtj.xroad.trustStore.location"
+                            "fi.espoo.voltti.vtj.xroad.trustStore.location",
                         )
                         ?.let { location ->
                             KeystoreEnv(
@@ -417,21 +417,21 @@ data class VtjXroadEnv(
                                 type =
                                     env.lookup(
                                         "evaka.integration.vtj.xroad.trust_store.type",
-                                        "fi.espoo.voltti.vtj.xroad.trustStore.type"
+                                        "fi.espoo.voltti.vtj.xroad.trustStore.type",
                                     ) ?: "pkcs12",
                                 password =
                                     Sensitive(
                                         env.lookup(
                                             "evaka.integration.vtj.xroad.trust_store.password",
-                                            "fi.espoo.voltti.vtj.xroad.trustStore.password"
+                                            "fi.espoo.voltti.vtj.xroad.trustStore.password",
                                         ) ?: ""
-                                    )
+                                    ),
                             )
                         },
                 keyStore =
                     env.lookup<URI?>(
                             "evaka.integration.vtj.xroad.key_store.location",
-                            "fi.espoo.voltti.vtj.xroad.keyStore.location"
+                            "fi.espoo.voltti.vtj.xroad.keyStore.location",
                         )
                         ?.let { location ->
                             KeystoreEnv(
@@ -439,35 +439,35 @@ data class VtjXroadEnv(
                                 type =
                                     env.lookup(
                                         "evaka.integration.vtj.xroad.key_store.type",
-                                        "fi.espoo.voltti.vtj.xroad.keyStore.type"
+                                        "fi.espoo.voltti.vtj.xroad.keyStore.type",
                                     ) ?: "pkcs12",
                                 password =
                                     Sensitive(
                                         env.lookup(
                                             "evaka.integration.vtj.xroad.key_store.password",
-                                            "fi.espoo.voltti.vtj.xroad.keyStore.password"
+                                            "fi.espoo.voltti.vtj.xroad.keyStore.password",
                                         ) ?: ""
-                                    )
+                                    ),
                             )
                         },
                 address =
                     env.lookup(
                         "evaka.integration.vtj.xroad.address",
-                        "fi.espoo.voltti.vtj.xroad.address"
+                        "fi.espoo.voltti.vtj.xroad.address",
                     ) ?: "",
                 httpClientCertificateCheck =
                     env.lookup(
                         "evaka.integration.vtj.xroad.certificate_check",
                         "evaka.http_client.certificate_check",
-                        "fuel.certificate.check"
+                        "fuel.certificate.check",
                     ) ?: true,
                 client = VtjXroadClientEnv.fromEnvironment(env),
                 service = VtjXroadServiceEnv.fromEnvironment(env),
                 protocolVersion =
                     env.lookup(
                         "evaka.integration.vtj.xroad.protocol_version",
-                        "fi.espoo.voltti.vtj.xroad.protocolVersion"
-                    ) ?: "4.0"
+                        "fi.espoo.voltti.vtj.xroad.protocolVersion",
+                    ) ?: "4.0",
             )
     }
 }
@@ -476,7 +476,7 @@ data class VtjXroadClientEnv(
     val instance: String,
     val memberClass: String,
     val memberCode: String,
-    val subsystemCode: String
+    val subsystemCode: String,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -484,23 +484,23 @@ data class VtjXroadClientEnv(
                 instance =
                     env.lookup(
                         "evaka.integration.vtj.xroad.client.instance",
-                        "fi.espoo.voltti.vtj.xroad.client.instance"
+                        "fi.espoo.voltti.vtj.xroad.client.instance",
                     ) ?: "",
                 memberClass =
                     env.lookup(
                         "evaka.integration.vtj.xroad.client.member_class",
-                        "fi.espoo.voltti.vtj.xroad.client.memberClass"
+                        "fi.espoo.voltti.vtj.xroad.client.memberClass",
                     ) ?: "",
                 memberCode =
                     env.lookup(
                         "evaka.integration.vtj.xroad.client.member_code",
-                        "fi.espoo.voltti.vtj.xroad.client.memberCode"
+                        "fi.espoo.voltti.vtj.xroad.client.memberCode",
                     ) ?: "",
                 subsystemCode =
                     env.lookup(
                         "evaka.integration.vtj.xroad.client.subsystem_code",
-                        "fi.espoo.voltti.vtj.xroad.client.subsystemCode"
-                    ) ?: ""
+                        "fi.espoo.voltti.vtj.xroad.client.subsystemCode",
+                    ) ?: "",
             )
     }
 }
@@ -511,7 +511,7 @@ data class VtjXroadServiceEnv(
     val memberCode: String,
     val subsystemCode: String,
     val serviceCode: String,
-    val serviceVersion: String?
+    val serviceVersion: String?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -519,33 +519,33 @@ data class VtjXroadServiceEnv(
                 instance =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.instance",
-                        "fi.espoo.voltti.vtj.xroad.service.instance"
+                        "fi.espoo.voltti.vtj.xroad.service.instance",
                     ) ?: "",
                 memberClass =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.member_class",
-                        "fi.espoo.voltti.vtj.xroad.service.memberClass"
+                        "fi.espoo.voltti.vtj.xroad.service.memberClass",
                     ) ?: "",
                 memberCode =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.member_code",
-                        "fi.espoo.voltti.vtj.xroad.service.memberCode"
+                        "fi.espoo.voltti.vtj.xroad.service.memberCode",
                     ) ?: "",
                 subsystemCode =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.subsystem_code",
-                        "fi.espoo.voltti.vtj.xroad.service.subsystemCode"
+                        "fi.espoo.voltti.vtj.xroad.service.subsystemCode",
                     ) ?: "",
                 serviceCode =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.service_code",
-                        "fi.espoo.voltti.vtj.xroad.service.serviceCode"
+                        "fi.espoo.voltti.vtj.xroad.service.serviceCode",
                     ) ?: "",
                 serviceVersion =
                     env.lookup(
                         "evaka.integration.vtj.xroad.service.service_version",
-                        "fi.espoo.voltti.vtj.xroad.service.serviceVersion"
-                    )
+                        "fi.espoo.voltti.vtj.xroad.service.serviceVersion",
+                    ),
             )
     }
 }
@@ -623,31 +623,31 @@ data class SfiEnv(
                 address =
                     env.lookup(
                         "evaka.integration.sfi.address",
-                        "fi.espoo.evaka.msg.sfi.ws.address"
+                        "fi.espoo.evaka.msg.sfi.ws.address",
                     ),
                 trustStore =
                     KeystoreEnv(
                         location =
                             env.lookup(
                                 "evaka.integration.sfi.trust_store.location",
-                                "fi.espoo.evaka.msg.sfi.ws.trustStore.location"
+                                "fi.espoo.evaka.msg.sfi.ws.trustStore.location",
                             ),
                         type =
                             env.lookup(
                                 "evaka.integration.sfi.trust_store.type",
-                                "fi.espoo.evaka.msg.sfi.ws.trustStore.type"
+                                "fi.espoo.evaka.msg.sfi.ws.trustStore.type",
                             ) ?: "pkcs12",
                         password =
                             env.lookup<String?>(
                                     "evaka.integration.sfi.trust_store.password",
-                                    "fi.espoo.evaka.msg.sfi.ws.trustStore.password"
+                                    "fi.espoo.evaka.msg.sfi.ws.trustStore.password",
                                 )
-                                ?.let(::Sensitive)
+                                ?.let(::Sensitive),
                     ),
                 keyStore =
                     env.lookup<URI?>(
                             "evaka.integration.sfi.key_store.location",
-                            "fi.espoo.evaka.msg.sfi.ws.keyStore.location"
+                            "fi.espoo.evaka.msg.sfi.ws.keyStore.location",
                         )
                         ?.let { location ->
                             KeystoreEnv(
@@ -655,38 +655,38 @@ data class SfiEnv(
                                 type =
                                     env.lookup(
                                         "evaka.integration.sfi.key_store.type",
-                                        "fi.espoo.evaka.msg.sfi.ws.keyStore.type"
+                                        "fi.espoo.evaka.msg.sfi.ws.keyStore.type",
                                     ) ?: "pkcs12",
                                 password =
                                     env.lookup<String?>(
                                             "evaka.integration.sfi.key_store.password",
-                                            "fi.espoo.evaka.msg.sfi.ws.keyStore.password"
+                                            "fi.espoo.evaka.msg.sfi.ws.keyStore.password",
                                         )
-                                        ?.let(::Sensitive)
+                                        ?.let(::Sensitive),
                             )
                         },
                 signingKeyAlias =
                     env.lookup(
                         "evaka.integration.sfi.signing_key_alias",
-                        "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias"
+                        "fi.espoo.evaka.msg.sfi.ws.keyStore.signingKeyAlias",
                     ) ?: "signing-key",
                 authorityIdentifier =
                     env.lookup(
                         "evaka.integration.sfi.authority_identifier",
                         "evaka.integration.sfi.message.authority_identifier",
-                        "fi.espoo.evaka.msg.sfi.message.authorityIdentifier"
+                        "fi.espoo.evaka.msg.sfi.message.authorityIdentifier",
                     ),
                 serviceIdentifier =
                     env.lookup(
                         "evaka.integration.sfi.service_identifier",
                         "evaka.integration.sfi.message.service_identifier",
-                        "fi.espoo.evaka.msg.sfi.message.serviceIdentifier"
+                        "fi.espoo.evaka.msg.sfi.message.serviceIdentifier",
                     ),
                 certificateCommonName =
                     env.lookup(
                         "evaka.integration.sfi.certificate_common_name",
                         "evaka.integration.sfi.message.certificate_common_name",
-                        "fi.espoo.evaka.msg.sfi.message.certificateCommonName"
+                        "fi.espoo.evaka.msg.sfi.message.certificateCommonName",
                     ),
                 printing = SfiPrintingEnv.fromEnvironment(env),
                 contactPerson = SfiContactPersonEnv.fromEnvironment(env),
@@ -695,7 +695,7 @@ data class SfiEnv(
                 restAddress = env.lookup("evaka.integration.sfi.rest_address"),
                 restUsername = env.lookup("evaka.integration.sfi.rest_username"),
                 restPassword =
-                    env.lookup<String?>("evaka.integration.sfi.rest_password")?.let(::Sensitive)
+                    env.lookup<String?>("evaka.integration.sfi.rest_password")?.let(::Sensitive),
             )
     }
 }
@@ -720,7 +720,7 @@ data class SfiPrintingEnv(
     /** Billing ID sent to the printing provider */
     val billingId: String,
     /** Billing password, if required by the printing provider */
-    val billingPassword: Sensitive<String>?
+    val billingPassword: Sensitive<String>?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -728,29 +728,29 @@ data class SfiPrintingEnv(
                 enabled =
                     env.lookup(
                         "evaka.integration.sfi.printing.enabled",
-                        "fi.espoo.evaka.msg.sfi.printing.enablePrinting"
+                        "fi.espoo.evaka.msg.sfi.printing.enablePrinting",
                     ) ?: false,
                 forcePrintForElectronicUser =
                     env.lookup(
                         "evaka.integration.sfi.printing.force_print_for_electronic_user",
-                        "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser"
+                        "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser",
                     ) ?: false,
                 printingProvider =
                     env.lookup(
                         "evaka.integration.sfi.printing.provider",
-                        "fi.espoo.evaka.msg.sfi.printing.printingProvider"
+                        "fi.espoo.evaka.msg.sfi.printing.printingProvider",
                     ),
                 billingId =
                     env.lookup(
                         "evaka.integration.sfi.printing.billing.id",
-                        "fi.espoo.evaka.msg.sfi.printing.billingId"
+                        "fi.espoo.evaka.msg.sfi.printing.billingId",
                     ),
                 billingPassword =
                     env.lookup<String?>(
                             "evaka.integration.sfi.printing.billing.password",
-                            "fi.espoo.evaka.msg.sfi.printing.billingPassword"
+                            "fi.espoo.evaka.msg.sfi.printing.billingPassword",
                         )
-                        ?.let(::Sensitive)
+                        ?.let(::Sensitive),
             )
     }
 }
@@ -762,18 +762,18 @@ data class SfiContactPersonEnv(val name: String?, val email: String?, val phone:
                 name =
                     env.lookup(
                         "evaka.integration.sfi.contact_person.name",
-                        "fi.espoo.evaka.msg.sfi.printing.contactPersonName"
+                        "fi.espoo.evaka.msg.sfi.printing.contactPersonName",
                     ),
                 phone =
                     env.lookup(
                         "evaka.integration.sfi.contact_person.phone",
-                        "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone"
+                        "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone",
                     ),
                 email =
                     env.lookup(
                         "evaka.integration.sfi.contact_person.email",
-                        "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail"
-                    )
+                        "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail",
+                    ),
             )
     }
 }
@@ -782,7 +782,7 @@ data class SfiContactOrganizationEnv(
     val name: String?,
     val streetAddress: String?,
     val postalCode: String?,
-    val postOffice: String?
+    val postOffice: String?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -791,7 +791,7 @@ data class SfiContactOrganizationEnv(
                 streetAddress =
                     env.lookup("evaka.integration.sfi.contact_organization.street_address"),
                 postalCode = env.lookup("evaka.integration.sfi.contact_organization.postal_code"),
-                postOffice = env.lookup("evaka.integration.sfi.contact_organization.post_office")
+                postOffice = env.lookup("evaka.integration.sfi.contact_organization.post_office"),
             )
     }
 }
@@ -799,7 +799,7 @@ data class SfiContactOrganizationEnv(
 data class KeystoreEnv(
     val location: URI,
     val type: String = "pkcs12",
-    val password: Sensitive<String>? = null
+    val password: Sensitive<String>? = null,
 ) {
     fun load(): KeyStore =
         KeyStore.getInstance(type).apply {
@@ -812,7 +812,7 @@ data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
         fun <T : Enum<T>> fromEnvironment(
             defaults: Map<T, ScheduledJobSettings>,
             prefix: String,
-            env: Environment
+            env: Environment,
         ) =
             ScheduledJobsEnv(
                 defaults.mapValues { (job, default) ->
@@ -822,7 +822,7 @@ data class ScheduledJobsEnv<T : Enum<T>>(val jobs: Map<T, ScheduledJobSettings>)
                         schedule =
                             env.lookup<String?>("$envPrefix.cron")?.let(JobSchedule::cron)
                                 ?: default.schedule,
-                        retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount
+                        retryCount = env.lookup("$envPrefix.retry_count") ?: default.retryCount,
                     )
                 }
             )
@@ -835,7 +835,7 @@ data class OphEnv(val organizerOid: String, val organizerId: String, val municip
             return OphEnv(
                 organizerOid = env.lookup("evaka.oph.organizer_oid"),
                 municipalityCode = env.lookup("evaka.oph.municipality_code"),
-                organizerId = env.lookup("evaka.oph.organizer_id")
+                organizerId = env.lookup("evaka.oph.organizer_id"),
             )
         }
     }
@@ -859,7 +859,7 @@ data class JamixEnv(val url: URI, val user: String, val password: Sensitive<Stri
                 // URL up to the operation name, e.g. https://fi.jamix.cloud/japi/pirnet/
                 url = URI.create(env.lookup("evaka.integration.jamix.url")),
                 user = env.lookup("evaka.integration.jamix.user"),
-                password = Sensitive(env.lookup("evaka.integration.jamix.password"))
+                password = Sensitive(env.lookup("evaka.integration.jamix.password")),
             )
         }
     }
@@ -904,7 +904,7 @@ fun <T> Environment.lookup(key: String, deprecatedKeys: Array<out String>, clazz
 class EnvLookupException(key: String, cause: Throwable) :
     RuntimeException(
         "Failed to lookup configuration key $key (environment variable ${key.toSystemEnvKey()})",
-        cause
+        cause,
     )
 
 // Reference: Spring SystemEnvironmentPropertySource

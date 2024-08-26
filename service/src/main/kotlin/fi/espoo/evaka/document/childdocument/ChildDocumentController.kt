@@ -41,20 +41,20 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/child-documents", // deprecated
-    "/employee/child-documents"
+    "/employee/child-documents",
 )
 class ChildDocumentController(
     private val accessControl: AccessControl,
     private val childDocumentService: ChildDocumentService,
     private val featureConfig: FeatureConfig,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @PostMapping
     fun createDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ChildDocumentCreateRequest
+        @RequestBody body: ChildDocumentCreateRequest,
     ): ChildDocumentId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -63,7 +63,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.Child.CREATE_CHILD_DOCUMENT,
-                        body.childId
+                        body.childId,
                     )
 
                     val template =
@@ -91,7 +91,7 @@ class ChildDocumentController(
                                     processDefinitionNumber = processDefinitionNumber,
                                     year = now.year,
                                     organization = featureConfig.archiveMetadataOrganization,
-                                    archiveDurationMonths = archiveDurationMonths
+                                    archiveDurationMonths = archiveDurationMonths,
                                 )
                                 .id
                                 .also { processId ->
@@ -99,7 +99,7 @@ class ChildDocumentController(
                                         processId = processId,
                                         state = ArchivedProcessState.INITIAL,
                                         now = now,
-                                        userId = user.evakaUserId
+                                        userId = user.evakaUserId,
                                     )
                                 }
                         }
@@ -108,7 +108,7 @@ class ChildDocumentController(
                         document = body,
                         now = now,
                         userId = user.id,
-                        processId = processId
+                        processId = processId,
                     )
                 }
             }
@@ -120,7 +120,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam childId: PersonId
+        @RequestParam childId: PersonId,
     ): List<ChildDocumentSummaryWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -129,7 +129,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.Child.READ_CHILD_DOCUMENT,
-                        childId
+                        childId,
                     )
                     val documents =
                         tx.getChildDocuments(childId) +
@@ -141,7 +141,7 @@ class ChildDocumentController(
                             tx,
                             user,
                             clock,
-                            documents.map { it.id }
+                            documents.map { it.id },
                         )
                     documents
                         .mapNotNull { document ->
@@ -157,7 +157,7 @@ class ChildDocumentController(
 
     data class ChildDocumentSummaryWithPermittedActions(
         val data: ChildDocumentSummary,
-        val permittedActions: Set<Action.ChildDocument>
+        val permittedActions: Set<Action.ChildDocument>,
     )
 
     @GetMapping("/{documentId}")
@@ -165,7 +165,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ): ChildDocumentWithPermittedActions {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -174,7 +174,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.READ,
-                        documentId
+                        documentId,
                     )
 
                     val document =
@@ -187,12 +187,12 @@ class ChildDocumentController(
                             tx,
                             user,
                             clock,
-                            documentId
+                            documentId,
                         )
 
                     ChildDocumentWithPermittedActions(
                         data = document,
-                        permittedActions = permittedActions
+                        permittedActions = permittedActions,
                     )
                 }
             }
@@ -205,7 +205,7 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: DocumentContent
+        @RequestBody body: DocumentContent,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -214,7 +214,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.UPDATE,
-                        documentId
+                        documentId,
                     )
                     val document =
                         tx.getChildDocument(documentId)
@@ -229,7 +229,7 @@ class ChildDocumentController(
                         if (lock.modifiedBy != user.id) {
                             throw Conflict(
                                 message = "Did not own the lock on the document",
-                                errorCode = "invalid-lock"
+                                errorCode = "invalid-lock",
                             )
                         }
                     }
@@ -239,7 +239,7 @@ class ChildDocumentController(
                         document.status,
                         body,
                         clock.now(),
-                        user.id
+                        user.id,
                     )
                 }
                 .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
@@ -248,7 +248,7 @@ class ChildDocumentController(
 
     data class DocumentLockResponse(
         val lockTakenSuccessfully: Boolean,
-        val currentLock: DocumentWriteLock
+        val currentLock: DocumentWriteLock,
     )
 
     @PutMapping("/{documentId}/lock")
@@ -256,7 +256,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ): DocumentLockResponse {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -265,7 +265,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.UPDATE,
-                        documentId
+                        documentId,
                     )
                     val success = tx.tryTakeWriteLock(documentId, clock.now(), user.id)
                     val currentLock =
@@ -273,7 +273,7 @@ class ChildDocumentController(
                             ?: throw IllegalStateException("lock should exist now")
                     DocumentLockResponse(
                         lockTakenSuccessfully = success && currentLock.modifiedBy == user.id,
-                        currentLock = currentLock
+                        currentLock = currentLock,
                     )
                 }
             }
@@ -282,7 +282,7 @@ class ChildDocumentController(
 
     private fun validateContentAgainstTemplate(
         documentContent: DocumentContent,
-        templateContent: DocumentTemplateContent
+        templateContent: DocumentTemplateContent,
     ) {
         val questions = templateContent.sections.flatMap { it.questions }
         val valid =
@@ -303,7 +303,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -312,7 +312,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.PUBLISH,
-                        documentId
+                        documentId,
                     )
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
                     tx.publishChildDocument(documentId, clock.now())
@@ -320,12 +320,12 @@ class ChildDocumentController(
                         childDocumentService.schedulePdfGeneration(
                             tx,
                             listOf(documentId),
-                            clock.now()
+                            clock.now(),
                         )
                         childDocumentService.scheduleEmailNotification(
                             tx,
                             listOf(documentId),
-                            clock.now()
+                            clock.now(),
                         )
                     }
                 }
@@ -344,7 +344,7 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: StatusChangeRequest
+        @RequestBody body: StatusChangeRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -353,14 +353,14 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.NEXT_STATUS,
-                        documentId
+                        documentId,
                     )
                     val statusTransition =
                         validateStatusTransition(
                             tx = tx,
                             documentId = documentId,
                             requestedStatus = body.newStatus,
-                            goingForward = true
+                            goingForward = true,
                         )
 
                     val wasUpToDate = tx.isDocumentPublishedContentUpToDate(documentId)
@@ -369,12 +369,12 @@ class ChildDocumentController(
                         childDocumentService.schedulePdfGeneration(
                             tx,
                             listOf(documentId),
-                            clock.now()
+                            clock.now(),
                         )
                         childDocumentService.scheduleEmailNotification(
                             tx,
                             listOf(documentId),
-                            clock.now()
+                            clock.now(),
                         )
                     }
                     updateDocumentProcessHistory(
@@ -382,14 +382,14 @@ class ChildDocumentController(
                         documentId = documentId,
                         newStatus = statusTransition.newStatus,
                         now = clock.now(),
-                        userId = user.evakaUserId
+                        userId = user.evakaUserId,
                     )
                 }
             }
             .also {
                 Audit.ChildDocumentNextStatus.log(
                     targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus)
+                    meta = mapOf("newStatus" to body.newStatus),
                 )
                 Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
             }
@@ -401,7 +401,7 @@ class ChildDocumentController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
-        @RequestBody body: StatusChangeRequest
+        @RequestBody body: StatusChangeRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -410,14 +410,14 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.PREV_STATUS,
-                        documentId
+                        documentId,
                     )
                     val statusTransition =
                         validateStatusTransition(
                             tx = tx,
                             documentId = documentId,
                             requestedStatus = body.newStatus,
-                            goingForward = false
+                            goingForward = false,
                         )
                     tx.changeStatus(documentId, statusTransition, clock.now())
                     updateDocumentProcessHistory(
@@ -425,14 +425,14 @@ class ChildDocumentController(
                         documentId = documentId,
                         newStatus = statusTransition.newStatus,
                         now = clock.now(),
-                        userId = user.evakaUserId
+                        userId = user.evakaUserId,
                     )
                 }
             }
             .also {
                 Audit.ChildDocumentPrevStatus.log(
                     targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus)
+                    meta = mapOf("newStatus" to body.newStatus),
                 )
             }
     }
@@ -442,7 +442,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -451,14 +451,14 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.DELETE,
-                        documentId
+                        documentId,
                     )
                     deleteProcessByDocumentId(tx, documentId)
                     tx.getChildDocumentKey(documentId)?.also { key ->
                         asyncJobRunner.plan(
                             tx = tx,
                             payloads = listOf(AsyncJob.DeleteChildDocumentPdf(key)),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                     tx.deleteChildDocumentDraft(documentId)
@@ -472,7 +472,7 @@ class ChildDocumentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -481,7 +481,7 @@ class ChildDocumentController(
                         user,
                         clock,
                         Action.ChildDocument.DOWNLOAD,
-                        documentId
+                        documentId,
                     )
                     childDocumentService.getPdfResponse(tx, documentId)
                 }

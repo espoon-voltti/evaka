@@ -20,7 +20,7 @@ fun Database.Transaction.insertChildDocument(
     document: ChildDocumentCreateRequest,
     now: HelsinkiDateTime,
     userId: EmployeeId,
-    processId: ArchivedProcessId?
+    processId: ArchivedProcessId?,
 ): ChildDocumentId {
     return createQuery {
             sql(
@@ -97,12 +97,12 @@ fun Database.Read.getChildDocumentKey(id: ChildDocumentId): String? {
 data class DocumentWriteLock(
     val modifiedBy: EmployeeId,
     val modifiedByName: String,
-    val opensAt: HelsinkiDateTime
+    val opensAt: HelsinkiDateTime,
 )
 
 fun Database.Read.getCurrentWriteLock(
     id: ChildDocumentId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): DocumentWriteLock? =
     createQuery {
             sql(
@@ -126,7 +126,7 @@ fun Database.Read.getCurrentWriteLock(
 fun Database.Transaction.tryTakeWriteLock(
     id: ChildDocumentId,
     now: HelsinkiDateTime,
-    userId: EmployeeId
+    userId: EmployeeId,
 ): Boolean =
     createUpdate {
             sql(
@@ -148,7 +148,7 @@ fun Database.Transaction.updateChildDocumentContent(
     status: DocumentStatus,
     content: DocumentContent,
     now: HelsinkiDateTime,
-    userId: EmployeeId
+    userId: EmployeeId,
 ) {
     createUpdate {
             sql(
@@ -212,7 +212,7 @@ fun validateStatusTransition(
     tx: Database.Read,
     documentId: ChildDocumentId,
     requestedStatus: DocumentStatus,
-    goingForward: Boolean // false = backwards
+    goingForward: Boolean, // false = backwards
 ): StatusTransition {
     val document = tx.getChildDocument(documentId) ?: throw NotFound()
 
@@ -233,7 +233,7 @@ fun validateStatusTransition(
 fun Database.Transaction.changeStatus(
     id: ChildDocumentId,
     statusTransition: StatusTransition,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -250,7 +250,7 @@ fun Database.Transaction.changeStatus(
 fun Database.Transaction.changeStatusAndPublish(
     id: ChildDocumentId,
     statusTransition: StatusTransition,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -267,7 +267,7 @@ fun Database.Transaction.changeStatusAndPublish(
 
 fun Database.Transaction.markCompletedAndPublish(
     ids: List<ChildDocumentId>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -318,10 +318,12 @@ fun Database.Transaction.updateChildDocumentKey(id: ChildDocumentId, documentKey
 
 fun Database.Transaction.resetChildDocumentKey(ids: List<ChildDocumentId>) {
     executeBatch(ids) {
-        sql("""
+        sql(
+            """
 UPDATE child_document
 SET document_key = NULL
 WHERE id = ${bind { it }}
-""")
+"""
+        )
     }
 }

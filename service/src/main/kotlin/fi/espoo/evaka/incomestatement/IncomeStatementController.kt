@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/income-statements", // deprecated
-    "/employee/income-statements"
+    "/employee/income-statements",
 )
 class IncomeStatementController(private val accessControl: AccessControl) {
     @GetMapping("/person/{personId}")
@@ -38,7 +38,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int
+        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read {
@@ -47,20 +47,20 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
-                        personId
+                        personId,
                     )
                     it.readIncomeStatementsForPerson(
                         personId = personId,
                         includeEmployeeContent = true,
                         page = page,
-                        pageSize = pageSize
+                        pageSize = pageSize,
                     )
                 }
             }
             .also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total),
                 )
             }
     }
@@ -71,7 +71,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-        @PathVariable incomeStatementId: IncomeStatementId
+        @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         return db.connect { dbc ->
                 dbc.read {
@@ -80,12 +80,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
-                        personId
+                        personId,
                     )
                     it.readIncomeStatementForPerson(
                         personId,
                         incomeStatementId,
-                        includeEmployeeContent = true
+                        includeEmployeeContent = true,
                     )
                 } ?: throw NotFound("No such income statement")
             }
@@ -100,7 +100,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: SetIncomeStatementHandledBody
+        @RequestBody body: SetIncomeStatementHandledBody,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -109,12 +109,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.IncomeStatement.UPDATE_HANDLED,
-                    incomeStatementId
+                    incomeStatementId,
                 )
                 tx.updateIncomeStatementHandled(
                     incomeStatementId,
                     body.handlerNote,
-                    if (body.handled) user.id else null
+                    if (body.handled) user.id else null,
                 )
             }
         }
@@ -126,7 +126,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchIncomeStatementsRequest
+        @RequestBody body: SearchIncomeStatementsRequest,
     ): PagedIncomeStatementsAwaitingHandler {
         return db.connect { dbc ->
                 dbc.read {
@@ -134,7 +134,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER
+                        Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER,
                     )
                     it.fetchIncomeStatementsAwaitingHandler(
                         clock.now().toLocalDate(),
@@ -146,7 +146,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.page,
                         body.pageSize,
                         body.sortBy ?: IncomeStatementSortParam.CREATED,
-                        body.sortDirection ?: SortDirection.ASC
+                        body.sortDirection ?: SortDirection.ASC,
                     )
                 }
             }
@@ -158,7 +158,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable guardianId: PersonId
+        @PathVariable guardianId: PersonId,
     ): List<ChildBasicInfo> {
         return db.connect { dbc ->
                 dbc.read {
@@ -167,7 +167,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
-                        guardianId
+                        guardianId,
                     )
                     it.getIncomeStatementChildrenByGuardian(guardianId, clock.today())
                 }
@@ -175,7 +175,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also {
                 Audit.GuardianChildrenRead.log(
                     targetId = AuditId(guardianId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -190,10 +190,10 @@ data class SearchIncomeStatementsRequest(
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
     val sentEndDate: LocalDate? = null,
-    val placementValidDate: LocalDate? = null
+    val placementValidDate: LocalDate? = null,
 )
 
 enum class IncomeStatementSortParam {
     CREATED,
-    START_DATE
+    START_DATE,
 }

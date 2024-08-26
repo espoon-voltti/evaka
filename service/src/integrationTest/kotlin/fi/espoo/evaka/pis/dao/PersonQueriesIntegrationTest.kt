@@ -81,7 +81,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 postalCode = "00001",
                 postOffice = "Muula",
                 restrictedDetailsEnabled = false,
-                restrictedDetailsEndDate = null
+                restrictedDetailsEndDate = null,
             )
 
         val actual = db.transaction { it.updatePersonFromVtj(updated) }
@@ -108,7 +108,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val adminUser =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.ADMIN)
+            roles = setOf(UserRole.ADMIN),
         )
 
     @Test
@@ -119,7 +119,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, persons.size)
         assertEquals(
             persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn
+            (created.identity as? ExternalIdentifier.SSN)?.ssn,
         )
     }
 
@@ -131,7 +131,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, persons.size)
         assertEquals(
             persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn
+            (created.identity as? ExternalIdentifier.SSN)?.ssn,
         )
     }
 
@@ -174,12 +174,12 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.searchPeople(
                     AuthenticatedUser.Employee(
                         EmployeeId(UUID.randomUUID()),
-                        setOf(UserRole.UNIT_SUPERVISOR)
+                        setOf(UserRole.UNIT_SUPERVISOR),
                     ),
                     "Matti",
                     "last_name",
                     "ASC",
-                    true
+                    true,
                 )
             }
 
@@ -261,7 +261,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, persons.size)
         assertEquals(
             persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn
+            (created.identity as? ExternalIdentifier.SSN)?.ssn,
         )
     }
 
@@ -273,7 +273,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, persons.size)
         assertEquals(
             persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn
+            (created.identity as? ExternalIdentifier.SSN)?.ssn,
         )
     }
 
@@ -285,13 +285,13 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, persons.size)
         assertEquals(
             persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn
+            (created.identity as? ExternalIdentifier.SSN)?.ssn,
         )
     }
 
     private fun createVtjPerson(
         tx: Database.Transaction,
-        validSSN: String = "010199-8137"
+        validSSN: String = "010199-8137",
     ): PersonDTO {
         val inputPerson = testPerson(validSSN)
         return tx.createPersonFromVtj(inputPerson)
@@ -317,7 +317,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             postOffice = "Jokula",
             residenceCode = "",
             restrictedDetailsEnabled = true,
-            restrictedDetailsEndDate = LocalDate.now().plusYears(1)
+            restrictedDetailsEndDate = LocalDate.now().plusYears(1),
         )
     }
 }

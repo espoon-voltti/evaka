@@ -33,7 +33,7 @@ class MockSfiMessagesRestEndpoint {
     @PostMapping(
         "/v1/token",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     fun getAccessToken(@RequestBody body: AccessTokenRequestBody): ResponseEntity<Any> =
         lock.withLock {
@@ -47,11 +47,11 @@ class MockSfiMessagesRestEndpoint {
     @PostMapping(
         "/v1/files",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     fun uploadFile(
         @RequestHeader("Authorization") authorization: String?,
-        @RequestPart file: MultipartFile
+        @RequestPart file: MultipartFile,
     ): ResponseEntity<Any> =
         lock.withLock {
             if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
@@ -66,11 +66,11 @@ class MockSfiMessagesRestEndpoint {
     @PostMapping(
         "/v1/messages",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     fun sendMessage(
         @RequestHeader("Authorization") authorization: String?,
-        @RequestBody body: NewMessageFromClientOrganisation
+        @RequestBody body: NewMessageFromClientOrganisation,
     ): ResponseEntity<Any> =
         lock.withLock {
             if (!tokens.contains(authorization?.removePrefix("Bearer "))) {

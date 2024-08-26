@@ -16,14 +16,14 @@ data class PlacementPlanDraft(
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
     val placements: List<PlacementSummary>,
-    val guardianHasRestrictedDetails: Boolean
+    val guardianHasRestrictedDetails: Boolean,
 )
 
 data class PlacementDraftChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val dob: LocalDate
+    val dob: LocalDate,
 )
 
 data class PlacementDraftUnit(val id: DaycareId, val name: String)

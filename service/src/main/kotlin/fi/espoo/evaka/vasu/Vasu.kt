@@ -52,14 +52,14 @@ enum class VasuDocumentState {
     DRAFT,
     READY,
     REVIEWED,
-    CLOSED
+    CLOSED,
 }
 
 data class VasuDocumentEvent(
     val id: UUID,
     val created: HelsinkiDateTime,
     val eventType: VasuDocumentEventType,
-    val createdBy: EvakaUserId
+    val createdBy: EvakaUserId,
 )
 
 private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentState {
@@ -78,7 +78,7 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
 @Deprecated(
     message = "use OfficialLanguage instead",
     replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
 )
 typealias VasuLanguage = OfficialLanguage
 
@@ -89,7 +89,7 @@ data class VasuDocumentSummary(
     val events: List<VasuDocumentEvent> = listOf(),
     val publishedAt: HelsinkiDateTime?,
     val guardiansThatHaveGivenPermissionToShare: List<PersonId>,
-    val type: CurriculumType
+    val type: CurriculumType,
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -108,7 +108,7 @@ data class VasuDocument(
     @Json val events: List<VasuDocumentEvent> = listOf(),
     @Json val basics: VasuBasics,
     @Json val content: VasuContent,
-    val publishedAt: HelsinkiDateTime?
+    val publishedAt: HelsinkiDateTime?,
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
@@ -121,7 +121,7 @@ data class VasuBasics(
     val child: VasuChild,
     val guardians: List<VasuGuardian>,
     val placements: List<VasuPlacement>?,
-    val childLanguage: ChildLanguage?
+    val childLanguage: ChildLanguage?,
 )
 
 @Json
@@ -129,7 +129,7 @@ data class VasuChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
 )
 
 @Json
@@ -137,7 +137,7 @@ data class VasuGuardian(
     val id: PersonId,
     val firstName: String,
     val lastName: String,
-    val hasGivenPermissionToShare: Boolean = false
+    val hasGivenPermissionToShare: Boolean = false,
 )
 
 @Json
@@ -146,7 +146,7 @@ data class VasuPlacement(
     val unitName: String,
     val groupId: GroupId,
     val groupName: String,
-    val range: FiniteDateRange
+    val range: FiniteDateRange,
 )
 
 @Json data class ChildLanguage(val nativeLanguage: String, val languageSpokenAtHome: String)
@@ -154,7 +154,7 @@ data class VasuPlacement(
 @Json
 data class VasuContent(
     val hasDynamicFirstSection: Boolean? = false,
-    val sections: List<VasuSection>
+    val sections: List<VasuSection>,
 ) {
     fun matchesStructurally(content: VasuContent): Boolean =
         this.sections.size == content.sections.size &&
@@ -199,7 +199,7 @@ data class VasuContent(
 data class VasuSection(
     val name: String,
     val questions: List<VasuQuestion>,
-    val hideBeforeReady: Boolean = false
+    val hideBeforeReady: Boolean = false,
 ) {
     fun matchesStructurally(section: VasuSection?): Boolean =
         section != null &&
@@ -228,8 +228,8 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.Paragraph::class, name = "PARAGRAPH"),
     JsonSubTypes.Type(
         value = VasuQuestion.StaticInfoSubSection::class,
-        name = "STATIC_INFO_SUBSECTION"
-    )
+        name = "STATIC_INFO_SUBSECTION",
+    ),
 )
 sealed class VasuQuestion(val type: VasuQuestionType) {
     abstract val name: String
@@ -252,7 +252,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val ophKey: OphQuestionKey? = null,
         override val info: String = "",
         override val id: String? = null,
-        override val dependsOn: List<String>? = null
+        override val dependsOn: List<String>? = null,
     ) : VasuQuestion(VasuQuestionType.STATIC_INFO_SUBSECTION) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return true
@@ -266,7 +266,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val id: String? = null,
         override val dependsOn: List<String>? = null,
         val multiline: Boolean,
-        val value: String
+        val value: String,
     ) : VasuQuestion(VasuQuestionType.TEXT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is TextQuestion && question.copy(value = this.value) == this
@@ -281,7 +281,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val dependsOn: List<String>? = null,
         val value: Boolean,
         val label: String? = null,
-        val notNumbered: Boolean? = false
+        val notNumbered: Boolean? = false,
     ) : VasuQuestion(VasuQuestionType.CHECKBOX) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is CheckboxQuestion && question.copy(value = this.value) == this
@@ -296,7 +296,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val dependsOn: List<String>? = null,
         val options: List<QuestionOption>,
         val value: String?,
-        val dateRange: FiniteDateRange? = null
+        val dateRange: FiniteDateRange? = null,
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is RadioGroupQuestion &&
@@ -325,7 +325,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val value: List<String>,
         val textValue: Map<String, String> = mapOf(),
         val dateValue: Map<String, LocalDate>? = mapOf(),
-        val dateRangeValue: Map<String, FiniteDateRange>? = mapOf()
+        val dateRangeValue: Map<String, FiniteDateRange>? = mapOf(),
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is MultiSelectQuestion &&
@@ -333,7 +333,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
                     value = this.value,
                     textValue = this.textValue,
                     dateValue = this.dateValue,
-                    dateRangeValue = this.dateRangeValue
+                    dateRangeValue = this.dateRangeValue,
                 ) == this
         }
 
@@ -363,7 +363,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val dependsOn: List<String>? = null,
         val keys: List<Field>,
         val value: List<String>,
-        val separateRows: Boolean = false
+        val separateRows: Boolean = false,
     ) : VasuQuestion(VasuQuestionType.MULTI_FIELD) {
         init {
             check(keys.size == value.size) {
@@ -383,7 +383,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val id: String? = null,
         override val dependsOn: List<String>? = null,
         val keys: List<Field>,
-        val value: List<List<String>>
+        val value: List<List<String>>,
     ) : VasuQuestion(VasuQuestionType.MULTI_FIELD_LIST) {
         init {
             check(value.all { it.size == keys.size }) {
@@ -404,7 +404,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val dependsOn: List<String>? = null,
         val trackedInEvents: Boolean,
         val nameInEvents: String = "",
-        val value: LocalDate?
+        val value: LocalDate?,
     ) : VasuQuestion(VasuQuestionType.DATE) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is DateQuestion && question.copy(value = this.value) == this
@@ -419,7 +419,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         override val dependsOn: List<String>? = null,
         val title: String = "",
         val value: List<FollowupEntry>,
-        val continuesNumbering: Boolean = false
+        val continuesNumbering: Boolean = false,
     ) : VasuQuestion(VasuQuestionType.FOLLOWUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is Followup && question.copy(value = this.value) == this
@@ -433,7 +433,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
                             authorName = null,
                             authorId = null,
                             edited = null,
-                            createdDate = null
+                            createdDate = null,
                         )
                     }
             )
@@ -447,7 +447,7 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
                             edited =
                                 entry.edited?.let { edited ->
                                     edited.copy(editorName = edited.editorId?.let { nameMap[it] })
-                                }
+                                },
                         )
                     }
             )
@@ -475,7 +475,7 @@ data class QuestionOption(
     val date: Boolean = false,
     val isIntervention: Boolean = false,
     val info: String = "",
-    val subText: String? = null
+    val subText: String? = null,
 )
 
 data class Field(val name: String, val info: String? = null)
@@ -490,7 +490,7 @@ enum class VasuQuestionType {
     DATE,
     FOLLOWUP,
     PARAGRAPH,
-    STATIC_INFO_SUBSECTION
+    STATIC_INFO_SUBSECTION,
 }
 
 @Json
@@ -501,14 +501,14 @@ data class FollowupEntry(
     val text: String = "",
     val authorId: EmployeeId? = null,
     val edited: FollowupEntryEditDetails? = null,
-    val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now()
+    val createdDate: HelsinkiDateTime? = HelsinkiDateTime.now(),
 )
 
 @Json
 data class FollowupEntryEditDetails(
     val editedAt: LocalDate = LocalDate.now(europeHelsinki),
     val editorId: EmployeeId? = null,
-    val editorName: String? = null
+    val editorName: String? = null,
 )
 
 /** Returns true if an email notification needs to be sent */
@@ -517,14 +517,14 @@ fun updateVasuDocumentState(
     now: HelsinkiDateTime,
     createdBy: EvakaUserId,
     id: VasuDocumentId,
-    eventType: VasuDocumentEventType
+    eventType: VasuDocumentEventType,
 ): Boolean {
     val events =
         if (
             eventType in
                 listOf(
                     VasuDocumentEventType.MOVED_TO_READY,
-                    VasuDocumentEventType.MOVED_TO_REVIEWED
+                    VasuDocumentEventType.MOVED_TO_REVIEWED,
                 )
         ) {
             listOf(VasuDocumentEventType.PUBLISHED, eventType)
@@ -574,7 +574,7 @@ fun closeVasusWithExpiredTemplate(tx: Database.Transaction, now: HelsinkiDateTim
             now,
             AuthenticatedUser.SystemInternalUser.evakaUserId,
             documentId,
-            VasuDocumentEventType.MOVED_TO_CLOSED
+            VasuDocumentEventType.MOVED_TO_CLOSED,
         )
     }
 }

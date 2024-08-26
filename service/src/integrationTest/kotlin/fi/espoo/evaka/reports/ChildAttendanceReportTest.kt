@@ -46,7 +46,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
             childId = child.id,
             unitId = daycare.id,
             startDate = range.start,
-            endDate = range.end
+            endDate = range.end,
         )
 
     @Test
@@ -64,7 +64,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     date = today.minusDays(1),
                     arrived = LocalTime.of(9, 0),
-                    departed = LocalTime.of(14, 0)
+                    departed = LocalTime.of(14, 0),
                 )
             )
             tx.insert(
@@ -73,7 +73,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     date = today.minusDays(1),
                     arrived = LocalTime.of(15, 0),
-                    departed = LocalTime.of(18, 0)
+                    departed = LocalTime.of(18, 0),
                 )
             )
             tx.insert(
@@ -82,7 +82,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     unitId = daycare.id,
                     date = today,
                     arrived = LocalTime.of(9, 0),
-                    departed = null
+                    departed = null,
                 )
             )
             tx.insert(
@@ -91,7 +91,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today.minusDays(1),
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(18, 0),
-                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
             tx.insert(
@@ -100,7 +100,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     date = today,
                     startTime = null,
                     endTime = null,
-                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
             tx.insert(
@@ -108,7 +108,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     childId = child.id,
                     date = today.minusDays(2),
                     absenceType = AbsenceType.PLANNED_ABSENCE,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             tx.insert(
@@ -116,7 +116,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     childId = child.id,
                     date = today.minusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
-                    absenceCategory = AbsenceCategory.NONBILLABLE
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
             )
         }
@@ -128,7 +128,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                 MockEvakaClock(now),
                 child.id,
                 range.start,
-                range.end
+                range.end,
             )
 
         assertEquals(
@@ -138,7 +138,7 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     reservations = emptyList(),
                     attendances = emptyList(),
                     billableAbsence = AbsenceType.PLANNED_ABSENCE,
-                    nonbillableAbsence = AbsenceType.SICKLEAVE
+                    nonbillableAbsence = AbsenceType.SICKLEAVE,
                 ),
                 ChildAttendanceReportRow(
                     date = today.minusDays(1),
@@ -146,27 +146,27 @@ internal class ChildAttendanceReportTest : FullApplicationTest(resetDbBeforeEach
                     attendances =
                         listOf(
                             TimeInterval(LocalTime.of(9, 0), LocalTime.of(14, 0)),
-                            TimeInterval(LocalTime.of(15, 0), LocalTime.of(18, 0))
+                            TimeInterval(LocalTime.of(15, 0), LocalTime.of(18, 0)),
                         ),
                     billableAbsence = null,
-                    nonbillableAbsence = null
+                    nonbillableAbsence = null,
                 ),
                 ChildAttendanceReportRow(
                     date = today,
                     reservations = emptyList(),
                     attendances = listOf(TimeInterval(LocalTime.of(9, 0), null)),
                     billableAbsence = null,
-                    nonbillableAbsence = null
+                    nonbillableAbsence = null,
                 ),
                 ChildAttendanceReportRow(
                     date = today.plusDays(1),
                     reservations = emptyList(),
                     attendances = emptyList(),
                     billableAbsence = null,
-                    nonbillableAbsence = null
+                    nonbillableAbsence = null,
                 ),
             ),
-            response
+            response,
         )
     }
 }

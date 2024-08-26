@@ -47,13 +47,13 @@ import org.springframework.web.bind.annotation.RestController
 class PlacementController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    featureConfig: FeatureConfig
+    featureConfig: FeatureConfig,
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
     @GetMapping(
         "/placements", // deprecated
-        "/employee/placements"
+        "/employee/placements",
     )
     fun getPlacements(
         db: Database,
@@ -62,7 +62,7 @@ class PlacementController(
         @RequestParam daycareId: DaycareId? = null,
         @RequestParam childId: ChildId? = null,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
     ): PlacementResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -73,7 +73,7 @@ class PlacementController(
                                 user,
                                 clock,
                                 Action.Unit.READ_PLACEMENT,
-                                daycareId
+                                daycareId,
                             )
                         childId != null ->
                             accessControl.requirePermissionFor(
@@ -81,7 +81,7 @@ class PlacementController(
                                 user,
                                 clock,
                                 Action.Child.READ_PLACEMENT,
-                                childId
+                                childId,
                             )
                         else -> throw BadRequest("daycareId or childId is required")
                     }
@@ -93,8 +93,8 @@ class PlacementController(
                                     tx,
                                     user,
                                     clock,
-                                    Action.Unit.READ
-                                )
+                                    Action.Unit.READ,
+                                ),
                             )
                             .asSequence()
                             .map { it.id }
@@ -123,14 +123,14 @@ class PlacementController(
                                         tx,
                                         user,
                                         clock,
-                                        placementIds
+                                        placementIds,
                                     ),
                                 permittedServiceNeedActions =
                                     accessControl.getPermittedActions(
                                         tx,
                                         user,
                                         clock,
-                                        serviceNeedIds
+                                        serviceNeedIds,
                                     ),
                             )
                         }
@@ -140,14 +140,14 @@ class PlacementController(
                 Audit.PlacementSearch.log(
                     targetId = daycareId?.let(AuditId::invoke) ?: childId?.let(AuditId::invoke),
                     meta =
-                        mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size)
+                        mapOf("startDate" to from, "endDate" to to, "count" to it.placements.size),
                 )
             }
     }
 
     @GetMapping(
         "/placements/plans", // deprecated
-        "/employee/placements/plans"
+        "/employee/placements/plans",
     )
     fun getPlacementPlans(
         db: Database,
@@ -155,7 +155,7 @@ class PlacementController(
         clock: EvakaClock,
         @RequestParam daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<PlacementPlanDetails> {
         return db.connect { dbc ->
                 dbc.read {
@@ -164,7 +164,7 @@ class PlacementController(
                         user,
                         clock,
                         Action.Unit.READ_PLACEMENT_PLAN,
-                        daycareId
+                        daycareId,
                     )
 
                     it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, from, to)
@@ -173,20 +173,20 @@ class PlacementController(
             .also {
                 Audit.PlacementPlanSearch.log(
                     targetId = AuditId(daycareId),
-                    meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size)
+                    meta = mapOf("startDate" to from, "endDate" to to, "count" to it.size),
                 )
             }
     }
 
     @PostMapping(
         "/placements", // deprecated
-        "/employee/placements"
+        "/employee/placements",
     )
     fun createPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PlacementCreateRequestBody
+        @RequestBody body: PlacementCreateRequestBody,
     ) {
         if (body.startDate > body.endDate)
             throw BadRequest("Placement start date cannot be after the end date")
@@ -200,13 +200,13 @@ class PlacementController(
                         user,
                         clock,
                         Action.Unit.CREATE_PLACEMENT,
-                        body.unitId
+                        body.unitId,
                     )
                     if (tx.getChild(body.childId) == null) {
                         tx.createChild(
                             Child(
                                 id = body.childId,
-                                additionalInformation = AdditionalInformation()
+                                additionalInformation = AdditionalInformation(),
                             )
                         )
                     }
@@ -218,12 +218,12 @@ class PlacementController(
                             period = FiniteDateRange(body.startDate, body.endDate),
                             type = body.type,
                             useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                            placeGuarantee = body.placeGuarantee
+                            placeGuarantee = body.placeGuarantee,
                         )
                         .also {
                             tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                                 body.childId,
-                                now.toLocalDate()
+                                now.toLocalDate(),
                             )
                             generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
                             asyncJobRunner.plan(
@@ -231,30 +231,30 @@ class PlacementController(
                                 listOf(
                                     AsyncJob.GenerateFinanceDecisions.forChild(
                                         body.childId,
-                                        DateRange(body.startDate, body.endDate)
+                                        DateRange(body.startDate, body.endDate),
                                     )
                                 ),
-                                runAt = now
+                                runAt = now,
                             )
                         }
                 }
             }
         Audit.PlacementCreate.log(
             targetId = AuditId(listOf(body.childId, body.unitId)),
-            objectId = AuditId(placements.map { it.id })
+            objectId = AuditId(placements.map { it.id }),
         )
     }
 
     @PutMapping(
         "/placements/{placementId}", // deprecated
-        "/employee/placements/{placementId}"
+        "/employee/placements/{placementId}",
     )
     fun updatePlacementById(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable placementId: PlacementId,
-        @RequestBody body: PlacementUpdateRequestBody
+        @RequestBody body: PlacementUpdateRequestBody,
     ) {
         val now = clock.now()
         db.connect { dbc ->
@@ -264,7 +264,7 @@ class PlacementController(
                     user,
                     clock,
                     Action.Placement.UPDATE,
-                    placementId
+                    placementId,
                 )
                 val authorizedDaycares =
                     tx.getDaycares(
@@ -273,8 +273,8 @@ class PlacementController(
                                 tx,
                                 user,
                                 clock,
-                                Action.Unit.READ
-                            )
+                                Action.Unit.READ,
+                            ),
                         )
                         .asSequence()
                         .map { it.id }
@@ -286,12 +286,12 @@ class PlacementController(
                         body.startDate,
                         body.endDate,
                         aclAuth,
-                        useFiveYearsOldDaycare
+                        useFiveYearsOldDaycare,
                     )
 
                 tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                     oldPlacement.childId,
-                    now.toLocalDate()
+                    now.toLocalDate(),
                 )
                 generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
                 asyncJobRunner.plan(
@@ -301,11 +301,11 @@ class PlacementController(
                             oldPlacement.childId,
                             DateRange(
                                 minOf(body.startDate, oldPlacement.startDate),
-                                maxOf(body.endDate, oldPlacement.endDate)
-                            )
+                                maxOf(body.endDate, oldPlacement.endDate),
+                            ),
                         )
                     ),
-                    runAt = now
+                    runAt = now,
                 )
             }
         }
@@ -314,13 +314,13 @@ class PlacementController(
 
     @DeleteMapping(
         "/placements/{placementId}", // deprecated
-        "/employee/placements/{placementId}"
+        "/employee/placements/{placementId}",
     )
     fun deletePlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable placementId: PlacementId
+        @PathVariable placementId: PlacementId,
     ) {
         val now = clock.now()
         db.connect { dbc ->
@@ -330,7 +330,7 @@ class PlacementController(
                         user,
                         clock,
                         Action.Placement.DELETE,
-                        placementId
+                        placementId,
                     )
                     val placement =
                         tx.getPlacement(placementId)
@@ -338,7 +338,7 @@ class PlacementController(
                     tx.cancelPlacement(placementId).also {
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             it.childId,
-                            now.toLocalDate()
+                            now.toLocalDate(),
                         )
                         generateAbsencesFromIrregularDailyServiceTimes(tx, now, it.childId)
                         asyncJobRunner.plan(
@@ -346,10 +346,10 @@ class PlacementController(
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     it.childId,
-                                    DateRange(it.startDate, it.endDate)
+                                    DateRange(it.startDate, it.endDate),
                                 )
                             ),
-                            runAt = now
+                            runAt = now,
                         )
                     }
                 }
@@ -357,21 +357,21 @@ class PlacementController(
             .also {
                 Audit.PlacementCancel.log(
                     targetId = AuditId(placementId),
-                    objectId = AuditId(listOf(it.childId, it.unitId))
+                    objectId = AuditId(listOf(it.childId, it.unitId)),
                 )
             }
     }
 
     @PostMapping(
         "/placements/{placementId}/group-placements", // deprecated
-        "/employee/placements/{placementId}/group-placements"
+        "/employee/placements/{placementId}/group-placements",
     )
     fun createGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable placementId: PlacementId,
-        @RequestBody body: GroupPlacementRequestBody
+        @RequestBody body: GroupPlacementRequestBody,
     ): GroupPlacementId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -380,13 +380,13 @@ class PlacementController(
                         user,
                         clock,
                         Action.Placement.CREATE_GROUP_PLACEMENT,
-                        placementId
+                        placementId,
                     )
                     tx.checkAndCreateGroupPlacement(
                         daycarePlacementId = placementId,
                         groupId = body.groupId,
                         startDate = body.startDate,
-                        endDate = body.endDate
+                        endDate = body.endDate,
                     )
                 }
             }
@@ -394,20 +394,20 @@ class PlacementController(
                 Audit.DaycareGroupPlacementCreate.log(
                     targetId = AuditId(placementId),
                     objectId = AuditId(groupPlacementId),
-                    meta = mapOf("groupId" to body.groupId)
+                    meta = mapOf("groupId" to body.groupId),
                 )
             }
     }
 
     @DeleteMapping(
         "/group-placements/{groupPlacementId}", // deprecated
-        "/employee/group-placements/{groupPlacementId}"
+        "/employee/group-placements/{groupPlacementId}",
     )
     fun deleteGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable groupPlacementId: GroupPlacementId
+        @PathVariable groupPlacementId: GroupPlacementId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -416,7 +416,7 @@ class PlacementController(
                     user,
                     clock,
                     Action.GroupPlacement.DELETE,
-                    groupPlacementId
+                    groupPlacementId,
                 )
                 it.deleteGroupPlacement(groupPlacementId)
             }
@@ -426,14 +426,14 @@ class PlacementController(
 
     @PostMapping(
         "/group-placements/{groupPlacementId}/transfer", // deprecated
-        "/employee/group-placements/{groupPlacementId}/transfer"
+        "/employee/group-placements/{groupPlacementId}/transfer",
     )
     fun transferGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupPlacementId: GroupPlacementId,
-        @RequestBody body: GroupTransferRequestBody
+        @RequestBody body: GroupTransferRequestBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -442,26 +442,26 @@ class PlacementController(
                     user,
                     clock,
                     Action.GroupPlacement.UPDATE,
-                    groupPlacementId
+                    groupPlacementId,
                 )
                 it.transferGroup(groupPlacementId, body.groupId, body.startDate)
             }
         }
         Audit.DaycareGroupPlacementTransfer.log(
             targetId = AuditId(groupPlacementId),
-            objectId = AuditId(body.groupId)
+            objectId = AuditId(body.groupId),
         )
     }
 
     @GetMapping(
         "/placements/child-placement-periods/{adultId}", // deprecated
-        "/employee/placements/child-placement-periods/{adultId}"
+        "/employee/placements/child-placement-periods/{adultId}",
     )
     fun getChildPlacementPeriods(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable adultId: PersonId
+        @PathVariable adultId: PersonId,
     ): List<FiniteDateRange> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -470,7 +470,7 @@ class PlacementController(
                         user,
                         clock,
                         Action.Person.READ_CHILD_PLACEMENT_PERIODS,
-                        adultId
+                        adultId,
                     )
                     tx.createQuery {
                             sql(
@@ -498,7 +498,7 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
             .also {
                 Audit.PlacementChildPlacementPeriodsRead.log(
                     targetId = AuditId(adultId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -510,7 +510,7 @@ data class PlacementCreateRequestBody(
     val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val placeGuarantee: Boolean
+    val placeGuarantee: Boolean,
 )
 
 data class PlacementUpdateRequestBody(val startDate: LocalDate, val endDate: LocalDate)
@@ -518,7 +518,7 @@ data class PlacementUpdateRequestBody(val startDate: LocalDate, val endDate: Loc
 data class GroupPlacementRequestBody(
     val groupId: GroupId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 )
 
 data class GroupTransferRequestBody(val groupId: GroupId, val startDate: LocalDate)

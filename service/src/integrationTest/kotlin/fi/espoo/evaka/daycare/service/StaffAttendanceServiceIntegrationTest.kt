@@ -43,7 +43,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                     daycareId = daycareId,
                     id = groupId,
                     name = groupName,
-                    startDate = groupStartDate
+                    startDate = groupStartDate,
                 )
             )
             tx.insert(
@@ -51,7 +51,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                     daycareId = daycareId,
                     id = groupId2,
                     name = groupName2,
-                    startDate = groupStartDate
+                    startDate = groupStartDate,
                 )
             )
         }
@@ -64,7 +64,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 groupStartDate.year,
                 groupStartDate.monthValue,
-                groupId
+                groupId,
             )
 
         assertEquals(groupId, result.groupId)
@@ -78,7 +78,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
         )
 
         val result =
@@ -86,7 +86,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
 
         assertEquals(1, result.attendances.size)
@@ -99,7 +99,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null)
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null),
         )
 
         val result =
@@ -107,7 +107,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
 
         assertEquals(1, result.attendances.size)
@@ -120,7 +120,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
         )
 
         var result =
@@ -128,21 +128,21 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0)
+            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0),
         )
         result =
             staffAttendanceService.getGroupAttendancesByMonth(
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
         assertEquals(2.5, result.attendances[attendanceDate]?.count)
         assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
@@ -153,7 +153,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val attendanceDate = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
         )
 
         var result =
@@ -161,21 +161,21 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null)
+            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null),
         )
         result =
             staffAttendanceService.getGroupAttendancesByMonth(
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
         assertEquals(2.5, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
@@ -187,7 +187,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         assertThrows<BadRequest> {
             staffAttendanceService.upsertStaffAttendance(
                 db,
-                StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+                StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5),
             )
         }
 
@@ -196,7 +196,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                 db,
                 attendanceDate.year,
                 attendanceDate.monthValue,
-                groupId
+                groupId,
             )
         assertEquals(null, result.attendances[attendanceDate])
     }
@@ -206,17 +206,17 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         val firstDay = groupStartDate
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5)
+            StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5),
         )
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5)
+            StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5),
         )
 
         val secondDay = groupStartDate.plusDays(5)
         staffAttendanceService.upsertStaffAttendance(
             db,
-            StaffAttendanceUpdate(groupId, secondDay, 6.5, null)
+            StaffAttendanceUpdate(groupId, secondDay, 6.5, null),
         )
 
         val unitResult = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, firstDay)
@@ -233,7 +233,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
                     }
                     .exactlyOne<HelsinkiDateTime>()
             },
-            unitResult.updated
+            unitResult.updated,
         )
 
         val groupResult = unitResult.groups.find { it.groupId == groupId }!!

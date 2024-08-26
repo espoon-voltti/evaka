@@ -18,7 +18,7 @@ private val logger = KotlinLogging.logger {}
 
 class EspooPatuIntegrationClient(
     private val env: EspooPatuIntegrationEnv,
-    private val jsonMapper: JsonMapper
+    private val jsonMapper: JsonMapper,
 ) : PatuIntegrationClient {
     private val fuel = FuelManager()
 

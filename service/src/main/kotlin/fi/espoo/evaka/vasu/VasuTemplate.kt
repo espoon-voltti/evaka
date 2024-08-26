@@ -18,7 +18,7 @@ data class VasuTemplate(
     val valid: FiniteDateRange,
     val language: OfficialLanguage,
     @Json val content: VasuContent,
-    val documentCount: Int
+    val documentCount: Int,
 )
 
 data class VasuTemplateSummary(
@@ -28,7 +28,7 @@ data class VasuTemplateSummary(
     val type: CurriculumType,
     val language: OfficialLanguage,
     val documentCount: Int,
-    val migratedDocumentCount: Int
+    val migratedDocumentCount: Int,
 )
 
 data class VasuTemplateUpdate(val name: String, val valid: FiniteDateRange)
@@ -39,7 +39,7 @@ enum class CurriculumTemplateError {
     FUTURE_START,
     CURRENT_START,
     CURRENT_END,
-    TEMPLATE_NAME
+    TEMPLATE_NAME,
 }
 
 fun validateTemplateUpdate(template: VasuTemplateSummary, body: VasuTemplateUpdate): Boolean {
@@ -50,7 +50,7 @@ fun validateTemplateUpdate(template: VasuTemplateSummary, body: VasuTemplateUpda
     if (body.name != template.name)
         throw BadRequest(
             "Name of a used template cannot be changed",
-            CurriculumTemplateError.TEMPLATE_NAME.name
+            CurriculumTemplateError.TEMPLATE_NAME.name,
         )
 
     val now = HelsinkiDateTime.now().toLocalDate()
@@ -58,29 +58,29 @@ fun validateTemplateUpdate(template: VasuTemplateSummary, body: VasuTemplateUpda
         if (body.valid.start != template.valid.start)
             throw BadRequest(
                 "Start date of an expired valid template cannot be changed",
-                CurriculumTemplateError.EXPIRED_START.name
+                CurriculumTemplateError.EXPIRED_START.name,
             )
         if (body.valid.end.isBefore(template.valid.end))
             throw BadRequest(
                 "End date of and expired template cannot be advanced",
-                CurriculumTemplateError.EXPIRED_END.name
+                CurriculumTemplateError.EXPIRED_END.name,
             )
     } else if (now.isBefore(template.valid.start)) { // template is in future
         if (body.valid.start.isBefore(now))
             throw BadRequest(
                 "Start date of a template valid in the future cannot be changed to the past",
-                CurriculumTemplateError.FUTURE_START.name
+                CurriculumTemplateError.FUTURE_START.name,
             )
     } else { // template is active
         if (body.valid.start != template.valid.start)
             throw BadRequest(
                 "Start date of a currently valid template cannot be changed",
-                CurriculumTemplateError.CURRENT_START.name
+                CurriculumTemplateError.CURRENT_START.name,
             )
         if (body.valid.end.isBefore(now.minusDays(1)))
             throw BadRequest(
                 "End date of a currently valid template cannot be before yesterday",
-                CurriculumTemplateError.CURRENT_END.name
+                CurriculumTemplateError.CURRENT_END.name,
             )
     }
     return true

@@ -55,13 +55,13 @@ class VoucherValueDecisionGeneratorV2Test {
                         maxIncomeThreshold = feeThresholds.maxIncomeThreshold5,
                         incomeMultiplier = feeThresholds.incomeMultiplier5,
                         maxFee = feeThresholds.maxFee,
-                        minFee = feeThresholds.minFee
+                        minFee = feeThresholds.minFee,
                     ),
                 child = voucherBasis.child,
                 placement =
                     VoucherValueDecisionPlacement(
                         unitId = voucherBasis.placement!!.unitId,
-                        type = voucherBasis.placement!!.placementType
+                        type = voucherBasis.placement!!.placementType,
                     ),
                 serviceNeed =
                     VoucherValueDecisionServiceNeed(
@@ -71,7 +71,7 @@ class VoucherValueDecisionGeneratorV2Test {
                         feeDescriptionSv = "Kokopäiväinen, vähintään 35h",
                         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
                         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
-                        missing = false
+                        missing = false,
                     ),
                 baseCoPayment = 28900,
                 siblingDiscount = 80,
@@ -82,8 +82,8 @@ class VoucherValueDecisionGeneratorV2Test {
                 assistanceNeedCoefficient = voucherBasis.assistanceNeedCoefficient,
                 voucherValue = 174000,
                 difference = emptySet(),
-                created = decision.created
-            )
+                created = decision.created,
+            ),
         )
     }
 }
@@ -102,7 +102,7 @@ private fun createVoucherBasis(): VoucherBasis {
                 totalIncome = 400000,
                 totalExpenses = 100000,
                 total = 500000,
-                worksAtECHA = false
+                worksAtECHA = false,
             ),
         partnerId = PersonId(UUID.randomUUID()),
         partnerIncome =
@@ -112,7 +112,7 @@ private fun createVoucherBasis(): VoucherBasis {
                 totalIncome = 200000,
                 totalExpenses = 0,
                 total = 200000,
-                worksAtECHA = false
+                worksAtECHA = false,
             ),
         child = ChildWithDateOfBirth(id = childId, dateOfBirth = date(1).minusYears(4)),
         placement =
@@ -135,7 +135,7 @@ private fun createVoucherBasis(): VoucherBasis {
                         baseValueUnder3y = 134850,
                         coefficientUnder3y = BigDecimal("1.00"),
                         valueUnder3y = 134850,
-                    )
+                    ),
             ),
         assistanceNeedCoefficient = BigDecimal(2.0),
         useUnder3YoCoefficient = false,
@@ -143,7 +143,7 @@ private fun createVoucherBasis(): VoucherBasis {
         feeAlterations = emptyList(),
         siblingIndex = 2,
         familySize = 5,
-        feeThresholds = feeThresholds
+        feeThresholds = feeThresholds,
     )
 }
 
@@ -170,7 +170,7 @@ private val snDaycareFullDay35 =
         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
         validFrom = LocalDate.of(2000, 1, 1),
-        validTo = null
+        validTo = null,
     )
 
 private val feeThresholds =
@@ -199,5 +199,5 @@ private val feeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )

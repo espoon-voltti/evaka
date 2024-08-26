@@ -24,7 +24,7 @@ class InvoicesTest {
                 areaId = AreaId(UUID.randomUUID()),
                 headOfFamily = PersonId(UUID.randomUUID()),
                 codebtor = null,
-                rows = listOf()
+                rows = listOf(),
             )
 
         assertEquals(LocalDate.of(2019, 2, 28), invoice.dueDate)
@@ -41,7 +41,7 @@ class InvoicesTest {
                 areaId = AreaId(UUID.randomUUID()),
                 headOfFamily = PersonId(UUID.randomUUID()),
                 codebtor = null,
-                rows = listOf()
+                rows = listOf(),
             )
 
         assertEquals(LocalDate.of(2019, 8, 30), invoice.dueDate)
@@ -58,7 +58,7 @@ class InvoicesTest {
                 areaId = AreaId(UUID.randomUUID()),
                 headOfFamily = PersonId(UUID.randomUUID()),
                 codebtor = null,
-                rows = listOf()
+                rows = listOf(),
             )
 
         assertEquals(LocalDate.of(2019, 6, 28), invoice.dueDate)
@@ -75,7 +75,7 @@ class InvoicesTest {
                 areaId = AreaId(UUID.randomUUID()),
                 headOfFamily = PersonId(UUID.randomUUID()),
                 codebtor = null,
-                rows = listOf()
+                rows = listOf(),
             )
 
         assertEquals(invoice.dueDate.minusDays(14), invoice.invoiceDate)

@@ -39,7 +39,7 @@ fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPerio
 fun Database.Read.getChildrenWithContinuousPlacement(
     today: LocalDate,
     userId: PersonId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): List<ChildId> {
     return createQuery {
             sql(
@@ -123,7 +123,7 @@ RETURNING id
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
-    data: FixedPeriodQuestionnaireBody
+    data: FixedPeriodQuestionnaireBody,
 ) =
     createUpdate {
             sql(
@@ -152,7 +152,7 @@ fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) 
 
 fun Database.Transaction.insertQuestionnaireAnswers(
     modifiedBy: PersonId,
-    answers: List<HolidayQuestionnaireAnswer>
+    answers: List<HolidayQuestionnaireAnswer>,
 ) {
     executeBatch(answers) {
         sql(
@@ -179,7 +179,7 @@ ON CONFLICT(questionnaire_id, child_id)
 
 fun Database.Read.getQuestionnaireAnswers(
     id: HolidayQuestionnaireId,
-    childIds: List<ChildId>
+    childIds: List<ChildId>,
 ): List<HolidayQuestionnaireAnswer> =
     createQuery {
             sql(

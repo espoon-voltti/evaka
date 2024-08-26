@@ -119,7 +119,7 @@ enum class PlacementType : DatabaseEnum {
 
     fun fixedScheduleRange(
         dailyPreschoolTime: TimeRange?,
-        dailyPreparatoryTime: TimeRange?
+        dailyPreparatoryTime: TimeRange?,
     ): TimeRange? =
         when (this) {
             CLUB,
@@ -192,5 +192,5 @@ enum class PlacementType : DatabaseEnum {
 enum class ScheduleType {
     RESERVATION_REQUIRED, // Daycare -> reservations required
     FIXED_SCHEDULE, // Preschool/club -> reservations not required
-    TERM_BREAK // Preschool/club term break -> no activity
+    TERM_BREAK, // Preschool/club term break -> no activity
 }

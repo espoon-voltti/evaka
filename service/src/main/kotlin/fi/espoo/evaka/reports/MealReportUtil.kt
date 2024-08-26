@@ -22,7 +22,7 @@ val preschoolPlacementTypes =
         PlacementType.PRESCHOOL_CLUB,
         PlacementType.PRESCHOOL_DAYCARE_ONLY,
         PlacementType.PREPARATORY_DAYCARE,
-        PlacementType.PREPARATORY_DAYCARE_ONLY
+        PlacementType.PREPARATORY_DAYCARE_ONLY,
     )
 
 data class MealReportRow(
@@ -33,13 +33,13 @@ data class MealReportRow(
     val dietAbbreviation: String? = null,
     val additionalInfo: String? = null,
     val mealTextureId: Int? = null,
-    val mealTextureName: String? = null
+    val mealTextureName: String? = null,
 )
 
 data class MealReportData(
     val date: LocalDate,
     val reportName: String,
-    val meals: List<MealReportRow>
+    val meals: List<MealReportRow>,
 )
 
 data class MealInfo(
@@ -48,7 +48,7 @@ data class MealInfo(
     val dietAbbreviation: String? = null,
     val mealTextureId: Int? = null,
     val mealTextureName: String? = null,
-    val additionalInfo: String? = null
+    val additionalInfo: String? = null,
 )
 
 private fun childMeals(
@@ -56,7 +56,7 @@ private fun childMeals(
     reservations: List<TimeRange>,
     absent: Boolean,
     mealtimes: DaycareMealtimes,
-    usePreschoolMealTypes: Boolean
+    usePreschoolMealTypes: Boolean,
 ): Set<MealType> {
     // if absent -> no meals
     if (absent) {
@@ -71,7 +71,7 @@ private fun childMeals(
         return setOf(
             MealType.BREAKFAST,
             if (usePreschoolMealTypes) MealType.LUNCH_PRESCHOOL else MealType.LUNCH,
-            MealType.SNACK
+            MealType.SNACK,
         )
     }
     // otherwise check unit meal times against the present time ranges
@@ -86,7 +86,7 @@ private fun childMeals(
     addMealIfPresent(mealtimes.breakfast, MealType.BREAKFAST)
     addMealIfPresent(
         mealtimes.lunch,
-        if (usePreschoolMealTypes) MealType.LUNCH_PRESCHOOL else MealType.LUNCH
+        if (usePreschoolMealTypes) MealType.LUNCH_PRESCHOOL else MealType.LUNCH,
     )
     addMealIfPresent(mealtimes.snack, MealType.SNACK)
     addMealIfPresent(mealtimes.supper, MealType.SUPPER)
@@ -105,14 +105,14 @@ data class MealReportChildInfo(
     val mealTextureInfo: MealTexture?,
     val dailyPreschoolTime: TimeRange?,
     val dailyPreparatoryTime: TimeRange?,
-    val mealTimes: DaycareMealtimes
+    val mealTimes: DaycareMealtimes,
 )
 
 fun mealReportData(
     children: Collection<MealReportChildInfo>,
     date: LocalDate,
     preschoolTerms: List<PreschoolTerm>,
-    mealTypeMapper: MealTypeMapper
+    mealTypeMapper: MealTypeMapper,
 ): List<MealReportRow> {
     val mealInfoMap =
         children
@@ -122,7 +122,7 @@ fun mealReportData(
                         date,
                         childInfo.dailyPreschoolTime,
                         childInfo.dailyPreparatoryTime,
-                        preschoolTerms
+                        preschoolTerms,
                     )
                 val absent =
                     childInfo.absences?.size == childInfo.placementType.absenceCategories().size
@@ -164,7 +164,7 @@ fun mealReportData(
             it.key.dietAbbreviation,
             it.key.additionalInfo,
             it.key.mealTextureId,
-            it.key.mealTextureName
+            it.key.mealTextureName,
         )
     }
 }
@@ -177,13 +177,13 @@ data class DaycareUnitData(
     val childData: Map<ChildId, ChildData>,
     val specialDiets: Map<ChildId, SpecialDiet>,
     val mealTextures: Map<ChildId, MealTexture>,
-    val preschoolTerms: List<PreschoolTerm>
+    val preschoolTerms: List<PreschoolTerm>,
 )
 
 fun getMealReportForUnit(
     unitData: DaycareUnitData,
     date: LocalDate,
-    mealTypeMapper: MealTypeMapper
+    mealTypeMapper: MealTypeMapper,
 ): MealReportData? {
     val daycare = unitData.daycare ?: return null
 
@@ -199,7 +199,7 @@ fun getMealReportForUnit(
                     shiftCareOpenOnHolidays = daycare.shiftCareOpenOnHolidays,
                     holidays = unitData.holidays,
                     date = date,
-                    childHasShiftCare = unitData.childrenWithShiftCare.contains(childId)
+                    childHasShiftCare = unitData.childrenWithShiftCare.contains(childId),
                 )
             ) {
                 MealReportChildInfo(

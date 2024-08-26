@@ -56,7 +56,7 @@ data class TsExternalTypeRef(
         deserializeJson,
         serializePathVariable,
         serializeRequestParam,
-        imports.toSet()
+        imports.toSet(),
     )
 }
 
@@ -88,14 +88,14 @@ data object TsRecord : TsRepresentation<Pair<KType?, KType?>> {
 data class TsPlainObject(
     override val clazz: KClass<*>,
     override val name: String,
-    val properties: Map<String, TsProperty>
+    val properties: Map<String, TsProperty>,
 ) : TsNamedType<List<KType?>> {
     constructor(
         clazz: KClass<*>
     ) : this(
         clazz,
         clazz.simpleName ?: error("no class name: $clazz"),
-        collectProperties(clazz.declaredMemberProperties)
+        collectProperties(clazz.declaredMemberProperties),
     )
 
     fun applyTypeArguments(arguments: List<KTypeProjection>): Map<String, KType> {
@@ -126,7 +126,7 @@ data class TsObjectLiteral(val properties: Map<String, TsProperty>) : TsRepresen
 data class TsSealedClass(
     val obj: TsPlainObject,
     val variants: Set<KClass<*>>,
-    val jacksonSerializer: TypeSerializer
+    val jacksonSerializer: TypeSerializer,
 ) : TsNamedType<Nothing> {
     override val clazz: KClass<*> = obj.clazz
 }
@@ -142,7 +142,7 @@ data class TsStringEnum(
     override val clazz: KClass<*>,
     override val name: String,
     val values: List<String>,
-    val constList: ConstList?
+    val constList: ConstList?,
 ) : TsNamedType<Nothing> {
     constructor(
         clazz: KClass<*>
@@ -150,7 +150,7 @@ data class TsStringEnum(
         clazz,
         name = clazz.simpleName ?: error("no class name: $clazz"),
         values = clazz.java.enumConstants.map { it.toString() },
-        constList = clazz.findAnnotation()
+        constList = clazz.findAnnotation(),
     )
 }
 
@@ -163,7 +163,7 @@ data class TsStringEnum(
 data class TsType(
     val representation: TsRepresentation<*>,
     val isNullable: Boolean,
-    val typeArguments: List<KTypeProjection>
+    val typeArguments: List<KTypeProjection>,
 )
 
 /** A TS object property, which may be optional (not necessarily the same thing as nullable) */
@@ -184,6 +184,6 @@ private fun collectProperties(props: Collection<KProperty1<*, *>>): Map<String, 
                             ?.type
                             ?.createType(nullable = prop.returnType.isMarkedNullable)
                             ?: prop.returnType),
-                    isOptional = false
+                    isOptional = false,
                 )
         }

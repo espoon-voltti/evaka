@@ -25,7 +25,7 @@ data class CheckboxGroupAnswerContent(val optionId: String, val extra: String = 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type"
+    property = "type",
 )
 sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     abstract val questionId: String
@@ -52,7 +52,7 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("CHECKBOX_GROUP")
     data class CheckboxGroupAnswer(
         override val questionId: String,
-        override val answer: List<CheckboxGroupAnswerContent>
+        override val answer: List<CheckboxGroupAnswerContent>,
     ) : AnsweredQuestion<List<CheckboxGroupAnswerContent>>(QuestionType.CHECKBOX_GROUP) {
         override fun isStructurallyValid(question: Question): Boolean {
             if (question !is Question.CheckboxGroupQuestion) return false
@@ -64,7 +64,7 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("RADIO_BUTTON_GROUP")
     data class RadioButtonGroupAnswer(
         override val questionId: String,
-        override val answer: String?
+        override val answer: String?,
     ) : AnsweredQuestion<String?>(QuestionType.RADIO_BUTTON_GROUP) {
         override fun isStructurallyValid(question: Question): Boolean {
             if (question !is Question.RadioButtonGroupQuestion) return false
@@ -76,7 +76,7 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("STATIC_TEXT_DISPLAY")
     data class StaticTextDisplayAnswer(
         override val questionId: String,
-        override val answer: Nothing?
+        override val answer: Nothing?,
     ) : AnsweredQuestion<Nothing?>(QuestionType.STATIC_TEXT_DISPLAY) {
         override fun isStructurallyValid(question: Question): Boolean {
             return question is Question.StaticTextDisplayQuestion
@@ -94,7 +94,7 @@ sealed class AnsweredQuestion<Answer>(val type: QuestionType) {
     @JsonTypeName("GROUPED_TEXT_FIELDS")
     data class GroupedTextFieldsAnswer(
         override val questionId: String,
-        override val answer: List<List<String>>
+        override val answer: List<List<String>>,
     ) : AnsweredQuestion<List<List<String>>>(QuestionType.GROUPED_TEXT_FIELDS) {
         override fun isStructurallyValid(question: Question): Boolean {
             if (question !is Question.GroupedTextFieldsQuestion) return false
@@ -129,14 +129,14 @@ data class ChildDocumentSummary(
     val templateId: DocumentTemplateId,
     val templateName: String,
     val modifiedAt: HelsinkiDateTime,
-    val publishedAt: HelsinkiDateTime?
+    val publishedAt: HelsinkiDateTime?,
 )
 
 data class ChildBasics(
     val id: PersonId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate?
+    val dateOfBirth: LocalDate?,
 )
 
 data class ChildDocumentDetails(
@@ -146,12 +146,12 @@ data class ChildDocumentDetails(
     @Json val content: DocumentContent,
     @Json val publishedContent: DocumentContent?,
     @Nested("child") val child: ChildBasics,
-    @Nested("template") val template: DocumentTemplate
+    @Nested("template") val template: DocumentTemplate,
 )
 
 data class ChildDocumentWithPermittedActions(
     val data: ChildDocumentDetails,
-    val permittedActions: Set<Action.ChildDocument>
+    val permittedActions: Set<Action.ChildDocument>,
 )
 
 data class ChildDocumentCreateRequest(val childId: PersonId, val templateId: DocumentTemplateId)

@@ -63,11 +63,11 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         totalIncome = calculateTotalIncome(it.data, coefficientMultiplierProvider),
                         totalExpenses =
                             calculateTotalExpense(it.data, coefficientMultiplierProvider),
-                        total = calculateIncomeTotal(it.data, coefficientMultiplierProvider)
+                        total = calculateIncomeTotal(it.data, coefficientMultiplierProvider),
                     )
                 }
                 .toSet(),
-            actual.map { it.copy(id = nullId, updatedAt = nullTime, updatedBy = "") }.toSet()
+            actual.map { it.copy(id = nullId, updatedAt = nullTime, updatedBy = "") }.toSet(),
         )
     }
 
@@ -94,19 +94,19 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 500000,
                                 coefficientMultiplierProvider.multiplier(
                                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                )
-                            )
+                                ),
+                            ),
                         )
                 ),
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
-            notes = ""
+            notes = "",
         )
 
     private val financeUser =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN)
+            roles = setOf(UserRole.FINANCE_ADMIN),
         )
     private val financeUserName = "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}"
     private val clock = MockEvakaClock(2023, 1, 7, 14, 0)
@@ -124,9 +124,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 testIncomeRequest()
                     .copy(
                         validFrom = testIncomeRequest().validFrom.plusYears(1),
-                        validTo = testIncomeRequest().validTo!!.plusYears(1)
+                        validTo = testIncomeRequest().validTo!!.plusYears(1),
                     ),
-                testIncomeRequest()
+                testIncomeRequest(),
             )
 
         db.transaction { tx ->
@@ -206,7 +206,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             testIncomeRequest().let {
                 it.copy(
                     validFrom = it.validTo!!.minusMonths(1),
-                    validTo = it.validTo!!.plusYears(1)
+                    validTo = it.validTo!!.plusYears(1),
                 )
             }
         assertThrows<Conflict> { createIncome(overlappingIncome) }
@@ -248,8 +248,8 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         1000,
                                         coefficientMultiplierProvider.multiplier(
                                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                        )
-                                    )
+                                        ),
+                                    ),
                                 )
                         )
                 )
@@ -261,15 +261,15 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         with(incomes.first()) {
             assertEquals(
                 calculateTotalIncome(updateRequest.data, coefficientMultiplierProvider),
-                totalIncome
+                totalIncome,
             )
             assertEquals(
                 calculateTotalExpense(updateRequest.data, coefficientMultiplierProvider),
-                totalExpenses
+                totalExpenses,
             )
             assertEquals(
                 calculateIncomeTotal(updateRequest.data, coefficientMultiplierProvider),
-                total
+                total,
             )
         }
     }
@@ -344,7 +344,7 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(incomeId2),
-            getPersonIncomes(testIncomeRequest().personId).map { it.id }
+            getPersonIncomes(testIncomeRequest().personId).map { it.id },
         )
     }
 

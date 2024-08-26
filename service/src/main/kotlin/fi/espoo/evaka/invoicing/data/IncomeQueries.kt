@@ -29,7 +29,7 @@ fun Database.Transaction.insertIncome(
     clock: EvakaClock,
     mapper: JsonMapper,
     income: IncomeRequest,
-    updatedBy: EvakaUserId
+    updatedBy: EvakaUserId,
 ): IncomeId {
     val update = createQuery {
         sql(
@@ -72,7 +72,7 @@ fun Database.Transaction.updateIncome(
     mapper: JsonMapper,
     id: IncomeId,
     income: IncomeRequest,
-    updatedBy: EvakaUserId
+    updatedBy: EvakaUserId,
 ) {
     val update = createUpdate {
         sql(
@@ -101,7 +101,7 @@ fun Database.Read.getIncome(
     mapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
-    id: IncomeId
+    id: IncomeId,
 ): Income? {
     return createQuery {
             sql(
@@ -133,7 +133,7 @@ fun Database.Read.getIncomesForPerson(
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personId: PersonId,
-    validAt: LocalDate? = null
+    validAt: LocalDate? = null,
 ): List<Income> {
     return createQuery {
             sql(
@@ -165,7 +165,7 @@ fun Database.Read.getIncomesFrom(
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     personIds: List<PersonId>,
-    from: LocalDate
+    from: LocalDate,
 ): List<Income> {
     if (personIds.isEmpty()) return emptyList()
 
@@ -210,7 +210,7 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
 fun Row.toIncome(
     mapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Income {
     val data =
         parseIncomeDataJson(column("data"), mapper, incomeTypes, coefficientMultiplierProvider)
@@ -230,7 +230,7 @@ fun Row.toIncome(
         attachments = jsonColumn("attachments"),
         totalIncome = calculateTotalIncome(data, coefficientMultiplierProvider),
         totalExpenses = calculateTotalExpense(data, coefficientMultiplierProvider),
-        total = calculateIncomeTotal(data, coefficientMultiplierProvider)
+        total = calculateIncomeTotal(data, coefficientMultiplierProvider),
     )
 }
 
@@ -238,7 +238,7 @@ fun parseIncomeDataJson(
     json: String,
     jsonMapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Map<String, IncomeValue> {
     return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
         value.copy(
@@ -246,8 +246,8 @@ fun parseIncomeDataJson(
             monthlyAmount =
                 calculateMonthlyAmount(
                     value.amount,
-                    coefficientMultiplierProvider.multiplier(value.coefficient)
-                )
+                    coefficientMultiplierProvider.multiplier(value.coefficient),
+                ),
         )
     }
 }

@@ -26,14 +26,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen/vasu")
 class VasuControllerCitizen(
     private val featureConfig: FeatureConfig,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping("/children/{childId}/vasu-summaries")
     fun getChildVasuSummaries(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Citizen,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): CitizenGetVasuDocumentSummariesResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -42,34 +42,34 @@ class VasuControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.READ_VASU_DOCUMENT_SUMMARIES,
-                        childId
+                        childId,
                     )
                     CitizenGetVasuDocumentSummariesResponse(
                         data =
                             tx.getVasuDocumentSummaries(childId).filter { it.publishedAt != null },
                         permissionToShareRequired =
-                            featureConfig.curriculumDocumentPermissionToShareRequired
+                            featureConfig.curriculumDocumentPermissionToShareRequired,
                     )
                 }
             }
             .also {
                 Audit.ChildVasuDocumentsReadByGuardian.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.data.size)
+                    meta = mapOf("count" to it.data.size),
                 )
             }
     }
 
     data class CitizenGetVasuDocumentSummariesResponse(
         val data: List<VasuDocumentSummary>,
-        val permissionToShareRequired: Boolean
+        val permissionToShareRequired: Boolean,
     )
 
     @GetMapping("/children/unread-count")
     fun getGuardianUnreadVasuCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<ChildId, Int> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -78,7 +78,7 @@ class VasuControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_VASU_UNREAD_COUNT,
-                        user.id
+                        user.id,
                     )
                     val children = tx.getCitizenChildIds(clock.today(), user.id)
                     if (!featureConfig.curriculumDocumentPermissionToShareRequired) {
@@ -100,7 +100,7 @@ class VasuControllerCitizen(
     data class CitizenGetVasuDocumentResponse(
         val vasu: VasuDocument,
         val permissionToShareRequired: Boolean,
-        val guardianHasGivenPermissionToShare: Boolean
+        val guardianHasGivenPermissionToShare: Boolean,
     )
 
     @GetMapping("/{id}")
@@ -108,7 +108,7 @@ class VasuControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: VasuDocumentId
+        @PathVariable id: VasuDocumentId,
     ): CitizenGetVasuDocumentResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -117,7 +117,7 @@ class VasuControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.VasuDocument.READ,
-                        id
+                        id,
                     )
                     val doc =
                         tx.getLatestPublishedVasuDocument(clock.today(), id)
@@ -129,7 +129,7 @@ class VasuControllerCitizen(
                         guardianHasGivenPermissionToShare =
                             doc.basics.guardians
                                 .find { it.id.raw == user.rawId() }
-                                ?.hasGivenPermissionToShare ?: false
+                                ?.hasGivenPermissionToShare ?: false,
                     )
                 }
             }
@@ -141,7 +141,7 @@ class VasuControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: VasuDocumentId
+        @PathVariable id: VasuDocumentId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -150,7 +150,7 @@ class VasuControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.VasuDocument.GIVE_PERMISSION_TO_SHARE,
-                        id
+                        id,
                     )
                     it.setVasuGuardianHasGivenPermissionToShare(id, user.id)
                 }

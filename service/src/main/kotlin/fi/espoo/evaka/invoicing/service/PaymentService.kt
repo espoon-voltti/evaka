@@ -26,7 +26,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class PaymentService(
     private val integrationClient: PaymentIntegrationClient,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     fun sendPayments(
         tx: Database.Transaction,
@@ -34,7 +34,7 @@ class PaymentService(
         user: AuthenticatedUser.Employee,
         paymentIds: List<PaymentId>,
         paymentDate: LocalDate,
-        dueDate: LocalDate
+        dueDate: LocalDate,
     ) {
         val seriesStart =
             featureConfig.paymentNumberSeriesStart
@@ -56,7 +56,7 @@ class PaymentService(
                             payment.unit.name,
                             payment.unit.businessId,
                             payment.unit.iban,
-                            payment.unit.providerId
+                            payment.unit.providerId,
                         )
                         .any { it.isNullOrBlank() }
                 if (missingDetails) {
@@ -71,7 +71,7 @@ class PaymentService(
                         number = nextPaymentNumber,
                         paymentDate = paymentDate,
                         dueDate = dueDate,
-                        sentBy = user.evakaUserId
+                        sentBy = user.evakaUserId,
                     )
                 nextPaymentNumber += 1
                 listOf(updatedPayment)
@@ -91,10 +91,7 @@ class PaymentService(
         tx.updateConfirmedPaymentsAsSent(sendResult.succeeded, now)
     }
 
-    fun confirmPayments(
-        tx: Database.Transaction,
-        paymentIds: List<PaymentId>,
-    ) {
+    fun confirmPayments(tx: Database.Transaction, paymentIds: List<PaymentId>) {
         val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 
         val notDrafts = payments.filterNot { it.status == PaymentStatus.DRAFT }
@@ -105,10 +102,7 @@ class PaymentService(
         tx.confirmDraftPayments(paymentIds)
     }
 
-    fun revertPaymentsToDrafts(
-        tx: Database.Transaction,
-        paymentIds: List<PaymentId>,
-    ) {
+    fun revertPaymentsToDrafts(tx: Database.Transaction, paymentIds: List<PaymentId>) {
         val payments = tx.readPaymentsByIdsWithFreshUnitData(paymentIds)
 
         val notConfirmed = payments.filterNot { it.status == PaymentStatus.CONFIRMED }

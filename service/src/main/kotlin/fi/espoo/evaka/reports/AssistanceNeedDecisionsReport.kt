@@ -25,12 +25,12 @@ import org.springframework.web.bind.annotation.RestController
 class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/assistance-need-decisions", // deprecated
-        "/employee/reports/assistance-need-decisions"
+        "/employee/reports/assistance-need-decisions",
     )
     fun getAssistanceNeedDecisionsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<AssistanceNeedDecisionsReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -41,14 +41,14 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            Action.AssistanceNeedDecision.READ_IN_REPORT
+                            Action.AssistanceNeedDecision.READ_IN_REPORT,
                         )
                     val filterPreschool =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
-                            Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT
+                            Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT,
                         )
 
                     it.getDecisionRows(user.evakaUserId, filterDaycare, filterPreschool)
@@ -59,12 +59,12 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/reports/assistance-need-decisions/unread-count", // deprecated
-        "/employee/reports/assistance-need-decisions/unread-count"
+        "/employee/reports/assistance-need-decisions/unread-count",
     )
     fun getAssistanceNeedDecisionsReportUnreadCount(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Int {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -73,7 +73,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
                             tx,
                             user,
                             clock,
-                            Action.AssistanceNeedDecision.READ_IN_REPORT
+                            Action.AssistanceNeedDecision.READ_IN_REPORT,
                         )
                     ) {
                         tx.getDecisionMakerUnreadCount(user.evakaUserId)
@@ -134,7 +134,7 @@ data class AssistanceNeedDecisionsReportRow(
     val unitName: String,
     val decisionMade: LocalDate?,
     val status: AssistanceNeedDecisionStatus,
-    val isOpened: Boolean?
+    val isOpened: Boolean?,
 )
 
 private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int {

@@ -110,7 +110,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
         }
@@ -173,7 +173,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     type = ApplicationType.DAYCARE,
                     guardianId = applicationOwner,
                     childId = child,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             tx.syncApplicationOtherGuardians(application, testDate)
             tx.deleteGuardianRelationship(childId = child, guardianId = otherGuardian)
@@ -201,7 +201,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
@@ -221,7 +221,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
@@ -229,7 +229,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_2.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
@@ -251,7 +251,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
@@ -259,7 +259,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_2.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
@@ -281,7 +281,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(
@@ -289,7 +289,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_2.id,
                     headOfChildId = testAdult_2.id,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 12, 31)
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
             )
             tx.insert(DevPlacement(childId = testChild_1.id, unitId = testUnit.id))
@@ -308,7 +308,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     testAdult_1.id,
                     LocalDate.now(),
                     IncomeStatementType.INCOME,
-                    42
+                    42,
                 )
             )
         }
@@ -336,7 +336,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     "title",
                     urgent = false,
                     sensitive = false,
-                    isCopy = false
+                    isCopy = false,
                 )
             val messageId =
                 tx.insertMessage(
@@ -347,7 +347,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     sentAt = now,
                     recipientNames = listOf("recipient name"),
                     municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus"
+                    serviceWorkerAccountName = "Espoon palveluohjaus",
                 )
             tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
@@ -375,7 +375,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     "title",
                     urgent = false,
                     sensitive = false,
-                    isCopy = false
+                    isCopy = false,
                 )
             val messageId =
                 tx.insertMessage(
@@ -386,7 +386,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     sentAt = now,
                     recipientNames = listOf("employee name"),
                     municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus"
+                    serviceWorkerAccountName = "Espoon palveluohjaus",
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
         }
@@ -431,7 +431,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     motivationForDecision = null,
                     unreadGuardianIds = null,
                     annulmentReason = "",
-                )
+                ),
             )
         }
 

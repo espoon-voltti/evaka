@@ -26,7 +26,7 @@ class VasuNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendVasuNotificationEmail)
@@ -38,7 +38,7 @@ class VasuNotificationService(
             tx,
             payloads = getVasuNotifications(tx, id),
             runAt = HelsinkiDateTime.now(),
-            retryCount = 10
+            retryCount = 10,
         )
     }
 
@@ -52,7 +52,7 @@ class VasuNotificationService(
 
     private fun getVasuNotifications(
         tx: Database.Read,
-        vasuDocumentId: VasuDocumentId
+        vasuDocumentId: VasuDocumentId,
     ): List<AsyncJob.SendVasuNotificationEmail> {
         return tx.createQuery {
                 sql(
@@ -77,7 +77,7 @@ WHERE
                     vasuDocumentId = vasuDocumentId,
                     childId = column("child_id"),
                     recipientId = column("recipient_id"),
-                    language = getLanguage(column("language"))
+                    language = getLanguage(column("language")),
                 )
             }
     }
@@ -85,7 +85,7 @@ WHERE
     fun sendVasuNotificationEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendVasuNotificationEmail
+        msg: AsyncJob.SendVasuNotificationEmail,
     ) {
         logger.info(
             "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to person ${msg.recipientId}"

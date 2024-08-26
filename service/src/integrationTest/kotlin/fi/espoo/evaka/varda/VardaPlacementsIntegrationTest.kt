@@ -12,7 +12,7 @@ import fi.espoo.evaka.testDaycare
 internal fun insertVardaUnit(
     db: Database.Connection,
     unitId: DaycareId = testDaycare.id,
-    unitOid: String? = "1.2.3"
+    unitOid: String? = "1.2.3",
 ) {
     db.transaction {
         it.execute {

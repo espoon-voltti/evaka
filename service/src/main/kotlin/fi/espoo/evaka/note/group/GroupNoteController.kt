@@ -39,7 +39,7 @@ class GroupNoteController(private val ac: AccessControl) {
             .also { notes ->
                 Audit.GroupNoteRead.log(
                     targetId = AuditId(groupId),
-                    objectId = AuditId(notes.map { it.id })
+                    objectId = AuditId(notes.map { it.id }),
                 )
             }
     }
@@ -50,7 +50,7 @@ class GroupNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,
-        @RequestBody body: GroupNoteBody
+        @RequestBody body: GroupNoteBody,
     ): GroupNoteId {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -70,7 +70,7 @@ class GroupNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable noteId: GroupNoteId,
-        @RequestBody body: GroupNoteBody
+        @RequestBody body: GroupNoteBody,
     ): GroupNote {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -86,7 +86,7 @@ class GroupNoteController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable noteId: GroupNoteId
+        @PathVariable noteId: GroupNoteId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction {

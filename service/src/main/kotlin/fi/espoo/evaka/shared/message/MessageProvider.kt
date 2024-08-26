@@ -41,6 +41,6 @@ interface IMessageProvider {
 @Deprecated(
     message = "use OfficialLanguage instead",
     replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
 )
 typealias MessageLanguage = OfficialLanguage

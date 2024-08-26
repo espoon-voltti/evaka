@@ -22,14 +22,14 @@ import org.jdbi.v3.core.mapper.PropagateNull
 data class VisitingAddress(
     val streetAddress: String = "", // address.street_address not nullable
     val postalCode: String = "", // address.postal_code not nullable
-    val postOffice: String = ""
+    val postOffice: String = "",
 )
 
 data class MailingAddress(
     val streetAddress: String? = null,
     val poBox: String? = null,
     val postalCode: String? = null,
-    val postOffice: String? = null
+    val postOffice: String? = null,
 )
 
 data class Daycare(
@@ -76,7 +76,7 @@ data class Daycare(
     val businessId: String,
     val iban: String,
     val providerId: String,
-    @Nested("mealtime_") override val mealTimes: DaycareMealtimes
+    @Nested("mealtime_") override val mealTimes: DaycareMealtimes,
 ) : DaycareInfo
 
 interface DaycareInfo {
@@ -95,7 +95,7 @@ fun isUnitOperationDay(
     shiftCareOpenOnHolidays: Boolean,
     holidays: Set<LocalDate>,
     date: LocalDate,
-    childHasShiftCare: Boolean
+    childHasShiftCare: Boolean,
 ): Boolean {
     val dayOfWeek = date.dayOfWeek.value
     return if (childHasShiftCare) {
@@ -111,13 +111,13 @@ data class DaycareMealtimes(
     val lunch: TimeRange?,
     val snack: TimeRange?,
     val supper: TimeRange?,
-    val eveningSnack: TimeRange?
+    val eveningSnack: TimeRange?,
 )
 
 data class FinanceDecisionHandler(
     @PropagateNull val id: EmployeeId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
 )
 
 data class UnitManager(val name: String, val email: String, val phone: String)
@@ -126,7 +126,7 @@ data class DaycareDecisionCustomization(
     val daycareName: String,
     val preschoolName: String,
     val handler: String,
-    val handlerAddress: String
+    val handlerAddress: String,
 )
 
 data class DaycareCareArea(val id: AreaId, val name: String, val shortName: String)
@@ -150,5 +150,5 @@ data class UnitFeatures(
     val name: String,
     val features: List<PilotFeature>,
     val providerType: ProviderType,
-    val type: List<CareType>
+    val type: List<CareType>,
 )

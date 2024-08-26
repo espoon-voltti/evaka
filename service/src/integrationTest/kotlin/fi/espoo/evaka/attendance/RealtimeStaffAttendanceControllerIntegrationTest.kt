@@ -81,14 +81,14 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             groupId = groupId1,
             arrived = now.minusHours(3),
             departed = now.minusHours(2),
-            hasStaffOccupancyEffect = true
+            hasStaffOccupancyEffect = true,
         )
         upsertDailyStaffAttendances(
             unitId = testDaycare2.id,
             groupId = groupId2,
             arrived = now.minusHours(1),
             departed = null,
-            hasStaffOccupancyEffect = false
+            hasStaffOccupancyEffect = false,
         )
 
         val unit1Attendances = getAttendances(testDaycare.id)
@@ -108,7 +108,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
                 assertEquals(
                     occupancyCoefficientSeven.stripTrailingZeros(),
-                    attendanceEntry.occupancyCoefficient.stripTrailingZeros()
+                    attendanceEntry.occupancyCoefficient.stripTrailingZeros(),
                 )
             }
         }
@@ -130,7 +130,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 assertEquals(StaffAttendanceType.PRESENT, attendanceEntry.type)
                 assertEquals(
                     BigDecimal.ZERO,
-                    attendanceEntry.occupancyCoefficient.stripTrailingZeros()
+                    attendanceEntry.occupancyCoefficient.stripTrailingZeros(),
                 )
             }
         }
@@ -143,7 +143,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 testDaycare.id,
                 groupId1,
                 now.minusHours(3),
-                now.plusMinutes(1)
+                now.plusMinutes(1),
             )
         }
         assertThrows<BadRequest> {
@@ -154,7 +154,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 testDaycare.id,
                 groupId1,
                 now.plusHours(22),
-                now.plusHours(23)
+                now.plusHours(23),
             )
         }
         upsertDailyStaffAttendances(testDaycare.id, groupId1, now.minusHours(7), now.minusHours(3))
@@ -165,7 +165,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 testDaycare.id,
                 groupId1,
                 now.minusHours(3),
-                now.plusMinutes(1)
+                now.plusMinutes(1),
             )
         }
         assertThrows<BadRequest> {
@@ -176,14 +176,14 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 testDaycare.id,
                 groupId1,
                 now.plusHours(22),
-                now.plusHours(23)
+                now.plusHours(23),
             )
         }
         upsertDailyExternalAttendances(
             testDaycare.id,
             groupId1,
             now.minusHours(7),
-            now.minusHours(3)
+            now.minusHours(3),
         )
         upsertDailyExternalAttendances(testDaycare.id, groupId1, now.minusHours(2), null)
     }
@@ -206,10 +206,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now.minusHours(3),
                             departed = now.minusHours(2),
                             type = StaffAttendanceType.TRAINING,
-                            hasStaffOccupancyEffect = false
+                            hasStaffOccupancyEffect = false,
                         )
-                    )
-            )
+                    ),
+            ),
         )
 
         getAttendances(testDaycare.id).staff.first().let { attendance ->
@@ -235,8 +235,8 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                 unitId = testDaycare.id,
                 date = now.toLocalDate(),
                 employeeId = testDecisionMaker_2.id,
-                entries = emptyList()
-            )
+                entries = emptyList(),
+            ),
         )
         assertEquals(0, getAttendances(testDaycare.id).staff.get(0).attendances.size)
     }
@@ -261,10 +261,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = now.minusHours(3),
                                 departed = now.minusHours(2),
                                 type = StaffAttendanceType.TRAINING,
-                                hasStaffOccupancyEffect = false
+                                hasStaffOccupancyEffect = false,
                             )
-                        )
-                )
+                        ),
+                ),
             )
         }
     }
@@ -276,7 +276,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
             MockEvakaClock(now),
             unitId,
             now.toLocalDate(),
-            now.toLocalDate()
+            now.toLocalDate(),
         )
     }
 
@@ -285,7 +285,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         groupId: GroupId,
         arrived: HelsinkiDateTime,
         departed: HelsinkiDateTime?,
-        hasStaffOccupancyEffect: Boolean = true
+        hasStaffOccupancyEffect: Boolean = true,
     ) {
         realtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances(
             dbInstance(),
@@ -303,10 +303,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = arrived,
                             departed = departed,
                             type = StaffAttendanceType.PRESENT,
-                            hasStaffOccupancyEffect = hasStaffOccupancyEffect
+                            hasStaffOccupancyEffect = hasStaffOccupancyEffect,
                         )
-                    )
-            )
+                    ),
+            ),
         )
     }
 
@@ -314,7 +314,7 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
         unitId: DaycareId,
         groupId: GroupId,
         arrived: HelsinkiDateTime,
-        departed: HelsinkiDateTime?
+        departed: HelsinkiDateTime?,
     ) {
         realtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances(
             dbInstance(),
@@ -331,10 +331,10 @@ class RealtimeStaffAttendanceControllerIntegrationTest :
                             groupId = groupId,
                             hasStaffOccupancyEffect = false,
                             arrived = arrived,
-                            departed = departed
+                            departed = departed,
                         )
-                    )
-            )
+                    ),
+            ),
         )
     }
 }

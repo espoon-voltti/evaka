@@ -54,7 +54,7 @@ class XroadSoapClientConfig {
         marshaller: Jaxb2Marshaller,
         xRoadEnv: VtjXroadEnv,
         messageSender: WebServiceMessageSender,
-        faultMessageResolver: FaultMessageResolver
+        faultMessageResolver: FaultMessageResolver,
     ) =
         WebServiceTemplate().apply {
             setMarshaller(marshaller)
@@ -77,7 +77,7 @@ class XroadSoapClientConfig {
                 is FaultAwareWebServiceMessage -> {
                     logger.error(
                         "Fault while doing X-Road request: ${message.faultCode}. Reason: ${message.faultReason}",
-                        message
+                        message,
                     )
                     throw WebServiceFaultException(message)
                 }
@@ -110,7 +110,7 @@ class XroadSoapClientConfig {
     @ConditionalOnMissingBean(WebServiceMessageSender::class)
     fun httpsClientAuthMessageSender(
         trustManagersFactoryBean: TrustManagersFactoryBean,
-        keyManagersFactoryBean: KeyManagersFactoryBean
+        keyManagersFactoryBean: KeyManagersFactoryBean,
     ) =
         HttpsUrlConnectionMessageSender().apply {
             setTrustManagers(trustManagersFactoryBean.`object`)
@@ -127,7 +127,7 @@ class XroadSoapClientConfig {
     fun vtjSoapHeaderCallback(
         xRoadEnv: VtjXroadEnv,
         factory: ObjectFactory,
-        marshaller: Jaxb2Marshaller
+        marshaller: Jaxb2Marshaller,
     ): SoapRequestAdapter =
         object : SoapRequestAdapter {
             override fun createCallback(query: VTJQuery) = WebServiceMessageCallback {

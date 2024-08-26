@@ -38,7 +38,7 @@ data class InvoiceCodes(val products: List<ProductWithName>, val units: List<Inv
 class InvoiceService(
     private val integrationClient: InvoiceIntegrationClient,
     private val productProvider: InvoiceProductProvider,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     fun sendInvoices(
         tx: Database.Transaction,
@@ -46,7 +46,7 @@ class InvoiceService(
         clock: EvakaClock,
         invoiceIds: List<InvoiceId>,
         invoiceDate: LocalDate?,
-        dueDate: LocalDate?
+        dueDate: LocalDate?,
     ) {
         val seriesStart = featureConfig.invoiceNumberSeriesStart
         tx.lockInvoices(invoiceIds)
@@ -66,7 +66,7 @@ class InvoiceService(
                 invoice.copy(
                     number = maxInvoiceNumber + index,
                     invoiceDate = invoiceDate ?: invoice.invoiceDate,
-                    dueDate = dueDate ?: invoice.dueDate
+                    dueDate = dueDate ?: invoice.dueDate,
                 )
             }
 
@@ -101,7 +101,7 @@ class InvoiceService(
         tx: Database.Read,
         from: LocalDate,
         to: LocalDate,
-        areas: List<String>
+        areas: List<String>,
     ): List<InvoiceId> {
         return tx.getInvoiceIdsByDates(FiniteDateRange(from, to), areas)
     }
@@ -126,7 +126,7 @@ class InvoiceService(
 fun Database.Transaction.markManuallySent(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
-    invoiceIds: List<InvoiceId>
+    invoiceIds: List<InvoiceId>,
 ) {
 
     val updatedIds =

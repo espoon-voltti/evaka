@@ -131,7 +131,7 @@ fun Database.Transaction.ensureDevData() {
                 "employees.sql",
                 "preschool-terms.sql",
                 "club-terms.sql",
-                "holidays.sql"
+                "holidays.sql",
             )
             .forEach { runDevScript(it) }
     }
@@ -220,7 +220,7 @@ RETURNING id
 fun Database.Transaction.updateDaycareAcl(
     daycareId: DaycareId,
     externalId: ExternalId,
-    role: UserRole
+    role: UserRole,
 ) {
     createUpdate {
             sql(
@@ -233,7 +233,7 @@ fun Database.Transaction.updateDaycareAcl(
 fun Database.Transaction.updateDaycareAclWithEmployee(
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    role: UserRole
+    role: UserRole,
 ) {
     createUpdate {
             sql(
@@ -255,7 +255,7 @@ fun Database.Transaction.insertEmployeeToDaycareGroupAcl(groupId: GroupId, emplo
 fun Database.Transaction.createMobileDeviceToUnit(
     id: MobileDeviceId,
     unitId: DaycareId,
-    name: String = "Nimeämätön laite"
+    name: String = "Nimeämätön laite",
 ) {
     createUpdate {
             sql(
@@ -285,7 +285,7 @@ RETURNING id
 fun Database.Transaction.insert(
     row: DevEmployee,
     unitRoles: Map<DaycareId, UserRole> = mapOf(),
-    groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf()
+    groupAcl: Map<DaycareId, Collection<GroupId>> = mapOf(),
 ) =
     createUpdate {
             sql(
@@ -383,7 +383,7 @@ fun Database.Transaction.insertTestParentship(
     id: ParentshipId = ParentshipId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
+    createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 ): ParentshipId = insert(DevParentship(id, childId, headOfChild, startDate, endDate, createdAt))
 
 fun Database.Transaction.insert(row: DevParentship): ParentshipId =
@@ -405,7 +405,7 @@ fun Database.Transaction.insertTestPartnership(
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate? = null,
     createdAt: HelsinkiDateTime =
-        HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 0))
+        HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 0)),
 ): PartnershipId {
     insert(
         DevFridgePartner(
@@ -415,7 +415,7 @@ fun Database.Transaction.insertTestPartnership(
             personId = adult1,
             startDate = startDate,
             endDate = endDate,
-            createdAt = createdAt
+            createdAt = createdAt,
         )
     )
     insert(
@@ -426,7 +426,7 @@ fun Database.Transaction.insertTestPartnership(
             personId = adult2,
             startDate = startDate,
             endDate = endDate,
-            createdAt = createdAt
+            createdAt = createdAt,
         )
     )
     return id
@@ -446,7 +446,7 @@ fun Database.Transaction.insertTestApplication(
     transferApplication: Boolean = false,
     allowOtherGuardianAccess: Boolean = true,
     document: DatabaseForm,
-    formModified: HelsinkiDateTime = HelsinkiDateTime.now()
+    formModified: HelsinkiDateTime = HelsinkiDateTime.now(),
 ): ApplicationId {
     createUpdate {
             sql(
@@ -511,7 +511,7 @@ fun Database.Transaction.insertTestPlacement(
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
     terminationRequestedDate: LocalDate? = null,
     terminatedBy: EvakaUserId? = null,
-    placeGuarantee: Boolean = false
+    placeGuarantee: Boolean = false,
 ): PlacementId {
     createUpdate {
             sql(
@@ -538,7 +538,7 @@ fun Database.Transaction.insertTestServiceNeed(
     shiftCare: ShiftCareType = ShiftCareType.NONE,
     partWeek: Boolean = false,
     confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID())
+    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
 ): ServiceNeedId =
     insert(
         DevServiceNeed(
@@ -550,7 +550,7 @@ fun Database.Transaction.insertTestServiceNeed(
             shiftCare,
             partWeek,
             confirmedBy,
-            confirmedAt
+            confirmedAt,
         )
     )
 
@@ -591,7 +591,7 @@ data class DevIncome(
     val isEntrepreneur: Boolean = false,
     val worksAtEcha: Boolean = false,
     val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val updatedBy: EvakaUserId
+    val updatedBy: EvakaUserId,
 )
 
 fun Database.Transaction.insert(row: DevIncome): IncomeId =
@@ -612,7 +612,7 @@ data class DevIncomeStatement(
     val startDate: LocalDate,
     val type: IncomeStatementType,
     val grossEstimatedMonthlyIncome: Int,
-    val handlerId: EmployeeId? = null
+    val handlerId: EmployeeId? = null,
 )
 
 fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId =
@@ -638,7 +638,7 @@ data class DevFeeAlteration(
     val validTo: LocalDate?,
     val notes: String = "",
     val updatedBy: EvakaUserId,
-    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now()
+    val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 fun Database.Transaction.insert(row: DevFeeAlteration): FeeAlterationId =
@@ -696,7 +696,7 @@ fun Database.Transaction.insertTestDaycareGroupPlacement(
     groupId: GroupId = GroupId(UUID.randomUUID()),
     id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
 ): GroupPlacementId =
     insert(DevDaycareGroupPlacement(id, daycarePlacementId, groupId, startDate, endDate))
 
@@ -710,7 +710,7 @@ fun Database.Transaction.insertTestPlacementPlan(
     preschoolDaycareStartDate: LocalDate? = null,
     preschoolDaycareEndDate: LocalDate? = null,
     updated: HelsinkiDateTime = HelsinkiDateTime.now(),
-    deleted: Boolean? = false
+    deleted: Boolean? = false,
 ): PlacementPlanId {
     createUpdate {
             sql(
@@ -741,7 +741,7 @@ data class TestDecision(
             HelsinkiDateTime.from(Instant.ofEpochSecond(1546300800))
         }, // 2019-01-01 midnight
     val pendingDecisionEmailsSentCount: Int? = 0,
-    val pendingDecisionEmailSent: HelsinkiDateTime? = null
+    val pendingDecisionEmailSent: HelsinkiDateTime? = null,
 )
 
 fun Database.Transaction.insertTestDecision(decision: TestDecision): DecisionId =
@@ -780,7 +780,7 @@ fun Database.Transaction.insertTestCaretakers(
     id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
     amount: Double = 3.0,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate? = null
+    endDate: LocalDate? = null,
 ) = insert(DevDaycareCaretaker(id, groupId, amount.toBigDecimal(), startDate, endDate))
 
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
@@ -837,7 +837,7 @@ VALUES (${bind(guardian.id)}, ${bind(decision.id)}, ${bind(guardian.personId)}, 
 
 fun Database.Transaction.insertTestAssistanceNeedDecision(
     childId: ChildId,
-    data: DevAssistanceNeedDecision
+    data: DevAssistanceNeedDecision,
 ): AssistanceNeedDecisionId {
     val id =
         createQuery {
@@ -900,7 +900,7 @@ fun Database.Transaction.insertTestStaffAttendance(
     id: StaffAttendanceId = StaffAttendanceId(UUID.randomUUID()),
     groupId: GroupId,
     date: LocalDate,
-    count: Double
+    count: Double,
 ) {
     createUpdate {
             sql(
@@ -919,7 +919,7 @@ data class DevStaffAttendancePlan(
     val type: StaffAttendanceType = StaffAttendanceType.PRESENT,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
-    val description: String? = null
+    val description: String? = null,
 )
 
 fun Database.Transaction.insert(row: DevStaffAttendancePlan): StaffAttendancePlanId =
@@ -942,7 +942,7 @@ fun Database.Transaction.insertTestAbsence(
     category: AbsenceCategory,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now()
+    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) = insert(DevAbsence(id, childId, date, absenceType, modifiedAt, modifiedBy, category))
 
 fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtimeId =
@@ -962,7 +962,7 @@ fun Database.Transaction.insertTestChildAttendance(
     childId: ChildId,
     unitId: DaycareId,
     arrived: HelsinkiDateTime,
-    departed: HelsinkiDateTime?
+    departed: HelsinkiDateTime?,
 ) {
     val attendances: List<Triple<LocalDate, LocalTime, LocalTime?>> =
         if (departed == null) {
@@ -976,7 +976,7 @@ fun Database.Transaction.insertTestChildAttendance(
                         if (arrived.toLocalDate() == date) arrived.toLocalTime()
                         else LocalTime.of(0, 0),
                         if (departed.toLocalDate() == date) departed.toLocalTime()
-                        else LocalTime.of(23, 59)
+                        else LocalTime.of(23, 59),
                     )
                 }
                 .toList()
@@ -999,7 +999,7 @@ fun Database.Transaction.insertTestBackUpCare(
     startDate: LocalDate,
     endDate: LocalDate,
     groupId: GroupId? = null,
-    id: BackupCareId = BackupCareId(UUID.randomUUID())
+    id: BackupCareId = BackupCareId(UUID.randomUUID()),
 ) = insert(DevBackupCare(id, childId, unitId, groupId, FiniteDateRange(startDate, endDate)))
 
 fun Database.Transaction.insert(row: DevBackupCare): BackupCareId =
@@ -1070,7 +1070,7 @@ data class DevFamilyContact(
     val id: UUID,
     val childId: ChildId,
     val contactPersonId: PersonId,
-    val priority: Int
+    val priority: Int,
 )
 
 fun Database.Transaction.insert(row: DevFamilyContact): FamilyContactId =
@@ -1090,7 +1090,7 @@ data class DevBackupPickup(
     val id: BackupPickupId,
     val childId: ChildId,
     val name: String,
-    val phone: String
+    val phone: String,
 )
 
 fun Database.Transaction.insert(row: DevBackupPickup): BackupPickupId =
@@ -1112,7 +1112,7 @@ data class DevFridgeChild(
     val headOfChild: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
 )
 
 fun Database.Transaction.insert(row: DevFridgeChild): ParentshipId =
@@ -1136,7 +1136,7 @@ data class DevFridgePartner(
     val startDate: LocalDate,
     val endDate: LocalDate? = null,
     val createdAt: HelsinkiDateTime,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
 )
 
 fun Database.Transaction.insert(row: DevFridgePartner): PartnershipId =
@@ -1159,7 +1159,7 @@ data class DevFridgePartnership(
     val startDate: LocalDate,
     val endDate: LocalDate? = null,
     val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
 )
 
 fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipId =
@@ -1172,7 +1172,7 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                 startDate = partnership.startDate,
                 endDate = partnership.endDate,
                 createdAt = partnership.createdAt,
-                conflict = partnership.conflict
+                conflict = partnership.conflict,
             )
         )
         .also {
@@ -1185,7 +1185,7 @@ fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipI
                     startDate = partnership.startDate,
                     endDate = partnership.endDate,
                     createdAt = partnership.createdAt,
-                    conflict = partnership.conflict
+                    conflict = partnership.conflict,
                 )
             )
         }
@@ -1195,14 +1195,14 @@ data class DevEmployeePin(
     val userId: EmployeeId? = null,
     val employeeExternalId: String? = null,
     val pin: String,
-    val locked: Boolean = false
+    val locked: Boolean = false,
 )
 
 data class DevFosterParent(
     val id: FosterParentId = FosterParentId(UUID.randomUUID()),
     val childId: ChildId,
     val parentId: PersonId,
-    val validDuring: DateRange
+    val validDuring: DateRange,
 )
 
 fun Database.Transaction.insert(row: DevFosterParent): FosterParentId =
@@ -1284,7 +1284,7 @@ RETURNING evaka_service_need_id
 data class DevPedagogicalDocument(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
-    val description: String
+    val description: String,
 )
 
 fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumentId =
@@ -1307,7 +1307,7 @@ data class DevReservation(
     val startTime: LocalTime?,
     val endTime: LocalTime?,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val createdBy: EvakaUserId
+    val createdBy: EvakaUserId,
 )
 
 fun Database.Transaction.insert(row: DevReservation): AttendanceReservationId =
@@ -1333,7 +1333,7 @@ data class DevInvoiceCorrection(
     val amount: Int,
     val unitPrice: Int,
     val description: String,
-    val note: String
+    val note: String,
 )
 
 fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId =
@@ -1480,11 +1480,11 @@ VALUES (${bind(row.id)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.t
 
 fun Database.Transaction.updateDaycareOperationTimes(
     daycareId: DaycareId,
-    operationTimes: List<TimeRange>
+    operationTimes: List<TimeRange>,
 ) =
     createUpdate {
             sql(
-                "UPDATE daycare SET operation_times = ${bind(operationTimes)} WHERE id = ${bind(daycareId)}",
+                "UPDATE daycare SET operation_times = ${bind(operationTimes)} WHERE id = ${bind(daycareId)}"
             )
         }
         .execute()

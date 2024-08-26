@@ -52,7 +52,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                         childId = preschoolChildId,
                         unitId = unitId,
                         startDate = mockToday.today().minusMonths(1),
-                        endDate = mockToday.today().plusMonths(1)
+                        endDate = mockToday.today().plusMonths(1),
                     )
                 )
             val period =
@@ -64,14 +64,14 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                     endDate = period.end,
                     optionId = snDefaultPreschool.id,
                     confirmedBy = EvakaUserId(admin.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
 
             val daycareU3yChildId =
                 tx.insert(
                     DevPerson(dateOfBirth = mockToday.today().minusYears(2)),
-                    DevPersonType.CHILD
+                    DevPersonType.CHILD,
                 )
             val daycarePlacementId =
                 tx.insert(
@@ -80,7 +80,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                         childId = daycareU3yChildId,
                         unitId = unitId,
                         startDate = mockToday.today().minusMonths(1),
-                        endDate = mockToday.today().plusMonths(1)
+                        endDate = mockToday.today().plusMonths(1),
                     )
                 )
             val period1 =
@@ -92,7 +92,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                     endDate = period1.end,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(admin.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -116,7 +116,7 @@ internal class PlacementCountReportControllerTest : FullApplicationTest(resetDbB
                 mockToday,
                 mockToday.today(),
                 null,
-                listOf(PlacementType.PRESCHOOL)
+                listOf(PlacementType.PRESCHOOL),
             )
         assertEquals(1, reportPreschool.placementCount)
         assertEquals(1, reportPreschool.placementCount3vAndOver)

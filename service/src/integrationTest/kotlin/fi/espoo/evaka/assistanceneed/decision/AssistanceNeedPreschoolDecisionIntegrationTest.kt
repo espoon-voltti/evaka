@@ -83,7 +83,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
     private val decisionMaker =
         AuthenticatedUser.Employee(
             specialEducationTeacherOfTestDaycare.id,
-            setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            setOf(UserRole.SPECIAL_EDUCATION_TEACHER),
         )
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val clock = MockEvakaClock(2024, 3, 5, 13, 30)
@@ -122,7 +122,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                         personId = testAdult_2.id,
                         name = "${testAdult_2.lastName} ${testAdult_2.firstName}",
                         isHeard = true,
-                        details = "Lots of details"
+                        details = "Lots of details",
                     )
                 ),
             otherRepresentativeHeard = false,
@@ -135,7 +135,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             preparer2Title = "",
             preparer2PhoneNumber = "",
             decisionMakerEmployeeId = specialEducationTeacherOfTestDaycare.id,
-            decisionMakerTitle = "Decider of everything"
+            decisionMakerTitle = "Decider of everything",
         )
 
     @BeforeEach
@@ -147,12 +147,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             tx.insert(testDecisionMaker_1)
             tx.insert(
                 specialEducationTeacherOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER)
+                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
             tx.insert(testDecisionMaker_3)
             tx.insert(
                 unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
             )
             tx.insert(testAdult_2, DevPersonType.ADULT)
             tx.insert(testChild_1, DevPersonType.CHILD)
@@ -164,7 +164,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                    endDate = clock.today().plusDays(5),
                 )
             )
         }
@@ -188,7 +188,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             assistanceNeedDecision.id,
-            getDecision(assistanceNeedDecision.id, specialEducationTeacherOfTestDaycare.user).id
+            getDecision(assistanceNeedDecision.id, specialEducationTeacherOfTestDaycare.user).id,
         )
 
         // remove child placement so child is not in VEO's unit so no document should be visible
@@ -219,7 +219,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                             .copy(id = assistanceNeedDecision.form.guardianInfo.first().id)
                     )
             ),
-            assistanceNeedDecision.form
+            assistanceNeedDecision.form,
         )
     }
 
@@ -352,7 +352,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertContains(messages[0].messageContent, "päätös tuesta")
         assertEquals(
             "assistance-need-preschool-decisions/assistance_need_preschool_decision_${decision.id}.pdf",
-            messages[0].documentKey
+            messages[0].documentKey,
         )
 
         annulDecision(decision.id, "oops", decisionMaker)
@@ -378,7 +378,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     dbInstance(),
                     admin.user,
                     clock,
-                    assistanceNeedDecision.id
+                    assistanceNeedDecision.id,
                 )
                 .data
         assertNotNull(metadata)
@@ -395,14 +395,14 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(
             AuthenticatedUser.SystemInternalUser.evakaUserId,
-            metadata.process.history[3].enteredBy.id
+            metadata.process.history[3].enteredBy.id,
         )
         assertEquals("Päätös tuesta esiopetuksessa", metadata.primaryDocument.name)
         assertEquals(assistanceWorker.evakaUserId, metadata.primaryDocument.createdBy?.id)
         assertEquals(true, metadata.primaryDocument.confidential)
         assertEquals(
             "/employee/assistance-need-preschool-decisions/${assistanceNeedDecision.id}/pdf",
-            metadata.primaryDocument.downloadPath
+            metadata.primaryDocument.downloadPath,
         )
     }
 
@@ -417,26 +417,26 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                 Tuple(
                     testDecisionMaker_1.id,
                     testDecisionMaker_1.lastName,
-                    testDecisionMaker_1.firstName
+                    testDecisionMaker_1.firstName,
                 ),
                 Tuple(
                     specialEducationTeacherOfTestDaycare.id,
                     specialEducationTeacherOfTestDaycare.lastName,
-                    specialEducationTeacherOfTestDaycare.firstName
+                    specialEducationTeacherOfTestDaycare.firstName,
                 ),
                 Tuple(
                     testDecisionMaker_3.id,
                     testDecisionMaker_3.lastName,
-                    testDecisionMaker_3.firstName
+                    testDecisionMaker_3.firstName,
                 ),
                 Tuple(
                     unitSupervisorOfTestDaycare.id,
                     unitSupervisorOfTestDaycare.lastName,
-                    unitSupervisorOfTestDaycare.firstName
+                    unitSupervisorOfTestDaycare.firstName,
                 ),
-                Tuple(admin.id, admin.lastName, admin.firstName)
+                Tuple(admin.id, admin.lastName, admin.firstName),
             ),
-            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
+            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) },
         )
     }
 
@@ -475,11 +475,11 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
         assertEquals(setOf(testAdult_2.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
-            getEmailFor(testAdult_2).content.subject
+            getEmailFor(testAdult_2).content.subject,
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
-            getEmailFor(testAdult_2).fromAddress
+            getEmailFor(testAdult_2).fromAddress,
         )
     }
 
@@ -496,7 +496,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             assistanceNeedDecisionService.generatePdf(
                 sentDate = LocalDate.now(),
                 decision,
-                validTo = null
+                validTo = null,
             )
 
         assertNotNull(pdf)
@@ -529,12 +529,12 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                 Tuple(
                     AssistanceNeedDecisionStatus.ACCEPTED,
                     LocalDate.of(2021, 1, 1),
-                    LocalDate.of(2021, 12, 31)
+                    LocalDate.of(2021, 12, 31),
                 ),
                 Tuple(
                     AssistanceNeedDecisionStatus.ACCEPTED,
                     LocalDate.of(2022, 1, 1),
-                    LocalDate.of(2022, 12, 31)
+                    LocalDate.of(2022, 12, 31),
                 ),
                 Tuple(AssistanceNeedDecisionStatus.ACCEPTED, LocalDate.of(2023, 1, 1), null),
             )
@@ -562,7 +562,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = startDate,
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -574,7 +574,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, LocalDate.of(2022, 6, 30)),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
 
         db.transaction { tx ->
@@ -594,7 +594,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, LocalDate.of(2022, 6, 30)),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -628,7 +628,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = startDate,
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -640,7 +640,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, endDate),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -665,7 +665,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = startDate,
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -677,7 +677,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, null),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -702,7 +702,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = startDate,
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -714,7 +714,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, endDate),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -748,7 +748,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = startDate,
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -760,7 +760,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(startDate, endDate),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -785,7 +785,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     testForm.copy(
                         validFrom = endDate.plusDays(1),
                         validTo = null,
-                        selectedUnit = testDaycare.id
+                        selectedUnit = testDaycare.id,
                     )
                 )
                 .id
@@ -797,7 +797,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
         assertEquals(
             DateRange(endDate.plusDays(1), null),
-            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) }
+            getDecision(decision.id).form.let { DateRange(it.validFrom!!, it.validTo) },
         )
     }
 
@@ -813,14 +813,14 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             dbInstance(),
             user,
             clock,
-            testChild_1.id
+            testChild_1.id,
         )
     }
 
     private fun updateDecision(
         form: AssistanceNeedPreschoolDecisionForm,
         decision: AssistanceNeedPreschoolDecision,
-        user: AuthenticatedUser.Employee = assistanceWorker
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ) {
         assistanceNeedDecisionController.updateAssistanceNeedPreschoolDecision(
             dbInstance(),
@@ -832,13 +832,13 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
                     setOf(
                         form.guardianInfo.first().copy(id = decision.form.guardianInfo.first().id)
                     )
-            )
+            ),
         )
     }
 
     private fun getDecision(
         id: AssistanceNeedPreschoolDecisionId,
-        user: AuthenticatedUser.Employee = assistanceWorker
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ): AssistanceNeedPreschoolDecision {
         return assistanceNeedDecisionController
             .getAssistanceNeedPreschoolDecision(dbInstance(), user, clock, id)
@@ -853,7 +853,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
 
     private fun createAndFillDecision(
         form: AssistanceNeedPreschoolDecisionForm,
-        user: AuthenticatedUser.Employee = assistanceWorker
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ): AssistanceNeedPreschoolDecision {
         return createEmptyDraft(user)
             .also { updateDecision(form, it, user) }
@@ -865,30 +865,28 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             dbInstance(),
             assistanceWorker,
             clock,
-            id
+            id,
         )
     }
 
-    private fun sendAssistanceNeedDecision(
-        id: AssistanceNeedPreschoolDecisionId,
-    ) {
+    private fun sendAssistanceNeedDecision(id: AssistanceNeedPreschoolDecisionId) {
         assistanceNeedDecisionController.sendAssistanceNeedPreschoolDecisionForDecision(
             dbInstance(),
             assistanceWorker,
             clock,
-            id
+            id,
         )
     }
 
     private fun markAssistanceNeedDecisionOpened(
         id: AssistanceNeedPreschoolDecisionId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.markAssistanceNeedPreschoolDecisionAsOpened(
             dbInstance(),
             user,
             clock,
-            id
+            id,
         )
     }
 
@@ -904,7 +902,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             id,
             AssistanceNeedPreschoolDecisionController.DecideAssistanceNeedPreschoolDecisionRequest(
                 status = status
-            )
+            ),
         )
     }
 
@@ -920,7 +918,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             id,
             AssistanceNeedPreschoolDecisionController.AnnulAssistanceNeedPreschoolDecisionRequest(
                 reason = reason
-            )
+            ),
         )
     }
 
@@ -932,7 +930,7 @@ class AssistanceNeedPreschoolDecisionIntegrationTest :
             dbInstance(),
             user,
             clock,
-            id
+            id,
         )
     }
 }

@@ -19,7 +19,7 @@ data class ClubTerm(
     /*The official application period.*/
     val applicationPeriod: FiniteDateRange,
     /*Club is not arranged during these periods (e.g. Christmas holiday).*/
-    val termBreaks: DateSet
+    val termBreaks: DateSet,
 ) {
     fun scheduleType(date: LocalDate): ScheduleType? =
         when {
@@ -63,7 +63,7 @@ fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? =
 fun Database.Transaction.insertClubTerm(
     term: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
-    termBreaks: DateSet
+    termBreaks: DateSet,
 ): ClubTermId {
     return createUpdate {
             sql(
@@ -82,7 +82,7 @@ fun Database.Transaction.updateClubTerm(
     id: ClubTermId,
     term: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
-    termBreaks: DateSet
+    termBreaks: DateSet,
 ) =
     createUpdate {
             sql(

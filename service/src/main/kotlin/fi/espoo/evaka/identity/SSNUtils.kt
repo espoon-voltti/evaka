@@ -39,7 +39,7 @@ private val CHECK_DIGITS =
         'V',
         'W',
         'X',
-        'Y'
+        'Y',
     )
 
 private fun checkDigitMatches(ssn: String): Boolean {

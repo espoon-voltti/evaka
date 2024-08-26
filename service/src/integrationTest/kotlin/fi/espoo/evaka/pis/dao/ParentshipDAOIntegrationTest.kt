@@ -34,7 +34,7 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNotNull(parentship.id)
         assertEquals(
             child.copy(updatedFromVtj = null),
-            parentship.child.copy(updatedFromVtj = null)
+            parentship.child.copy(updatedFromVtj = null),
         )
         assertEquals(parent.id, parentship.headOfChildId)
         assertEquals(startDate, parentship.startDate)
@@ -101,38 +101,38 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 setOf(parentship),
                 tx.getParentships(headOfChildId = adult.id, childId = child.id)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
             assertEquals(
                 setOf(parentship),
                 tx.getParentships(headOfChildId = adult.id, childId = null)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
             assertEquals(
                 setOf(parentship),
                 tx.getParentships(headOfChildId = null, childId = child.id)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
 
             assertEquals(
                 emptySet(),
                 tx.getParentships(headOfChildId = child.id, childId = adult.id)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
             assertEquals(
                 emptySet(),
                 tx.getParentships(headOfChildId = child.id, childId = null)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
             assertEquals(
                 emptySet(),
                 tx.getParentships(headOfChildId = null, childId = adult.id)
                     .map { it.withoutDetails() }
-                    .toHashSet()
+                    .toHashSet(),
             )
         }
     }
@@ -147,9 +147,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 firstName = firstName,
                                 lastName = "Meikäläinen",
                                 email = "${firstName.lowercase()}.meikalainen@example.com",
-                                language = "fi"
+                                language = "fi",
                             ),
-                            DevPersonType.RAW_ROW
+                            DevPersonType.RAW_ROW,
                         )
                         .let { tx.getPersonById(it)!! }
             }

@@ -31,7 +31,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestResponseBody
 /** Scans all REST endpoints using Spring, returning metadata about all of them */
 fun scanEndpoints(
     packageName: String,
-    profiles: List<String> = emptyList()
+    profiles: List<String> = emptyList(),
 ): List<EndpointMetadata> =
     StaticWebApplicationContext().use { ctx ->
         val env = StandardEnvironment()
@@ -84,7 +84,7 @@ data class EndpointMetadata(
         when (httpMethod) {
             RequestMethod.GET,
             RequestMethod.HEAD,
-            RequestMethod.DELETE, -> {
+            RequestMethod.DELETE -> {
                 if (isJsonEndpoint && httpMethod == RequestMethod.GET && responseBodyType == null) {
                     fail("It should have a response body")
                 }
@@ -146,7 +146,7 @@ data class NamedParameter(val name: String, val type: KType, val isOptional: Boo
         type.classifier!!.createType(
             type.arguments,
             type.isMarkedNullable || isOptional,
-            type.annotations
+            type.annotations,
         )
 }
 
@@ -157,14 +157,14 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
         annotation: KClass<A>,
         getName: (A) -> String?,
         isRequired: (A) -> Boolean,
-        param: MethodParameter
+        param: MethodParameter,
     ): NamedParameter {
         val kotlinParam = find(param)
         val paramAnnotation = param.getParameterAnnotation(annotation.java)
         return NamedParameter(
             name = paramAnnotation?.let(getName)?.takeIf { it.isNotBlank() } ?: kotlinParam.name!!,
             type = kotlinParam.type,
-            isOptional = !(paramAnnotation?.let(isRequired) ?: true) || kotlinParam.isOptional
+            isOptional = !(paramAnnotation?.let(isRequired) ?: true) || kotlinParam.isOptional,
         )
     }
 
@@ -188,7 +188,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                             PathVariable::class,
                             { it.name },
                             { it.required },
-                            param
+                            param,
                         )
                     }
             val requestParameters =
@@ -199,7 +199,7 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
                             RequestParam::class,
                             { it.name },
                             { it.required },
-                            param
+                            param,
                         )
                     }
             val requestBodyType =

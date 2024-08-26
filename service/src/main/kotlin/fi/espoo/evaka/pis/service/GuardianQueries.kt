@@ -101,7 +101,7 @@ fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
 
 fun Database.Read.getChildGuardiansAndFosterParents(
     childId: ChildId,
-    today: LocalDate
+    today: LocalDate,
 ): List<PersonId> {
     return createQuery {
             sql(

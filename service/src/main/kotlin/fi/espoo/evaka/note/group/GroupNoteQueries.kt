@@ -42,7 +42,7 @@ RETURNING id
 fun Database.Transaction.updateGroupNote(
     clock: EvakaClock,
     id: GroupNoteId,
-    note: GroupNoteBody
+    note: GroupNoteBody,
 ): GroupNote {
     val now = clock.now()
     return createUpdate {

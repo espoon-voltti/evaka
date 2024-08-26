@@ -29,14 +29,14 @@ data class GenerateDecisionsBody(val starting: String, val targetHeads: List<Per
 @RequestMapping("/fee-decision-generator")
 class FeeDecisionGeneratorController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @PostMapping("/generate")
     fun generateDecisions(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody data: GenerateDecisionsBody
+        @RequestBody data: GenerateDecisionsBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -44,7 +44,7 @@ class FeeDecisionGeneratorController(
                     it,
                     user,
                     clock,
-                    Action.Global.GENERATE_FEE_DECISIONS
+                    Action.Global.GENERATE_FEE_DECISIONS,
                 )
                 val starting = LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE)
                 val targetHeads = data.targetHeads.filterNotNull().distinct()
@@ -53,7 +53,7 @@ class FeeDecisionGeneratorController(
                     clock,
                     asyncJobRunner,
                     DateRange(starting, null),
-                    targetHeads
+                    targetHeads,
                 )
             }
         }

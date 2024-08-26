@@ -32,7 +32,7 @@ data class FeeThresholds(
     val temporaryFee: Int,
     val temporaryFeePartDay: Int,
     val temporaryFeeSibling: Int,
-    val temporaryFeeSiblingPartDay: Int
+    val temporaryFeeSiblingPartDay: Int,
 ) {
     fun incomeMultiplier(familySize: Int): BigDecimal =
         if (familySize <= 1) {
@@ -95,7 +95,7 @@ data class FeeThresholds(
                 maxIncomeThreshold = this.maxIncomeThreshold(familySize),
                 incomeMultiplier = this.incomeMultiplier(familySize),
                 maxFee = this.maxFee,
-                minFee = this.minFee
+                minFee = this.minFee,
             )
         } else {
             FeeDecisionThresholds(
@@ -103,7 +103,7 @@ data class FeeThresholds(
                 maxIncomeThreshold = 0,
                 incomeMultiplier = BigDecimal(0),
                 maxFee = this.maxFee,
-                minFee = this.minFee
+                minFee = this.minFee,
             )
         }
 
@@ -120,7 +120,7 @@ data class FeeDecisionThresholds(
     val maxIncomeThreshold: Int,
     val incomeMultiplier: BigDecimal,
     val maxFee: Int,
-    val minFee: Int
+    val minFee: Int,
 )
 
 data class SiblingDiscount(val multiplier: BigDecimal, val percent: Int, val fee: Int?)

@@ -27,7 +27,7 @@ class NotesController(private val ac: AccessControl) {
     data class NotesByGroupResponse(
         val childDailyNotes: List<ChildDailyNote>,
         val childStickyNotes: List<ChildStickyNote>,
-        val groupNotes: List<GroupNote>
+        val groupNotes: List<GroupNote>,
     )
 
     @GetMapping("/daycare-groups/{groupId}/notes")
@@ -35,7 +35,7 @@ class NotesController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         db: Database,
         clock: EvakaClock,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ): NotesByGroupResponse {
         return db.connect { dbc ->
                 dbc.read {
@@ -43,7 +43,7 @@ class NotesController(private val ac: AccessControl) {
                     NotesByGroupResponse(
                         childDailyNotes = it.getChildDailyNotesForGroup(groupId, clock.today()),
                         childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),
-                        groupNotes = it.getGroupNotesForGroup(groupId)
+                        groupNotes = it.getGroupNotesForGroup(groupId),
                     )
                 }
             }
@@ -54,8 +54,8 @@ class NotesController(private val ac: AccessControl) {
                         mapOf(
                             "childDailyNoteCount" to it.childDailyNotes.size,
                             "childStickyNoteCount" to it.childStickyNotes.size,
-                            "groupNoteCount" to it.groupNotes.size
-                        )
+                            "groupNoteCount" to it.groupNotes.size,
+                        ),
                 )
             }
     }

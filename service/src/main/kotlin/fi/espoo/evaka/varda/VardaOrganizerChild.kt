@@ -19,7 +19,7 @@ fun getOrCreateVardaChildByOrganizer(
     evakaPersonId: ChildId,
     organizerOid: String,
     sourceSystem: String,
-    municipalOrganizerOid: String
+    municipalOrganizerOid: String,
 ): Long {
     return db.transaction { tx ->
         val isPaosChild = organizerOid != municipalOrganizerOid
@@ -33,7 +33,7 @@ fun getOrCreateVardaChildByOrganizer(
                 municipalOrganizerOid,
                 organizerOid,
                 isPaosChild,
-                sourceSystem
+                sourceSystem,
             )
         }
 
@@ -50,7 +50,7 @@ fun getOrCreateVardaChildByOrganizer(
                 municipalOrganizerOid,
                 organizerOid,
                 isPaosChild,
-                sourceSystem
+                sourceSystem,
             )
         }
 
@@ -63,12 +63,12 @@ data class VardaChildOrganizerRow(
     val vardaPersonId: Int,
     val vardaPersonOid: String,
     val vardaChildId: Long,
-    val organizerOid: String
+    val organizerOid: String,
 )
 
 private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
-    evakaPersonId: ChildId
+    evakaPersonId: ChildId,
 ): List<VardaChildOrganizerRow> {
     return tx.createQuery {
             sql(
@@ -89,7 +89,7 @@ private fun createVardaPersonAndChild(
     municipalOrganizerOid: String,
     organizerOid: String,
     isPaosChild: Boolean,
-    sourceSystem: String
+    sourceSystem: String,
 ): Long {
     val personPayload = getVardaPersonPayload(tx, evakaPersonId, organizerOid)
 
@@ -105,7 +105,7 @@ private fun createVardaPersonAndChild(
                 VardaClient.VardaPersonSearchRequest(
                     henkilotunnus = personPayload.ssn,
                     henkilo_oid =
-                        if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null
+                        if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null,
                 )
             )
         } catch (e: Exception) {
@@ -121,7 +121,7 @@ private fun createVardaPersonAndChild(
         municipalOrganizerOid = municipalOrganizerOid,
         organizerOid = organizerOid,
         isPaosChild = isPaosChild,
-        sourceSystem = sourceSystem
+        sourceSystem = sourceSystem,
     )
 }
 
@@ -129,7 +129,7 @@ data class VardaChildPayload(
     val personUrl: String,
     val personOid: String,
     val organizerOid: String,
-    val sourceSystem: String
+    val sourceSystem: String,
 ) {
     fun toVardaChildRequest(evakaChildId: ChildId) =
         VardaChildRequest(
@@ -139,7 +139,7 @@ data class VardaChildPayload(
             vakatoimija_oid = organizerOid,
             oma_organisaatio_oid = null,
             paos_organisaatio_oid = null,
-            lahdejarjestelma = sourceSystem
+            lahdejarjestelma = sourceSystem,
         )
 }
 
@@ -148,7 +148,7 @@ data class VardaPaosChildPayload(
     val personOid: String,
     val organizerOid: String,
     val paosOrganizationOid: String,
-    val sourceSystem: String
+    val sourceSystem: String,
 ) {
     fun toVardaChildRequest(evakaChildId: ChildId) =
         VardaChildRequest(
@@ -158,7 +158,7 @@ data class VardaPaosChildPayload(
             vakatoimija_oid = null,
             oma_organisaatio_oid = organizerOid,
             paos_organisaatio_oid = paosOrganizationOid,
-            lahdejarjestelma = sourceSystem
+            lahdejarjestelma = sourceSystem,
         )
 }
 
@@ -171,7 +171,7 @@ private fun createVardaChildWhenPersonExists(
     municipalOrganizerOid: String,
     organizerOid: String,
     isPaosChild: Boolean,
-    sourceSystem: String
+    sourceSystem: String,
 ): Long {
     return if (isPaosChild) {
         val vardaChildPayload =
@@ -180,7 +180,7 @@ private fun createVardaChildWhenPersonExists(
                 personOid = vardaPersonOid,
                 organizerOid = municipalOrganizerOid,
                 paosOrganizationOid = organizerOid,
-                sourceSystem = sourceSystem
+                sourceSystem = sourceSystem,
             )
 
         val vardaChildId =
@@ -196,7 +196,7 @@ private fun createVardaChildWhenPersonExists(
             vardaChildId,
             vardaPersonId,
             vardaPersonOid,
-            organizerOid
+            organizerOid,
         )
 
         vardaChildId
@@ -206,7 +206,7 @@ private fun createVardaChildWhenPersonExists(
                 personUrl = client.getPersonUrl(vardaPersonId.toLong()),
                 personOid = vardaPersonOid,
                 organizerOid = municipalOrganizerOid,
-                sourceSystem = sourceSystem
+                sourceSystem = sourceSystem,
             )
 
         val vardaChildId =
@@ -222,7 +222,7 @@ private fun createVardaChildWhenPersonExists(
             vardaChildId,
             vardaPersonId,
             vardaPersonOid,
-            organizerOid
+            organizerOid,
         )
 
         vardaChildId
@@ -232,7 +232,7 @@ private fun createVardaChildWhenPersonExists(
 private fun getVardaPersonPayload(
     tx: Database.Transaction,
     evakaChildId: ChildId,
-    organizerOid: String
+    organizerOid: String,
 ) =
     tx.createQuery {
             sql(
@@ -259,7 +259,7 @@ fun insertVardaOrganizerChild(
     vardaChildId: Long,
     vardaPersonId: Int,
     vardaPersonOid: String,
-    organizerOid: String
+    organizerOid: String,
 ) {
     tx.createUpdate {
             sql(
@@ -284,7 +284,7 @@ data class VardaPerson(
     val lastName: String,
     val nickName: String,
     val ssn: String? = null,
-    val personOid: String? = null
+    val personOid: String? = null,
 ) {
     fun toVardaPersonRequest() =
         VardaPersonRequest(
@@ -293,7 +293,7 @@ data class VardaPerson(
             sukunimi = lastName,
             kutsumanimi = nickName,
             henkilotunnus = ssn,
-            henkilo_oid = if (ssn.isNullOrBlank()) personOid else null
+            henkilo_oid = if (ssn.isNullOrBlank()) personOid else null,
         )
 }
 
@@ -304,7 +304,7 @@ data class VardaPersonRequest(
     val sukunimi: String,
     val kutsumanimi: String,
     @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String? = null,
-    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null
+    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -316,7 +316,7 @@ data class VardaPersonResponse(
     @JsonProperty("kutsumanimi") val nickName: String,
     @JsonProperty("henkilo_oid") val personOid: String,
     @JsonProperty("syntyma_pvm") val dob: String?,
-    @JsonProperty("lapsi") val child: List<String>
+    @JsonProperty("lapsi") val child: List<String>,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -327,7 +327,7 @@ data class VardaChildRequest(
     val vakatoimija_oid: String?,
     val oma_organisaatio_oid: String?,
     val paos_organisaatio_oid: String?,
-    val lahdejarjestelma: String
+    val lahdejarjestelma: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true) data class VardaChildResponse(val id: Int)

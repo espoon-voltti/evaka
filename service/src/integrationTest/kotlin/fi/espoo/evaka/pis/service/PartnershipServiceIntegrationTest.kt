@@ -45,7 +45,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 startDate,
                 endDate,
                 partnershipCreator,
-                clock.now()
+                clock.now(),
             )
         }
         assertThrows<Conflict> {
@@ -57,7 +57,7 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     startDate,
                     endDate,
                     partnershipCreator,
-                    clock.now()
+                    clock.now(),
                 )
             }
         }
@@ -72,9 +72,9 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         firstName = firstName,
                         lastName = "Meikäläinen",
                         email = "",
-                        language = "fi"
+                        language = "fi",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
                 .let { tx.getPersonById(it)!! }
         }

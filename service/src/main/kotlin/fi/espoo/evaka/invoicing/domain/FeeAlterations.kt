@@ -30,7 +30,7 @@ data class FeeAlteration(
     val notes: String,
     val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: EvakaUserId? = null,
-    @Json val attachments: List<FeeAlterationAttachment> = listOf()
+    @Json val attachments: List<FeeAlterationAttachment> = listOf(),
 )
 
 @ConstList("feeAlterationTypes")

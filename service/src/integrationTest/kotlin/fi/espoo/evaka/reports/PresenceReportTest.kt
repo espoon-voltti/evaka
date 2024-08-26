@@ -109,7 +109,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = reportStart,
-                        endDate = reportEnd
+                        endDate = reportEnd,
                     )
                 )
             it.insert(
@@ -117,7 +117,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = reportStart,
-                    endDate = reportEnd
+                    endDate = reportEnd,
                 )
             )
         }
@@ -130,7 +130,7 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     date = date,
                     absenceType = AbsenceType.SICKLEAVE,
-                    absenceCategory = category
+                    absenceCategory = category,
                 )
             )
         }

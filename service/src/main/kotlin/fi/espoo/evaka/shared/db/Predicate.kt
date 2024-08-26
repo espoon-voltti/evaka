@@ -156,7 +156,7 @@ sealed interface PredicateSql {
 
     private data class Single(
         override val sql: PredicateSqlString,
-        override val bindings: List<ValueBinding<out Any?>>
+        override val bindings: List<ValueBinding<out Any?>>,
     ) : PredicateSql
 
     private data object AlwaysTrue : PredicateSql {

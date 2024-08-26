@@ -96,7 +96,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                         validDaycareForm.copy(
                             apply =
                                 validDaycareForm.apply.copy(preferredUnits = listOf(testDaycare.id))
-                        )
+                        ),
                 )
             }
 
@@ -136,10 +136,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         fi.espoo.evaka.application.persistence.daycare.Address(
                                             street = "foo",
                                             postalCode = "00200",
-                                            city = "Espoo"
+                                            city = "Espoo",
                                         )
                                 )
-                        )
+                        ),
                 )
             }
 
@@ -169,10 +169,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         fi.espoo.evaka.application.persistence.daycare.Address(
                                             street = "foo",
                                             postalCode = "00200",
-                                            city = "Espoo"
+                                            city = "Espoo",
                                         )
                                 )
-                        )
+                        ),
                 )
             }
 
@@ -197,8 +197,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                             DaycareFormV0(
                                 ApplicationType.DAYCARE,
                                 child = testChild_1.toDaycareFormChild(),
-                                guardian = testAdult_1.toDaycareFormAdult()
-                            )
+                                guardian = testAdult_1.toDaycareFormAdult(),
+                            ),
                     ),
                     tx.insertTestApplication(
                         childId = testChild_2.id,
@@ -209,8 +209,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                             DaycareFormV0(
                                 ApplicationType.DAYCARE,
                                 child = testChild_2.toDaycareFormChild(),
-                                guardian = testAdult_1.toDaycareFormAdult()
-                            )
+                                guardian = testAdult_1.toDaycareFormAdult(),
+                            ),
                     ),
                     tx.insertTestApplication(
                         childId = testChild_3.id,
@@ -220,9 +220,9 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                             DaycareFormV0(
                                 ApplicationType.DAYCARE,
                                 child = testChild_3.toDaycareFormChild(),
-                                guardian = testAdult_1.toDaycareFormAdult()
-                            )
-                    )
+                                guardian = testAdult_1.toDaycareFormAdult(),
+                            ),
+                    ),
                 )
             }
 
@@ -256,7 +256,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             tx.insertDaycareAclRow(
                 testDaycare.id,
                 testSpecialEducationTeacherId,
-                UserRole.SPECIAL_EDUCATION_TEACHER
+                UserRole.SPECIAL_EDUCATION_TEACHER,
             )
         }
 
@@ -303,7 +303,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         preferredUnits = listOf(testDaycare.id),
                                         siblingBasis = true,
                                         siblingSsn = "secret",
-                                        siblingName = "secret"
+                                        siblingName = "secret",
                                     ),
                                 hasOtherChildren = true,
                                 otherChildren =
@@ -311,10 +311,10 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                                         OtherPerson(
                                             firstName = "secret",
                                             lastName = "secret",
-                                            socialSecurityNumber = "secret"
+                                            socialSecurityNumber = "secret",
                                         )
-                                    )
-                            )
+                                    ),
+                            ),
                     )
                     .also {
                         tx.insert(
@@ -326,64 +326,64 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val guardianResult =
             getApplication(
                 applicationId,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             )
         assertEquals(
             listOf(PreferredUnit(id = testDaycare.id, name = testDaycare.name)),
-            guardianResult.form.preferences.preferredUnits
+            guardianResult.form.preferences.preferredUnits,
         )
         assertEquals(
             SiblingBasis(siblingName = "secret", siblingSsn = "secret"),
-            guardianResult.form.preferences.siblingBasis
+            guardianResult.form.preferences.siblingBasis,
         )
         assertEquals(
             listOf(
                 PersonBasics(
                     firstName = "secret",
                     lastName = "secret",
-                    socialSecurityNumber = "secret"
+                    socialSecurityNumber = "secret",
                 )
             ),
-            guardianResult.form.otherChildren
+            guardianResult.form.otherChildren,
         )
 
         val otherGuardianResult =
             getApplication(
                 applicationId,
-                AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
+                AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG),
             )
         assertEquals(
             listOf(PreferredUnit(id = testDaycare.id, name = testDaycare.name)),
-            otherGuardianResult.form.preferences.preferredUnits
+            otherGuardianResult.form.preferences.preferredUnits,
         )
         assertEquals(
             SiblingBasis(siblingName = "", siblingSsn = ""),
-            otherGuardianResult.form.preferences.siblingBasis
+            otherGuardianResult.form.preferences.siblingBasis,
         )
         assertEquals(emptyList(), otherGuardianResult.form.otherChildren)
     }
 
     private fun getApplication(
         applicationId: ApplicationId,
-        user: AuthenticatedUser.Employee = serviceWorker
+        user: AuthenticatedUser.Employee = serviceWorker,
     ): ApplicationResponse {
         return applicationController.getApplicationDetails(
             dbInstance(),
             user,
             RealEvakaClock(),
-            applicationId
+            applicationId,
         )
     }
 
     private fun getApplication(
         applicationId: ApplicationId,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
     ): ApplicationDetails {
         return applicationControllerCitizen.getApplication(
             dbInstance(),
             user,
             RealEvakaClock(),
-            applicationId
+            applicationId,
         )
     }
 
@@ -395,7 +395,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     guardianId = citizen.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             }
         uploadAttachment(applicationId, citizen, AttachmentType.URGENCY)
@@ -412,8 +412,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unitId,
-                    period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31))
-                )
+                    period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31)),
+                ),
             )
             stateService.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }

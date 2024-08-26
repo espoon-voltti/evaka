@@ -17,7 +17,7 @@ class RuleCacheTest : AccessControlTest() {
     private fun <P : Any> createUnscopedRule(
         params: P,
         cacheKey: Any,
-        deferred: () -> DatabaseActionRule.Deferred<P>
+        deferred: () -> DatabaseActionRule.Deferred<P>,
     ) =
         DatabaseActionRule.Unscoped(
             params,
@@ -28,7 +28,7 @@ class RuleCacheTest : AccessControlTest() {
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<P> = deferred()
-            }
+            },
         )
 
     @Test
@@ -38,7 +38,7 @@ class RuleCacheTest : AccessControlTest() {
             listOf(
                 Action.Global.CREATE_UNIT,
                 Action.Global.CREATE_PERSON,
-                Action.Global.CREATE_PAPER_APPLICATION
+                Action.Global.CREATE_PAPER_APPLICATION,
             )
 
         // Multiple different instances of the same rule that take different params (= the index
@@ -54,7 +54,7 @@ class RuleCacheTest : AccessControlTest() {
         actions.withIndex().forEach { (idx, action) ->
             rules.add(
                 action,
-                createUnscopedRule(idx, cacheKey = Unit) { deferred.also { executionCount += 1 } }
+                createUnscopedRule(idx, cacheKey = Unit) { deferred.also { executionCount += 1 } },
             )
         }
         val permittedActions =
@@ -62,7 +62,7 @@ class RuleCacheTest : AccessControlTest() {
                 accessControl.getPermittedActions<Action.Global>(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
-                    clock
+                    clock,
                 )
             }
         // Without a cache all rules would be executed, but with the cache it should keep the
@@ -79,7 +79,7 @@ class RuleCacheTest : AccessControlTest() {
             setOf(
                 Action.Global.CREATE_UNIT,
                 Action.Global.CREATE_PERSON,
-                Action.Global.CREATE_PAPER_APPLICATION
+                Action.Global.CREATE_PAPER_APPLICATION,
             )
 
         // Multiple different instances of the same rule that take same params (= Unit) but use
@@ -89,7 +89,7 @@ class RuleCacheTest : AccessControlTest() {
                 action,
                 createUnscopedRule(Unit, cacheKey = idx) {
                     DatabaseActionRule.Deferred.Permitted.also { executed += action }
-                }
+                },
             )
         }
         val permittedActions =
@@ -97,7 +97,7 @@ class RuleCacheTest : AccessControlTest() {
                 accessControl.getPermittedActions<Action.Global>(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
-                    clock
+                    clock,
                 )
             }
         assertEquals(actions, executed)

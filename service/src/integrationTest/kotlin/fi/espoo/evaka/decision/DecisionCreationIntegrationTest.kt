@@ -118,10 +118,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.DAYCARE,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
 
         val decisions = createDecisions(applicationId)
@@ -149,10 +149,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.DAYCARE_PART_TIME,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
 
         val decisions = createDecisions(applicationId)
@@ -179,7 +179,7 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PRESCHOOL,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     ),
                     DecisionDraft(
                         id = decisionId,
@@ -187,10 +187,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PRESCHOOL_DAYCARE,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = false
-                    )
+                        planned = false,
+                    ),
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
 
         val decisions = createDecisions(applicationId)
@@ -213,7 +213,7 @@ WHERE id = ${bind(testDaycare.id)}
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
-                preparatoryEducation = false
+                preparatoryEducation = false,
             )
         checkDecisionDrafts(
             applicationId,
@@ -225,7 +225,7 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PRESCHOOL,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     ),
                     DecisionDraft(
                         id = decisionId,
@@ -233,10 +233,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PRESCHOOL_DAYCARE,
                         startDate = preschoolDaycarePeriod.start,
                         endDate = preschoolDaycarePeriod.end,
-                        planned = true
-                    )
+                        planned = true,
+                    ),
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
 
         val decisions = createDecisions(applicationId)
@@ -263,7 +263,7 @@ WHERE id = ${bind(testDaycare.id)}
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
-                preparatoryEducation = true
+                preparatoryEducation = true,
             )
         checkDecisionDrafts(
             applicationId,
@@ -275,7 +275,7 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PREPARATORY_EDUCATION,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     ),
                     DecisionDraft(
                         id = decisionId,
@@ -283,10 +283,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.PRESCHOOL_DAYCARE,
                         startDate = preschoolDaycarePeriod.start,
                         endDate = preschoolDaycarePeriod.end,
-                        planned = true
-                    )
+                        planned = true,
+                    ),
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
 
         val decisions = createDecisions(applicationId)
@@ -312,7 +312,7 @@ WHERE id = ${bind(testDaycare.id)}
                 setOf(UserRole.UNIT_SUPERVISOR),
                 setOf(UserRole.FINANCE_ADMIN),
                 setOf(UserRole.END_USER),
-                setOf()
+                setOf(),
             )
         invalidRoleLists.forEach { roles ->
             assertThrows<Forbidden> {
@@ -320,7 +320,7 @@ WHERE id = ${bind(testDaycare.id)}
                     dbInstance(),
                     AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
                     RealEvakaClock(),
-                    applicationId
+                    applicationId,
                 )
             }
         }
@@ -340,10 +340,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.DAYCARE,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
@@ -352,7 +352,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(1, notificationCount)
 
@@ -370,7 +370,7 @@ WHERE id = ${bind(testDaycare.id)}
                             type = DecisionType.DAYCARE,
                             status = DecisionStatus.PENDING,
                             sentDate = LocalDate.now(),
-                            resolved = null
+                            resolved = null,
                         )
                     ),
                 permittedActions =
@@ -378,11 +378,11 @@ WHERE id = ${bind(testDaycare.id)}
                         createdDecisions[0].id to
                             setOf(
                                 Action.Citizen.Decision.READ,
-                                Action.Citizen.Decision.DOWNLOAD_PDF
+                                Action.Citizen.Decision.DOWNLOAD_PDF,
                             )
                     ),
-                decidableApplications = setOf(applicationId)
-            )
+                decidableApplications = setOf(applicationId),
+            ),
         )
     }
 
@@ -400,10 +400,10 @@ WHERE id = ${bind(testDaycare.id)}
                         type = DecisionType.DAYCARE,
                         startDate = period.start,
                         endDate = period.end,
-                        planned = true
+                        planned = true,
                     )
                 ),
-            otherGuardian = testAdult_6
+            otherGuardian = testAdult_6,
         )
         val createdDecisions = createDecisions(applicationId)
         assertEquals(1, createdDecisions.size)
@@ -414,7 +414,7 @@ WHERE id = ${bind(testDaycare.id)}
             applicationControllerCitizen.getGuardianApplicationNotifications(
                 dbInstance(),
                 citizen,
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(0, notificationCount)
 
@@ -424,9 +424,9 @@ WHERE id = ${bind(testDaycare.id)}
             ApplicationDecisions(
                 decisions = emptyList(),
                 permittedActions = emptyMap(),
-                decidableApplications = emptySet()
+                decidableApplications = emptySet(),
             ),
-            citizenDecisions
+            citizenDecisions,
         )
     }
 
@@ -436,14 +436,14 @@ WHERE id = ${bind(testDaycare.id)}
         adult: DevPerson = testAdult_5,
         child: DevPerson = testChild_6,
         otherGuardian: DevPerson? = null,
-        decisions: List<DecisionDraft>
+        decisions: List<DecisionDraft>,
     ) {
         val result =
             applicationController.getDecisionDrafts(
                 dbInstance(),
                 serviceWorker,
                 RealEvakaClock(),
-                applicationId
+                applicationId,
             )
         assertEquals(
             DecisionDraftGroup(
@@ -462,7 +462,7 @@ WHERE id = ${bind(testDaycare.id)}
                         phone = "Test phone",
                         decisionHandler = "Test decision handler",
                         decisionHandlerAddress = "Test decision handler address",
-                        providerType = ProviderType.MUNICIPAL
+                        providerType = ProviderType.MUNICIPAL,
                     ),
                 guardian =
                     GuardianInfo(
@@ -470,7 +470,7 @@ WHERE id = ${bind(testDaycare.id)}
                         adult.ssn,
                         adult.firstName,
                         adult.lastName,
-                        isVtjGuardian = true
+                        isVtjGuardian = true,
                     ),
                 otherGuardian =
                     if (otherGuardian != null) {
@@ -479,16 +479,16 @@ WHERE id = ${bind(testDaycare.id)}
                             otherGuardian.ssn,
                             otherGuardian.firstName,
                             otherGuardian.lastName,
-                            isVtjGuardian = true
+                            isVtjGuardian = true,
                         )
                     } else {
                         null
                     },
-                child = ChildInfo(child.ssn, child.firstName, child.lastName)
+                child = ChildInfo(child.ssn, child.firstName, child.lastName),
             ),
             result.copy(
                 decisions = result.decisions.map { it.copy(id = decisionId) }.sortedBy { it.type }
-            )
+            ),
         )
     }
 
@@ -498,7 +498,7 @@ WHERE id = ${bind(testDaycare.id)}
             serviceWorker,
             RealEvakaClock(),
             applicationId,
-            "send-decisions-without-proposal"
+            "send-decisions-without-proposal",
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -515,7 +515,7 @@ WHERE id = ${bind(testDaycare.id)}
         db.read { r ->
             assertEquals(
                 ApplicationStatus.WAITING_CONFIRMATION,
-                r.getApplicationStatus(applicationId)
+                r.getApplicationStatus(applicationId),
             )
         }
         return rows
@@ -528,7 +528,7 @@ WHERE id = ${bind(testDaycare.id)}
         child: DevPerson = testChild_6,
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
-        preparatoryEducation: Boolean = false
+        preparatoryEducation: Boolean = false,
     ): ApplicationId =
         db.transaction { tx ->
             // make sure guardians are up-to-date
@@ -552,8 +552,8 @@ WHERE id = ${bind(testDaycare.id)}
                             child = child.toDaycareFormChild(),
                             guardian = adult.toDaycareFormAdult(),
                             apply = Apply(preferredUnits = listOf(unit.id)),
-                            preferredStartDate = period.start
-                        )
+                            preferredStartDate = period.start,
+                        ),
                 )
 
             applicationStateService.createPlacementPlan(
@@ -564,8 +564,8 @@ WHERE id = ${bind(testDaycare.id)}
                 DaycarePlacementPlan(
                     unitId = unit.id,
                     period = period,
-                    preschoolDaycarePeriod = preschoolDaycarePeriod
-                )
+                    preschoolDaycarePeriod = preschoolDaycarePeriod,
+                ),
             )
 
             applicationId

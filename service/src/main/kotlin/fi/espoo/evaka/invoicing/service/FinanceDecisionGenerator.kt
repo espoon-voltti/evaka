@@ -27,7 +27,7 @@ class FinanceDecisionGenerator(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     env: EvakaEnv,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
 
@@ -77,7 +77,7 @@ FROM ids
     fun createRetroactiveFeeDecisions(
         tx: Database.Transaction,
         headOfFamily: PersonId,
-        from: LocalDate
+        from: LocalDate,
     ) {
         generateAndInsertFeeDecisionsV2(
             tx = tx,
@@ -86,14 +86,14 @@ FROM ids
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
             headOfFamilyId = headOfFamily,
-            retroactiveOverride = from
+            retroactiveOverride = from,
         )
     }
 
     fun createRetroactiveValueDecisions(
         tx: Database.Transaction,
         headOfFamily: PersonId,
-        from: LocalDate
+        from: LocalDate,
     ) {
         tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).forEach { childId ->
             generateAndInsertVoucherValueDecisionsV2(
@@ -105,7 +105,7 @@ FROM ids
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
                 childId = childId,
-                retroactiveOverride = from
+                retroactiveOverride = from,
             )
         }
     }
@@ -113,7 +113,7 @@ FROM ids
     fun generateNewDecisionsForAdult(
         tx: Database.Transaction,
         personId: PersonId,
-        skipPropagation: Boolean = false
+        skipPropagation: Boolean = false,
     ) {
         val adults =
             if (skipPropagation) setOf(personId)
@@ -128,7 +128,7 @@ FROM ids
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
-                headOfFamilyId = adult
+                headOfFamilyId = adult,
             )
         }
 
@@ -141,7 +141,7 @@ FROM ids
                 financeMinDate = feeDecisionMinDate,
                 valueDecisionCapacityFactorEnabled =
                     featureConfig.valueDecisionCapacityFactorEnabled,
-                childId = childId
+                childId = childId,
             )
         }
     }
@@ -154,7 +154,7 @@ FROM ids
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
-                headOfFamilyId = adultId
+                headOfFamilyId = adultId,
             )
         }
 
@@ -165,14 +165,14 @@ FROM ids
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
             valueDecisionCapacityFactorEnabled = featureConfig.valueDecisionCapacityFactorEnabled,
-            childId = childId
+            childId = childId,
         )
     }
 }
 
 internal fun getAllPossiblyAffectedAdultsByAdult(
     tx: Database.Read,
-    adultId: PersonId
+    adultId: PersonId,
 ): Set<PersonId> {
     val children =
         tx.getParentships(headOfChildId = adultId, childId = null).map { it.childId }.toSet() +
@@ -190,7 +190,7 @@ internal fun getAllPossiblyAffectedAdultsByAdult(
 
 internal fun getAllPossiblyAffectedAdultsByChild(
     tx: Database.Read,
-    childId: PersonId
+    childId: PersonId,
 ): Set<PersonId> {
     val heads = tx.getParentships(headOfChildId = null, childId = childId).map { it.headOfChildId }
     val partners =

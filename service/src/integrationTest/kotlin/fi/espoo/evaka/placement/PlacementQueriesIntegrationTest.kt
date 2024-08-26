@@ -37,7 +37,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.CLUB,
             hasReservations = false,
             hasBillableAbsences = false,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -47,7 +47,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
-            hasNonbillableAbsences = false
+            hasNonbillableAbsences = false,
         )
     }
 
@@ -57,7 +57,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.PRESCHOOL,
             hasReservations = false,
             hasBillableAbsences = false,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -67,7 +67,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.PRESCHOOL_DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -77,7 +77,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.PREPARATORY,
             hasReservations = false,
             hasBillableAbsences = false,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -87,7 +87,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.PREPARATORY_DAYCARE,
             hasReservations = true,
             hasBillableAbsences = true,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -97,7 +97,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
             hasReservations = true,
             hasBillableAbsences = true,
-            hasNonbillableAbsences = true
+            hasNonbillableAbsences = true,
         )
     }
 
@@ -115,7 +115,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = daycare.id,
                 startDate = placementPeriod.start,
                 endDate = placementPeriod.end,
-                childId = child.id
+                childId = child.id,
             )
 
         val reservationYesterday =
@@ -124,7 +124,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 date = today.minusDays(1),
                 startTime = LocalTime.of(9, 0),
                 endTime = LocalTime.of(17, 0),
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
         val reservationDuringPlacement =
             DevReservation(
@@ -132,7 +132,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 date = today.plusDays(1),
                 startTime = LocalTime.of(9, 0),
                 endTime = LocalTime.of(17, 0),
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
         val reservationAfterPlacement =
             DevReservation(
@@ -140,7 +140,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 date = placementPeriod.end.plusDays(1),
                 startTime = LocalTime.of(9, 0),
                 endTime = LocalTime.of(17, 0),
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
 
         val billableAbsenceYesterday =
@@ -148,21 +148,21 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.BILLABLE,
-                date = today.minusDays(1)
+                date = today.minusDays(1),
             )
         val billableAbsenceDuringPlacement =
             DevAbsence(
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.BILLABLE,
-                date = today.plusDays(1)
+                date = today.plusDays(1),
             )
         val billableAbsenceAfterPlacement =
             DevAbsence(
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.BILLABLE,
-                date = placementPeriod.end.plusDays(1)
+                date = placementPeriod.end.plusDays(1),
             )
 
         val nonbillableAbsenceYesterday =
@@ -170,21 +170,21 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.NONBILLABLE,
-                date = today.minusDays(1)
+                date = today.minusDays(1),
             )
         val nonbillableAbsenceDuringPlacement =
             DevAbsence(
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.NONBILLABLE,
-                date = today.plusDays(1)
+                date = today.plusDays(1),
             )
         val nonbillableAbsenceAfterPlacement =
             DevAbsence(
                 childId = child.id,
                 absenceType = AbsenceType.PLANNED_ABSENCE,
                 absenceCategory = AbsenceCategory.NONBILLABLE,
-                date = placementPeriod.end.plusDays(1)
+                date = placementPeriod.end.plusDays(1),
             )
 
         db.transaction { tx ->
@@ -223,7 +223,7 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(hasBillableAbsences, absenceIds.contains(billableAbsenceDuringPlacement.id))
         assertEquals(
             hasNonbillableAbsences,
-            absenceIds.contains(nonbillableAbsenceDuringPlacement.id)
+            absenceIds.contains(nonbillableAbsenceDuringPlacement.id),
         )
         assertFalse(absenceIds.contains(billableAbsenceAfterPlacement.id))
         assertFalse(absenceIds.contains(nonbillableAbsenceAfterPlacement.id))

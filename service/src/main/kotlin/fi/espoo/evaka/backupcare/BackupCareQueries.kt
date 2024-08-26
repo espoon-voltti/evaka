@@ -38,7 +38,7 @@ WHERE child_id = ${bind(childId)}
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): List<UnitBackupCare> =
     createQuery {
             sql(
@@ -87,7 +87,7 @@ AND daterange(backup_care.start_date, backup_care.end_date, '[]') && ${bind(peri
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
     groupId: GroupId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): List<ChildId> =
     createQuery {
             sql(
@@ -116,7 +116,7 @@ WHERE id = ${bind(id)}
 
 fun Database.Transaction.createBackupCare(
     childId: ChildId,
-    backupCare: NewBackupCare
+    backupCare: NewBackupCare,
 ): BackupCareId =
     createUpdate {
             sql(
@@ -139,7 +139,7 @@ RETURNING id
 fun Database.Transaction.updateBackupCare(
     id: BackupCareId,
     period: FiniteDateRange,
-    groupId: GroupId?
+    groupId: GroupId?,
 ) = execute {
     sql(
         """
@@ -154,16 +154,22 @@ WHERE id = ${bind(id)}
 }
 
 fun Database.Transaction.deleteBackupCare(id: BackupCareId) = execute {
-    sql("""
+    sql(
+        """
 DELETE FROM backup_care
 WHERE id = ${bind(id)}
-""")
+"""
+    )
 }
 
 fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
-    createQuery { sql("""
+    createQuery {
+            sql(
+                """
 SELECT child_id FROM backup_care WHERE id = ${bind(id)}
-""") }
+"""
+            )
+        }
         .exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */
@@ -200,8 +206,8 @@ fun Database.Transaction.recreateBackupCares(childId: ChildId) {
                 NewBackupCare(
                     unitId = backupCare.unit.id,
                     groupId = backupCare.group?.id,
-                    period = range
-                )
+                    period = range,
+                ),
             )
         }
     }

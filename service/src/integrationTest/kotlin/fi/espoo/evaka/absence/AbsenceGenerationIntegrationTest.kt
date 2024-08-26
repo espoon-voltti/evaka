@@ -59,7 +59,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
             )
             listOf(testChild_1, testChild_2, testChild_3, testChild_4).forEach {
                 tx.insert(it, DevPersonType.CHILD)
@@ -76,7 +76,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
 
@@ -86,7 +86,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
             tx.insert(
@@ -94,7 +94,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_2.id,
                     validityPeriod = DateRange(today, null),
                     type = DailyServiceTimesType.REGULAR,
-                    regularTimes = present
+                    regularTimes = present,
                 )
             )
 
@@ -104,14 +104,14 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
             tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_3.id,
                     validityPeriod = DateRange(today, null),
-                    type = DailyServiceTimesType.IRREGULAR
+                    type = DailyServiceTimesType.IRREGULAR,
                 )
             )
 
@@ -125,7 +125,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     tuesdayTimes = present,
                     wednesdayTimes = present,
                     thursdayTimes = present,
-                    fridayTimes = present
+                    fridayTimes = present,
                 )
             )
         }
@@ -153,7 +153,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                         tuesdayTimes = present,
                         wednesdayTimes = present,
                         thursdayTimes = present,
-                        fridayTimes = present
+                        fridayTimes = present,
                     )
                 )
             }
@@ -164,7 +164,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
 
@@ -175,7 +175,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
 
@@ -186,7 +186,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
         }
@@ -242,7 +242,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
             tx.insert(
@@ -254,7 +254,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     tuesdayTimes = present,
                     wednesdayTimes = present,
                     thursdayTimes = present,
-                    fridayTimes = present
+                    fridayTimes = present,
                 )
             )
 
@@ -264,7 +264,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     date = mondays[1],
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
                 )
             )
             tx.insert(
@@ -273,7 +273,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     date = tuesdays[1],
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
                 )
             )
             // Reservation with no times
@@ -283,7 +283,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     date = tuesdays[2],
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw)
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
                 )
             )
             tx.insert(
@@ -293,7 +293,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     date = mondays[3],
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -321,7 +321,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
 
@@ -336,7 +336,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     tuesdayTimes = null,
                     wednesdayTimes = present,
                     thursdayTimes = present,
-                    fridayTimes = present
+                    fridayTimes = present,
                 )
             )
 
@@ -348,7 +348,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedAt = now.minusDays(1),
                     modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -391,7 +391,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
                     tuesdayTimes = present,
                     wednesdayTimes = null,
                     thursdayTimes = present,
-                    fridayTimes = present
+                    fridayTimes = present,
                 )
             )
         }
@@ -407,7 +407,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             assertEquals(mondays.size + wednesdays.size - 1, generated.size)
             assertEquals(
                 (mondays + wednesdays.takeLast(wednesdays.size - 1)).sorted(),
-                generated.map { it.date }
+                generated.map { it.date },
             )
             generated.forEach {
                 assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
@@ -433,7 +433,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
         val category: AbsenceCategory,
         val absenceType: AbsenceType,
         val modifiedByType: EvakaUserType,
-        val modifiedAt: HelsinkiDateTime
+        val modifiedAt: HelsinkiDateTime,
     )
 
     private fun getAllAbsences(): List<Absence> {
@@ -454,9 +454,13 @@ ORDER BY a.date, a.category
 
     private fun getAllReservationDates(): Set<LocalDate> {
         return db.read {
-            it.createQuery { sql("""
+            it.createQuery {
+                    sql(
+                        """
 SELECT date FROM attendance_reservation
-""") }
+"""
+                    )
+                }
                 .toSet<LocalDate>()
         }
     }

@@ -92,7 +92,7 @@ class FeeDecisionService(
         ids: List<FeeDecisionId>,
         confirmDateTime: HelsinkiDateTime,
         decisionHandlerId: EmployeeId?,
-        alwaysUseDaycareFinanceDecisionHandler: Boolean
+        alwaysUseDaycareFinanceDecisionHandler: Boolean,
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
         val decisions = tx.getFeeDecisionsByIds(ids)
@@ -110,7 +110,7 @@ class FeeDecisionService(
         if (decisionsNotValidForConfirmation.isNotEmpty()) {
             throw BadRequest(
                 "Some of the fee decisions are not valid yet",
-                "feeDecisions.confirmation.tooFarInFuture"
+                "feeDecisions.confirmation.tooFarInFuture",
             )
         }
         decisionHandlerId?.let { validateFinanceDecisionHandler(tx, it) }
@@ -123,14 +123,14 @@ class FeeDecisionService(
                         tx.findFeeDecisionsForHeadOfFamily(
                             it.headOfFamilyId,
                             it.validDuring,
-                            listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                            listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT),
                         )
                     val partnerDecisions =
                         it.partnerId?.let { partnerId ->
                             tx.findFeeDecisionsForHeadOfFamily(
                                 partnerId,
                                 it.validDuring,
-                                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT),
                             )
                         } ?: listOf()
                     ownDecisions + partnerDecisions
@@ -142,10 +142,7 @@ class FeeDecisionService(
                 }
 
         if (waitingForSending.isNotEmpty()) {
-            val logMeta =
-                mapOf(
-                    "feeDecisionIds" to waitingForSending.map { it.id },
-                )
+            val logMeta = mapOf("feeDecisionIds" to waitingForSending.map { it.id })
             logger.info(logMeta) {
                 "Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending"
             }
@@ -179,14 +176,14 @@ class FeeDecisionService(
             isRetroactive = true,
             approvedAt = approvedAt,
             decisionHandlerId = decisionHandlerId,
-            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
+            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler,
         )
         tx.approveFeeDecisionDraftsForSending(
             otherValidDecisions.map { it.id },
             approvedBy = user.id,
             approvedAt = approvedAt,
             decisionHandlerId = decisionHandlerId,
-            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
+            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler,
         )
 
         return validDecisions.map { it.id }
@@ -243,7 +240,7 @@ class FeeDecisionService(
                         it.headOfFamily.id,
                         it.partner?.id,
                         it.children.map { c -> c.child.id },
-                        it.validDuring
+                        it.validDuring,
                     )
                 it.copy(partnerIsCodebtor = partnerIsCodebtor)
             } ?: throw NotFound("No fee decision found with ID ($id)")
@@ -264,8 +261,8 @@ class FeeDecisionService(
                     Document(
                         "feedecision_${decision.id}_${lang.isoLanguage.alpha2}.pdf",
                         pdfByteArray,
-                        "application/pdf"
-                    )
+                        "application/pdf",
+                    ),
                 )
                 .key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
@@ -315,7 +312,7 @@ class FeeDecisionService(
                 postOffice = sendAddress.postOffice,
                 ssn = recipient.ssn!!,
                 messageHeader = messageProvider.getFeeDecisionHeader(lang),
-                messageContent = messageProvider.getFeeDecisionContent(lang)
+                messageContent = messageProvider.getFeeDecisionContent(lang),
             )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
@@ -324,7 +321,7 @@ class FeeDecisionService(
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.SendNewFeeDecisionEmail(decisionId = decision.id)),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
         tx.setFeeDecisionSent(clock, listOf(decision.id))
 
@@ -341,7 +338,7 @@ class FeeDecisionService(
 
     fun getFeeDecisionPdfResponse(
         dbc: Database.Connection,
-        decisionId: FeeDecisionId
+        decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
         val documentKey =
             dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
@@ -363,7 +360,7 @@ class FeeDecisionService(
     fun runSendNewFeeDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendNewFeeDecisionEmail
+        msg: AsyncJob.SendNewFeeDecisionEmail,
     ) {
         val feeDecisionId = msg.decisionId
         val decision =

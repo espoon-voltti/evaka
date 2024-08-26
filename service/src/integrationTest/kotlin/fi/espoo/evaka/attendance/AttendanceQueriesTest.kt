@@ -50,16 +50,8 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         val attendances = db.read { it.getUnitChildAttendances(testDaycare.id, now) }
         assertEquals(
-            mapOf(
-                testChild_1.id to
-                    listOf(
-                        AttendanceTimes(
-                            arrived = now,
-                            departed = null,
-                        )
-                    )
-            ),
-            attendances
+            mapOf(testChild_1.id to listOf(AttendanceTimes(arrived = now, departed = null))),
+            attendances,
         )
     }
 
@@ -77,14 +69,9 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             mapOf(
                 testChild_1.id to
-                    listOf(
-                        AttendanceTimes(
-                            arrived = now.minusHours(1),
-                            departed = now,
-                        )
-                    )
+                    listOf(AttendanceTimes(arrived = now.minusHours(1), departed = now))
             ),
-            attendances
+            attendances,
         )
     }
 
@@ -108,21 +95,11 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             mapOf(
                 testChild_1.id to
-                    listOf(
-                        AttendanceTimes(
-                            arrived = now.minusHours(1),
-                            departed = now,
-                        )
-                    ),
+                    listOf(AttendanceTimes(arrived = now.minusHours(1), departed = now)),
                 testChild_2.id to
-                    listOf(
-                        AttendanceTimes(
-                            arrived = now.minusHours(2),
-                            departed = null,
-                        )
-                    )
+                    listOf(AttendanceTimes(arrived = now.minusHours(2), departed = null)),
             ),
-            attendances
+            attendances,
         )
     }
 
@@ -160,28 +137,16 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 // Newest attendance is first
                 testChild_1.id to
                     listOf(
-                        AttendanceTimes(
-                            arrived = now.minusHours(1),
-                            departed = now,
-                        ),
-                        AttendanceTimes(
-                            arrived = now.minusHours(3),
-                            departed = now.minusHours(2),
-                        ),
+                        AttendanceTimes(arrived = now.minusHours(1), departed = now),
+                        AttendanceTimes(arrived = now.minusHours(3), departed = now.minusHours(2)),
                     ),
                 testChild_2.id to
                     listOf(
-                        AttendanceTimes(
-                            arrived = now.minusHours(2),
-                            departed = null,
-                        ),
-                        AttendanceTimes(
-                            arrived = now.minusHours(4),
-                            departed = now.minusHours(3),
-                        ),
-                    )
+                        AttendanceTimes(arrived = now.minusHours(2), departed = null),
+                        AttendanceTimes(arrived = now.minusHours(4), departed = now.minusHours(3)),
+                    ),
             ),
-            attendances
+            attendances,
         )
     }
 
@@ -207,7 +172,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testChild_1.id to
                     listOf(AttendanceTimes(arrived = now.minusDays(1), departed = null))
             ),
-            attendances
+            attendances,
         )
     }
 
@@ -235,7 +200,7 @@ class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         AttendanceTimes(arrived = now.minusDays(1), departed = now.minusMinutes(45))
                     )
             ),
-            attendances
+            attendances,
         )
     }
 }

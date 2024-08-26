@@ -20,7 +20,7 @@ fun Database.Read.getFosterParents(childId: PersonId) =
 
 private fun Database.Read.getFosterParentRelationships(
     parentId: PersonId? = null,
-    childId: PersonId? = null
+    childId: PersonId? = null,
 ): List<FosterParentRelationship> {
     if (parentId == null && childId == null) error("Either parentId or childId must be provided")
 
@@ -69,7 +69,7 @@ fun Database.Transaction.createFosterParentRelationship(
 
 fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,
-    validDuring: DateRange
+    validDuring: DateRange,
 ) =
     createUpdate {
             sql(

@@ -24,7 +24,7 @@ class VTJResponseMapper {
 data class VTJResponse(
     val henkiloSanoma: VTJHenkiloVastaussanoma? = null,
     val faultString: String? = null,
-    val faultCode: String? = null
+    val faultCode: String? = null,
 ) {
 
     fun mapToHenkiloOrLogError(): VTJHenkiloVastaussanoma.Henkilo? =

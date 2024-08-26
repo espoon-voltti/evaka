@@ -49,7 +49,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
             it.insertApplication(
                 applicationId = applicationId,
                 guardian = testAdult_5,
-                status = ApplicationStatus.CREATED
+                status = ApplicationStatus.CREATED,
             )
         }
         for (i in 1..maxAttachments) {
@@ -65,7 +65,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
             db.transaction {
                 it.createIncomeStatement(
                     testAdult_5.id,
-                    IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null)
+                    IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null),
                 )
             }
         for (i in 1..maxAttachments) {
@@ -85,7 +85,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun uploadAttachment(
         path: String,
-        parameters: List<Pair<String, Any?>>? = null
+        parameters: List<Pair<String, Any?>>? = null,
     ): Boolean {
         val (_, res, _) =
             http
@@ -99,11 +99,11 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun uploadApplicationAttachment(
         applicationId: ApplicationId,
-        type: AttachmentType = AttachmentType.URGENCY
+        type: AttachmentType = AttachmentType.URGENCY,
     ): Boolean {
         return uploadAttachment(
             "/attachments/citizen/applications/$applicationId",
-            listOf("type" to type)
+            listOf("type" to type),
         )
     }
 

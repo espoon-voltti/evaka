@@ -59,7 +59,7 @@ import org.springframework.web.bind.annotation.RestController
 class ReservationControllerCitizen(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
-    private val env: EvakaEnv
+    private val env: EvakaEnv,
 ) {
     @GetMapping("/citizen/reservations")
     fun getReservations(
@@ -67,7 +67,7 @@ class ReservationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         val requestedRange =
             try {
@@ -84,7 +84,7 @@ class ReservationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_RESERVATIONS,
-                        user.id
+                        user.id,
                     )
                     val holidayPeriods = tx.getHolidayPeriods()
                     val holidays = tx.getHolidays(requestedRange)
@@ -98,7 +98,7 @@ class ReservationControllerCitizen(
                         tx.getReservationPlacements(
                             childIds,
                             // Include all future placements for upcomingPlacementType computation
-                            DateRange(minOf(today, requestedRange.start), null)
+                            DateRange(minOf(today, requestedRange.start), null),
                         )
                     val backupPlacements =
                         tx.getReservationBackupPlacements(childIds, requestedRange)
@@ -131,7 +131,7 @@ class ReservationControllerCitizen(
                     val operationDays =
                         tx.getOperationalDatesForChildren(
                             requestedRange,
-                            childIdsWithHourBasedServiceNeed
+                            childIdsWithHourBasedServiceNeed,
                         )
 
                     val reservableRange =
@@ -167,7 +167,7 @@ class ReservationControllerCitizen(
                                                             placement,
                                                             backupPlacements[child.id],
                                                             clubTerms,
-                                                            preschoolTerms
+                                                            preschoolTerms,
                                                         )
                                                     }
                                                     ?.let { placementDay ->
@@ -205,7 +205,7 @@ class ReservationControllerCitizen(
                                                                             .mapNotNull {
                                                                                 it.asTimeRange()
                                                                             },
-                                                                        childAttendances
+                                                                        childAttendances,
                                                                     )
                                                                 }
                                                         ReservationResponseDayChild(
@@ -218,7 +218,7 @@ class ReservationControllerCitizen(
                                                                     today,
                                                                     placementDay.placementType,
                                                                     childReservations.isNotEmpty(),
-                                                                    childAbsences
+                                                                    childAbsences,
                                                                 ),
                                                             reservations =
                                                                 childReservations.sorted(),
@@ -233,11 +233,11 @@ class ReservationControllerCitizen(
                                                                 holidayPeriod?.effect(
                                                                     today,
                                                                     reservationEnabledPlacementRangesByChild[
-                                                                        child.id]!!
-                                                                )
+                                                                        child.id]!!,
+                                                                ),
                                                         )
                                                     }
-                                            }
+                                            },
                                 )
                             }
                             .toList()
@@ -251,14 +251,14 @@ class ReservationControllerCitizen(
                                 }
                             },
                         days = days,
-                        reservableRange = reservableRange
+                        reservableRange = reservableRange,
                     )
                 }
             }
             .also {
                 Audit.AttendanceReservationCitizenRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("from" to from, "to" to to)
+                    meta = mapOf("from" to from, "to" to to),
                 )
             }
     }
@@ -269,7 +269,7 @@ class ReservationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>,
-        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false
+        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false,
     ) {
         val children = body.map { it.childId }.toSet()
 
@@ -280,7 +280,7 @@ class ReservationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_RESERVATION,
-                        children
+                        children,
                     )
 
                     createReservationsAndAbsences(
@@ -290,7 +290,7 @@ class ReservationControllerCitizen(
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
-                        automaticFixedScheduleAbsencesEnabled
+                        automaticFixedScheduleAbsencesEnabled,
                     )
                 }
             }
@@ -302,8 +302,8 @@ class ReservationControllerCitizen(
                             "deletedAbsences" to it.deletedAbsences,
                             "deletedReservations" to it.deletedReservations,
                             "upsertedAbsences" to it.upsertedAbsences,
-                            "upsertedReservations" to it.upsertedReservations
-                        )
+                            "upsertedReservations" to it.upsertedReservations,
+                        ),
                 )
             }
     }
@@ -313,7 +313,7 @@ class ReservationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: AbsenceRequest
+        @RequestBody body: AbsenceRequest,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -334,12 +334,12 @@ class ReservationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_ABSENCE,
-                        body.childIds
+                        body.childIds,
                     )
                     if (tx.childrenHaveAttendanceInRange(body.childIds, range)) {
                         throw BadRequest(
                             "Attendance already exists for given dates",
-                            "ATTENDANCE_ALREADY_EXISTS"
+                            "ATTENDANCE_ALREADY_EXISTS",
                         )
                     }
 
@@ -348,7 +348,7 @@ class ReservationControllerCitizen(
                             tx.getPlannedAbsenceEnabledRanges(
                                 body.childIds,
                                 it,
-                                env.plannedAbsenceEnabledForHourBasedServiceNeeds
+                                env.plannedAbsenceEnabledForHourBasedServiceNeeds,
                             )
                         } ?: emptyMap()
 
@@ -357,7 +357,7 @@ class ReservationControllerCitizen(
                             body.childIds.flatMap { childId ->
                                 range.dates().map { childId to it }
                             },
-                            reservableRange = reservableRange
+                            reservableRange = reservableRange,
                         )
                     // Delete reservations on days in the reservable range. Reservations in the
                     // closed range are kept.
@@ -397,7 +397,7 @@ class ReservationControllerCitizen(
                                             }
                                         } else {
                                             body.absenceType
-                                        }
+                                        },
                                     )
                                 }
                             }
@@ -414,8 +414,8 @@ class ReservationControllerCitizen(
             meta =
                 mapOf(
                     "deletedAbsences" to deletedAbsences,
-                    "deletedReservations" to deletedReservations
-                )
+                    "deletedReservations" to deletedReservations,
+                ),
         )
     }
 }
@@ -428,7 +428,7 @@ data class PlacementDay(
     val daycareHoursPerMonth: Int?,
     val reservableTimeRange: ReservableTimeRange,
     val preschoolTime: TimeRange?,
-    val preparatoryTime: TimeRange?
+    val preparatoryTime: TimeRange?,
 )
 
 private fun placementDay(
@@ -437,7 +437,7 @@ private fun placementDay(
     placement: ReservationPlacement,
     backupPlacements: List<ReservationBackupPlacement>?,
     clubTerms: List<ClubTerm>,
-    preschoolTerms: List<PreschoolTerm>
+    preschoolTerms: List<PreschoolTerm>,
 ): PlacementDay? {
     val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
     val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
@@ -480,7 +480,7 @@ private fun placementDay(
                         ReservableTimeRange.IntermittentShiftCare(operationTime)
                 },
             preschoolTime = placement.dailyPreschoolTime,
-            preparatoryTime = placement.dailyPreparatoryTime
+            preparatoryTime = placement.dailyPreparatoryTime,
         )
     } else {
         null
@@ -491,7 +491,7 @@ private fun relevantAbsence(
     today: LocalDate,
     placementType: PlacementType,
     hasReservation: Boolean,
-    absences: List<Absence>
+    absences: List<Absence>,
 ): AbsenceInfo? {
     // Take billable absence if available, as it affects invoicing and is more important in that
     // sense
@@ -513,7 +513,7 @@ private fun relevantAbsence(
 data class ReservationsResponse(
     val children: List<ReservationChild>,
     val days: List<ReservationResponseDay>,
-    val reservableRange: FiniteDateRange
+    val reservableRange: FiniteDateRange,
 )
 
 data class ReservationChild(
@@ -524,14 +524,14 @@ data class ReservationChild(
     val duplicateOf: PersonId?,
     val imageId: ChildImageId?,
     val upcomingPlacementType: PlacementType?,
-    val monthSummaries: List<MonthSummary>
+    val monthSummaries: List<MonthSummary>,
 ) {
     companion object {
         fun from(
             child: ReservationChildRow,
             days: List<ReservationResponseDay>,
             placements: List<ReservationPlacement>,
-            today: LocalDate
+            today: LocalDate,
         ): ReservationChild {
             val hasHourBasedServiceNeeds =
                 placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
@@ -543,7 +543,7 @@ data class ReservationChild(
                         }
                         .groupBy(
                             { (date, _) -> date.year to date.monthValue },
-                            { (_, childDay) -> childDay }
+                            { (_, childDay) -> childDay },
                         )
                         .mapNotNull { (yearMonth, childDays) ->
                             val (year, month) = yearMonth
@@ -574,7 +574,7 @@ data class ReservationChild(
                                 reservedMinutes =
                                     childDays.sumOf { it.usedService?.reservedMinutes ?: 0 },
                                 usedServiceMinutes =
-                                    childDays.sumOf { it.usedService?.usedServiceMinutes ?: 0 }
+                                    childDays.sumOf { it.usedService?.usedServiceMinutes ?: 0 },
                             )
                         }
                 } else {
@@ -590,7 +590,7 @@ data class ReservationChild(
                 duplicateOf = child.duplicateOf,
                 imageId = child.imageId,
                 upcomingPlacementType = placements.find { it.range.end >= today }?.type,
-                monthSummaries = monthSummaries
+                monthSummaries = monthSummaries,
             )
         }
     }
@@ -601,13 +601,13 @@ data class MonthSummary(
     val month: Int,
     val serviceNeedMinutes: Long,
     val reservedMinutes: Long,
-    val usedServiceMinutes: Long
+    val usedServiceMinutes: Long,
 )
 
 data class ReservationResponseDay(
     val date: LocalDate,
     val holiday: Boolean,
-    val children: List<ReservationResponseDayChild>
+    val children: List<ReservationResponseDayChild>,
 )
 
 data class ReservationResponseDayChild(
@@ -619,7 +619,7 @@ data class ReservationResponseDayChild(
     val attendances: List<TimeInterval>,
     val usedService: UsedServiceResult?,
     val reservableTimeRange: ReservableTimeRange,
-    val holidayPeriodEffect: HolidayPeriodEffect?
+    val holidayPeriodEffect: HolidayPeriodEffect?,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -645,5 +645,5 @@ data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)
 data class AbsenceRequest(
     val childIds: Set<ChildId>,
     val dateRange: FiniteDateRange,
-    val absenceType: AbsenceType
+    val absenceType: AbsenceType,
 )

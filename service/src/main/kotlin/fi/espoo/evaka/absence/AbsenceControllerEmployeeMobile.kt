@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController
 class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) {
     @GetMapping(
         "/absences/by-child/{childId}/future", // deprecated
-        "/employee-mobile/absences/by-child/{childId}/future"
+        "/employee-mobile/absences/by-child/{childId}/future",
     )
     fun futureAbsencesOfChild(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<Absence> {
         return db.connect { dbc ->
                 dbc.read {
@@ -35,7 +35,7 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
                         user,
                         clock,
                         Action.Child.READ_FUTURE_ABSENCES,
-                        childId
+                        childId,
                     )
                     getFutureAbsencesOfChild(it, clock, childId)
                 }

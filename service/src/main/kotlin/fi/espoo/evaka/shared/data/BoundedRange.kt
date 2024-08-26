@@ -133,6 +133,7 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
          * second range)
          */
         data class LeftTo<Range>(val gap: Range?) : Relation<Range>()
+
         /** Ranges overlap at least partially */
         data class Overlap<Range>(
             /** A possible remainder extending to the left of the overlap */
@@ -140,8 +141,9 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
             /** The overlapping part of the ranges */
             val overlap: Range,
             /** A possible remainder extending to the right of the overlap */
-            val right: Remainder<Range>?
+            val right: Remainder<Range>?,
         ) : Relation<Range>()
+
         /**
          * First range is strictly right to the second range (= the second range ends before the
          * first range)
@@ -157,7 +159,7 @@ interface BoundedRange<Point : Comparable<Point>, This : BoundedRange<Point, Thi
              * `true` if the remainder belongs to the first range, `false` if it belongs to the
              * second
              */
-            val isFirst: Boolean
+            val isFirst: Boolean,
         )
     }
 

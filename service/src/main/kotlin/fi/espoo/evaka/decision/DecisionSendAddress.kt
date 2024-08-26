@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 private fun addressIsUnusable(
     streetAddress: String?,
     postalCode: String?,
-    postOffice: String?
+    postOffice: String?,
 ): Boolean {
     return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
 }
@@ -21,7 +21,7 @@ private fun addressIsUnusable(
 fun getSendAddress(
     messageProvider: IMessageProvider,
     guardian: PersonDTO,
-    lang: OfficialLanguage
+    lang: OfficialLanguage,
 ): DecisionSendAddress {
     val logMissingAddress = {
         logger.warn(
@@ -41,7 +41,7 @@ fun getSendAddress(
                 postOffice = guardian.postOffice,
                 row1 = guardian.streetAddress,
                 row2 = "${guardian.postalCode} ${guardian.postOffice}",
-                row3 = ""
+                row3 = "",
             )
     }
 }
@@ -52,7 +52,7 @@ data class DecisionSendAddress(
     val postOffice: String,
     val row1: String,
     val row2: String,
-    val row3: String
+    val row3: String,
 ) {
     companion object {
         fun fromPerson(person: PersonDetailed): DecisionSendAddress? {
@@ -64,7 +64,7 @@ data class DecisionSendAddress(
                         person.postOffice,
                         person.streetAddress,
                         "${person.postalCode} ${person.postOffice}",
-                        ""
+                        "",
                     )
                 }
             }

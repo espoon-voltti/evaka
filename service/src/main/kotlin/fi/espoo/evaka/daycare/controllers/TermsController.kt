@@ -69,13 +69,13 @@ class TermsController(private val accessControl: AccessControl) {
 
     @PostMapping(
         "/club-terms", // deprecated
-        "/employee/club-terms"
+        "/employee/club-terms",
     )
     fun createClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ClubTermRequest
+        @RequestBody body: ClubTermRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -83,7 +83,7 @@ class TermsController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_CLUB_TERM
+                        Action.Global.CREATE_CLUB_TERM,
                     )
 
                     validateClubTermRequest(tx, body, null)
@@ -96,14 +96,14 @@ class TermsController(private val accessControl: AccessControl) {
 
     @PutMapping(
         "/club-terms/{id}", // deprecated
-        "/employee/club-terms/{id}"
+        "/employee/club-terms/{id}",
     )
     fun updateClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ClubTermId,
-        @RequestBody body: ClubTermRequest
+        @RequestBody body: ClubTermRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -121,13 +121,13 @@ class TermsController(private val accessControl: AccessControl) {
 
     @DeleteMapping(
         "/club-terms/{id}", // deprecated
-        "/employee/club-terms/{id}"
+        "/employee/club-terms/{id}",
     )
     fun deleteClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ClubTermId
+        @PathVariable id: ClubTermId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -148,13 +148,13 @@ class TermsController(private val accessControl: AccessControl) {
 
     @PostMapping(
         "/preschool-terms", // deprecated
-        "/employee/preschool-terms"
+        "/employee/preschool-terms",
     )
     fun createPreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PreschoolTermRequest
+        @RequestBody body: PreschoolTermRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -162,7 +162,7 @@ class TermsController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_PRESCHOOL_TERM
+                        Action.Global.CREATE_PRESCHOOL_TERM,
                     )
 
                     validatePreschoolTermRequest(tx, body, null)
@@ -172,7 +172,7 @@ class TermsController(private val accessControl: AccessControl) {
                         body.swedishPreschool,
                         body.extendedTerm,
                         body.applicationPeriod,
-                        body.termBreaks
+                        body.termBreaks,
                     )
                 }
             }
@@ -181,14 +181,14 @@ class TermsController(private val accessControl: AccessControl) {
 
     @PutMapping(
         "/preschool-terms/{id}", // deprecated
-        "/employee/preschool-terms/{id}"
+        "/employee/preschool-terms/{id}",
     )
     fun updatePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PreschoolTermId,
-        @RequestBody body: PreschoolTermRequest
+        @RequestBody body: PreschoolTermRequest,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -197,7 +197,7 @@ class TermsController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.PreschoolTerm.UPDATE,
-                        id
+                        id,
                     )
 
                     tx.getPreschoolTerm(id) ?: throw NotFound("Preschool term $id does not exist")
@@ -210,7 +210,7 @@ class TermsController(private val accessControl: AccessControl) {
                         body.swedishPreschool,
                         body.extendedTerm,
                         body.applicationPeriod,
-                        body.termBreaks
+                        body.termBreaks,
                     )
                 }
             }
@@ -219,13 +219,13 @@ class TermsController(private val accessControl: AccessControl) {
 
     @DeleteMapping(
         "/preschool-terms/{id}", // deprecated
-        "/employee/preschool-terms/{id}"
+        "/employee/preschool-terms/{id}",
     )
     fun deletePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PreschoolTermId
+        @PathVariable id: PreschoolTermId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -234,7 +234,7 @@ class TermsController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.PreschoolTerm.DELETE,
-                        id
+                        id,
                     )
 
                     val existingTerm =
@@ -257,7 +257,7 @@ class TermsController(private val accessControl: AccessControl) {
     private fun validateClubTermRequest(
         tx: Database.Transaction,
         termReq: ClubTermRequest,
-        termIdToUpdate: ClubTermId?
+        termIdToUpdate: ClubTermId?,
     ) {
         val allTerms =
             when {
@@ -276,7 +276,7 @@ class TermsController(private val accessControl: AccessControl) {
     private fun validatePreschoolTermRequest(
         tx: Database.Transaction,
         termReq: PreschoolTermRequest,
-        termIdToUpdate: PreschoolTermId?
+        termIdToUpdate: PreschoolTermId?,
     ) {
         val allTermsToCompare =
             when {
@@ -316,7 +316,7 @@ class TermsController(private val accessControl: AccessControl) {
     data class ClubTermRequest(
         val term: FiniteDateRange,
         val applicationPeriod: FiniteDateRange,
-        val termBreaks: DateSet
+        val termBreaks: DateSet,
     )
 
     data class PreschoolTermRequest(
@@ -324,6 +324,6 @@ class TermsController(private val accessControl: AccessControl) {
         val swedishPreschool: FiniteDateRange,
         val extendedTerm: FiniteDateRange,
         val applicationPeriod: FiniteDateRange,
-        val termBreaks: DateSet
+        val termBreaks: DateSet,
     )
 }

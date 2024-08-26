@@ -19,7 +19,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
     data: AssistanceNeedDecisionForm,
     processId: ArchivedProcessId?,
-    user: AuthenticatedUser.Employee
+    user: AuthenticatedUser.Employee,
 ): AssistanceNeedDecision {
     val id =
         createQuery {
@@ -153,7 +153,7 @@ GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.i
 fun Database.Transaction.updateAssistanceNeedDecision(
     id: AssistanceNeedDecisionId,
     data: AssistanceNeedDecisionForm,
-    decisionMakerHasOpened: Boolean? = null
+    decisionMakerHasOpened: Boolean? = null,
 ) {
     createUpdate {
             sql(
@@ -217,7 +217,7 @@ WHERE id = ${bind { it.id }}
 
 fun Database.Read.getAssistanceNeedDecisionsByChildId(
     childId: ChildId,
-    filter: AccessControlFilter<AssistanceNeedDecisionId>
+    filter: AccessControlFilter<AssistanceNeedDecisionId>,
 ): List<AssistanceNeedDecisionBasics> =
     createQuery {
             sql(
@@ -259,7 +259,7 @@ fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDe
 
 fun Database.Read.getAssistanceNeedDecisionsForCitizen(
     today: LocalDate,
-    userId: PersonId
+    userId: PersonId,
 ): List<AssistanceNeedDecisionCitizenListItem> =
     createQuery {
             sql(
@@ -295,7 +295,7 @@ fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisio
 
 fun Database.Transaction.updateAssistanceNeedDocumentKey(
     id: AssistanceNeedDecisionId,
-    key: String
+    key: String,
 ) {
     createUpdate {
             sql(
@@ -311,7 +311,7 @@ fun Database.Transaction.updateAssistanceNeedDocumentKey(
 
 fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
     assistanceNeedDecisionId: AssistanceNeedDecisionId,
-    guardianId: PersonId
+    guardianId: PersonId,
 ) {
     createUpdate {
             sql(
@@ -327,7 +327,7 @@ fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
 
 fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
     today: LocalDate,
-    userId: PersonId
+    userId: PersonId,
 ): List<UnreadAssistanceNeedDecisionItem> =
     createQuery {
             sql(
@@ -352,7 +352,7 @@ fun Database.Transaction.decideAssistanceNeedDecision(
     status: AssistanceNeedDecisionStatus,
     decisionMade: LocalDate?,
     unreadGuardianIds: List<PersonId>?,
-    validTo: LocalDate?
+    validTo: LocalDate?,
 ) {
     createUpdate {
             sql(
@@ -373,7 +373,7 @@ WHERE id = ${bind(id)} AND status IN ('DRAFT', 'NEEDS_WORK')
 fun Database.Transaction.endActiveAssistanceNeedDecisions(
     excludingId: AssistanceNeedDecisionId,
     endDate: LocalDate,
-    childId: ChildId
+    childId: ChildId,
 ) {
     execute {
         sql(
@@ -421,10 +421,7 @@ WHERE daycare_assistance_decision_with_new_end_date.id = assistance_need_decisio
     )
 }
 
-fun Database.Read.getNextAssistanceNeedDecisionValidFrom(
-    childId: ChildId,
-    startDate: LocalDate,
-) =
+fun Database.Read.getNextAssistanceNeedDecisionValidFrom(childId: ChildId, startDate: LocalDate) =
     createQuery {
             sql(
                 """
@@ -439,10 +436,7 @@ WHERE child_id = ${bind(childId)}
         .mapTo<LocalDate>()
         .exactlyOneOrNull()
 
-fun Database.Transaction.annulAssistanceNeedDecision(
-    id: AssistanceNeedDecisionId,
-    reason: String,
-) =
+fun Database.Transaction.annulAssistanceNeedDecision(id: AssistanceNeedDecisionId, reason: String) =
     createUpdate {
             sql(
                 """

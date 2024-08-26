@@ -29,5 +29,5 @@ data class VtjPersonDTO(
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
     val streetAddressSe: String,
-    val citySe: String
+    val citySe: String,
 )

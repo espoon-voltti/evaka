@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 fun getPlacementDetailsByChild(
     tx: Database.Read,
-    childIds: Set<PersonId>
+    childIds: Set<PersonId>,
 ): Map<PersonId, List<PlacementDetails>> {
     if (childIds.isEmpty()) return emptyMap()
 
@@ -29,7 +29,7 @@ fun getPlacementDetailsByChild(
             *serviceNeeds.flatMap { it.value }.toTypedArray(),
             *serviceNeedOptionVoucherValues
                 .flatMap { it.value.map { it.voucherValues } }
-                .toTypedArray()
+                .toTypedArray(),
         )
 
     return childIds.associateWith { childId ->
@@ -64,7 +64,7 @@ fun getPlacementDetailsByChild(
                 invoicedUnit = placement.invoicedUnit,
                 hasServiceNeed = serviceNeed != null,
                 serviceNeedOption = serviceNeedOption,
-                serviceNeedVoucherValues = serviceNeedVoucherValues?.voucherValues
+                serviceNeedVoucherValues = serviceNeedVoucherValues?.voucherValues,
             )
         }
     }
@@ -75,7 +75,7 @@ fun <Decision : FinanceDecision<Decision>> filterAndMergeDrafts(
     newDrafts: List<Decision>,
     activeDecisions: List<Decision>,
     ignoredDrafts: List<Decision>,
-    minDate: LocalDate
+    minDate: LocalDate,
 ): List<Decision> {
     if (newDrafts.isEmpty()) return emptyList()
 
@@ -152,7 +152,7 @@ fun <Decision : FinanceDecision<Decision>> mergeAdjacentIdenticalDrafts(
 fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesToPrevious(
     newDrafts: List<Decision>,
     existingActiveDecisions: List<Decision>,
-    getDifferences: (decision1: Decision, decision2: Decision) -> Set<Difference>
+    getDifferences: (decision1: Decision, decision2: Decision) -> Set<Difference>,
 ): Set<Difference> {
     if (this.isEmpty()) {
         return emptySet()

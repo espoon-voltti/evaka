@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class PaymentController(
     private val accessControl: AccessControl,
-    private val paymentService: PaymentService
+    private val paymentService: PaymentService,
 ) {
     @PostMapping(path = ["/payments/search", "/employee/payments/search"])
     fun searchPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
-        @RequestBody params: SearchPaymentsRequest
+        @RequestBody params: SearchPaymentsRequest,
     ): PagedPayments {
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
@@ -46,7 +46,7 @@ class PaymentController(
                     tx,
                     user,
                     clock,
-                    Action.Global.CREATE_DRAFT_PAYMENTS
+                    Action.Global.CREATE_DRAFT_PAYMENTS,
                 )
                 createPaymentDrafts(tx)
             }
@@ -57,7 +57,7 @@ class PaymentController(
     data class SendPaymentsRequest(
         val paymentDate: LocalDate,
         val dueDate: LocalDate,
-        val paymentIds: List<PaymentId>
+        val paymentIds: List<PaymentId>,
     )
 
     @PostMapping(path = ["/payments/delete-drafts", "/employee/payments/delete-drafts"])
@@ -65,7 +65,7 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody paymentIds: List<PaymentId>
+        @RequestBody paymentIds: List<PaymentId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -74,7 +74,7 @@ class PaymentController(
                     user,
                     clock,
                     Action.Payment.DELETE,
-                    paymentIds
+                    paymentIds,
                 )
                 it.deleteDraftPayments(paymentIds)
             }
@@ -87,7 +87,7 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SendPaymentsRequest
+        @RequestBody body: SendPaymentsRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -96,7 +96,7 @@ class PaymentController(
                     user,
                     clock,
                     Action.Payment.SEND,
-                    body.paymentIds
+                    body.paymentIds,
                 )
                 paymentService.sendPayments(
                     tx,
@@ -104,7 +104,7 @@ class PaymentController(
                     user,
                     body.paymentIds,
                     body.paymentDate,
-                    body.dueDate
+                    body.dueDate,
                 )
             }
         }
@@ -116,7 +116,7 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody paymentIds: List<PaymentId>
+        @RequestBody paymentIds: List<PaymentId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -125,7 +125,7 @@ class PaymentController(
                     user,
                     clock,
                     Action.Payment.CONFIRM,
-                    paymentIds
+                    paymentIds,
                 )
                 paymentService.confirmPayments(it, paymentIds)
             }
@@ -138,7 +138,7 @@ class PaymentController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody paymentIds: List<PaymentId>
+        @RequestBody paymentIds: List<PaymentId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -147,7 +147,7 @@ class PaymentController(
                     user,
                     clock,
                     Action.Payment.REVERT_TO_DRAFT,
-                    paymentIds
+                    paymentIds,
                 )
                 paymentService.revertPaymentsToDrafts(it, paymentIds)
             }
@@ -167,7 +167,7 @@ data class SearchPaymentsRequest(
     val distinctions: List<PaymentDistinctiveParams>,
     val status: PaymentStatus,
     val paymentDateStart: LocalDate?,
-    val paymentDateEnd: LocalDate?
+    val paymentDateEnd: LocalDate?,
 )
 
 enum class PaymentSortParam {
@@ -175,7 +175,7 @@ enum class PaymentSortParam {
     PERIOD,
     CREATED,
     NUMBER,
-    AMOUNT
+    AMOUNT,
 }
 
 enum class PaymentDistinctiveParams {

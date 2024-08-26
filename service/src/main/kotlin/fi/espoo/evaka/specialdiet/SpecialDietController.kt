@@ -27,7 +27,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody specialDietList: List<JamixSpecialDiet>
+        @RequestBody specialDietList: List<JamixSpecialDiet>,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -35,7 +35,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.UPDATE_SPECIAL_DIET_LIST
+                        Action.Global.UPDATE_SPECIAL_DIET_LIST,
                     )
                     val cleanedDietList = cleanupJamixDietList(specialDietList)
                     tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
@@ -49,7 +49,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
     fun getDiets(
         db: Database,
         authenticatedUser: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<SpecialDiet> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -57,7 +57,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
                         tx,
                         authenticatedUser,
                         clock,
-                        Action.Global.READ_SPECIAL_DIET_LIST
+                        Action.Global.READ_SPECIAL_DIET_LIST,
                     )
                     tx.getSpecialDiets()
                 }

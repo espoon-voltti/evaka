@@ -78,8 +78,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     street = guardian.streetAddress,
                     city = guardian.postOffice,
                     postalCode = guardian.postalCode,
-                    editable = false
-                )
+                    editable = false,
+                ),
         )
 
     private val mockedTime = HelsinkiDateTime.of(LocalDate.of(2021, 1, 15), LocalTime.of(12, 0))
@@ -107,8 +107,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document =
                         validDaycareForm.copy(
                             guardian = guardianAsDaycareAdult,
-                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id))
-                        )
+                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id)),
+                        ),
                 )
             }
 
@@ -132,7 +132,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.content.subject
+            sentMail.content.subject,
         )
     }
 
@@ -151,8 +151,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                         validDaycareForm.copy(
                             guardian = guardianAsDaycareAdult,
                             apply =
-                                validDaycareForm.apply.copy(preferredUnits = listOf(daycareSv.id))
-                        )
+                                validDaycareForm.apply.copy(preferredUnits = listOf(daycareSv.id)),
+                        ),
                 )
             }
 
@@ -177,7 +177,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.content.subject
+            sentMail.content.subject,
         )
     }
 
@@ -194,8 +194,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document =
                         validDaycareForm.copy(
                             guardian = guardianAsDaycareAdult,
-                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id))
-                        )
+                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id)),
+                        ),
                 )
             }
         val (_, res, _) =
@@ -225,7 +225,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             DevDaycare(
                 areaId = area.id,
                 type = setOf(CareType.CLUB),
-                clubApplyPeriod = DateRange(startDate, null)
+                clubApplyPeriod = DateRange(startDate, null),
             )
         val validClubForm =
             ClubFormV0.fromForm2(validClubApplication(club, startDate).form, false, false)
@@ -238,7 +238,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     guardianId = guardian.id,
                     status = ApplicationStatus.CREATED,
                     type = ApplicationType.CLUB,
-                    document = validClubForm
+                    document = validClubForm,
                 )
             }
 
@@ -262,7 +262,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.content.subject
+            sentMail.content.subject,
         )
     }
 
@@ -276,7 +276,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2021, 8, 11),
-                preferredUnit = daycare
+                preferredUnit = daycare,
             )
         }
 
@@ -300,7 +300,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(guardian.id.toString(), sentMail.traceId)
         assertEquals(
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
-            sentMail.content.subject
+            sentMail.content.subject,
         )
     }
 
@@ -317,8 +317,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document =
                         validDaycareForm.copy(
                             guardian = guardianAsDaycareAdult,
-                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id))
-                        )
+                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id)),
+                        ),
                 )
             }
         val (_, res, _) =
@@ -348,8 +348,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                     document =
                         validDaycareForm.copy(
                             guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
-                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id))
-                        )
+                            apply = validDaycareForm.apply.copy(preferredUnits = listOf(daycare.id)),
+                        ),
                 )
             }
 
@@ -407,7 +407,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             db,
             testAdult_1.id,
             Language.fi,
-            ApplicationType.DAYCARE
+            ApplicationType.DAYCARE,
         )
         assertEmail(
             MockEmailClient.getEmail("working@test.fi"),
@@ -415,7 +415,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             "Test email sender fi <testemail_fi@test.com>",
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika",
-            "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
+            "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika",
         )
 
         setPersonEmail(testAdult_1.id, "Working.Email@Test.Com")
@@ -423,7 +423,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             db,
             testAdult_1.id,
             Language.sv,
-            ApplicationType.DAYCARE
+            ApplicationType.DAYCARE,
         )
         assertEmail(
             MockEmailClient.getEmail("Working.Email@Test.Com"),
@@ -431,7 +431,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             "Test email sender sv <testemail_sv@test.com>",
             "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
             "Ansökan om småbarnspedagogik har en <strong>ansökningstid på fyra (4) månader",
-            "Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader"
+            "Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader",
         )
     }
 
@@ -450,7 +450,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         expectedFromAddress: String,
         expectedSubject: String,
         expectedHtmlPart: String,
-        expectedTextPart: String
+        expectedTextPart: String,
     ) {
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)

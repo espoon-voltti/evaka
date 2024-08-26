@@ -34,7 +34,7 @@ class OutdatedIncomeNotifications(
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
-    private val mapper: JsonMapper
+    private val mapper: JsonMapper,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendEmail)
@@ -49,7 +49,7 @@ class OutdatedIncomeNotifications(
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
-                    IncomeNotificationType.INITIAL_EMAIL
+                    IncomeNotificationType.INITIAL_EMAIL,
                 )
                 .map { it.personId }
 
@@ -57,7 +57,7 @@ class OutdatedIncomeNotifications(
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today().plusWeeks(2)),
-                    IncomeNotificationType.REMINDER_EMAIL
+                    IncomeNotificationType.REMINDER_EMAIL,
                 )
                 .filter { !guardiansForInitialNotification.contains(it.personId) }
                 .map { it.personId }
@@ -66,7 +66,7 @@ class OutdatedIncomeNotifications(
             tx.expiringIncomes(
                     clock.now().toLocalDate(),
                     FiniteDateRange(clock.today(), clock.today()),
-                    IncomeNotificationType.EXPIRED_EMAIL
+                    IncomeNotificationType.EXPIRED_EMAIL,
                 )
                 .filter { !guardiansForInitialNotification.contains(it.personId) }
                 .filter { !guardiansForReminderNotification.contains(it.personId) }
@@ -79,14 +79,14 @@ class OutdatedIncomeNotifications(
                     .map {
                         AsyncJob.SendOutdatedIncomeNotificationEmail(
                             it,
-                            IncomeNotificationType.INITIAL_EMAIL
+                            IncomeNotificationType.INITIAL_EMAIL,
                         )
                     }
                     .plus(
                         guardiansForReminderNotification.map {
                             AsyncJob.SendOutdatedIncomeNotificationEmail(
                                 it,
-                                IncomeNotificationType.REMINDER_EMAIL
+                                IncomeNotificationType.REMINDER_EMAIL,
                             )
                         }
                     )
@@ -94,11 +94,11 @@ class OutdatedIncomeNotifications(
                         guardiansForExpirationNotification.map {
                             AsyncJob.SendOutdatedIncomeNotificationEmail(
                                 it,
-                                IncomeNotificationType.EXPIRED_EMAIL
+                                IncomeNotificationType.EXPIRED_EMAIL,
                             )
                         }
                     ),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
 
         logger.info(
@@ -113,7 +113,7 @@ class OutdatedIncomeNotifications(
     fun sendEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendOutdatedIncomeNotificationEmail
+        msg: AsyncJob.SendOutdatedIncomeNotificationEmail,
     ) {
         val language =
             db.read { tx ->
@@ -142,7 +142,7 @@ class OutdatedIncomeNotifications(
                 personId = msg.guardianId,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.incomeNotification(msg.type, language),
-                traceId = msg.guardianId.toString()
+                traceId = msg.guardianId.toString(),
             )
             ?.also { emailClient.send(it) }
 
@@ -164,9 +164,9 @@ class OutdatedIncomeNotifications(
                             validFrom = firstDayAfterExpiration,
                             validTo = null,
                             data = emptyMap(),
-                            notes = "Created automatically because previous income expired"
+                            notes = "Created automatically because previous income expired",
                         ),
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
 
                 asyncJobRunner.plan(
@@ -174,10 +174,10 @@ class OutdatedIncomeNotifications(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             msg.guardianId,
-                            DateRange(firstDayAfterExpiration, null)
+                            DateRange(firstDayAfterExpiration, null),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }

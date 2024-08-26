@@ -35,7 +35,7 @@ data class HolidayPeriod(
     val id: HolidayPeriodId,
     val period: FiniteDateRange,
     val reservationsOpenOn: LocalDate,
-    val reservationDeadline: LocalDate
+    val reservationDeadline: LocalDate,
 ) {
     /**
      * Returns the effect of the holiday period for all dates inside `period`, when the *current*
@@ -43,7 +43,7 @@ data class HolidayPeriod(
      */
     fun effect(
         today: LocalDate,
-        reservationEnabledPlacementRanges: List<ReservationEnabledPlacementRange>
+        reservationEnabledPlacementRanges: List<ReservationEnabledPlacementRange>,
     ): HolidayPeriodEffect? =
         when {
             reservationEnabledPlacementRanges.none {
@@ -77,5 +77,5 @@ data class HolidayPeriod(
 data class HolidayPeriodBody(
     val period: FiniteDateRange,
     val reservationsOpenOn: LocalDate,
-    val reservationDeadline: LocalDate
+    val reservationDeadline: LocalDate,
 )

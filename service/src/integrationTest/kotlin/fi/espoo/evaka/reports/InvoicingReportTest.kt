@@ -63,7 +63,7 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             totalSumCents = 28900,
                             amountWithoutSSN = 0,
                             amountWithoutAddress = 0,
-                            amountWithZeroPrice = 0
+                            amountWithZeroPrice = 0,
                         ),
                         InvoiceReportRow(
                             areaCode = area2.areaCode!!,
@@ -71,10 +71,10 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                             totalSumCents = 28900,
                             amountWithoutSSN = 0,
                             amountWithoutAddress = 0,
-                            amountWithZeroPrice = 1
-                        )
+                            amountWithZeroPrice = 1,
+                        ),
                     )
-            )
+            ),
         )
     }
 
@@ -99,21 +99,21 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 headOfFamilyId = testAdult_1.id,
                 areaId = area1.id,
                 rows =
-                    listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = daycare1.id))
+                    listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = daycare1.id)),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
                 areaId = area2.id,
                 rows =
-                    listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = daycare2.id))
+                    listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = daycare2.id)),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
                 headOfFamilyId = testAdult_2.id,
                 areaId = area2.id,
-                rows = listOf()
-            )
+                rows = listOf(),
+            ),
         )
 
     private fun insertInvoices(date: LocalDate) {

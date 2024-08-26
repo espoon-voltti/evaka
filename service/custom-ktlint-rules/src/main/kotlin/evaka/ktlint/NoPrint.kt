@@ -16,7 +16,7 @@ class NoPrint : EvakaRule("no-println"), RuleAutocorrectApproveHandler {
     override fun afterVisitChildNodes(
         node: ASTNode,
         emit:
-            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
+            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
         val expression = node.psi as? KtCallExpression ?: return
         val isPrintCall =

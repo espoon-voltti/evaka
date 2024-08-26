@@ -27,7 +27,7 @@ import java.time.LocalDate
 
 data class CitizenApplicationUpdate(
     val form: ApplicationFormUpdate,
-    val allowOtherGuardianAccess: Boolean
+    val allowOtherGuardianAccess: Boolean,
 )
 
 data class ApplicationUpdate(val form: ApplicationFormUpdate, val dueDate: LocalDate? = null)
@@ -62,13 +62,13 @@ data class ApplicationSummary(
     val placementProposalStatus: PlacementProposalStatus?,
     val placementPlanStartDate: LocalDate?,
     val placementPlanUnitName: String?,
-    val currentPlacementUnit: PreferredUnit?
+    val currentPlacementUnit: PreferredUnit?,
 )
 
 data class PlacementProposalStatus(
     val unitConfirmationStatus: PlacementPlanConfirmationStatus,
     val unitRejectReason: PlacementPlanRejectReason?,
-    val unitRejectOtherReason: String?
+    val unitRejectOtherReason: String?,
 )
 
 data class PersonApplicationSummary(
@@ -85,7 +85,7 @@ data class PersonApplicationSummary(
     val type: ApplicationType,
     val status: ApplicationStatus,
     val connectedDaycare: Boolean = false,
-    val preparatoryEducation: Boolean = false
+    val preparatoryEducation: Boolean = false,
 )
 
 data class ApplicationDetails(
@@ -111,7 +111,7 @@ data class ApplicationDetails(
     val additionalDaycareApplication: Boolean,
     val hideFromGuardian: Boolean,
     val allowOtherGuardianAccess: Boolean,
-    val attachments: List<ApplicationAttachment>
+    val attachments: List<ApplicationAttachment>,
 ) {
     fun derivePlacementType(): PlacementType =
         when (type) {
@@ -141,7 +141,7 @@ data class ApplicationAttachment(
     val receivedAt: HelsinkiDateTime,
     val type: AttachmentType,
     val uploadedByEmployee: EmployeeId?,
-    val uploadedByPerson: PersonId?
+    val uploadedByPerson: PersonId?,
 )
 
 enum class ApplicationType : DatabaseEnum {
@@ -162,7 +162,7 @@ enum class ApplicationStatus {
     WAITING_CONFIRMATION,
     REJECTED,
     ACTIVE,
-    CANCELLED
+    CANCELLED,
 }
 
 enum class ApplicationOrigin : DatabaseEnum {
@@ -185,7 +185,7 @@ data class ApplicationNote(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
     val messageContentId: MessageContentId?,
-    val messageThreadId: MessageThreadId?
+    val messageThreadId: MessageThreadId?,
 )
 
 data class ApplicationUnitSummary(
@@ -202,7 +202,7 @@ data class ApplicationUnitSummary(
     val preferredStartDate: LocalDate,
     val extendedCare: Boolean,
     val preferenceOrder: Int,
-    val status: ApplicationStatus
+    val status: ApplicationStatus,
 )
 
 data class CitizenApplicationSummary(
@@ -224,7 +224,7 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     user: AuthenticatedUser,
     tx: Database.Transaction,
     personService: PersonService,
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
 ): ApplicationDetails? =
     tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)?.let {
         application ->
@@ -237,8 +237,8 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
                     personService.personsLiveInTheSameAddress(
                         tx,
                         application.guardianId,
-                        otherGuardianId
+                        otherGuardianId,
                     )
-                }
+                },
         )
     }

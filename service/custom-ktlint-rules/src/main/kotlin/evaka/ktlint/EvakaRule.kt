@@ -10,7 +10,7 @@ import com.pinterest.ktlint.rule.engine.core.api.RuleId
 private val about =
     Rule.About(
         maintainer = "eVaka core team",
-        repositoryUrl = "https://github.com/espoon-voltti/evaka"
+        repositoryUrl = "https://github.com/espoon-voltti/evaka",
     )
 
 open class EvakaRule(name: String) : Rule(RuleId("evaka:$name"), about)

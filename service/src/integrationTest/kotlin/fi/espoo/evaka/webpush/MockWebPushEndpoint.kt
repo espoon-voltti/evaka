@@ -27,7 +27,7 @@ class MockWebPushEndpoint {
     fun postNotification(
         @PathVariable id: String,
         request: WebRequest,
-        body: InputStream
+        body: InputStream,
     ): ResponseEntity<Nothing> {
         lock.withLock {
             capturedRequests

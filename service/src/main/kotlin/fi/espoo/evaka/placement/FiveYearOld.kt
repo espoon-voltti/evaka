@@ -13,7 +13,7 @@ import java.time.LocalDate
 fun resolveFiveYearOldPlacementPeriods(
     tx: Database.Read,
     childId: ChildId,
-    placements: List<Pair<FiniteDateRange, PlacementType>>
+    placements: List<Pair<FiniteDateRange, PlacementType>>,
 ): List<Pair<FiniteDateRange, PlacementType>> {
     val child = tx.getPersonById(childId) ?: error("Child not found ($childId)")
     val fiveYearOldTermStart = LocalDate.of(child.dateOfBirth.plusYears(5).year, 8, 1)
@@ -37,7 +37,7 @@ fun resolveFiveYearOldPlacementPeriods(
                 if (period.start < fiveYearOldTermStart) {
                     FiniteDateRange(
                         period.start,
-                        minOf(fiveYearOldTermStart.minusDays(1), period.end)
+                        minOf(fiveYearOldTermStart.minusDays(1), period.end),
                     ) to normalPlacementType
                 } else {
                     null
@@ -45,7 +45,7 @@ fun resolveFiveYearOldPlacementPeriods(
                 if (fiveYearOldTermStart <= period.end && period.start <= fiveYearOldTermEnd) {
                     FiniteDateRange(
                         maxOf(fiveYearOldTermStart, period.start),
-                        minOf(fiveYearOldTermEnd, period.end)
+                        minOf(fiveYearOldTermEnd, period.end),
                     ) to fiveYearOldPlacementType
                 } else {
                     null
@@ -53,11 +53,11 @@ fun resolveFiveYearOldPlacementPeriods(
                 if (fiveYearOldTermEnd < period.end) {
                     FiniteDateRange(
                         maxOf(fiveYearOldTermEnd.plusDays(1), period.start),
-                        period.end
+                        period.end,
                     ) to normalPlacementType
                 } else {
                     null
-                }
+                },
             )
         }
         .flatten()

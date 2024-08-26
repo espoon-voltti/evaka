@@ -28,20 +28,20 @@ const val KOSKI_DATA_VERSION: Int = 3
 data class KoskiData(
     val oppija: Oppija,
     val operation: KoskiOperation,
-    val organizationOid: String
+    val organizationOid: String,
 )
 
 enum class KoskiOperation {
     CREATE,
     UPDATE,
-    VOID
+    VOID,
 }
 
 data class KoskiChildRaw(
     val ssn: String?,
     val ophPersonOid: String?,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
 ) {
     fun toHenkilö(): Henkilö =
         when {
@@ -59,14 +59,14 @@ data class KoskiUnitRaw(
     val providerType: ProviderType,
     val ophUnitOid: String,
     val ophOrganizerOid: String,
-    val approverName: String
+    val approverName: String,
 ) {
     val approverTitle = "Esiopetusyksikön johtaja"
 
     fun haeSuoritus(
         type: OpiskeluoikeudenTyyppiKoodi,
         vahvistus: Vahvistus?,
-        osasuoritus: Osasuoritus?
+        osasuoritus: Osasuoritus?,
     ) =
         Suoritus(
             when (type) {
@@ -74,13 +74,13 @@ data class KoskiUnitRaw(
                     Koulutusmoduuli(
                         tunniste =
                             KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
-                        perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
+                        perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL,
                     )
                 OpiskeluoikeudenTyyppiKoodi.PREPARATORY ->
                     Koulutusmoduuli(
                         tunniste =
                             KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
-                        perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
+                        perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY,
                     )
             },
             Toimipiste(ophUnitOid),
@@ -92,7 +92,7 @@ data class KoskiUnitRaw(
                 }
             ),
             vahvistus,
-            osasuoritus?.let { listOf(it) }
+            osasuoritus?.let { listOf(it) },
         )
 
     fun haeJärjestämisMuoto(type: OpiskeluoikeudenTyyppiKoodi) =
@@ -117,17 +117,17 @@ data class KoskiVoidedDataRaw(
     val type: OpiskeluoikeudenTyyppiKoodi,
     val voidDate: LocalDate,
     val studyRightId: KoskiStudyRightId,
-    val studyRightOid: String
+    val studyRightOid: String,
 ) {
     fun toKoskiData(sourceSystem: String, ophOrganizationOid: String) =
         KoskiData(
             oppija =
                 Oppija(
                     henkilö = child.toHenkilö(),
-                    opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
+                    opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem)),
                 ),
             organizationOid = ophOrganizationOid,
-            operation = KoskiOperation.VOID
+            operation = KoskiOperation.VOID,
         )
 
     private fun haeOpiskeluOikeus(sourceSystem: String) =
@@ -138,11 +138,11 @@ data class KoskiVoidedDataRaw(
             lähdejärjestelmänId =
                 LähdejärjestelmäId(
                     id = studyRightId.raw,
-                    lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
+                    lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem),
                 ),
             tyyppi = OpiskeluoikeudenTyyppi(type),
             lisätiedot = null,
-            järjestämismuoto = unit.haeJärjestämisMuoto(type)
+            järjestämismuoto = unit.haeJärjestämisMuoto(type),
         )
 }
 
@@ -167,7 +167,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
         sourceSystem: String,
         ophOrganizationOid: String,
         ophMunicipalityCode: String,
-        today: LocalDate
+        today: LocalDate,
     ): KoskiData? {
         val placementSpan = placements.spanningRange() ?: return null
 
@@ -188,12 +188,12 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                                 sourceSystem,
                                 ophOrganizationOid,
                                 ophMunicipalityCode,
-                                termination
+                                termination,
                             )
-                        )
+                        ),
                 ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
-            organizationOid = ophOrganizationOid
+            organizationOid = ophOrganizationOid,
         )
     }
 
@@ -201,7 +201,7 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
         sourceSystem: String,
         ophOrganizationOid: String,
         ophMunicipalityCode: String,
-        termination: StudyRightTermination?
+        termination: StudyRightTermination?,
     ): Opiskeluoikeus {
         val vahvistus =
             when (termination) {
@@ -215,9 +215,9 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                                 MyöntäjäHenkilö(
                                     nimi = unit.approverName,
                                     titteli = MyöntäjäHenkilönTitteli(unit.approverTitle),
-                                    organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizerOid)
+                                    organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizerOid),
                                 )
-                            )
+                            ),
                     )
                 else -> null
             }
@@ -228,11 +228,11 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
             lähdejärjestelmänId =
                 LähdejärjestelmäId(
                     id = studyRightId.raw,
-                    lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
+                    lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem),
                 ),
             tyyppi = OpiskeluoikeudenTyyppi(type),
             lisätiedot = haeLisätiedot(),
-            järjestämismuoto = unit.haeJärjestämisMuoto(type)
+            järjestämismuoto = unit.haeJärjestämisMuoto(type),
         )
     }
 
@@ -248,12 +248,12 @@ sealed class KoskiActiveDataRaw(val type: OpiskeluoikeudenTyyppiKoodi) {
                     is StudyRightTermination.Qualified ->
                         it.set(
                             FiniteDateRange(termination.date, LocalDate.MAX),
-                            OpiskeluoikeusjaksonTilaKoodi.QUALIFIED
+                            OpiskeluoikeusjaksonTilaKoodi.QUALIFIED,
                         )
                     is StudyRightTermination.Resigned ->
                         it.set(
                             FiniteDateRange(termination.date, LocalDate.MAX),
-                            OpiskeluoikeusjaksonTilaKoodi.RESIGNED
+                            OpiskeluoikeusjaksonTilaKoodi.RESIGNED,
                         )
                     null -> it // still ongoing
                 }
@@ -334,7 +334,7 @@ data class KoskiActivePreschoolDataRaw(
                         .ranges()
                         .map { ErityisenTuenPäätös.from(it) }
                         .toList()
-                        .takeIf { it.isNotEmpty() })
+                        .takeIf { it.isNotEmpty() }),
             )
             .takeIf {
                 it.vammainen != null ||
@@ -355,7 +355,7 @@ data class KoskiActivePreparatoryDataRaw(
     val lastOfChild: Boolean,
     val lastOfType: Boolean,
     val holidays: Set<LocalDate>,
-    @Json val absences: Map<AbsenceType, Set<LocalDate>>
+    @Json val absences: Map<AbsenceType, Set<LocalDate>>,
 ) : KoskiActiveDataRaw(OpiskeluoikeudenTyyppiKoodi.PREPARATORY) {
     private val effectiveAbsences = calculatePreparatoryAbsences(placements, holidays, absences)
 
@@ -375,8 +375,8 @@ data class KoskiActivePreparatoryDataRaw(
                         OsasuorituksenLaajuus(
                             arvo = 25,
                             yksikkö =
-                                Laajuusyksikkö(koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI)
-                        )
+                                Laajuusyksikkö(koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI),
+                        ),
                     ),
                     listOf(
                         Arviointi(
@@ -385,11 +385,11 @@ data class KoskiActivePreparatoryDataRaw(
                                 LokalisoituTeksti(
                                     fi =
                                         "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
-                                )
+                                ),
                         )
                     ),
                     SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT),
-                )
+                ),
         )
 
     override fun getTermination(lastPlacementEnd: LocalDate): StudyRightTermination {
@@ -441,7 +441,7 @@ internal fun DateSet.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
 internal data class PreparatoryAbsences(
     val plannedAbsence: DateSet,
     val sickLeaveAbsence: DateSet,
-    val unknownAbsence: DateSet
+    val unknownAbsence: DateSet,
 )
 
 internal fun calculatePreparatoryAbsences(
@@ -489,6 +489,6 @@ internal fun calculatePreparatoryAbsences(
     return PreparatoryAbsences(
         plannedAbsence = plannedAbsence,
         sickLeaveAbsence = sickLeaveAbsence,
-        unknownAbsence = unknownAbsence
+        unknownAbsence = unknownAbsence,
     )
 }

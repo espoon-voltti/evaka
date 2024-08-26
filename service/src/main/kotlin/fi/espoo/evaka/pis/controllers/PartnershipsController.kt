@@ -36,19 +36,19 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/partnerships", // deprecated
-    "/employee/partnerships"
+    "/employee/partnerships",
 )
 class PartnershipsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val partnershipService: PartnershipService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @PostMapping
     fun createPartnership(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PartnershipRequest
+        @RequestBody body: PartnershipRequest,
     ) {
         val partnership =
             db.connect { dbc ->
@@ -58,7 +58,7 @@ class PartnershipsController(
                         user,
                         clock,
                         Action.Person.CREATE_PARTNERSHIP,
-                        body.person1Id
+                        body.person1Id,
                     )
                     partnershipService
                         .createPartnership(
@@ -68,7 +68,7 @@ class PartnershipsController(
                             body.startDate,
                             body.endDate,
                             user.evakaUserId,
-                            clock.now()
+                            clock.now(),
                         )
                         .also {
                             asyncJobRunner.plan(
@@ -76,17 +76,17 @@ class PartnershipsController(
                                 listOf(
                                     AsyncJob.GenerateFinanceDecisions.forAdult(
                                         body.person1Id,
-                                        DateRange(body.startDate, body.endDate)
+                                        DateRange(body.startDate, body.endDate),
                                     )
                                 ),
-                                runAt = clock.now()
+                                runAt = clock.now(),
                             )
                         }
                 }
             }
         Audit.PartnerShipsCreate.log(
             targetId = AuditId(listOf(body.person1Id, body.person2Id)),
-            objectId = AuditId(partnership.id)
+            objectId = AuditId(partnership.id),
         )
     }
 
@@ -95,7 +95,7 @@ class PartnershipsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam personId: PersonId
+        @RequestParam personId: PersonId,
     ): List<PartnershipWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -104,7 +104,7 @@ class PartnershipsController(
                         user,
                         clock,
                         Action.Person.READ_PARTNERSHIPS,
-                        personId
+                        personId,
                     )
                     val partnerships =
                         tx.getPartnershipsForPerson(personId, includeConflicts = true)
@@ -114,13 +114,13 @@ class PartnershipsController(
                             tx,
                             user,
                             clock,
-                            partnerships.map { it.id }
+                            partnerships.map { it.id },
                         )
 
                     partnerships.map {
                         PartnershipWithPermittedActions(
                             data = it,
-                            permittedActions = permittedActions[it.id] ?: emptySet()
+                            permittedActions = permittedActions[it.id] ?: emptySet(),
                         )
                     }
                 }
@@ -128,7 +128,7 @@ class PartnershipsController(
             .also {
                 Audit.PartnerShipsRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -138,7 +138,7 @@ class PartnershipsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable partnershipId: PartnershipId
+        @PathVariable partnershipId: PartnershipId,
     ): Partnership {
         return db.connect { dbc ->
                 dbc.read {
@@ -147,7 +147,7 @@ class PartnershipsController(
                         user,
                         clock,
                         Action.Partnership.READ,
-                        partnershipId
+                        partnershipId,
                     )
                     it.getPartnership(partnershipId)
                 } ?: throw NotFound()
@@ -161,7 +161,7 @@ class PartnershipsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId,
-        @RequestBody body: PartnershipUpdateRequest
+        @RequestBody body: PartnershipUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -170,7 +170,7 @@ class PartnershipsController(
                     user,
                     clock,
                     Action.Partnership.UPDATE,
-                    partnershipId
+                    partnershipId,
                 )
                 val oldPartnership =
                     tx.getPartnership(partnershipId)
@@ -181,7 +181,7 @@ class PartnershipsController(
                     body.startDate,
                     body.endDate,
                     user.evakaUserId,
-                    clock.now()
+                    clock.now(),
                 )
                 asyncJobRunner.plan(
                     tx,
@@ -190,17 +190,17 @@ class PartnershipsController(
                             oldPartnership.partners.first().id,
                             DateRange(
                                 minOf(oldPartnership.startDate, body.startDate),
-                                maxEndDate(oldPartnership.endDate, body.endDate)
-                            )
+                                maxEndDate(oldPartnership.endDate, body.endDate),
+                            ),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
         Audit.PartnerShipsUpdate.log(
             targetId = AuditId(partnershipId),
-            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
         )
     }
 
@@ -209,7 +209,7 @@ class PartnershipsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable partnershipId: PartnershipId
+        @PathVariable partnershipId: PartnershipId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -218,7 +218,7 @@ class PartnershipsController(
                     user,
                     clock,
                     Action.Partnership.RETRY,
-                    partnershipId
+                    partnershipId,
                 )
                 partnershipService
                     .retryPartnership(tx, partnershipId, user.evakaUserId, clock.now())
@@ -228,10 +228,10 @@ class PartnershipsController(
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forAdult(
                                     it.partners.first().id,
-                                    DateRange(it.startDate, it.endDate)
+                                    DateRange(it.startDate, it.endDate),
                                 )
                             ),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
             }
@@ -244,7 +244,7 @@ class PartnershipsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable partnershipId: PartnershipId
+        @PathVariable partnershipId: PartnershipId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -253,7 +253,7 @@ class PartnershipsController(
                     user,
                     clock,
                     Action.Partnership.DELETE,
-                    partnershipId
+                    partnershipId,
                 )
                 partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
                     asyncJobRunner.plan(
@@ -261,10 +261,10 @@ class PartnershipsController(
                         partnership.partners.map {
                             AsyncJob.GenerateFinanceDecisions.forAdult(
                                 it.id,
-                                DateRange(partnership.startDate, partnership.endDate)
+                                DateRange(partnership.startDate, partnership.endDate),
                             )
                         },
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                 }
             }
@@ -276,13 +276,13 @@ class PartnershipsController(
         val person1Id: PersonId,
         val person2Id: PersonId,
         val startDate: LocalDate,
-        val endDate: LocalDate?
+        val endDate: LocalDate?,
     )
 
     data class PartnershipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate?)
 
     data class PartnershipWithPermittedActions(
         val data: Partnership,
-        val permittedActions: Set<Action.Partnership>
+        val permittedActions: Set<Action.Partnership>,
     )
 }

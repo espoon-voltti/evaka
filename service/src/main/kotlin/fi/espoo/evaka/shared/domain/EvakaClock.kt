@@ -22,7 +22,7 @@ class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
         day: Int,
         hour: Int,
         minute: Int,
-        second: Int = 0
+        second: Int = 0,
     ) : this(
         HelsinkiDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minute, second))
     )

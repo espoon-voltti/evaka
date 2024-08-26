@@ -47,7 +47,7 @@ enum class Report {
     UNITS,
     VARDA_ERRORS,
     FUTURE_PRESCHOOLERS,
-    MEALS
+    MEALS,
 }
 
 @RestController
@@ -56,7 +56,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
     fun getPermittedReports(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Set<Report> =
         db.connect { dbc ->
             dbc.read { tx ->
@@ -73,13 +73,13 @@ class ReportPermissions(private val accessControl: AccessControl) {
                             tx,
                             user,
                             clock,
-                            Action.AssistanceNeedDecision.READ_IN_REPORT
+                            Action.AssistanceNeedDecision.READ_IN_REPORT,
                         ) ||
                             accessControl.isPermittedForSomeTarget(
                                 tx,
                                 user,
                                 clock,
-                                Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT
+                                Action.AssistanceNeedPreschoolDecision.READ_IN_REPORT,
                             )
                     },
                     Report.ASSISTANCE_NEEDS_AND_ACTIONS.takeIf {
@@ -214,7 +214,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT
                         )
-                    }
+                    },
                 )
             }
         }

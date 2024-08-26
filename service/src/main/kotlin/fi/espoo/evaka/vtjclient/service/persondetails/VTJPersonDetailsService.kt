@@ -18,7 +18,7 @@ import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 
 class VTJPersonDetailsService(
     private val vtjClientService: IVtjClientService,
-    private val henkiloMapper: VtjHenkiloMapper
+    private val henkiloMapper: VtjHenkiloMapper,
 ) : IPersonDetailsService {
     /*
        Fetches person with dependants from VTJ, then for each dependant, fetches
@@ -33,7 +33,7 @@ class VTJPersonDetailsService(
                     DetailsQuery(
                         requestingUser = query.requestingUser,
                         targetIdentifier =
-                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
+                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber),
                     )
                 }
                 .map { doVtjQuery(it, PERUSSANOMA3) }
@@ -54,7 +54,7 @@ class VTJPersonDetailsService(
                     DetailsQuery(
                         requestingUser = query.requestingUser,
                         targetIdentifier =
-                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber)
+                            ExternalIdentifier.SSN.getInstance(it.socialSecurityNumber),
                     )
                 }
                 .map { doVtjQuery(it, PERUSSANOMA3) }

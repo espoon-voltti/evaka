@@ -37,7 +37,7 @@ enum class StaffAttendanceType : DatabaseEnum {
 
 data class CurrentDayStaffAttendanceResponse(
     val staff: List<StaffMember>,
-    val extraAttendances: List<ExternalStaffMember>
+    val extraAttendances: List<ExternalStaffMember>,
 )
 
 data class ExternalStaffMember(
@@ -45,7 +45,7 @@ data class ExternalStaffMember(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val occupancyEffect: Boolean
+    val occupancyEffect: Boolean,
 )
 
 data class StaffMember(
@@ -57,7 +57,7 @@ data class StaffMember(
     @Nested("attendance") val latestCurrentDayAttendance: StaffMemberAttendance?,
     @Json val attendances: List<StaffMemberAttendance>,
     @Json val plannedAttendances: List<PlannedStaffAttendance>,
-    val hasFutureAttendances: Boolean
+    val hasFutureAttendances: Boolean,
 ) {
     val present: GroupId?
         get() =
@@ -72,7 +72,7 @@ data class StaffMember(
             } else {
                 HelsinkiDateTimeRange(
                     plannedAttendances.minOf { it.start },
-                    plannedAttendances.maxOf { it.end }
+                    plannedAttendances.maxOf { it.end },
                 )
             }
 }
@@ -85,7 +85,7 @@ data class StaffMemberAttendance(
     val departed: HelsinkiDateTime?,
     val type: StaffAttendanceType,
     val departedAutomatically: Boolean,
-    val occupancyCoefficient: BigDecimal
+    val occupancyCoefficient: BigDecimal,
 )
 
 data class ExternalAttendance(
@@ -95,7 +95,7 @@ data class ExternalAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
-    val departedAutomatically: Boolean
+    val departedAutomatically: Boolean,
 ) {
     val type = StaffAttendanceType.PRESENT
 }
@@ -107,7 +107,7 @@ data class Attendance(
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType,
-    val departedAutomatically: Boolean
+    val departedAutomatically: Boolean,
 )
 
 data class EmployeeAttendance(
@@ -118,16 +118,16 @@ data class EmployeeAttendance(
     val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>,
     val plannedAttendances: List<PlannedStaffAttendance>,
-    val allowedToEdit: Boolean
+    val allowedToEdit: Boolean,
 )
 
 data class StaffAttendanceResponse(
     val staff: List<EmployeeAttendance>,
-    val extraAttendances: List<ExternalAttendance>
+    val extraAttendances: List<ExternalAttendance>,
 )
 
 data class PlannedStaffAttendance(
     val start: HelsinkiDateTime,
     val end: HelsinkiDateTime,
-    val type: StaffAttendanceType
+    val type: StaffAttendanceType,
 )

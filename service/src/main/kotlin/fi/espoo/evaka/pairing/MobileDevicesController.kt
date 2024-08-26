@@ -32,7 +32,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        @RequestParam unitId: DaycareId,
     ): List<MobileDevice> {
         return db.connect { dbc ->
                 dbc.read {
@@ -41,7 +41,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_MOBILE_DEVICES,
-                        unitId
+                        unitId,
                     )
                     it.listSharedDevices(unitId)
                 }
@@ -49,7 +49,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             .also {
                 Audit.MobileDevicesList.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -58,7 +58,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     fun getPersonalMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<MobileDevice> {
         return db.connect { dbc ->
                 dbc.read {
@@ -66,7 +66,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_PERSONAL_MOBILE_DEVICES
+                        Action.Global.READ_PERSONAL_MOBILE_DEVICES,
                     )
                     it.listPersonalDevices(user.id)
                 }
@@ -74,7 +74,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             .also {
                 Audit.MobileDevicesList.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -87,7 +87,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId,
-        @RequestBody body: RenameRequest
+        @RequestBody body: RenameRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -96,7 +96,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.MobileDevice.UPDATE_NAME,
-                    id
+                    id,
                 )
                 it.renameDevice(id, body.name)
             }
@@ -109,7 +109,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable id: MobileDeviceId
+        @PathVariable id: MobileDeviceId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -125,7 +125,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestBody params: PinLoginRequest
+        @RequestBody params: PinLoginRequest,
     ): PinLoginResponse =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -142,7 +142,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                             employee?.let {
                                 PinLoginResponse(
                                     PinLoginStatus.SUCCESS,
-                                    Employee(it.preferredFirstName ?: it.firstName, it.lastName)
+                                    Employee(it.preferredFirstName ?: it.firstName, it.lastName),
                                 )
                             } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                         }
@@ -152,7 +152,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             .also {
                 Audit.PinLogin.log(
                     targetId = AuditId(params.employeeId),
-                    meta = mapOf("status" to it.status)
+                    meta = mapOf("status" to it.status),
                 )
             }
 }
@@ -162,7 +162,7 @@ data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
 enum class PinLoginStatus {
     SUCCESS,
     WRONG_PIN,
-    PIN_LOCKED
+    PIN_LOCKED,
 }
 
 data class Employee(val firstName: String, val lastName: String)

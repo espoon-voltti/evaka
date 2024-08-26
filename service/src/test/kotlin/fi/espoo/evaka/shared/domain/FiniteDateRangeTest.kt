@@ -402,12 +402,8 @@ class FiniteDateRangeTest {
         // A -----
         val a = testRange(1, 5)
         assertEquals(
-            BoundedRange.Relation.Overlap(
-                left = null,
-                overlap = a,
-                right = null,
-            ),
-            a.relationTo(a)
+            BoundedRange.Relation.Overlap(left = null, overlap = a, right = null),
+            a.relationTo(a),
         )
     }
 
@@ -422,17 +418,17 @@ class FiniteDateRangeTest {
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 2), isFirst = true),
                 overlap = testRange(3, 5),
-                right = BoundedRange.Relation.Remainder(testRange(6, 7), isFirst = false)
+                right = BoundedRange.Relation.Remainder(testRange(6, 7), isFirst = false),
             ),
-            a.relationTo(b)
+            a.relationTo(b),
         )
         assertEquals(
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 2), isFirst = false),
                 overlap = testRange(3, 5),
-                right = BoundedRange.Relation.Remainder(testRange(6, 7), isFirst = true)
+                right = BoundedRange.Relation.Remainder(testRange(6, 7), isFirst = true),
             ),
-            b.relationTo(a)
+            b.relationTo(a),
         )
     }
 

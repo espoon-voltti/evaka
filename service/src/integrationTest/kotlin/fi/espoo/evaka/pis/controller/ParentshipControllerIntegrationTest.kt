@@ -56,7 +56,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisor.id,
-                role = UserRole.UNIT_SUPERVISOR
+                role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
                 DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
@@ -98,7 +98,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             0,
-            controller.getParentships(dbInstance(), user, clock, headOfChildId = child.id).size
+            controller.getParentships(dbInstance(), user, clock, headOfChildId = child.id).size,
         )
     }
 
@@ -109,7 +109,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 parent.id,
                 child.dateOfBirth,
                 child.dateOfBirth.plusDays(200),
-                Creator.DVV
+                Creator.DVV,
             )
         }
 
@@ -137,7 +137,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             0,
-            controller.getParentships(dbInstance(), user, clock, headOfChildId = child.id).size
+            controller.getParentships(dbInstance(), user, clock, headOfChildId = child.id).size,
         )
     }
 
@@ -164,14 +164,14 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     parent.id,
                     child.dateOfBirth.plusDays(500),
                     child.dateOfBirth.plusDays(700),
-                    Creator.DVV
+                    Creator.DVV,
                 )
                 tx.createParentship(
                     child.id,
                     parent.id,
                     child.dateOfBirth,
                     child.dateOfBirth.plusDays(200),
-                    Creator.DVV
+                    Creator.DVV,
                 )
             }
         val newStartDate = child.dateOfBirth.plusDays(100)
@@ -208,7 +208,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         parent.id,
                         child.dateOfBirth,
                         child.dateOfBirth.plusDays(100),
-                        Creator.DVV
+                        Creator.DVV,
                     )
                     .also {
                         tx.createParentship(
@@ -216,11 +216,11 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             parent.id,
                             child.dateOfBirth.plusDays(200),
                             child.dateOfBirth.plusDays(300),
-                            Creator.DVV
+                            Creator.DVV,
                         )
                         assertEquals(
                             2,
-                            tx.getParentships(headOfChildId = parent.id, childId = null).size
+                            tx.getParentships(headOfChildId = parent.id, childId = null).size,
                         )
                     }
             }
@@ -239,7 +239,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         parent.id,
                         child.dateOfBirth,
                         child.dateOfBirth.plusDays(100),
-                        Creator.DVV
+                        Creator.DVV,
                     )
                     .also {
                         tx.createParentship(
@@ -247,11 +247,11 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                             parent.id,
                             child.dateOfBirth.plusDays(200),
                             child.dateOfBirth.plusDays(300),
-                            Creator.DVV
+                            Creator.DVV,
                         )
                         assertEquals(
                             2,
-                            tx.getParentships(headOfChildId = parent.id, childId = null).size
+                            tx.getParentships(headOfChildId = parent.id, childId = null).size,
                         )
                     }
             }
@@ -267,7 +267,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 parent.id,
                 child.id,
                 child.dateOfBirth.minusDays(1),
-                child.dateOfBirth.plusYears(1)
+                child.dateOfBirth.plusYears(1),
             )
         assertThrows<BadRequest> {
             controller.createParentship(dbInstance(), serviceWorker.user, clock, request)
@@ -281,7 +281,7 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 parent.id,
                 child.id,
                 child.dateOfBirth,
-                child.dateOfBirth.plusYears(18)
+                child.dateOfBirth.plusYears(18),
             )
         assertThrows<BadRequest> {
             controller.createParentship(dbInstance(), serviceWorker.user, clock, request)

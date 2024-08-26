@@ -75,7 +75,7 @@ private fun Row.decisionFromResultSet(): Decision =
                 phone = column("phone"),
                 decisionHandler = column("decision_handler"),
                 decisionHandlerAddress = column("decision_handler_address"),
-                providerType = column("provider_type")
+                providerType = column("provider_type"),
             ),
         applicationId = column("application_id"),
         childId = column("child_id"),
@@ -96,20 +96,20 @@ fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
-    filter: AccessControlFilter<DecisionId>
+    filter: AccessControlFilter<DecisionId>,
 ): List<Decision> =
     createDecisionQuery(
             decision =
                 Predicate {
                     where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
                 },
-            application = Predicate { where("$it.child_id = ${bind(childId)}") }
+            application = Predicate { where("$it.child_id = ${bind(childId)}") },
         )
         .toList(Row::decisionFromResultSet)
 
 fun Database.Read.getDecisionsByApplication(
     applicationId: ApplicationId,
-    filter: AccessControlFilter<DecisionId>
+    filter: AccessControlFilter<DecisionId>,
 ): List<Decision> =
     createDecisionQuery(
             decision =
@@ -123,7 +123,7 @@ fun Database.Read.getDecisionsByApplication(
 
 fun Database.Read.getSentDecisionsByApplication(
     applicationId: ApplicationId,
-    filter: AccessControlFilter<DecisionId>
+    filter: AccessControlFilter<DecisionId>,
 ): List<Decision> =
     createDecisionQuery(
             decision =
@@ -141,7 +141,7 @@ fun Database.Read.getSentDecisionsByApplication(
 
 fun Database.Read.getDecisionsByGuardian(
     guardianId: PersonId,
-    filter: AccessControlFilter<DecisionId>
+    filter: AccessControlFilter<DecisionId>,
 ): List<Decision> =
     createDecisionQuery(
             decision =
@@ -160,7 +160,7 @@ fun Database.Read.getDecisionsByGuardian(
                 ))
 """
                     )
-                }
+                },
         )
         .toList(Row::decisionFromResultSet)
 
@@ -171,13 +171,13 @@ data class ApplicationDecisionRow(
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,
-    val resolved: LocalDate?
+    val resolved: LocalDate?,
 )
 
 fun Database.Read.getOwnDecisions(
     guardianId: PersonId,
     children: Collection<ChildId>,
-    filter: AccessControlFilter<DecisionId>
+    filter: AccessControlFilter<DecisionId>,
 ): List<DecisionSummary> =
     createQuery {
             sql(
@@ -223,7 +223,7 @@ WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
 
 fun Database.Transaction.finalizeDecisions(
     applicationId: ApplicationId,
-    today: LocalDate
+    today: LocalDate,
 ): List<DecisionId> {
     // discard unplanned drafts
     execute {
@@ -242,7 +242,7 @@ fun Database.Transaction.finalizeDecisions(
 
 fun Database.Transaction.markApplicationDecisionsSent(
     applicationId: ApplicationId,
-    sentDate: LocalDate
+    sentDate: LocalDate,
 ) {
     execute {
         sql(
@@ -267,7 +267,7 @@ WHERE sent_date IS NULL AND id = ${bind(decisionId)} AND planned = true
 
 fun Database.Transaction.updateDecisionGuardianDocumentKey(
     decisionId: DecisionId,
-    documentKey: String
+    documentKey: String,
 ) {
     execute {
         sql(
@@ -306,7 +306,7 @@ fun Database.Transaction.markDecisionAccepted(
     user: AuthenticatedUser,
     clock: EvakaClock,
     decisionId: DecisionId,
-    requestedStartDate: LocalDate
+    requestedStartDate: LocalDate,
 ) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
@@ -330,7 +330,7 @@ AND status = 'PENDING'
 fun Database.Transaction.markDecisionRejected(
     user: AuthenticatedUser,
     clock: EvakaClock,
-    decisionId: DecisionId
+    decisionId: DecisionId,
 ) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")

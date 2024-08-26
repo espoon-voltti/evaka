@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/absences", // deprecated
-    "/employee/absences"
+    "/employee/absences",
 )
 class AbsenceController(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping("/{groupId}")
     fun groupMonthCalendar(
@@ -42,7 +42,7 @@ class AbsenceController(
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ): GroupMonthCalendar {
         return db.connect { dbc ->
                 dbc.read {
@@ -51,7 +51,7 @@ class AbsenceController(
                         user,
                         clock,
                         Action.Group.READ_ABSENCES,
-                        groupId
+                        groupId,
                     )
                     getGroupMonthCalendar(it, clock.today(), groupId, year, month)
                 }
@@ -59,7 +59,7 @@ class AbsenceController(
             .also {
                 Audit.AbsenceRead.log(
                     targetId = AuditId(groupId),
-                    meta = mapOf("year" to year, "month" to month)
+                    meta = mapOf("year" to year, "month" to month),
                 )
             }
     }
@@ -70,7 +70,7 @@ class AbsenceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody absences: List<AbsenceUpsert>,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ) {
         val children = absences.map { it.childId }
 
@@ -82,14 +82,14 @@ class AbsenceController(
                         user,
                         clock,
                         Action.Group.CREATE_ABSENCES,
-                        groupId
+                        groupId,
                     )
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Child.CREATE_ABSENCE,
-                        children
+                        children,
                     )
 
                     // Delete reservations in the unconfirmed range that are now covered by
@@ -112,7 +112,7 @@ class AbsenceController(
                     val reservableRange =
                         getReservableRange(
                             clock.now(),
-                            featureConfig.citizenReservationThresholdHours
+                            featureConfig.citizenReservationThresholdHours,
                         )
                     tx.clearOldReservations(
                         absences
@@ -126,7 +126,7 @@ class AbsenceController(
         Audit.AbsenceUpsert.log(
             targetId = AuditId(groupId),
             objectId = AuditId(upserted),
-            meta = mapOf("children" to children)
+            meta = mapOf("children" to children),
         )
     }
 
@@ -146,20 +146,20 @@ class AbsenceController(
                         user,
                         clock,
                         Action.Group.DELETE_ABSENCES,
-                        groupId
+                        groupId,
                     )
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE,
-                        children
+                        children,
                     )
                     val deletedAbsences = tx.batchDeleteAbsences(deletions)
                     val addedReservations =
                         tx.addMissingHolidayReservations(
                             user.evakaUserId,
-                            deletions.map { HolidayReservationCreate(it.childId, it.date) }
+                            deletions.map { HolidayReservationCreate(it.childId, it.date) },
                         )
                     Pair(deletedAbsences, addedReservations)
                 }
@@ -169,18 +169,12 @@ class AbsenceController(
                     targetId = AuditId(groupId),
                     objectId = AuditId(deleted),
                     meta =
-                        mapOf(
-                            "children" to children,
-                            "createdHolidayReservations" to reservations,
-                        )
+                        mapOf("children" to children, "createdHolidayReservations" to reservations),
                 )
             }
     }
 
-    data class HolidayReservationsDelete(
-        val childId: ChildId,
-        val date: LocalDate,
-    )
+    data class HolidayReservationsDelete(val childId: ChildId, val date: LocalDate)
 
     @PostMapping("/{groupId}/delete-holiday-reservations")
     fun deleteHolidayReservations(
@@ -188,7 +182,7 @@ class AbsenceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable groupId: GroupId,
-        @RequestBody body: List<HolidayReservationsDelete>
+        @RequestBody body: List<HolidayReservationsDelete>,
     ) {
         if (body.isEmpty()) return
 
@@ -215,8 +209,8 @@ class AbsenceController(
                         mapOf(
                             "children" to children,
                             "deletedReservations" to deletedReservations,
-                            "deletedAbsences" to deletedAbsences
-                        )
+                            "deletedAbsences" to deletedAbsences,
+                        ),
                 )
             }
     }
@@ -229,7 +223,7 @@ class AbsenceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: DeleteChildAbsenceBody
+        @RequestBody body: DeleteChildAbsenceBody,
     ) {
         val deleted =
             db.connect { dbc ->
@@ -239,7 +233,7 @@ class AbsenceController(
                         user,
                         clock,
                         Action.Child.DELETE_ABSENCE,
-                        childId
+                        childId,
                     )
                     it.deleteChildAbsences(childId, body.date)
                 }
@@ -247,7 +241,7 @@ class AbsenceController(
         Audit.AbsenceDelete.log(
             targetId = AuditId(childId),
             objectId = AuditId(deleted),
-            meta = mapOf("date" to body.date)
+            meta = mapOf("date" to body.date),
         )
     }
 
@@ -258,7 +252,7 @@ class AbsenceController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<Absence> {
         return db.connect { dbc ->
                 dbc.read {
@@ -267,7 +261,7 @@ class AbsenceController(
                         user,
                         clock,
                         Action.Child.READ_ABSENCES,
-                        childId
+                        childId,
                     )
                     getAbsencesOfChildByMonth(it, childId, year, month)
                 }
@@ -275,7 +269,7 @@ class AbsenceController(
             .also {
                 Audit.AbsenceRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("year" to year, "month" to month)
+                    meta = mapOf("year" to year, "month" to month),
                 )
             }
     }

@@ -12,7 +12,7 @@ interface HasDateOfBirth {
 
 fun <P : Any, C : HasDateOfBirth> determineHeadOfFamily(
     firstParent: Pair<P, List<C>>,
-    secondParent: Pair<P?, List<C>?>
+    secondParent: Pair<P?, List<C>?>,
 ): Pair<P, P?> {
     val parent1 = firstParent.first
     val parent2 = secondParent.first

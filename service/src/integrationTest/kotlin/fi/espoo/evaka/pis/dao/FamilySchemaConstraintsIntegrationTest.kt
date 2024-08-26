@@ -106,7 +106,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person1.id,
                         startDate2,
                         endDate2,
-                        createdAt2
+                        createdAt2,
                     )
                 )
                 it.insert(
@@ -117,7 +117,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person2.id,
                         startDate2,
                         endDate2,
-                        createdAt2
+                        createdAt2,
                     )
                 )
             }
@@ -239,7 +239,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person1.id,
                         startDate1,
                         endDate,
-                        createdAt
+                        createdAt,
                     )
                 )
                 it.insert(
@@ -250,7 +250,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person2.id,
                         startDate2,
                         endDate,
-                        createdAt
+                        createdAt,
                     )
                 )
             }
@@ -277,7 +277,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person1.id,
                         startDate,
                         endDate1,
-                        createdAt
+                        createdAt,
                     )
                 )
                 it.insert(
@@ -288,7 +288,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         person2.id,
                         startDate,
                         endDate2,
-                        createdAt
+                        createdAt,
                     )
                 )
             }
@@ -373,7 +373,7 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         childId: ChildId,
         parentId: PersonId,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate, Creator.DVV) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
@@ -385,9 +385,9 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
                         firstName = firstName,
                         lastName = "Meikäläinen",
                         email = "${firstName.lowercase()}.meikalainen@example.com",
-                        language = "fi"
+                        language = "fi",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
                 .let { tx.getPersonById(it)!! }
         }

@@ -14,7 +14,7 @@ data class StaffAttendancePlan(
     val type: StaffAttendanceType,
     val startTime: HelsinkiDateTime,
     val endTime: HelsinkiDateTime,
-    val description: String?
+    val description: String?,
 ) {
     fun canMerge(other: StaffAttendancePlan) =
         this.employeeId == other.employeeId &&

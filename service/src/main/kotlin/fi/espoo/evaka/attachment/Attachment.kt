@@ -44,7 +44,7 @@ data class Attachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
-    val attachedTo: AttachmentParent
+    val attachedTo: AttachmentParent,
 )
 
 data class IncomeAttachment(val id: AttachmentId, val name: String, val contentType: String)
@@ -53,5 +53,5 @@ data class MessageAttachment(val id: AttachmentId, val name: String, val content
 
 enum class AttachmentType {
     URGENCY,
-    EXTENDED_CARE
+    EXTENDED_CARE,
 }

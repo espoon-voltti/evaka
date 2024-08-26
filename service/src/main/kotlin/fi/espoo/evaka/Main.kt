@@ -19,7 +19,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder
             FlywayAutoConfiguration::class,
             SecurityAutoConfiguration::class,
             SecurityFilterAutoConfiguration::class,
-            TransactionAutoConfiguration::class
+            TransactionAutoConfiguration::class,
         ]
 )
 class Main

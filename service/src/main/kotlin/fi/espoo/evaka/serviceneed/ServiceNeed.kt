@@ -57,7 +57,7 @@ data class ServiceNeed(
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
     val confirmed: ServiceNeedConfirmation?,
-    val updated: HelsinkiDateTime
+    val updated: HelsinkiDateTime,
 )
 
 data class ServiceNeedSummary(
@@ -65,7 +65,7 @@ data class ServiceNeedSummary(
     val endDate: LocalDate,
     @Nested("option") val option: ServiceNeedOptionPublicInfo?,
     val contractDaysPerMonth: Int?,
-    val unitName: String
+    val unitName: String,
 )
 
 data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)
@@ -75,13 +75,13 @@ data class ServiceNeedOptionSummary(
     val nameFi: String,
     val nameSv: String,
     val nameEn: String,
-    val updated: HelsinkiDateTime
+    val updated: HelsinkiDateTime,
 )
 
 data class ServiceNeedConfirmation(
     @PropagateNull val userId: EvakaUserId,
     val name: String,
-    val at: HelsinkiDateTime?
+    val at: HelsinkiDateTime?,
 )
 
 data class ServiceNeedOptionPublicInfo(
@@ -91,7 +91,7 @@ data class ServiceNeedOptionPublicInfo(
     val nameEn: String,
     val validPlacementType: PlacementType,
     val validFrom: LocalDate,
-    val validTo: LocalDate?
+    val validTo: LocalDate?,
 ) {
     companion object {
         fun of(option: ServiceNeedOption) =
@@ -102,7 +102,7 @@ data class ServiceNeedOptionPublicInfo(
                 option.nameEn,
                 option.validPlacementType,
                 option.validFrom,
-                option.validTo
+                option.validTo,
             )
     }
 }
@@ -130,7 +130,7 @@ data class ServiceNeedOption(
     val voucherValueDescriptionSv: String,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
-    val updated: HelsinkiDateTime = HelsinkiDateTime.now()
+    val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) {
     fun daycareMinutesPerMonth(): Long? = daycareHoursPerMonth?.let { it * 60L }
 }
@@ -142,7 +142,7 @@ data class ServiceNeedOptionFee(
     val siblingDiscount2: BigDecimal,
     val siblingFee2: Int,
     val siblingDiscount2Plus: BigDecimal,
-    val siblingFee2Plus: Int
+    val siblingFee2Plus: Int,
 ) {
     fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
         val multiplier =
@@ -168,7 +168,7 @@ fun validateServiceNeed(
     startDate: LocalDate,
     endDate: LocalDate,
     optionId: ServiceNeedOptionId,
-    partWeek: Boolean
+    partWeek: Boolean,
 ) {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Start date cannot be before end date.")
@@ -213,7 +213,7 @@ fun createServiceNeed(
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
     partWeek: Boolean,
-    confirmedAt: HelsinkiDateTime
+    confirmedAt: HelsinkiDateTime,
 ): ServiceNeedId {
     validateServiceNeed(tx, placementId, startDate, endDate, optionId, partWeek)
     clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
@@ -225,7 +225,7 @@ fun createServiceNeed(
         shiftCare = shiftCare,
         partWeek = partWeek,
         confirmedBy = user.evakaUserId,
-        confirmedAt = confirmedAt
+        confirmedAt = confirmedAt,
     )
 }
 
@@ -238,7 +238,7 @@ fun updateServiceNeed(
     optionId: ServiceNeedOptionId,
     shiftCare: ShiftCareType,
     partWeek: Boolean,
-    confirmedAt: HelsinkiDateTime
+    confirmedAt: HelsinkiDateTime,
 ) {
     val old = tx.getServiceNeed(id)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId, partWeek)
@@ -247,7 +247,7 @@ fun updateServiceNeed(
             tx,
             old.placementId,
             FiniteDateRange(startDate, old.startDate.minusDays(1)),
-            excluding = id
+            excluding = id,
         )
     }
     if (endDate.isAfter(old.endDate)) {
@@ -255,7 +255,7 @@ fun updateServiceNeed(
             tx,
             old.placementId,
             FiniteDateRange(old.endDate.plusDays(1), endDate),
-            excluding = id
+            excluding = id,
         )
     }
 
@@ -267,7 +267,7 @@ fun updateServiceNeed(
         shiftCare = shiftCare,
         partWeek = partWeek,
         confirmedBy = user.evakaUserId,
-        confirmedAt = confirmedAt
+        confirmedAt = confirmedAt,
     )
 }
 
@@ -275,7 +275,7 @@ fun clearServiceNeedsFromPeriod(
     tx: Database.Transaction,
     placementId: PlacementId,
     periodToClear: FiniteDateRange,
-    excluding: ServiceNeedId? = null
+    excluding: ServiceNeedId? = null,
 ) {
     tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding)
         .forEach { old ->
@@ -293,7 +293,7 @@ fun clearServiceNeedsFromPeriod(
                         shiftCare = old.shiftCare,
                         partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
-                        confirmedAt = old.confirmed?.at
+                        confirmedAt = old.confirmed?.at,
                     )
                 }
                 periodToClear.includes(oldPeriod.end) -> {
@@ -305,7 +305,7 @@ fun clearServiceNeedsFromPeriod(
                         shiftCare = old.shiftCare,
                         partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
-                        confirmedAt = old.confirmed?.at
+                        confirmedAt = old.confirmed?.at,
                     )
                 }
                 else -> {
@@ -317,7 +317,7 @@ fun clearServiceNeedsFromPeriod(
                         shiftCare = old.shiftCare,
                         partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
-                        confirmedAt = old.confirmed?.at
+                        confirmedAt = old.confirmed?.at,
                     )
                     tx.insertServiceNeed(
                         placementId = placementId,
@@ -327,7 +327,7 @@ fun clearServiceNeedsFromPeriod(
                         shiftCare = old.shiftCare,
                         partWeek = old.partWeek,
                         confirmedBy = old.confirmed?.userId,
-                        confirmedAt = old.confirmed?.at
+                        confirmedAt = old.confirmed?.at,
                     )
                 }
             }
@@ -338,16 +338,16 @@ fun notifyServiceNeedUpdated(
     tx: Database.Transaction,
     clock: EvakaClock,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    childRange: ServiceNeedChildRange
+    childRange: ServiceNeedChildRange,
 ) {
     asyncJobRunner.plan(
         tx,
         listOf(
             AsyncJob.GenerateFinanceDecisions.forChild(
                 childRange.childId,
-                childRange.dateRange.asDateRange()
+                childRange.dateRange.asDateRange(),
             )
         ),
-        runAt = clock.now()
+        runAt = clock.now(),
     )
 }

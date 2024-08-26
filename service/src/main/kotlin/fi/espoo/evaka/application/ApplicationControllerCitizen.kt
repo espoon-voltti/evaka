@@ -61,14 +61,14 @@ class ApplicationControllerCitizen(
     private val decisionService: DecisionService,
     private val personService: PersonService,
     private val feeDecisionService: FeeDecisionService,
-    private val voucherValueDecisionService: VoucherValueDecisionService
+    private val voucherValueDecisionService: VoucherValueDecisionService,
 ) {
 
     @GetMapping("/applications/by-guardian")
     fun getGuardianApplications(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ApplicationsOfChild> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -77,7 +77,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_APPLICATIONS,
-                        user.id
+                        user.id,
                     )
                     val allApplications = tx.fetchApplicationSummariesForCitizen(user.id)
                     val allPermittedActions: Map<ApplicationId, Set<Action.Citizen.Application>> =
@@ -85,14 +85,14 @@ class ApplicationControllerCitizen(
                             tx,
                             user,
                             clock,
-                            allApplications.map { it.applicationId }
+                            allApplications.map { it.applicationId },
                         )
                     val allDecidableApplications =
                         getDecidableApplications(
                             tx,
                             user,
                             clock,
-                            allApplications.map { it.applicationId }.toSet()
+                            allApplications.map { it.applicationId }.toSet(),
                         )
                     val existingApplicationsByChild = allApplications.groupBy { it.childId }
 
@@ -117,7 +117,7 @@ class ApplicationControllerCitizen(
                                             allDecidableApplications.contains(it)
                                         }
                                     }
-                                    .toSet()
+                                    .toSet(),
                         )
                     }
                 }
@@ -129,7 +129,7 @@ class ApplicationControllerCitizen(
     fun getApplicationChildren(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<CitizenChildren> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -138,7 +138,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_APPLICATION_CHILDREN,
-                        user.id
+                        user.id,
                     )
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
@@ -151,7 +151,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): ApplicationDetails {
         val application =
             db.connect { dbc ->
@@ -161,14 +161,14 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Application.READ,
-                        applicationId
+                        applicationId,
                     )
 
                     fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
                         user,
                         tx,
                         personService,
-                        applicationId
+                        applicationId,
                     )
                 }
             }
@@ -190,7 +190,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CreateApplicationBody
+        @RequestBody body: CreateApplicationBody,
     ): ApplicationId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -199,14 +199,14 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_APPLICATION,
-                        body.childId
+                        body.childId,
                     )
                     if (
                         body.type != ApplicationType.CLUB &&
                             tx.duplicateApplicationExists(
                                 guardianId = user.id,
                                 childId = body.childId,
-                                type = body.type
+                                type = body.type,
                             )
                     ) {
                         throw BadRequest("Duplicate application")
@@ -231,7 +231,7 @@ class ApplicationControllerCitizen(
                         origin = ApplicationOrigin.ELECTRONIC,
                         type = body.type,
                         guardian = guardian,
-                        child = child
+                        child = child,
                     )
                 }
             }
@@ -239,7 +239,7 @@ class ApplicationControllerCitizen(
                 Audit.ApplicationCreate.log(
                     targetId = AuditId(body.childId),
                     objectId = AuditId(applicationId),
-                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type)
+                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type),
                 )
             }
     }
@@ -249,7 +249,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): Map<ApplicationType, Boolean> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -258,7 +258,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS,
-                        childId
+                        childId,
                     )
                     ApplicationType.values()
                         .map { type ->
@@ -267,7 +267,7 @@ class ApplicationControllerCitizen(
                                     tx.duplicateApplicationExists(
                                         guardianId = user.id,
                                         childId = childId,
-                                        type = type
+                                        type = type,
                                     ))
                         }
                         .toMap()
@@ -276,7 +276,7 @@ class ApplicationControllerCitizen(
             .also {
                 Audit.ApplicationReadDuplicates.log(
                     targetId = AuditId(user.id),
-                    objectId = AuditId(childId)
+                    objectId = AuditId(childId),
                 )
             }
     }
@@ -286,7 +286,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): Map<ApplicationType, Boolean> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -295,7 +295,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE,
-                        childId
+                        childId,
                     )
                     ApplicationType.values()
                         .map { type ->
@@ -303,7 +303,7 @@ class ApplicationControllerCitizen(
                                 tx.activePlacementExists(
                                     childId = childId,
                                     type = type,
-                                    today = clock.today()
+                                    today = clock.today(),
                                 )
                         }
                         .toMap()
@@ -318,7 +318,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody update: CitizenApplicationUpdate
+        @RequestBody update: CitizenApplicationUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -327,14 +327,14 @@ class ApplicationControllerCitizen(
                     user,
                     clock,
                     Action.Citizen.Application.UPDATE,
-                    applicationId
+                    applicationId,
                 )
                 applicationStateService.updateOwnApplicationContentsCitizen(
                     it,
                     user,
                     clock.now(),
                     applicationId,
-                    update
+                    update,
                 )
             }
         }
@@ -347,7 +347,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody applicationForm: ApplicationFormUpdate
+        @RequestBody applicationForm: ApplicationFormUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -356,7 +356,7 @@ class ApplicationControllerCitizen(
                     user,
                     clock,
                     Action.Citizen.Application.UPDATE,
-                    applicationId
+                    applicationId,
                 )
                 applicationStateService.updateOwnApplicationContentsCitizen(
                     it,
@@ -364,7 +364,7 @@ class ApplicationControllerCitizen(
                     clock.now(),
                     applicationId,
                     CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
-                    asDraft = true
+                    asDraft = true,
                 )
             }
         }
@@ -376,7 +376,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -393,7 +393,7 @@ class ApplicationControllerCitizen(
                             user,
                             clock,
                             Action.Citizen.Application.DELETE,
-                            applicationId
+                            applicationId,
                         )
                         tx.deleteApplication(applicationId)
                     }
@@ -414,7 +414,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -427,7 +427,7 @@ class ApplicationControllerCitizen(
     fun getDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): ApplicationDecisions {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -436,7 +436,7 @@ class ApplicationControllerCitizen(
                             tx,
                             user,
                             clock,
-                            Action.Citizen.Decision.READ
+                            Action.Citizen.Decision.READ,
                         )
                     val children = tx.getCitizenChildIds(clock.today(), user.id)
                     val decisions = tx.getOwnDecisions(user.id, children, filter)
@@ -447,22 +447,22 @@ class ApplicationControllerCitizen(
                                 tx,
                                 user,
                                 clock,
-                                decisions.map { it.id }
+                                decisions.map { it.id },
                             ),
                         decidableApplications =
                             getDecidableApplications(
                                 tx,
                                 user,
                                 clock,
-                                decisions.map { it.applicationId }.toSet()
-                            )
+                                decisions.map { it.applicationId }.toSet(),
+                            ),
                     )
                 }
             }
             .also {
                 Audit.DecisionRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.decisions.size)
+                    meta = mapOf("count" to it.decisions.size),
                 )
             }
     }
@@ -471,7 +471,7 @@ class ApplicationControllerCitizen(
         val decision: Decision,
         val validRequestedStartDatePeriod: FiniteDateRange,
         val permittedActions: Set<Action.Citizen.Decision>,
-        val canDecide: Boolean
+        val canDecide: Boolean,
     )
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -479,7 +479,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): List<DecisionWithValidStartDatePeriod> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -488,14 +488,14 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Application.READ_DECISIONS,
-                        applicationId
+                        applicationId,
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             tx,
                             user,
                             clock,
-                            Action.Citizen.Decision.READ
+                            Action.Citizen.Decision.READ,
                         )
                     val decisions = tx.getSentDecisionsByApplication(applicationId, filter)
                     val permittedActions =
@@ -503,21 +503,21 @@ class ApplicationControllerCitizen(
                             tx,
                             user,
                             clock,
-                            decisions.map { it.id }
+                            decisions.map { it.id },
                         )
                     val canDecide =
                         getDecidableApplications(
                             tx,
                             user,
                             clock,
-                            decisions.map { it.applicationId }.toSet()
+                            decisions.map { it.applicationId }.toSet(),
                         )
                     decisions.map {
                         DecisionWithValidStartDatePeriod(
                             it,
                             it.validRequestedStartDatePeriod(featureConfig),
                             permittedActions[it.id] ?: emptySet(),
-                            canDecide.contains(it.applicationId)
+                            canDecide.contains(it.applicationId),
                         )
                     }
                 }
@@ -525,7 +525,7 @@ class ApplicationControllerCitizen(
             .also {
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -536,7 +536,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: AcceptDecisionRequest
+        @RequestBody body: AcceptDecisionRequest,
     ) {
         // note: applicationStateService handles logging and authorization
         db.connect { dbc ->
@@ -547,7 +547,7 @@ class ApplicationControllerCitizen(
                     clock,
                     applicationId,
                     body.decisionId,
-                    body.requestedStartDate
+                    body.requestedStartDate,
                 )
             }
         }
@@ -559,7 +559,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: RejectDecisionRequest
+        @RequestBody body: RejectDecisionRequest,
     ) {
         // note: applicationStateService handles logging and authorization
         db.connect { dbc ->
@@ -569,7 +569,7 @@ class ApplicationControllerCitizen(
                     user,
                     clock,
                     applicationId,
-                    body.decisionId
+                    body.decisionId,
                 )
             }
         }
@@ -580,7 +580,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: DecisionId
+        @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 val decision =
@@ -590,7 +590,7 @@ class ApplicationControllerCitizen(
                             user,
                             clock,
                             Action.Citizen.Decision.DOWNLOAD_PDF,
-                            id
+                            id,
                         )
                         tx.getSentDecision(id)
                     } ?: throw NotFound("Decision $id does not exist")
@@ -603,7 +603,7 @@ class ApplicationControllerCitizen(
     fun getGuardianApplicationNotifications(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Int {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -612,7 +612,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS,
-                        user.id
+                        user.id,
                     )
                     tx.fetchApplicationNotificationCountForCitizen(user.id)
                 }
@@ -633,7 +633,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_FINANCE_DECISIONS,
-                        user.id
+                        user.id,
                     )
                     val voucherValueDecisionRows =
                         tx.getVoucherValueDecisionByLiableCitizen(user.id)
@@ -665,7 +665,7 @@ class ApplicationControllerCitizen(
                                         FinanceDecisionChildInfo(
                                             childInfo.id,
                                             childInfo.firstName,
-                                            childInfo.lastName
+                                            childInfo.lastName,
                                         )
                                     ),
                                 validFrom = row.validFrom,
@@ -674,15 +674,15 @@ class ApplicationControllerCitizen(
                                 coDebtors =
                                     listOfNotNull(
                                             personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId]
+                                            personMap[row.partnerId],
                                         )
                                         .map {
                                             LiableCitizenInfo(
                                                 id = it.id,
                                                 firstName = it.firstName,
-                                                lastName = it.lastName
+                                                lastName = it.lastName,
                                             )
-                                        }
+                                        },
                             )
                         }
                     val feeDecisionInfos =
@@ -697,15 +697,15 @@ class ApplicationControllerCitizen(
                                 coDebtors =
                                     listOfNotNull(
                                             personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId]
+                                            personMap[row.partnerId],
                                         )
                                         .map {
                                             LiableCitizenInfo(
                                                 id = it.id,
                                                 firstName = it.firstName,
-                                                lastName = it.lastName
+                                                lastName = it.lastName,
                                             )
-                                        }
+                                        },
                             )
                         }
                     voucherValueDecisionInfos + feeDecisionInfos
@@ -714,7 +714,7 @@ class ApplicationControllerCitizen(
             .also {
                 Audit.FinanceDecisionCitizenRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -724,7 +724,7 @@ class ApplicationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: FeeDecisionId
+        @PathVariable id: FeeDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -733,7 +733,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.FeeDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 feeDecisionService.getFeeDecisionPdfResponse(dbc, id)
@@ -743,13 +743,13 @@ class ApplicationControllerCitizen(
 
     @GetMapping(
         "/voucher-value-decisions/{id}/download",
-        produces = [MediaType.APPLICATION_PDF_VALUE]
+        produces = [MediaType.APPLICATION_PDF_VALUE],
     )
     fun downloadVoucherValueDecisionPdf(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: VoucherValueDecisionId
+        @PathVariable id: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -758,7 +758,7 @@ class ApplicationControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.VoucherValueDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 voucherValueDecisionService.getDecisionPdfResponse(dbc, id)
@@ -770,7 +770,7 @@ class ApplicationControllerCitizen(
         tx: Database.Read,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        applications: Set<ApplicationId>
+        applications: Set<ApplicationId>,
     ): Set<ApplicationId> {
         val canAccept =
             accessControl
@@ -779,7 +779,7 @@ class ApplicationControllerCitizen(
                     user,
                     clock,
                     Action.Application.ACCEPT_DECISION,
-                    applications
+                    applications,
                 )
                 .filter { it.value.isPermitted() }
                 .keys
@@ -790,7 +790,7 @@ class ApplicationControllerCitizen(
                     user,
                     clock,
                     Action.Application.REJECT_DECISION,
-                    applications
+                    applications,
                 )
                 .filter { it.value.isPermitted() }
                 .keys
@@ -822,20 +822,12 @@ data class DecisionSummary(
     val type: DecisionType,
     val status: DecisionStatus,
     val sentDate: LocalDate,
-    val resolved: LocalDate?
+    val resolved: LocalDate?,
 )
 
-data class LiableCitizenInfo(
-    val id: PersonId,
-    val firstName: String,
-    val lastName: String,
-)
+data class LiableCitizenInfo(val id: PersonId, val firstName: String, val lastName: String)
 
-data class FinanceDecisionChildInfo(
-    val id: PersonId,
-    val firstName: String,
-    val lastName: String,
-)
+data class FinanceDecisionChildInfo(val id: PersonId, val firstName: String, val lastName: String)
 
 data class FinanceDecisionCitizenInfo(
     val id: UUID,
@@ -844,7 +836,7 @@ data class FinanceDecisionCitizenInfo(
     val validTo: LocalDate?,
     val sentAt: HelsinkiDateTime,
     val coDebtors: List<LiableCitizenInfo>,
-    val decisionChildren: List<FinanceDecisionChildInfo>
+    val decisionChildren: List<FinanceDecisionChildInfo>,
 )
 
 private fun hideCriticalApplicationInfoFromOtherGuardian(
@@ -858,7 +850,7 @@ private fun hideCriticalApplicationInfoFromOtherGuardian(
                         person = application.form.child.person.copy(socialSecurityNumber = null),
                         address = null,
                         futureAddress = null,
-                        assistanceDescription = ""
+                        assistanceDescription = "",
                     ),
                 guardian =
                     application.form.guardian.copy(
@@ -866,18 +858,18 @@ private fun hideCriticalApplicationInfoFromOtherGuardian(
                         address = null,
                         futureAddress = null,
                         phoneNumber = "",
-                        email = ""
+                        email = "",
                     ),
                 preferences =
                     application.form.preferences.copy(
                         siblingBasis =
                             application.form.preferences.siblingBasis?.copy(
                                 siblingName = "",
-                                siblingSsn = ""
+                                siblingSsn = "",
                             )
                     ),
                 otherPartner = null,
                 otherChildren = emptyList(),
-                otherInfo = ""
+                otherInfo = "",
             )
     )

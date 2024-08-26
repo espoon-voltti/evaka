@@ -42,7 +42,7 @@ class Config(env: SfiEnv) {
                 password =
                     requireNotNull(env.printing.billingPassword?.value) {
                         "SFI printing billing password must be set"
-                    }
+                    },
             )
         )
 
@@ -80,7 +80,7 @@ class Config(env: SfiEnv) {
             NewElectronicMessage(
                 title = msg.messageHeader,
                 body = msg.messageContent,
-                files = listOf(file)
+                files = listOf(file),
             ),
             NewNormalPaperMail(
                 createCoverPage = true,
@@ -92,7 +92,7 @@ class Config(env: SfiEnv) {
                         streetAddress = msg.streetAddress,
                         zipCode = msg.postalCode,
                         city = msg.postOffice,
-                        countryCode = msg.countryCode
+                        countryCode = msg.countryCode,
                     )
                 ),
                 paperMailSender,
@@ -104,7 +104,7 @@ class Config(env: SfiEnv) {
 
 class SfiMessagesRestClient(
     env: SfiEnv,
-    private val getDocument: (bucketName: String, key: String) -> Document
+    private val getDocument: (bucketName: String, key: String) -> Document,
 ) : SfiMessagesClient {
     private val config = Config(env)
     private val jsonMapper = defaultJsonMapperBuilder().build()

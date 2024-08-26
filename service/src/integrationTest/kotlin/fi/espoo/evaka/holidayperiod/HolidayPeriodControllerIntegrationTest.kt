@@ -53,7 +53,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = today,
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
         }
@@ -70,15 +70,15 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart.minusDays(1),
-                        AbsenceType.OTHER_ABSENCE
+                        AbsenceType.OTHER_ABSENCE,
                     ),
                     // Inside holiday period
                     FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart,
-                        AbsenceType.OTHER_ABSENCE
-                    )
-                )
+                        AbsenceType.OTHER_ABSENCE,
+                    ),
+                ),
             )
             tx.upsertFullDayAbsences(
                 EvakaUserId(testDecisionMaker_1.id.raw),
@@ -88,9 +88,9 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     FullDayAbsenseUpsert(
                         testChild_1.id,
                         holidayPeriodStart.plusDays(1),
-                        AbsenceType.OTHER_ABSENCE
+                        AbsenceType.OTHER_ABSENCE,
                     )
-                )
+                ),
             )
 
             listOf(
@@ -117,7 +117,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
                         createdBy = EvakaUserId(testAdult_1.id.raw),
-                    )
+                    ),
                 )
                 .forEach { tx.insert(it) }
         }
@@ -129,15 +129,15 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             HolidayPeriodBody(
                 period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
                 reservationsOpenOn = holidayPeriodDeadline,
-                reservationDeadline = holidayPeriodDeadline
-            )
+                reservationDeadline = holidayPeriodDeadline,
+            ),
         )
 
         val holidayPeriods =
             holidayPeriodController.getHolidayPeriods(
                 dbInstance(),
                 AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-                MockEvakaClock(now)
+                MockEvakaClock(now),
             )
         assertEquals(
             listOf(
@@ -145,10 +145,10 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     id = holidayPeriods[0].id,
                     period = FiniteDateRange(holidayPeriodStart, holidayPeriodEnd),
                     reservationsOpenOn = holidayPeriodDeadline,
-                    reservationDeadline = holidayPeriodDeadline
+                    reservationDeadline = holidayPeriodDeadline,
                 )
             ),
-            holidayPeriods
+            holidayPeriods,
         )
 
         val absences =
@@ -157,7 +157,7 @@ class HolidayPeriodControllerIntegrationTest : FullApplicationTest(resetDbBefore
             }
         assertEquals(
             listOf(holidayPeriodStart.minusDays(1), holidayPeriodStart.plusDays(1)),
-            absences
+            absences,
         )
 
         val reservations =

@@ -30,7 +30,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
     data class ProcessMetadata(
         val process: ArchivedProcess,
         val primaryDocument: DocumentMetadata,
-        val secondaryDocuments: List<DocumentMetadata>
+        val secondaryDocuments: List<DocumentMetadata>,
     )
 
     data class DocumentMetadata(
@@ -38,7 +38,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         val createdAt: HelsinkiDateTime?,
         @Nested("created_by") val createdBy: EvakaUser?,
         val confidential: Boolean,
-        val downloadPath: String?
+        val downloadPath: String?,
     )
 
     // wrapper that is needed because currently returning null
@@ -50,7 +50,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childDocumentId: ChildDocumentId
+        @PathVariable childDocumentId: ChildDocumentId,
     ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -59,7 +59,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.ChildDocument.READ_METADATA,
-                        childDocumentId
+                        childDocumentId,
                     )
                     val process =
                         tx.getArchiveProcessByChildDocumentId(childDocumentId)
@@ -77,11 +77,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 user,
                                                 clock,
                                                 Action.ChildDocument.DOWNLOAD,
-                                                childDocumentId
+                                                childDocumentId,
                                             )
                                         }
                                 ),
-                            secondaryDocuments = emptyList()
+                            secondaryDocuments = emptyList(),
                         )
                     )
                 }
@@ -89,7 +89,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             .also { response ->
                 Audit.ChildDocumentReadMetadata.log(
                     targetId = AuditId(childDocumentId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
                 )
             }
     }
@@ -99,7 +99,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable decisionId: AssistanceNeedDecisionId
+        @PathVariable decisionId: AssistanceNeedDecisionId,
     ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -108,7 +108,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.AssistanceNeedDecision.READ_METADATA,
-                        decisionId
+                        decisionId,
                     )
                     val process =
                         tx.getArchiveProcessByAssistanceNeedDecisionId(decisionId)
@@ -127,11 +127,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 user,
                                                 clock,
                                                 Action.AssistanceNeedDecision.DOWNLOAD,
-                                                decisionId
+                                                decisionId,
                                             )
                                         }
                                 ),
-                            secondaryDocuments = emptyList()
+                            secondaryDocuments = emptyList(),
                         )
                     )
                 }
@@ -139,7 +139,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             .also { response ->
                 Audit.AssistanceNeedDecisionReadMetadata.log(
                     targetId = AuditId(decisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
                 )
             }
     }
@@ -149,7 +149,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable decisionId: AssistanceNeedPreschoolDecisionId
+        @PathVariable decisionId: AssistanceNeedPreschoolDecisionId,
     ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -158,7 +158,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.READ_METADATA,
-                        decisionId
+                        decisionId,
                     )
                     val process =
                         tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(decisionId)
@@ -178,11 +178,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                 user,
                                                 clock,
                                                 Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
-                                                decisionId
+                                                decisionId,
                                             )
                                         }
                                 ),
-                            secondaryDocuments = emptyList()
+                            secondaryDocuments = emptyList(),
                         )
                     )
                 }
@@ -190,7 +190,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             .also { response ->
                 Audit.AssistanceNeedPreschoolDecisionReadMetadata.log(
                     targetId = AuditId(decisionId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
                 )
             }
     }
@@ -200,7 +200,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): ProcessMetadataResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -209,7 +209,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Application.READ_METADATA,
-                        applicationId
+                        applicationId,
                     )
                     val process =
                         tx.getArchiveProcessByApplicationId(applicationId)
@@ -234,11 +234,11 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
                                                     user,
                                                     clock,
                                                     Action.Decision.DOWNLOAD_PDF,
-                                                    decisionId
+                                                    decisionId,
                                                 )
                                             }
                                     )
-                                }
+                                },
                         )
                     )
                 }
@@ -246,7 +246,7 @@ class ProcessMetadataController(private val accessControl: AccessControl) {
             .also { response ->
                 Audit.ApplicationReadMetadata.log(
                     targetId = AuditId(applicationId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke)
+                    objectId = response.data?.process?.id?.let(AuditId::invoke),
                 )
             }
     }

@@ -19,7 +19,7 @@ class GeneratorsTest {
     private enum class Multi {
         A,
         B,
-        C
+        C,
     }
 
     @Test
@@ -42,7 +42,7 @@ export type Multi =
   | 'C'
 """
                 .trimStart(),
-            generateEnum<Multi>()()
+            generateEnum<Multi>()(),
         )
     }
 }

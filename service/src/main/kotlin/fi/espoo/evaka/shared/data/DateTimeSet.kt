@@ -29,13 +29,17 @@ class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
 
     companion object {
         private val EMPTY = DateTimeSet(emptyList())
+
         /** Returns a empty datetime set */
         fun empty(): DateTimeSet = EMPTY
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(vararg ranges: HelsinkiDateTimeRange): DateTimeSet =
             empty().addAll(ranges.asSequence())
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(ranges: Iterable<HelsinkiDateTimeRange>): DateTimeSet = empty().addAll(ranges)
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(ranges: Sequence<HelsinkiDateTimeRange>): DateTimeSet = empty().addAll(ranges)
     }

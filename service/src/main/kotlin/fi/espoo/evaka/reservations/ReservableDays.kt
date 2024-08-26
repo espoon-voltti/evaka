@@ -13,7 +13,7 @@ private fun getNextMonday(now: LocalDate): LocalDate = now.plusDays(7 - now.dayO
 fun getNextReservableMonday(
     now: HelsinkiDateTime,
     thresholdHours: Long,
-    nextMonday: LocalDate = getNextMonday(now.toLocalDate())
+    nextMonday: LocalDate = getNextMonday(now.toLocalDate()),
 ): LocalDate =
     if (nextMonday.isAfter(now.plusHours(thresholdHours).toLocalDate())) {
         nextMonday
@@ -21,10 +21,7 @@ fun getNextReservableMonday(
         getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
     }
 
-fun getReservableRange(
-    now: HelsinkiDateTime,
-    thresholdHours: Long,
-): FiniteDateRange {
+fun getReservableRange(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRange {
     val today = now.toLocalDate()
     val nextReservableMonday = getNextReservableMonday(now, thresholdHours, getNextMonday(today))
 

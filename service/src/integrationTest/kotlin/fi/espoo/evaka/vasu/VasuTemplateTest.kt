@@ -25,7 +25,7 @@ class VasuTemplateTest {
             type = CurriculumType.DAYCARE,
             language = OfficialLanguage.FI,
             documentCount = 5,
-            migratedDocumentCount = 0
+            migratedDocumentCount = 0,
         )
     }
 
@@ -49,11 +49,11 @@ class VasuTemplateTest {
         assertFailure(template, templateUpdate(FiniteDateRange(today.minusDays(1), today)))
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(today.plusDays(1), today.plusDays(2)))
+            templateUpdate(FiniteDateRange(today.plusDays(1), today.plusDays(2))),
         )
         assertValid(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, today.plusDays(2)))
+            templateUpdate(FiniteDateRange(template.valid.start, today.plusDays(2))),
         )
     }
 
@@ -63,11 +63,11 @@ class VasuTemplateTest {
         val template = currentlyValidTemplate()
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, today.minusDays(2)))
+            templateUpdate(FiniteDateRange(template.valid.start, today.minusDays(2))),
         )
         assertValid(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, today.minusDays(1)))
+            templateUpdate(FiniteDateRange(template.valid.start, today.minusDays(1))),
         )
     }
 
@@ -79,7 +79,7 @@ class VasuTemplateTest {
                 .copy(valid = FiniteDateRange(today.plusMonths(1), today.plusMonths(2)))
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(today.minusDays(1), template.valid.end))
+            templateUpdate(FiniteDateRange(today.minusDays(1), template.valid.end)),
         )
         assertValid(template, templateUpdate(FiniteDateRange(today, template.valid.end)))
     }
@@ -92,15 +92,15 @@ class VasuTemplateTest {
                 .copy(valid = FiniteDateRange(today.minusMonths(2), today.minusMonths(1)))
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start.plusDays(1), template.valid.end))
+            templateUpdate(FiniteDateRange(template.valid.start.plusDays(1), template.valid.end)),
         )
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start.minusDays(1), template.valid.end))
+            templateUpdate(FiniteDateRange(template.valid.start.minusDays(1), template.valid.end)),
         )
         assertValid(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end))
+            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end)),
         )
     }
 
@@ -112,12 +112,12 @@ class VasuTemplateTest {
                 .copy(valid = FiniteDateRange(today.minusMonths(2), today.minusMonths(1)))
         assertFailure(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end.minusDays(1)))
+            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end.minusDays(1))),
         )
 
         assertValid(
             template,
-            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end.plusDays(1)))
+            templateUpdate(FiniteDateRange(template.valid.start, template.valid.end.plusDays(1))),
         )
     }
 

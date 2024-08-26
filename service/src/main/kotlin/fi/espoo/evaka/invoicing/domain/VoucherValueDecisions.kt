@@ -53,7 +53,7 @@ data class VoucherValueDecision(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val decisionHandler: UUID? = null
+    val decisionHandler: UUID? = null,
 ) : FinanceDecision<VoucherValueDecision> {
     override val validDuring: DateRange
         @JsonIgnore get() = DateRange(validFrom, validTo)
@@ -91,7 +91,7 @@ data class VoucherValueDecision(
             childIncome: DecisionIncome?,
             familySize: Int,
             feeThresholds: FeeDecisionThresholds,
-            child: ChildWithDateOfBirth
+            child: ChildWithDateOfBirth,
         ): VoucherValueDecision {
             val decision =
                 VoucherValueDecision(
@@ -118,7 +118,7 @@ data class VoucherValueDecision(
                     baseValue = 0,
                     assistanceNeedCoefficient = BigDecimal.ZERO,
                     voucherValue = 0,
-                    difference = emptySet()
+                    difference = emptySet(),
                 )
             check(decision.isEmpty())
             return decision
@@ -164,11 +164,11 @@ enum class VoucherValueDecisionDifference(
     INCOME({ d1, d2 ->
         setOf(
             d1.headOfFamilyIncome?.effectiveComparable(),
-            d1.partnerIncome?.effectiveComparable()
+            d1.partnerIncome?.effectiveComparable(),
         ) ==
             setOf(
                 d2.headOfFamilyIncome?.effectiveComparable(),
-                d2.partnerIncome?.effectiveComparable()
+                d2.partnerIncome?.effectiveComparable(),
             ) && d1.childIncome?.effectiveComparable() == d2.childIncome?.effectiveComparable()
     }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
@@ -191,7 +191,7 @@ enum class VoucherValueDecisionDifference(
     companion object {
         fun getDifference(
             d1: VoucherValueDecision,
-            d2: VoucherValueDecision
+            d2: VoucherValueDecision,
         ): Set<VoucherValueDecisionDifference> {
             if (d1.isEmpty() && d2.isEmpty()) {
                 return if (GUARDIANS.contentEquals(d1, d2)) emptySet() else setOf(GUARDIANS)
@@ -236,7 +236,7 @@ data class VoucherValueDecisionDetailed(
     val financeDecisionHandlerLastName: String?,
     val partnerIsCodebtor: Boolean? = false,
     // True if the document is a legacy document that may contain guardian name and address.
-    val documentContainsContactInfo: Boolean
+    val documentContainsContactInfo: Boolean,
 ) {
     val incomeEffect
         get() =
@@ -249,7 +249,7 @@ data class VoucherValueDecisionDetailed(
                 headOfFamilyIncome?.effect,
                 headOfFamilyIncome?.total,
                 partnerIncome?.effect,
-                partnerIncome?.total
+                partnerIncome?.total,
             )
 
     val requiresManualSending
@@ -291,7 +291,7 @@ data class VoucherValueDecisionSummary(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val difference: Set<VoucherValueDecisionDifference>
+    val difference: Set<VoucherValueDecisionDifference>,
 ) {
     val annullingDecision
         get() = this.voucherValue == 0
@@ -299,12 +299,12 @@ data class VoucherValueDecisionSummary(
 
 data class VoucherValueDecisionPlacement(
     @PropagateNull val unitId: DaycareId,
-    val type: PlacementType
+    val type: PlacementType,
 )
 
 data class VoucherValueDecisionPlacementDetailed(
     @Nested("unit") val unit: UnitData,
-    val type: PlacementType
+    val type: PlacementType,
 )
 
 data class VoucherValueDecisionServiceNeed(
@@ -314,7 +314,7 @@ data class VoucherValueDecisionServiceNeed(
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
     val voucherValueDescriptionSv: String,
-    val missing: Boolean
+    val missing: Boolean,
 )
 
 fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate =
@@ -328,7 +328,7 @@ data class VoucherValue(val baseValue: Int, val coefficient: BigDecimal, val val
 fun getVoucherValues(
     period: DateRange,
     dateOfBirth: LocalDate,
-    voucherValues: ServiceNeedOptionVoucherValue
+    voucherValues: ServiceNeedOptionVoucherValue,
 ): VoucherValue {
     val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
     val periodStartInMiddleOfTargetPeriod =
@@ -345,7 +345,7 @@ fun getVoucherValues(
             VoucherValue(
                 voucherValues.baseValueUnder3y,
                 voucherValues.coefficientUnder3y,
-                voucherValues.valueUnder3y
+                voucherValues.valueUnder3y,
             )
         else ->
             VoucherValue(voucherValues.baseValue, voucherValues.coefficient, voucherValues.value)

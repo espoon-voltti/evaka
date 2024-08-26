@@ -15,7 +15,7 @@ fun Database.Transaction.insertVasuTemplate(
     valid: FiniteDateRange,
     type: CurriculumType,
     language: OfficialLanguage,
-    content: VasuContent
+    content: VasuContent,
 ): VasuTemplateId {
     return createQuery {
             sql(
@@ -44,7 +44,7 @@ fun Database.Read.getVasuTemplate(id: VasuTemplateId): VasuTemplate? {
 
 fun Database.Read.getVasuTemplates(
     clock: EvakaClock,
-    validOnly: Boolean
+    validOnly: Boolean,
 ): List<VasuTemplateSummary> {
     return createQuery {
             sql(

@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/starting-placements", // deprecated
-        "/employee/reports/starting-placements"
+        "/employee/reports/starting-placements",
     )
     fun getStartingPlacementsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<StartingPlacementsRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -37,7 +37,7 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
                         it,
                         user,
                         clock,
-                        Action.Global.READ_STARTING_PLACEMENTS_REPORT
+                        Action.Global.READ_STARTING_PLACEMENTS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getStartingPlacementsRows(year, month)
@@ -58,7 +58,7 @@ data class StartingPlacementsRow(
     val dateOfBirth: LocalDate,
     val ssn: String?,
     val placementStart: LocalDate,
-    val careAreaName: String
+    val careAreaName: String,
 )
 
 /*
@@ -66,7 +66,7 @@ data class StartingPlacementsRow(
  */
 private fun Database.Read.getStartingPlacementsRows(
     year: Int,
-    month: Int
+    month: Int,
 ): List<StartingPlacementsRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
     return createQuery {

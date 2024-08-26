@@ -59,7 +59,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     DevFeeDecision(
                         headOfFamilyId = headOfFamily,
                         validDuring = range,
-                        status = FeeDecisionStatus.SENT
+                        status = FeeDecisionStatus.SENT,
                     )
                 )
             tx.insert(
@@ -67,7 +67,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     feeDecisionId = feeDecisionId,
                     childId = child1,
                     placementUnitId = daycare.id,
-                    finalFee = 28800
+                    finalFee = 28800,
                 )
             )
             tx.insert(
@@ -75,7 +75,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     feeDecisionId = feeDecisionId,
                     childId = child2,
                     placementUnitId = daycare.id,
-                    finalFee = 28800
+                    finalFee = 28800,
                 )
             )
             tx.insert(
@@ -83,7 +83,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     feeDecisionId = feeDecisionId,
                     childId = child3,
                     placementUnitId = daycare.id,
-                    finalFee = 14400
+                    finalFee = 14400,
                 )
             )
         }
@@ -99,15 +99,15 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(emptyList(), getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION))
         assertEquals(
             emptyList(),
-            getReport(FinanceDecisionType.FEE_DECISION, date = date.minusYears(1))
+            getReport(FinanceDecisionType.FEE_DECISION, date = date.minusYears(1)),
         )
         assertEquals(
             emptyList(),
-            getReport(FinanceDecisionType.FEE_DECISION, areaId = AreaId(UUID.randomUUID()))
+            getReport(FinanceDecisionType.FEE_DECISION, areaId = AreaId(UUID.randomUUID())),
         )
         assertEquals(
             emptyList(),
-            getReport(FinanceDecisionType.FEE_DECISION, unitId = DaycareId(UUID.randomUUID()))
+            getReport(FinanceDecisionType.FEE_DECISION, unitId = DaycareId(UUID.randomUUID())),
         )
     }
 
@@ -133,7 +133,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validTo = range.end,
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
-                    finalCoPayment = 28800
+                    finalCoPayment = 28800,
                 )
             )
             tx.insert(
@@ -144,7 +144,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validTo = range.end,
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
-                    finalCoPayment = 28800
+                    finalCoPayment = 28800,
                 )
             )
             tx.insert(
@@ -155,7 +155,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     validTo = range.end,
                     status = VoucherValueDecisionStatus.SENT,
                     placementUnitId = daycare.id,
-                    finalCoPayment = 14400
+                    finalCoPayment = 14400,
                 )
             )
         }
@@ -168,30 +168,30 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(expected, getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION))
         assertEquals(
             expected,
-            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, areaId = area.id)
+            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, areaId = area.id),
         )
         assertEquals(
             expected,
-            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, unitId = daycare.id)
+            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, unitId = daycare.id),
         )
         assertEquals(emptyList(), getReport(FinanceDecisionType.FEE_DECISION))
         assertEquals(
             emptyList(),
-            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, date = date.minusYears(1))
+            getReport(FinanceDecisionType.VOUCHER_VALUE_DECISION, date = date.minusYears(1)),
         )
         assertEquals(
             emptyList(),
             getReport(
                 FinanceDecisionType.VOUCHER_VALUE_DECISION,
-                areaId = AreaId(UUID.randomUUID())
-            )
+                areaId = AreaId(UUID.randomUUID()),
+            ),
         )
         assertEquals(
             emptyList(),
             getReport(
                 FinanceDecisionType.VOUCHER_VALUE_DECISION,
-                unitId = DaycareId(UUID.randomUUID())
-            )
+                unitId = DaycareId(UUID.randomUUID()),
+            ),
         )
     }
 
@@ -199,7 +199,7 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         decisionType: FinanceDecisionType,
         date: LocalDate = clock.today(),
         areaId: AreaId? = null,
-        unitId: DaycareId? = null
+        unitId: DaycareId? = null,
     ) =
         controller.getCustomerFeesReport(
             db = dbInstance(),
@@ -208,6 +208,6 @@ class CustomerFeesReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             date = date,
             areaId = areaId,
             unitId = unitId,
-            decisionType = decisionType
+            decisionType = decisionType,
         )
 }

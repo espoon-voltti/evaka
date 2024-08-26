@@ -25,11 +25,11 @@ interface JobSchedule {
 data class ScheduledJobDefinition(
     val job: Enum<*>,
     val settings: ScheduledJobSettings,
-    val jobFn: (db: Database.Connection, clock: EvakaClock) -> Unit
+    val jobFn: (db: Database.Connection, clock: EvakaClock) -> Unit,
 )
 
 data class ScheduledJobSettings(
     val enabled: Boolean,
     val schedule: Schedule,
-    val retryCount: Int? = null
+    val retryCount: Int? = null,
 )

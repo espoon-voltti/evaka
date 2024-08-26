@@ -81,7 +81,7 @@ val oldTestFeeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )
 
 val testFeeThresholds =
@@ -110,7 +110,7 @@ val testFeeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )
 
 val testDecisionChild1 =
@@ -124,7 +124,7 @@ val testDecisionChild1 =
                 null,
                 "palveluntarve",
                 "vårdbehövet",
-                false
+                false,
             ),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -132,7 +132,7 @@ val testDecisionChild1 =
         feeAlterations =
             listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
         finalFee = 28900,
-        childIncome = null
+        childIncome = null,
     )
 val testDecisionChild2 =
     FeeDecisionChild(
@@ -145,7 +145,7 @@ val testDecisionChild2 =
                 null,
                 "palveluntarve",
                 "vårdbehövet",
-                false
+                false,
             ),
         baseFee = 28900,
         siblingDiscount = 0,
@@ -153,7 +153,7 @@ val testDecisionChild2 =
         feeAlterations =
             listOf(FeeAlterationWithEffect(FeeAlterationType.RELIEF, 50, false, -10800)),
         finalFee = 28900,
-        childIncome = null
+        childIncome = null,
     )
 
 val testDecision1 =
@@ -172,10 +172,10 @@ val testDecision1 =
         children =
             listOf(
                 testDecisionChild1,
-                testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)
+                testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500),
             ),
         created = HelsinkiDateTime.now(),
-        difference = emptySet()
+        difference = emptySet(),
     )
 
 val testDecisionIncome =
@@ -185,14 +185,14 @@ val testDecisionIncome =
         totalIncome = 314100,
         totalExpenses = 0,
         total = 314100,
-        worksAtECHA = false
+        worksAtECHA = false,
     )
 
 fun createFeeDecisionAlterationFixture(
     type: FeeAlterationType = FeeAlterationType.DISCOUNT,
     amount: Int = 100,
     isAbsolute: Boolean = false,
-    effect: Int = 10000
+    effect: Int = 10000,
 ) = FeeAlterationWithEffect(type, amount, isAbsolute, effect)
 
 fun createFeeDecisionChildFixture(
@@ -204,7 +204,7 @@ fun createFeeDecisionChildFixture(
     baseFee: Int = 28900,
     siblingDiscount: Int = 0,
     fee: Int = 28900,
-    feeAlterations: List<FeeAlterationWithEffect> = listOf()
+    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
 ) =
     FeeDecisionChild(
         child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
@@ -215,7 +215,7 @@ fun createFeeDecisionChildFixture(
         fee = fee,
         feeAlterations = feeAlterations,
         finalFee = fee + feeAlterations.sumOf { it.effect },
-        childIncome = null
+        childIncome = null,
     )
 
 fun createFeeDecisionFixture(
@@ -230,7 +230,7 @@ fun createFeeDecisionFixture(
     headOfFamilyIncome: DecisionIncome? = null,
     partnerIncome: DecisionIncome? = null,
     familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
-    created: HelsinkiDateTime = HelsinkiDateTime.now()
+    created: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) =
     FeeDecision(
         id = FeeDecisionId(UUID.randomUUID()),
@@ -245,7 +245,7 @@ fun createFeeDecisionFixture(
         feeThresholds = feeThresholds,
         children = children,
         difference = emptySet(),
-        created = created
+        created = created,
     )
 
 fun createVoucherValueDecisionFixture(
@@ -265,7 +265,7 @@ fun createVoucherValueDecisionFixture(
     baseCoPayment: Int = 28900,
     siblingDiscount: Int = 0,
     coPayment: Int = 28900,
-    feeAlterations: List<FeeAlterationWithEffect> = listOf()
+    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
 ) =
     VoucherValueDecision(
         id = VoucherValueDecisionId(UUID.randomUUID()),
@@ -291,14 +291,14 @@ fun createVoucherValueDecisionFixture(
         coPayment = coPayment,
         feeAlterations = feeAlterations,
         finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
-        difference = emptySet()
+        difference = emptySet(),
     )
 
 fun createInvoiceRowFixture(
     childId: ChildId,
     unitId: DaycareId,
     amount: Int = 1,
-    unitPrice: Int = 28900
+    unitPrice: Int = 28900,
 ) =
     InvoiceRow(
         id = InvoiceRowId(UUID.randomUUID()),
@@ -309,7 +309,7 @@ fun createInvoiceRowFixture(
         unitId = unitId,
         periodStart = LocalDate.of(2019, 1, 1),
         periodEnd = LocalDate.of(2019, 1, 31),
-        correctionId = null
+        correctionId = null,
     )
 
 fun createInvoiceFixture(
@@ -318,7 +318,7 @@ fun createInvoiceFixture(
     areaId: AreaId,
     number: Long? = null,
     period: FiniteDateRange = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
-    rows: List<InvoiceRow>
+    rows: List<InvoiceRow>,
 ) =
     Invoice(
         id = InvoiceId(UUID.randomUUID()),
@@ -329,5 +329,5 @@ fun createInvoiceFixture(
         codebtor = null,
         periodStart = period.start,
         periodEnd = period.end,
-        rows = rows
+        rows = rows,
     )

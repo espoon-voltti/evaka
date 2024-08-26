@@ -41,7 +41,7 @@ fun Database.Read.getParentships(
     headOfChildId: PersonId?,
     childId: ChildId?,
     includeConflicts: Boolean = false,
-    period: DateRange? = null
+    period: DateRange? = null,
 ): List<ParentshipDetailed> {
     if (headOfChildId == null && childId == null)
         throw BadRequest("Must give either headOfChildId or childId")
@@ -79,7 +79,7 @@ fun Database.Transaction.createParentship(
     startDate: LocalDate,
     endDate: LocalDate,
     creator: Creator,
-    conflict: Boolean = false
+    conflict: Boolean = false,
 ): Parentship {
     val (userId, applicationId) =
         when (creator) {
@@ -113,7 +113,7 @@ fun Database.Transaction.updateParentshipDuration(
     startDate: LocalDate,
     endDate: LocalDate,
     now: HelsinkiDateTime,
-    modifier: Modifier
+    modifier: Modifier,
 ): Boolean {
     val userId =
         when (modifier) {
@@ -141,7 +141,7 @@ fun Database.Transaction.updateParentshipDuration(
 fun Database.Transaction.retryParentship(
     id: ParentshipId,
     now: HelsinkiDateTime,
-    userId: EvakaUserId
+    userId: EvakaUserId,
 ) {
     createUpdate {
             sql(
@@ -200,7 +200,7 @@ private val personColumns =
         "invoicing_street_address",
         "postal_code",
         "post_office",
-        "force_manual_fee_decisions"
+        "force_manual_fee_decisions",
     )
 
 private val toParentship: (String, String) -> Row.() -> Parentship = { childAlias, headAlias ->
@@ -213,7 +213,7 @@ private val toParentship: (String, String) -> Row.() -> Parentship = { childAlia
             headOfChild = toPersonJSON(headAlias),
             startDate = column("start_date"),
             endDate = column("end_date"),
-            conflict = column("conflict")
+            conflict = column("conflict"),
         )
     }
 }
@@ -242,8 +242,8 @@ private val toParentshipDetailed: (String, String) -> Row.() -> ParentshipDetail
                         modifiedByName = column("modified_by_user_name"),
                         createdFromApplication = column("created_by_application"),
                         createdFromApplicationType = column("created_by_application_type"),
-                        createdFromApplicationCreated = column("created_by_application_created")
-                    )
+                        createdFromApplicationCreated = column("created_by_application_created"),
+                    ),
             )
         }
     }
@@ -270,6 +270,6 @@ internal val toPersonJSON: Row.(String) -> PersonJSON = { table ->
         invoicingStreetAddress = column("${table}_invoicing_street_address"),
         invoicingPostalCode = column("${table}_postal_code"),
         invoicingPostOffice = column("${table}_post_office"),
-        forceManualFeeDecisions = column("${table}_force_manual_fee_decisions")
+        forceManualFeeDecisions = column("${table}_force_manual_fee_decisions"),
     )
 }

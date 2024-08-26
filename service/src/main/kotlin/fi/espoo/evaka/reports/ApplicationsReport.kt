@@ -29,7 +29,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<ApplicationsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -40,7 +40,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_APPLICATIONS_REPORT
+                            Action.Unit.READ_APPLICATIONS_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getApplicationsRows(from, to, filter)
@@ -57,7 +57,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
 private fun Database.Read.getApplicationsRows(
     from: LocalDate,
     to: LocalDate,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<ApplicationsReportRow> =
     createQuery {
             sql(
@@ -109,5 +109,5 @@ data class ApplicationsReportRow(
     val over3Years: Int,
     val preschool: Int,
     val club: Int,
-    val total: Int
+    val total: Int,
 )

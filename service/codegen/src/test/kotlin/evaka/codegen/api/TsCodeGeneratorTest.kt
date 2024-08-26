@@ -55,7 +55,7 @@ class TsCodeGeneratorTest {
             text: String,
             vararg imports: TsImport,
             type: KType,
-            compact: Boolean = false
+            compact: Boolean = false,
         ) {
             assertEquals(TsCode(text, *imports), generator.tsType(type, compact = compact))
         }
@@ -69,7 +69,7 @@ class TsCodeGeneratorTest {
         assertTsCode(
             "{ bool: boolean, list: string[] | null, str: string }",
             type = typeOf<ObjectLiteral>(),
-            compact = true
+            compact = true,
         )
         assertTsCode(
             """{
@@ -78,7 +78,7 @@ class TsCodeGeneratorTest {
   str: string
 }"""
                 .trimIndent(),
-            type = typeOf<ObjectLiteral>()
+            type = typeOf<ObjectLiteral>(),
         )
 
         assertTsCode("string[]", type = typeOf<List<String>>())
@@ -87,7 +87,7 @@ class TsCodeGeneratorTest {
         assertTsCode("[string, number][]", type = typeOf<List<Pair<String, Int>>>())
         assertTsCode(
             "[string, number, boolean][]",
-            type = typeOf<List<Triple<String, Int, Boolean>>>()
+            type = typeOf<List<Triple<String, Int, Boolean>>>(),
         )
         assertTsCode("LocalDate[]", Imports.localDate, type = typeOf<List<LocalDate>>())
         assertTsCode("PlainObject[]", PlainObject.import, type = typeOf<List<PlainObject>>())
@@ -98,28 +98,28 @@ class TsCodeGeneratorTest {
   str: string
 } | null)[]"""
                 .trimIndent(),
-            type = typeOf<List<ObjectLiteral?>>()
+            type = typeOf<List<ObjectLiteral?>>(),
         )
 
         assertTsCode("Record<string, number>", type = typeOf<Map<String, Int>>())
         assertTsCode("Record<string, number | null>", type = typeOf<Map<String, Int?>>())
         assertTsCode(
             "Record<string, [string, number]>",
-            type = typeOf<Map<String, Pair<String, Int>>>()
+            type = typeOf<Map<String, Pair<String, Int>>>(),
         )
         assertTsCode(
             "Record<string, [string, number, boolean]>",
-            type = typeOf<Map<String, Triple<String, Int, Boolean>>>()
+            type = typeOf<Map<String, Triple<String, Int, Boolean>>>(),
         )
         assertTsCode(
             "Record<string, LocalDate>",
             Imports.localDate,
-            type = typeOf<Map<String, LocalDate>>()
+            type = typeOf<Map<String, LocalDate>>(),
         )
         assertTsCode(
             "Record<string, PlainObject>",
             PlainObject.import,
-            type = typeOf<Map<String, PlainObject>>()
+            type = typeOf<Map<String, PlainObject>>(),
         )
         assertTsCode(
             """Record<string, {
@@ -128,7 +128,7 @@ class TsCodeGeneratorTest {
   str: string
 } | null>"""
                 .trimIndent(),
-            type = typeOf<Map<String, ObjectLiteral?>>()
+            type = typeOf<Map<String, ObjectLiteral?>>(),
         )
     }
 
@@ -141,7 +141,7 @@ class TsCodeGeneratorTest {
                 TsCode(text.trimIndent(), *imports),
                 generator.namedType(generator.metadata[type] as TsNamedType<*>).let {
                     it.copy(text = it.text.trimIndent())
-                }
+                },
             )
         }
 
@@ -155,7 +155,7 @@ export interface PlainObject {
   list: string[]
   str: string
 }""",
-            type = typeOf<PlainObject>()
+            type = typeOf<PlainObject>(),
         )
 
         assertTsCode(
@@ -182,7 +182,7 @@ export namespace SealedInterface {
 */
 export type SealedInterface = SealedInterface.Variant1 | SealedInterface.Variant2
 """,
-            type = typeOf<SealedInterface>()
+            type = typeOf<SealedInterface>(),
         )
     }
 }

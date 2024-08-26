@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.RestController
 class ChildAgeLanguageReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/child-age-language", // deprecated
-        "/employee/reports/child-age-language"
+        "/employee/reports/child-age-language",
     )
     fun getChildAgeLanguageReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): List<ChildAgeLanguageReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -39,7 +39,7 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                            Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getChildAgeLanguageRows(date, filter)
@@ -55,7 +55,7 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
 
 private fun Database.Read.getChildAgeLanguageRows(
     date: LocalDate,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<ChildAgeLanguageReportRow> =
     createQuery {
             sql(
@@ -141,5 +141,5 @@ data class ChildAgeLanguageReportRow(
     val other_4y: Int,
     val other_5y: Int,
     val other_6y: Int,
-    val other_7y: Int
+    val other_7y: Int,
 )

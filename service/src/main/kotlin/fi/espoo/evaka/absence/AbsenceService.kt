@@ -45,7 +45,7 @@ fun getGroupMonthCalendar(
     today: LocalDate,
     groupId: GroupId,
     year: Int,
-    month: Int
+    month: Int,
 ): GroupMonthCalendar {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -140,7 +140,7 @@ fun getGroupMonthCalendar(
                                                     it.reservation.asTimeRange()
                                                 },
                                             attendances =
-                                                childAttendances.map { it.asTimeInterval() }
+                                                childAttendances.map { it.asTimeInterval() },
                                         )
                                     usedServiceByChild.updateKey(child.id) {
                                         (it ?: UsedServiceData(daycareHoursPerMonth)).let { totals
@@ -151,7 +151,7 @@ fun getGroupMonthCalendar(
                                                         usedService.reservedMinutes,
                                                 usedServiceMinutes =
                                                     totals.usedServiceMinutes +
-                                                        usedService.usedServiceMinutes
+                                                        usedService.usedServiceMinutes,
                                             )
                                         }
                                     }
@@ -190,7 +190,7 @@ fun getGroupMonthCalendar(
                                             },
                                 )
                             }
-                            .sortedBy { it.childId }
+                            .sortedBy { it.childId },
                 )
             }
             .toList()
@@ -235,7 +235,7 @@ fun getGroupMonthCalendar(
                             } else null
                         },
                         dailyServiceTimes[child.id]?.map { it.times },
-                        absenceDates
+                        absenceDates,
                     )
                 GroupMonthCalendarChild(
                     id = child.id,
@@ -255,7 +255,7 @@ fun getGroupMonthCalendar(
                                 }
                             }
                             .let { sumOfHours(DateTimeSet.of(it), placementDateRanges, range) },
-                    usedService = usedServiceByChild[child.id]?.asUsedServiceTotals()
+                    usedService = usedServiceByChild[child.id]?.asUsedServiceTotals(),
                 )
             }
             .sortedWith(compareBy({ it.lastName }, { it.firstName }))
@@ -279,13 +279,13 @@ fun <K, V> MutableMap<K, V>.updateKey(key: K, fn: (V?) -> V) {
 private data class UsedServiceData(
     val serviceNeedHours: Int,
     val reservedMinutes: Long = 0,
-    val usedServiceMinutes: Long = 0
+    val usedServiceMinutes: Long = 0,
 ) {
     fun asUsedServiceTotals(): UsedServiceTotals =
         UsedServiceTotals(
             serviceNeedHours,
             BigDecimal(reservedMinutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt(),
-            BigDecimal(usedServiceMinutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt()
+            BigDecimal(usedServiceMinutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt(),
         )
 }
 
@@ -293,7 +293,7 @@ fun getAbsencesOfChildByMonth(
     tx: Database.Read,
     childId: ChildId,
     year: Int,
-    month: Int
+    month: Int,
 ): List<Absence> {
     val range = DateRange.ofMonth(year, Month.of(month))
     return tx.getAbsencesOfChildByRange(childId, range)
@@ -302,7 +302,7 @@ fun getAbsencesOfChildByMonth(
 fun getFutureAbsencesOfChild(
     tx: Database.Read,
     evakaClock: EvakaClock,
-    childId: ChildId
+    childId: ChildId,
 ): List<Absence> {
     val period = DateRange(evakaClock.today().plusDays(1), null)
     return tx.getAbsencesOfChildByRange(childId, period)
@@ -318,7 +318,7 @@ fun setChildDateAbsences(
     userId: EvakaUserId,
     childId: ChildId,
     date: LocalDate,
-    absences: Map<AbsenceCategory, AbsenceType>
+    absences: Map<AbsenceCategory, AbsenceType>,
 ): Pair<List<AbsenceId>, List<AbsenceId>> {
     val alreadyUpToDateCategories =
         absences.entries.mapNotNull { (category, type) ->
@@ -328,7 +328,7 @@ fun setChildDateAbsences(
         tx.deleteChildAbsences(
             childId = childId,
             date = date,
-            categories = AbsenceCategory.entries.toSet().minus(alreadyUpToDateCategories.toSet())
+            categories = AbsenceCategory.entries.toSet().minus(alreadyUpToDateCategories.toSet()),
         )
 
     val insertedAbsences =
@@ -338,7 +338,7 @@ fun setChildDateAbsences(
             absences =
                 absences
                     .filterKeys { !alreadyUpToDateCategories.contains(it) }
-                    .map { (category, type) -> AbsenceUpsert(childId, date, category, type) }
+                    .map { (category, type) -> AbsenceUpsert(childId, date, category, type) },
         )
 
     return insertedAbsences to deletedAbsences
@@ -347,7 +347,7 @@ fun setChildDateAbsences(
 fun generateAbsencesFromIrregularDailyServiceTimes(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
-    childId: ChildId
+    childId: ChildId,
 ) {
     // Change absences from tomorrow onwards
     val period = DateRange(now.toLocalDate().plusDays(1), null)
@@ -409,7 +409,7 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
                                 childId = childId,
                                 date = date,
                                 absenceType = AbsenceType.OTHER_ABSENCE,
-                                category = category
+                                category = category,
                             )
                         }
                     }
@@ -424,7 +424,7 @@ private fun supplementReservationsWithDailyServiceTimes(
     possibleAttendanceDates: List<LocalDate>,
     reservations: List<Pair<LocalDate, List<ChildReservation>>>,
     dailyServiceTimesList: List<DailyServiceTimesValue>?,
-    absenceDates: Set<LocalDate>
+    absenceDates: Set<LocalDate>,
 ): DateTimeSet {
     val reservationRanges =
         DateTimeSet.of(
@@ -462,7 +462,7 @@ private fun supplementReservationsWithDailyServiceTimes(
 
 private fun dailyServiceTimesToPerDateTimeRanges(
     dates: List<LocalDate>,
-    dailyServiceTimesList: List<DailyServiceTimesValue>
+    dailyServiceTimesList: List<DailyServiceTimesValue>,
 ): DateTimeSet {
     return DateTimeSet.of(
         dates.mapNotNull { date ->
@@ -487,7 +487,7 @@ private fun dailyServiceTimesToPerDateTimeRanges(
 private fun sumOfHours(
     dateTimeRanges: DateTimeSet,
     placementDateRanges: List<FiniteDateRange>,
-    spanningDateRange: FiniteDateRange
+    spanningDateRange: FiniteDateRange,
 ): Int {
     return dateTimeRanges
         .intersection(DateTimeSet.of(placementDateRanges.map { it.asHelsinkiDateTimeRange() }))
@@ -524,20 +524,20 @@ data class GroupMonthCalendarChild(
     val actualServiceNeeds: List<ChildServiceNeedInfo>,
     val reservationTotalHours: Int,
     val attendanceTotalHours: Int,
-    val usedService: UsedServiceTotals?
+    val usedService: UsedServiceTotals?,
 )
 
 data class UsedServiceTotals(
     val serviceNeedHours: Int,
     val reservedHours: Int,
-    val usedServiceHours: Int
+    val usedServiceHours: Int,
 )
 
 data class GroupMonthCalendarDay(
     val date: LocalDate,
     val isOperationDay: Boolean,
     val isInHolidayPeriod: Boolean,
-    val children: List<GroupMonthCalendarDayChild>
+    val children: List<GroupMonthCalendarDayChild>,
 )
 
 data class GroupMonthCalendarDayChild(
@@ -549,7 +549,7 @@ data class GroupMonthCalendarDayChild(
     val reservations: List<ChildReservation>,
     val dailyServiceTimes: TimeRange?,
     val scheduleType: ScheduleType,
-    val shiftCare: ShiftCareType
+    val shiftCare: ShiftCareType,
 )
 
 data class ChildServiceNeedInfo(
@@ -559,14 +559,14 @@ data class ChildServiceNeedInfo(
     val optionName: String,
     val validDuring: FiniteDateRange,
     val shiftCare: ShiftCareType,
-    val partWeek: Boolean
+    val partWeek: Boolean,
 )
 
 data class AbsencePlacement(
     val range: FiniteDateRange,
     val type: PlacementType,
     val preschoolTime: TimeRange?,
-    val preparatoryTime: TimeRange?
+    val preparatoryTime: TimeRange?,
 )
 
 data class Absence(
@@ -575,7 +575,7 @@ data class Absence(
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByStaff: Boolean,
-    val modifiedAt: HelsinkiDateTime
+    val modifiedAt: HelsinkiDateTime,
 ) {
     fun editableByCitizen(): Boolean = absenceType != AbsenceType.FREE_ABSENCE && !modifiedByStaff
 }
@@ -584,7 +584,7 @@ data class AbsenceWithModifierInfo(
     val absenceType: AbsenceType,
     val category: AbsenceCategory,
     val modifiedByStaff: Boolean,
-    val modifiedAt: HelsinkiDateTime
+    val modifiedAt: HelsinkiDateTime,
 ) {
     companion object {
         fun from(absence: Absence): AbsenceWithModifierInfo =
@@ -592,7 +592,7 @@ data class AbsenceWithModifierInfo(
                 absence.absenceType,
                 absence.category,
                 absence.modifiedByStaff,
-                absence.modifiedAt
+                absence.modifiedAt,
             )
     }
 }

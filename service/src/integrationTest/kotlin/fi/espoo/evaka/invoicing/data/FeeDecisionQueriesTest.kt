@@ -77,7 +77,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             dateOfBirth = testChild_1.dateOfBirth,
                             placementUnitId = testDaycare.id,
                             placementType = PlacementType.DAYCARE,
-                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         ),
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
@@ -86,9 +86,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             siblingDiscount = 50,
-                            fee = 145
-                        )
-                    )
+                            fee = 145,
+                        ),
+                    ),
             ),
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.SENT,
@@ -102,9 +102,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             dateOfBirth = testChild_2.dateOfBirth,
                             placementUnitId = testDaycare.id,
                             placementType = PlacementType.DAYCARE,
-                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         )
-                    )
+                    ),
             ),
             createFeeDecisionFixture(
                 status = FeeDecisionStatus.SENT,
@@ -118,10 +118,10 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             dateOfBirth = testChild_1.dateOfBirth,
                             placementUnitId = testDaycare.id,
                             placementType = PlacementType.DAYCARE,
-                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         )
-                    )
-            )
+                    ),
+            ),
         )
 
     @BeforeEach
@@ -139,7 +139,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     testAdult_4,
                     testAdult_5,
                     testAdult_6,
-                    testAdult_7
+                    testAdult_7,
                 )
                 .forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach {
@@ -160,7 +160,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 approvedAt = HelsinkiDateTime.now(),
                 null,
                 false,
-                false
+                false,
             )
 
             val result = tx.getFeeDecision(testDecisions[0].id)!!
@@ -180,7 +180,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNotNull(result.approvedAt)
         assertEquals(
             "${testDecisionMaker_1.lastName} ${testDecisionMaker_1.firstName}",
-            "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}"
+            "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}",
         )
     }
 
@@ -193,13 +193,13 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNotNull(result.approvedAt)
         assertEquals(
             "${testDecisionMaker_2.lastName} ${testDecisionMaker_2.firstName}",
-            "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}"
+            "${result.financeDecisionHandlerLastName} ${result.financeDecisionHandlerFirstName}",
         )
     }
 
     private fun createAndApproveFeeDecisionForSending(
         forceUseDaycareHandler: Boolean,
-        childDaycare: DevDaycare
+        childDaycare: DevDaycare,
     ): FeeDecisionDetailed {
         return db.transaction { tx ->
             val draft =
@@ -215,9 +215,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 dateOfBirth = testChild_1.dateOfBirth,
                                 placementUnitId = childDaycare.id,
                                 placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             )
-                        )
+                        ),
                 )
 
             tx.upsertFeeDecisions(listOf(draft))
@@ -227,7 +227,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 approvedAt = HelsinkiDateTime.now(),
                 null,
                 true,
-                forceUseDaycareHandler
+                forceUseDaycareHandler,
             )
 
             tx.getFeeDecision(draft.id)!!
@@ -245,9 +245,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         validDuring =
                             DateRange(
                                 testPeriod.start.minusYears(1),
-                                testPeriod.end!!.minusYears(1)
-                            )
-                    )
+                                testPeriod.end!!.minusYears(1),
+                            ),
+                    ),
                 )
             tx.upsertFeeDecisions(decisions)
 
@@ -257,7 +257,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 approvedAt = HelsinkiDateTime.now(),
                 null,
                 false,
-                false
+                false,
             )
 
             val result =
@@ -293,8 +293,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             find(
                 testAdult_1.id,
                 DateRange(LocalDate.of(2019, 5, 15), LocalDate.of(2019, 5, 15)),
-                null
-            )
+                null,
+            ),
         )
 
         assertEquals(
@@ -302,8 +302,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             find(
                 testAdult_1.id,
                 DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 1)),
-                null
-            )
+                null,
+            ),
         )
 
         assertEquals(
@@ -311,21 +311,21 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             find(
                 testAdult_1.id,
                 DateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 1, 1)),
-                null
-            )
+                null,
+            ),
         )
 
         // Filter by status
         assertEquals(
             both,
-            find(testAdult_1.id, null, listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT))
+            find(testAdult_1.id, null, listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)),
         )
 
         assertEquals(sent, find(testAdult_1.id, null, listOf(FeeDecisionStatus.SENT)))
 
         assertEquals(
             emptySet(),
-            find(testAdult_1.id, null, listOf(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING))
+            find(testAdult_1.id, null, listOf(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING)),
         )
 
         // Filter by both period and status
@@ -337,9 +337,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     FeeDecisionStatus.WAITING_FOR_SENDING,
                     FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-                    FeeDecisionStatus.SENT
-                )
-            )
+                    FeeDecisionStatus.SENT,
+                ),
+            ),
         )
 
         assertEquals(
@@ -347,8 +347,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             find(
                 testAdult_1.id,
                 DateRange(LocalDate.of(2018, 5, 10), LocalDate.of(2019, 5, 15)),
-                listOf(FeeDecisionStatus.ANNULLED)
-            )
+                listOf(FeeDecisionStatus.ANNULLED),
+            ),
         )
     }
 
@@ -369,9 +369,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     dateOfBirth = testChild_5.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = PlacementType.DAYCARE,
-                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
             )
@@ -400,9 +400,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     dateOfBirth = child.dateOfBirth,
                                     placementUnitId = testDaycare.id,
                                     placementType = PlacementType.DAYCARE,
-                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 }
                 tx.upsertFeeDecisions(
@@ -419,8 +419,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
-                                        worksAtECHA = false
-                                    )
+                                        worksAtECHA = false,
+                                    ),
                             ),
                         baseDecision(testChild_3)
                             .copy(
@@ -434,8 +434,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
-                                        worksAtECHA = false
-                                    )
+                                        worksAtECHA = false,
+                                    ),
                             ),
                         baseDecision(testChild_4)
                             .copy(
@@ -447,8 +447,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
-                                        worksAtECHA = false
-                                    )
+                                        worksAtECHA = false,
+                                    ),
                             ),
                         baseDecision(testChild_5)
                             .copy(
@@ -460,7 +460,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalIncome = 200000,
                                         totalExpenses = 0,
                                         total = 200000,
-                                        worksAtECHA = false
+                                        worksAtECHA = false,
                                     ),
                                 partnerId = testAdult_7.id,
                                 partnerIncome =
@@ -470,9 +470,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         totalIncome = 0,
                                         totalExpenses = 0,
                                         total = 0,
-                                        worksAtECHA = false
-                                    )
-                            )
+                                        worksAtECHA = false,
+                                    ),
+                            ),
                     )
                 )
                 val ids =
@@ -483,14 +483,14 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting(
                 { it.headOfFamily.lastName },
                 { it.headOfFamily.firstName },
-                { it.incomeEffect }
+                { it.incomeEffect },
             )
             .containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_5.lastName, testAdult_5.firstName, IncomeEffect.INCOME),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED)
+                Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
             )
 
         val result =
@@ -510,7 +510,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = null,
                     endDate = null,
                     financeDecisionHandlerId = null,
-                    difference = emptySet()
+                    difference = emptySet(),
                 )
             }
 
@@ -519,7 +519,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .containsExactly(
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName)
+                Tuple(testAdult_6.lastName, testAdult_6.firstName),
             )
     }
 
@@ -539,9 +539,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 dateOfBirth = child.dateOfBirth,
                                 placementUnitId = testDaycare.id,
                                 placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             )
-                        )
+                        ),
                 )
             }
             tx.upsertFeeDecisions(
@@ -551,7 +551,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     baseDecision(testChild_2)
                         .copy(
                             headOfFamilyId = testAdult_2.id,
-                            difference = setOf(FeeDecisionDifference.INCOME)
+                            difference = setOf(FeeDecisionDifference.INCOME),
                         ),
                     baseDecision(testChild_3)
                         .copy(
@@ -559,14 +559,14 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             difference =
                                 setOf(
                                     FeeDecisionDifference.INCOME,
-                                    FeeDecisionDifference.FAMILY_SIZE
-                                )
+                                    FeeDecisionDifference.FAMILY_SIZE,
+                                ),
                         ),
                     baseDecision(testChild_4)
                         .copy(
                             headOfFamilyId = testAdult_4.id,
-                            difference = setOf(FeeDecisionDifference.FEE_ALTERATIONS)
-                        )
+                            difference = setOf(FeeDecisionDifference.FEE_ALTERATIONS),
+                        ),
                 )
             )
         }
@@ -588,7 +588,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = null,
                     endDate = null,
                     financeDecisionHandlerId = null,
-                    difference = setOf(FeeDecisionDifference.INCOME)
+                    difference = setOf(FeeDecisionDifference.INCOME),
                 )
             }
 
@@ -596,7 +596,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
             .containsExactly(
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
-                Tuple(testAdult_3.lastName, testAdult_3.firstName)
+                Tuple(testAdult_3.lastName, testAdult_3.firstName),
             )
     }
 
@@ -616,9 +616,9 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 dateOfBirth = child.dateOfBirth,
                                 placementUnitId = testDaycare.id,
                                 placementType = PlacementType.DAYCARE,
-                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             )
-                        )
+                        ),
                 )
             }
             tx.upsertFeeDecisions(
@@ -627,19 +627,19 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         .copy(
                             status = FeeDecisionStatus.DRAFT,
                             headOfFamilyId = testAdult_1.id,
-                            headOfFamilyIncome = null
+                            headOfFamilyIncome = null,
                         ),
                     baseDecision(testChild_2)
                         .copy(
                             status = FeeDecisionStatus.SENT,
                             headOfFamilyId = testAdult_2.id,
-                            headOfFamilyIncome = null
+                            headOfFamilyIncome = null,
                         ),
                     baseDecision(testChild_3)
                         .copy(
                             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
                             headOfFamilyId = testAdult_3.id,
-                            headOfFamilyIncome = null
+                            headOfFamilyIncome = null,
                         ),
                 )
             )
@@ -648,7 +648,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(3, searchByStatuses(emptyList()).size)
         assertEquals(
             2,
-            searchByStatuses(listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)).size
+            searchByStatuses(listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)).size,
         )
         assertEquals(1, searchByStatuses(listOf(FeeDecisionStatus.DRAFT)).size)
     }
@@ -670,7 +670,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = null,
                     endDate = null,
                     financeDecisionHandlerId = null,
-                    difference = emptySet()
+                    difference = emptySet(),
                 )
             }
             .data
@@ -694,7 +694,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = null,
                     endDate = null,
                     financeDecisionHandlerId = null,
-                    difference = emptySet()
+                    difference = emptySet(),
                 )
             }
         assertEquals(1, result.data.size)

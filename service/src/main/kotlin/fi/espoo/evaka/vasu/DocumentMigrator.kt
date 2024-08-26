@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service
 @Service
 class VasuMigratorService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    featureConfig: FeatureConfig
+    featureConfig: FeatureConfig,
 ) {
     init {
         asyncJobRunner.registerHandler<AsyncJob.MigrateVasuDocument> { db, clock, msg ->
@@ -51,7 +51,7 @@ class VasuMigratorService(
                     now = clock.now(),
                     id = msg.documentId,
                     processDefinitionNumber = msg.processDefinitionNumber,
-                    archiveMetadataOrganization = featureConfig.archiveMetadataOrganization
+                    archiveMetadataOrganization = featureConfig.archiveMetadataOrganization,
                 )
             }
         }
@@ -61,7 +61,7 @@ class VasuMigratorService(
         tx: Database.Transaction,
         now: HelsinkiDateTime,
         vasuTemplateId: VasuTemplateId,
-        processDefinitionNumber: String
+        processDefinitionNumber: String,
     ) {
         val vasuDocumentIds =
             tx.createQuery {
@@ -79,7 +79,7 @@ class VasuMigratorService(
             payloads =
                 vasuDocumentIds.map { AsyncJob.MigrateVasuDocument(it, processDefinitionNumber) },
             retryCount = 3,
-            runAt = now
+            runAt = now,
         )
     }
 }
@@ -107,7 +107,7 @@ fun migrateVasu(
             tx = tx,
             vasuDocument = vasuDocument,
             processDefinitionNumber = processDefinitionNumber,
-            archiveMetadataOrganization = archiveMetadataOrganization
+            archiveMetadataOrganization = archiveMetadataOrganization,
         )
 
     tx.insertMigratedChildDocument(
@@ -117,7 +117,7 @@ fun migrateVasu(
         content = documentContent,
         modifiedAt = vasuDocument.modifiedAt,
         publishedAt = vasuDocument.publishedAt ?: now,
-        processId = processId
+        processId = processId,
     )
 
     tx.insertChildDocumentReads(
@@ -126,14 +126,14 @@ fun migrateVasu(
             vasuDocument.basics.guardians
                 .filter { it.hasGivenPermissionToShare }
                 .map { it.id }
-                .toSet()
+                .toSet(),
     )
 
     asyncJobRunner.plan(
         tx = tx,
         payloads = listOf(AsyncJob.CreateChildDocumentPdf(documentId)),
         retryCount = 5,
-        runAt = now
+        runAt = now,
     )
 }
 
@@ -141,7 +141,7 @@ private fun migrateMetadataProcess(
     tx: Database.Transaction,
     vasuDocument: VasuDocument,
     processDefinitionNumber: String,
-    archiveMetadataOrganization: String
+    archiveMetadataOrganization: String,
 ): ArchivedProcessId {
     val archiveDurationMonths = 120 * 12
     val processId =
@@ -149,14 +149,14 @@ private fun migrateMetadataProcess(
                 processDefinitionNumber = processDefinitionNumber,
                 year = vasuDocument.created.year,
                 organization = archiveMetadataOrganization,
-                archiveDurationMonths = archiveDurationMonths
+                archiveDurationMonths = archiveDurationMonths,
             )
             .id
     tx.insertProcessHistoryRow(
         processId = processId,
         state = ArchivedProcessState.INITIAL,
         now = vasuDocument.created,
-        userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+        userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
     )
     vasuDocument.events
         .firstOrNull { it.eventType == VasuDocumentEventType.MOVED_TO_CLOSED }
@@ -165,7 +165,7 @@ private fun migrateMetadataProcess(
                 processId = processId,
                 state = ArchivedProcessState.COMPLETED,
                 now = it.created,
-                userId = it.createdBy
+                userId = it.createdBy,
             )
         }
     return processId
@@ -179,7 +179,7 @@ private val emptyField = "___________"
 private fun getOrCreateTemplate(
     tx: Database.Transaction,
     templateBasics: DocumentTemplateBasicsRequest,
-    templateContent: DocumentTemplateContent
+    templateContent: DocumentTemplateContent,
 ): DocumentTemplateId {
     tx.createUpdate { sql("LOCK TABLE document_template") }.execute()
     return getMatchingTemplate(tx, templateBasics, templateContent)
@@ -192,7 +192,7 @@ private fun getOrCreateTemplate(
 private fun getMatchingTemplate(
     tx: Database.Transaction,
     templateBasics: DocumentTemplateBasicsRequest,
-    templateContent: DocumentTemplateContent
+    templateContent: DocumentTemplateContent,
 ): DocumentTemplateId? =
     tx.createQuery {
             sql(
@@ -250,7 +250,7 @@ private fun Database.Transaction.insertMigratedChildDocument(
     content: DocumentContent,
     modifiedAt: HelsinkiDateTime,
     publishedAt: HelsinkiDateTime,
-    processId: ArchivedProcessId
+    processId: ArchivedProcessId,
 ) {
     createUpdate {
             sql(
@@ -265,16 +265,18 @@ VALUES (${bind(id)}, ${bind(childId)}, ${bind(templateId)}, 'COMPLETED', ${bind(
 
 private fun Database.Transaction.insertChildDocumentReads(
     childDocumentId: ChildDocumentId,
-    guardianIds: Set<PersonId>
+    guardianIds: Set<PersonId>,
 ) {
     if (guardianIds.isEmpty()) return
 
     // these come from json and are not guaranteed to exist anymore
     val validGuardianIds =
         createQuery {
-                sql("""
+                sql(
+                    """
         SELECT id FROM person WHERE id = ANY(${bind(guardianIds)})
-    """)
+    """
+                )
             }
             .toSet<PersonId>()
     if (validGuardianIds.isEmpty()) return
@@ -311,7 +313,7 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
             },
         validity = vasu.templateRange.asDateRange(),
         processDefinitionNumber = null,
-        archiveDurationMonths = null
+        archiveDurationMonths = null,
     )
 }
 
@@ -325,7 +327,7 @@ private fun migrateContents(
             val basicsSection =
                 VasuSection(
                     name = getTranslations(vasuDocument.language).basicsTitle,
-                    questions = listOf(VasuQuestion.StaticInfoSubSection())
+                    questions = listOf(VasuQuestion.StaticInfoSubSection()),
                 )
             listOf(basicsSection) + vasuDocument.content.sections
         }
@@ -341,7 +343,7 @@ private fun migrateContents(
 private fun migrateTemplateSection(
     document: VasuDocument,
     vasuSection: VasuSection,
-    sectionIndex: Int
+    sectionIndex: Int,
 ): Pair<Section, List<AnsweredQuestion<*>>> {
     val questionsAndAnswer =
         vasuSection.questions.flatMapIndexed { i, q ->
@@ -349,13 +351,13 @@ private fun migrateTemplateSection(
                 document = document,
                 vasuQuestion = q,
                 sectionIndex = sectionIndex,
-                questionIndex = i
+                questionIndex = i,
             )
         }
     return Section(
         id = "section-$sectionIndex",
         label = vasuSection.name,
-        questions = questionsAndAnswer.map { it.first }
+        questions = questionsAndAnswer.map { it.first },
     ) to questionsAndAnswer.map { it.second }
 }
 
@@ -364,7 +366,7 @@ private fun migrateTemplateQuestion(
     document: VasuDocument,
     vasuQuestion: VasuQuestion,
     sectionIndex: Int,
-    questionIndex: Int
+    questionIndex: Int,
 ): List<Pair<Question, AnsweredQuestion<*>>> {
     val id = "section-$sectionIndex-question-$questionIndex"
     return when (vasuQuestion) {
@@ -374,7 +376,7 @@ private fun migrateTemplateQuestion(
                     id = id,
                     label = vasuQuestion.name,
                     infoText = vasuQuestion.info,
-                    multiline = vasuQuestion.multiline
+                    multiline = vasuQuestion.multiline,
                 )
             val answer = AnsweredQuestion.TextAnswer(questionId = id, answer = vasuQuestion.value)
             listOf(question to answer)
@@ -385,34 +387,34 @@ private fun migrateTemplateQuestion(
                     Question.CheckboxQuestion(
                         id = id,
                         label = vasuQuestion.name,
-                        infoText = vasuQuestion.info
+                        infoText = vasuQuestion.info,
                     ) to
                         AnsweredQuestion.CheckboxAnswer(
                             questionId = id,
-                            answer = vasuQuestion.value
+                            answer = vasuQuestion.value,
                         )
                 } else if (vasuQuestion.name.isBlank()) {
                     Question.CheckboxQuestion(
                         id = id,
                         label = vasuQuestion.label,
-                        infoText = vasuQuestion.info
+                        infoText = vasuQuestion.info,
                     ) to
                         AnsweredQuestion.CheckboxAnswer(
                             questionId = id,
-                            answer = vasuQuestion.value
+                            answer = vasuQuestion.value,
                         )
                 } else {
                     Question.TextQuestion(
                         id = id,
                         label = vasuQuestion.label,
                         infoText = vasuQuestion.info,
-                        multiline = false
+                        multiline = false,
                     ) to
                         AnsweredQuestion.TextAnswer(
                             questionId = id,
                             answer =
                                 if (vasuQuestion.value) "$checkboxTrue ${vasuQuestion.name}"
-                                else "$checkboxFalse ${vasuQuestion.name}"
+                                else "$checkboxFalse ${vasuQuestion.name}",
                         )
                 }
             listOf(questionAndAnswer)
@@ -423,7 +425,7 @@ private fun migrateTemplateQuestion(
                     id = id,
                     label = vasuQuestion.name,
                     infoText = vasuQuestion.info,
-                    multiline = true
+                    multiline = true,
                 )
 
             val answerText =
@@ -436,7 +438,7 @@ private fun migrateTemplateQuestion(
                                     vasuQuestion.dateRange?.let {
                                         "${it.start.format(dateFormatter)} - ${it.end.format(dateFormatter)}"
                                     } ?: emptyField
-                                } else null
+                                } else null,
                             )
                             .joinToString(separator = " : ")
                     } ?: "-"
@@ -451,7 +453,7 @@ private fun migrateTemplateQuestion(
                     id = id,
                     label = vasuQuestion.name,
                     infoText = vasuQuestion.info,
-                    multiline = true
+                    multiline = true,
                 )
             val optionAnswers =
                 vasuQuestion.options.map { opt ->
@@ -474,14 +476,14 @@ private fun migrateTemplateQuestion(
                             if (selected && opt.textAnswer) {
                                 vasuQuestion.textValue[opt.key]?.takeIf { it.isNotBlank() }
                                     ?: emptyField
-                            } else null
+                            } else null,
                         )
                     answerParts.joinToString(separator = " ")
                 }
             val answer =
                 AnsweredQuestion.TextAnswer(
                     questionId = id,
-                    answer = optionAnswers.joinToString(separator = "\n")
+                    answer = optionAnswers.joinToString(separator = "\n"),
                 )
             listOf(question to answer)
         }
@@ -491,11 +493,11 @@ private fun migrateTemplateQuestion(
                     Question.StaticTextDisplayQuestion(
                         id = "$id-header",
                         label = vasuQuestion.name,
-                        infoText = vasuQuestion.info
+                        infoText = vasuQuestion.info,
                     ) to
                         AnsweredQuestion.StaticTextDisplayAnswer(
                             questionId = "$id-header",
-                            answer = null
+                            answer = null,
                         )
                 val subQuestions =
                     vasuQuestion.keys.mapIndexed { i, field ->
@@ -503,11 +505,11 @@ private fun migrateTemplateQuestion(
                             id = "$id-$i",
                             label = field.name,
                             infoText = field.info ?: "",
-                            multiline = false
+                            multiline = false,
                         ) to
                             AnsweredQuestion.TextAnswer(
                                 questionId = "$id-$i",
-                                answer = vasuQuestion.value[i]
+                                answer = vasuQuestion.value[i],
                             )
                     }
                 listOf(header) + subQuestions
@@ -518,12 +520,12 @@ private fun migrateTemplateQuestion(
                         label = vasuQuestion.name,
                         fieldLabels = vasuQuestion.keys.map { it.name },
                         infoText = vasuQuestion.info,
-                        allowMultipleRows = false
+                        allowMultipleRows = false,
                     )
                 val answer =
                     AnsweredQuestion.GroupedTextFieldsAnswer(
                         questionId = id,
-                        answer = listOf(vasuQuestion.value)
+                        answer = listOf(vasuQuestion.value),
                     )
                 listOf(question to answer)
             }
@@ -535,14 +537,14 @@ private fun migrateTemplateQuestion(
                     label = vasuQuestion.name,
                     fieldLabels = vasuQuestion.keys.map { it.name },
                     infoText = vasuQuestion.info,
-                    allowMultipleRows = true
+                    allowMultipleRows = true,
                 )
             val answer =
                 AnsweredQuestion.GroupedTextFieldsAnswer(
                     questionId = id,
                     answer =
                         vasuQuestion.value.takeIf { it.isNotEmpty() }
-                            ?: listOf(vasuQuestion.keys.map { "" })
+                            ?: listOf(vasuQuestion.keys.map { "" }),
                 )
             listOf(question to answer)
         }
@@ -551,7 +553,7 @@ private fun migrateTemplateQuestion(
                 Question.DateQuestion(
                     id = id,
                     label = vasuQuestion.name,
-                    infoText = vasuQuestion.info
+                    infoText = vasuQuestion.info,
                 )
             val answer = AnsweredQuestion.DateAnswer(questionId = id, answer = vasuQuestion.value)
             listOf(question to answer)
@@ -562,7 +564,7 @@ private fun migrateTemplateQuestion(
                     id = id,
                     label = vasuQuestion.title,
                     infoText = vasuQuestion.info,
-                    multiline = true
+                    multiline = true,
                 )
             val answer =
                 AnsweredQuestion.TextAnswer(
@@ -573,7 +575,7 @@ private fun migrateTemplateQuestion(
                             vasuQuestion.value.joinToString("\n\n") {
                                 "${it.date.format(dateFormatter)}: ${it.text.trim()}"
                             }
-                        }
+                        },
                 )
 
             listOf(question to answer)
@@ -583,7 +585,7 @@ private fun migrateTemplateQuestion(
                 Question.StaticTextDisplayQuestion(
                     id = id,
                     label = vasuQuestion.title,
-                    text = vasuQuestion.paragraph
+                    text = vasuQuestion.paragraph,
                 ) to AnsweredQuestion.StaticTextDisplayAnswer(questionId = id, answer = null)
             )
         }
@@ -594,24 +596,24 @@ private fun migrateTemplateQuestion(
                     AnsweredQuestion.TextAnswer(
                         questionId = "$id-0",
                         answer =
-                            "${document.basics.child.firstName} ${document.basics.child.lastName}"
+                            "${document.basics.child.firstName} ${document.basics.child.lastName}",
                     ),
                 Question.TextQuestion(id = "$id-1", label = translations.dateOfBirth) to
                     AnsweredQuestion.TextAnswer(
                         questionId = "$id-1",
-                        answer = document.basics.child.dateOfBirth.format(dateFormatter)
+                        answer = document.basics.child.dateOfBirth.format(dateFormatter),
                     ),
                 Question.TextQuestion(
                     id = "$id-2",
                     label = translations.guardians,
-                    multiline = true
+                    multiline = true,
                 ) to
                     AnsweredQuestion.TextAnswer(
                         questionId = "$id-2",
                         answer =
                             document.basics.guardians.joinToString("\n") {
                                 "${it.firstName} ${it.lastName}"
-                            }
+                            },
                     ),
                 Question.TextQuestion(
                     id = "$id-3",
@@ -620,15 +622,15 @@ private fun migrateTemplateQuestion(
                             CurriculumType.DAYCARE -> translations.placementsVasu
                             CurriculumType.PRESCHOOL -> translations.placementsLeops
                         },
-                    multiline = true
+                    multiline = true,
                 ) to
                     AnsweredQuestion.TextAnswer(
                         questionId = "$id-3",
                         answer =
                             document.basics.placements?.joinToString("\n") {
                                 "${it.unitName} ${it.groupName} ${it.range.start.format(dateFormatter)} - ${it.range.end.format(dateFormatter)}"
-                            } ?: "-"
-                    )
+                            } ?: "-",
+                    ),
             )
         }
     }
@@ -654,7 +656,7 @@ private val translationsFi =
         placementsVasu = "Varhaiskasvatusyksikkö ja ryhmä",
         placementsLeops = "Esiopetusyksikkö ja ryhmä",
         lawVasu = "Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.",
-        lawLeops = "JulkL 24.1 §:n kohdat 25 ja 30"
+        lawLeops = "JulkL 24.1 §:n kohdat 25 ja 30",
     )
 
 private val translationsSv =
@@ -666,7 +668,7 @@ private val translationsSv =
         placementsVasu = "Enhet och grupp inom småbarnspedagogiken",
         placementsLeops = "Enhet och grupp inom förskoleundervisningen",
         lawVasu = "40 § 3 mom. i lagen om småbarnspedagogik (540/2018)",
-        lawLeops = "OffentlighetsL 24.1 §§ punkt 25 och 30"
+        lawLeops = "OffentlighetsL 24.1 §§ punkt 25 och 30",
     )
 
 private fun getTranslations(language: OfficialLanguage) =

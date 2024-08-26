@@ -15,7 +15,7 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
     override fun serialize(
         value: AuthenticatedUser,
         gen: JsonGenerator,
-        serializers: SerializerProvider
+        serializers: SerializerProvider,
     ) {
         gen.writeStartObject()
         gen.writeObjectField("type", value.type.toString())

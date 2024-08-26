@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service
 class MessagePushNotifications(
     private val webPush: WebPush?,
     private val accessControl: AccessControl,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler { db, clock, job: AsyncJob.SendMessagePushNotification ->
@@ -82,7 +82,7 @@ END
 
     fun getAsyncJobs(
         tx: Database.Read,
-        messages: Collection<MessageId>
+        messages: Collection<MessageId>,
     ): List<AsyncJob.SendMessagePushNotification> =
         tx.createQuery {
                 sql(
@@ -99,12 +99,12 @@ WHERE notification.message = ANY(${bind(messages)})
         val groupId: GroupId,
         val groupName: String,
         val senderName: String?,
-        val endpoint: WebPushEndpoint
+        val endpoint: WebPushEndpoint,
     )
 
     private fun Database.Read.getNotification(
         messageRecipient: MessageRecipientId,
-        device: MobileDeviceId
+        device: MobileDeviceId,
     ): GroupNotification? =
         createQuery {
                 sql(
@@ -126,8 +126,8 @@ AND notification.device = ${bind(device)}
                         uri = column("endpoint"),
                         ecdhPublicKey =
                             WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
-                        authSecret = column("auth_secret")
-                    )
+                        authSecret = column("auth_secret"),
+                    ),
                 )
             }
 
@@ -135,7 +135,7 @@ AND notification.device = ${bind(device)}
         dbc: Database.Connection,
         clock: EvakaClock,
         recipient: MessageRecipientId,
-        device: MobileDeviceId
+        device: MobileDeviceId,
     ) {
         if (webPush == null) return
 
@@ -148,7 +148,7 @@ AND notification.device = ${bind(device)}
                             AuthenticatedUser.MobileDevice(device),
                             clock,
                             Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
-                            it.groupId
+                            it.groupId,
                         )
                     }
                     ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
@@ -168,10 +168,10 @@ AND notification.device = ${bind(device)}
                         listOf(
                             WebPushPayload.NotificationV1(
                                 title =
-                                    "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)"} ?: ""}",
+                                    "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)"} ?: ""}"
                             )
-                        )
-                )
+                        ),
+                ),
             )
         } catch (e: WebPush.SubscriptionExpired) {
             logger.warn(

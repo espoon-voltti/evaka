@@ -8,5 +8,5 @@ data class CitizenFeatures(
     val messages: Boolean,
     val composeNewMessage: Boolean,
     val reservations: Boolean,
-    val childDocumentation: Boolean
+    val childDocumentation: Boolean,
 )

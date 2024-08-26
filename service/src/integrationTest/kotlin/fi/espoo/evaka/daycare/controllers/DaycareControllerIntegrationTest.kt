@@ -130,7 +130,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             it.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placement.id,
-                    daycareGroupId = group.id
+                    daycareGroupId = group.id,
                 )
             )
         }
@@ -152,7 +152,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     groupId = group.id,
-                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1))
+                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
                 )
             )
         }
@@ -197,7 +197,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
 
@@ -208,7 +208,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
             it.insert(
@@ -216,7 +216,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycarePlacementId = placementId2,
                     daycareGroupId = group1.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
 
@@ -229,7 +229,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(14),
                     terminationRequestedDate = today.minusDays(5),
-                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw),
                 )
             )
             it.insert(
@@ -237,7 +237,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycarePlacementId = placementId3,
                     daycareGroupId = group1.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusDays(14)
+                    endDate = today.plusDays(14),
                 )
             )
         }
@@ -246,7 +246,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(setOf(group1.id, group2.id), details.groups.map { it.id }.toSet())
         assertEquals(
             setOf(placementId1, placementId2, placementId3),
-            details.placements.map { it.id }.toSet()
+            details.placements.map { it.id }.toSet(),
         )
         assertEquals(listOf(placementId1), details.missingGroupPlacements.map { it.placementId })
         assertEquals(listOf(placementId3), details.recentlyTerminatedPlacements.map { it.id })
@@ -257,14 +257,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     UnitChildrenCapacityFactors(testChild_3.id, 1.0, 1.75),
                 )
                 .sortedBy { it.childId },
-            details.unitChildrenCapacityFactors.sortedBy { it.childId }
+            details.unitChildrenCapacityFactors.sortedBy { it.childId },
         )
         assertEquals(
-            mapOf(
-                group1.id to Caretakers(3.0, 3.0),
-                group2.id to Caretakers(1.0, 1.0),
-            ),
-            details.caretakers
+            mapOf(group1.id to Caretakers(3.0, 3.0), group2.id to Caretakers(1.0, 1.0)),
+            details.caretakers,
         )
         assertEquals(2, details.groupOccupancies?.confirmed?.size)
         assertEquals(2, details.groupOccupancies?.realized?.size)
@@ -290,7 +287,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(7),
                     terminationRequestedDate = today.minusDays(15),
-                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw),
                 )
             )
 
@@ -303,7 +300,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(7),
                     terminationRequestedDate = today.minusDays(14),
-                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw),
                 )
             )
 
@@ -316,7 +313,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(14),
                     terminationRequestedDate = today.minusDays(5),
-                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw),
                 )
             )
             it.insert(
@@ -324,7 +321,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycarePlacementId = placementId3,
                     daycareGroupId = group.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusDays(14)
+                    endDate = today.plusDays(14),
                 )
             )
 
@@ -338,7 +335,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(15),
                     terminationRequestedDate = today.minusDays(2),
-                    terminatedBy = EvakaUserId(testAdult_1.id.raw)
+                    terminatedBy = EvakaUserId(testAdult_1.id.raw),
                 )
             )
             it.insert(
@@ -346,7 +343,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     daycarePlacementId = placementId4,
                     daycareGroupId = group.id,
                     startDate = today.minusDays(10),
-                    endDate = today.plusDays(15)
+                    endDate = today.plusDays(15),
                 )
             )
             it.insert(
@@ -356,7 +353,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_4.id,
                     unitId = testDaycare.id,
                     startDate = today.plusDays(16),
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
         }
@@ -375,16 +372,16 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             socialSecurityNumber = testChild_2.ssn,
                             firstName = testChild_2.firstName,
                             lastName = testChild_2.lastName,
-                            dateOfBirth = testChild_2.dateOfBirth
+                            dateOfBirth = testChild_2.dateOfBirth,
                         ),
                     terminatedBy =
                         EvakaUser(
                             id = EvakaUserId(testAdult_1.id.raw),
                             name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
-                            type = EvakaUserType.CITIZEN
+                            type = EvakaUserType.CITIZEN,
                         ),
                     currentDaycareGroupName = null,
-                    connectedDaycareOnly = false
+                    connectedDaycareOnly = false,
                 ),
                 TerminatedPlacement(
                     id = placementId3,
@@ -397,16 +394,16 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             socialSecurityNumber = testChild_3.ssn,
                             firstName = testChild_3.firstName,
                             lastName = testChild_3.lastName,
-                            dateOfBirth = testChild_3.dateOfBirth
+                            dateOfBirth = testChild_3.dateOfBirth,
                         ),
                     terminatedBy =
                         EvakaUser(
                             id = EvakaUserId(testAdult_1.id.raw),
                             name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
-                            type = EvakaUserType.CITIZEN
+                            type = EvakaUserType.CITIZEN,
                         ),
                     currentDaycareGroupName = group.name,
-                    connectedDaycareOnly = false
+                    connectedDaycareOnly = false,
                 ),
                 TerminatedPlacement(
                     id = placementId4,
@@ -419,19 +416,19 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                             socialSecurityNumber = testChild_4.ssn,
                             firstName = testChild_4.firstName,
                             lastName = testChild_4.lastName,
-                            dateOfBirth = testChild_4.dateOfBirth
+                            dateOfBirth = testChild_4.dateOfBirth,
                         ),
                     terminatedBy =
                         EvakaUser(
                             id = EvakaUserId(testAdult_1.id.raw),
                             name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
-                            type = EvakaUserType.CITIZEN
+                            type = EvakaUserType.CITIZEN,
                         ),
                     currentDaycareGroupName = group.name,
-                    connectedDaycareOnly = true
-                )
+                    connectedDaycareOnly = true,
+                ),
             ),
-            details.recentlyTerminatedPlacements.sortedBy { it.endDate }
+            details.recentlyTerminatedPlacements.sortedBy { it.endDate },
         )
     }
 
@@ -444,7 +441,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = today,
-                endDate = endDate
+                endDate = endDate,
             )
         db.transaction { tx ->
             tx.insert(admin)
@@ -469,7 +466,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             DevBackupCare(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                period = FiniteDateRange(today, endDate)
+                period = FiniteDateRange(today, endDate),
             )
         db.transaction { tx ->
             tx.insert(admin)
@@ -502,7 +499,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             dbInstance(),
             staffMember.user,
             RealEvakaClock(),
-            daycareId
+            daycareId,
         )
     }
 
@@ -512,7 +509,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             user,
             MockEvakaClock(now),
             testDaycare.id,
-            fields
+            fields,
         )
     }
 
@@ -520,27 +517,24 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         daycareId: DaycareId,
         name: String,
         startDate: LocalDate,
-        initialCaretakers: Double
+        initialCaretakers: Double,
     ): DaycareGroup {
         return daycareController.createGroup(
             dbInstance(),
             supervisor.user,
             RealEvakaClock(),
             daycareId,
-            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers)
+            DaycareController.CreateGroupRequest(name, startDate, initialCaretakers),
         )
     }
 
-    private fun deleteDaycareGroup(
-        daycareId: DaycareId,
-        groupId: GroupId,
-    ) {
+    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId) {
         daycareController.deleteGroup(
             dbInstance(),
             supervisor.user,
             RealEvakaClock(),
             daycareId,
-            groupId
+            groupId,
         )
     }
 

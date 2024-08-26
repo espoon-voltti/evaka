@@ -100,7 +100,7 @@ class DateSetTest {
         val set = DateSet.of(added).removeAll(removed)
         assertEquals(
             listOf(testRange(1, 1), testRange(5, 5), testRange(8, 8)),
-            set.ranges().toList()
+            set.ranges().toList(),
         )
     }
 

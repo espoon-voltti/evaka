@@ -21,7 +21,7 @@ data class Employee(
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime?,
     val temporaryInUnitId: DaycareId?,
-    val active: Boolean
+    val active: Boolean,
 )
 
 data class TemporaryEmployee(

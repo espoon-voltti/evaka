@@ -44,7 +44,7 @@ WHERE (${predicate(idFilter.forTable("message_account"))})
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): List<AuthorizedMessageAccount> {
     return createQuery {
             sql(
@@ -82,7 +82,7 @@ AND (
 
 fun Database.Read.getAccountNames(
     accountIds: Set<MessageAccountId>,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): List<String> {
 
     return createQuery {
@@ -144,7 +144,7 @@ RETURNING id
 
 fun Database.Transaction.upsertEmployeeMessageAccount(
     employeeId: EmployeeId,
-    accountType: AccountType = AccountType.PERSONAL
+    accountType: AccountType = AccountType.PERSONAL,
 ): MessageAccountId {
     return createQuery {
             sql(

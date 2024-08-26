@@ -32,7 +32,7 @@ fun generateApiFiles(): Map<TsFile, String> {
     val metadata =
         discoverMetadata(
             initial = defaultMetadata,
-            rootTypes = endpoints.asSequence().flatMap { it.types() } + forceIncludes.asSequence()
+            rootTypes = endpoints.asSequence().flatMap { it.types() } + forceIncludes.asSequence(),
         )
 
     val devEndpoints =
@@ -42,7 +42,7 @@ fun generateApiFiles(): Map<TsFile, String> {
     val devMetadata =
         discoverMetadata(
             initial = defaultMetadata,
-            rootTypes = devEndpoints.asSequence().flatMap { it.types() }
+            rootTypes = devEndpoints.asSequence().flatMap { it.types() },
         )
 
     val generator =
@@ -85,7 +85,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                     generator,
                     file,
                     TsImport.Named(TsProject.CitizenFrontend / "api-client.ts", "client"),
-                    citizenEndpoints
+                    citizenEndpoints,
                 )
             }
 
@@ -111,7 +111,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                     generator,
                     file,
                     TsImport.Named(TsProject.EmployeeFrontend / "api/client.ts", "client"),
-                    citizenEndpoints
+                    citizenEndpoints,
                 )
             }
 
@@ -135,7 +135,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                     generator,
                     file,
                     TsImport.Named(TsProject.EmployeeMobileFrontend / "client.ts", "client"),
-                    citizenEndpoints
+                    citizenEndpoints,
                 )
             }
 
@@ -147,7 +147,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                         generator,
                         file,
                         TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
-                        devEndpoints.map { it.copy(path = it.path.removePrefix("/dev-api")) }
+                        devEndpoints.map { it.copy(path = it.path.removePrefix("/dev-api")) },
                     ) { body: TsCode ->
                         TsCode {
                             """
@@ -172,7 +172,7 @@ ${inline(body).prependIndent("  ")}
 fun generateApiTypes(
     file: TsFile,
     generator: TsCodeGenerator,
-    namedTypes: Collection<TsNamedType<*>>
+    namedTypes: Collection<TsNamedType<*>>,
 ): String {
     val conflicts = namedTypes.groupBy { it.name }.filter { it.value.size > 1 }
     conflicts.forEach { (name, conflictingClasses) ->
@@ -228,19 +228,14 @@ fun generateApiClients(
                 }
                 duplicates.single()
             }
-            .sortedWith(
-                compareBy(
-                    { it.controllerClass.jvmName },
-                    { it.controllerMethod.name },
-                )
-            )
+            .sortedWith(compareBy({ it.controllerClass.jvmName }, { it.controllerMethod.name }))
             .map {
                 try {
                     generateApiClient(generator, axiosClient, it, wrapBody)
                 } catch (e: Exception) {
                     throw RuntimeException(
                         "Failed to generate API client for ${it.controllerClass}.${it.controllerMethod.name}",
-                        e
+                        e,
                     )
                 }
             }
@@ -292,7 +287,7 @@ fun generateApiClient(
                     generator.toRequestParamPairs(
                         param.toOptionalType(),
                         param.name,
-                        TsCode("request.${param.name}")
+                        TsCode("request.${param.name}"),
                     )
                 }
             TsCode {
@@ -309,7 +304,7 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
             UriComponentsBuilder.fromPath(endpoint.path)
                 .buildAndExpand(pathVariables.mapValues { it.value.text })
                 .toUriString(),
-            imports = pathVariables.flatMap { it.value.imports }.toSet()
+            imports = pathVariables.flatMap { it.value.imports }.toSet(),
         )
 
     val tsRequestType =
@@ -324,7 +319,7 @@ ${join(nameValuePairs, separator = ",\n").prependIndent("  ")}
                 TsCode {
                     "data: request.body satisfies ${ref(Imports.jsonCompatible)}<${inline(tsRequestType)}>"
                 }
-            }
+            },
         )
 
     val tsResponseType =
@@ -346,7 +341,7 @@ ${join(axiosArguments, ",\n").prependIndent("  ")}
                 },
                 TsCode { "return ${inline(responseDeserializer ?: TsCode("json"))}" },
             ),
-            separator = "\n"
+            separator = "\n",
         )
 
     return TsCode {

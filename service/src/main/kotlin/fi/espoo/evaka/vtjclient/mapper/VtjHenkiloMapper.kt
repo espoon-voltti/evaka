@@ -51,7 +51,7 @@ fun parseMailAddress(
                     postinumero,
                     postitoimipaikkaS,
                     postiosoiteR,
-                    postitoimipaikkaR
+                    postitoimipaikkaR,
                 )
 
         if (!isValid) return null
@@ -70,7 +70,7 @@ fun parseTemporaryAddress(
                     postinumero,
                     postitoimipaikkaS,
                     lahiosoiteR,
-                    postitoimipaikkaR
+                    postitoimipaikkaR,
                 )
 
         if (!isValid) return null
@@ -88,7 +88,7 @@ fun parseRegularAddress(
                 postinumero,
                 postitoimipaikkaS,
                 lahiosoiteR,
-                postitoimipaikkaR
+                postitoimipaikkaR,
             )
 
         if (!isValid) return null
@@ -99,12 +99,12 @@ fun parseRegularAddress(
 fun parseAddress(
     mailAddresses: List<Henkilo.KotimainenPostiosoite>,
     temporaryAddresses: List<Henkilo.TilapainenKotimainenLahiosoite>,
-    regularAddress: Henkilo.VakinainenKotimainenLahiosoite
+    regularAddress: Henkilo.VakinainenKotimainenLahiosoite,
 ) =
     listOfNotNull(
             mailAddresses.mapNotNull { parseMailAddress(it) }.firstOrNull(),
             temporaryAddresses.mapNotNull { parseTemporaryAddress(it) }.firstOrNull(),
-            parseRegularAddress(regularAddress)
+            parseRegularAddress(regularAddress),
         )
         .firstOrNull()
 
@@ -113,7 +113,7 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
         parseAddress(
             kotimainenPostiosoite,
             tilapainenKotimainenLahiosoite,
-            vakinainenKotimainenLahiosoite
+            vakinainenKotimainenLahiosoite,
         )
 
     return VtjPerson(
@@ -127,7 +127,7 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
         residenceCode = vakinainenAsuinpaikka?.asuinpaikantunnus,
         nativeLanguage = mapNativeLanguage(),
         restrictedDetails = turvakielto.mapToRestrictedDetails(),
-        dateOfDeath = parseLocalDateFromString(kuolintiedot.kuolinpvm)
+        dateOfDeath = parseLocalDateFromString(kuolintiedot.kuolinpvm),
     )
 }
 
@@ -136,7 +136,7 @@ fun Henkilo.Huollettava.mapToPerson() =
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
         socialSecurityNumber = henkilotunnus,
-        restrictedDetails = null
+        restrictedDetails = null,
     )
 
 fun Henkilo.Huoltaja.mapToPerson() =
@@ -144,7 +144,7 @@ fun Henkilo.Huoltaja.mapToPerson() =
         firstNames = nykyisetEtunimet.etunimet,
         lastName = nykyinenSukunimi.sukunimi,
         socialSecurityNumber = henkilotunnus,
-        restrictedDetails = null
+        restrictedDetails = null,
     )
 
 /*

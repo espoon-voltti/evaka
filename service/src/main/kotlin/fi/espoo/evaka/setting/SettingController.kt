@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/settings", // deprecated
-    "/employee/settings"
+    "/employee/settings",
 )
 class SettingController(private val accessControl: AccessControl) {
 
@@ -27,7 +27,7 @@ class SettingController(private val accessControl: AccessControl) {
     fun getSettings(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<SettingType, String> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -35,7 +35,7 @@ class SettingController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.UPDATE_SETTINGS
+                        Action.Global.UPDATE_SETTINGS,
                     )
                     tx.getSettings()
                 }
@@ -48,7 +48,7 @@ class SettingController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody settings: Map<SettingType, String>
+        @RequestBody settings: Map<SettingType, String>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

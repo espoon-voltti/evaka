@@ -46,7 +46,7 @@ INSERT INTO message_draft (account_id) VALUES (${bind(accountId)}) RETURNING id
 fun Database.Transaction.updateDraft(
     accountId: MessageAccountId,
     id: MessageDraftId,
-    draft: UpdatableDraftContent
+    draft: UpdatableDraftContent,
 ) =
     createUpdate {
             sql(

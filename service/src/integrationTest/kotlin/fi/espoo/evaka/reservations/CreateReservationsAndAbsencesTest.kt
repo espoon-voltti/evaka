@@ -101,7 +101,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -123,9 +123,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -144,7 +144,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday
+                    endDate = monday,
                 )
             )
             it.insert(
@@ -153,7 +153,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = tuesday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -181,9 +181,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = wednesday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -205,7 +205,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child2.id)
@@ -227,9 +227,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -247,7 +247,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday.minusDays(1),
-                    endDate = monday
+                    endDate = monday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -269,9 +269,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = saturday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -291,7 +291,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -314,9 +314,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -336,7 +336,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -346,7 +346,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -355,7 +355,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = tuesday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -371,9 +371,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = monday,
                         TimeRange(startTime, endTime),
-                    ),
+                    )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -399,7 +399,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -409,7 +409,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
         }
@@ -420,13 +420,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 it,
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
-                listOf(
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = monday,
-                    ),
-                ),
-                citizenReservationThresholdHours
+                listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
+                citizenReservationThresholdHours,
             )
         }
 
@@ -452,7 +447,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -462,7 +457,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
         }
@@ -473,13 +468,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 it,
                 afterThreshold,
                 employee.user,
-                listOf(
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = monday,
-                    ),
-                ),
-                citizenReservationThresholdHours
+                listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
+                citizenReservationThresholdHours,
             )
         }
 
@@ -511,7 +501,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -522,7 +512,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = monday,
                         startTime = start,
                         endTime = end,
-                        createdBy = employee.evakaUserId
+                        createdBy = employee.evakaUserId,
                     )
                 )
             }
@@ -539,10 +529,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = monday,
                         reservation = reservation3,
-                        secondReservation = null
-                    ),
+                        secondReservation = null,
+                    )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -565,7 +555,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -575,7 +565,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -584,7 +574,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = tuesday,
                     startTime = startTime,
                     endTime = endTime,
-                    createdBy = EvakaUserId(adult.id.raw)
+                    createdBy = EvakaUserId(adult.id.raw),
                 )
             )
         }
@@ -596,16 +586,10 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
                 listOf(
-                    DailyReservationRequest.Nothing(
-                        childId = child.id,
-                        date = monday,
-                    ),
-                    DailyReservationRequest.Nothing(
-                        childId = child.id,
-                        date = tuesday,
-                    )
+                    DailyReservationRequest.Nothing(childId = child.id, date = monday),
+                    DailyReservationRequest.Nothing(childId = child.id, date = tuesday),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -637,7 +621,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = monday,
-                        endDate = unlockedDate.plusDays(1)
+                        endDate = unlockedDate.plusDays(1),
                     )
                 )
                 .let { placementId ->
@@ -649,7 +633,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                             endDate = period.end,
                             optionId = snDaycareContractDays15.id,
                             confirmedBy = employee.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                     val period1 =
@@ -661,7 +645,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                             endDate = period1.end,
                             optionId = snDaycareHours120.id,
                             confirmedBy = employee.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -675,25 +659,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 afterThreshold,
                 employee.user,
                 listOf(
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = monday,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = tuesday,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = unlockedDate,
-                    ),
+                    DailyReservationRequest.Absent(childId = child.id, date = monday),
+                    DailyReservationRequest.Absent(childId = child.id, date = tuesday),
+                    DailyReservationRequest.Absent(childId = child.id, date = unlockedDate),
                     DailyReservationRequest.Absent(
                         childId = child.id,
                         date = unlockedDate.plusDays(1),
-                    )
+                    ),
                 ),
                 citizenReservationThresholdHours,
-                true
+                true,
             )
         }
 
@@ -703,7 +678,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     it.getAbsencesCitizen(
                         monday,
                         adult.id,
-                        queryRange.copy(end = unlockedDate.plusDays(2))
+                        queryRange.copy(end = unlockedDate.plusDays(2)),
                     )
                 }
                 .map { absence -> absence.date to absence.absenceType }
@@ -713,9 +688,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 monday to AbsenceType.OTHER_ABSENCE,
                 tuesday to AbsenceType.OTHER_ABSENCE,
                 unlockedDate to AbsenceType.PLANNED_ABSENCE,
-                unlockedDate.plusDays(1) to AbsenceType.PLANNED_ABSENCE
+                unlockedDate.plusDays(1) to AbsenceType.PLANNED_ABSENCE,
             ),
-            absences
+            absences,
         )
     }
 
@@ -728,7 +703,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -738,7 +713,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -747,7 +722,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = tuesday,
                     absenceType = AbsenceType.FREE_ABSENCE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -756,7 +731,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = wednesday,
                     absenceType = AbsenceType.FREE_ABSENCE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -778,12 +753,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = tuesday,
                         TimeRange(startTime, endTime),
                     ),
-                    DailyReservationRequest.Nothing(
-                        childId = child.id,
-                        date = wednesday,
-                    )
+                    DailyReservationRequest.Nothing(childId = child.id, date = wednesday),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -799,7 +771,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
         assertEquals(
             listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE),
-            absences.map { it.absenceType }
+            absences.map { it.absenceType },
         )
     }
 
@@ -816,7 +788,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = wednesday
+                    endDate = wednesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -838,7 +810,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 friday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 saturday = null,
                 sunday = null,
-            )
+            ),
         )
 
         // when
@@ -853,28 +825,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = monday,
                         TimeRange(startTime, endTime),
                     ),
-                    DailyReservationRequest.Absent(
-                        childId = child.id,
-                        date = tuesday,
-                    ),
-                    DailyReservationRequest.Nothing(
-                        childId = child.id,
-                        date = wednesday,
-                    ),
+                    DailyReservationRequest.Absent(childId = child.id, date = tuesday),
+                    DailyReservationRequest.Nothing(childId = child.id, date = wednesday),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
         // then 3 non-editable absences are left
         val absences =
-            db.read {
-                    it.getAbsencesCitizen(
-                        monday,
-                        adult.id,
-                        queryRange,
-                    )
-                }
+            db.read { it.getAbsencesCitizen(monday, adult.id, queryRange) }
                 .map { absence ->
                     Triple(absence.date, absence.absenceType, absence.editableByCitizen())
                 }
@@ -884,7 +844,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 Triple(tuesday, AbsenceType.OTHER_ABSENCE, false),
                 Triple(wednesday, AbsenceType.OTHER_ABSENCE, false),
             ),
-            absences
+            absences,
         )
     }
 
@@ -897,7 +857,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -915,9 +875,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = tuesday,
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -934,7 +894,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         TimeRange(LocalTime.of(12, 0), endTime),
                     )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -945,12 +905,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(monday, reservations[0].date)
         assertEquals(
             TimeRange(LocalTime.of(12, 0), endTime),
-            (reservations[0].reservation as Reservation.Times).range
+            (reservations[0].reservation as Reservation.Times).range,
         )
         assertEquals(tuesday, reservations[1].date)
         assertEquals(
             TimeRange(startTime, endTime),
-            (reservations[1].reservation as Reservation.Times).range
+            (reservations[1].reservation as Reservation.Times).range,
         )
     }
 
@@ -964,7 +924,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -974,7 +934,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(adult.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -985,13 +945,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 it,
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
-                listOf(
-                    DailyReservationRequest.Present(
-                        childId = child.id,
-                        date = monday,
-                    )
-                ),
-                citizenReservationThresholdHours
+                listOf(DailyReservationRequest.Present(childId = child.id, date = monday)),
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1019,7 +974,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday.minusYears(1),
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1027,7 +982,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 DevHolidayPeriod(
                     period = holidayPeriod,
                     reservationsOpenOn = reservationsOpenOn,
-                    reservationDeadline = reservationDeadline
+                    reservationDeadline = reservationDeadline,
                 )
             )
         }
@@ -1042,21 +997,21 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     listOf(
                         DailyReservationRequest.Present(
                             childId = child.id,
-                            date = holidayPeriodStart
+                            date = holidayPeriodStart,
                         ),
                         DailyReservationRequest.Absent(
                             childId = child.id,
-                            date = holidayPeriodStart.plusDays(1)
-                        )
+                            date = holidayPeriodStart.plusDays(1),
+                        ),
                     ),
-                    citizenReservationThresholdHours
+                    citizenReservationThresholdHours,
                 )
             }
 
             // then
             assertEquals(
                 0,
-                db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }.size
+                db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }.size,
             )
             assertEquals(0, db.read { it.getAbsencesCitizen(monday, adult.id, holidayPeriod) }.size)
         }
@@ -1075,7 +1030,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1089,12 +1044,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
                 listOf(
-                    DailyReservationRequest.Present(
-                        childId = child.id,
-                        date = holidayPeriodStart,
-                    )
+                    DailyReservationRequest.Present(childId = child.id, date = holidayPeriodStart)
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1122,7 +1074,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1139,16 +1091,16 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart,
-                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                        reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                     ),
                     DailyReservationRequest.Reservations(
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
                         reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
-                        secondReservation = TimeRange(LocalTime.of(16, 0), LocalTime.of(19, 0))
-                    )
+                        secondReservation = TimeRange(LocalTime.of(16, 0), LocalTime.of(19, 0)),
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1181,14 +1133,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(
                 holidayPeriod,
                 beforeThreshold.toLocalDate().minusDays(1),
-                beforeThreshold.toLocalDate().minusDays(1)
+                beforeThreshold.toLocalDate().minusDays(1),
             )
         }
 
@@ -1206,7 +1158,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                             date = holidayPeriodStart,
                         )
                     ),
-                    citizenReservationThresholdHours
+                    citizenReservationThresholdHours,
                 )
             }
         }
@@ -1224,7 +1176,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                             date = holidayPeriodEnd.plusDays(1),
                         )
                     ),
-                    citizenReservationThresholdHours
+                    citizenReservationThresholdHours,
                 )
             }
         }
@@ -1243,14 +1195,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = beforeThreshold.toLocalDate().minusDays(2),
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(
                 holidayPeriod,
                 beforeThreshold.toLocalDate().minusDays(1),
-                beforeThreshold.toLocalDate().minusDays(1)
+                beforeThreshold.toLocalDate().minusDays(1),
             )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
@@ -1265,8 +1217,8 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(1),
                         absenceType = AbsenceType.OTHER_ABSENCE,
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -1290,9 +1242,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         date = holidayPeriodStart.plusDays(2),
                         TimeRange(startTime, endTime),
-                    )
+                    ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1319,7 +1271,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday.minusYears(1),
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1333,7 +1285,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     )
-                )
+                ),
             )
         }
 
@@ -1344,12 +1296,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
                 listOf(
-                    DailyReservationRequest.Present(
-                        childId = child.id,
-                        date = holidayPeriodStart,
-                    ),
+                    DailyReservationRequest.Present(childId = child.id, date = holidayPeriodStart)
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1376,7 +1325,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday.minusYears(1),
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1399,12 +1348,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 beforeThreshold,
                 adult.user(CitizenAuthLevel.STRONG),
                 listOf(
-                    DailyReservationRequest.Nothing(
-                        childId = child.id,
-                        date = holidayPeriodStart,
-                    ),
+                    DailyReservationRequest.Nothing(childId = child.id, date = holidayPeriodStart)
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1432,14 +1378,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(
                 holidayPeriod,
                 beforeThreshold.toLocalDate().minusDays(1),
-                beforeThreshold.toLocalDate().minusDays(1)
+                beforeThreshold.toLocalDate().minusDays(1),
             )
             it.upsertFullDayAbsences(
                 adult.user(CitizenAuthLevel.STRONG).evakaUserId,
@@ -1450,7 +1396,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = holidayPeriodStart,
                         absenceType = AbsenceType.OTHER_ABSENCE,
                     )
-                )
+                ),
             )
         }
 
@@ -1467,7 +1413,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         TimeRange(startTime, endTime),
                     )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1497,14 +1443,14 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = monday.plusYears(1)
+                    endDate = monday.plusYears(1),
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
             it.insertHolidayPeriod(
                 holidayPeriod,
                 beforeThreshold.toLocalDate().minusDays(1),
-                beforeThreshold.toLocalDate().minusDays(1)
+                beforeThreshold.toLocalDate().minusDays(1),
             )
             it.insert(
                 // NoTimes reservation
@@ -1513,7 +1459,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = holidayPeriodStart,
                     startTime = null,
                     endTime = null,
-                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId
+                    createdBy = adult.user(CitizenAuthLevel.STRONG).evakaUserId,
                 )
             )
         }
@@ -1531,7 +1477,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         TimeRange(startTime, endTime),
                     )
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1554,7 +1500,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1564,7 +1510,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(employee.user.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -1573,7 +1519,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = tuesday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(employee.user.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -1596,7 +1542,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         TimeRange(startTime, endTime),
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1619,7 +1565,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
             it.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1629,7 +1575,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = monday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(employee.user.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -1638,7 +1584,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     date = tuesday,
                     absenceType = AbsenceType.SICKLEAVE,
                     modifiedBy = EvakaUserId(employee.user.id.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -1661,7 +1607,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         TimeRange(startTime, endTime),
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -1693,7 +1639,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 areaId = area.id,
                 dailyPreschoolTime = TimeRange(fixedScheduleStart, fixedScheduleEnd),
                 dailyPreparatoryTime = TimeRange(fixedScheduleStart, fixedScheduleEnd),
-                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
             )
 
         db.transaction { tx ->
@@ -1703,7 +1649,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     swedishPreschool = term,
                     extendedTerm = term,
                     applicationPeriod = term,
-                    termBreaks = DateSet.empty()
+                    termBreaks = DateSet.empty(),
                 )
             )
             tx.insertServiceNeedOption(snDaycareHours120)
@@ -1714,7 +1660,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = placementRange.start,
-                        endDate = placementRange.end
+                        endDate = placementRange.end,
                     )
                 )
                 .also { placementId ->
@@ -1725,7 +1671,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                             endDate = placementRange.end,
                             optionId = snDaycareHours120.id,
                             confirmedBy = employee.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -1757,7 +1703,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 },
                 citizenReservationThresholdHours,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                automaticFixedScheduleAbsencesEnabled = true
+                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1767,7 +1713,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 .sortedWith(compareBy({ it.date }, { it.reservation }))
         assertEquals(
             times.map { (date, timeRange) -> date to Reservation.Times(timeRange) },
-            reservations.map { it.date to it.reservation }
+            reservations.map { it.date to it.reservation },
         )
 
         // and absences are automatically created based on reserved times
@@ -1781,7 +1727,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 // No absence for wednesday
                 Triple(thursday, AbsenceType.PLANNED_ABSENCE, AbsenceCategory.NONBILLABLE),
             ),
-            absences.map { Triple(it.date, it.absenceType, it.category) }
+            absences.map { Triple(it.date, it.absenceType, it.category) },
         )
     }
 
@@ -1795,7 +1741,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = wednesday
+                    endDate = wednesday,
                 )
             )
             tx.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1822,7 +1768,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 },
                 citizenReservationThresholdHours,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                automaticFixedScheduleAbsencesEnabled = true
+                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1832,7 +1778,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 .sortedWith(compareBy({ it.date }, { it.reservation }))
         assertEquals(
             times.map { (date, timeRange) -> date to Reservation.Times(timeRange) },
-            reservations.map { it.date to it.reservation }
+            reservations.map { it.date to it.reservation },
         )
 
         // and absences are automatically created based on reserved times
@@ -1844,7 +1790,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 Triple(tuesday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
                 Triple(wednesday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
             ),
-            absences.map { Triple(it.date, it.absenceType, it.category) }
+            absences.map { Triple(it.date, it.absenceType, it.category) },
         )
     }
 
@@ -1859,7 +1805,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
             DevDaycare(
                 areaId = area.id,
                 dailyPreschoolTime = preschoolTime,
-                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+                enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
             )
 
         db.transaction { tx ->
@@ -1869,7 +1815,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     swedishPreschool = term,
                     extendedTerm = term,
                     applicationPeriod = term,
-                    termBreaks = DateSet.empty()
+                    termBreaks = DateSet.empty(),
                 )
             )
             tx.insert(daycare)
@@ -1879,7 +1825,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = placementRange.start,
-                    endDate = placementRange.end
+                    endDate = placementRange.end,
                 )
             )
             tx.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1892,7 +1838,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         date = monday,
                         absenceType = AbsenceType.PLANNED_ABSENCE,
                         absenceCategory = category,
-                        modifiedBy = adult.evakaUserId()
+                        modifiedBy = adult.evakaUserId(),
                     )
                 )
             }
@@ -1907,7 +1853,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 adult.user(CitizenAuthLevel.WEAK),
                 listOf(DailyReservationRequest.Reservations(child.id, monday, preschoolTime)),
                 citizenReservationThresholdHours,
-                automaticFixedScheduleAbsencesEnabled = true
+                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1917,7 +1863,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 .sortedWith(compareBy({ it.date }, { it.reservation }))
         assertEquals(
             listOf(monday to Reservation.Times(preschoolTime)),
-            reservations.map { it.date to it.reservation }
+            reservations.map { it.date to it.reservation },
         )
 
         // full-day absence is gone, only the automatic absence remains
@@ -1926,7 +1872,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 .sortedBy { it.date }
         assertEquals(
             listOf(Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE)),
-            absences.map { Triple(it.date, it.absenceType, it.category) }
+            absences.map { Triple(it.date, it.absenceType, it.category) },
         )
     }
 
@@ -1943,7 +1889,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     swedishPreschool = term,
                     extendedTerm = term,
                     applicationPeriod = term,
-                    termBreaks = DateSet.empty()
+                    termBreaks = DateSet.empty(),
                 )
             )
             tx.insert(
@@ -1952,7 +1898,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     childId = child.id,
                     unitId = daycare.id,
                     startDate = placementRange.start,
-                    endDate = placementRange.end
+                    endDate = placementRange.end,
                 )
             )
             tx.insertGuardian(guardianId = adult.id, childId = child.id)
@@ -1970,7 +1916,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(child.id, monday, veryShortReservation)
                 ),
                 citizenReservationThresholdHours,
-                automaticFixedScheduleAbsencesEnabled = true
+                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1980,7 +1926,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 .sortedWith(compareBy({ it.date }, { it.reservation }))
         assertEquals(
             listOf(monday to Reservation.Times(veryShortReservation)),
-            reservations.map { it.date to it.reservation }
+            reservations.map { it.date to it.reservation },
         )
 
         // full-day absence is created, because the reservation is so short
@@ -1990,9 +1936,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(
             listOf(
                 Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.BILLABLE),
-                Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.NONBILLABLE)
+                Triple(monday, AbsenceType.OTHER_ABSENCE, AbsenceCategory.NONBILLABLE),
             ),
-            absences.map { Triple(it.date, it.absenceType, it.category) }
+            absences.map { Triple(it.date, it.absenceType, it.category) },
         )
     }
 }

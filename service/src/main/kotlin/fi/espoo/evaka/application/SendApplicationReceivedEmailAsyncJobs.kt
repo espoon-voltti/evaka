@@ -15,7 +15,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class SendApplicationReceivedEmailAsyncJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val applicationReceivedEmailService: ApplicationReceivedEmailService
+    private val applicationReceivedEmailService: ApplicationReceivedEmailService,
 ) {
 
     init {
@@ -26,14 +26,14 @@ class SendApplicationReceivedEmailAsyncJobs(
 
     private fun runSendApplicationEmail(
         db: Database.Connection,
-        msg: AsyncJob.SendApplicationEmail
+        msg: AsyncJob.SendApplicationEmail,
     ) {
         applicationReceivedEmailService.sendApplicationEmail(
             db,
             msg.guardianId,
             msg.language,
             msg.type,
-            msg.sentWithinPreschoolApplicationPeriod
+            msg.sentWithinPreschoolApplicationPeriod,
         )
     }
 }

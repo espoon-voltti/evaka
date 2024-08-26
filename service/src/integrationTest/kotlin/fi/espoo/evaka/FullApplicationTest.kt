@@ -41,7 +41,7 @@ import org.springframework.core.env.Environment
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class]
+    classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class],
 )
 abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     @LocalServerPort protected var httpPort: Int = 0
@@ -99,7 +99,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     fun uploadAttachment(
         applicationId: ApplicationId,
         user: AuthenticatedUser,
-        type: AttachmentType = AttachmentType.URGENCY
+        type: AttachmentType = AttachmentType.URGENCY,
     ): Boolean {
         val path =
             if (user is AuthenticatedUser.Citizen)

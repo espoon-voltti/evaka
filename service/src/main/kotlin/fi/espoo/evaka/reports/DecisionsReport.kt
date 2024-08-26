@@ -27,14 +27,14 @@ import org.springframework.web.bind.annotation.RestController
 class DecisionsReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/decisions", // deprecated
-        "/employee/reports/decisions"
+        "/employee/reports/decisions",
     )
     fun getDecisionsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<DecisionsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -44,7 +44,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_DECISIONS_REPORT
+                        Action.Global.READ_DECISIONS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getDecisionsRows(FiniteDateRange(from, to))
@@ -181,7 +181,7 @@ private data class DecisionsReportQueryRow(
     val decisionType: DecisionType,
     val applicationId: ApplicationId,
     val preferredUnits: List<DaycareId>,
-    val age: Int
+    val age: Int,
 )
 
 data class DecisionsReportRow(
@@ -201,5 +201,5 @@ data class DecisionsReportRow(
     val preference2: Int,
     val preference3: Int,
     val preferenceNone: Int,
-    val total: Int
+    val total: Int,
 )

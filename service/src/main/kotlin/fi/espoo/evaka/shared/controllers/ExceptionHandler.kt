@@ -27,7 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 data class ErrorResponse(
     val errorCode: String? = null,
-    val timestamp: Long = Instant.now().toEpochMilli()
+    val timestamp: Long = Instant.now().toEpochMilli(),
 )
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -72,7 +72,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         ex: MaxUploadSizeExceededException,
         headers: HttpHeaders,
         status: HttpStatusCode,
-        request: WebRequest
+        request: WebRequest,
     ): ResponseEntity<Any>? {
         logger.warn("Max upload size exceeded (${ex.message})", ex)
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
@@ -94,7 +94,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         body: Any?,
         headers: HttpHeaders,
         statusCode: HttpStatusCode,
-        request: WebRequest
+        request: WebRequest,
     ): ResponseEntity<Any>? {
         logger.warn("Spring exception (${ex.message})", ex)
         return super.handleExceptionInternal(ex, body, headers, statusCode, request)

@@ -11,20 +11,20 @@ enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
     AssistanceAction("assistance_actions", EspooBi.getAssistanceActions),
     AssistanceActionOptionRef(
         "assistance_action_option_refs",
-        EspooBi.getAssistanceActionOptionRefs
+        EspooBi.getAssistanceActionOptionRefs,
     ),
     AssistanceFactor("assistance_factors", EspooBi.getAssistanceFactors),
     AssistanceNeedDaycareDecision(
         "assistance_need_daycare_decisions",
-        EspooBi.getAssistanceNeedDaycareDecisions
+        EspooBi.getAssistanceNeedDaycareDecisions,
     ),
     AssistanceNeedPreschoolDecision(
         "assistance_need_preschool_decisions",
-        EspooBi.getAssistanceNeedPreschoolDecisions
+        EspooBi.getAssistanceNeedPreschoolDecisions,
     ),
     AssistanceNeedVoucherCoefficient(
         "assistance_need_voucher_coefficients",
-        EspooBi.getAssistanceNeedVoucherCoefficients
+        EspooBi.getAssistanceNeedVoucherCoefficients,
     ),
     Child("children", EspooBi.getChildren),
     CurriculumDocument("curriculum_documents", EspooBi.getCurriculumDocuments),
@@ -38,7 +38,7 @@ enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
     GroupPlacement("group_placements", EspooBi.getGroupPlacements),
     OtherAssistanceMeasureEntry(
         "other_assistance_measure_entries",
-        EspooBi.getOtherAssistanceMeasureEntries
+        EspooBi.getOtherAssistanceMeasureEntries,
     ),
     PedagogicalDocument("pedagogical_documents", EspooBi.getPedagogicalDocuments),
     Placement("placements", EspooBi.getPlacements),
@@ -46,5 +46,5 @@ enum class EspooBiTable(val fileName: String, val query: CsvQuery) {
     ServiceNeedOption("service_need_options", EspooBi.getServiceNeedOptions),
     ServiceNeed("service_needs", EspooBi.getServiceNeeds),
     Unit("units", EspooBi.getUnits),
-    VoucherValueDecision("voucher_value_decisions", EspooBi.getVoucherValueDecisions)
+    VoucherValueDecision("voucher_value_decisions", EspooBi.getVoucherValueDecisions),
 }

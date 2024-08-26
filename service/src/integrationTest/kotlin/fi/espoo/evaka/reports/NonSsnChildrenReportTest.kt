@@ -32,7 +32,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val adminUser =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.ADMIN)
+            roles = setOf(UserRole.ADMIN),
         )
 
     private final val testDay: LocalDate = LocalDate.of(2021, 5, 5)
@@ -44,7 +44,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             lastName = "No SSN",
             dateOfBirth = testDay.minusYears(3),
             ssn = null,
-            ophPersonOid = null
+            ophPersonOid = null,
         )
 
     private val jackieNoSsn =
@@ -54,7 +54,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             lastName = "No SSN",
             dateOfBirth = testDay.minusYears(4),
             ssn = null,
-            ophPersonOid = "MockOID"
+            ophPersonOid = "MockOID",
         )
 
     @BeforeEach
@@ -70,7 +70,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = jimmyNoSsn.id,
                     unitId = testDaycare.id,
                     startDate = testDay.minusDays(7),
-                    endDate = testDay.plusYears(1)
+                    endDate = testDay.plusYears(1),
                 )
             )
             tx.insert(
@@ -78,7 +78,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = jackieNoSsn.id,
                     unitId = testDaycare2.id,
                     startDate = testDay.minusDays(7),
-                    endDate = testDay.plusYears(1)
+                    endDate = testDay.plusYears(1),
                 )
             )
         }
@@ -94,7 +94,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     lastName = jackieNoSsn.lastName,
                     dateOfBirth = jackieNoSsn.dateOfBirth,
                     existingPersonOid = jackieNoSsn.ophPersonOid,
-                    vardaOid = null
+                    vardaOid = null,
                 ),
                 NonSsnChildrenReportRow(
                     childId = jimmyNoSsn.id,
@@ -102,14 +102,14 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     lastName = jimmyNoSsn.lastName,
                     dateOfBirth = jimmyNoSsn.dateOfBirth,
                     existingPersonOid = null,
-                    vardaOid = null
-                )
+                    vardaOid = null,
+                ),
             )
         val result =
             nonSsnChildrenReportController.getNonSsnChildrenReportRows(
                 dbInstance(),
                 adminUser,
-                testClock
+                testClock,
             )
 
         assertEquals(expectation.size, result.size)

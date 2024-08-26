@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 class InvoicingAsyncJobs(
     private val feeService: FeeDecisionService,
     private val valueDecisionService: VoucherValueDecisionService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler(::runCreateFeeDecisionPdf)
@@ -31,7 +31,7 @@ class InvoicingAsyncJobs(
     fun runCreateFeeDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.NotifyFeeDecisionApproved
+        msg: AsyncJob.NotifyFeeDecisionApproved,
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
@@ -40,14 +40,14 @@ class InvoicingAsyncJobs(
             asyncJobRunner.plan(
                 tx,
                 listOf(AsyncJob.NotifyFeeDecisionPdfGenerated(decisionId)),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
 
     fun runSendFeeDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.NotifyFeeDecisionPdfGenerated
+        msg: AsyncJob.NotifyFeeDecisionPdfGenerated,
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
@@ -65,7 +65,7 @@ class InvoicingAsyncJobs(
     fun runCreateVoucherValueDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.NotifyVoucherValueDecisionApproved
+        msg: AsyncJob.NotifyVoucherValueDecisionApproved,
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
@@ -74,14 +74,14 @@ class InvoicingAsyncJobs(
             asyncJobRunner.plan(
                 tx,
                 listOf(AsyncJob.NotifyVoucherValueDecisionPdfGenerated(decisionId)),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
 
     fun runSendVoucherValueDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated
+        msg: AsyncJob.NotifyVoucherValueDecisionPdfGenerated,
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId

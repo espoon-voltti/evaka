@@ -46,7 +46,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         DevDaycare(
             areaId = area2.id,
             name = "Daycare 2",
-            enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+            enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
         )
 
     val childId = testChild_1.id
@@ -77,7 +77,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
-                        name = "group 1"
+                        name = "group 1",
                     )
                 )
             groupId2 =
@@ -85,7 +85,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     DevDaycareGroup(
                         daycareId = unitId,
                         startDate = placementStart,
-                        name = "group 2"
+                        name = "group 2",
                     )
                 )
 
@@ -96,7 +96,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId,
                     placementStart,
                     placementEnd,
-                    false
+                    false,
                 )
             daycarePlacementId = oldPlacement.id
 
@@ -106,7 +106,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycarePlacementId = daycarePlacementId,
                         daycareGroupId = groupId1,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
         }
@@ -127,11 +127,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 21),
-                            LocalDate.of(year, month, 30)
+                            LocalDate.of(year, month, 30),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -158,7 +158,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
                     PlacementType.PRESCHOOL,
                     useFiveYearsOldDaycare = true,
-                    placeGuarantee = false
+                    placeGuarantee = false,
                 )
             }
 
@@ -182,11 +182,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 11),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -214,11 +214,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 21),
-                            LocalDate.of(year, month, 30)
+                            LocalDate.of(year, month, 30),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -234,7 +234,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 id = newPlacement.id,
                 startDate = newStart,
                 endDate = newPlacement.endDate,
-                useFiveYearsOldDaycare = true
+                useFiveYearsOldDaycare = true,
             )
         }
 
@@ -264,11 +264,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 11),
-                            LocalDate.of(year, month, 21)
+                            LocalDate.of(year, month, 21),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -301,11 +301,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 11),
-                            LocalDate.of(year, month, 19)
+                            LocalDate.of(year, month, 19),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -346,11 +346,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 21)
+                            LocalDate.of(year, month, 21),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -376,11 +376,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 19)
+                            LocalDate.of(year, month, 19),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -413,11 +413,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 9),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -443,11 +443,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 9),
-                            LocalDate.of(year, month, 21)
+                            LocalDate.of(year, month, 21),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -473,11 +473,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 9),
-                            LocalDate.of(year, month, 19)
+                            LocalDate.of(year, month, 19),
                         ),
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -510,11 +510,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 21),
-                            LocalDate.of(year, month, 31)
+                            LocalDate.of(year, month, 31),
                         ),
                         PlacementType.PRESCHOOL_DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -526,11 +526,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 15),
-                            LocalDate.of(year, month, 25)
+                            LocalDate.of(year, month, 25),
                         ),
                         PlacementType.PREPARATORY,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -572,11 +572,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 11),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -619,11 +619,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 10),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -652,11 +652,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 9),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -678,7 +678,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId,
                     LocalDate.of(year + 2, 8, 1),
                     LocalDate.of(year + 2, 12, 1),
-                    false
+                    false,
                 )
             }
 
@@ -692,11 +692,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 9),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -721,7 +721,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 1, 8, 1),
                         LocalDate.of(year + 2, 6, 30),
-                        false
+                        false,
                     ),
                     it.insertPlacement(
                         PlacementType.DAYCARE,
@@ -729,7 +729,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 2, 7, 1),
                         LocalDate.of(year + 2, 7, 31),
-                        false
+                        false,
                     ),
                     it.insertPlacement(
                         PlacementType.PRESCHOOL,
@@ -737,8 +737,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 2, 9, 1),
                         LocalDate.of(year + 3, 4, 11),
-                        false
-                    )
+                        false,
+                    ),
                 )
             }
 
@@ -752,11 +752,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 9),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -783,7 +783,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 1, 8, 1),
                         LocalDate.of(year + 2, 6, 30),
-                        false
+                        false,
                     ),
                     it.insertPlacement(
                         PlacementType.DAYCARE,
@@ -791,7 +791,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 2, 7, 1),
                         LocalDate.of(year + 2, 7, 31),
-                        false
+                        false,
                     ),
                     it.insertPlacement(
                         PlacementType.PREPARATORY_DAYCARE,
@@ -799,8 +799,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         LocalDate.of(year + 2, 9, 1),
                         LocalDate.of(year + 3, 4, 11),
-                        false
-                    )
+                        false,
+                    ),
                 )
             }
 
@@ -814,11 +814,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             listOf(
                                 FiniteDateRange(
                                     LocalDate.of(year, month, 9),
-                                    LocalDate.of(year, month, 19)
+                                    LocalDate.of(year, month, 19),
                                 ) to PlacementType.CLUB
                             ),
                         cancelPlacementsAfterClub = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -843,11 +843,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -857,7 +857,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 id = oldPlacement.id,
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 19),
-                useFiveYearsOldDaycare = true
+                useFiveYearsOldDaycare = true,
             )
         }
 
@@ -876,11 +876,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -891,7 +891,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycarePlacementId = oldPlacement.id,
                     daycareGroupId = groupId,
                     startDate = oldPlacement.startDate,
-                    endDate = oldPlacement.endDate
+                    endDate = oldPlacement.endDate,
                 )
             )
             val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
@@ -902,7 +902,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = period.end,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -912,7 +912,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 id = oldPlacement.id,
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 15),
-                useFiveYearsOldDaycare = true
+                useFiveYearsOldDaycare = true,
             )
         }
 
@@ -951,11 +951,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 1),
-                            LocalDate.of(year, month, 30)
+                            LocalDate.of(year, month, 30),
                         ),
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -966,7 +966,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     daycarePlacementId = oldPlacement.id,
                     daycareGroupId = groupId,
                     startDate = oldPlacement.startDate,
-                    endDate = oldPlacement.endDate
+                    endDate = oldPlacement.endDate,
                 )
             )
             val period = FiniteDateRange(oldPlacement.startDate, oldPlacement.endDate)
@@ -977,7 +977,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     endDate = period.end,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -990,7 +990,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 FiniteDateRange(LocalDate.of(year, month, 15), LocalDate.of(year, month, 30)),
                 PlacementType.PRESCHOOL_DAYCARE,
                 useFiveYearsOldDaycare = true,
-                placeGuarantee = false
+                placeGuarantee = false,
             )
         }
 
@@ -1035,11 +1035,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -1049,7 +1049,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 id = oldPlacement.id,
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 21),
-                useFiveYearsOldDaycare = true
+                useFiveYearsOldDaycare = true,
             )
         }
 
@@ -1068,11 +1068,11 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId,
                         FiniteDateRange(
                             LocalDate.of(year, month, 10),
-                            LocalDate.of(year, month, 20)
+                            LocalDate.of(year, month, 20),
                         ),
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 }
                 .first()
@@ -1082,7 +1082,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     id = oldPlacement.id,
                     startDate = oldPlacement.startDate,
                     endDate = oldPlacement.startDate.minusDays(1),
-                    useFiveYearsOldDaycare = true
+                    useFiveYearsOldDaycare = true,
                 )
             }
         }
@@ -1099,7 +1099,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareId = unitId,
                         childId = childId,
                         startDate = null,
-                        endDate = null
+                        endDate = null,
                     )
                 }
                 .also { assertEquals(1, it.size) }
@@ -1126,7 +1126,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycareId = unitId,
                         childId = childId,
                         startDate = null,
-                        endDate = null
+                        endDate = null,
                     )
                 }
                 .also { assertEquals(1, it.size) }
@@ -1154,7 +1154,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_2.id,
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
-                    endDate = daycarePlacementEndDate
+                    endDate = daycarePlacementEndDate,
                 )
             )
         }
@@ -1171,7 +1171,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             dateOfBirth = testChild_2.dateOfBirth,
                             socialSecurityNumber = testChild_2.ssn,
                             firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName
+                            lastName = testChild_2.lastName,
                         ),
                     daycare =
                         DaycareBasics(
@@ -1180,7 +1180,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             area2.name,
                             ProviderType.MUNICIPAL,
                             daycare2.enabledPilotFeatures.toList(),
-                            Language.fi
+                            Language.fi,
                         ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
@@ -1194,17 +1194,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = null,
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = daycarePlacementStartDate,
-                                endDate = daycarePlacementEndDate
+                                endDate = daycarePlacementEndDate,
                             )
                         ),
                     serviceNeeds = emptyList(),
                     defaultServiceNeedOptionNameFi = "Kokopäiväinen",
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    placeGuarantee = false
+                    placeGuarantee = false,
                 )
             ),
-            placements
+            placements,
         )
     }
 
@@ -1225,7 +1225,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_2.id,
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
-                    endDate = daycarePlacementEndDate
+                    endDate = daycarePlacementEndDate,
                 )
             )
         }
@@ -1241,7 +1241,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 groupPlacementId2,
                 groupPlacementId3,
                 groupPlacementId4,
-                groupPlacementId5
+                groupPlacementId5,
             )
         val groupPlacementDays = listOf(3 to 5, 6 to 9, 12 to 12, 16 to 17, 19 to 20)
 
@@ -1253,7 +1253,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycarePlacementId = daycarePlacementId,
                         daycareGroupId = groupId1,
                         startDate = date(startDate),
-                        endDate = date(endDate)
+                        endDate = date(endDate),
                     )
                 )
             }
@@ -1271,7 +1271,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             dateOfBirth = testChild_2.dateOfBirth,
                             socialSecurityNumber = testChild_2.ssn,
                             firstName = testChild_2.firstName,
-                            lastName = testChild_2.lastName
+                            lastName = testChild_2.lastName,
                         ),
                     daycare =
                         DaycareBasics(
@@ -1280,7 +1280,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             area2.name,
                             ProviderType.MUNICIPAL,
                             daycare2.enabledPilotFeatures.toList(),
-                            Language.fi
+                            Language.fi,
                         ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
@@ -1294,7 +1294,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = null,
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(1),
-                                endDate = date(2)
+                                endDate = date(2),
                             ),
                             DaycareGroupPlacement(
                                 id = groupPlacementId1,
@@ -1302,7 +1302,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = "group 1",
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(3),
-                                endDate = date(5)
+                                endDate = date(5),
                             ),
                             DaycareGroupPlacement(
                                 id = groupPlacementId2,
@@ -1310,7 +1310,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = "group 1",
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(6),
-                                endDate = date(9)
+                                endDate = date(9),
                             ),
                             DaycareGroupPlacement(
                                 id = null,
@@ -1318,7 +1318,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = null,
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(10),
-                                endDate = date(11)
+                                endDate = date(11),
                             ),
                             DaycareGroupPlacement(
                                 id = groupPlacementId3,
@@ -1326,7 +1326,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = "group 1",
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(12),
-                                endDate = date(12)
+                                endDate = date(12),
                             ),
                             DaycareGroupPlacement(
                                 id = null,
@@ -1334,7 +1334,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = null,
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(13),
-                                endDate = date(15)
+                                endDate = date(15),
                             ),
                             DaycareGroupPlacement(
                                 id = groupPlacementId4,
@@ -1342,7 +1342,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = "group 1",
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(16),
-                                endDate = date(17)
+                                endDate = date(17),
                             ),
                             DaycareGroupPlacement(
                                 id = null,
@@ -1350,7 +1350,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = null,
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(18),
-                                endDate = date(18)
+                                endDate = date(18),
                             ),
                             DaycareGroupPlacement(
                                 id = groupPlacementId5,
@@ -1358,17 +1358,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                 groupName = "group 1",
                                 daycarePlacementId = daycarePlacementId,
                                 startDate = date(19),
-                                endDate = date(20)
-                            )
+                                endDate = date(20),
+                            ),
                         ),
                     serviceNeeds = emptyList(),
                     defaultServiceNeedOptionNameFi = "Kokopäiväinen",
                     terminatedBy = null,
                     terminationRequestedDate = null,
-                    placeGuarantee = false
+                    placeGuarantee = false,
                 )
             ),
-            placements
+            placements,
         )
     }
 
@@ -1384,14 +1384,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycare1.id,
                         evakaLaunch.minusYears(1),
                         evakaLaunch.plusYears(1),
-                        false
+                        false,
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placement.id,
                         daycareGroupId = groupId1,
                         startDate = evakaLaunch,
-                        endDate = evakaLaunch.plusMonths(6)
+                        endDate = evakaLaunch.plusMonths(6),
                     )
                 )
                 placement
@@ -1412,10 +1412,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     listOf(),
                     listOf(),
                     "Kokopäiväinen",
-                    FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1))
+                    FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1)),
                 )
             ),
-            result
+            result,
         )
     }
 
@@ -1431,14 +1431,14 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         daycare1.id,
                         evakaLaunch.minusYears(1),
                         evakaLaunch.plusYears(1),
-                        false
+                        false,
                     )
                 tx.insert(
                     DevDaycareGroupPlacement(
                         daycarePlacementId = placement.id,
                         daycareGroupId = groupId1,
                         startDate = placement.startDate,
-                        endDate = placement.endDate
+                        endDate = placement.endDate,
                     )
                 )
                 tx.insert(
@@ -1447,7 +1447,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         unitId = daycare2.id,
                         groupId = null,
                         period =
-                            FiniteDateRange(evakaLaunch.minusYears(1), evakaLaunch.minusDays(1))
+                            FiniteDateRange(evakaLaunch.minusYears(1), evakaLaunch.minusDays(1)),
                     )
                 )
                 tx.insert(
@@ -1455,7 +1455,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         childId = testChild_1.id,
                         unitId = daycare2.id,
                         groupId = null,
-                        period = FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
+                        period = FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
                     )
                 )
             }
@@ -1475,10 +1475,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     listOf(daycare1.name),
                     listOf(),
                     "",
-                    FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1))
+                    FiniteDateRange(evakaLaunch, evakaLaunch.plusYears(1)),
                 )
             ),
-            result
+            result,
         )
     }
 }

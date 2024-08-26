@@ -69,11 +69,7 @@ ORDER BY period DESC, unit_name
         .toList<Payment>()
 }
 
-data class PagedPayments(
-    val data: List<Payment>,
-    val total: Int,
-    val pages: Int,
-)
+data class PagedPayments(val data: List<Payment>, val total: Int, val pages: Int)
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
     val orderBy =
@@ -142,7 +138,7 @@ fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
 
 fun Database.Transaction.updateConfirmedPaymentsAsSent(
     payments: List<Payment>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     executeBatch(payments) {
         sql(

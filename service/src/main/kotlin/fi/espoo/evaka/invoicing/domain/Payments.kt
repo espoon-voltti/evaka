@@ -30,7 +30,7 @@ val logger = KotlinLogging.logger {}
 interface PaymentIntegrationClient {
     data class SendResult(
         val succeeded: List<Payment> = listOf(),
-        val failed: List<Payment> = listOf()
+        val failed: List<Payment> = listOf(),
     )
 
     fun send(payments: List<Payment>, tx: Database.Read): SendResult
@@ -74,7 +74,7 @@ fun createPaymentDrafts(tx: Database.Transaction) {
             lastSnapshot.year,
             lastSnapshot.month,
             null,
-            AccessControlFilter.PermitAll
+            AccessControlFilter.PermitAll,
         )
     if (report.locked == null) throw BadRequest("Voucher value report is not locked")
 
@@ -100,7 +100,7 @@ data class PaymentUnit(
     val businessId: String?,
     val iban: String?,
     val providerId: String?,
-    val careType: Set<CareType>
+    val careType: Set<CareType>,
 )
 
 data class Payment(
@@ -115,5 +115,5 @@ data class Payment(
     val paymentDate: LocalDate?,
     val dueDate: LocalDate?,
     val sentAt: HelsinkiDateTime?,
-    val sentBy: EvakaUserId?
+    val sentBy: EvakaUserId?,
 )

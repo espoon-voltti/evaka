@@ -26,7 +26,7 @@ data class PreschoolTerm(
     until end of term.*/
     val applicationPeriod: FiniteDateRange,
     /*Preschool is not arranged during term breaks (e.g. Christmas holiday).*/
-    val termBreaks: DateSet
+    val termBreaks: DateSet,
 ) {
     fun isApplicationAccepted(date: LocalDate) =
         FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
@@ -87,7 +87,7 @@ fun Database.Transaction.insertPreschoolTerm(
     swedishPreschool: FiniteDateRange,
     extendedTerm: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
-    termBreaks: DateSet
+    termBreaks: DateSet,
 ): PreschoolTermId {
     return createUpdate {
             sql(
@@ -119,7 +119,7 @@ fun Database.Transaction.updatePreschoolTerm(
     swedishPreschool: FiniteDateRange,
     extendedTerm: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
-    termBreaks: DateSet
+    termBreaks: DateSet,
 ) =
     createUpdate {
             sql(

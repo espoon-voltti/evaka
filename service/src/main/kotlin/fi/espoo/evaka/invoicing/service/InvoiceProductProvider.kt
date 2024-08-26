@@ -22,7 +22,7 @@ interface InvoiceProductProvider {
 
     fun mapToFeeAlterationProduct(
         productKey: ProductKey,
-        feeAlterationType: FeeAlterationType
+        feeAlterationType: FeeAlterationType,
     ): ProductKey
 }
 

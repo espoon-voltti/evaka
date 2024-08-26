@@ -34,7 +34,7 @@ fun Database.Read.getChildStickyNotesForChildren(
 
 fun Database.Read.getChildStickyNotesForGroup(
     groupId: GroupId,
-    today: LocalDate
+    today: LocalDate,
 ): List<ChildStickyNote> =
     getChildStickyNotes(
             Predicate {
@@ -53,7 +53,7 @@ $it.child_id IN (
 
 fun Database.Transaction.createChildStickyNote(
     childId: ChildId,
-    note: ChildStickyNoteBody
+    note: ChildStickyNoteBody,
 ): ChildStickyNoteId {
     return createUpdate {
             sql(
@@ -71,7 +71,7 @@ RETURNING id
 fun Database.Transaction.updateChildStickyNote(
     clock: EvakaClock,
     id: ChildStickyNoteId,
-    note: ChildStickyNoteBody
+    note: ChildStickyNoteBody,
 ): ChildStickyNote {
     val now = clock.now()
     return createUpdate {

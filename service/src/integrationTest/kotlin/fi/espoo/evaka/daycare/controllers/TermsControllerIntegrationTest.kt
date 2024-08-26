@@ -39,12 +39,12 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     private val adminUser =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.ADMIN)
+            roles = setOf(UserRole.ADMIN),
         )
     private val serviceWorker =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.SERVICE_WORKER)
+            roles = setOf(UserRole.SERVICE_WORKER),
         )
 
     @BeforeEach
@@ -73,7 +73,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
         val terms = termsController.getPreschoolTerms(dbInstance())
@@ -100,14 +100,14 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<Forbidden> {
             termsController.createPreschoolTerm(
                 dbInstance(),
                 serviceWorker,
                 clock,
-                preschoolTerm2025
+                preschoolTerm2025,
             )
         }
 
@@ -136,7 +136,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<BadRequest> {
             termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
@@ -166,7 +166,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<BadRequest> {
             termsController.createPreschoolTerm(dbInstance(), adminUser, clock, preschoolTerm2025)
@@ -196,14 +196,14 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<BadRequest> {
             termsController.createPreschoolTerm(
                 dbInstance(),
                 adminUser,
                 clock,
-                firstPreschoolTerm2025
+                firstPreschoolTerm2025,
             )
         }
 
@@ -218,14 +218,14 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<BadRequest> {
             termsController.createPreschoolTerm(
                 dbInstance(),
                 adminUser,
                 clock,
-                secondPreschoolTerm2025
+                secondPreschoolTerm2025,
             )
         }
 
@@ -258,15 +258,15 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 FiniteDateRange(LocalDate.of(2024, 3, 9), LocalDate.of(2024, 3, 25)),
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
-                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28))
-                )
+                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28)),
+                ),
             )
         termsController.updatePreschoolTerm(
             dbInstance(),
             adminUser,
             clock,
             preschoolTerm2024.id,
-            preschoolTermUpdate
+            preschoolTermUpdate,
         )
 
         val updatedTerm = db.transaction { tx -> tx.getPreschoolTerm(preschoolTerm2024.id)!! }
@@ -291,7 +291,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
                     FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28)),
-                )
+                ),
             )
         assertThrows<Forbidden> {
             termsController.updatePreschoolTerm(
@@ -299,7 +299,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 serviceWorker,
                 clock,
                 preschoolTerm2024.id,
-                preschoolTermUpdate
+                preschoolTermUpdate,
             )
         }
 
@@ -320,7 +320,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                     FiniteDateRange(LocalDate.of(2025, 10, 14), LocalDate.of(2025, 10, 18)),
                     FiniteDateRange(LocalDate.of(2025, 12, 21), LocalDate.of(2026, 1, 6)),
                     FiniteDateRange(LocalDate.of(2026, 2, 17), LocalDate.of(2026, 2, 21)),
-                )
+                ),
             )
         assertThrows<BadRequest> {
             termsController.updatePreschoolTerm(
@@ -328,7 +328,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 adminUser,
                 clock,
                 preschoolTerm2024.id,
-                preschoolTermUpdate2024
+                preschoolTermUpdate2024,
             )
         }
 
@@ -347,8 +347,8 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 FiniteDateRange(LocalDate.of(2024, 3, 9), LocalDate.of(2024, 3, 25)),
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
-                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28))
-                )
+                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28)),
+                ),
             )
         assertThrows<BadRequest> {
             termsController.updatePreschoolTerm(
@@ -356,7 +356,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 adminUser,
                 clock,
                 preschoolTerm2024.id,
-                preschoolTermUpdate2024
+                preschoolTermUpdate2024,
             )
         }
 
@@ -375,8 +375,8 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 FiniteDateRange(LocalDate.of(2024, 3, 9), LocalDate.of(2024, 3, 25)),
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
-                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28))
-                )
+                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28)),
+                ),
             )
         assertThrows<BadRequest> {
             termsController.updatePreschoolTerm(
@@ -384,7 +384,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 adminUser,
                 clock,
                 preschoolTerm2024.id,
-                firstPreschoolTermUpdate
+                firstPreschoolTermUpdate,
             )
         }
 
@@ -397,8 +397,8 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 FiniteDateRange(LocalDate.of(2024, 3, 9), LocalDate.of(2024, 3, 25)),
                 DateSet.of(
                     FiniteDateRange(LocalDate.of(2025, 1, 14), LocalDate.of(2025, 1, 18)),
-                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28))
-                )
+                    FiniteDateRange(LocalDate.of(2025, 2, 21), LocalDate.of(2025, 2, 28)),
+                ),
             )
         assertThrows<BadRequest> {
             termsController.updatePreschoolTerm(
@@ -406,7 +406,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 adminUser,
                 clock,
                 preschoolTerm2024.id,
-                secondPreschoolTermUpdate
+                secondPreschoolTermUpdate,
             )
         }
 
@@ -434,7 +434,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
                 dbInstance(),
                 adminUser,
                 clock,
-                preschoolTerm2023.id
+                preschoolTerm2023.id,
             )
         }
 
@@ -452,7 +452,7 @@ class TermsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
     private fun assertPreschoolTermFromRequest(
         expected: TermsController.PreschoolTermRequest,
-        targetId: PreschoolTermId
+        targetId: PreschoolTermId,
     ) {
         val existingTerm = db.transaction { tx -> tx.getPreschoolTerm(targetId)!! }
         assertEquals(expected.finnishPreschool, existingTerm.finnishPreschool)

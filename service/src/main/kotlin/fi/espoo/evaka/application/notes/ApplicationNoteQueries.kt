@@ -52,7 +52,7 @@ fun Database.Transaction.createApplicationNote(
     applicationId: ApplicationId,
     content: String,
     createdBy: EvakaUserId,
-    messageContentId: MessageContentId? = null
+    messageContentId: MessageContentId? = null,
 ): ApplicationNote =
     createQuery {
             sql(
@@ -81,7 +81,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
 fun Database.Transaction.updateApplicationNote(
     id: ApplicationNoteId,
     content: String,
-    updatedBy: EvakaUserId
+    updatedBy: EvakaUserId,
 ): ApplicationNote =
     createQuery {
             sql(

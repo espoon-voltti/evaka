@@ -36,8 +36,8 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         AdditionalInformation(
                             allergies = "Pähkinäallergia",
                             diet = "Kasvisruokavalio",
-                            additionalInfo = "Ei osaa solmia kengännauhoja"
-                        )
+                            additionalInfo = "Ei osaa solmia kengännauhoja",
+                        ),
                 )
             )
             child = tx.getChild(childId)!!
@@ -59,7 +59,7 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AdditionalInformation(
                         allergies = "Retiisi",
                         diet = "Vähäglugoosinen",
-                        additionalInfo = "Hankala luonne"
+                        additionalInfo = "Hankala luonne",
                     )
             )
 

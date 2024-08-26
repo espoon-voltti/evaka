@@ -70,7 +70,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(testDaycare2)
             tx.insert(
                 unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
             )
             listOf(
                     testChild_1,
@@ -80,7 +80,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     testChild_5,
                     testChild_6,
                     testChild_7,
-                    testChild_8
+                    testChild_8,
                 )
                 .forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
@@ -116,7 +116,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -135,7 +135,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -144,7 +144,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -163,7 +163,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -172,7 +172,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -190,7 +190,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -200,8 +200,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -217,7 +217,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
             val period = FiniteDateRange(date, date)
@@ -228,7 +228,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     endDate = period.end,
                     optionId = snDaycareContractDays10.id,
                     confirmedBy = admin.evakaUserId,
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
             tx.insert(
@@ -237,7 +237,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -255,7 +255,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 0.88,
-                        staffCountRequired = 0.1
+                        staffCountRequired = 0.1,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -265,8 +265,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 0.88,
-                        staffCountRequired = 0.1
-                    )
+                        staffCountRequired = 0.1,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -282,7 +282,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
             tx.insert(
@@ -291,7 +291,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
@@ -300,7 +300,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = endDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -318,7 +318,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -328,7 +328,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -338,7 +338,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 1,
                         capacityFactor = 1.0,
-                        staffCountRequired = 0.1
+                        staffCountRequired = 0.1,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -348,8 +348,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 1,
                         capacityFactor = 1.0,
-                        staffCountRequired = 0.1
-                    )
+                        staffCountRequired = 0.1,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -364,7 +364,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -372,7 +372,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     modifiedBy = admin.evakaUserId,
                     validDuring = date.toFiniteDateRange(),
-                    capacityFactor = 5.0
+                    capacityFactor = 5.0,
                 )
             )
             tx.insert(
@@ -381,7 +381,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -399,7 +399,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 8.75,
-                        staffCountRequired = 1.3
+                        staffCountRequired = 1.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -409,8 +409,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 8.75,
-                        staffCountRequired = 1.3
-                    )
+                        staffCountRequired = 1.3,
+                    ),
                 )
             }
 
@@ -433,12 +433,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childId = testChild_1.id,
                                 unitId = testDaycare2.id,
                                 startDate = date,
-                                endDate = date
+                                endDate = date,
                             )
                         ),
                     daycareGroupId = groupId,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -446,7 +446,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     groupId = null,
-                    period = FiniteDateRange(date, date)
+                    period = FiniteDateRange(date, date),
                 )
             )
             tx.insert(
@@ -455,7 +455,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -473,7 +473,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -483,8 +483,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
 
@@ -500,7 +500,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -509,7 +509,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 14),
                     endTime = LocalTime.of(15, 22),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -527,7 +527,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     )
                 }
                 .toList()
@@ -545,7 +545,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -554,7 +554,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 14),
                     endTime = LocalTime.of(15, 48),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -572,7 +572,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     )
                 }
                 .toList()
@@ -590,7 +590,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -599,7 +599,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = null,
                     endTime = null,
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -618,7 +618,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -627,7 +627,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -645,7 +645,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -655,8 +655,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -674,7 +674,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     testChild_5,
                     testChild_6,
                     testChild_7,
-                    testChild_8
+                    testChild_8,
                 )
                 .forEach { testChild ->
                     tx.insert(
@@ -682,7 +682,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                             childId = testChild.id,
                             unitId = testDaycare.id,
                             startDate = date,
-                            endDate = date
+                            endDate = date,
                         )
                     )
                     tx.insert(
@@ -691,7 +691,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                             date = date,
                             startTime = LocalTime.of(8, 0),
                             endTime = LocalTime.of(8, 15),
-                            createdBy = admin.evakaUserId
+                            createdBy = admin.evakaUserId,
                         )
                     )
                 }
@@ -710,7 +710,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 2,
                         childCount = 8,
                         capacityFactor = 12.5,
-                        staffCountRequired = 1.8
+                        staffCountRequired = 1.8,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -720,8 +720,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 2,
                         childCount = 8,
                         capacityFactor = 12.5,
-                        staffCountRequired = 1.8
-                    )
+                        staffCountRequired = 1.8,
+                    ),
                 )
             }
 
@@ -752,12 +752,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childId = testChild_1.id,
                                 unitId = testDaycare.id,
                                 startDate = date,
-                                endDate = date
+                                endDate = date,
                             )
                         ),
                     daycareGroupId = group1.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -766,7 +766,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
@@ -777,12 +777,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childId = testChild_2.id,
                                 unitId = testDaycare.id,
                                 startDate = date,
-                                endDate = date
+                                endDate = date,
                             )
                         ),
                     daycareGroupId = group1.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -791,7 +791,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
@@ -802,12 +802,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childId = testChild_3.id,
                                 unitId = testDaycare.id,
                                 startDate = date,
-                                endDate = date
+                                endDate = date,
                             )
                         ),
                     daycareGroupId = group2.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -816,7 +816,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
@@ -824,7 +824,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_4.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -833,7 +833,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -851,7 +851,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 2,
                         capacityFactor = 2.75,
-                        staffCountRequired = 0.4
+                        staffCountRequired = 0.4,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group1.id,
@@ -861,7 +861,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 1,
                         childCount = 2,
                         capacityFactor = 2.75,
-                        staffCountRequired = 0.4
+                        staffCountRequired = 0.4,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group2.id,
@@ -871,7 +871,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = group2.id,
@@ -881,8 +881,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
 
@@ -899,7 +899,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
             val groupId =
@@ -911,7 +911,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -920,7 +920,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -938,7 +938,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -948,8 +948,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -964,7 +964,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = date,
-                    endDate = date
+                    endDate = date,
                 )
             )
             tx.insert(
@@ -973,7 +973,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = date,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
         }
@@ -991,7 +991,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1001,8 +1001,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -1018,7 +1018,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childId = testChild.id,
                         unitId = testDaycare.id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
                 tx.insert(
@@ -1027,7 +1027,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         date = date,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(8, 15),
-                        createdBy = admin.evakaUserId
+                        createdBy = admin.evakaUserId,
                     )
                 )
             }
@@ -1037,7 +1037,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_2.id,
                     date = date,
                     absenceType = AbsenceType.SICKLEAVE,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -1055,7 +1055,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1065,8 +1065,8 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
-                    )
+                        staffCountRequired = 0.3,
+                    ),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -1083,7 +1083,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
 
@@ -1094,7 +1094,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(8, 15),
-                    createdBy = admin.evakaUserId
+                    createdBy = admin.evakaUserId,
                 )
             )
 
@@ -1102,7 +1102,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             tx.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(startDate, endDate)
+                    validityPeriod = DateRange(startDate, endDate),
                 )
             )
 
@@ -1112,7 +1112,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                     childId = testChild_1.id,
                     date = startDate.plusDays(2),
                     absenceType = AbsenceType.SICKLEAVE,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -1130,7 +1130,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     AttendanceReservationReportRow(
                         groupId = null,
@@ -1140,7 +1140,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                         childCountOver3 = 0,
                         childCount = 1,
                         capacityFactor = 1.75,
-                        staffCountRequired = 0.3
+                        staffCountRequired = 0.3,
                     ),
                     *createRowsForTimespan(
                             AttendanceReservationReportRow(
@@ -1151,12 +1151,12 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                                 childCountOver3 = 0,
                                 childCount = 1,
                                 capacityFactor = 1.75,
-                                staffCountRequired = 0.3
+                                staffCountRequired = 0.3,
                             ),
                             HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(8, 0)),
-                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0))
+                            HelsinkiDateTime.of(startDate.plusDays(1), LocalTime.of(16, 0)),
                         )
-                        .toTypedArray()
+                        .toTypedArray(),
                 )
             }
         assertThat(result).containsExactlyElementsOf(expected.values)
@@ -1165,7 +1165,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     private fun getReport(
         startDate: LocalDate,
         endDate: LocalDate,
-        groupIds: List<GroupId>? = null
+        groupIds: List<GroupId>? = null,
     ): List<AttendanceReservationReportRow> {
         return attendanceReservationReportController.getAttendanceReservationReportByUnit(
             dbInstance(),
@@ -1174,7 +1174,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             testDaycare.id,
             startDate,
             endDate,
-            groupIds
+            groupIds,
         )
     }
 }
@@ -1185,7 +1185,7 @@ private fun createEmptyReport(
     start: LocalDate,
     end: LocalDate,
     groups: List<Group> = emptyList(),
-    operationDays: Set<DayOfWeek> = setOf(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
+    operationDays: Set<DayOfWeek> = setOf(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY),
 ): MutableMap<RowKey, AttendanceReservationReportRow> {
     val startDateTime = HelsinkiDateTime.of(start, LocalTime.MIN)
     val endDateTime = HelsinkiDateTime.of(end, LocalTime.MAX)
@@ -1207,7 +1207,7 @@ private fun createEmptyReport(
                             0,
                             0,
                             0.0,
-                            0.0
+                            0.0,
                         )
                 }
             }
@@ -1219,7 +1219,7 @@ private fun createEmptyReport(
 
 private fun addExpectedRow(
     map: MutableMap<RowKey, AttendanceReservationReportRow>,
-    vararg rows: AttendanceReservationReportRow
+    vararg rows: AttendanceReservationReportRow,
 ) {
     rows.forEach { row ->
         map[RowKey(row.groupId?.let { Group(it, row.groupName!!) }, row.dateTime)] = row
@@ -1229,7 +1229,7 @@ private fun addExpectedRow(
 private fun createRowsForTimespan(
     row: AttendanceReservationReportRow,
     startTime: HelsinkiDateTime,
-    endTime: HelsinkiDateTime
+    endTime: HelsinkiDateTime,
 ): List<AttendanceReservationReportRow> {
     return generateSequence(startTime) { it.plusMinutes(15) }
         .takeWhile { it <= endTime }

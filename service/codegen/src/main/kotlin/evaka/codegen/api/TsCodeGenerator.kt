@@ -26,7 +26,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
     private fun deserializerRef(sealedVariant: TsSealedVariant): TsImport =
         TsImport.Named(
             locateNamedType(sealedVariant.parent),
-            "deserializeJson${sealedVariant.parent.name}${sealedVariant.obj.name}"
+            "deserializeJson${sealedVariant.parent.name}${sealedVariant.obj.name}",
         )
 
     fun arrayType(elementType: KType?, compact: Boolean): TsCode {
@@ -53,7 +53,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
             elementTypes.map { type -> type?.let { tsType(it, compact) } ?: TsCode("never") },
             separator = ", ",
             prefix = "[",
-            postfix = "]"
+            postfix = "]",
         )
 
     private fun typeToTsCode(type: KType, f: (tsType: TsType) -> TsCode): TsCode =
@@ -63,7 +63,7 @@ abstract class TsCodeGenerator(val metadata: TypeMetadata) {
                     TsType(
                         metadata[clazz] ?: error("No TS type found for $type"),
                         type.isMarkedNullable,
-                        type.arguments
+                        type.arguments,
                     )
                 )
             is KTypeParameter -> TsCode(clazz.name)
@@ -281,7 +281,7 @@ ${cases.prependIndent("    ")}
                         namedType.clazz.typeParameters.joinToString(
                             prefix = "<",
                             separator = ", ",
-                            postfix = ">"
+                            postfix = ">",
                         )
                     else ""
                 jsonObjectDeserializer(
@@ -302,7 +302,7 @@ ${cases.prependIndent("    ")}
         type: TsCode,
         function: TsCode,
         extraArguments: List<TsCode>,
-        props: Map<String, TsProperty>
+        props: Map<String, TsProperty>,
     ): TsCode? {
         val propDeserializers =
             props.mapNotNull { (name, prop) ->
@@ -330,7 +330,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                 is TsArray -> {
                     jsonDeserializerExpression(
                             requireNotNull(tsRepr.getTypeArgs(type.arguments)),
-                            TsCode("e")
+                            TsCode("e"),
                         )
                         ?.let { TsCode { "${inline(jsonExpression)}.map(e => ${inline(it)})" } }
                 }
@@ -338,7 +338,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                     val valueDeser =
                         jsonDeserializerExpression(
                             requireNotNull(tsRepr.getTypeArgs(type.arguments).second),
-                            TsCode("v")
+                            TsCode("v"),
                         )
                     if (valueDeser == null) null
                     else
@@ -355,12 +355,12 @@ ${join(propCodes, ",\n").prependIndent("    ")}
                             val elementExpression = jsonExpression + "[$elementIndex]"
                             jsonDeserializerExpression(
                                 requireNotNull(elementType),
-                                elementExpression
+                                elementExpression,
                             ) ?: elementExpression
                         },
                         separator = ",",
                         prefix = "[",
-                        postfix = "]"
+                        postfix = "]",
                     )
                 }
                 is TsObjectLiteral,
@@ -450,6 +450,7 @@ ${join(propCodes, ",\n").prependIndent("    ")}
         } ?: error("$type is not supported as an API request parameter type")
 }
 
-private fun TsNamedType<*>.docHeader() = """/**
+private fun TsNamedType<*>.docHeader() =
+    """/**
 * Generated from $source
 */"""

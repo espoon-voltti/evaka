@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class PlacementControllerCitizen(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     data class ChildPlacementResponse(val placements: List<TerminatablePlacementGroup>)
@@ -42,7 +42,7 @@ class PlacementControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
         return db.connect { dbc ->
                 dbc.read {
@@ -51,13 +51,13 @@ class PlacementControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.READ_PLACEMENT,
-                        childId
+                        childId,
                     )
                     ChildPlacementResponse(
                         placements =
                             mapToTerminatablePlacements(
                                 it.getCitizenChildPlacements(clock.today(), childId),
-                                clock.today()
+                                clock.today(),
                             )
                     )
                 }
@@ -65,7 +65,7 @@ class PlacementControllerCitizen(
             .also {
                 Audit.PlacementSearch.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.placements.size)
+                    meta = mapOf("count" to it.placements.size),
                 )
             }
     }
@@ -74,7 +74,7 @@ class PlacementControllerCitizen(
         val type: TerminatablePlacementType,
         val unitId: DaycareId,
         val terminationDate: LocalDate,
-        val terminateDaycareOnly: Boolean?
+        val terminateDaycareOnly: Boolean?,
     )
 
     @PostMapping("/citizen/children/{childId}/placements/terminate")
@@ -83,7 +83,7 @@ class PlacementControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: PlacementTerminationRequestBody
+        @RequestBody body: PlacementTerminationRequestBody,
     ) {
         val terminationDate =
             body.terminationDate.also {
@@ -100,7 +100,7 @@ class PlacementControllerCitizen(
                         ) {
                             throw Forbidden(
                                 "Placement termination not enabled for unit",
-                                "PLACEMENT_TERMINATION_DISABLED"
+                                "PLACEMENT_TERMINATION_DISABLED",
                             )
                         }
                         tx.getCitizenChildPlacements(clock.today(), childId)
@@ -110,7 +110,7 @@ class PlacementControllerCitizen(
                                     user,
                                     clock,
                                     Action.Citizen.Placement.TERMINATE,
-                                    placements.map { it.id }
+                                    placements.map { it.id },
                                 )
                             }
                             .let { mapToTerminatablePlacements(it, clock.today()) }
@@ -128,7 +128,7 @@ class PlacementControllerCitizen(
                                 terminatablePlacementGroup,
                                 terminationDate,
                                 childId,
-                                body.unitId
+                                body.unitId,
                             )
                         } else {
                             // normal termination simply cancels or terminates the placements
@@ -141,7 +141,7 @@ class PlacementControllerCitizen(
                                         clock.today(),
                                         it,
                                         terminationDate,
-                                        user
+                                        user,
                                     )
                                 }
                         }
@@ -151,17 +151,17 @@ class PlacementControllerCitizen(
 
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             childId,
-                            clock.today()
+                            clock.today(),
                         )
                         asyncJobRunner.plan(
                             tx,
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     childId,
-                                    DateRange(terminationDate, null)
+                                    DateRange(terminationDate, null),
                                 )
                             ),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
 
                         cancelableTransferApplicationIds
@@ -179,8 +179,8 @@ class PlacementControllerCitizen(
                         mapOf(
                             "type" to body.type,
                             "placementIds" to placements.map { it.id },
-                            "transferApplicationIds" to cancelableTransferApplicationIds
-                        )
+                            "transferApplicationIds" to cancelableTransferApplicationIds,
+                        ),
                 )
             }
     }

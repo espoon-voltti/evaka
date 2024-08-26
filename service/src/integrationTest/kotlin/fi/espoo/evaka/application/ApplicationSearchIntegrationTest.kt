@@ -71,7 +71,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     testChild_4,
                     testChild_5,
                     testChild_6,
-                    testChild_7
+                    testChild_7,
                 )
                 .forEach { tx.insert(it, DevPersonType.CHILD) }
         }
@@ -81,7 +81,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 child = testChild_2,
                 guardian = testAdult_1,
                 extendedCare = true,
-                attachment = true
+                attachment = true,
             )
         createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
     }
@@ -91,7 +91,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val summary =
             getApplicationSummaries(
                 type = ApplicationTypeToggle.ALL,
-                status = setOf(ApplicationStatusOption.SENT)
+                status = setOf(ApplicationStatusOption.SENT),
             )
         assertEquals(3, summary.total)
     }
@@ -102,7 +102,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getApplicationSummaries(
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT),
-                basis = setOf(ApplicationBasis.HAS_ATTACHMENTS)
+                basis = setOf(ApplicationBasis.HAS_ATTACHMENTS),
             )
         assertEquals(1, summary.total)
         assertEquals(1, summary.data[0].attachmentCount)
@@ -114,7 +114,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getApplicationSummaries(
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT),
-                basis = setOf(ApplicationBasis.URGENT)
+                basis = setOf(ApplicationBasis.URGENT),
             )
         assertEquals(1, summary.total)
         assertEquals(true, summary.data[0].urgent)
@@ -128,7 +128,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 testAdult_1,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
-                serviceNeedOption = null // service need option disabled (=espoo)
+                serviceNeedOption = null, // service need option disabled (=espoo)
             )
         val preschoolDaycare =
             createApplication(
@@ -139,7 +139,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 serviceNeedOption =
                     ofServiceNeedOption(
                         snPreschoolDaycare45
-                    ) // service need option enabled (=tampere)
+                    ), // service need option enabled (=tampere)
             )
         val preschoolClub =
             createApplication(
@@ -147,7 +147,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 testAdult_1,
                 type = ApplicationType.PRESCHOOL,
                 connectedDaycare = true,
-                serviceNeedOption = ofServiceNeedOption(snPreschoolClub45)
+                serviceNeedOption = ofServiceNeedOption(snPreschoolClub45),
             )
         val preschoolAdditionalDaycare =
             createApplication(
@@ -173,7 +173,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getApplicationSummaries(
                     type = ApplicationTypeToggle.PRESCHOOL,
                     status = ApplicationStatusOption.values().toSet(),
-                    preschoolType = preschoolTypes.toSet()
+                    preschoolType = preschoolTypes.toSet(),
                 )
                 .data
                 .map { it.id }
@@ -184,11 +184,11 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
         assertEquals(
             listOf(preschoolClub),
-            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB)
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB),
         )
         assertEquals(
             listOf(preschoolAdditionalDaycare, preparatoryAdditionalDaycare).sorted(),
-            getPreschoolApplications(ApplicationPreschoolTypeToggle.DAYCARE_ONLY).sorted()
+            getPreschoolApplications(ApplicationPreschoolTypeToggle.DAYCARE_ONLY).sorted(),
         )
         assertEquals(
             listOf(
@@ -196,10 +196,10 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     preschoolDaycare,
                     preschoolClub,
                     preschoolAdditionalDaycare,
-                    preparatoryAdditionalDaycare
+                    preparatoryAdditionalDaycare,
                 )
                 .sorted(),
-            getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted()
+            getPreschoolApplications(*ApplicationPreschoolTypeToggle.values()).sorted(),
         )
     }
 
@@ -209,7 +209,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             listOf(testChild_1.id),
             applicationControllerV2
                 .getChildApplicationSummaries(dbInstance(), serviceWorker, now, testChild_1.id)
-                .map { it.childId }
+                .map { it.childId },
         )
     }
 
@@ -221,8 +221,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 dbInstance(),
                 serviceWorker,
                 now,
-                testChild_7.id
-            )
+                testChild_7.id,
+            ),
         )
     }
 
@@ -234,8 +234,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 dbInstance(),
                 serviceWorker,
                 now,
-                ChildId(UUID.randomUUID())
-            )
+                ChildId(UUID.randomUUID()),
+            ),
         )
     }
 
@@ -248,7 +248,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_1.id,
                     unitId = testClub.id,
                     startDate = now.today().minusMonths(12),
-                    endDate = now.today().minusMonths(6)
+                    endDate = now.today().minusMonths(6),
                 )
             )
 
@@ -258,7 +258,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_2.id,
                     unitId = testClub.id,
                     startDate = now.today().minusMonths(12),
-                    endDate = now.today().plusMonths(6)
+                    endDate = now.today().plusMonths(6),
                 )
             )
 
@@ -269,7 +269,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = testChild_3.id,
                     unitId = testClub.id,
                     startDate = now.today().plusMonths(1),
-                    endDate = now.today().plusMonths(6)
+                    endDate = now.today().plusMonths(6),
                 )
             )
         }
@@ -278,7 +278,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             getApplicationSummaries(
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT),
-                basis = setOf(ApplicationBasis.CLUB_CARE)
+                basis = setOf(ApplicationBasis.CLUB_CARE),
             )
         assertEquals(2, summary.total)
         assertEquals(applicationId_2, summary.data[0].id)
@@ -302,7 +302,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         periodEnd: LocalDate? = null,
         searchTerms: String? = null,
         transferApplications: TransferApplicationFilter? = null,
-        voucherApplications: VoucherApplicationFilter? = null
+        voucherApplications: VoucherApplicationFilter? = null,
     ): PagedApplicationSummaries =
         applicationControllerV2.getApplicationSummaries(
             dbInstance(),
@@ -325,8 +325,8 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 periodEnd = periodEnd,
                 searchTerms = searchTerms,
                 transferApplications = transferApplications,
-                voucherApplications = voucherApplications
-            )
+                voucherApplications = voucherApplications,
+            ),
         )
 
     private fun createApplication(
@@ -339,7 +339,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         connectedDaycare: Boolean = false,
         preparatory: Boolean = false,
         additionalDaycareApplication: Boolean = false,
-        serviceNeedOption: ServiceNeedOption? = null
+        serviceNeedOption: ServiceNeedOption? = null,
     ): ApplicationId {
         val applicationId =
             db.transaction { tx ->
@@ -353,7 +353,7 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                 validDaycareApplication.copy(
                                     childId = child.id,
                                     guardianId = guardian.id,
-                                    type = type
+                                    type = type,
                                 )
                             )
                             .copy(urgent = urgent)
@@ -364,14 +364,14 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                                 if (preparatory)
                                     it.copy(careDetails = it.careDetails.copy(preparatory = true))
                                 else it
-                            }
+                            },
                 )
             }
 
         if (attachment) {
             uploadAttachment(
                 applicationId,
-                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
             )
         }
 
@@ -385,5 +385,5 @@ private fun ofServiceNeedOption(option: fi.espoo.evaka.serviceneed.ServiceNeedOp
         option.nameFi,
         option.nameSv,
         option.nameEn,
-        option.validPlacementType
+        option.validPlacementType,
     )

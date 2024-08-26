@@ -237,7 +237,7 @@ import org.springframework.web.multipart.MultipartFile
 private val fakeAdmin =
     AuthenticatedUser.Employee(
         id = EmployeeId(UUID.fromString("00000000-0000-0000-0000-000000000001")),
-        roles = setOf(UserRole.ADMIN)
+        roles = setOf(UserRole.ADMIN),
     )
 
 private val logger = KotlinLogging.logger {}
@@ -255,7 +255,7 @@ class DevApi(
     private val env: EvakaEnv,
     bucketEnv: BucketEnv,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     private val filesBucket = bucketEnv.attachments
     private val digitransit = MockDigitransit()
@@ -331,14 +331,14 @@ class DevApi(
     fun addAclRoleForDaycare(
         db: Database,
         @PathVariable daycareId: DaycareId,
-        @RequestBody body: DaycareAclInsert
+        @RequestBody body: DaycareAclInsert,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateDaycareAcl(
                     daycareId,
                     body.externalId,
-                    body.role ?: UserRole.UNIT_SUPERVISOR
+                    body.role ?: UserRole.UNIT_SUPERVISOR,
                 )
             }
         }
@@ -357,7 +357,7 @@ class DevApi(
     @PostMapping("/daycare-group-placements")
     fun createDaycareGroupPlacement(
         db: Database,
-        @RequestBody placements: List<DevDaycareGroupPlacement>
+        @RequestBody placements: List<DevDaycareGroupPlacement>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -368,7 +368,7 @@ class DevApi(
                             it.daycarePlacementId,
                             it.daycareGroupId,
                             it.startDate,
-                            it.endDate
+                            it.endDate,
                         )
                     )
                 }
@@ -380,7 +380,7 @@ class DevApi(
         val groupId: GroupId,
         val amount: Double,
         val startDate: LocalDate,
-        val endDate: LocalDate?
+        val endDate: LocalDate?,
     )
 
     @PostMapping("/daycare-caretakers")
@@ -394,7 +394,7 @@ class DevApi(
                             caretaker.groupId,
                             caretaker.amount.toBigDecimal(),
                             startDate = caretaker.startDate,
-                            endDate = caretaker.endDate
+                            endDate = caretaker.endDate,
                         )
                     )
                 }
@@ -418,7 +418,7 @@ class DevApi(
         val placementId: PlacementId,
         val endDate: LocalDate,
         val terminationRequestedDate: LocalDate?,
-        val terminatedBy: EvakaUserId?
+        val terminatedBy: EvakaUserId?,
     )
 
     @PostMapping("/placement/terminate")
@@ -445,14 +445,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val type: DecisionType,
         val startDate: LocalDate,
         val endDate: LocalDate,
-        val status: DecisionStatus
+        val status: DecisionStatus,
     )
 
     @PostMapping("/decisions")
     fun createDecisions(
         db: Database,
         evakaClock: EvakaClock,
-        @RequestBody decisions: List<DecisionRequest>
+        @RequestBody decisions: List<DecisionRequest>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -472,7 +472,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             resolvedBy = null,
                             resolved = null,
                             pendingDecisionEmailsSentCount = null,
-                            pendingDecisionEmailSent = null
+                            pendingDecisionEmailSent = null,
                         )
                     )
                 }
@@ -498,7 +498,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
                     clock,
                     application.id,
-                    id
+                    id,
                 )
             }
         }
@@ -507,7 +507,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @GetMapping("/applications/{applicationId}")
     fun getApplication(
         db: Database,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): ApplicationDetails {
         return db.connect { dbc -> dbc.read { tx -> tx.fetchApplicationDetails(applicationId) } }
             ?: throw NotFound("application not found")
@@ -516,7 +516,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @GetMapping("/applications/{applicationId}/decisions")
     fun getApplicationDecisions(
         db: Database,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): List<Decision> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -545,7 +545,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/value-decisions")
     fun createVoucherValueDecisions(
         db: Database,
-        @RequestBody decisions: List<VoucherValueDecision>
+        @RequestBody decisions: List<VoucherValueDecision>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -570,12 +570,12 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/fee-thresholds")
     fun createFeeThresholds(
         db: Database,
-        @RequestBody feeThresholds: FeeThresholds
+        @RequestBody feeThresholds: FeeThresholds,
     ): FeeThresholdsId = db.connect { dbc -> dbc.transaction { it.insert(feeThresholds) } }
 
     data class DevCreateIncomeStatements(
         val personId: PersonId,
-        val data: List<IncomeStatementBody>
+        val data: List<IncomeStatementBody>,
     )
 
     @PostMapping("/income-statements")
@@ -627,7 +627,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createPerson(
         db: Database,
         @RequestBody body: DevPerson,
-        @RequestParam type: DevPersonType
+        @RequestParam type: DevPersonType,
     ): PersonId {
         return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body, type) } }
     }
@@ -708,7 +708,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createApplications(
         db: Database,
         clock: EvakaClock,
-        @RequestBody applications: List<DevApplicationWithForm>
+        @RequestBody applications: List<DevApplicationWithForm>,
     ): List<ApplicationId> =
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -731,7 +731,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createPlacementPlan(
         db: Database,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody placementPlan: PlacementPlan
+        @RequestBody placementPlan: PlacementPlan,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -742,7 +742,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     if (placementPlan.preschoolDaycarePeriodStart != null) {
                         FiniteDateRange(
                             placementPlan.preschoolDaycarePeriodStart,
-                            placementPlan.preschoolDaycarePeriodEnd!!
+                            placementPlan.preschoolDaycarePeriodEnd!!,
                         )
                     } else {
                         null
@@ -754,8 +754,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     DaycarePlacementPlan(
                         placementPlan.unitId,
                         FiniteDateRange(placementPlan.periodStart, placementPlan.periodEnd),
-                        preschoolDaycarePeriod
-                    )
+                        preschoolDaycarePeriod,
+                    ),
                 )
             }
         }
@@ -798,7 +798,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @PathVariable action: String
+        @PathVariable action: String,
     ) {
         val simpleActions =
             mapOf(
@@ -809,7 +809,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 "send-decisions-without-proposal" to
                     applicationStateService::sendDecisionsWithoutProposal,
                 "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
             )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
@@ -827,7 +827,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: DaycarePlacementPlan
+        @RequestBody body: DaycarePlacementPlan,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -837,7 +837,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     fakeAdmin,
                     clock,
                     applicationId,
-                    body
+                    body,
                 )
             }
         }
@@ -847,7 +847,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createDefaultPlacementPlan(
         db: Database,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -858,7 +858,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                         DaycarePlacementPlan(
                             unitId = it.preferredUnits.first().id,
                             period = it.period,
-                            preschoolDaycarePeriod = it.preschoolDaycarePeriod
+                            preschoolDaycarePeriod = it.preschoolDaycarePeriod,
                         )
                     }
                     .let {
@@ -867,7 +867,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             fakeAdmin,
                             clock,
                             applicationId,
-                            it
+                            it,
                         )
                     }
             }
@@ -878,7 +878,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postPairingChallenge(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: PairingsController.PostPairingChallengeReq
+        @RequestBody body: PairingsController.PostPairingChallengeReq,
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction { it.challengePairing(clock, body.challengeKey) }
@@ -890,7 +890,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @PathVariable id: PairingId,
-        @RequestBody body: PairingsController.PostPairingResponseReq
+        @RequestBody body: PairingsController.PostPairingResponseReq,
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
@@ -899,7 +899,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     clock,
                     id,
                     body.challengeKey,
-                    body.responseKey
+                    body.responseKey,
                 )
             }
         }
@@ -909,7 +909,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postPairing(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: PairingsController.PostPairingReq
+        @RequestBody body: PairingsController.PostPairingReq,
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction {
@@ -937,14 +937,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createHolidayPeriod(
         db: Database,
         @PathVariable id: HolidayPeriodId,
-        @RequestBody body: HolidayPeriodBody
+        @RequestBody body: HolidayPeriodBody,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertHolidayPeriod(
                         body.period,
                         body.reservationsOpenOn,
-                        body.reservationDeadline
+                        body.reservationDeadline,
                     )
                     .let {
                         tx.createUpdate {
@@ -967,7 +967,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createHolidayQuestionnaire(
         db: Database,
         @PathVariable id: HolidayQuestionnaireId,
-        @RequestBody body: FixedPeriodQuestionnaireBody
+        @RequestBody body: FixedPeriodQuestionnaireBody,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -987,7 +987,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postReservations(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: List<DailyReservationRequest>
+        @RequestBody body: List<DailyReservationRequest>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -999,7 +999,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     body,
                     featureConfig.citizenReservationThresholdHours,
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                    automaticFixedScheduleAbsencesEnabled = false
+                    automaticFixedScheduleAbsencesEnabled = false,
                 )
             }
         }
@@ -1009,7 +1009,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postReservationsRaw(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: List<ReservationInsert>
+        @RequestBody body: List<ReservationInsert>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -1023,7 +1023,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postChildDailyNote(
         db: Database,
         @PathVariable childId: ChildId,
-        @RequestBody body: ChildDailyNoteBody
+        @RequestBody body: ChildDailyNoteBody,
     ): ChildDailyNoteId {
         return db.connect { dbc ->
             dbc.transaction { it.createChildDailyNote(childId = childId, note = body) }
@@ -1034,7 +1034,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postChildStickyNote(
         db: Database,
         @PathVariable childId: ChildId,
-        @RequestBody body: ChildStickyNoteBody
+        @RequestBody body: ChildStickyNoteBody,
     ): ChildStickyNoteId {
         return db.connect { dbc ->
             dbc.transaction { it.createChildStickyNote(childId = childId, note = body) }
@@ -1045,7 +1045,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun postGroupNote(
         db: Database,
         @PathVariable groupId: GroupId,
-        @RequestBody body: GroupNoteBody
+        @RequestBody body: GroupNoteBody,
     ): GroupNoteId {
         return db.connect { dbc ->
             dbc.transaction { it.createGroupNote(groupId = groupId, note = body) }
@@ -1137,7 +1137,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/pedagogical-document")
     fun createPedagogicalDocuments(
         db: Database,
-        @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>
+        @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -1150,14 +1150,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping(
         "/pedagogical-document-attachment/{pedagogicalDocumentId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun createPedagogicalDocumentAttachment(
         db: Database,
         clock: EvakaClock,
         @PathVariable pedagogicalDocumentId: PedagogicalDocumentId,
         @RequestParam employeeId: EmployeeId,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): String {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -1168,15 +1168,15 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             file.name,
                             file.contentType ?: "image/jpeg",
                             AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
-                            type = null
+                            type = null,
                         )
                     documentClient.upload(
                         filesBucket,
                         Document(
                             name = id.toString(),
                             bytes = file.bytes,
-                            contentType = file.contentType ?: "image/jpeg"
-                        )
+                            contentType = file.contentType ?: "image/jpeg",
+                        ),
                     )
                 }
             }
@@ -1188,13 +1188,13 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val valid: FiniteDateRange =
             FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
         val type: CurriculumType = CurriculumType.DAYCARE,
-        val language: OfficialLanguage = OfficialLanguage.FI
+        val language: OfficialLanguage = OfficialLanguage.FI,
     )
 
     @PostMapping("/vasu/template")
     fun createVasuTemplate(
         db: Database,
-        @RequestBody body: CreateVasuTemplateBody
+        @RequestBody body: CreateVasuTemplateBody,
     ): VasuTemplateId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -1203,7 +1203,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     valid = body.valid,
                     type = body.type,
                     language = body.language,
-                    content = getDefaultTemplateContent(body.type, body.language)
+                    content = getDefaultTemplateContent(body.type, body.language),
                 )
             }
         }
@@ -1227,7 +1227,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createVasuDocument(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: PostVasuDocBody
+        @RequestBody body: PostVasuDocBody,
     ): VasuDocumentId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -1243,7 +1243,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun publishVasuDocument(
         db: Database,
         clock: EvakaClock,
-        @PathVariable documentId: VasuDocumentId
+        @PathVariable documentId: VasuDocumentId,
     ) {
         return db.connect { dbc ->
             dbc.transaction { tx -> tx.publishVasuDocument(clock.now(), documentId) }
@@ -1254,7 +1254,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createDocumentTemplate(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: DevDocumentTemplate
+        @RequestBody body: DevDocumentTemplate,
     ): DocumentTemplateId {
         return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
@@ -1263,7 +1263,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createChildDocument(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: DevChildDocument
+        @RequestBody body: DevChildDocument,
     ): ChildDocumentId {
         return db.connect { dbc -> dbc.transaction { tx -> tx.insert(body) } }
     }
@@ -1276,7 +1276,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/service-need-option")
     fun createServiceNeedOption(
         db: Database,
-        @RequestBody serviceNeedOptions: List<ServiceNeedOption>
+        @RequestBody serviceNeedOptions: List<ServiceNeedOption>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -1298,7 +1298,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-factors")
     fun createAssistanceFactors(
         db: Database,
-        @RequestBody assistanceFactors: List<DevAssistanceFactor>
+        @RequestBody assistanceFactors: List<DevAssistanceFactor>,
     ) {
         db.connect { dbc -> dbc.transaction { tx -> assistanceFactors.forEach { tx.insert(it) } } }
     }
@@ -1306,7 +1306,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/daycare-assistances")
     fun createDaycareAssistances(
         db: Database,
-        @RequestBody daycareAssistances: List<DevDaycareAssistance>
+        @RequestBody daycareAssistances: List<DevDaycareAssistance>,
     ) {
         db.connect { dbc -> dbc.transaction { tx -> daycareAssistances.forEach { tx.insert(it) } } }
     }
@@ -1314,7 +1314,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/preschool-assistances")
     fun createPreschoolAssistances(
         db: Database,
-        @RequestBody preschoolAssistances: List<DevPreschoolAssistance>
+        @RequestBody preschoolAssistances: List<DevPreschoolAssistance>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx -> preschoolAssistances.forEach { tx.insert(it) } }
@@ -1324,7 +1324,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/other-assistance-measures")
     fun createOtherAssistanceMeasures(
         db: Database,
-        @RequestBody otherAssistanceMeasures: List<DevOtherAssistanceMeasure>
+        @RequestBody otherAssistanceMeasures: List<DevOtherAssistanceMeasure>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx -> otherAssistanceMeasures.forEach { tx.insert(it) } }
@@ -1334,7 +1334,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-action-option")
     fun createAssistanceActionOption(
         db: Database,
-        @RequestBody assistanceActionOptions: List<DevAssistanceActionOption>
+        @RequestBody assistanceActionOptions: List<DevAssistanceActionOption>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx -> assistanceActionOptions.forEach { tx.insert(it) } }
@@ -1344,7 +1344,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-action")
     fun createAssistanceAction(
         db: Database,
-        @RequestBody assistanceActions: List<DevAssistanceAction>
+        @RequestBody assistanceActions: List<DevAssistanceAction>,
     ) {
         db.connect { dbc -> dbc.transaction { tx -> assistanceActions.forEach { tx.insert(it) } } }
     }
@@ -1352,7 +1352,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-need-decisions")
     fun createAssistanceNeedDecisions(
         db: Database,
-        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>
+        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -1366,7 +1366,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecisions(
         db: Database,
-        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>
+        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedPreschoolDecision>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -1378,7 +1378,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficients(
         db: Database,
-        @RequestBody assistanceNeedVoucherCoefficients: List<DevAssistanceNeedVoucherCoefficient>
+        @RequestBody assistanceNeedVoucherCoefficients: List<DevAssistanceNeedVoucherCoefficient>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx -> assistanceNeedVoucherCoefficients.forEach { tx.insert(it) } }
@@ -1410,7 +1410,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val evakaServiceNeedUpdated: HelsinkiDateTime,
         val evakaChildId: ChildId,
         val updateFailed: Boolean?,
-        val errors: List<String>?
+        val errors: List<String>?,
     )
 
     @PostMapping("/varda/varda-service-need")
@@ -1433,7 +1433,7 @@ VALUES (${bind(body.evakaServiceNeedId)}, ${bind(body.evakaServiceNeedUpdated)},
     @PostMapping("/occupancy-coefficient")
     fun upsertStaffOccupancyCoefficient(
         db: Database,
-        @RequestBody body: DevUpsertStaffOccupancyCoefficient
+        @RequestBody body: DevUpsertStaffOccupancyCoefficient,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -1470,7 +1470,7 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
     @PostMapping("/daily-service-time-notification")
     fun addDailyServiceTimeNotification(
         db: Database,
-        @RequestBody body: DevDailyServiceTimeNotification
+        @RequestBody body: DevDailyServiceTimeNotification,
     ) =
         db.connect { dbc ->
             dbc.transaction {
@@ -1536,13 +1536,13 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
         calendarEventNotification,
         financeDecisionNotification,
         discussionTimeReservation,
-        discussionTimeCancellation
+        discussionTimeCancellation,
     }
 
     @GetMapping("/email-content", produces = [MediaType.TEXT_HTML_VALUE])
     fun getEmails(
         @RequestParam message: EmailMessageType = EmailMessageType.pendingDecisionNotification,
-        @RequestParam format: String = "html"
+        @RequestParam format: String = "html",
     ): ByteArray {
         val emailContent =
             when (message) {
@@ -1561,7 +1561,7 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                 EmailMessageType.missingReservationsNotification ->
                     emailMessageProvider.missingReservationsNotification(
                         Language.fi,
-                        FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now())
+                        FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now()),
                     )
                 EmailMessageType.messageNotification ->
                     emailMessageProvider.messageNotification(
@@ -1572,20 +1572,20 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             title = "Testiviesti",
                             urgent = false,
                             sensitive = false,
-                            isCopy = false
-                        )
+                            isCopy = false,
+                        ),
                     )
                 EmailMessageType.vasuNotification ->
                     emailMessageProvider.vasuNotification(Language.fi, ChildId(UUID.randomUUID()))
                 EmailMessageType.pedagogicalDocumentNotification ->
                     emailMessageProvider.pedagogicalDocumentNotification(
                         Language.fi,
-                        ChildId(UUID.randomUUID())
+                        ChildId(UUID.randomUUID()),
                     )
                 EmailMessageType.outdatedIncomeNotification ->
                     emailMessageProvider.incomeNotification(
                         IncomeNotificationType.INITIAL_EMAIL,
-                        Language.fi
+                        Language.fi,
                     )
                 EmailMessageType.calendarEventNotification ->
                     emailMessageProvider.calendarEventNotification(
@@ -1593,16 +1593,16 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                         listOf(
                             CalendarEventNotificationData(
                                 "Esimerkki 1",
-                                FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1))
+                                FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
                             ),
                             CalendarEventNotificationData(
                                 "Esimerkki 2",
                                 FiniteDateRange(
                                     LocalDate.now().plusDays(7),
-                                    LocalDate.now().plusDays(7)
-                                )
+                                    LocalDate.now().plusDays(7),
+                                ),
                             ),
-                        )
+                        ),
                     )
                 EmailMessageType.financeDecisionNotification ->
                     emailMessageProvider.financeDecisionNotification(
@@ -1620,9 +1620,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     date = LocalDate.now(),
                                     startTime = LocalTime.of(12, 20),
                                     endTime = LocalTime.of(12, 50),
-                                    childId = null
-                                )
-                        )
+                                    childId = null,
+                                ),
+                        ),
                     )
                 EmailMessageType.discussionTimeCancellation ->
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
@@ -1636,9 +1636,9 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                                     date = LocalDate.now(),
                                     startTime = LocalTime.of(12, 20),
                                     endTime = LocalTime.of(12, 50),
-                                    childId = null
-                                )
-                        )
+                                    childId = null,
+                                ),
+                        ),
                     )
             }
         val content =
@@ -1709,7 +1709,7 @@ private const val LOCK_NOT_AVAILABLE: String = "55P03"
 
 private fun <T> Database.Connection.withLockedDatabase(
     timeout: Duration,
-    f: (tx: Database.Transaction) -> T
+    f: (tx: Database.Transaction) -> T,
 ): T {
     val start = Instant.now()
     do {
@@ -1734,7 +1734,7 @@ private data class ActiveConnection(
     val state: String,
     val xactStart: Instant?,
     val queryStart: Instant?,
-    val query: String?
+    val query: String?,
 )
 
 private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
@@ -1851,7 +1851,7 @@ data class DevCareArea(
     val name: String = "Test Care Area",
     val shortName: String = "test_area",
     val areaCode: Int? = 200,
-    val subCostCenter: String? = "00"
+    val subCostCenter: String? = "00",
 )
 
 data class DevBackupCare(
@@ -1859,7 +1859,7 @@ data class DevBackupCare(
     val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId? = null,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
 )
 
 data class DevChild(
@@ -1871,7 +1871,7 @@ data class DevChild(
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = "",
     val dietId: Int? = null,
-    val mealTextureId: Int? = null
+    val mealTextureId: Int? = null,
 )
 
 data class DevHoliday(val date: LocalDate, val description: String = "Test Holiday")
@@ -1881,7 +1881,7 @@ data class DevHolidayPeriod(
     val period: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 1)),
     val reservationsOpenOn: LocalDate = LocalDate.of(2024, 3, 1),
-    val reservationDeadline: LocalDate = LocalDate.of(2024, 3, 1)
+    val reservationDeadline: LocalDate = LocalDate.of(2024, 3, 1),
 )
 
 data class DevDaycare(
@@ -1921,7 +1921,7 @@ data class DevDaycare(
             daycareName = name,
             preschoolName = name,
             handler = "Decision Handler",
-            handlerAddress = "Decision Handler Street 1"
+            handlerAddress = "Decision Handler Street 1",
         ),
     val ophUnitOid: String? = "1.2.3.4.5",
     val ophOrganizerOid: String? = "1.2.3.4.5",
@@ -1933,7 +1933,7 @@ data class DevDaycare(
             TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             null,
-            null
+            null,
         ),
     val shiftCareOperationTimes: List<TimeRange?>? = null,
     val shiftCareOpenOnHolidays: Boolean = false,
@@ -1946,7 +1946,7 @@ data class DevDaycare(
     val mealtimeLunch: TimeRange? = null,
     val mealtimeSnack: TimeRange? = null,
     val mealtimeSupper: TimeRange? = null,
-    val mealtimeEveningSnack: TimeRange? = null
+    val mealtimeEveningSnack: TimeRange? = null,
 )
 
 data class DevDaycareGroup(
@@ -1955,7 +1955,7 @@ data class DevDaycareGroup(
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate? = null,
-    val jamixCustomerNumber: Int? = null
+    val jamixCustomerNumber: Int? = null,
 )
 
 data class DevDaycareGroupPlacement(
@@ -2008,7 +2008,7 @@ data class DevAssistanceNeedPreschoolDecision(
     val annulmentReason: String,
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
-    val unreadGuardianIds: Set<PersonId>?
+    val unreadGuardianIds: Set<PersonId>?,
 )
 
 data class DevChildAttendance(
@@ -2016,7 +2016,7 @@ data class DevChildAttendance(
     val unitId: DaycareId,
     val date: LocalDate,
     val arrived: LocalTime,
-    val departed: LocalTime?
+    val departed: LocalTime?,
 )
 
 data class DevAssistanceAction(
@@ -2026,7 +2026,7 @@ data class DevAssistanceAction(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val actions: Set<String> = emptySet(),
-    val otherAction: String = ""
+    val otherAction: String = "",
 )
 
 data class DevAssistanceNeedVoucherCoefficient(
@@ -2035,7 +2035,7 @@ data class DevAssistanceNeedVoucherCoefficient(
     val childId: ChildId,
     val validityPeriod: FiniteDateRange =
         FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 1)),
-    val coefficient: BigDecimal = BigDecimal(1.0)
+    val coefficient: BigDecimal = BigDecimal(1.0),
 )
 
 data class DevPlacement(
@@ -2047,7 +2047,7 @@ data class DevPlacement(
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val terminationRequestedDate: LocalDate? = null,
     val terminatedBy: EvakaUserId? = null,
-    val placeGuarantee: Boolean = false
+    val placeGuarantee: Boolean = false,
 )
 
 data class DevPerson(
@@ -2106,7 +2106,7 @@ data class DevPerson(
             invoicingStreetAddress = this.invoicingStreetAddress,
             invoicingPostalCode = this.invoicingPostalCode,
             invoicingPostOffice = this.invoicingPostOffice,
-            ophPersonOid = this.ophPersonOid
+            ophPersonOid = this.ophPersonOid,
         )
 
     fun evakaUserId() = EvakaUserId(id.raw)
@@ -2120,14 +2120,14 @@ data class DevParentship(
     val headOfChildId: PersonId,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now()
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevClubTerm(
     val id: ClubTermId = ClubTermId(UUID.randomUUID()),
     val term: FiniteDateRange,
     val applicationPeriod: FiniteDateRange,
-    val termBreaks: DateSet
+    val termBreaks: DateSet,
 )
 
 data class DevPreschoolTerm(
@@ -2136,7 +2136,7 @@ data class DevPreschoolTerm(
     val swedishPreschool: FiniteDateRange,
     val extendedTerm: FiniteDateRange,
     val applicationPeriod: FiniteDateRange,
-    val termBreaks: DateSet
+    val termBreaks: DateSet,
 )
 
 data class DevEmployee(
@@ -2149,7 +2149,7 @@ data class DevEmployee(
     val employeeNumber: String? = null,
     val roles: Set<UserRole> = setOf(),
     val lastLogin: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val active: Boolean = true
+    val active: Boolean = true,
 ) {
     val evakaUserId: EvakaUserId
         @JsonIgnore get() = EvakaUserId(id.raw)
@@ -2170,7 +2170,7 @@ data class DevPersonalMobileDevice(
     val id: MobileDeviceId = MobileDeviceId(UUID.randomUUID()),
     val employeeId: EmployeeId,
     val name: String = "Laite",
-    val longTermToken: UUID? = null
+    val longTermToken: UUID? = null,
 )
 
 data class DaycareAclInsert(val externalId: ExternalId, val role: UserRole?)
@@ -2180,7 +2180,7 @@ data class PlacementPlan(
     val periodStart: LocalDate,
     val periodEnd: LocalDate,
     val preschoolDaycarePeriodStart: LocalDate?,
-    val preschoolDaycarePeriodEnd: LocalDate?
+    val preschoolDaycarePeriodEnd: LocalDate?,
 )
 
 data class DevApplicationWithForm(
@@ -2200,7 +2200,7 @@ data class DevApplicationWithForm(
     val allowOtherGuardianAccess: Boolean = true,
     val otherGuardians: List<PersonId>,
     val form: ApplicationForm,
-    val formModified: HelsinkiDateTime
+    val formModified: HelsinkiDateTime,
 )
 
 data class DevDaycareGroupAcl(val groupId: GroupId, val employeeId: EmployeeId)
@@ -2214,7 +2214,7 @@ data class DevServiceNeed(
     val shiftCare: ShiftCareType = ShiftCareType.NONE,
     val partWeek: Boolean = false,
     val confirmedBy: EvakaUserId,
-    val confirmedAt: HelsinkiDateTime? = null
+    val confirmedAt: HelsinkiDateTime? = null,
 )
 
 data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
@@ -2222,7 +2222,7 @@ data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
 data class DevUpsertStaffOccupancyCoefficient(
     val unitId: DaycareId,
     val employeeId: EmployeeId,
-    val coefficient: BigDecimal
+    val coefficient: BigDecimal,
 )
 
 data class DevStaffAttendance(
@@ -2233,7 +2233,7 @@ data class DevStaffAttendance(
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal = occupancyCoefficientSeven,
     val type: StaffAttendanceType = StaffAttendanceType.PRESENT,
-    val departedAutomatically: Boolean = false
+    val departedAutomatically: Boolean = false,
 )
 
 data class DevDailyServiceTimes(
@@ -2248,12 +2248,12 @@ data class DevDailyServiceTimes(
     val thursdayTimes: TimeRange? = null,
     val fridayTimes: TimeRange? = null,
     val saturdayTimes: TimeRange? = null,
-    val sundayTimes: TimeRange? = null
+    val sundayTimes: TimeRange? = null,
 )
 
 data class DevDailyServiceTimeNotification(
     val id: DailyServiceTimeNotificationId,
-    val guardianId: PersonId
+    val guardianId: PersonId,
 )
 
 data class DevPayment(
@@ -2270,7 +2270,7 @@ data class DevPayment(
     val paymentDate: LocalDate?,
     val dueDate: LocalDate?,
     val sentAt: HelsinkiDateTime?,
-    val sentBy: EmployeeId?
+    val sentBy: EmployeeId?,
 )
 
 data class DevCalendarEvent(
@@ -2279,7 +2279,7 @@ data class DevCalendarEvent(
     val description: String,
     val period: FiniteDateRange,
     val modifiedAt: HelsinkiDateTime,
-    val eventType: CalendarEventType
+    val eventType: CalendarEventType,
 )
 
 data class DevCalendarEventAttendee(
@@ -2298,7 +2298,7 @@ data class DevCalendarEventTime(
     val end: LocalTime,
     val childId: ChildId? = null,
     val modifiedBy: EvakaUserId,
-    val modifiedAt: HelsinkiDateTime
+    val modifiedAt: HelsinkiDateTime,
 )
 
 data class DevAbsence(
@@ -2319,7 +2319,7 @@ data class DevDaycareCaretaker(
     val groupId: GroupId,
     val amount: BigDecimal = BigDecimal.ZERO,
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
 )
 
 data class DevDocumentTemplate(
@@ -2333,7 +2333,7 @@ data class DevDocumentTemplate(
     val processDefinitionNumber: String? = null,
     val archiveDurationMonths: Int? = null,
     val published: Boolean = true,
-    @Json val content: DocumentTemplateContent
+    @Json val content: DocumentTemplateContent,
 )
 
 data class DevChildDocument(
@@ -2346,14 +2346,14 @@ data class DevChildDocument(
     val modifiedAt: HelsinkiDateTime,
     val contentModifiedAt: HelsinkiDateTime,
     val contentModifiedBy: EmployeeId?,
-    val publishedAt: HelsinkiDateTime?
+    val publishedAt: HelsinkiDateTime?,
 )
 
 data class Citizen(
     val ssn: String,
     val firstName: String,
     val lastName: String,
-    val dependantCount: Int
+    val dependantCount: Int,
 ) {
     companion object {
         fun from(vtjPerson: VtjPerson) =
@@ -2361,7 +2361,7 @@ data class Citizen(
                 ssn = vtjPerson.socialSecurityNumber,
                 firstName = vtjPerson.firstNames,
                 lastName = vtjPerson.lastName,
-                dependantCount = vtjPerson.dependants.size
+                dependantCount = vtjPerson.dependants.size,
             )
     }
 }
@@ -2412,14 +2412,14 @@ data class DevVardaOrganizerChild(
     val vardaChildId: Long = Random.nextLong(),
     val organizerOid: String = "organizerOid123",
     val uploadedAt: HelsinkiDateTime? = null,
-    val vardaPersonId: Long = Random.nextLong()
+    val vardaPersonId: Long = Random.nextLong(),
 )
 
 data class DevAssistanceActionOption(
     val id: AssistanceActionOptionId,
     val value: String = "TEST_ASSISTANCE_ACTION_OPTION",
     val nameFi: String = "testAssistanceActionOption",
-    val descriptionFi: String?
+    val descriptionFi: String?,
 )
 
 val feeThresholds2020 =
@@ -2448,7 +2448,7 @@ val feeThresholds2020 =
         temporaryFee = 2800,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )
 
 data class DevFeeDecision(
@@ -2470,7 +2470,7 @@ data class DevFeeDecision(
     val sentAt: HelsinkiDateTime? = null,
     val cancelledAt: HelsinkiDateTime? = null,
     val totalFee: Int = 0,
-    val difference: List<FeeDecisionDifference> = emptyList()
+    val difference: List<FeeDecisionDifference> = emptyList(),
 )
 
 data class DevFeeDecisionChild(
@@ -2491,7 +2491,7 @@ data class DevFeeDecisionChild(
     val serviceNeedMissing: Boolean = false,
     val serviceNeedContractDaysPerMonth: Int? = null,
     val childIncome: DecisionIncome? = null,
-    val serviceNeedOptionId: ServiceNeedOptionId? = null
+    val serviceNeedOptionId: ServiceNeedOptionId? = null,
 )
 
 data class DevVoucherValueDecision(

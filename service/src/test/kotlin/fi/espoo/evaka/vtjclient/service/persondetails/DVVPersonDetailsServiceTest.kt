@@ -73,7 +73,7 @@ class DVVPersonDetailsServiceTest {
         val expectedChildQuery =
             DetailsQuery(
                 requestingUser = query.requestingUser,
-                targetIdentifier = SSN.getInstance(expectedChildResult.socialSecurityNumber)
+                targetIdentifier = SSN.getInstance(expectedChildResult.socialSecurityNumber),
             )
         val expectedChildVtjQuery =
             expectedChildQuery.mapToVtjQuery(IVtjClientService.RequestType.PERUSSANOMA3)
@@ -115,7 +115,7 @@ class DVVPersonDetailsServiceTest {
         vtjPerson.toPersonDTO().let {
             DetailsQuery(
                 requestingUser = EvakaUserId(it.id.raw),
-                targetIdentifier = it.identity as SSN
+                targetIdentifier = it.identity as SSN,
             )
         }
 
@@ -143,7 +143,7 @@ class DVVPersonDetailsServiceTest {
             streetAddress = "",
             postalCode = "",
             postOffice = "",
-            residenceCode = ""
+            residenceCode = "",
         )
 
     private val validPerson =
@@ -158,10 +158,10 @@ class DVVPersonDetailsServiceTest {
                     postOffice = "Espoo",
                     postalCode = "12311",
                     streetAddressSe = "Brunnsmästargatan 15",
-                    postOfficeSe = "Esbo"
+                    postOfficeSe = "Esbo",
                 ),
             restrictedDetails = RestrictedDetails(enabled = false),
             nationalities = listOf(Nationality(countryCode = "246", countryName = "Suomi")),
-            dependants = emptyList()
+            dependants = emptyList(),
         )
 }

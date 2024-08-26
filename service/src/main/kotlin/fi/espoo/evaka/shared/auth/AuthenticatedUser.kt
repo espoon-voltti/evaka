@@ -43,11 +43,11 @@ sealed class AuthenticatedUser {
     private constructor(
         val id: EmployeeId,
         val globalRoles: Set<UserRole>,
-        val allScopedRoles: Set<UserRole>
+        val allScopedRoles: Set<UserRole>,
     ) : AuthenticatedUser() {
         constructor(
             id: EmployeeId,
-            roles: Set<UserRole>
+            roles: Set<UserRole>,
         ) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
 
         constructor(
@@ -89,12 +89,12 @@ sealed class AuthenticatedUser {
 
 enum class CitizenAuthLevel {
     WEAK,
-    STRONG
+    STRONG,
 }
 
 enum class MobileAuthLevel {
     DEFAULT,
-    PIN_LOGIN
+    PIN_LOGIN,
 }
 
 /** Low-level AuthenticatedUser type "tag" used in serialized representations (JWT, JSON). */
@@ -105,5 +105,5 @@ enum class AuthenticatedUserType {
     employee,
     mobile,
     system,
-    integration
+    integration,
 }

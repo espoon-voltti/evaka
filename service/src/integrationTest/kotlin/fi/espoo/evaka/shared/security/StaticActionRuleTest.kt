@@ -57,7 +57,7 @@ class StaticActionRuleTest : AccessControlTest() {
         val permittedEmployee =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+                setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN),
             )
         val deniedEmployee =
             AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))

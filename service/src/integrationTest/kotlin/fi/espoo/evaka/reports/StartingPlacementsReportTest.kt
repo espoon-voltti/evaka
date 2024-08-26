@@ -108,7 +108,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         insertPlacement(
             testChild_1.id,
             placementStart.plusMonths(1).plusDays(1),
-            placementStart.plusMonths(2)
+            placementStart.plusMonths(2),
         )
 
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
@@ -130,7 +130,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
             http
                 .get(
                     "/reports/starting-placements",
-                    listOf("year" to date.year, "month" to date.monthValue)
+                    listOf("year" to date.year, "month" to date.monthValue),
                 )
                 .asUser(testUser)
                 .responseObject<List<StartingPlacementsRow>>(jsonMapper)
@@ -143,7 +143,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         childId: ChildId,
         startDate: LocalDate,
         endDate: LocalDate = startDate.plusYears(1),
-        daycare: DevDaycare = testDaycare
+        daycare: DevDaycare = testDaycare,
     ) =
         db.transaction { tx ->
             tx.insert(
@@ -151,7 +151,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     childId = childId,
                     unitId = daycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -159,7 +159,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun toReportRow(
         child: DevPerson,
         startDate: LocalDate,
-        careAreaName: String = testArea.name
+        careAreaName: String = testArea.name,
     ) =
         StartingPlacementsRow(
             childId = child.id,
@@ -168,6 +168,6 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
             dateOfBirth = child.dateOfBirth,
             ssn = child.ssn,
             placementStart = startDate,
-            careAreaName = careAreaName
+            careAreaName = careAreaName,
         )
 }

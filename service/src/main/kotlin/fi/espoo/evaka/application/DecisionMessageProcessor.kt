@@ -17,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class DecisionMessageProcessor(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
 ) {
     init {
         asyncJobRunner.registerHandler(::runCreateJob)
@@ -27,7 +27,7 @@ class DecisionMessageProcessor(
     fun runCreateJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.NotifyDecisionCreated
+        msg: AsyncJob.NotifyDecisionCreated,
     ) =
         db.transaction { tx ->
             val decisionId = msg.decisionId
@@ -40,7 +40,7 @@ class DecisionMessageProcessor(
                 asyncJobRunner.plan(
                     tx,
                     listOf(AsyncJob.SendDecision(decisionId)),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }

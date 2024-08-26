@@ -90,7 +90,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = daycareId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
             tx.insert(testDaycareGroup)
@@ -229,7 +229,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             createGroupPlacement(
                 testPlacement.id,
-                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
+                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd),
             )
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -246,11 +246,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement right after another merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(3))
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(3)),
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementStart.plusDays(4), placementEnd)
+            GroupPlacementRequestBody(groupId, placementStart.plusDays(4), placementEnd),
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
@@ -266,11 +266,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement right before another merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementEnd.minusDays(3), placementEnd)
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(3), placementEnd),
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementStart, placementEnd.minusDays(4))
+            GroupPlacementRequestBody(groupId, placementStart, placementEnd.minusDays(4)),
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
@@ -286,19 +286,19 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement between two merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2))
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2)),
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd)
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd),
         )
         createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
                 groupId,
                 placementStart.plusDays(3),
-                placementEnd.minusDays(3)
-            )
+                placementEnd.minusDays(3),
+            ),
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
@@ -314,19 +314,19 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `group placements are not merged if they have gap between`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2))
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2)),
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd)
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd),
         )
         createGroupPlacement(
             testPlacement.id,
             GroupPlacementRequestBody(
                 groupId,
                 placementStart.plusDays(4),
-                placementEnd.minusDays(4)
-            )
+                placementEnd.minusDays(4),
+            ),
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
@@ -338,7 +338,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             createGroupPlacement(
                 testPlacement.id,
-                GroupPlacementRequestBody(GroupId(UUID.randomUUID()), placementStart, placementEnd)
+                GroupPlacementRequestBody(GroupId(UUID.randomUUID()), placementStart, placementEnd),
             )
 
         Assertions.assertThat(res.statusCode).isEqualTo(404)
@@ -355,7 +355,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create absences
@@ -369,24 +369,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
                 listOf(
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = firstAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = secondAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = thirdAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = fourthAbsence,
-                    ),
+                    DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = thirdAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -419,8 +407,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 daycareId,
                 newPlacementStartDate,
                 newPlacementEndDate,
-                false
-            )
+                false,
+            ),
         )
 
         val placements = db.read { r -> r.getPlacementsForChild(childId) }
@@ -434,7 +422,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitSupervisor,
                 mockClock,
                 newPlacement.id,
-                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate)
+                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate),
             )
         assertNotNull(secondGroupPlacementId)
 
@@ -459,7 +447,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create reservations
@@ -477,25 +465,25 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = firstReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = secondReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = thirdReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = fourthReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -504,7 +492,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(4, reservations.size)
@@ -529,8 +517,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 daycareId,
                 newPlacementStartDate,
                 newPlacementEndDate,
-                false
-            )
+                false,
+            ),
         )
 
         val placements = db.read { r -> r.getPlacementsForChild(childId) }
@@ -544,7 +532,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitSupervisor,
                 mockClock,
                 newPlacement.id,
-                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate)
+                GroupPlacementRequestBody(groupId, newPlacementStartDate, newPlacementEndDate),
             )
         assertNotNull(secondGroupPlacementId)
 
@@ -553,7 +541,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(2, updatedReservations.size)
@@ -572,7 +560,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create absences
@@ -586,24 +574,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
                 listOf(
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = firstAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = secondAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = thirdAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = fourthAbsence,
-                    ),
+                    DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = thirdAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -629,7 +605,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             unitSupervisor,
             mockClock,
             activePlacement.id,
-            PlacementUpdateRequestBody(activePlacementStart, newEndDate)
+            PlacementUpdateRequestBody(activePlacementStart, newEndDate),
         )
 
         val placements = db.read { r -> r.getPlacementsForChild(childId) }
@@ -659,7 +635,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create reservations
@@ -677,25 +653,25 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = firstReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = secondReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = thirdReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = fourthReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -704,7 +680,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(4, reservations.size)
@@ -722,7 +698,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             unitSupervisor,
             mockClock,
             activePlacement.id,
-            PlacementUpdateRequestBody(activePlacementStart, newEndDate)
+            PlacementUpdateRequestBody(activePlacementStart, newEndDate),
         )
 
         val placements = db.read { r -> r.getPlacementsForChild(childId) }
@@ -736,7 +712,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(2, updatedReservations.size)
@@ -755,7 +731,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create absences
@@ -769,24 +745,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
                 listOf(
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = firstAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = secondAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = thirdAbsence,
-                    ),
-                    DailyReservationRequest.Absent(
-                        childId = childId,
-                        date = fourthAbsence,
-                    ),
+                    DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = thirdAbsence),
+                    DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -829,7 +793,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             activePlacementEnd,
             childId,
             daycareId,
-            groupId
+            groupId,
         )
 
         val futurePlacementStart = activePlacementEnd.plusDays(1)
@@ -841,7 +805,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 futurePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create reservations
@@ -857,15 +821,15 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = firstReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = secondReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -873,7 +837,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, futurePlacementEnd)
+                    FiniteDateRange(activePlacementStart, futurePlacementEnd),
                 )
             }
         assertEquals(2, reservations.size)
@@ -888,7 +852,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, futurePlacementEnd)
+                    FiniteDateRange(activePlacementStart, futurePlacementEnd),
                 )
             }
         assertEquals(1, updatedReservations.size)
@@ -906,7 +870,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 activePlacementEnd,
                 childId,
                 daycareId,
-                groupId
+                groupId,
             )
 
         // Create reservations
@@ -924,25 +888,25 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = firstReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = secondReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = thirdReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                     DailyReservationRequest.Reservations(
                         childId = childId,
                         date = fourthReservation,
-                        reservation = reservationTime
+                        reservation = reservationTime,
                     ),
                 ),
-                citizenReservationThresholdHours
+                citizenReservationThresholdHours,
             )
         }
 
@@ -951,7 +915,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(4, reservations.size)
@@ -971,7 +935,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db.read {
                 it.getReservationsForChildInRange(
                     childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd)
+                    FiniteDateRange(activePlacementStart, activePlacementEnd),
                 )
             }
         assertEquals(2, updatedReservations.size)
@@ -984,7 +948,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, _) =
             createGroupPlacement(
                 testPlacement.id,
-                GroupPlacementRequestBody(groupId, placementStart, placementEnd)
+                GroupPlacementRequestBody(groupId, placementStart, placementEnd),
             )
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
@@ -998,8 +962,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 GroupPlacementRequestBody(
                     GroupId(UUID.randomUUID()),
                     placementStart.minusDays(1),
-                    placementEnd
-                )
+                    placementEnd,
+                ),
             )
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
@@ -1013,8 +977,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 GroupPlacementRequestBody(
                     GroupId(UUID.randomUUID()),
                     placementStart,
-                    placementEnd.plusDays(1)
-                )
+                    placementEnd.plusDays(1),
+                ),
             )
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
@@ -1052,7 +1016,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         unitId = daycareId,
                         startDate = LocalDate.now(),
-                        endDate = LocalDate.now().plusDays(1)
+                        endDate = LocalDate.now().plusDays(1),
                     )
                 )
             }
@@ -1064,7 +1028,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         unitId = testDaycare2.id,
                         startDate = LocalDate.now().minusDays(2),
-                        endDate = LocalDate.now().minusDays(1)
+                        endDate = LocalDate.now().minusDays(1),
                     )
                 )
             }
@@ -1097,7 +1061,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         childId = childId,
                         unitId = testDaycare2.id,
                         startDate = placementEnd.plusDays(1),
-                        endDate = placementEnd.plusMonths(2)
+                        endDate = placementEnd.plusMonths(2),
                     )
                 )
             }
@@ -1138,14 +1102,14 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = testDaycare2.id,
                     startDate = newEnd,
-                    endDate = newEnd.plusMonths(2)
+                    endDate = newEnd.plusMonths(2),
                 )
             )
         }
         val body =
             PlacementUpdateRequestBody(
                 startDate = placementStart,
-                endDate = newEnd
+                endDate = newEnd,
             ) // endDate overlaps with another placement
 
         val (_, res, _) =
@@ -1168,14 +1132,14 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             childId = childId,
                             unitId = testDaycare2.id,
                             startDate = newEnd,
-                            endDate = newEnd.plusMonths(2)
+                            endDate = newEnd.plusMonths(2),
                         )
                     )
                     .also {
                         tx.updateDaycareAclWithEmployee(
                             testDaycare2.id,
                             unitSupervisor.id,
-                            UserRole.UNIT_SUPERVISOR
+                            UserRole.UNIT_SUPERVISOR,
                         )
                     }
             }
@@ -1183,7 +1147,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val body =
             PlacementUpdateRequestBody(
                 startDate = placementStart,
-                endDate = newEnd
+                endDate = newEnd,
             ) // endDate overlaps with another placement
         val (_, res, _) =
             http
@@ -1241,7 +1205,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 DevBackupCare(
                     childId = childId,
                     unitId = testDaycare2.id,
-                    period = FiniteDateRange(placementEnd.minusDays(5), placementEnd.minusDays(1))
+                    period = FiniteDateRange(placementEnd.minusDays(5), placementEnd.minusDays(1)),
                 )
             )
         }
@@ -1270,7 +1234,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 DevBackupCare(
                     childId = childId,
                     unitId = testDaycare2.id,
-                    period = FiniteDateRange(placementStart, placementStart.plusDays(4))
+                    period = FiniteDateRange(placementStart, placementStart.plusDays(4)),
                 )
             )
         }
@@ -1300,7 +1264,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = daycareId,
                     startDate = placementStart.minusDays(10),
-                    endDate = placementStart.minusDays(1)
+                    endDate = placementStart.minusDays(1),
                 )
             )
             tx.insert(
@@ -1308,7 +1272,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = testDaycare2.id,
                     period =
-                        FiniteDateRange(placementStart.minusDays(8), placementStart.plusDays(4))
+                        FiniteDateRange(placementStart.minusDays(8), placementStart.plusDays(4)),
                 )
             )
         }
@@ -1337,7 +1301,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 DevBackupCare(
                     childId = childId,
                     unitId = testDaycare2.id,
-                    period = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5))
+                    period = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5)),
                 )
             )
         }
@@ -1353,7 +1317,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun createGroupPlacement(
         placementId: PlacementId,
-        groupPlacement: GroupPlacementRequestBody
+        groupPlacement: GroupPlacementRequestBody,
     ): ResponseResultOf<ByteArray> {
         return http
             .post("/placements/$placementId/group-placements")
@@ -1369,7 +1333,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         daycareId: DaycareId,
         groupId: GroupId,
         groupPlacementStart: LocalDate = placementStartDate,
-        groupPlacementEnd: LocalDate = placementEndDate
+        groupPlacementEnd: LocalDate = placementEndDate,
     ): DaycarePlacementDetails {
         db.transaction { tx ->
             tx.insert(
@@ -1377,7 +1341,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     childId = childId,
                     unitId = daycareId,
                     startDate = placementStartDate,
-                    endDate = placementEndDate
+                    endDate = placementEndDate,
                 )
             )
         }
@@ -1392,7 +1356,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitSupervisor,
                 mockClock,
                 placement.id,
-                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
+                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd),
             )
         assertNotNull(groupPlacementId)
 
@@ -1401,7 +1365,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun getGroupPlacements(
         childId: ChildId,
-        daycareId: DaycareId
+        daycareId: DaycareId,
     ): List<DaycareGroupPlacement> {
         return http
             .get("/placements?childId=$childId&daycareId=$daycareId")
@@ -1418,10 +1382,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun getAbsencesOfChildByRange(range: DateRange) =
         db.read {
-            it.getAbsencesOfChildByRange(
-                    childId,
-                    range,
-                )
+            it.getAbsencesOfChildByRange(childId, range)
                 .sortedWith(compareBy({ it.date }, { it.category }))
         }
 }

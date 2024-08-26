@@ -57,7 +57,7 @@ class SystemController(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
-        @RequestBody request: CitizenLoginRequest
+        @RequestBody request: CitizenLoginRequest,
     ): CitizenUserIdentity {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -67,14 +67,14 @@ class SystemController(
                                 .getOrCreatePerson(
                                     tx,
                                     user,
-                                    ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber)
+                                    ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber),
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")
                     tx.updateCitizenOnLogin(
                         clock,
                         citizen.id,
-                        keycloakEmail = request.keycloakEmail
+                        keycloakEmail = request.keycloakEmail,
                     )
                     tx.upsertCitizenUser(citizen.id)
                     personService.getPersonWithChildren(tx, user, citizen.id)
@@ -83,12 +83,9 @@ class SystemController(
             }
             .also {
                 Audit.CitizenLogin.log(
-                    targetId =
-                        AuditId(
-                            request.socialSecurityNumber,
-                        ),
+                    targetId = AuditId(request.socialSecurityNumber),
                     objectId = AuditId(it.id),
-                    meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName)
+                    meta = mapOf("lastName" to request.lastName, "firstName" to request.firstName),
                 )
             }
     }
@@ -98,7 +95,7 @@ class SystemController(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
-        @PathVariable id: PersonId
+        @PathVariable id: PersonId,
     ): CitizenUserResponse =
         db.connect { dbc ->
             dbc.read { tx ->
@@ -117,14 +114,14 @@ class SystemController(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
-        @RequestBody request: EmployeeLoginRequest
+        @RequestBody request: EmployeeLoginRequest,
     ): EmployeeUser {
         return db.connect { dbc ->
                 dbc.transaction {
                     if (request.employeeNumber != null) {
                         it.updateExternalIdByEmployeeNumber(
                             request.employeeNumber,
-                            request.externalId
+                            request.externalId,
                         )
                     }
                     val inserted = it.loginEmployee(clock, request.toNewEmployee())
@@ -136,7 +133,7 @@ class SystemController(
                             lastName = inserted.lastName,
                             globalRoles = roles.globalRoles,
                             allScopedRoles = roles.allScopedRoles,
-                            active = inserted.active
+                            active = inserted.active,
                         )
                     it.upsertEmployeeUser(employee.id)
                     employee
@@ -144,18 +141,15 @@ class SystemController(
             }
             .also {
                 Audit.EmployeeLogin.log(
-                    targetId =
-                        AuditId(
-                            request.externalId.toString(),
-                        ),
+                    targetId = AuditId(request.externalId.toString()),
                     objectId = AuditId(it.id),
                     meta =
                         mapOf(
                             "lastName" to request.lastName,
                             "firstName" to request.firstName,
                             "email" to request.email,
-                            "globalRoles" to it.globalRoles
-                        )
+                            "globalRoles" to it.globalRoles,
+                        ),
                 )
             }
     }
@@ -165,7 +159,7 @@ class SystemController(
         db: Database,
         systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ): EmployeeUserResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -216,7 +210,7 @@ class SystemController(
                                     tx,
                                     user,
                                     clock,
-                                    Action.AssistanceNeedDecision.READ_IN_REPORT
+                                    Action.AssistanceNeedDecision.READ_IN_REPORT,
                                 ),
                             createDraftInvoices =
                                 permittedGlobalActions.contains(
@@ -227,7 +221,7 @@ class SystemController(
                                     tx,
                                     user,
                                     clock,
-                                    Action.Unit.CREATE_PLACEMENT
+                                    Action.Unit.CREATE_PLACEMENT,
                                 ),
                             submitPatuReport =
                                 permittedGlobalActions.contains(Action.Global.SUBMIT_PATU_REPORT),
@@ -240,7 +234,7 @@ class SystemController(
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
                         accessibleFeatures = accessibleFeatures,
-                        permittedGlobalActions = permittedGlobalActions
+                        permittedGlobalActions = permittedGlobalActions,
                     )
                 }
             }
@@ -255,7 +249,7 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId,
-        @RequestBody tracking: MobileDeviceTracking
+        @RequestBody tracking: MobileDeviceTracking,
     ): MobileDeviceDetails =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -266,7 +260,7 @@ class SystemController(
                             webPush?.applicationServerKey.takeIf {
                                 tx.anyUnitHasFeature(
                                     device.unitIds,
-                                    PilotFeature.PUSH_NOTIFICATIONS
+                                    PilotFeature.PUSH_NOTIFICATIONS,
                                 )
                             }
                     )
@@ -278,7 +272,7 @@ class SystemController(
     fun mobileIdentity(
         db: Database,
         user: AuthenticatedUser.SystemInternalUser,
-        @PathVariable token: UUID
+        @PathVariable token: UUID,
     ): MobileDeviceIdentity {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -297,7 +291,7 @@ class SystemController(
         val firstName: String,
         val lastName: String,
         val employeeNumber: String?,
-        val email: String?
+        val email: String?,
     ) {
         fun toNewEmployee(): NewEmployee =
             NewEmployee(
@@ -307,7 +301,7 @@ class SystemController(
                 externalId = externalId,
                 employeeNumber = employeeNumber,
                 temporaryInUnitId = null,
-                active = true
+                active = true,
             )
     }
 
@@ -316,7 +310,7 @@ class SystemController(
         val firstName: String,
         val lastName: String,
         // null in SFI login requests, always set (but possibly empty) in Keycloak login requests
-        val keycloakEmail: String?
+        val keycloakEmail: String?,
     )
 
     data class EmployeeUserResponse(
@@ -326,7 +320,7 @@ class SystemController(
         val globalRoles: Set<UserRole> = setOf(),
         val allScopedRoles: Set<UserRole> = setOf(),
         val accessibleFeatures: EmployeeFeatures,
-        val permittedGlobalActions: Set<Action.Global>
+        val permittedGlobalActions: Set<Action.Global>,
     )
 
     data class CitizenUserResponse(

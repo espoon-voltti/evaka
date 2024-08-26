@@ -12,7 +12,7 @@ val tika: org.apache.tika.Tika = org.apache.tika.Tika()
 enum class ContentTypePattern(
     private val type: String,
     private val subtypePattern: String,
-    private val allowedFileExtensions: Set<String>
+    private val allowedFileExtensions: Set<String>,
 ) {
     JPEG("image", "jpeg", setOf("jpg", "jpeg")),
     PNG("image", "png", setOf("png")),
@@ -21,7 +21,7 @@ enum class ContentTypePattern(
     MSWORD_DOCX(
         "application",
         "vnd.openxmlformats-officedocument.wordprocessingml.document",
-        setOf("docx")
+        setOf("docx"),
     ),
     OPEN_DOCUMENT_TEXT("application", "vnd.oasis.opendocument.text", setOf("odt")),
     TIKA_MSOFFICE("application", "x-tika-msoffice", setOf("doc", "docx")),
@@ -50,7 +50,7 @@ fun checkFileContentType(file: InputStream, allowedContentTypes: Set<ContentType
 fun checkFileContentTypeAndExtension(
     file: InputStream,
     fileExtension: String,
-    allowedContentTypes: List<ContentTypePattern>
+    allowedContentTypes: List<ContentTypePattern>,
 ): String {
     val detectedContentType = tika.detect(file)
     val contentTypePattern =

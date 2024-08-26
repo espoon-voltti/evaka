@@ -23,7 +23,7 @@ private val vardaPlacementTypes =
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
         PlacementType.PRESCHOOL_DAYCARE,
-        PlacementType.PREPARATORY_DAYCARE
+        PlacementType.PREPARATORY_DAYCARE,
     )
 private val vardaTemporaryPlacementTypes =
     listOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
@@ -38,12 +38,12 @@ data class VardaServiceNeed(
     val shiftCare: Boolean,
     val providerType: ProviderType,
     val ophOrganizerOid: String,
-    val ophUnitOid: String
+    val ophUnitOid: String,
 )
 
 fun Database.Read.getVardaServiceNeeds(
     childIds: List<ChildId>,
-    range: DateRange
+    range: DateRange,
 ): Map<ChildId, List<VardaServiceNeed>> {
     return createQuery {
             sql(
@@ -109,12 +109,12 @@ data class VardaFeeData(
     val familySize: Int,
     val childFee: Int,
     val ophOrganizerOid: String,
-    val voucherValue: Int?
+    val voucherValue: Int?,
 )
 
 fun Database.Read.getVardaFeeData(
     childIds: List<ChildId>,
-    range: DateRange
+    range: DateRange,
 ): Map<ChildId, List<VardaFeeData>> =
     createQuery {
             sql(
@@ -171,7 +171,7 @@ data class VardaChild(
     val firstName: String,
     val lastName: String,
     val socialSecurityNumber: String?,
-    val ophPersonOid: String?
+    val ophPersonOid: String?,
 )
 
 fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaChild> =
@@ -198,7 +198,7 @@ data class VardaGuardian(
     val firstName: String,
     val lastName: String,
     val socialSecurityNumber: String?,
-    val ophPersonOid: String?
+    val ophPersonOid: String?,
 )
 
 fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<VardaGuardian>> =
@@ -303,7 +303,7 @@ inline fun <reified T> Database.Read.getVardaUpdateState(
 fun Database.Transaction.setVardaUpdateSuccess(
     childId: ChildId,
     now: HelsinkiDateTime,
-    state: Any?
+    state: Any?,
 ) {
     createUpdate {
             sql(
@@ -323,7 +323,7 @@ fun Database.Transaction.setVardaUpdateSuccess(
 fun Database.Transaction.setVardaUpdateError(
     childId: ChildId,
     now: HelsinkiDateTime,
-    error: String
+    error: String,
 ) {
     createUpdate {
             sql(

@@ -28,13 +28,13 @@ enum class DailyServiceTimesType : DatabaseEnum {
 data class DailyServiceTimes(
     val id: DailyServiceTimesId,
     val childId: ChildId,
-    val times: DailyServiceTimesValue
+    val times: DailyServiceTimesValue,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class DailyServiceTimesValue(
     open val validityPeriod: DateRange,
-    val type: DailyServiceTimesType
+    val type: DailyServiceTimesType,
 ) {
     abstract fun asUpdateRow(): DailyServiceTimeUpdateRow
 
@@ -56,7 +56,7 @@ sealed class DailyServiceTimesValue(
                 fridayTimes = null,
                 saturdayTimes = null,
                 sundayTimes = null,
-                validityPeriod = validityPeriod
+                validityPeriod = validityPeriod,
             )
 
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
@@ -78,7 +78,7 @@ sealed class DailyServiceTimesValue(
         val thursday: TimeRange?,
         val friday: TimeRange?,
         val saturday: TimeRange?,
-        val sunday: TimeRange?
+        val sunday: TimeRange?,
     ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.IRREGULAR) {
         fun timesForDayOfWeek(dayOfWeek: DayOfWeek) =
             when (dayOfWeek) {
@@ -102,7 +102,7 @@ sealed class DailyServiceTimesValue(
                 fridayTimes = friday,
                 saturdayTimes = saturday,
                 sundayTimes = sunday,
-                validityPeriod = validityPeriod
+                validityPeriod = validityPeriod,
             )
 
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
@@ -145,7 +145,7 @@ sealed class DailyServiceTimesValue(
                 fridayTimes = null,
                 saturdayTimes = null,
                 sundayTimes = null,
-                validityPeriod = validityPeriod
+                validityPeriod = validityPeriod,
             )
 
         override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
@@ -171,7 +171,7 @@ data class DailyServiceTimeRow(
     val fridayTimes: TimeRange?,
     val saturdayTimes: TimeRange?,
     val sundayTimes: TimeRange?,
-    val validityPeriod: DateRange
+    val validityPeriod: DateRange,
 )
 
 fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> =
@@ -254,7 +254,7 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                         row.regularTimes
                             ?: throw IllegalStateException(
                                 "Regular daily service times must have regular times"
-                            )
+                            ),
                 )
                 .withId(row.id, row.childId)
         DailyServiceTimesType.IRREGULAR ->
@@ -266,7 +266,7 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
                     thursday = row.thursdayTimes,
                     friday = row.fridayTimes,
                     saturday = row.saturdayTimes,
-                    sunday = row.sundayTimes
+                    sunday = row.sundayTimes,
                 )
                 .withId(row.id, row.childId)
         DailyServiceTimesType.VARIABLE_TIME ->
@@ -285,12 +285,12 @@ data class DailyServiceTimeUpdateRow(
     val fridayTimes: TimeRange?,
     val saturdayTimes: TimeRange?,
     val sundayTimes: TimeRange?,
-    val validityPeriod: DateRange
+    val validityPeriod: DateRange,
 )
 
 fun Database.Transaction.updateChildDailyServiceTimes(
     id: DailyServiceTimesId,
-    times: DailyServiceTimesValue
+    times: DailyServiceTimesValue,
 ) {
     val u = times.asUpdateRow()
     execute {
@@ -336,7 +336,7 @@ fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
 
 fun Database.Transaction.createChildDailyServiceTimes(
     childId: ChildId,
-    times: DailyServiceTimesValue
+    times: DailyServiceTimesValue,
 ): DailyServiceTimesId {
     val u = times.asUpdateRow()
     return createQuery {
@@ -375,12 +375,12 @@ fun Database.Transaction.createChildDailyServiceTimes(
 
 data class DailyServiceTimesValidityWithId(
     val id: DailyServiceTimesId,
-    val validityPeriod: DateRange
+    val validityPeriod: DateRange,
 )
 
 fun Database.Read.getOverlappingChildDailyServiceTimes(
     childId: ChildId,
-    range: DateRange
+    range: DateRange,
 ): List<DailyServiceTimesValidityWithId> =
     createQuery {
             sql(
@@ -396,7 +396,7 @@ WHERE child_id = ${bind(childId)}
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(
     id: DailyServiceTimesId,
-    validityPeriod: DateRange
+    validityPeriod: DateRange,
 ) {
     execute {
         sql(

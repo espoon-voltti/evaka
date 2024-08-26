@@ -34,7 +34,7 @@ fun printCsvField(value: Any?): String =
 fun <T : Any> toCsvRecords(
     printField: (value: Any?) -> String,
     clazz: KClass<T>,
-    values: Sequence<T>
+    values: Sequence<T>,
 ): Sequence<String> {
     check(clazz.isData)
     val props = clazz.declaredMemberProperties.toList()

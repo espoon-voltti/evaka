@@ -84,7 +84,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
-            result.children.map { it.personId }.toSet()
+            result.children.map { it.personId }.toSet(),
         )
     }
 
@@ -102,7 +102,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
-            result.children.map { it.personId }.toSet()
+            result.children.map { it.personId }.toSet(),
         )
     }
 
@@ -168,7 +168,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                 to,
                 false,
                 Creator.User(creator),
-                clock.now()
+                clock.now(),
             )
         }
     }
@@ -184,7 +184,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = childId,
                     unitId = testDaycare.id,
                     startDate = LocalDate.now(),
-                    endDate = LocalDate.now().plusYears(1)
+                    endDate = LocalDate.now().plusYears(1),
                 )
             )
             it.insert(unitSupervisor)
@@ -211,11 +211,11 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                                         incomeTotal,
                                         coefficientMultiplierProvider.multiplier(
                                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                        )
-                                    )
+                                        ),
+                                    ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

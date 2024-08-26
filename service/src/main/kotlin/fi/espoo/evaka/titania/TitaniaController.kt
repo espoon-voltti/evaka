@@ -29,7 +29,7 @@ class TitaniaController(private val titaniaService: TitaniaService) {
     fun updateWorkingTimeEvents(
         @RequestBody request: UpdateWorkingTimeEventsRequest,
         user: AuthenticatedUser.Integration,
-        db: Database
+        db: Database,
     ): UpdateWorkingTimeEventsResponse {
         return db.connect { dbc ->
             lateinit var result: UpdateWorkingTimeEventsServiceResponse
@@ -43,7 +43,7 @@ class TitaniaController(private val titaniaService: TitaniaService) {
     fun getStampedWorkingTimeEvents(
         @RequestBody request: GetStampedWorkingTimeEventsRequest,
         user: AuthenticatedUser.Integration,
-        db: Database
+        db: Database,
     ): GetStampedWorkingTimeEventsResponse {
         return db.connect { dbc ->
             dbc.read { tx -> titaniaService.getStampedWorkingTimeEvents(tx, request) }
@@ -53,7 +53,7 @@ class TitaniaController(private val titaniaService: TitaniaService) {
     @ExceptionHandler(value = [TitaniaException::class])
     fun titaniaExceptionHandler(
         ex: TitaniaException,
-        req: HttpServletRequest
+        req: HttpServletRequest,
     ): ResponseEntity<TitaniaErrorResponse> {
         val message = "${ex.status.name} (${ex.message})"
         when (ex.status.series()) {

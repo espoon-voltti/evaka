@@ -73,7 +73,7 @@ internal val IGNORED_EVENT_CODES =
         ".",
         "*",
         "@",
-        "<"
+        "<",
     )
 
 // from updateWorkingTimeEvents.wsdl, version 1.2 25.8.2020 & getStampedWorkingTimeEvents.wsdl,
@@ -87,7 +87,7 @@ data class TitaniaPeriod(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TITANIA_DATE_FORMAT)
     val beginDate: LocalDate,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = TITANIA_DATE_FORMAT)
-    val endDate: LocalDate
+    val endDate: LocalDate,
 ) {
     fun toDateRange() = FiniteDateRange(beginDate, endDate)
 
@@ -112,7 +112,7 @@ enum class TitaniaPayrollItemType {
     TIME,
 
     /** Rahana korvattavat */
-    MONEY
+    MONEY,
 }
 
 enum class TitaniaPayrollItemUnit {
@@ -120,19 +120,19 @@ enum class TitaniaPayrollItemUnit {
     MINUTE,
 
     /** Kappaleet */
-    QUANTITY
+    QUANTITY,
 }
 
 data class UpdateWorkingTimeEventsRequest(
     val organisation: TitaniaCode? = null,
     val period: TitaniaPeriod,
-    val schedulingUnit: List<TitaniaSchedulingUnit>
+    val schedulingUnit: List<TitaniaSchedulingUnit>,
 )
 
 data class TitaniaSchedulingUnit(
     val code: String,
     val name: String? = null,
-    val occupation: List<TitaniaOccupation>
+    val occupation: List<TitaniaOccupation>,
 )
 
 data class TitaniaOccupation(val code: String, val name: String, val person: List<TitaniaPerson>)
@@ -142,7 +142,7 @@ data class TitaniaPerson(
     val employeeId: String, // optional in the schema, but required for us
     val name: String,
     val actualWorkingTimeEvents: TitaniaWorkingTimeEvents,
-    val payrollItems: TitaniaPayrollItems? = null
+    val payrollItems: TitaniaPayrollItems? = null,
 ) {
     fun firstName() = name.indexOf(' ').let { if (it == -1) "" else name.substring(it + 1) }
 
@@ -162,7 +162,7 @@ data class TitaniaWorkingTimeEvent(
     val operativeUnit: TitaniaCodeName? = null,
     val project: TitaniaCodeName? = null,
     val eventType: TitaniaCodeName? = null,
-    val eventKind: TitaniaCodeName? = null
+    val eventKind: TitaniaCodeName? = null,
 )
 
 data class TitaniaPayrollItems(val item: List<TitaniaPayrollItem>)
@@ -172,7 +172,7 @@ data class TitaniaPayrollItem(
     val type: TitaniaPayrollItemType,
     val name: String? = null,
     val value: String,
-    val unit: TitaniaPayrollItemUnit
+    val unit: TitaniaPayrollItemUnit,
 )
 
 data class UpdateWorkingTimeEventsResponse(val message: String) {
@@ -183,25 +183,25 @@ data class UpdateWorkingTimeEventsResponse(val message: String) {
 
 data class UpdateWorkingTimeEventsServiceResponse(
     val updateWorkingTimeEventsResponse: UpdateWorkingTimeEventsResponse,
-    val createdEmployees: List<EmployeeId>
+    val createdEmployees: List<EmployeeId>,
 )
 
 data class GetStampedWorkingTimeEventsRequest(
     val organisation: TitaniaCode? = null,
     val period: TitaniaPeriod,
-    val schedulingUnit: List<TitaniaStampedUnitRequest>
+    val schedulingUnit: List<TitaniaStampedUnitRequest>,
 )
 
 data class TitaniaStampedUnitRequest(
     val code: String,
     val name: String? = null,
-    val person: List<TitaniaStampedPersonRequest>
+    val person: List<TitaniaStampedPersonRequest>,
 )
 
 // also includes ssn, but we cannot use it so just drop it
 data class TitaniaStampedPersonRequest(
     val employeeId: String, // optional in the schema, but required for us
-    val name: String? = null
+    val name: String? = null,
 )
 
 data class GetStampedWorkingTimeEventsResponse(
@@ -211,14 +211,14 @@ data class GetStampedWorkingTimeEventsResponse(
 data class TitaniaStampedUnitResponse(
     val code: String,
     val name: String? = null,
-    val person: List<TitaniaStampedPersonResponse>
+    val person: List<TitaniaStampedPersonResponse>,
 )
 
 // also includes ssn, but we cannot use it so just drop it
 data class TitaniaStampedPersonResponse(
     val employeeId: String, // optional in the schema, but required for us
     val name: String,
-    val stampedWorkingTimeEvents: TitaniaStampedWorkingTimeEvents
+    val stampedWorkingTimeEvents: TitaniaStampedWorkingTimeEvents,
 )
 
 data class TitaniaStampedWorkingTimeEvents(val event: List<TitaniaStampedWorkingTimeEvent>)
@@ -228,7 +228,7 @@ data class TitaniaStampedWorkingTimeEvent(
     val beginTime: String? = null,
     val beginReasonCode: String? = null,
     val endTime: String? = null,
-    val endReasonCode: String? = null
+    val endReasonCode: String? = null,
 )
 
 data class TitaniaException(val status: HttpStatus, val detail: List<TitaniaErrorDetail>) :
@@ -246,7 +246,7 @@ data class TitaniaErrorResponse(
     val faultcode: String = "Server",
     val faultstring: String = "multiple",
     val faultactor: String,
-    val detail: List<TitaniaErrorDetail>
+    val detail: List<TitaniaErrorDetail>,
 )
 
 enum class TitaniaError(val status: HttpStatus) {

@@ -48,11 +48,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class CalendarEventController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @GetMapping(
         "/units/{unitId}/calendar-events", // deprecated
-        "/employee/units/{unitId}/calendar-events"
+        "/employee/units/{unitId}/calendar-events",
     )
     fun getUnitCalendarEvents(
         db: Database,
@@ -60,7 +60,7 @@ class CalendarEventController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
     ): List<CalendarEvent> {
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -79,7 +79,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Unit.READ_CALENDAR_EVENTS,
-                        unitId
+                        unitId,
                     )
                     tx.getCalendarEventsByUnit(unitId, range)
                 }
@@ -87,21 +87,21 @@ class CalendarEventController(
             .also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size),
                 )
             }
     }
 
     @GetMapping(
         "/units/{unitId}/groups/{groupId}/discussion-surveys", // deprecated
-        "/employee/units/{unitId}/groups/{groupId}/discussion-surveys"
+        "/employee/units/{unitId}/groups/{groupId}/discussion-surveys",
     )
     fun getGroupDiscussionSurveys(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ): List<CalendarEvent> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -110,25 +110,25 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Unit.READ_CALENDAR_EVENTS,
-                        unitId
+                        unitId,
                     )
                     tx.getCalendarEventsByGroupAndType(
                         groupId,
-                        listOf(CalendarEventType.DISCUSSION_SURVEY)
+                        listOf(CalendarEventType.DISCUSSION_SURVEY),
                     )
                 }
             }
             .also {
                 Audit.GroupCalendarEventsRead.log(
                     targetId = AuditId(groupId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @GetMapping(
         "/units/{unitId}/groups/{groupId}/discussion-reservation-days", // deprecated
-        "/employee/units/{unitId}/groups/{groupId}/discussion-reservation-days"
+        "/employee/units/{unitId}/groups/{groupId}/discussion-reservation-days",
     )
     fun getGroupDiscussionReservationDays(
         db: Database,
@@ -137,7 +137,7 @@ class CalendarEventController(
         @PathVariable unitId: DaycareId,
         @PathVariable groupId: GroupId,
         @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
     ): Set<DiscussionReservationDay> {
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -152,7 +152,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Unit.READ_CALENDAR_EVENTS,
-                        unitId
+                        unitId,
                     )
 
                     val holidays = tx.getHolidays(range)
@@ -179,7 +179,7 @@ class CalendarEventController(
                                         }
                                         .toSet(),
                                 isHoliday = holidays.contains(day),
-                                isOperationalDay = unitOperationDays.contains(day.dayOfWeek.value)
+                                isOperationalDay = unitOperationDays.contains(day.dayOfWeek.value),
                             )
                         }
                         .toSet()
@@ -188,20 +188,20 @@ class CalendarEventController(
             .also {
                 Audit.GroupDiscussionReservationCalendarDaysRead.log(
                     targetId = AuditId(groupId),
-                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size),
                 )
             }
     }
 
     @PostMapping(
         "/calendar-event", // deprecated
-        "/employee/calendar-event"
+        "/employee/calendar-event",
     )
     fun createCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventForm
+        @RequestBody body: CalendarEventForm,
     ): CalendarEventId {
         val eventId =
             db.connect { dbc ->
@@ -211,7 +211,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Unit.CREATE_CALENDAR_EVENT,
-                        body.unitId
+                        body.unitId,
                     )
 
                     if (body.tree != null) {
@@ -220,7 +220,7 @@ class CalendarEventController(
                             user,
                             clock,
                             Action.Group.CREATE_CALENDAR_EVENT,
-                            body.tree.keys
+                            body.tree.keys,
                         )
 
                         val unitGroupIds =
@@ -242,7 +242,7 @@ class CalendarEventController(
                                     tx.getBackupCareChildrenInGroup(
                                         body.unitId,
                                         groupId,
-                                        body.period
+                                        body.period,
                                     )
 
                                 if (
@@ -266,13 +266,13 @@ class CalendarEventController(
 
     @GetMapping(
         "/calendar-event/{id}", // deprecated
-        "/employee/calendar-event/{id}"
+        "/employee/calendar-event/{id}",
     )
     fun getCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: CalendarEventId
+        @PathVariable id: CalendarEventId,
     ): CalendarEvent {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -281,7 +281,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEvent.READ,
-                        id
+                        id,
                     )
                     tx.getCalendarEventById(id) ?: throw NotFound()
                 }
@@ -291,13 +291,13 @@ class CalendarEventController(
 
     @DeleteMapping(
         "/calendar-event/{id}", // deprecated
-        "/employee/calendar-event/{id}"
+        "/employee/calendar-event/{id}",
     )
     fun deleteCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: CalendarEventId
+        @PathVariable id: CalendarEventId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -306,7 +306,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEvent.DELETE,
-                        id
+                        id,
                     )
                     tx.deleteCalendarEvent(id)
                 }
@@ -316,14 +316,14 @@ class CalendarEventController(
 
     @PatchMapping(
         "/calendar-event/{id}", // deprecated
-        "/employee/calendar-event/{id}"
+        "/employee/calendar-event/{id}",
     )
     fun modifyCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
-        @RequestBody body: CalendarEventUpdateForm
+        @RequestBody body: CalendarEventUpdateForm,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -332,7 +332,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEvent.UPDATE,
-                        id
+                        id,
                     )
                     tx.updateCalendarEvent(id, clock.now(), body)
                 }
@@ -342,14 +342,14 @@ class CalendarEventController(
 
     @PutMapping(
         "/calendar-event/{id}", // deprecated
-        "/employee/calendar-event/{id}"
+        "/employee/calendar-event/{id}",
     )
     fun updateCalendarEvent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
-        @RequestBody body: CalendarEventUpdateForm
+        @RequestBody body: CalendarEventUpdateForm,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -358,7 +358,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEvent.UPDATE,
-                        id
+                        id,
                     )
                     val event = tx.getCalendarEventById(id) ?: throw NotFound()
                     val current = tx.getCalendarEventChildIds(event.id)
@@ -367,7 +367,7 @@ class CalendarEventController(
                     removed.forEach { childId ->
                         tx.deleteCalendarEventTimeReservations(
                             calendarEventId = event.id,
-                            childId = childId
+                            childId = childId,
                         )
                     }
                     tx.updateCalendarEvent(id, clock.now(), body)
@@ -380,14 +380,14 @@ class CalendarEventController(
 
     @PostMapping(
         "/calendar-event/{id}/time", // deprecated
-        "/employee/calendar-event/{id}/time"
+        "/employee/calendar-event/{id}/time",
     )
     fun addCalendarEventTime(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: CalendarEventId,
-        @RequestBody body: CalendarEventTimeForm
+        @RequestBody body: CalendarEventTimeForm,
     ): CalendarEventTimeId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -396,7 +396,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEvent.UPDATE,
-                        id
+                        id,
                     )
                     val associatedEvent = tx.getCalendarEventById(id)
                     if (
@@ -413,7 +413,7 @@ class CalendarEventController(
                     tx.updateCalendarEventPeriod(
                         eventId = id,
                         modifiedAt = clock.now(),
-                        period = getPeriodOfTimes(updatedEvent.times, clock.today())
+                        period = getPeriodOfTimes(updatedEvent.times, clock.today()),
                     )
                     cetId
                 }
@@ -423,13 +423,13 @@ class CalendarEventController(
 
     @DeleteMapping(
         "/calendar-event-time/{id}", // deprecated
-        "/employee/calendar-event-time/{id}"
+        "/employee/calendar-event-time/{id}",
     )
     fun deleteCalendarEventTime(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: CalendarEventTimeId
+        @PathVariable id: CalendarEventTimeId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -438,7 +438,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEventTime.DELETE,
-                        id
+                        id,
                     )
 
                     val preUpdateEventTimeDetails =
@@ -458,7 +458,7 @@ class CalendarEventController(
                     tx.updateCalendarEventPeriod(
                         eventId = calendarEventId,
                         modifiedAt = clock.now(),
-                        period = getPeriodOfTimes(associatedEvent.times, clock.today())
+                        period = getPeriodOfTimes(associatedEvent.times, clock.today()),
                     )
 
                     if (preUpdateEventTimeDetails.eventTime.childId != null) {
@@ -473,10 +473,10 @@ class CalendarEventController(
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
                                     unitName = preUpdateEventTimeDetails.unitName,
-                                    recipientId = it.id
+                                    recipientId = it.id,
                                 )
                             },
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -486,13 +486,13 @@ class CalendarEventController(
 
     @PostMapping(
         "/calendar-event/reservation", // deprecated
-        "/employee/calendar-event/reservation"
+        "/employee/calendar-event/reservation",
     )
     fun setCalendarEventTimeReservation(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventTimeEmployeeReservationForm
+        @RequestBody body: CalendarEventTimeEmployeeReservationForm,
     ) {
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -501,12 +501,12 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.CalendarEventTime.UPDATE_RESERVATION,
-                        body.calendarEventTimeId
+                        body.calendarEventTimeId,
                     )
                     validate(
                         tx = tx,
                         eventTimeId = body.calendarEventTimeId,
-                        childId = body.childId
+                        childId = body.childId,
                     )
                     val preUpdateEventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
@@ -520,7 +520,7 @@ class CalendarEventController(
                             eventTimeId = body.calendarEventTimeId,
                             childId = body.childId,
                             modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId
+                            modifiedBy = user.evakaUserId,
                         )
 
                         if (body.childId != preUpdateEventTimeDetails.eventTime.childId) {
@@ -533,10 +533,10 @@ class CalendarEventController(
                                         language = Language.fi,
                                         calendarEventTime = preUpdateEventTimeDetails.eventTime,
                                         unitName = preUpdateEventTimeDetails.unitName,
-                                        recipientId = it.id
+                                        recipientId = it.id,
                                     )
                                 },
-                                runAt = clock.now()
+                                runAt = clock.now(),
                             )
                         }
                     }
@@ -555,17 +555,17 @@ class CalendarEventController(
                                     language = Language.fi,
                                     calendarEventTime = preUpdateEventTimeDetails.eventTime,
                                     unitName = preUpdateEventTimeDetails.unitName,
-                                    recipientId = it.id
+                                    recipientId = it.id,
                                 )
                             },
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
                 .also {
                     Audit.CalendarEventTimeReservationUpdate.log(
                         targetId = AuditId(body.calendarEventTimeId),
-                        objectId = body.childId?.let(AuditId::invoke)
+                        objectId = body.childId?.let(AuditId::invoke),
                     )
                 }
         }
@@ -577,7 +577,7 @@ class CalendarEventController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
     ): List<CitizenCalendarEvent> {
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -595,7 +595,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Citizen.Person.READ_CALENDAR_EVENTS,
-                        user.id
+                        user.id,
                     )
                     val daycareEvents = tx.getDaycareEventsForGuardian(user.id, range)
                     val discussionEvents = tx.getDiscussionSurveysForGuardian(user.id, range)
@@ -623,11 +623,11 @@ class CalendarEventController(
                                                             periods = attendance.map { it.period },
                                                             type = t.first,
                                                             groupName = attendance[0].groupName,
-                                                            unitName = attendance[0].unitName
+                                                            unitName = attendance[0].unitName,
                                                         )
                                                     }
                                             },
-                                    timesByChild = emptyMap()
+                                    timesByChild = emptyMap(),
                                 )
                             }
                     val discussionEventResults =
@@ -656,7 +656,7 @@ class CalendarEventController(
                                                                     .distinct(),
                                                             type = t.first,
                                                             groupName = attendance[0].groupName,
-                                                            unitName = attendance[0].unitName
+                                                            unitName = attendance[0].unitName,
                                                         )
                                                     }
                                             },
@@ -677,7 +677,7 @@ class CalendarEventController(
                                                                     getManipulationWindowStart(
                                                                         today
                                                                     )
-                                                                )
+                                                                ),
                                                         )
                                                     }
                                             }
@@ -690,7 +690,7 @@ class CalendarEventController(
             .also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size),
                 )
             }
     }
@@ -701,7 +701,7 @@ class CalendarEventController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable eventId: CalendarEventId,
-        @RequestParam childId: ChildId
+        @RequestParam childId: ChildId,
     ): List<CalendarEventTime> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -710,7 +710,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Citizen.CalendarEvent.READ,
-                        eventId
+                        eventId,
                     )
                     tx.getReservableCalendarEventTimes(eventId, childId)
                 }
@@ -718,7 +718,7 @@ class CalendarEventController(
             .also {
                 Audit.CalendarEventTimeRead.log(
                     targetId = AuditId(eventId),
-                    objectId = AuditId(childId)
+                    objectId = AuditId(childId),
                 )
             }
     }
@@ -728,7 +728,7 @@ class CalendarEventController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CalendarEventTimeCitizenReservationForm
+        @RequestBody body: CalendarEventTimeCitizenReservationForm,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -737,12 +737,12 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
-                        body.childId
+                        body.childId,
                     )
                     validate(
                         tx = tx,
                         eventTimeId = body.calendarEventTimeId,
-                        childId = body.childId
+                        childId = body.childId,
                     )
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
@@ -753,12 +753,12 @@ class CalendarEventController(
                             eventTimeId = body.calendarEventTimeId,
                             childId = body.childId,
                             modifiedAt = clock.now(),
-                            modifiedBy = user.evakaUserId
+                            modifiedBy = user.evakaUserId,
                         )
                     if (count != 1) {
                         throw Conflict(
                             "Calendar event time already reserved",
-                            errorCode = "TIME_ALREADY_RESERVED"
+                            errorCode = "TIME_ALREADY_RESERVED",
                         )
                     }
 
@@ -775,10 +775,10 @@ class CalendarEventController(
                                     language = Language.fi,
                                     calendarEventTime = finalEventTime,
                                     unitName = eventTimeDetails.unitName,
-                                    recipientId = it.id
+                                    recipientId = it.id,
                                 )
                             },
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -786,7 +786,7 @@ class CalendarEventController(
             .also {
                 Audit.CalendarEventTimeReservationCreate.log(
                     targetId = AuditId(body.calendarEventTimeId),
-                    objectId = AuditId(body.childId)
+                    objectId = AuditId(body.childId),
                 )
             }
     }
@@ -797,7 +797,7 @@ class CalendarEventController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam calendarEventTimeId: CalendarEventTimeId,
-        @RequestParam childId: ChildId
+        @RequestParam childId: ChildId,
     ) {
         val body = CalendarEventTimeCitizenReservationForm(calendarEventTimeId, childId)
         db.connect { dbc ->
@@ -807,7 +807,7 @@ class CalendarEventController(
                         user,
                         clock,
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
-                        body.childId
+                        body.childId,
                     )
                     val eventTimeDetails =
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
@@ -823,17 +823,17 @@ class CalendarEventController(
                                 language = Language.fi,
                                 calendarEventTime = eventTimeDetails.eventTime,
                                 unitName = eventTimeDetails.unitName,
-                                recipientId = it.id
+                                recipientId = it.id,
                             )
                         },
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                 }
             }
             .also {
                 Audit.CalendarEventTimeReservationDelete.log(
                     targetId = AuditId(body.calendarEventTimeId),
-                    objectId = AuditId(body.childId)
+                    objectId = AuditId(body.childId),
                 )
             }
     }
@@ -853,7 +853,7 @@ private fun resolveAttendeeChildIds(
     tx: Database.Read,
     unitId: DaycareId,
     tree: Map<GroupId, Set<ChildId>?>?,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ChildId> {
     return tree?.flatMap {
         if (it.value != null) it.value!!.toList() else tx.getGroupPlacementChildren(it.key, range)
@@ -862,14 +862,14 @@ private fun resolveAttendeeChildIds(
                 daycareId = unitId,
                 childId = null,
                 startDate = range.start,
-                endDate = range.end
+                endDate = range.end,
             )
             .map { placement -> placement.child.id }
 }
 
 private fun getPeriodOfTimes(
     dateList: Set<CalendarEventTime>,
-    default: LocalDate
+    default: LocalDate,
 ): FiniteDateRange {
     val minDate = dateList.minOfOrNull { it.date }
     val maxDate = dateList.maxOfOrNull { it.date }

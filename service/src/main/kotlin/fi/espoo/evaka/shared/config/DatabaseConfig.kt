@@ -62,7 +62,7 @@ class DatabaseConfig {
                 poolName = "evaka-service"
                 addDataSourceProperty(
                     "socketTimeout",
-                    TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt()
+                    TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt(),
                 )
             }
         )

@@ -53,20 +53,26 @@ class DateTimeMap<T> private constructor(entries: List<Pair<HelsinkiDateTimeRang
         private val EMPTY: DateTimeMap<*> = DateTimeMap<Any>(emptyList())
 
         fun <T> empty(): DateTimeMap<T> {
-            @Suppress("UNCHECKED_CAST") return EMPTY as DateTimeMap<T>
+            @Suppress("UNCHECKED_CAST")
+            return EMPTY as DateTimeMap<T>
         }
+
         /** Returns a new datetime map containing all the given entries */
         fun <T> of(vararg ranges: Pair<HelsinkiDateTimeRange, T>): DateTimeMap<T> =
             empty<T>().setAll(ranges.asSequence())
+
         /** Returns a new datetime map containing all the given ranges mapped to the given value. */
         fun <T> of(ranges: Iterable<HelsinkiDateTimeRange>, value: T): DateTimeMap<T> =
             empty<T>().setAll(ranges.asSequence().map { it to value })
+
         /** Returns a new datetime map containing all the given ranges mapped to the given value. */
         fun <T> of(ranges: Sequence<HelsinkiDateTimeRange>, value: T): DateTimeMap<T> =
             empty<T>().setAll(ranges.map { it to value })
+
         /** Returns a new datetime map containing all the given entries */
         fun <T> of(ranges: Iterable<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> =
             empty<T>().setAll(ranges.asSequence())
+
         /** Returns a new datetime map containing all the given entries */
         fun <T> of(ranges: Sequence<Pair<HelsinkiDateTimeRange, T>>): DateTimeMap<T> =
             empty<T>().setAll(ranges)

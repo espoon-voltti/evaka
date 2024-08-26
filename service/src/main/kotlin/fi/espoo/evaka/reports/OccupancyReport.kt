@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 class OccupancyReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/occupancy-by-unit", // deprecated
-        "/employee/reports/occupancy-by-unit"
+        "/employee/reports/occupancy-by-unit",
     )
     fun getOccupancyUnitReport(
         db: Database,
@@ -42,7 +42,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         @RequestParam providerType: ProviderType?,
         @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<OccupancyUnitReportResultRow> {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -54,7 +54,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             tx,
                             user,
                             clock,
-                            Action.Unit.READ_OCCUPANCY_REPORT
+                            Action.Unit.READ_OCCUPANCY_REPORT,
                         )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.calculateUnitOccupancyReport(
@@ -64,7 +64,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                         unitTypes,
                         FiniteDateRange(from, to),
                         type,
-                        filter
+                        filter,
                     )
                 }
             }
@@ -77,7 +77,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             "unitTypes" to unitTypes,
                             "year" to year,
                             "month" to month,
-                            "count" to it.size
+                            "count" to it.size,
                         )
                 )
             }
@@ -85,7 +85,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/reports/occupancy-by-group", // deprecated
-        "/employee/reports/occupancy-by-group"
+        "/employee/reports/occupancy-by-group",
     )
     fun getOccupancyGroupReport(
         db: Database,
@@ -96,7 +96,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
         @RequestParam providerType: ProviderType?,
         @RequestParam unitTypes: Set<CareType>?,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<OccupancyGroupReportResultRow> {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -108,7 +108,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             tx,
                             user,
                             clock,
-                            Action.Unit.READ_OCCUPANCY_REPORT
+                            Action.Unit.READ_OCCUPANCY_REPORT,
                         )
                     tx.calculateGroupOccupancyReport(
                         clock.today(),
@@ -117,7 +117,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                         unitTypes,
                         FiniteDateRange(from, to),
                         type,
-                        filter
+                        filter,
                     )
                 }
             }
@@ -130,7 +130,7 @@ class OccupancyReportController(private val accessControl: AccessControl) {
                             "unitTypes" to unitTypes,
                             "year" to year,
                             "month" to month,
-                            "count" to it.size
+                            "count" to it.size,
                         )
                 )
             }
@@ -142,7 +142,7 @@ data class OccupancyUnitReportResultRow(
     val areaName: String,
     val unitId: DaycareId,
     val unitName: String,
-    val occupancies: Map<LocalDate, OccupancyValues>
+    val occupancies: Map<LocalDate, OccupancyValues>,
 )
 
 data class OccupancyGroupReportResultRow(
@@ -152,7 +152,7 @@ data class OccupancyGroupReportResultRow(
     val unitName: String,
     val groupId: GroupId,
     val groupName: String,
-    val occupancies: Map<LocalDate, OccupancyValues>
+    val occupancies: Map<LocalDate, OccupancyValues>,
 )
 
 private fun Database.Read.calculateUnitOccupancyReport(
@@ -162,7 +162,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<OccupancyUnitReportResultRow> {
     return calculateDailyUnitOccupancyValues(
             today,
@@ -171,7 +171,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
             unitFilter,
             areaId = areaId,
             providerType = providerType,
-            unitTypes = unitTypes
+            unitTypes = unitTypes,
         )
         .map { (key, occupancies) ->
             OccupancyUnitReportResultRow(
@@ -179,7 +179,7 @@ private fun Database.Read.calculateUnitOccupancyReport(
                 areaName = key.areaName,
                 unitId = key.unitId,
                 unitName = key.unitName,
-                occupancies = occupancies
+                occupancies = occupancies,
             )
         }
         .sortedWith(compareBy({ it.areaName }, { it.unitName }))
@@ -192,7 +192,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<OccupancyGroupReportResultRow> {
     if (type == OccupancyType.PLANNED)
         throw BadRequest("Unable to calculate planned occupancy at group level")
@@ -204,7 +204,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
             unitFilter,
             areaId = areaId,
             providerType = providerType,
-            unitTypes = unitTypes
+            unitTypes = unitTypes,
         )
         .map { (key, occupancies) ->
             OccupancyGroupReportResultRow(
@@ -214,7 +214,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
                 unitName = key.unitName,
                 groupId = key.groupId,
                 groupName = key.groupName,
-                occupancies = occupancies
+                occupancies = occupancies,
             )
         }
         .sortedWith(compareBy({ it.areaName }, { it.unitName }))

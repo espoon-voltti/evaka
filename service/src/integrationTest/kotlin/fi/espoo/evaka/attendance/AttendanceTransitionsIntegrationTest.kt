@@ -107,7 +107,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         givenChildAbsent(
             AbsenceType.UNKNOWN_ABSENCE,
             AbsenceCategory.BILLABLE,
-            AbsenceCategory.NONBILLABLE
+            AbsenceCategory.NONBILLABLE,
         )
 
         returnToComing()
@@ -122,11 +122,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30))
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30)),
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45))
+            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45)),
         )
         assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 20)))
     }
@@ -139,7 +139,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20))
+            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20)),
         )
     }
 
@@ -151,7 +151,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(
             setOf(AbsenceCategory.NONBILLABLE),
-            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45))
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45)),
         )
         assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 0)))
     }
@@ -183,7 +183,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
         )
         assertTrue(child.absences.isEmpty())
     }
@@ -202,7 +202,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
         )
         assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
@@ -221,7 +221,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
         )
         assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
@@ -240,11 +240,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
-            child.absences.map { it.category }.toSet()
+            child.absences.map { it.category }.toSet(),
         )
     }
 
@@ -303,7 +303,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = mockClock.now().minusDays(1).minusHours(1),
-                departed = mockClock.now().minusDays(1).minusMinutes(1)
+                departed = mockClock.now().minusDays(1).minusMinutes(1),
             )
         }
         givenChildPlacement(PlacementType.PRESCHOOL)
@@ -327,7 +327,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
-            child.absences.map { it.category }.toSet()
+            child.absences.map { it.category }.toSet(),
         )
     }
 
@@ -354,7 +354,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
-            child.absences.map { it.category }.toSet()
+            child.absences.map { it.category }.toSet(),
         )
     }
 
@@ -424,7 +424,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
             tx.insert(
@@ -432,7 +432,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     daycarePlacementId = daycarePlacementId,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -448,14 +448,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun givenChildPresent(
         arrived: LocalTime = roundedNow.minusHours(1),
-        date: LocalDate = mockClock.today()
+        date: LocalDate = mockClock.today(),
     ) {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = HelsinkiDateTime.of(date, arrived),
-                departed = null
+                departed = null,
             )
         }
         val child = expectOneAttendanceStatus()
@@ -464,14 +464,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun givenChildDeparted(
         arrived: LocalTime = roundedNow.minusHours(1),
-        departed: LocalTime = roundedNow.minusMinutes(10)
+        departed: LocalTime = roundedNow.minusMinutes(10),
     ) {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = mockClock.now().withTime(arrived),
-                departed = mockClock.now().withTime(departed)
+                departed = mockClock.now().withTime(departed),
             )
         }
         val child = expectOneAttendanceStatus()
@@ -486,7 +486,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                         childId = testChild_1.id,
                         date = LocalDate.now(),
                         absenceType = absenceType,
-                        absenceCategory = category
+                        absenceCategory = category,
                     )
                 )
             }
@@ -498,7 +498,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             dbInstance(),
             mobileUser,
             mockClock,
-            testDaycare.id
+            testDaycare.id,
         )
 
     private fun expectOneAttendanceStatus():
@@ -520,7 +520,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mockClock,
             testDaycare.id,
             testChild_1.id,
-            ChildAttendanceController.ArrivalRequest(arrived)
+            ChildAttendanceController.ArrivalRequest(arrived),
         )
     }
 
@@ -530,7 +530,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mobileUser,
             mockClock,
             testDaycare.id,
-            testChild_1.id
+            testChild_1.id,
         )
     }
 
@@ -542,7 +542,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 mockClock,
                 testDaycare.id,
                 testChild_1.id,
-                ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed)
+                ChildAttendanceController.ExpectedAbsencesOnDepartureRequest(departed),
             )
             .categories
     }
@@ -550,7 +550,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private fun markDeparted(
         departed: LocalTime,
         absenceTypeNonbillable: AbsenceType?,
-        absenceTypeBillable: AbsenceType?
+        absenceTypeBillable: AbsenceType?,
     ) {
         childAttendanceController.postDeparture(
             dbInstance(),
@@ -561,8 +561,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             ChildAttendanceController.DepartureRequest(
                 departed = departed,
                 absenceTypeNonbillable = absenceTypeNonbillable,
-                absenceTypeBillable = absenceTypeBillable
-            )
+                absenceTypeBillable = absenceTypeBillable,
+            ),
         )
     }
 
@@ -572,7 +572,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mobileUser,
             mockClock,
             testDaycare.id,
-            testChild_1.id
+            testChild_1.id,
         )
     }
 
@@ -583,7 +583,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mockClock,
             testDaycare.id,
             testChild_1.id,
-            ChildAttendanceController.FullDayAbsenceRequest(absenceType)
+            ChildAttendanceController.FullDayAbsenceRequest(absenceType),
         )
     }
 }

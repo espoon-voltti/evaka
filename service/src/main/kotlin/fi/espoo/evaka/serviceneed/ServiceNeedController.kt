@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ServiceNeedController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     data class ServiceNeedCreateRequest(
@@ -41,18 +41,18 @@ class ServiceNeedController(
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
         val shiftCare: ShiftCareType,
-        val partWeek: Boolean
+        val partWeek: Boolean,
     )
 
     @PostMapping(
         "/service-needs", // deprecated
-        "/employee/service-needs"
+        "/employee/service-needs",
     )
     fun postServiceNeed(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ServiceNeedCreateRequest
+        @RequestBody body: ServiceNeedCreateRequest,
     ) {
         val serviceNeedId =
             db.connect { dbc ->
@@ -62,7 +62,7 @@ class ServiceNeedController(
                         user,
                         clock,
                         Action.Placement.CREATE_SERVICE_NEED,
-                        body.placementId
+                        body.placementId,
                     )
 
                     createServiceNeed(
@@ -74,7 +74,7 @@ class ServiceNeedController(
                             optionId = body.optionId,
                             shiftCare = body.shiftCare,
                             partWeek = body.partWeek,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                         .also { id ->
                             val range = tx.getServiceNeedChildRange(id)
@@ -84,7 +84,7 @@ class ServiceNeedController(
             }
         Audit.PlacementServiceNeedCreate.log(
             targetId = AuditId(body.placementId),
-            objectId = AuditId(serviceNeedId)
+            objectId = AuditId(serviceNeedId),
         )
     }
 
@@ -93,19 +93,19 @@ class ServiceNeedController(
         val endDate: LocalDate,
         val optionId: ServiceNeedOptionId,
         val shiftCare: ShiftCareType,
-        val partWeek: Boolean
+        val partWeek: Boolean,
     )
 
     @PutMapping(
         "/service-needs/{id}", // deprecated
-        "/employee/service-needs/{id}"
+        "/employee/service-needs/{id}",
     )
     fun putServiceNeed(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId,
-        @RequestBody body: ServiceNeedUpdateRequest
+        @RequestBody body: ServiceNeedUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -121,7 +121,7 @@ class ServiceNeedController(
                     optionId = body.optionId,
                     shiftCare = body.shiftCare,
                     partWeek = body.partWeek,
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
                 notifyServiceNeedUpdated(
                     tx,
@@ -132,9 +132,9 @@ class ServiceNeedController(
                         dateRange =
                             FiniteDateRange(
                                 minOf(oldRange.dateRange.start, body.startDate),
-                                maxOf(oldRange.dateRange.end, body.endDate)
-                            )
-                    )
+                                maxOf(oldRange.dateRange.end, body.endDate),
+                            ),
+                    ),
                 )
             }
         }
@@ -146,7 +146,7 @@ class ServiceNeedController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ServiceNeedId
+        @PathVariable id: ServiceNeedId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -162,12 +162,12 @@ class ServiceNeedController(
 
     @GetMapping(
         "/service-needs/options", // deprecated
-        "/employee/service-needs/options"
+        "/employee/service-needs/options",
     )
     fun getServiceNeedOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ServiceNeedOption> {
         return db.connect { dbc ->
                 dbc.read {
@@ -175,7 +175,7 @@ class ServiceNeedController(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_SERVICE_NEED_OPTIONS
+                        Action.Global.READ_SERVICE_NEED_OPTIONS,
                     )
                     it.getServiceNeedOptions()
                 }
@@ -188,12 +188,12 @@ class ServiceNeedController(
             [
                 "/public/service-needs/options", // deprecated
                 "/citizen/public/service-needs/options",
-                "/employee/public/service-needs/options"
+                "/employee/public/service-needs/options",
             ]
     )
     fun getServiceNeedOptionPublicInfos(
         db: Database,
-        @RequestParam placementTypes: List<PlacementType> = emptyList()
+        @RequestParam placementTypes: List<PlacementType> = emptyList(),
     ): List<ServiceNeedOptionPublicInfo> {
         return db.connect { dbc -> dbc.read { it.getServiceNeedOptionPublicInfos(placementTypes) } }
     }

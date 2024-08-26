@@ -61,10 +61,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     Section(
                         id = "s1",
                         label = "Eka",
-                        questions =
-                            listOf(
-                                Question.TextQuestion(id = "q1", label = "kysymys 1"),
-                            )
+                        questions = listOf(Question.TextQuestion(id = "q1", label = "kysymys 1")),
                     )
                 )
         )
@@ -90,7 +87,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                    endDate = clock.today().plusDays(5),
                 )
             )
             tx.insert(
@@ -99,7 +96,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
                     name = "Pedagoginen arvio 2023",
                     validity = DateRange(clock.today(), clock.today()),
-                    content = templateContent
+                    content = templateContent,
                 )
             )
             tx.insert(
@@ -113,7 +110,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     modifiedAt = clock.now(),
                     contentModifiedAt = clock.now(),
                     contentModifiedBy = employeeUser.id,
-                    publishedAt = null
+                    publishedAt = null,
                 )
             )
         }
@@ -141,10 +138,10 @@ class ChildDocumentControllerCitizenIntegrationTest :
                     publishedAt = clock.now(),
                     templateName = "Pedagoginen arvio 2023",
                     status = DocumentStatus.DRAFT,
-                    unread = true
+                    unread = true,
                 )
             ),
-            getDocumentsByChild(testChild_1.id)
+            getDocumentsByChild(testChild_1.id),
         )
         assertEquals(
             ChildDocumentCitizenDetails(
@@ -158,11 +155,11 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         id = testChild_1.id,
                         firstName = testChild_1.firstName,
                         lastName = testChild_1.lastName,
-                        dateOfBirth = testChild_1.dateOfBirth
+                        dateOfBirth = testChild_1.dateOfBirth,
                     ),
-                template = template
+                template = template,
             ),
-            getDocument(documentId)
+            getDocument(documentId),
         )
 
         putDocumentRead(documentId)

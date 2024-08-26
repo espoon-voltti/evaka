@@ -21,14 +21,14 @@ private val logger = KotlinLogging.logger {}
 class ApplicationReceivedEmailService(
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     fun sendApplicationEmail(
         dbc: Database.Connection,
         personId: PersonId,
         language: Language,
         type: ApplicationType,
-        sentWithinPreschoolApplicationPeriod: Boolean? = null
+        sentWithinPreschoolApplicationPeriod: Boolean? = null,
     ) {
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content =
@@ -38,7 +38,7 @@ class ApplicationReceivedEmailService(
                 ApplicationType.PRESCHOOL ->
                     emailMessageProvider.preschoolApplicationReceived(
                         language,
-                        sentWithinPreschoolApplicationPeriod!!
+                        sentWithinPreschoolApplicationPeriod!!,
                     )
             }
         logger.info { "Sending application email (personId: $personId)" }
@@ -48,7 +48,7 @@ class ApplicationReceivedEmailService(
                 emailType = EmailMessageType.TRANSACTIONAL,
                 fromAddress = fromAddress,
                 content = content,
-                traceId = personId.toString()
+                traceId = personId.toString(),
             )
             ?.also { emailClient.send(it) }
     }

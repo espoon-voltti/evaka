@@ -89,7 +89,7 @@ class ScheduledJobRunner(
                 tx,
                 listOf(AsyncJob.RunScheduledJob(job.name)),
                 retryCount = settings.retryCount ?: ASYNC_JOB_RETRY_COUNT,
-                runAt = HelsinkiDateTime.now()
+                runAt = HelsinkiDateTime.now(),
             )
         }
     }

@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen")
 class AssistanceNeedPreschoolDecisionCitizenController(
     private val accessControl: AccessControl,
-    private val assistanceNeedDecisionService: AssistanceNeedPreschoolDecisionService
+    private val assistanceNeedDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
     @GetMapping("/assistance-need-preschool-decisions")
     fun getAssistanceNeedPreschoolDecisions(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<AssistanceNeedPreschoolDecisionCitizenListItem> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -39,7 +39,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.Person.READ_ASSISTANCE_NEED_PRESCHOOL_DECISIONS,
-                        user.id
+                        user.id,
                     )
 
                     tx.getAssistanceNeedPreschoolDecisionsForCitizen(clock.today(), user.id)
@@ -55,7 +55,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): AssistanceNeedPreschoolDecision {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -64,7 +64,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedPreschoolDecision.READ,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
@@ -85,7 +85,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read {
@@ -94,7 +94,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedPreschoolDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
@@ -111,7 +111,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -120,7 +120,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.AssistanceNeedPreschoolDecision.MARK_AS_READ,
-                        id
+                        id,
                     )
                     tx.markAssistanceNeedPreschoolDecisionAsReadByGuardian(id, user.id)
                 }
@@ -136,7 +136,7 @@ class AssistanceNeedPreschoolDecisionCitizenController(
     fun getAssistanceNeedPreschoolDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<UnreadAssistanceNeedDecisionItem> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -145,11 +145,11 @@ class AssistanceNeedPreschoolDecisionCitizenController(
                         user,
                         clock,
                         Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_PRESCHOOL_DECISION_COUNT,
-                        user.id
+                        user.id,
                     )
                     tx.getAssistanceNeedPreschoolDecisionsUnreadCountsForCitizen(
                         clock.today(),
-                        user.id
+                        user.id,
                     )
                 }
             }

@@ -28,12 +28,16 @@ class TimeSet private constructor(ranges: List<TimeRange>) :
 
     companion object {
         private val EMPTY = TimeSet(emptyList())
+
         /** Returns a empty datetime set */
         fun empty(): TimeSet = EMPTY
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(vararg ranges: TimeRange): TimeSet = empty().addAll(ranges.asSequence())
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(ranges: Iterable<TimeRange>): TimeSet = empty().addAll(ranges)
+
         /** Returns a new datetime set containing all the given ranges */
         fun of(ranges: Sequence<TimeRange>): TimeSet = empty().addAll(ranges)
     }

@@ -31,7 +31,7 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
             db.read {
                 it.createQuery { sql("SELECT date FROM holiday ORDER BY date") }.toList<LocalDate>()
-            }
+            },
         )
     }
 
@@ -50,7 +50,7 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(LocalDate.of(2020, 1, 1)),
             db.read {
                 it.createQuery { sql("SELECT date FROM holiday ORDER BY date") }.toList<LocalDate>()
-            }
+            },
         )
     }
 

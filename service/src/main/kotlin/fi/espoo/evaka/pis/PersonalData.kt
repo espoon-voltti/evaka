@@ -8,7 +8,7 @@ data class PersonalDataUpdate(
     val preferredName: String,
     val phone: String,
     val backupPhone: String,
-    val email: String
+    val email: String,
 )
 
 enum class EmailMessageType {
@@ -55,7 +55,7 @@ enum class EmailMessageType {
     MISSING_HOLIDAY_ATTENDANCE_RESERVATION_NOTIFICATION,
 
     /** Confirmation email for discussion time reservation */
-    DISCUSSION_TIME_RESERVATION_CONFIRMATION
+    DISCUSSION_TIME_RESERVATION_CONFIRMATION,
 }
 
 data class EmailNotificationSettings(
@@ -67,7 +67,7 @@ data class EmailNotificationSettings(
     val document: Boolean,
     val informalDocument: Boolean,
     val missingAttendanceReservation: Boolean,
-    val discussionTimeReservationConfirmation: Boolean
+    val discussionTimeReservationConfirmation: Boolean,
 ) {
     fun toNotificationTypes() =
         listOfNotNull(
@@ -84,7 +84,7 @@ data class EmailNotificationSettings(
             },
             EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION.takeIf {
                 discussionTimeReservationConfirmation
-            }
+            },
         )
 
     companion object {
@@ -100,7 +100,7 @@ data class EmailNotificationSettings(
                     document = true,
                     informalDocument = true,
                     missingAttendanceReservation = true,
-                    discussionTimeReservationConfirmation = true
+                    discussionTimeReservationConfirmation = true,
                 )
             } else {
                 EmailNotificationSettings(
@@ -119,7 +119,7 @@ data class EmailNotificationSettings(
                             enabledNotificationTypes,
                     discussionTimeReservationConfirmation =
                         EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION in
-                            enabledNotificationTypes
+                            enabledNotificationTypes,
                 )
             }
     }

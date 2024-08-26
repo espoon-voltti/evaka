@@ -44,7 +44,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
-            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
         )
     private val clock = RealEvakaClock()
 
@@ -78,7 +78,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val feeAlteration =
                 testFeeAlteration.copy(
                     validFrom = LocalDate.of(2000, 1, 1),
-                    validTo = LocalDate.of(1900, 1, 1)
+                    validTo = LocalDate.of(1900, 1, 1),
                 )
             assertThrows<BadRequest> { tx.upsertFeeAlteration(clock, feeAlteration) }
         }
@@ -125,8 +125,8 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(1),
-                        validTo = validTo!!.plusYears(1)
-                    )
+                        validTo = validTo!!.plusYears(1),
+                    ),
                 )
             }
             with(testFeeAlteration) {
@@ -135,8 +135,8 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(2),
-                        validTo = validTo!!.plusYears(2)
-                    )
+                        validTo = validTo!!.plusYears(2),
+                    ),
                 )
             }
 
@@ -180,7 +180,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(1),
-                        validTo = validTo!!.plusYears(1)
+                        validTo = validTo!!.plusYears(1),
                     )
                 }
             val thirdFeeAlteration =
@@ -188,7 +188,7 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     this.copy(
                         id = FeeAlterationId(UUID.randomUUID()),
                         validFrom = validFrom.plusYears(2),
-                        validTo = validTo!!.plusYears(2)
+                        validTo = validTo!!.plusYears(2),
                     )
                 }
 
@@ -216,14 +216,14 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
-                    validTo = testFeeAlteration.validTo!!.plusYears(1)
-                )
+                    validTo = testFeeAlteration.validTo!!.plusYears(1),
+                ),
             )
 
             val result =
                 tx.getFeeAlterationsFrom(
                     listOf(testFeeAlteration.personId),
-                    testFeeAlteration.validFrom
+                    testFeeAlteration.validFrom,
                 )
 
             assertEquals(2, result.size)
@@ -239,14 +239,14 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
-                    validTo = testFeeAlteration.validTo!!.plusYears(1)
-                )
+                    validTo = testFeeAlteration.validTo!!.plusYears(1),
+                ),
             )
 
             val result =
                 tx.getFeeAlterationsFrom(
                     listOf(testFeeAlteration.personId),
-                    testFeeAlteration.validTo!!.plusDays(1)
+                    testFeeAlteration.validTo!!.plusDays(1),
                 )
 
             assertEquals(1, result.size)
@@ -262,14 +262,14 @@ class FeeAlterationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validTo!!.plusDays(1),
-                    validTo = testFeeAlteration.validTo!!.plusYears(1)
-                )
+                    validTo = testFeeAlteration.validTo!!.plusYears(1),
+                ),
             )
 
             val result =
                 tx.getFeeAlterationsFrom(
                     listOf(testFeeAlteration.personId),
-                    testFeeAlteration.validTo!!.plusYears(1).plusDays(1)
+                    testFeeAlteration.validTo!!.plusYears(1).plusDays(1),
                 )
 
             assertEquals(0, result.size)

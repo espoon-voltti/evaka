@@ -49,13 +49,13 @@ class AttachmentService(
                     fileName,
                     contentType,
                     AttachmentParent.None,
-                    type = type
+                    type = type,
                 )
             }
         dbc.close() // avoid hogging the connection while we access S3
         documentClient.upload(
             filesBucket,
-            Document(name = id.toString(), bytes = bytes, contentType = contentType)
+            Document(name = id.toString(), bytes = bytes, contentType = contentType),
         )
         return id
     }
@@ -75,17 +75,19 @@ class AttachmentService(
         // We must remove the bookkeeping information *after* we are sure the S3 file has been
         // removed, or we could end up losing all bookkeeping info but have a leftover file.
         dbc.transaction {
-            it.createUpdate { sql("""
+            it.createUpdate {
+                    sql(
+                        """
 DELETE FROM attachment
 WHERE id = ${bind(id)}
-""") }.execute()
+"""
+                    )
+                }
+                .execute()
         }
     }
 
-    fun scheduleOrphanAttachmentDeletion(
-        tx: Database.Transaction,
-        clock: EvakaClock,
-    ) {
+    fun scheduleOrphanAttachmentDeletion(tx: Database.Transaction, clock: EvakaClock) {
         val ids = tx.getOrphanAttachments(olderThan = clock.now().minusDays(1))
         logger.info("Scheduling deletion for ${ids.size} orphan attachments")
         asyncJobRunner.plan(tx, ids.map { AsyncJob.DeleteAttachment(it) }, runAt = clock.now())

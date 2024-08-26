@@ -97,7 +97,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2022, 1, 1),
-                    endDate = LocalDate.of(2022, 3, 1)
+                    endDate = LocalDate.of(2022, 3, 1),
                 )
             )
         }
@@ -119,7 +119,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         assertOkResponse(
             http.get(
                 "/reports/missing-head-of-family",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01")
+                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
             )
         )
     }
@@ -129,7 +129,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         assertOkResponse(
             http.get(
                 "/reports/missing-service-need",
-                listOf("from" to "2020-05-01", "to" to "2020-08-01")
+                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
             )
         )
     }
@@ -143,8 +143,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     "type" to "PLANNED",
                     "careAreaId" to testArea.id,
                     "year" to 2020,
-                    "month" to 1
-                )
+                    "month" to 1,
+                ),
             )
         )
 
@@ -155,8 +155,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     "type" to "CONFIRMED",
                     "careAreaId" to testArea.id,
                     "year" to 2020,
-                    "month" to 1
-                )
+                    "month" to 1,
+                ),
             )
         )
 
@@ -167,8 +167,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     "type" to "REALIZED",
                     "careAreaId" to testArea.id,
                     "year" to 2020,
-                    "month" to 1
-                )
+                    "month" to 1,
+                ),
             )
         )
     }
@@ -182,8 +182,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     "type" to "CONFIRMED",
                     "careAreaId" to testArea.id,
                     "year" to 2020,
-                    "month" to 1
-                )
+                    "month" to 1,
+                ),
             )
         )
 
@@ -194,8 +194,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     "type" to "REALIZED",
                     "careAreaId" to testArea.id,
                     "year" to 2020,
-                    "month" to 1
-                )
+                    "month" to 1,
+                ),
             )
         )
     }
@@ -238,8 +238,8 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                 "/reports/placement-sketching",
                 listOf(
                     "placementStartDate" to "2021-01-01",
-                    "earliestPreferredStartDate" to "2021-08-13"
-                )
+                    "earliestPreferredStartDate" to "2021-08-13",
+                ),
             )
         )
     }

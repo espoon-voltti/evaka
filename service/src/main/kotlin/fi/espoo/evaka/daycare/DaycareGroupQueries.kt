@@ -14,7 +14,7 @@ import java.time.LocalDate
 private fun Database.Read.createDaycareGroupQuery(
     groupId: GroupId?,
     daycareId: DaycareId?,
-    period: DateRange?
+    period: DateRange?,
 ) = createQuery {
     sql(
         """
@@ -52,7 +52,7 @@ AND (${bind(period)}::daterange IS NULL OR daterange(start_date, end_date, '[]')
 fun Database.Transaction.createDaycareGroup(
     daycareId: DaycareId,
     name: String,
-    startDate: LocalDate
+    startDate: LocalDate,
 ): DaycareGroup =
     createUpdate {
             sql(
@@ -71,7 +71,7 @@ fun Database.Transaction.updateGroup(
     name: String,
     startDate: LocalDate,
     endDate: LocalDate?,
-    jamixCustomerNumber: Int?
+    jamixCustomerNumber: Int?,
 ) {
     createUpdate {
             sql(
@@ -92,12 +92,12 @@ fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
 fun Database.Read.getDaycareGroups(
     daycareId: DaycareId,
     startDate: LocalDate?,
-    endDate: LocalDate?
+    endDate: LocalDate?,
 ): List<DaycareGroup> =
     createDaycareGroupQuery(
             groupId = null,
             daycareId = daycareId,
-            period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate)
+            period = DateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate),
         )
         .toList<DaycareGroup>()
 

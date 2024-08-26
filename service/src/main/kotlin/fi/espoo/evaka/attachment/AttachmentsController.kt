@@ -50,7 +50,7 @@ class AttachmentsController(
     private val accessControl: AccessControl,
     private val attachmentsService: AttachmentService,
     evakaEnv: EvakaEnv,
-    bucketEnv: BucketEnv
+    bucketEnv: BucketEnv,
 ) {
     private val filesBucket = bucketEnv.attachments
     private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
@@ -58,7 +58,7 @@ class AttachmentsController(
     @PostMapping(
         "/attachments/applications/{applicationId}", // deprecated
         "/employee/attachments/applications/{applicationId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadApplicationAttachmentEmployee(
         db: Database,
@@ -66,7 +66,7 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 dbc.read {
@@ -75,7 +75,7 @@ class AttachmentsController(
                         user,
                         clock,
                         Action.Application.UPLOAD_ATTACHMENT,
-                        applicationId
+                        applicationId,
                     )
                 }
                 handleFileUpload(
@@ -84,7 +84,7 @@ class AttachmentsController(
                     clock,
                     AttachmentParent.Application(applicationId),
                     file,
-                    type
+                    type,
                 ) { tx ->
                     stateService.reCalculateDueDate(tx, clock.today(), applicationId)
                 }
@@ -93,7 +93,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("type" to type.name, "size" to file.size)
+                    meta = mapOf("type" to type.name, "size" to file.size),
                 )
             }
     }
@@ -101,14 +101,14 @@ class AttachmentsController(
     @PostMapping(
         "/attachments/income-statements/{incomeStatementId}", // deprecated
         "/employee/attachments/income-statements/{incomeStatementId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadIncomeStatementAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 dbc.read {
@@ -117,7 +117,7 @@ class AttachmentsController(
                         user,
                         clock,
                         Action.IncomeStatement.UPLOAD_ATTACHMENT,
-                        incomeStatementId
+                        incomeStatementId,
                     )
                 }
                 handleFileUpload(
@@ -125,14 +125,14 @@ class AttachmentsController(
                     user,
                     clock,
                     AttachmentParent.IncomeStatement(incomeStatementId),
-                    file
+                    file,
                 )
             }
             .also { attachmentId ->
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = AuditId(incomeStatementId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -142,14 +142,14 @@ class AttachmentsController(
         "/attachments/income", // deprecated
         "/employee/attachments/income/{incomeId}",
         "/employee/attachments/income",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadIncomeAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId?,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 if (incomeId != null) {
@@ -159,7 +159,7 @@ class AttachmentsController(
                             user,
                             clock,
                             Action.Income.UPLOAD_ATTACHMENT,
-                            incomeId
+                            incomeId,
                         )
                     }
                 }
@@ -173,7 +173,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForIncome.log(
                     targetId = incomeId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -181,14 +181,14 @@ class AttachmentsController(
     @PostMapping(
         "/attachments/messages/{draftId}", // deprecated
         "/employee/attachments/messages/{draftId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadMessageAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable draftId: MessageDraftId,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 dbc.read {
@@ -198,7 +198,7 @@ class AttachmentsController(
                         user,
                         clock,
                         Action.MessageAccount.ACCESS,
-                        accountId
+                        accountId,
                     )
                 }
                 handleFileUpload(dbc, user, clock, AttachmentParent.MessageDraft(draftId), file)
@@ -207,7 +207,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForMessageDraft.log(
                     targetId = AuditId(draftId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -215,14 +215,14 @@ class AttachmentsController(
     @PostMapping(
         "/attachments/pedagogical-documents/{documentId}", // deprecated
         "/employee/attachments/pedagogical-documents/{documentId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadPedagogicalDocumentAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 dbc.read {
@@ -231,7 +231,7 @@ class AttachmentsController(
                         user,
                         clock,
                         Action.PedagogicalDocument.CREATE_ATTACHMENT,
-                        documentId
+                        documentId,
                     )
                 }
                 handleFileUpload(
@@ -239,11 +239,11 @@ class AttachmentsController(
                     user,
                     clock,
                     AttachmentParent.PedagogicalDocument(documentId),
-                    file
+                    file,
                 ) { tx ->
                     pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                         tx,
-                        documentId
+                        documentId,
                     )
                 }
             }
@@ -251,7 +251,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForPedagogicalDocument.log(
                     targetId = AuditId(documentId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -259,7 +259,7 @@ class AttachmentsController(
     @PostMapping(
         "/attachments/citizen/applications/{applicationId}", // deprecated
         "/citizen/attachments/applications/{applicationId}",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadApplicationAttachmentCitizen(
         db: Database,
@@ -267,7 +267,7 @@ class AttachmentsController(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
         @RequestParam type: AttachmentType,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->
@@ -277,7 +277,7 @@ class AttachmentsController(
                         user,
                         clock,
                         Action.Citizen.Application.UPLOAD_ATTACHMENT,
-                        applicationId
+                        applicationId,
                     )
                 }
 
@@ -289,7 +289,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = AuditId(applicationId),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("type" to type.name, "size" to file.size)
+                    meta = mapOf("type" to type.name, "size" to file.size),
                 )
             }
     }
@@ -299,14 +299,14 @@ class AttachmentsController(
         "/attachments/citizen/income-statements", // deprecated
         "/citizen/attachments/income-statements/{incomeStatementId}",
         "/citizen/attachments/income-statements",
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadIncomeStatementAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId?,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 if (incomeStatementId != null) {
@@ -316,7 +316,7 @@ class AttachmentsController(
                             user,
                             clock,
                             Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
-                            incomeStatementId
+                            incomeStatementId,
                         )
                     }
                 }
@@ -331,7 +331,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = incomeStatementId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -341,14 +341,14 @@ class AttachmentsController(
         "/attachments/fee-alteration", // deprecated
         "/employee/attachments/fee-alteration/{feeAlterationId}", // deprecated
         "/employee/attachments/fee-alteration", // deprecated
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadFeeAlterationAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId?,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
         return db.connect { dbc ->
                 if (feeAlterationId != null) {
@@ -358,7 +358,7 @@ class AttachmentsController(
                             user,
                             clock,
                             Action.FeeAlteration.UPLOAD_ATTACHMENT,
-                            feeAlterationId
+                            feeAlterationId,
                         )
                     }
                 }
@@ -372,7 +372,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForFeeAlteration.log(
                     targetId = feeAlterationId?.let(AuditId::invoke),
                     objectId = AuditId(attachmentId),
-                    meta = mapOf("size" to file.size)
+                    meta = mapOf("size" to file.size),
                 )
             }
     }
@@ -380,7 +380,7 @@ class AttachmentsController(
     private fun checkAttachmentCount(
         db: Database.Connection,
         attachTo: AttachmentParent,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
     ) {
         val count =
             db.read {
@@ -389,7 +389,7 @@ class AttachmentsController(
                     is AttachmentParent.Application,
                     is AttachmentParent.IncomeStatement,
                     is AttachmentParent.Income,
-                    is AttachmentParent.PedagogicalDocument, ->
+                    is AttachmentParent.PedagogicalDocument ->
                         it.userAttachmentCount(user.evakaUserId, attachTo)
                     is AttachmentParent.MessageDraft,
                     is AttachmentParent.MessageContent -> 0
@@ -421,7 +421,7 @@ class AttachmentsController(
         attachTo: AttachmentParent,
         file: MultipartFile,
         type: AttachmentType? = null,
-        onSuccess: ((tx: Database.Transaction) -> Unit)? = null
+        onSuccess: ((tx: Database.Transaction) -> Unit)? = null,
     ): AttachmentId {
         if (user is AuthenticatedUser.Citizen) {
             checkAttachmentCount(dbc, attachTo, user)
@@ -439,7 +439,7 @@ class AttachmentsController(
                 checkFileContentTypeAndExtension(
                     stream,
                     getFileExtension(fileName),
-                    allowedContentTypes
+                    allowedContentTypes,
                 )
             }
 
@@ -451,7 +451,7 @@ class AttachmentsController(
                 fileName = fileName,
                 bytes = file.bytes,
                 contentType = contentType,
-                type = type
+                type = type,
             )
         dbc.transaction { tx ->
             tx.associateOrphanAttachments(user.evakaUserId, attachTo, listOf(id))
@@ -466,7 +466,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable attachmentId: AttachmentId,
-        @PathVariable requestedFilename: String
+        @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
 
     @GetMapping("/employee/attachments/{attachmentId}/download/{requestedFilename}")
@@ -475,7 +475,7 @@ class AttachmentsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable attachmentId: AttachmentId,
-        @PathVariable requestedFilename: String
+        @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
 
     @GetMapping("/employee-mobile/attachments/{attachmentId}/download/{requestedFilename}")
@@ -484,18 +484,18 @@ class AttachmentsController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable attachmentId: AttachmentId,
-        @PathVariable requestedFilename: String
+        @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
 
     @GetMapping(
-        "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
+        "/attachments/{attachmentId}/download/{requestedFilename}" // deprecated
     )
     fun getAttachmentInternal(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable attachmentId: AttachmentId,
-        @PathVariable requestedFilename: String
+        @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> {
         val attachment =
             db.connect { dbc ->
@@ -510,7 +510,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_APPLICATION_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.Income ->
                             accessControl.requirePermissionFor(
@@ -518,7 +518,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_INCOME_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.IncomeStatement ->
                             accessControl.requirePermissionFor(
@@ -526,7 +526,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.MessageContent -> {
                             val accountIds =
@@ -538,7 +538,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS,
-                                accountIds
+                                accountIds,
                             )
                         }
                         is AttachmentParent.MessageDraft -> {
@@ -549,7 +549,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS,
-                                accountId!!
+                                accountId!!,
                             )
                         }
                         is AttachmentParent.PedagogicalDocument ->
@@ -558,7 +558,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.FeeAlteration ->
                             accessControl.requirePermissionFor(
@@ -566,7 +566,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.None ->
                             accessControl.requirePermissionFor(
@@ -574,7 +574,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.READ_ORPHAN_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                     }.exhaust()
                     attachment
@@ -594,25 +594,25 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable attachmentId: AttachmentId
+        @PathVariable attachmentId: AttachmentId,
     ) = deleteAttachmentHandler(db, user, clock, attachmentId)
 
     @DeleteMapping(
         "/attachments/{attachmentId}", // deprecated
-        "/employee/attachments/{attachmentId}"
+        "/employee/attachments/{attachmentId}",
     )
     fun deleteAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable attachmentId: AttachmentId
+        @PathVariable attachmentId: AttachmentId,
     ) = deleteAttachmentHandler(db, user, clock, attachmentId)
 
     private fun deleteAttachmentHandler(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable attachmentId: AttachmentId
+        @PathVariable attachmentId: AttachmentId,
     ) {
         db.connect { dbc ->
             dbc.read {
@@ -626,7 +626,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.Income ->
                             accessControl.requirePermissionFor(
@@ -634,7 +634,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_INCOME_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.IncomeStatement ->
                             accessControl.requirePermissionFor(
@@ -642,7 +642,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.MessageDraft -> {
                             val accountId =
@@ -652,7 +652,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.MessageAccount.ACCESS,
-                                accountId!!
+                                accountId!!,
                             )
                         }
                         is AttachmentParent.MessageContent ->
@@ -661,7 +661,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.PedagogicalDocument ->
                             accessControl.requirePermissionFor(
@@ -669,7 +669,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.FeeAlteration ->
                             accessControl.requirePermissionFor(
@@ -677,7 +677,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_FEE_ALTERATION_ATTACHMENTS,
-                                attachment.id
+                                attachment.id,
                             )
                         is AttachmentParent.None ->
                             accessControl.requirePermissionFor(
@@ -685,7 +685,7 @@ class AttachmentsController(
                                 user,
                                 clock,
                                 Action.Attachment.DELETE_ORPHAN_ATTACHMENT,
-                                attachment.id
+                                attachment.id,
                             )
                     }.exhaust()
                     attachment
@@ -704,7 +704,7 @@ class AttachmentsController(
             ContentTypePattern.MSWORD_DOCX,
             ContentTypePattern.OPEN_DOCUMENT_TEXT,
             ContentTypePattern.TIKA_MSOFFICE,
-            ContentTypePattern.TIKA_OOXML
+            ContentTypePattern.TIKA_OOXML,
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 class JdbiReflectionTest : PureJdbiTest(resetDbBeforeEach = false) {
     private inline fun <reified T> mapOneValue(
         @Language("sql") query: String,
-        vararg annotations: KClass<out Annotation>
+        vararg annotations: KClass<out Annotation>,
     ) =
         db.read { tx ->
             @Suppress("DEPRECATION")

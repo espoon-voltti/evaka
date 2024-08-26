@@ -42,7 +42,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     private val financeUser =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN)
+            roles = setOf(UserRole.FINANCE_ADMIN),
         )
 
     val testVoucherValue =
@@ -54,7 +54,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             88000,
             136400,
             BigDecimal.valueOf(1.0),
-            136400
+            136400,
         )
 
     @BeforeEach
@@ -146,7 +146,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             testVoucherValue.range.start.minusDays(1),
-            voucherValuesAfter[1].voucherValues.range.end
+            voucherValuesAfter[1].voucherValues.range.end,
         )
     }
 
@@ -189,7 +189,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     range =
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start,
-                            LocalDate.of(2024, 5, 31)
+                            LocalDate.of(2024, 5, 31),
                         )
                 )
         updateVoucherValue(voucherValuesBefore[1].id, endedVoucherValue)
@@ -226,7 +226,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     range =
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start.plusWeeks(2),
-                            voucherValuesBefore[1].voucherValues.range.end
+                            voucherValuesBefore[1].voucherValues.range.end,
                         )
                 )
 
@@ -237,7 +237,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             newVoucherValue.range.start.minusDays(1),
-            voucherValuesAfter[0].voucherValues.range.end
+            voucherValuesAfter[0].voucherValues.range.end,
         )
     }
 
@@ -253,7 +253,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     range =
                         DateRange(
                             voucherValuesBefore[1].voucherValues.range.start.minusWeeks(2),
-                            voucherValuesBefore[1].voucherValues.range.end
+                            voucherValuesBefore[1].voucherValues.range.end,
                         )
                 )
 
@@ -264,7 +264,7 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             newVoucherValue.range.start.minusDays(1),
-            voucherValuesAfter[0].voucherValues.range.end
+            voucherValuesAfter[0].voucherValues.range.end,
         )
     }
 
@@ -285,20 +285,20 @@ class VoucherValueIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             dbInstance(),
             financeUser,
             mockClock,
-            voucherValue
+            voucherValue,
         )
     }
 
     fun updateVoucherValue(
         id: ServiceNeedOptionVoucherValueId,
-        voucherValue: ServiceNeedOptionVoucherValueRange
+        voucherValue: ServiceNeedOptionVoucherValueRange,
     ) {
         financeBasicsController.updateVoucherValue(
             dbInstance(),
             financeUser,
             mockClock,
             id,
-            voucherValue
+            voucherValue,
         )
     }
 

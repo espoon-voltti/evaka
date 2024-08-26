@@ -121,7 +121,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .flatMap {
                     listOf(
                         TestJobParams(it, completed = false),
-                        TestJobParams(it, completed = true)
+                        TestJobParams(it, completed = true),
                     )
                 }
                 .forEach { params -> tx.insertTestJob(params) }
@@ -140,7 +140,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     .toList {
                         TestJobParams(
                             runAt = column<HelsinkiDateTime>("run_at").toLocalDate(),
-                            completed = column("completed")
+                            completed = column("completed"),
                         )
                     }
             }
@@ -148,9 +148,9 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 TestJobParams(recent, completed = false),
                 TestJobParams(recent, completed = true),
-                TestJobParams(future, completed = false)
+                TestJobParams(future, completed = false),
             ),
-            remainingJobs
+            remainingJobs,
         )
     }
 

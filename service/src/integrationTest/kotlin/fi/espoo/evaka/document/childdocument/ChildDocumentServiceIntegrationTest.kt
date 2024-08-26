@@ -55,7 +55,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Section(
                     id = "s1",
                     label = "s1",
-                    questions = listOf(Question.TextQuestion(id = "q1", label = "q1"))
+                    questions = listOf(Question.TextQuestion(id = "q1", label = "q1")),
                 )
             )
         )
@@ -83,7 +83,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                    endDate = clock.today().plusDays(5),
                 )
             )
             tx.insert(
@@ -92,7 +92,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     type = DocumentType.PEDAGOGICAL_ASSESSMENT,
                     name = "Arvio",
                     validity = DateRange(clock.today().minusYears(1), clock.today()),
-                    content = templateContent
+                    content = templateContent,
                 )
             )
             tx.insert(
@@ -101,7 +101,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     type = DocumentType.HOJKS,
                     name = "HOJKS",
                     validity = DateRange(clock.today().minusYears(1), clock.today().minusDays(1)),
-                    content = templateContent
+                    content = templateContent,
                 )
             )
         }
@@ -122,7 +122,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     modifiedAt = clock.now(),
                     contentModifiedAt = clock.now(),
                     contentModifiedBy = null,
-                    publishedAt = null
+                    publishedAt = null,
                 )
             )
             tx.insert(
@@ -139,8 +139,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),
-                            LocalTime.of(8, 0)
-                        )
+                            LocalTime.of(8, 0),
+                        ),
                 )
             )
             tx.insert(
@@ -154,7 +154,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     modifiedAt = clock.now().minusMonths(1),
                     contentModifiedAt = clock.now().minusMonths(1),
                     contentModifiedBy = null,
-                    publishedAt = clock.now().minusMonths(1)
+                    publishedAt = clock.now().minusMonths(1),
                 )
             )
         }
@@ -202,8 +202,8 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     publishedAt =
                         HelsinkiDateTime.Companion.of(
                             clock.today().minusMonths(1),
-                            LocalTime.of(8, 0)
-                        )
+                            LocalTime.of(8, 0),
+                        ),
                 )
             )
         }

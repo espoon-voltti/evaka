@@ -44,7 +44,7 @@ AND NOT EXISTS (
 fun Database.Transaction.createPlacementPlan(
     applicationId: ApplicationId,
     type: PlacementType,
-    plan: DaycarePlacementPlan
+    plan: DaycarePlacementPlan,
 ): PlacementPlanId =
     createUpdate {
             sql(
@@ -74,7 +74,7 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val startDate: LocalDate,
         val endDate: LocalDate,
         val preschoolDaycareStartDate: LocalDate?,
-        val preschoolDaycareEndDate: LocalDate?
+        val preschoolDaycareEndDate: LocalDate?,
     )
     return createQuery {
             sql(
@@ -100,7 +100,7 @@ WHERE application_id = ${bind(applicationId)} AND deleted = false
                         FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
                     } else {
                         null
-                    }
+                    },
             )
         }
 }
@@ -125,7 +125,7 @@ fun Database.Read.getPlacementPlans(
     unitId: DaycareId,
     from: LocalDate?,
     to: LocalDate?,
-    statuses: List<ApplicationStatus> = ApplicationStatus.values().asList()
+    statuses: List<ApplicationStatus> = ApplicationStatus.values().asList(),
 ): List<PlacementPlanDetails> {
     data class QueryResult(
         val id: PlacementPlanId,
@@ -143,7 +143,7 @@ fun Database.Read.getPlacementPlans(
         val unitConfirmationStatus: PlacementPlanConfirmationStatus,
         val unitRejectReason: PlacementPlanRejectReason?,
         val unitRejectOtherReason: String?,
-        val rejectedByCitizen: Boolean
+        val rejectedByCitizen: Boolean,
     )
 
     return createQuery {
@@ -197,12 +197,12 @@ WHERE
                         id = it.childId,
                         firstName = it.firstName,
                         lastName = it.lastName,
-                        dateOfBirth = it.dateOfBirth
+                        dateOfBirth = it.dateOfBirth,
                     ),
                 unitConfirmationStatus = it.unitConfirmationStatus,
                 unitRejectReason = it.unitRejectReason,
                 unitRejectOtherReason = it.unitRejectOtherReason,
-                rejectedByCitizen = it.rejectedByCitizen
+                rejectedByCitizen = it.rejectedByCitizen,
             )
         }
 }
@@ -211,7 +211,7 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
     applicationId: ApplicationId,
     status: PlacementPlanConfirmationStatus,
     rejectReason: PlacementPlanRejectReason?,
-    rejectOtherReason: String?
+    rejectOtherReason: String?,
 ) {
     createUpdate {
             sql(
@@ -256,7 +256,7 @@ fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int {
         listOf(
             ApplicationStatus.WAITING_UNIT_CONFIRMATION,
             ApplicationStatus.WAITING_MAILING,
-            ApplicationStatus.WAITING_CONFIRMATION
+            ApplicationStatus.WAITING_CONFIRMATION,
         )
     val unitConfirmationStatus = PlacementPlanConfirmationStatus.REJECTED
 

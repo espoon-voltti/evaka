@@ -40,21 +40,21 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class VasuController(
     private val accessControl: AccessControl,
-    private val vasuNotificationService: VasuNotificationService
+    private val vasuNotificationService: VasuNotificationService,
 ) {
 
     data class CreateDocumentRequest(val templateId: VasuTemplateId)
 
     @PostMapping(
         "/children/{childId}/vasu", // deprecated
-        "/employee/children/{childId}/vasu"
+        "/employee/children/{childId}/vasu",
     )
     fun createDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: CreateDocumentRequest
+        @RequestBody body: CreateDocumentRequest,
     ): VasuDocumentId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -63,7 +63,7 @@ class VasuController(
                         user,
                         clock,
                         Action.Child.CREATE_VASU_DOCUMENT,
-                        childId
+                        childId,
                     )
                     if (
                         tx.getVasuDocumentSummaries(childId).any {
@@ -89,20 +89,20 @@ class VasuController(
             .also { documentId ->
                 Audit.VasuDocumentCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(documentId)
+                    objectId = AuditId(documentId),
                 )
             }
     }
 
     @GetMapping(
         "/children/{childId}/vasu-summaries", // deprecated
-        "/employee/children/{childId}/vasu-summaries"
+        "/employee/children/{childId}/vasu-summaries",
     )
     fun getVasuSummariesByChild(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<VasuDocumentSummaryWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -111,7 +111,7 @@ class VasuController(
                         user,
                         clock,
                         Action.Child.READ_VASU_DOCUMENT,
-                        childId
+                        childId,
                     )
                     val documents =
                         tx.getVasuDocumentSummaries(childId) +
@@ -126,7 +126,7 @@ class VasuController(
                             tx,
                             user,
                             clock,
-                            documents.map { it.id }
+                            documents.map { it.id },
                         )
                     documents.mapNotNull { document ->
                         permittedActions[document.id]
@@ -138,27 +138,27 @@ class VasuController(
             .also {
                 Audit.ChildVasuDocumentsRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     data class VasuDocumentSummaryWithPermittedActions(
         val data: VasuDocumentSummary,
-        val permittedActions: Set<Action.VasuDocument>
+        val permittedActions: Set<Action.VasuDocument>,
     )
 
     data class ChangeDocumentStateRequest(val eventType: VasuDocumentEventType)
 
     @GetMapping(
         "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}"
+        "/employee/vasu/{id}",
     )
     fun getDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VasuDocumentId
+        @PathVariable id: VasuDocumentId,
     ): VasuDocumentWithPermittedActions {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -167,7 +167,7 @@ class VasuController(
                         user,
                         clock,
                         Action.VasuDocument.READ,
-                        id
+                        id,
                     )
                     val doc =
                         tx.getVasuDocumentMaster(clock.today(), id)
@@ -206,7 +206,7 @@ class VasuController(
                                     }
                             ),
                         permittedActions =
-                            accessControl.getPermittedActions(tx, user, clock, doc.id)
+                            accessControl.getPermittedActions(tx, user, clock, doc.id),
                     )
                 }
             }
@@ -215,21 +215,21 @@ class VasuController(
 
     data class VasuDocumentWithPermittedActions(
         val data: VasuDocument,
-        val permittedActions: Set<Action.VasuDocument>
+        val permittedActions: Set<Action.VasuDocument>,
     )
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 
     @PutMapping(
         "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}"
+        "/employee/vasu/{id}",
     )
     fun putDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
-        @RequestBody body: UpdateDocumentRequest
+        @RequestBody body: UpdateDocumentRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -258,7 +258,7 @@ class VasuController(
                                                             authorId = EmployeeId(user.rawId()),
                                                             edited = null,
                                                             createdDate = HelsinkiDateTime.now(),
-                                                            authorName = null
+                                                            authorName = null,
                                                         )
 
                                                 val authorEditingInGracePeriod =
@@ -286,11 +286,11 @@ class VasuController(
                                                             FollowupEntryEditDetails(
                                                                 editedAt = clock.today(),
                                                                 editorId = EmployeeId(user.rawId()),
-                                                                editorName = null
+                                                                editorName = null,
                                                             )
                                                         },
                                                     createdDate = storedEntry.createdDate,
-                                                    authorName = null
+                                                    authorName = null,
                                                 )
                                             }
                                     )
@@ -304,7 +304,7 @@ class VasuController(
                     clock.now(),
                     id,
                     transformedFollowupsVasu.content,
-                    body.childLanguage
+                    body.childLanguage,
                 )
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
@@ -320,28 +320,28 @@ class VasuController(
         if (!vasu.content.matchesStructurally(body.content)) {
             throw BadRequest(
                 "Vasu document structure does not match template",
-                "DOCUMENT_DOES_NOT_MATCH_TEMPLATE"
+                "DOCUMENT_DOES_NOT_MATCH_TEMPLATE",
             )
         }
 
         if (vasu.content.followupEntriesMissing(body.content)) {
             throw Forbidden(
                 "Follow-up entries may not be removed",
-                "CANNOT_REMOVE_FOLLOWUP_COMMENTS"
+                "CANNOT_REMOVE_FOLLOWUP_COMMENTS",
             )
         }
     }
 
     @PostMapping(
         "/vasu/{id}/update-state", // deprecated
-        "/employee/vasu/{id}/update-state"
+        "/employee/vasu/{id}/update-state",
     )
     fun updateDocumentState(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId,
-        @RequestBody body: ChangeDocumentStateRequest
+        @RequestBody body: ChangeDocumentStateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -357,7 +357,7 @@ class VasuController(
                         RETURNED_TO_REVIEWED -> Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED
                         MOVED_TO_CLOSED -> Action.VasuDocument.EVENT_MOVED_TO_CLOSED
                     },
-                    id
+                    id,
                 )
 
                 val sendNotification =
@@ -372,7 +372,7 @@ class VasuController(
 
     @DeleteMapping(
         "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}"
+        "/employee/vasu/{id}",
     )
     fun deleteDocument(
         dbc: Database,

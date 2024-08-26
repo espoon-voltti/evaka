@@ -32,17 +32,17 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AssistanceNeedsAndActionsReportController(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping(
         "/reports/assistance-needs-and-actions", // deprecated
-        "/employee/reports/assistance-needs-and-actions"
+        "/employee/reports/assistance-needs-and-actions",
     )
     fun getAssistanceNeedsAndActionsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): AssistanceNeedsAndActionsReport {
         return db.connect { dbc ->
                 dbc.read {
@@ -51,14 +51,14 @@ class AssistanceNeedsAndActionsReportController(
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
+                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
                         actions = it.getAssistanceActionOptions(),
                         rows = it.getReportRows(date, filter),
                         showAssistanceNeedVoucherCoefficient =
-                            !featureConfig.valueDecisionCapacityFactorEnabled
+                            !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
                 }
             }
@@ -72,7 +72,7 @@ class AssistanceNeedsAndActionsReportController(
     data class AssistanceNeedsAndActionsReport(
         val actions: List<AssistanceActionOption>,
         val rows: List<AssistanceNeedsAndActionsReportRow>,
-        val showAssistanceNeedVoucherCoefficient: Boolean
+        val showAssistanceNeedVoucherCoefficient: Boolean,
     )
 
     data class AssistanceNeedsAndActionsReportRow(
@@ -87,18 +87,18 @@ class AssistanceNeedsAndActionsReportController(
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
-        val assistanceNeedVoucherCoefficientCount: Int
+        val assistanceNeedVoucherCoefficientCount: Int,
     )
 
     @GetMapping(
         "/reports/assistance-needs-and-actions/by-child", // deprecated
-        "/employee/reports/assistance-needs-and-actions/by-child"
+        "/employee/reports/assistance-needs-and-actions/by-child",
     )
     fun getAssistanceNeedsAndActionsReportByChild(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): AssistanceNeedsAndActionsReportByChild {
         return db.connect { dbc ->
                 dbc.read {
@@ -107,13 +107,13 @@ class AssistanceNeedsAndActionsReportController(
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD
+                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD,
                         )
                     getAssistanceNeedsAndActionsReportByChild(
                         it,
                         date,
                         filter,
-                        !featureConfig.valueDecisionCapacityFactorEnabled
+                        !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
                 }
             }
@@ -128,20 +128,20 @@ class AssistanceNeedsAndActionsReportController(
         tx: Database.Read,
         date: LocalDate,
         filter: AccessControlFilter<DaycareId>,
-        showAssistanceNeedVoucherCoefficient: Boolean
+        showAssistanceNeedVoucherCoefficient: Boolean,
     ): AssistanceNeedsAndActionsReportByChild {
         tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
         return AssistanceNeedsAndActionsReportByChild(
             actions = tx.getAssistanceActionOptions(),
             rows = tx.getReportRowsByChild(date, filter),
-            showAssistanceNeedVoucherCoefficient = showAssistanceNeedVoucherCoefficient
+            showAssistanceNeedVoucherCoefficient = showAssistanceNeedVoucherCoefficient,
         )
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
         val actions: List<AssistanceActionOption>,
         val rows: List<AssistanceNeedsAndActionsReportRowByChild>,
-        val showAssistanceNeedVoucherCoefficient: Boolean
+        val showAssistanceNeedVoucherCoefficient: Boolean,
     )
 
     data class AssistanceNeedsAndActionsReportRowByChild(
@@ -159,7 +159,7 @@ class AssistanceNeedsAndActionsReportController(
         @Json val daycareAssistanceCounts: Map<DaycareAssistanceLevel, Int>,
         @Json val preschoolAssistanceCounts: Map<PreschoolAssistanceLevel, Int>,
         @Json val otherAssistanceMeasureCounts: Map<OtherAssistanceMeasureType, Int>,
-        val assistanceNeedVoucherCoefficient: BigDecimal
+        val assistanceNeedVoucherCoefficient: BigDecimal,
     )
 }
 
@@ -167,7 +167,7 @@ private typealias AssistanceActionOptionValue = String
 
 private fun Database.Read.getReportRows(
     date: LocalDate,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ) =
     createQuery {
             sql(
@@ -293,7 +293,7 @@ ORDER BY ca.name, u.name, g.name
 
 private fun Database.Read.getReportRowsByChild(
     date: LocalDate,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ) =
     createQuery {
             sql(

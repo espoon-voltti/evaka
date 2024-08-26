@@ -57,7 +57,7 @@ class JamixService(
     private val mealTypeMapper: MealTypeMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailEnv: EmailEnv,
-    private val emailClient: EmailClient
+    private val emailClient: EmailClient,
 ) {
     private val client = env?.let { JamixHttpClient(it, jsonMapper) }
 
@@ -80,7 +80,7 @@ class JamixService(
                 mealTypeMapper,
                 customerNumber = job.customerNumber,
                 customerId = job.customerId,
-                date = job.date
+                date = job.date,
             )
         } catch (e: Exception) {
             logger.warn(e) {
@@ -97,7 +97,7 @@ class JamixService(
                 tx,
                 listOf(AsyncJob.SyncJamixDiets()),
                 runAt = clock.now(),
-                retryCount = 1
+                retryCount = 1,
             )
         }
     }
@@ -128,7 +128,7 @@ fun fetchAndUpdateJamixDiets(
     db: Database.Connection,
     clock: EvakaClock,
     fromAddress: String,
-    warner: (s: String) -> Unit = loggerWarner
+    warner: (s: String) -> Unit = loggerWarner,
 ): List<Email> {
     val dietsFromJamix = client.getDiets()
 
@@ -147,7 +147,7 @@ fun fetchAndUpdateJamixDiets(
                     tx,
                     clock,
                     nulledChildren,
-                    fromAddress
+                    fromAddress,
                 )
             } else {
                 emptyList()
@@ -163,7 +163,7 @@ fun generateSpecialDietNullificationWarningEmails(
     tx: Database.Transaction,
     clock: EvakaClock,
     nulledChildren: Map<ChildId, SpecialDiet>,
-    fromAddress: String
+    fromAddress: String,
 ): List<Email> {
     val childrenByUnit = tx.getActivePlacementUnitsForChildren(clock.today(), nulledChildren.keys)
     if (childrenByUnit.isEmpty()) return emptyList()
@@ -181,10 +181,10 @@ fun generateSpecialDietNullificationWarningEmails(
                     EmailContent(
                         subject = "Muutoksia Jamix erityisruokavalioihin",
                         html = emailBody.replace("\n", "<br>"),
-                        text = emailBody
+                        text = emailBody,
                     ),
                 traceId = "",
-                fromAddress
+                fromAddress,
             )
         }
     }
@@ -192,7 +192,7 @@ fun generateSpecialDietNullificationWarningEmails(
 
 private fun createEmailBodyForUnit(
     childrenInUnit: List<ChildId>,
-    nulledChildren: Map<ChildId, SpecialDiet>
+    nulledChildren: Map<ChildId, SpecialDiet>,
 ): String {
     val emailBodyLines =
         childrenInUnit.mapNotNull { childId ->
@@ -209,7 +209,7 @@ private fun createEmailBodyForUnit(
 fun fetchAndUpdateJamixTextures(
     client: JamixClient,
     db: Database.Connection,
-    warner: (s: String) -> Unit = loggerWarner
+    warner: (s: String) -> Unit = loggerWarner,
 ) {
     val texturesFromJamix =
         client.getTextures().map { it -> MealTexture(it.modelId, it.fields.textureName) }
@@ -233,7 +233,7 @@ fun planJamixOrderJobs(
     dbc: Database.Connection,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     client: JamixClient,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     val range = now.toLocalDate().startOfNextWeek().weekSpan()
 
@@ -258,14 +258,14 @@ fun planJamixOrderJobs(
                         AsyncJob.SendJamixOrder(
                             customerNumber = customerNumber,
                             customerId = customerId,
-                            date = date
+                            date = date,
                         )
                     }
                 }
             },
             runAt = now,
             retryInterval = Duration.ofHours(1),
-            retryCount = 3
+            retryCount = 3,
         )
     }
 }
@@ -276,7 +276,7 @@ fun createAndSendJamixOrder(
     mealTypeMapper: MealTypeMapper,
     customerNumber: Int,
     customerId: Int,
-    date: LocalDate
+    date: LocalDate,
 ) {
     val (preschoolTerms, children) =
         dbc.read { tx ->
@@ -295,9 +295,9 @@ fun createAndSendJamixOrder(
                         mealTypeID = it.mealId,
                         dietID = it.dietId,
                         additionalInfo = it.additionalInfo,
-                        textureID = it.mealTextureId
+                        textureID = it.mealTextureId,
                     )
-                }
+                },
         )
 
     if (order.mealOrderRows.isNotEmpty()) {
@@ -315,7 +315,7 @@ fun createAndSendJamixOrder(
 private fun getChildInfos(
     tx: Database.Read,
     jamixCustomerNumber: Int,
-    date: LocalDate
+    date: LocalDate,
 ): List<MealReportChildInfo> {
     val holidays = tx.getHolidays(FiniteDateRange(date, date))
 
@@ -336,7 +336,7 @@ private fun getChildInfos(
                 shiftCareOpenOnHolidays = unit.shiftCareOpenOnHolidays,
                 holidays = holidays,
                 date = date,
-                childHasShiftCare = child.hasShiftCare
+                childHasShiftCare = child.hasShiftCare,
             )
         )
             return@mapNotNull null
@@ -351,7 +351,7 @@ private fun getChildInfos(
             mealTextureInfo = mealTextures[child.childId],
             dailyPreschoolTime = unit.dailyPreschoolTime,
             dailyPreparatoryTime = unit.dailyPreparatoryTime,
-            mealTimes = unit.mealTimes
+            mealTimes = unit.mealTimes,
         )
     }
 }
@@ -364,7 +364,7 @@ interface JamixClient {
     data class MealOrder(
         val customerID: Int,
         val deliveryDate: LocalDate,
-        val mealOrderRows: List<MealOrderRow>
+        val mealOrderRows: List<MealOrderRow>,
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -373,7 +373,7 @@ interface JamixClient {
         val mealTypeID: Int,
         val dietID: Int?,
         val additionalInfo: String?,
-        val textureID: Int?
+        val textureID: Int?,
     )
 
     fun createMealOrder(order: MealOrder)

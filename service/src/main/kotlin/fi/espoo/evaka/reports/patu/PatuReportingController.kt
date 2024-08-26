@@ -27,11 +27,11 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping(
     "/patu-report", // deprecated
-    "/employee/patu-report"
+    "/employee/patu-report",
 )
 class PatuReportingController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
 
     @PostMapping
@@ -40,7 +40,7 @@ class PatuReportingController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ) {
         val range = DateRange(from, to)
         db.connect { dbc ->
@@ -51,7 +51,7 @@ class PatuReportingController(
                     tx,
                     payloads = listOf(AsyncJob.SendPatuReport(range)),
                     runAt = HelsinkiDateTime.now(),
-                    retryCount = 1
+                    retryCount = 1,
                 )
             }
         }

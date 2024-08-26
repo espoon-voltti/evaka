@@ -13,7 +13,7 @@ import java.time.LocalDate
 
 fun Database.Read.childPlacementsForDay(
     daycareId: DaycareId,
-    date: LocalDate
+    date: LocalDate,
 ): Map<ChildId, PlacementType> =
     createQuery {
             sql(

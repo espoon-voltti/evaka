@@ -48,8 +48,8 @@ data class Decision(
                         DecisionType.PRESCHOOL_CLUB -> featureConfig.requestedStartUpperLimit
                         DecisionType.PREPARATORY_EDUCATION -> 0
                     }.toLong()
-                )
-            )
+                ),
+            ),
         )
 }
 
@@ -65,5 +65,5 @@ data class DecisionUnit(
     val phone: String?,
     val decisionHandler: String,
     val decisionHandlerAddress: String,
-    val providerType: ProviderType
+    val providerType: ProviderType,
 )

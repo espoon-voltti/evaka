@@ -58,8 +58,8 @@ class ApplicationAccessControlTest : AccessControlTest() {
                             type = ApplicationType.DAYCARE,
                             child = Child(dateOfBirth = LocalDate.of(2019, 1, 1)),
                             Adult(),
-                            apply = Apply(preferredUnits = listOf(daycareId))
-                        )
+                            apply = Apply(preferredUnits = listOf(daycareId)),
+                        ),
                 )
         }
     }
@@ -87,12 +87,12 @@ class ApplicationAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR)
+                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF)
+                unitRoles = mapOf(daycareId to UserRole.STAFF),
             )
         db.read { tx ->
             assertTrue(
@@ -121,12 +121,12 @@ class ApplicationAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR)
+                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR),
             )
         val otherEmployee =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(daycareId to UserRole.STAFF)
+                unitRoles = mapOf(daycareId to UserRole.STAFF),
             )
         db.read { tx ->
             assertTrue(

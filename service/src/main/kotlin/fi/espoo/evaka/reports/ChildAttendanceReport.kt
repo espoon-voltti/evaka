@@ -34,7 +34,7 @@ class ChildAttendanceReportController(private val accessControl: AccessControl) 
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<ChildAttendanceReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -44,7 +44,7 @@ class ChildAttendanceReportController(private val accessControl: AccessControl) 
                         user,
                         clock,
                         Action.Child.READ_ATTENDANCE_REPORT,
-                        childId
+                        childId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.getChildAttendanceRows(childId, range)
@@ -56,12 +56,12 @@ class ChildAttendanceReportController(private val accessControl: AccessControl) 
 
 private fun Database.Read.getChildAttendanceRows(
     childId: ChildId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ChildAttendanceReportRow> {
     data class SimpleReservation(
         val date: LocalDate,
         val startTime: LocalTime,
-        val endTime: LocalTime
+        val endTime: LocalTime,
     )
     val reservations =
         createQuery {
@@ -77,13 +77,13 @@ private fun Database.Read.getChildAttendanceRows(
             .toList<SimpleReservation>()
             .groupBy(
                 keySelector = { it.date },
-                valueTransform = { TimeRange(it.startTime, it.endTime) }
+                valueTransform = { TimeRange(it.startTime, it.endTime) },
             )
 
     data class SimpleAttendance(
         val date: LocalDate,
         val startTime: LocalTime,
-        val endTime: LocalTime?
+        val endTime: LocalTime?,
     )
     val attendances =
         createQuery {
@@ -98,13 +98,13 @@ private fun Database.Read.getChildAttendanceRows(
             .toList<SimpleAttendance>()
             .groupBy(
                 keySelector = { it.date },
-                valueTransform = { TimeInterval(it.startTime, it.endTime) }
+                valueTransform = { TimeInterval(it.startTime, it.endTime) },
             )
 
     data class SimpleAbsence(
         val date: LocalDate,
         val absenceType: AbsenceType,
-        val category: AbsenceCategory
+        val category: AbsenceCategory,
     )
     val absences =
         createQuery {
@@ -119,7 +119,7 @@ private fun Database.Read.getChildAttendanceRows(
             .toList<SimpleAbsence>()
             .associateBy(
                 keySelector = { Pair(it.date, it.category) },
-                valueTransform = { it.absenceType }
+                valueTransform = { it.absenceType },
             )
 
     return range
@@ -130,7 +130,7 @@ private fun Database.Read.getChildAttendanceRows(
                 reservations = reservations[date]?.sortedBy { it.start } ?: emptyList(),
                 attendances = attendances[date]?.sortedBy { it.start } ?: emptyList(),
                 billableAbsence = absences[Pair(date, AbsenceCategory.BILLABLE)],
-                nonbillableAbsence = absences[Pair(date, AbsenceCategory.NONBILLABLE)]
+                nonbillableAbsence = absences[Pair(date, AbsenceCategory.NONBILLABLE)],
             )
         }
         .toList()
@@ -141,5 +141,5 @@ data class ChildAttendanceReportRow(
     val reservations: List<TimeRange>,
     val attendances: List<TimeInterval>,
     val billableAbsence: AbsenceType?,
-    val nonbillableAbsence: AbsenceType?
+    val nonbillableAbsence: AbsenceType?,
 )

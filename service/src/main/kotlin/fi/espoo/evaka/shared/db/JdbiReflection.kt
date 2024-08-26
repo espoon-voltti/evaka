@@ -19,7 +19,7 @@ inline fun <reified T> createQualifiedType(
 
 fun <T> createQualifiedType(
     type: KType,
-    vararg annotations: KClass<out Annotation>
+    vararg annotations: KClass<out Annotation>,
 ): QualifiedType<T> =
     @Suppress("UNCHECKED_CAST")
     (QualifiedType.of(type.asJdbiJavaType()) as QualifiedType<T>).withAnnotationClasses(
@@ -63,7 +63,7 @@ fun KType.asJdbiJavaType(): Type {
                         .map {
                             it.type?.asJdbiJavaType() ?: error("Star projections are not supported")
                         }
-                        .toTypedArray())
+                        .toTypedArray()),
                 )
             }
         }

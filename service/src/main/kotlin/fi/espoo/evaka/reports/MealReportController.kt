@@ -51,26 +51,26 @@ fun unitDataFromDatabase(tx: Database.Read, date: LocalDate, unitId: DaycareId):
         childData,
         specialDiets,
         mealTextures,
-        preschoolTerms
+        preschoolTerms,
     )
 }
 
 @RestController
 class MealReportController(
     private val accessControl: AccessControl,
-    private val mealTypeMapper: MealTypeMapper
+    private val mealTypeMapper: MealTypeMapper,
 ) {
 
     @GetMapping(
         "/reports/meal/{unitId}", // deprecated
-        "/employee/reports/meal/{unitId}"
+        "/employee/reports/meal/{unitId}",
     )
     fun getMealReportByUnit(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): MealReportData {
         return db.connect { dbc ->
             dbc.read {
@@ -79,13 +79,13 @@ class MealReportController(
                         user,
                         clock,
                         Action.Unit.READ_MEAL_REPORT,
-                        unitId
+                        unitId,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     getMealReportForUnit(
                         unitDataFromDatabase(it, date, unitId),
                         date,
-                        mealTypeMapper
+                        mealTypeMapper,
                     ) ?: throw BadRequest("Daycare not found for $unitId")
                 }
                 .also {
@@ -95,7 +95,7 @@ class MealReportController(
                                 "unitId" to unitId,
                                 "unitName" to it.reportName,
                                 "date" to date,
-                                "count" to it.meals.size
+                                "count" to it.meals.size,
                             )
                     )
                 }

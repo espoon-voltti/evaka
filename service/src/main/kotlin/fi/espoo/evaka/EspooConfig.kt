@@ -67,7 +67,7 @@ class EspooConfig {
     fun invoiceIntegrationClient(
         env: EspooEnv,
         invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>,
-        jsonMapper: JsonMapper
+        jsonMapper: JsonMapper,
     ): InvoiceIntegrationClient =
         when (env.invoiceIntegrationEnabled) {
             true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), jsonMapper)
@@ -78,7 +78,7 @@ class EspooConfig {
     fun patuIntegrationClient(
         env: EspooEnv,
         patuEnv: ObjectProvider<EspooPatuIntegrationEnv>,
-        jsonMapper: JsonMapper
+        jsonMapper: JsonMapper,
     ): PatuIntegrationClient =
         when (env.patuIntegrationEnabled) {
             true -> EspooPatuIntegrationClient(patuEnv.getObject(), jsonMapper)
@@ -103,7 +103,7 @@ class EspooConfig {
     @Bean
     fun espooPatuAsyncJobProcessor(
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
-        patuReportingService: PatuReportingService
+        patuReportingService: PatuReportingService,
     ) = PatuAsyncJobProcessor(asyncJobRunner, patuReportingService)
 
     @Bean
@@ -128,7 +128,7 @@ class EspooConfig {
         ScheduledJobsEnv.fromEnvironment(
             EspooScheduledJob.values().associateWith { it.defaultSettings },
             "espoo.job",
-            env
+            env,
         )
 
     @Bean
@@ -153,7 +153,7 @@ class EspooConfig {
     fun espooAsyncJobRunner(
         jdbi: Jdbi,
         tracer: Tracer,
-        env: Environment
+        env: Environment,
     ): AsyncJobRunner<EspooAsyncJob> =
         AsyncJobRunner(EspooAsyncJob::class, listOf(EspooAsyncJob.pool), jdbi, tracer)
 
@@ -200,29 +200,29 @@ class EspooConfig {
                     ArchiveProcessType.APPLICATION_DAYCARE to
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
-                            archiveDurationMonths = 10 * 12
+                            archiveDurationMonths = 10 * 12,
                         ),
                     ArchiveProcessType.APPLICATION_PRESCHOOL to
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
-                            archiveDurationMonths = 10 * 12
+                            archiveDurationMonths = 10 * 12,
                         ),
                     ArchiveProcessType.APPLICATION_CLUB to
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.01",
-                            archiveDurationMonths = 10 * 12
+                            archiveDurationMonths = 10 * 12,
                         ),
                     ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.03",
-                            archiveDurationMonths = 120 * 12
+                            archiveDurationMonths = 120 * 12,
                         ),
                     ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
                         ArchiveProcessConfig(
                             processDefinitionNumber = "12.06.04",
-                            archiveDurationMonths = 120 * 12
-                        )
-                )
+                            archiveDurationMonths = 120 * 12,
+                        ),
+                ),
         )
 
     @Bean
@@ -238,7 +238,7 @@ class EspooConfig {
     fun espooScheduledJobs(
         patuReportingService: PatuReportingService,
         espooAsyncJobRunner: AsyncJobRunner<EspooAsyncJob>,
-        env: ScheduledJobsEnv<EspooScheduledJob>
+        env: ScheduledJobsEnv<EspooScheduledJob>,
     ): EspooScheduledJobs = EspooScheduledJobs(patuReportingService, espooAsyncJobRunner, env)
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
@@ -247,7 +247,7 @@ class EspooConfig {
 data class EspooEnv(
     val invoiceIntegrationEnabled: Boolean,
     val patuIntegrationEnabled: Boolean,
-    val biIntegrationEnabled: Boolean
+    val biIntegrationEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EspooEnv =
@@ -255,10 +255,10 @@ data class EspooEnv(
                 invoiceIntegrationEnabled =
                     env.lookup(
                         "espoo.integration.invoice.enabled",
-                        "fi.espoo.integration.invoice.enabled"
+                        "fi.espoo.integration.invoice.enabled",
                     ) ?: true,
                 patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false,
-                biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false
+                biIntegrationEnabled = env.lookup("espoo.integration.bi.enabled") ?: false,
             )
     }
 }
@@ -267,7 +267,7 @@ data class EspooInvoiceIntegrationEnv(
     val url: String,
     val username: String,
     val password: Sensitive<String>,
-    val sendCodebtor: Boolean
+    val sendCodebtor: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -277,31 +277,27 @@ data class EspooInvoiceIntegrationEnv(
                 username =
                     env.lookup(
                         "espoo.integration.invoice.username",
-                        "fi.espoo.integration.invoice.username"
+                        "fi.espoo.integration.invoice.username",
                     ),
                 password =
                     Sensitive(
                         env.lookup(
                             "espoo.integration.invoice.password",
-                            "fi.espoo.integration.invoice.password"
+                            "fi.espoo.integration.invoice.password",
                         )
                     ),
-                sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
+                sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false,
             )
     }
 }
 
-data class EspooBiEnv(
-    val url: String,
-    val username: String,
-    val password: Sensitive<String>,
-) {
+data class EspooBiEnv(val url: String, val username: String, val password: Sensitive<String>) {
     companion object {
         fun fromEnvironment(env: Environment) =
             EspooBiEnv(
                 url = env.lookup("espoo.integration.bi.url"),
                 username = env.lookup("espoo.integration.bi.username"),
-                password = Sensitive(env.lookup("espoo.integration.bi.password"))
+                password = Sensitive(env.lookup("espoo.integration.bi.password")),
             )
     }
 }
@@ -309,14 +305,14 @@ data class EspooBiEnv(
 data class EspooPatuIntegrationEnv(
     val url: String,
     val username: String,
-    val password: Sensitive<String>
+    val password: Sensitive<String>,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
             EspooPatuIntegrationEnv(
                 url = env.lookup("fi.espoo.integration.patu.url"),
                 username = env.lookup("fi.espoo.integration.patu.username"),
-                password = Sensitive(env.lookup("fi.espoo.integration.patu.password"))
+                password = Sensitive(env.lookup("fi.espoo.integration.patu.password")),
             )
     }
 }

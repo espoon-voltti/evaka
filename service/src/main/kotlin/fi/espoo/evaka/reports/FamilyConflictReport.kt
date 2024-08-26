@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RestController
 class FamilyConflictReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/family-conflicts", // deprecated
-        "/employee/reports/family-conflicts"
+        "/employee/reports/family-conflicts",
     )
     fun getFamilyConflictsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<FamilyConflictReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -35,7 +35,7 @@ class FamilyConflictReportController(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_FAMILY_CONFLICT_REPORT
+                            Action.Unit.READ_FAMILY_CONFLICT_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyConflicts(filter)
@@ -104,5 +104,5 @@ data class FamilyConflictReportRow(
     val lastName: String?,
     val socialSecurityNumber: String?,
     val partnerConflictCount: Int,
-    val childConflictCount: Int
+    val childConflictCount: Int,
 )

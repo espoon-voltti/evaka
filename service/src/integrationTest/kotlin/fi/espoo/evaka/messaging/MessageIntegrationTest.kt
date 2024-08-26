@@ -77,22 +77,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employee1 =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.UNIT_SUPERVISOR)
+            roles = setOf(UserRole.UNIT_SUPERVISOR),
         )
     private val employee2 =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.UNIT_SUPERVISOR)
+            roles = setOf(UserRole.UNIT_SUPERVISOR),
         )
     private val serviceWorker =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.SERVICE_WORKER)
+            roles = setOf(UserRole.SERVICE_WORKER),
         )
     private val messager =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.MESSAGING)
+            roles = setOf(UserRole.MESSAGING),
         )
     private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
     private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
@@ -126,7 +126,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         groupId: GroupId,
         daycareId: DaycareId = testDaycare.id,
         optionId: ServiceNeedOptionId = snDefaultDaycare.id,
-        shiftCare: ShiftCareType = ShiftCareType.NONE
+        shiftCare: ShiftCareType = ShiftCareType.NONE,
     ) {
         tx.insert(child, DevPersonType.CHILD)
 
@@ -136,7 +136,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = child.id,
                     unitId = daycareId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         tx.insert(
@@ -144,7 +144,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycarePlacementId = placementId,
                 daycareGroupId = groupId,
                 startDate = placementStart,
-                endDate = placementEnd
+                endDate = placementEnd,
             )
         )
         tx.insert(
@@ -154,7 +154,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 startDate = placementStart,
                 endDate = placementEnd,
                 optionId = optionId,
-                shiftCare = shiftCare
+                shiftCare = shiftCare,
             )
         )
     }
@@ -168,7 +168,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     areaId = testArea.id,
                     id = testDaycare.id,
                     name = testDaycare.name,
-                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                 )
             )
             tx.insert(
@@ -177,7 +177,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     id = testDaycare2.id,
                     name = testDaycare2.name,
                     type = setOf(CareType.FAMILY),
-                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                 )
             )
 
@@ -219,7 +219,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = it.id,
                         headOfChildId = fridgeHeadId,
                         startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2019, 12, 31)
+                        endDate = LocalDate.of(2019, 12, 31),
                     )
                 ) // parentship alone does not allow messaging if not a guardian
             }
@@ -237,7 +237,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     it,
                     groupId2,
                     optionId = snDefaultFiveYearOldsPartDayDaycare.id,
-                    shiftCare = ShiftCareType.FULL
+                    shiftCare = ShiftCareType.FULL,
                 )
                 tx.insertGuardian(person4.id, it.id)
             }
@@ -249,7 +249,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = it.id,
                         headOfChildId = fridgeHeadId,
                         startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2019, 12, 31)
+                        endDate = LocalDate.of(2019, 12, 31),
                     )
                 ) // no guardian, no messages
             }
@@ -269,7 +269,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     groupId2,
                     daycareId = testDaycare2.id,
                     optionId = snDefaultPreschool.id,
-                    shiftCare = ShiftCareType.INTERMITTENT
+                    shiftCare = ShiftCareType.INTERMITTENT,
                 )
                 tx.insertGuardian(person6.id, it.id)
                 tx.insertGuardian(person7.id, it.id)
@@ -303,7 +303,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
-            now = sendTime
+            now = sendTime,
         )
 
         // then sender does not see it in received messages
@@ -315,7 +315,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(MessageType.MESSAGE, threadWithOneReply.messageType)
         assertEquals(
             listOf(Pair(employee1Account, "Juhannus tulee pian")),
-            threadWithOneReply.toSenderContentPairs()
+            threadWithOneReply.toSenderContentPairs(),
         )
 
         // when
@@ -324,7 +324,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             threadWithOneReply.messages[0].id,
             setOf(employee1Account, person2Account),
             "No niinpä näyttää tulevan",
-            now = sendTime.plusSeconds(1)
+            now = sendTime.plusSeconds(1),
         )
 
         // then recipients see the same data
@@ -340,10 +340,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
-                    messageThread.messages
+                    messageThread.messages,
                 )
             },
-            person2Threads
+            person2Threads,
         )
 
         // then thread has both messages in correct order
@@ -353,9 +353,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
-                Pair(person1Account, "No niinpä näyttää tulevan")
+                Pair(person1Account, "No niinpä näyttää tulevan"),
             ),
-            person2Thread.toSenderContentPairs()
+            person2Thread.toSenderContentPairs(),
         )
 
         // when person one replies to the employee only
@@ -364,7 +364,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person2Thread.messages.last().id,
             setOf(employee1Account),
             "person 2 does not see this",
-            now = sendTime.plusSeconds(2)
+            now = sendTime.plusSeconds(2),
         )
 
         // then person one and employee see the new message
@@ -372,24 +372,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan"),
-                Pair(person1Account, "person 2 does not see this")
+                Pair(person1Account, "person 2 does not see this"),
             )
         assertEquals(
             threadContentWithTwoReplies,
-            getRegularMessageThreads(person1)[0].toSenderContentPairs()
+            getRegularMessageThreads(person1)[0].toSenderContentPairs(),
         )
         assertEquals(
             threadContentWithTwoReplies,
-            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
+            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs(),
         )
 
         // then person two does not see the message
         assertEquals(
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
-                Pair(person1Account, "No niinpä näyttää tulevan")
+                Pair(person1Account, "No niinpä näyttää tulevan"),
             ),
-            getRegularMessageThreads(person2)[0].toSenderContentPairs()
+            getRegularMessageThreads(person2)[0].toSenderContentPairs(),
         )
 
         // when author replies to person two
@@ -399,7 +399,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageId = threadWithOneReply.messages.last().id,
             recipientAccountIds = setOf(person2Account),
             content = "person 1 does not see this",
-            now = sendTime.plusSeconds(3)
+            now = sendTime.plusSeconds(3),
         )
 
         // then person two sees that
@@ -407,15 +407,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan"),
-                Pair(employee1Account, "person 1 does not see this")
+                Pair(employee1Account, "person 1 does not see this"),
             ),
-            getRegularMessageThreads(person2)[0].toSenderContentPairs()
+            getRegularMessageThreads(person2)[0].toSenderContentPairs(),
         )
 
         // then person one does not see that
         assertEquals(
             threadContentWithTwoReplies,
-            getRegularMessageThreads(person1)[0].toSenderContentPairs()
+            getRegularMessageThreads(person1)[0].toSenderContentPairs(),
         )
 
         // then employee sees all the messages
@@ -424,15 +424,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan"),
                 Pair(person1Account, "person 2 does not see this"),
-                Pair(employee1Account, "person 1 does not see this")
+                Pair(employee1Account, "person 1 does not see this"),
             ),
-            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
+            getEmployeeMessageThreads(employee1Account, employee1)[0].toSenderContentPairs(),
         )
 
         // then employee can see all sent messages
         assertEquals(
             listOf("person 1 does not see this", "Juhannus tulee pian"),
-            getSentMessages(employee1Account, employee1).map { it.content }
+            getSentMessages(employee1Account, employee1).map { it.content },
         )
     }
 
@@ -456,7 +456,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                 MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
                 MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id)
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id),
             )
         val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
@@ -466,26 +466,26 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = employee1Account,
             recipients = recipients,
             recipientNames = recipientNames,
-            user = employee1
+            user = employee1,
         )
 
         // then three threads should be created
         db.read {
             assertEquals(
                 1,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_content") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_content") }.exactlyOne<Int>(),
             )
             assertEquals(
                 3,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_thread") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_thread") }.exactlyOne<Int>(),
             )
             assertEquals(
                 3,
-                it.createQuery { sql("SELECT COUNT(id) FROM message") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message") }.exactlyOne<Int>(),
             )
             assertEquals(
                 5,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>(),
             )
         }
 
@@ -533,14 +533,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person1,
             person1Threads.first().messages.first().id,
             setOf(employee1Account, person2Account),
-            "Hello"
+            "Hello",
         )
 
         // then only the participants should get the message
         val employeeThreads = getEmployeeMessageThreads(employee1Account, employee1)
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-            employeeThreads.map { it.toSenderContentPairs() }.flatten()
+            employeeThreads.map { it.toSenderContentPairs() }.flatten(),
         )
         assertEquals(
             employeeThreads.map { messageThread ->
@@ -552,14 +552,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     messageThread.title,
                     messageThread.sensitive,
                     messageThread.isCopy,
-                    messageThread.messages
+                    messageThread.messages,
                 )
             },
-            getRegularMessageThreads(person1)
+            getRegularMessageThreads(person1),
         )
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-            getRegularMessageThreads(person2).map { it.toSenderContentPairs() }.flatten()
+            getRegularMessageThreads(person2).map { it.toSenderContentPairs() }.flatten(),
         )
 
         assertEquals(person3Threads, getRegularMessageThreads(person3))
@@ -575,7 +575,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.BULLETIN,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1
+            user = employee1,
         )
 
         // then the recipient can see it
@@ -584,7 +584,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(MessageType.BULLETIN, thread.messageType)
         assertEquals(
             listOf(Pair(employee1Account, "Juhannus tulee pian")),
-            thread.toSenderContentPairs()
+            thread.toSenderContentPairs(),
         )
 
         // when the recipient tries to reply to the bulletin, it is denied
@@ -593,7 +593,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 user = person1,
                 messageId = thread.messages.first().id,
                 recipientAccountIds = setOf(thread.messages.first().sender.id),
-                content = "Kiitos tiedosta"
+                content = "Kiitos tiedosta",
             )
         }
 
@@ -608,16 +608,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user = employee1,
             messageId = thread.messages.last().id,
             recipientAccountIds = setOf(person1Account),
-            content = "Nauttikaa siitä"
+            content = "Nauttikaa siitä",
         )
 
         // then the recipient can see it
         assertEquals(
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
-                Pair(employee1Account, "Nauttikaa siitä")
+                Pair(employee1Account, "Nauttikaa siitä"),
             ),
-            getRegularMessageThreads(person1).first().toSenderContentPairs()
+            getRegularMessageThreads(person1).first().toSenderContentPairs(),
         )
     }
 
@@ -630,7 +630,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1
+            user = employee1,
         )
 
         // then
@@ -644,7 +644,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person1,
             person1UnreadMessages.first().id,
             setOf(employee1Account, person2Account),
-            "reply"
+            "reply",
         )
 
         // then
@@ -677,7 +677,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employee2,
                 clock,
                 attachmentId,
-                "evaka-logo.png"
+                "evaka-logo.png",
             )
         }
         assertThrows<Forbidden> {
@@ -690,7 +690,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             employee1,
             clock,
             attachmentId,
-            "evaka-logo.png"
+            "evaka-logo.png",
         )
         attachmentsController.deleteAttachment(dbInstance(), employee1, clock, attachmentId)
 
@@ -700,7 +700,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val attachmentIds =
             setOf(
                 uploadMessageAttachment(employee1, draftId),
-                uploadMessageAttachment(employee1, draftId)
+                uploadMessageAttachment(employee1, draftId),
             )
 
         // when a message thread with attachment is created
@@ -712,7 +712,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
             attachmentIds = attachmentIds,
-            draftId = draftId
+            draftId = draftId,
         )
 
         // then
@@ -727,7 +727,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         sql("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL")
                     }
                     .exactlyOne<Int>()
-            }
+            },
         )
 
         // the author can read the attachment
@@ -736,7 +736,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             employee1,
             clock,
             attachmentIds.first(),
-            "evaka-logo.png"
+            "evaka-logo.png",
         )
         // another employee cannot read the attachment
         assertThrows<Forbidden> {
@@ -745,7 +745,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employee2,
                 clock,
                 attachmentIds.first(),
-                "evaka-logo.png"
+                "evaka-logo.png",
             )
         }
 
@@ -761,7 +761,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             person1,
             clock,
             attachmentIds.first(),
-            "evaka-logo.png"
+            "evaka-logo.png",
         )
 
         // another citizen cannot read the attachment
@@ -771,7 +771,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 person3,
                 clock,
                 attachmentIds.first(),
-                "evaka-logo.png"
+                "evaka-logo.png",
             )
         }
     }
@@ -830,7 +830,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1
+            user = employee1,
         )
         assertEquals(0, unreadMessagesCount(employee1Account, employee1))
         assertEquals(1, unreadMessagesCount(person1))
@@ -847,7 +847,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user = person1,
             messageId = getRegularMessageThreads(person1).first().messages.last().id,
             recipientAccountIds = setOf(person2Account, employee1Account),
-            content = "Juhannus on jo ohi"
+            content = "Juhannus on jo ohi",
         )
         assertEquals(1, unreadMessagesCount(employee1Account, employee1))
         assertEquals(0, unreadMessagesCount(person1))
@@ -909,7 +909,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, unreadMessagesCount(person1, now = readReplyTime))
         assertEquals(
             1,
-            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size
+            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size,
         )
 
         // Reply is visible to citizen after the async job has run
@@ -917,7 +917,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(2, unreadMessagesCount(person1, now = readReplyTime))
         assertEquals(
             2,
-            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size
+            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size,
         )
     }
 
@@ -929,7 +929,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             }
 
@@ -943,7 +943,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
                 user = serviceWorker,
-                relatedApplicationId = applicationId
+                relatedApplicationId = applicationId,
             )
 
         db.transaction { tx ->
@@ -973,7 +973,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             }
 
@@ -986,7 +986,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = serviceWorkerAccount,
             recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
             user = serviceWorker,
-            relatedApplicationId = applicationId
+            relatedApplicationId = applicationId,
         )
         val thread = getRegularMessageThreads(person1)[0]
         replyToMessage(
@@ -994,7 +994,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             content = "Vastaus",
             recipientAccountIds = setOf(serviceWorkerAccount),
             user = person1,
-            now = clock.now()
+            now = clock.now(),
         )
         assertEquals(1, unreadMessagesCount(serviceWorkerAccount, serviceWorker))
     }
@@ -1010,7 +1010,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
                 user = serviceWorker,
-                relatedApplicationId = null
+                relatedApplicationId = null,
             )
         }
     }
@@ -1026,7 +1026,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
                 user = serviceWorker,
-                relatedApplicationId = ApplicationId(UUID.randomUUID())
+                relatedApplicationId = ApplicationId(UUID.randomUUID()),
             )
         }
     }
@@ -1039,7 +1039,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     guardianId = testAdult_1.id,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             }
 
@@ -1052,7 +1052,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = serviceWorkerAccount,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_2.id)),
                 user = serviceWorker,
-                relatedApplicationId = applicationId
+                relatedApplicationId = applicationId,
             )
         }
     }
@@ -1066,13 +1066,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
-            sensitive = true
+            sensitive = true,
         )
 
         // then the recipient can see it
         assertEquals(
             listOf(Pair(employee1Account, "Juhannus tulee pian")),
-            getRegularMessageThreads(person1).first().toSenderContentPairs()
+            getRegularMessageThreads(person1).first().toSenderContentPairs(),
         )
     }
 
@@ -1087,10 +1087,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 recipients =
                     listOf(
                         MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_2.id)
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_2.id),
                     ),
                 user = employee1,
-                sensitive = true
+                sensitive = true,
             )
         }
     }
@@ -1105,7 +1105,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = employee1Account,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CITIZEN, testAdult_1.id)),
                 user = employee1,
-                sensitive = true
+                sensitive = true,
             )
         }
     }
@@ -1120,7 +1120,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sender = group1Account,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testAdult_1.id)),
                 user = employee1,
-                sensitive = true
+                sensitive = true,
             )
         }
     }
@@ -1134,8 +1134,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 recipients =
                     listOf(
                         MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id)
-                    )
+                        MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                    ),
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 3), response)
     }
@@ -1154,7 +1154,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     DevDaycareGroup(
                         id = groupId3,
                         daycareId = testDaycare2.id,
-                        startDate = placementStart
+                        startDate = placementStart,
                     )
                 )
                 testChild_7.let {
@@ -1171,7 +1171,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             title = "title",
             message = "content",
             children = listOf(testChild_1.id, testChild_3.id),
-            recipients = listOf(group1Account)
+            recipients = listOf(group1Account),
         )
 
         // Child 1 in group 1, child 2 in group 2 -> ok
@@ -1180,7 +1180,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             title = "title",
             message = "content",
             children = listOf(testChild_1.id, testChild_2.id),
-            recipients = listOf(group1Account, group2Account)
+            recipients = listOf(group1Account, group2Account),
         )
 
         // None of the children in group 2 -> fail
@@ -1190,7 +1190,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "title",
                 message = "content",
                 children = listOf(testChild_1.id, testChild_3.id),
-                recipients = listOf(group1Account, group2Account)
+                recipients = listOf(group1Account, group2Account),
             )
         }
 
@@ -1201,7 +1201,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 title = "title",
                 message = "content",
                 children = listOf(testChild_1.id, testChild_7.id),
-                recipients = listOf(group1Account, group3Account)
+                recipients = listOf(group1Account, group3Account),
             )
         }
     }
@@ -1223,13 +1223,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
             filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2017)),
             user = messager,
-            now = sendTime
+            now = sendTime,
         )
 
         db.read {
             assertEquals(
                 2,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>(),
             )
         }
     }
@@ -1252,16 +1252,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             filters =
                 MessageController.PostMessageFilters(
                     shiftCare = true,
-                    intermittentShiftCare = true
+                    intermittentShiftCare = true,
                 ),
             user = messager,
-            now = sendTime
+            now = sendTime,
         )
 
         db.read {
             assertEquals(
                 3,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>(),
             )
         }
     }
@@ -1283,13 +1283,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 ),
             filters = MessageController.PostMessageFilters(familyDaycare = true),
             user = messager,
-            now = sendTime
+            now = sendTime,
         )
 
         db.read {
             assertEquals(
                 2,
-                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>()
+                it.createQuery { sql("SELECT COUNT(id) FROM message_recipients") }.exactlyOne<Int>(),
             )
         }
     }
@@ -1305,7 +1305,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
                         MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
                     ),
-                filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018))
+                filters = MessageController.PostMessageFilters(yearsOfBirth = listOf(2018)),
             )
         assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 2), response)
     }
@@ -1330,14 +1330,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun uploadMessageAttachment(
         user: AuthenticatedUser.Employee,
-        draftId: MessageDraftId
+        draftId: MessageDraftId,
     ): AttachmentId =
         attachmentsController.uploadMessageAttachment(
             dbInstance(),
             user,
             clock,
             draftId,
-            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes())
+            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes()),
         )
 
     private fun postNewThreadPreflightCheck(
@@ -1345,7 +1345,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         recipients: List<MessageRecipient>,
         filters: MessageController.PostMessageFilters? = null,
         user: AuthenticatedUser.Employee,
-        now: HelsinkiDateTime = sendTime
+        now: HelsinkiDateTime = sendTime,
     ): PostMessagePreflightResponse {
         return messageController.createMessagePreflightCheck(
             dbInstance(),
@@ -1354,8 +1354,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender,
             MessageController.PostMessagePreflightBody(
                 recipients = recipients.toSet(),
-                filters = filters
-            )
+                filters = filters,
+            ),
         )
     }
 
@@ -1392,8 +1392,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         urgent = false,
                         sensitive = sensitive,
                         relatedApplicationId = relatedApplicationId,
-                        filters = filters
-                    )
+                        filters = filters,
+                    ),
                 )
                 .createdId
         if (asyncJobRunningEnabled) {
@@ -1420,7 +1420,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     children = children.toSet(),
                     title = title,
                     content = message,
-                )
+                ),
             )
         if (asyncJobRunningEnabled) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
@@ -1440,7 +1440,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             user,
             MockEvakaClock(now),
             messageId,
-            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
+            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds),
         )
         if (asyncJobRunningEnabled) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
@@ -1461,7 +1461,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             MockEvakaClock(now),
             sender,
             messageId,
-            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
+            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds),
         )
         if (asyncJobRunningEnabled) {
             asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
@@ -1473,7 +1473,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             user,
             MockEvakaClock(readTime),
-            threadId
+            threadId,
         )
     }
 
@@ -1499,14 +1499,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MockEvakaClock(now),
                 accountId,
                 page = 1,
-                pageSize = 100
+                pageSize = 100,
             )
             .data
     }
 
     private fun getSentMessages(
         accountId: MessageAccountId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ): List<SentMessage> {
         return messageController
             .getSentMessages(
@@ -1515,7 +1515,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MockEvakaClock(readTime),
                 accountId,
                 page = 1,
-                pageSize = 100
+                pageSize = 100,
             )
             .data
     }
@@ -1528,7 +1528,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun unreadMessagesCount(
         user: AuthenticatedUser.Citizen,
-        now: HelsinkiDateTime = readTime
+        now: HelsinkiDateTime = readTime,
     ): Int {
         return messageControllerCitizen.getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
     }

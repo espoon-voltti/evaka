@@ -24,7 +24,7 @@ data class WebPushSubscription(
     val endpoint: URI,
     val expires: HelsinkiDateTime?,
     val authSecret: List<Byte>,
-    val ecdhKey: List<Byte>
+    val ecdhKey: List<Byte>,
 ) {
     init {
         require(authSecret.size <= 1024) {
@@ -38,17 +38,17 @@ data class WebPushSubscription(
 class WebPushController(private val accessControl: AccessControl) {
     @PostMapping(
         "/mobile-devices/push-subscription", // deprecated
-        "/employee-mobile/push-subscription"
+        "/employee-mobile/push-subscription",
     )
     fun upsertPushSubscription(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
-        @RequestBody subscription: WebPushSubscription
+        @RequestBody subscription: WebPushSubscription,
     ) {
         db.connect { dbc -> dbc.transaction { it.upsertPushSubscription(user.id, subscription) } }
         Audit.PushSubscriptionUpsert.log(
             targetId = AuditId(user.id),
-            meta = mapOf("endpoint" to subscription.endpoint, "expires" to subscription.expires)
+            meta = mapOf("endpoint" to subscription.endpoint, "expires" to subscription.expires),
         )
     }
 
@@ -59,7 +59,7 @@ class WebPushController(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/mobile-devices/push-settings", // deprecated
-        "/employee-mobile/push-settings"
+        "/employee-mobile/push-settings",
     )
     fun getPushSettings(
         db: Database,
@@ -73,11 +73,11 @@ class WebPushController(private val accessControl: AccessControl) {
                             tx,
                             user,
                             clock,
-                            Action.Group.RECEIVE_PUSH_NOTIFICATIONS
+                            Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
                         )
                     PushSettings(
                         categories = tx.getPushCategories(user.id),
-                        groups = tx.getPushGroups(filter, user.id)
+                        groups = tx.getPushGroups(filter, user.id),
                     )
                 }
             }
@@ -85,13 +85,13 @@ class WebPushController(private val accessControl: AccessControl) {
 
     @PutMapping(
         "/mobile-devices/push-settings", // deprecated
-        "/employee-mobile/push-settings"
+        "/employee-mobile/push-settings",
     )
     fun setPushSettings(
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser.MobileDevice,
-        @RequestBody settings: PushSettings
+        @RequestBody settings: PushSettings,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -100,7 +100,7 @@ class WebPushController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
-                    settings.groups
+                    settings.groups,
                 )
                 tx.setPushCategories(user.id, settings.categories)
                 tx.setPushGroups(clock.now(), user.id, settings.groups)
@@ -108,11 +108,7 @@ class WebPushController(private val accessControl: AccessControl) {
         }
         Audit.PushSettingsSet.log(
             targetId = AuditId(user.id),
-            meta =
-                mapOf(
-                    "categories" to settings.categories,
-                    "groups" to settings.groups,
-                )
+            meta = mapOf("categories" to settings.categories, "groups" to settings.groups),
         )
     }
 }

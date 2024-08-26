@@ -34,7 +34,7 @@ const val maxImageSize = 512
 class ChildImageController(
     private val accessControl: AccessControl,
     private val documentClient: DocumentService,
-    env: BucketEnv
+    env: BucketEnv,
 ) {
     private val bucket = env.data
 
@@ -44,7 +44,7 @@ class ChildImageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ) {
         val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
 
@@ -62,7 +62,7 @@ class ChildImageController(
                         user,
                         clock,
                         Action.Child.UPLOAD_IMAGE,
-                        childId
+                        childId,
                     )
                 }
 
@@ -71,7 +71,7 @@ class ChildImageController(
         Audit.ChildImageUpload.log(
             targetId = AuditId(childId),
             objectId = AuditId(imageId),
-            meta = mapOf("size" to file.size, "contentType" to contentType)
+            meta = mapOf("size" to file.size, "contentType" to contentType),
         )
     }
 
@@ -80,7 +80,7 @@ class ChildImageController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ) {
         val imageId =
             db.connect { dbc ->
@@ -90,14 +90,14 @@ class ChildImageController(
                         user,
                         clock,
                         Action.Child.DELETE_IMAGE,
-                        childId
+                        childId,
                     )
                 }
                 dbc.transaction { tx -> removeImage(tx, documentClient, bucket, childId) }
             }
         Audit.ChildImageDelete.log(
             targetId = AuditId(childId),
-            objectId = imageId?.let(AuditId::invoke)
+            objectId = imageId?.let(AuditId::invoke),
         )
     }
 
@@ -106,7 +106,7 @@ class ChildImageController(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable imageId: ChildImageId
+        @PathVariable imageId: ChildImageId,
     ): ResponseEntity<Any> = getImage(db, user, clock, imageId)
 
     @GetMapping("/child-images/{imageId}")
@@ -114,7 +114,7 @@ class ChildImageController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable imageId: ChildImageId
+        @PathVariable imageId: ChildImageId,
     ): ResponseEntity<Any> {
         db.connect { dbc ->
             dbc.read {
@@ -123,7 +123,7 @@ class ChildImageController(
                     user,
                     clock,
                     Action.ChildImage.DOWNLOAD,
-                    imageId
+                    imageId,
                 )
             }
         }

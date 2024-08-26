@@ -41,8 +41,8 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     EmailMessageType.TRANSACTIONAL,
                     EmailMessageType.BULLETIN_NOTIFICATION,
-                    EmailMessageType.DOCUMENT_NOTIFICATION
-                )
+                    EmailMessageType.DOCUMENT_NOTIFICATION,
+                ),
             )
         }
         EmailMessageType.values()
@@ -52,16 +52,16 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
                     listOf(
                         "TRANSACTIONAL@example.com",
                         "BULLETIN_NOTIFICATION@example.com",
-                        "DOCUMENT_NOTIFICATION@example.com"
+                        "DOCUMENT_NOTIFICATION@example.com",
                     ),
-                    emails.map { it.toAddress }
+                    emails.map { it.toAddress },
                 )
             }
     }
 
     private fun createEmail(
         emailType: EmailMessageType = EmailMessageType.TRANSACTIONAL,
-        toAddress: String = "test@example.com"
+        toAddress: String = "test@example.com",
     ): Email? {
         db.transaction { tx ->
             tx.createUpdate {

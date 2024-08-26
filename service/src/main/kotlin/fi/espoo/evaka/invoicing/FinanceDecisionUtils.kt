@@ -33,7 +33,7 @@ fun validateFinanceDecisionHandler(tx: Database.Read, decisionHandlerId: Employe
 
 fun mapIncomeToDecisionIncome(
     income: Income,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): DecisionIncome =
     DecisionIncome(
         effect = income.effect,
@@ -41,30 +41,30 @@ fun mapIncomeToDecisionIncome(
             income.data.mapValues { (_, value) ->
                 calculateMonthlyAmount(
                     value.amount,
-                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                    coefficientMultiplierProvider.multiplier(value.coefficient),
                 )
             },
         totalIncome = calculateTotalIncome(income.data, coefficientMultiplierProvider),
         totalExpenses = calculateTotalExpense(income.data, coefficientMultiplierProvider),
         total = calculateIncomeTotal(income.data, coefficientMultiplierProvider),
-        worksAtECHA = income.worksAtECHA
+        worksAtECHA = income.worksAtECHA,
     )
 
 fun calculateIncomeTotal(
     data: Map<String, IncomeValue>,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Int =
     data.entries.sumOf { (_, value) ->
         value.multiplier *
             calculateMonthlyAmount(
                 value.amount,
-                coefficientMultiplierProvider.multiplier(value.coefficient)
+                coefficientMultiplierProvider.multiplier(value.coefficient),
             )
     }
 
 fun calculateTotalIncome(
     data: Map<String, IncomeValue>,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Int =
     data.entries
         .filter { (_, value) -> value.multiplier > 0 }
@@ -72,13 +72,13 @@ fun calculateTotalIncome(
             value.multiplier *
                 calculateMonthlyAmount(
                     value.amount,
-                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                    coefficientMultiplierProvider.multiplier(value.coefficient),
                 )
         }
 
 fun calculateTotalExpense(
     data: Map<String, IncomeValue>,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): Int =
     data.entries
         .filter { (_, value) -> value.multiplier < 0 }
@@ -87,7 +87,7 @@ fun calculateTotalExpense(
                 value.multiplier *
                 calculateMonthlyAmount(
                     value.amount,
-                    coefficientMultiplierProvider.multiplier(value.coefficient)
+                    coefficientMultiplierProvider.multiplier(value.coefficient),
                 )
         }
 

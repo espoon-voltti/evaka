@@ -38,13 +38,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -77,7 +77,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placement1Start,
-                        endDate = placement1End
+                        endDate = placement1End,
                     )
                 )
                 tx.insert(
@@ -85,13 +85,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placement2Start,
-                        endDate = placement2End
+                        endDate = placement2End,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -125,7 +125,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unit1Id,
                         startDate = placement1Start,
-                        endDate = placement1End
+                        endDate = placement1End,
                     )
                 )
                 tx.insert(
@@ -133,13 +133,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unit2Id,
                         startDate = placement2Start,
-                        endDate = placement2End
+                        endDate = placement2End,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -172,19 +172,19 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactor1Start, assistanceFactor1End)
+                        validDuring = FiniteDateRange(assistanceFactor1Start, assistanceFactor1End),
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactor2Start, assistanceFactor2End)
+                        validDuring = FiniteDateRange(assistanceFactor2Start, assistanceFactor2End),
                     )
                 )
                 childId
@@ -196,7 +196,7 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting<FiniteDateRange> { it.validDuring }
             .containsExactlyInAnyOrder(
                 FiniteDateRange(assistanceFactor1Start, assistanceFactor1End),
-                FiniteDateRange(assistanceFactor2Start, placementEnd)
+                FiniteDateRange(assistanceFactor2Start, placementEnd),
             )
     }
 
@@ -218,13 +218,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -255,13 +255,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -296,13 +296,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = child1PlacementStart,
-                        endDate = child1PlacementEnd
+                        endDate = child1PlacementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId
@@ -316,13 +316,13 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = childId,
                         unitId = unitId,
                         startDate = child2PlacementStart,
-                        endDate = child2PlacementEnd
+                        endDate = child2PlacementEnd,
                     )
                 )
                 tx.insert(
                     DevAssistanceFactor(
                         childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd)
+                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                     )
                 )
                 childId

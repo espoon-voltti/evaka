@@ -64,7 +64,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person1: MessageAccount,
         val person2: MessageAccount,
         val employee1: MessageAccount,
-        val employee2: MessageAccount
+        val employee2: MessageAccount,
     )
 
     private lateinit var accounts: TestAccounts
@@ -82,7 +82,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     person1 = tx.getAccount(person1),
                     person2 = tx.getAccount(person2),
                     employee1 = tx.createAccount(employee1),
-                    employee2 = tx.createAccount(employee2)
+                    employee2 = tx.createAccount(employee2),
                 )
         }
     }
@@ -98,25 +98,25 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read {
                 it.createQuery { sql("SELECT recipient_id FROM message_recipients") }
                     .toSet<MessageAccountId>()
-            }
+            },
         )
         assertEquals(
             content,
             db.read {
                 it.createQuery { sql("SELECT content FROM message_content") }.exactlyOne<String>()
-            }
+            },
         )
         assertEquals(
             title,
             db.read {
                 it.createQuery { sql("SELECT title FROM message_thread") }.exactlyOne<String>()
-            }
+            },
         )
         assertEquals(
             "Employee Firstname",
             db.read {
                 it.createQuery { sql("SELECT sender_name FROM message") }.exactlyOne<String>()
-            }
+            },
         )
         assertEquals(
             setOf("Person Firstname", "Person Two Firstname"),
@@ -124,7 +124,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     it.createQuery { sql("SELECT recipient_names FROM message") }
                         .exactlyOne<Array<String>>()
                 }
-                .toSet()
+                .toSet(),
         )
     }
 
@@ -136,7 +136,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Content",
                 accounts.employee1,
                 listOf(accounts.person1, accounts.person2),
-                sendTime
+                sendTime,
             )
         val thread2Id =
             createThread(
@@ -144,14 +144,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Content 2",
                 accounts.employee1,
                 listOf(accounts.person1),
-                sendTime.plusSeconds(1)
+                sendTime.plusSeconds(1),
             )
         createThread(
             "Lone Thread",
             "Alone",
             accounts.employee2,
             listOf(accounts.employee2),
-            sendTime.plusSeconds(2)
+            sendTime.plusSeconds(2),
         )
 
         // employee is not a recipient in any threads
@@ -163,11 +163,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         10,
                         1,
                         "Espoo",
-                        "Espoon palveluohjaus"
+                        "Espoon palveluohjaus",
                     )
                 }
                 .data
-                .size
+                .size,
         )
         val personResult =
             db.read { it.getThreads(accounts.employee1.id, 10, 1, "Espoo", "Espoon palveluohjaus") }
@@ -194,7 +194,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read { it.getThreads(accounts.person2.id, 10, 1, "Espoo", "Espoon palveluohjaus") }
                 .data
                 .flatMap { it.messages.mapNotNull { m -> m.readAt } }
-                .size
+                .size,
         )
 
         // when employee gets a reply
@@ -204,7 +204,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             setOf(accounts.employee1),
             "Just replying here",
             thread.messages.last().id,
-            now = sendTime.plusSeconds(3)
+            now = sendTime.plusSeconds(3),
         )
 
         // then employee sees the thread
@@ -227,9 +227,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 Pair(accounts.employee1, "Content 2"),
-                Pair(accounts.person1, "Just replying here")
+                Pair(accounts.person1, "Just replying here"),
             ),
-            newestThread.messages.map { Pair(it.sender, it.content) }
+            newestThread.messages.map { Pair(it.sender, it.content) },
         )
         assertEquals(employeeResult.data[0], newestThread)
 
@@ -271,7 +271,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read {
                 listOf(
                     it.getThreads(accounts.person1.id, 1, 1, "Espoo", "Espoon palveluohjaus"),
-                    it.getThreads(accounts.person1.id, 1, 2, "Espoo", "Espoon palveluohjaus")
+                    it.getThreads(accounts.person1.id, 1, 2, "Espoo", "Espoon palveluohjaus"),
                 )
             }
         assertEquals(2, page1.total)
@@ -293,14 +293,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             "content 1",
             accounts.employee1,
             listOf(accounts.person1, accounts.person2),
-            sendTime
+            sendTime,
         )
         createThread(
             "thread 2",
             "content 2",
             accounts.employee1,
             listOf(accounts.person1),
-            sendTime.plusSeconds(1)
+            sendTime.plusSeconds(1),
         )
 
         // then sent messages are returned for sender id
@@ -324,7 +324,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("thread 1", oldestMessage.threadTitle)
         assertEquals(
             listOf(accounts.person1.name, accounts.person2.name),
-            oldestMessage.recipientNames
+            oldestMessage.recipientNames,
         )
 
         // then fetching sent messages by recipient ids does not return the messages
@@ -338,7 +338,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Hello",
                 "Content",
                 accounts.employee1,
-                listOf(accounts.person1, accounts.person2)
+                listOf(accounts.person1, accounts.person2),
             )
 
         val participants =
@@ -357,9 +357,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 isCopy = false,
                 senders = setOf(accounts.employee1.id),
                 recipients = setOf(accounts.person1.id, accounts.person2.id),
-                applicationId = null
+                applicationId = null,
             ),
-            participants
+            participants,
         )
 
         val now = HelsinkiDateTime.now()
@@ -376,10 +376,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         recipientNames =
                             tx.getAccountNames(
                                 setOf(accounts.employee1.id),
-                                testFeatureConfig.serviceWorkerMessageAccountName
+                                testFeatureConfig.serviceWorkerMessageAccountName,
                             ),
                         municipalAccountName = "Espoo",
-                        serviceWorkerAccountName = "Espoon palveluohjaus"
+                        serviceWorkerAccountName = "Espoon palveluohjaus",
                     )
                 tx.insertRecipients(listOf(messageId to setOf(accounts.employee1.id)))
                 tx.getThreadByMessageId(messageId)
@@ -391,9 +391,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 isCopy = false,
                 senders = setOf(accounts.employee1.id, accounts.person2.id),
                 recipients = setOf(accounts.person1.id, accounts.person2.id, accounts.employee1.id),
-                applicationId = null
+                applicationId = null,
             ),
-            participants2
+            participants2,
         )
     }
 
@@ -414,13 +414,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycare(
                         areaId = areaId,
                         language = Language.fi,
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                     )
                 )
             tx.insertDaycareAclRow(
                 daycareId = daycareId,
                 employeeId = employee1.id,
-                role = UserRole.UNIT_SUPERVISOR
+                role = UserRole.UNIT_SUPERVISOR,
             )
             val group1 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
             val group2 = DevDaycareGroup(daycareId = daycareId, name = "Testiläiset 2")
@@ -432,14 +432,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val childId =
                 tx.insert(
                     DevPerson(firstName = "Firstname", lastName = "Test Child"),
-                    DevPersonType.CHILD
+                    DevPersonType.CHILD,
                 )
             tx.insert(
                 DevParentship(
                     childId = childId,
                     headOfChildId = person1.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
             tx.insertGuardian(guardianId = person1.id, childId = childId)
@@ -450,7 +450,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         unitId = daycareId,
                         type = PlacementType.DAYCARE,
                         startDate = startDate,
-                        endDate = endDate
+                        endDate = endDate,
                     )
                 )
             tx.insert(
@@ -458,7 +458,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     daycareGroupId = group1.id,
                     startDate = startDate,
-                    endDate = endDateGroup1
+                    endDate = endDateGroup1,
                 )
             )
             tx.insert(
@@ -466,7 +466,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     daycareGroupId = group2.id,
                     startDate = startDateGroup2,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -491,7 +491,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 tx.insert(
                     DevDaycare(
                         areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                     )
                 )
             tx.insertDaycareAclRow(daycareId, employee1.id, UserRole.UNIT_SUPERVISOR)
@@ -501,7 +501,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 MessageAccount(
                     id = tx.createDaycareGroupMessageAccount(group.id),
                     name = group.name,
-                    type = AccountType.GROUP
+                    type = AccountType.GROUP,
                 )
             child1Id = tx.insert(DevPerson(), DevPersonType.CHILD)
             child2Id = tx.insert(DevPerson(), DevPersonType.CHILD)
@@ -518,7 +518,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = child1Id,
                         unitId = daycareId,
                         startDate = startDate,
-                        endDate = endDate
+                        endDate = endDate,
                     )
                 )
             tx.insert(
@@ -526,7 +526,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     daycareGroupId = group.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
             child2Placement =
@@ -535,7 +535,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = child2Id,
                         unitId = daycareId,
                         startDate = startDate,
-                        endDate = endDate
+                        endDate = endDate,
                     )
                 )
         }
@@ -546,16 +546,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             mapOf(
                 child1Id to setOf(accounts.employee1, groupAccount, accounts.person2),
-                child2Id to setOf(accounts.employee1, accounts.person2)
+                child2Id to setOf(accounts.employee1, accounts.person2),
             ),
-            receiversOf(accounts.person1)
+            receiversOf(accounts.person1),
         )
         deletePlacement(child2Placement)
         assertEquals(
-            mapOf(
-                child1Id to setOf(accounts.employee1, groupAccount, accounts.person2),
-            ),
-            receiversOf(accounts.person1)
+            mapOf(child1Id to setOf(accounts.employee1, groupAccount, accounts.person2)),
+            receiversOf(accounts.person1),
         )
     }
 
@@ -581,10 +579,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
-                        archiveFolderId
+                        archiveFolderId,
                     )
                     .total
-            }
+            },
         )
     }
 
@@ -604,10 +602,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
-                        archiveFolderId
+                        archiveFolderId,
                     )
                     .total
-            }
+            },
         )
 
         replyToThread(threadId, accounts.employee1, setOf(accounts.person1), "Reply")
@@ -621,10 +619,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
-                        null
+                        null,
                     )
                     .total
-            }
+            },
         )
         assertEquals(
             0,
@@ -636,10 +634,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         1,
                         "Espoo",
                         "Espoon palveluohjaus",
-                        archiveFolderId
+                        archiveFolderId,
                     )
                     .total
-            }
+            },
         )
     }
 
@@ -652,7 +650,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         content: String,
         sender: MessageAccount,
         recipientAccounts: List<MessageAccount>,
-        now: HelsinkiDateTime = sendTime
+        now: HelsinkiDateTime = sendTime,
     ): MessageThreadId =
         db.transaction { tx ->
             val recipientIds = recipientAccounts.map { it.id }.toSet()
@@ -663,7 +661,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     title,
                     urgent = false,
                     sensitive = false,
-                    isCopy = false
+                    isCopy = false,
                 )
             val messageId =
                 tx.insertMessage(
@@ -675,10 +673,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     recipientNames =
                         tx.getAccountNames(
                             recipientIds,
-                            testFeatureConfig.serviceWorkerMessageAccountName
+                            testFeatureConfig.serviceWorkerMessageAccountName,
                         ),
                     municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus"
+                    serviceWorkerAccountName = "Espoon palveluohjaus",
                 )
             tx.insertRecipients(listOf(messageId to recipientAccounts.map { it.id }.toSet()))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
@@ -696,7 +694,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         recipients: Set<MessageAccount>,
         content: String,
         repliesToMessageId: MessageId? = null,
-        now: HelsinkiDateTime = sendTime
+        now: HelsinkiDateTime = sendTime,
     ) =
         db.transaction { tx ->
             val recipientIds = recipients.map { it.id }.toSet()
@@ -711,7 +709,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     repliesToMessageId = repliesToMessageId,
                     recipientNames = listOf(),
                     municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus"
+                    serviceWorkerAccountName = "Espoon palveluohjaus",
                 )
             tx.insertRecipients(listOf(messageId to recipientIds))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
@@ -725,7 +723,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         tx,
                         AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
                 .first()
@@ -736,21 +734,21 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         MessageAccount(
             id = getCitizenMessageAccount(person.id),
             name = "${person.lastName} ${person.firstName}",
-            type = AccountType.CITIZEN
+            type = AccountType.CITIZEN,
         )
 
     private fun Database.Transaction.createAccount(group: DevDaycareGroup) =
         MessageAccount(
             id = createDaycareGroupMessageAccount(group.id),
             name = group.name,
-            type = AccountType.GROUP
+            type = AccountType.GROUP,
         )
 
     private fun Database.Transaction.createAccount(employee: DevEmployee) =
         MessageAccount(
             id = upsertEmployeeMessageAccount(employee.id),
             name = "${employee.lastName} ${employee.firstName}",
-            type = AccountType.PERSONAL
+            type = AccountType.PERSONAL,
         )
 
     private fun deletePlacement(placement: PlacementId) =

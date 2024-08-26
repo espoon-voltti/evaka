@@ -40,7 +40,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = fixture.daycare.id,
                     date = today.plusDays(1),
                     arrived = LocalTime.of(0, 15),
-                    departed = null
+                    departed = null,
                 )
             )
         }
@@ -58,7 +58,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = fixture.daycare.id,
                     date = today,
                     arrived = LocalTime.of(0, 15),
-                    departed = null
+                    departed = null,
                 )
             )
         }
@@ -81,7 +81,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = placementStart.minusDays(1),
                     endDate = today.minusDays(1),
                     optionId = snDaycareFullDay35.id,
-                    confirmedBy = employee.evakaUserId
+                    confirmedBy = employee.evakaUserId,
                 )
             )
             it.insert(
@@ -90,7 +90,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = today.plusDays(1),
                     endDate = placementEnd.plusDays(1),
                     optionId = snDaycareFullDay35.id,
-                    confirmedBy = employee.evakaUserId
+                    confirmedBy = employee.evakaUserId,
                 )
             )
         }
@@ -113,7 +113,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = placementStart,
                     endDate = today.minusDays(1),
                     optionId = snDaycareFullDay35.id,
-                    confirmedBy = employee.evakaUserId
+                    confirmedBy = employee.evakaUserId,
                 )
             )
             it.insert(
@@ -122,7 +122,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     startDate = today.plusDays(1),
                     endDate = placementEnd.minusDays(1),
                     optionId = snDaycareFullDay35.id,
-                    confirmedBy = employee.evakaUserId
+                    confirmedBy = employee.evakaUserId,
                 )
             )
         }
@@ -143,7 +143,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = fixture.placement.id,
                     daycareGroupId = group.id,
                     startDate = placementStart.minusDays(1),
-                    endDate = today.minusDays(1)
+                    endDate = today.minusDays(1),
                 )
             )
             it.insert(
@@ -151,7 +151,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = fixture.placement.id,
                     daycareGroupId = group.id,
                     startDate = today.plusDays(1),
-                    endDate = placementEnd.plusDays(1)
+                    endDate = placementEnd.plusDays(1),
                 )
             )
         }
@@ -172,7 +172,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = fixture.placement.id,
                     daycareGroupId = group.id,
                     startDate = placementStart.plusDays(1),
-                    endDate = today.minusDays(1)
+                    endDate = today.minusDays(1),
                 )
             )
             it.insert(
@@ -180,7 +180,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                     daycarePlacementId = fixture.placement.id,
                     daycareGroupId = group.id,
                     startDate = today.plusDays(1),
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -191,12 +191,12 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
     private data class ChildInDaycareFixture(
         val daycare: DevDaycare,
         val child: DevPerson,
-        val placement: DevPlacement
+        val placement: DevPlacement,
     )
 
     private fun givenChildInDaycare(
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ): ChildInDaycareFixture {
         val area = DevCareArea()
         val daycare = DevDaycare(areaId = area.id)
@@ -206,7 +206,7 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId = child.id,
                 unitId = daycare.id,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
             )
         db.transaction {
             it.insert(area)

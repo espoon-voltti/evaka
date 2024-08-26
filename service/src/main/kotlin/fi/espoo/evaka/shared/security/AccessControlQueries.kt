@@ -33,7 +33,7 @@ data class ChildAclConfig(
         listOfNotNull(
             if (this.placement) employeeChildAclViaPlacement(user.id, now) else null,
             if (this.backupCare) employeeChildAclViaBackupCare(user.id, now) else null,
-            if (this.application) employeeChildAclViaApplication(user.id) else null
+            if (this.application) employeeChildAclViaApplication(user.id) else null,
         )
 
     /**
@@ -45,7 +45,7 @@ data class ChildAclConfig(
         listOfNotNull(
             if (this.placement) mobileChildAclViaPlacement(user.id, now) else null,
             if (this.backupCare) mobileChildAclViaBackupCare(user.id, now) else null,
-            if (this.application) mobileChildAclViaApplication(user.id) else null
+            if (this.application) mobileChildAclViaApplication(user.id) else null,
         )
 }
 

@@ -68,19 +68,19 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     headOfChildId = person.id,
                     childId = testChild_1.id,
                     startDate = testChild_1.dateOfBirth,
-                    endDate = LocalDate.now()
+                    endDate = LocalDate.now(),
                 )
             )
             tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = unitSupervisorId,
-                role = UserRole.UNIT_SUPERVISOR
+                role = UserRole.UNIT_SUPERVISOR,
             )
             tx.insert(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    endDate = LocalDate.now()
+                    endDate = LocalDate.now(),
                 )
             )
         }
@@ -129,7 +129,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         canDeletePartnership(
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         )
     }
@@ -151,7 +151,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         LocalDate.now().plusDays(100),
                         false,
                         Creator.User(partnershipCreator),
-                        clock.now()
+                        clock.now(),
                     )
                     .also {
                         tx.createPartnership(
@@ -161,7 +161,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(300),
                             false,
                             Creator.User(partnershipCreator),
-                            clock.now()
+                            clock.now(),
                         )
                         assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
                     }
@@ -202,7 +202,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         LocalDate.now().plusDays(200),
                         false,
                         Creator.User(partnershipCreator),
-                        clock.now()
+                        clock.now(),
                     )
                     .also {
                         tx.createPartnership(
@@ -212,7 +212,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(700),
                             false,
                             Creator.User(partnershipCreator),
-                            clock.now()
+                            clock.now(),
                         )
                     }
             }
@@ -233,7 +233,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val partnership1 =
             db.transaction { tx ->
@@ -244,7 +244,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                         LocalDate.now().plusDays(200),
                         false,
                         Creator.User(partnershipCreator),
-                        clock.now()
+                        clock.now(),
                     )
                     .also {
                         tx.createPartnership(
@@ -254,7 +254,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                             LocalDate.now().plusDays(700),
                             false,
                             Creator.User(partnershipCreator),
-                            clock.now()
+                            clock.now(),
                         )
                     }
             }
@@ -278,7 +278,7 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                     LocalDate.now().plusDays(200),
                     true,
                     Creator.User(partnershipCreator),
-                    clock.now()
+                    clock.now(),
                 )
             }
 

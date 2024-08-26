@@ -29,7 +29,7 @@ data class ApiUrls(val token: HttpUrl, val files: HttpUrl, val messages: HttpUrl
 data class ApiError(
     val reason: String,
     val validationErrors: List<ValidationError>? = null,
-    val messageId: Long? = null
+    val messageId: Long? = null,
 )
 
 // https://api.messages-qa.suomi.fi/api-docs#model-ValidationError
@@ -111,7 +111,7 @@ data class PrintingAndEnvelopingService(val postiMessaging: PostiMessaging)
 data class PostiMessaging(
     val contactDetails: ContactDetails,
     val username: String,
-    val password: String
+    val password: String,
 ) {
     init {
         require(username.isNotBlank()) { "username must not be blank" }
@@ -158,7 +158,7 @@ data class Address(
     val zipCode: String,
     val city: String,
     /** ISO 3166-1 alpha-2 country code */
-    val countryCode: String = "FI"
+    val countryCode: String = "FI",
 ) {
     init {
         require(name.isNotBlank()) { "name must not be blank" }

@@ -194,12 +194,12 @@ private class Parser(private var text: CharSequence) {
         val lower: Lower?,
         val lowerInclusive: Boolean,
         val upper: Upper?,
-        val upperInclusive: Boolean
+        val upperInclusive: Boolean,
     )
 
     private fun <Lower : Any, Upper : Any> parseRange(
         parseLower: (parser: Parser) -> Lower,
-        parseUpper: (parser: Parser) -> Upper
+        parseUpper: (parser: Parser) -> Upper,
     ): RawRange<Lower, Upper> {
         val lowerInclusive =
             when (val char = parseChar()) {
@@ -321,7 +321,7 @@ val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ ->
 class CustomArgumentFactory<T>(
     private val clazz: Class<T>,
     private val sqlType: Int,
-    private val f: (T) -> Argument?
+    private val f: (T) -> Argument?,
 ) : ArgumentFactory.Preparable {
     init {
         check(sqlType != Types.OTHER) {
@@ -369,7 +369,7 @@ class CustomStringArgument(val value: String) : Argument {
 
 inline fun <reified T> customArgumentFactory(
     sqlType: Int,
-    noinline f: (T) -> Argument?
+    noinline f: (T) -> Argument?,
 ): CustomArgumentFactory<T> = CustomArgumentFactory(T::class.java, sqlType, f)
 
 inline fun <reified T> pgObjectArgumentFactory(noinline serializer: (T?) -> PGobject) =

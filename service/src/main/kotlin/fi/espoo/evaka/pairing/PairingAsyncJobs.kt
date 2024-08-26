@@ -19,7 +19,7 @@ class PairingAsyncJobs(asyncJobRunner: AsyncJobRunner<AsyncJob>) {
 
     private fun runGarbageCollectPairing(
         db: Database.Connection,
-        msg: AsyncJob.GarbageCollectPairing
+        msg: AsyncJob.GarbageCollectPairing,
     ) {
         db.transaction {
             it.createUpdate { sql("DELETE FROM pairing WHERE id = ${bind(msg.pairingId)}") }

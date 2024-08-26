@@ -38,7 +38,7 @@ fun defaultAccessLoggingValve(env: Environment) =
                         "appCommit" to System.getenv("APP_COMMIT"),
                         "appName" to env.getProperty("spring.application.name"),
                         "env" to System.getenv("VOLTTI_ENV"),
-                        "hostIp" to System.getenv("HOST_IP")
+                        "hostIp" to System.getenv("HOST_IP"),
                     )
                 createJsonEncoder { event ->
                     val user = event.request.getAuthenticatedUser()

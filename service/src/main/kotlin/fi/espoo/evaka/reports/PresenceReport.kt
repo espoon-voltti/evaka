@@ -24,14 +24,14 @@ const val MAX_NUMBER_OF_DAYS = 14
 class PresenceReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/presences", // deprecated
-        "/employee/reports/presences"
+        "/employee/reports/presences",
     )
     fun getPresenceReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<PresenceReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong())))
@@ -43,7 +43,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_PRESENCE_REPORT
+                        Action.Global.READ_PRESENCE_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPresenceRows(from, to)
@@ -94,5 +94,5 @@ data class PresenceReportRow(
     val socialSecurityNumber: String?,
     val daycareId: DaycareId?,
     val daycareGroupName: String?,
-    val present: Boolean?
+    val present: Boolean?,
 )

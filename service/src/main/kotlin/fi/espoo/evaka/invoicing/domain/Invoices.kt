@@ -43,7 +43,7 @@ data class Invoice(
     val rows: List<InvoiceRow>,
     val number: Long? = null,
     val sentBy: EvakaUserId? = null,
-    val sentAt: HelsinkiDateTime? = null
+    val sentAt: HelsinkiDateTime? = null,
 ) {
     val totalPrice
         get() = invoiceRowTotal(rows)
@@ -69,7 +69,7 @@ data class InvoiceRow(
     val product: ProductKey,
     val unitId: DaycareId,
     val description: String = "",
-    val correctionId: InvoiceCorrectionId?
+    val correctionId: InvoiceCorrectionId?,
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice
@@ -93,7 +93,7 @@ data class InvoiceDetailed(
     val number: Long?,
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
-    @Json val relatedFeeDecisions: List<RelatedFeeDecision>
+    @Json val relatedFeeDecisions: List<RelatedFeeDecision>,
 ) {
     val account: Int = 3295
     val totalPrice
@@ -118,7 +118,7 @@ data class InvoiceRowDetailed(
     val savedCostCenter: String?,
     val description: String,
     val correctionId: InvoiceCorrectionId?,
-    val note: String?
+    val note: String?,
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice
@@ -135,7 +135,7 @@ data class InvoiceSummary(
     val rows: List<InvoiceRowSummary>,
     val sentBy: EvakaUserId?,
     val sentAt: HelsinkiDateTime?,
-    val createdAt: HelsinkiDateTime? = null
+    val createdAt: HelsinkiDateTime? = null,
 ) {
     val account: Int = 3295
     val totalPrice
@@ -147,7 +147,7 @@ data class InvoiceRowSummary(
     val id: InvoiceRowId,
     val child: PersonBasic,
     val amount: Int,
-    val unitPrice: Int
+    val unitPrice: Int,
 ) : RowWithPrice {
     override val price
         get() = amount * unitPrice

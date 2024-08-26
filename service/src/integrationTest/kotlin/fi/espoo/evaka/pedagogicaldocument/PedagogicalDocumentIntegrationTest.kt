@@ -97,14 +97,14 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
-                        endDate = LocalDate.MAX
+                        endDate = LocalDate.MAX,
                     )
                 )
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
-                    endDate = LocalDate.MAX
+                    endDate = LocalDate.MAX,
                 )
             )
 
@@ -123,7 +123,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun getAttachmentAsUser(
         attachmentId: AttachmentId,
         user: AuthenticatedUser,
-        requestedFilename: String = "evaka-logo.png"
+        requestedFilename: String = "evaka-logo.png",
     ) =
         http
             .get("/attachments/$attachmentId/download/$requestedFilename")
@@ -136,7 +136,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun getPedagogicalDocumentsAsCitizen(
         user: AuthenticatedUser.Citizen,
-        childId: ChildId
+        childId: ChildId,
     ) = http.get("/citizen/children/$childId/pedagogical-documents").asUser(user).responseString()
 
     private fun getUnreadCount(user: AuthenticatedUser.Citizen) =
@@ -234,7 +234,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 DevPlacement(
                     childId = testChild_2.id,
                     unitId = testDaycare2.id,
-                    endDate = LocalDate.MAX
+                    endDate = LocalDate.MAX,
                 )
             )
         }
@@ -246,7 +246,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         assertEquals(
             403,
-            getPedagogicalDocumentAsUser(testChild_2.id, supervisor).second.statusCode
+            getPedagogicalDocumentAsUser(testChild_2.id, supervisor).second.statusCode,
         )
         assertEquals(403, getAttachmentAsUser(attachmentId, supervisor).statusCode)
     }
@@ -289,7 +289,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         assertEquals(
             200,
-            getAttachmentAsUser(attachment.id, groupStaff, attachment.name).statusCode
+            getAttachmentAsUser(attachment.id, groupStaff, attachment.name).statusCode,
         )
     }
 
@@ -360,7 +360,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             emptyList(),
             deserializeGetResultCitizen(
                 getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
-            )
+            ),
         )
         assertEquals(0, getUnreadCount(guardian).values.sum())
 
@@ -371,7 +371,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             deserializeGetResultCitizen(
                     getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
                 )
-                .size
+                .size,
         )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
@@ -382,7 +382,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             deserializeGetResultCitizen(
                     getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
                 )
-                .size
+                .size,
         )
 
         http
@@ -396,7 +396,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             deserializeGetResultCitizen(
                     getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
                 )
-                .size
+                .size,
         )
         // only docs with attachments are counted in unread
         assertEquals(1, getUnreadCount(guardian).values.sum())
@@ -432,7 +432,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             1,
             deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
-                .size
+                .size,
         )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
@@ -442,14 +442,14 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(
             0,
             deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
-                .size
+                .size,
         )
         assertEquals(
             0,
             deserializeGetResultCitizen(
                     getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
                 )
-                .size
+                .size,
         )
     }
 

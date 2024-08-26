@@ -22,7 +22,7 @@ fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, 
 fun Database.Read.getUnitStats(
     unitId: DaycareId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
 ): Caretakers {
     if (startDate.isBefore(endDate.minusYears(5))) {
         throw BadRequest("Too long time range")
@@ -52,7 +52,7 @@ from dailyTotals
 fun Database.Read.getGroupStats(
     unitId: DaycareId,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
 ): Map<GroupId, Caretakers> =
     createQuery {
             sql(

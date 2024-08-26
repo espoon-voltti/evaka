@@ -28,7 +28,7 @@ class EspooIncomeTypesProvider : IncomeTypesProvider {
             "ALIMONY" to IncomeType("Elatusapu/-tuki", 1, false, false),
             "OTHER_INCOME" to IncomeType("Muu tulo (korko, vuokra, osinko jne.)", 1, true, false),
             "ALL_EXPENSES" to
-                IncomeType("Menot (esim. maksetut elatusmaksut tai syytinki)", -1, false, false)
+                IncomeType("Menot (esim. maksetut elatusmaksut tai syytinki)", -1, false, false),
         )
     }
 }

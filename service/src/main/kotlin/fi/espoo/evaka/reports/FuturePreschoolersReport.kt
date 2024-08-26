@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController
 class FuturePreschoolersReport(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/future-preschoolers", // deprecated
-        "/employee/reports/future-preschoolers"
+        "/employee/reports/future-preschoolers",
     )
     fun getFuturePreschoolersReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<FuturePreschoolersReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -33,7 +33,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_FUTURE_PRESCHOOLERS
+                        Action.Global.READ_FUTURE_PRESCHOOLERS,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFuturePreschoolerRows(clock.today())
@@ -54,7 +54,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_FUTURE_PRESCHOOLERS
+                        Action.Global.READ_FUTURE_PRESCHOOLERS,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPreschoolUnitsRows(clock.today())
@@ -67,7 +67,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
     fun getFuturePreschoolersSourceUnitsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<SourceUnitsReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -75,7 +75,7 @@ class FuturePreschoolersReport(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_FUTURE_PRESCHOOLERS
+                        Action.Global.READ_FUTURE_PRESCHOOLERS,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getSourceUnitsRows(clock.today())
@@ -123,9 +123,7 @@ END
         .bind("today", today)
         .toList<FuturePreschoolersReportRow>()
 
-fun Database.Read.getPreschoolUnitsRows(
-    today: LocalDate,
-): List<PreschoolUnitsReportRow> =
+fun Database.Read.getPreschoolUnitsRows(today: LocalDate): List<PreschoolUnitsReportRow> =
     createQuery {
             sql(
                 """
@@ -188,7 +186,7 @@ data class FuturePreschoolersReportRow(
     val childPostOffice: String,
     val unitId: DaycareId,
     val unitName: String,
-    val options: List<String>
+    val options: List<String>,
 )
 
 data class PreschoolUnitsReportRow(
@@ -198,7 +196,7 @@ data class PreschoolUnitsReportRow(
     val postalCode: String,
     val postOffice: String,
     val unitSize: Int,
-    val options: List<String>
+    val options: List<String>,
 )
 
 data class SourceUnitsReportRow(
@@ -206,5 +204,5 @@ data class SourceUnitsReportRow(
     val unitName: String,
     val address: String,
     val postalCode: String,
-    val postOffice: String
+    val postOffice: String,
 )

@@ -54,7 +54,7 @@ class WebPushCryptoTest {
                 ikm = WebPushCrypto.base64Decode("yqdlZ-tYemfogSmv7Ws5PQ"),
                 keyId = byteArrayOf(),
                 salt = WebPushCrypto.base64Decode("I1BsxtFttlv3u_Oo94xnmw"),
-                data = data
+                data = data,
             )
         assertEquals(
             """
@@ -62,7 +62,7 @@ I1BsxtFttlv3u_Oo94xnmwAAEAAA-NAVub2qFgBEuQKRapoZu-IxkIva3MEB1PD-
 ly8Thjg 
 """
                 .removeWhitespace(),
-            WebPushCrypto.base64Encode(body)
+            WebPushCrypto.base64Encode(body),
         )
     }
 
@@ -81,7 +81,7 @@ Dll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8
 """
                         .removeWhitespace()
                 ),
-                WebPushCrypto.decodePrivateKey("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw")
+                WebPushCrypto.decodePrivateKey("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw"),
             )
         val uaKeyPair =
             WebPushKeyPair(
@@ -92,7 +92,7 @@ JvLexhqUzORcx aOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4
 """
                         .removeWhitespace()
                 ),
-                WebPushCrypto.decodePrivateKey("q1dXpw3UpT5VOmu_cf_v6ih07Aems3njxI-JWgLcM94")
+                WebPushCrypto.decodePrivateKey("q1dXpw3UpT5VOmu_cf_v6ih07Aems3njxI-JWgLcM94"),
             )
         assertEquals(asKeyPair.publicKey, WebPushCrypto.derivePublicKey(asKeyPair.privateKey))
         assertEquals(uaKeyPair.publicKey, WebPushCrypto.derivePublicKey(uaKeyPair.privateKey))
@@ -101,7 +101,7 @@ JvLexhqUzORcx aOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4
             WebPushEndpoint(
                 uri = URI("https://push.example.net/push/JzLQ3raZJfFBR0aqvOMsLrt54w4rJUsV"),
                 ecdhPublicKey = uaKeyPair.publicKey,
-                authSecret = WebPushCrypto.base64Decode("BTBZMqHH6r4Tts7J_aSIgg")
+                authSecret = WebPushCrypto.base64Decode("BTBZMqHH6r4Tts7J_aSIgg"),
             )
         val request =
             WebPushRequest.createEncryptedPushMessage(
@@ -110,7 +110,7 @@ JvLexhqUzORcx aOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4
                 endpoint = endpoint,
                 messageKeyPair = asKeyPair,
                 salt = WebPushCrypto.base64Decode("DGv6ra1nlYgDCS1FRnbzlw"),
-                data = data
+                data = data,
             )
         assertEquals(endpoint.uri, request.uri)
         assertEquals("10", request.headers.ttl)
@@ -122,7 +122,7 @@ mlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A_yl95bQpu6cVPT
 pK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN
 """
                 .removeWhitespace(),
-            WebPushCrypto.base64Encode(request.body)
+            WebPushCrypto.base64Encode(request.body),
         )
     }
 

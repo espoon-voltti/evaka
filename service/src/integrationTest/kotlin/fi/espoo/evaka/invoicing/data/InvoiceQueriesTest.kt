@@ -34,7 +34,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    )
+                    ),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
@@ -44,7 +44,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    )
+                    ),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.DRAFT,
@@ -54,8 +54,8 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    )
-            )
+                    ),
+            ),
         )
 
     @BeforeEach
@@ -144,7 +144,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = testArea.id,
                         number = 5000000123L,
                         rows =
-                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
+                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id)),
                     )
                 )
             )
@@ -166,7 +166,7 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         areaId = testArea.id,
                         number = it,
                         rows =
-                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
+                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id)),
                     )
                 }
                 .let { invoices -> tx.insertInvoices(invoices) }
@@ -241,9 +241,9 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             listOf(
                                 createInvoiceRowFixture(
                                     childId = testChild_1.id,
-                                    unitId = testDaycare.id
+                                    unitId = testDaycare.id,
                                 )
-                            )
+                            ),
                     )
                 )
             )

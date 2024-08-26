@@ -100,7 +100,7 @@ class TimeSetTest {
         val set = TimeSet.of(added).removeAll(removed)
         assertEquals(
             listOf(testRange(1, 2), testRange(5, 6), testRange(8, 9)),
-            set.ranges().toList()
+            set.ranges().toList(),
         )
     }
 

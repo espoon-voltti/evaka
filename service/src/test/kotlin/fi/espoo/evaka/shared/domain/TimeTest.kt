@@ -27,7 +27,7 @@ class TimeTest {
         val periods =
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)),
-                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5))
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)),
             )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5))
 
@@ -36,9 +36,9 @@ class TimeTest {
         assertEquals(
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)),
-                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5)),
             ),
-            result
+            result,
         )
     }
 
@@ -57,7 +57,7 @@ class TimeTest {
         val periods =
             listOf(
                 DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 7)),
-                DateRange(LocalDate.of(2019, 1, 1), null)
+                DateRange(LocalDate.of(2019, 1, 1), null),
             )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), null)
 
@@ -67,9 +67,9 @@ class TimeTest {
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)),
                 DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 7)),
-                DateRange(LocalDate.of(2019, 1, 8), null)
+                DateRange(LocalDate.of(2019, 1, 8), null),
             ),
-            result
+            result,
         )
     }
 
@@ -88,7 +88,7 @@ class TimeTest {
         val periods =
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)),
-                DateRange(LocalDate.of(2019, 1, 10), LocalDate.of(2019, 1, 15))
+                DateRange(LocalDate.of(2019, 1, 10), LocalDate.of(2019, 1, 15)),
             )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
@@ -99,9 +99,9 @@ class TimeTest {
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)),
                 DateRange(LocalDate.of(2019, 1, 6), LocalDate.of(2019, 1, 9)),
                 DateRange(LocalDate.of(2019, 1, 10), LocalDate.of(2019, 1, 15)),
-                DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31))
+                DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)),
             ),
-            result
+            result,
         )
     }
 
@@ -111,7 +111,7 @@ class TimeTest {
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)) to 1,
                 DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 6, 30)) to 1,
-                DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2
+                DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2,
             )
 
         val result = mergePeriods(periods)
@@ -119,9 +119,9 @@ class TimeTest {
         assertEquals(
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 30)) to 1,
-                DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2
+                DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2,
             ),
-            result
+            result,
         )
     }
 
@@ -135,7 +135,7 @@ class TimeTest {
                 DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 4)) to 4,
                 DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 5)) to 5,
                 DateRange(LocalDate.of(2019, 1, 6), LocalDate.of(2019, 1, 6)) to 6,
-                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 7
+                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 7,
             )
 
         val result = mergePeriods(periods)
@@ -148,7 +148,7 @@ class TimeTest {
         val periods =
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 1)) to 1,
-                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 1
+                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 1,
             )
 
         val result = mergePeriods(periods)
@@ -162,14 +162,14 @@ class TimeTest {
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)) to 1,
                 DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3)) to 1,
-                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1,
             )
 
         val result = mergePeriods(periods)
 
         assertEquals(
             listOf(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 7)) to 1),
-            result
+            result,
         )
     }
 
@@ -179,7 +179,7 @@ class TimeTest {
             listOf(
                 DateRange(LocalDate.of(2019, 1, 1), null) to 1,
                 DateRange(LocalDate.of(2019, 1, 2), null) to 1,
-                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1,
             )
 
         val result = mergePeriods(periods)
@@ -192,7 +192,7 @@ class TimeTest {
         val periods =
             listOf(
                 DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1,
-                DateRange(LocalDate.of(2019, 1, 1), null) to 1
+                DateRange(LocalDate.of(2019, 1, 1), null) to 1,
             )
 
         val result = mergePeriods(periods)

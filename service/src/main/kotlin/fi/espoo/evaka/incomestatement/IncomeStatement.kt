@@ -60,7 +60,7 @@ data class Gross(
     val incomeSource: IncomeSource,
     val estimatedMonthlyIncome: Int,
     val otherIncome: Set<OtherIncome>,
-    val otherIncomeInfo: String
+    val otherIncomeInfo: String,
 )
 
 data class SelfEmployed(val attachments: Boolean, val estimatedIncome: EstimatedIncome?)
@@ -68,7 +68,7 @@ data class SelfEmployed(val attachments: Boolean, val estimatedIncome: Estimated
 data class EstimatedIncome(
     val estimatedMonthlyIncome: Int,
     val incomeStartDate: LocalDate,
-    val incomeEndDate: LocalDate?
+    val incomeEndDate: LocalDate?,
 )
 
 data class LimitedCompany(val incomeSource: IncomeSource)
@@ -85,7 +85,7 @@ data class Entrepreneur(
     val limitedCompany: LimitedCompany?,
     val partnership: Boolean,
     val lightEntrepreneur: Boolean,
-    val accountant: Accountant?
+    val accountant: Accountant?,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -103,7 +103,7 @@ sealed class IncomeStatementBody(open val startDate: LocalDate, open val endDate
         val student: Boolean,
         val alimonyPayer: Boolean,
         val otherInfo: String,
-        val attachmentIds: List<AttachmentId>
+        val attachmentIds: List<AttachmentId>,
     ) : IncomeStatementBody(startDate, endDate)
 
     @JsonTypeName("CHILD_INCOME")
@@ -111,7 +111,7 @@ sealed class IncomeStatementBody(open val startDate: LocalDate, open val endDate
         override val startDate: LocalDate,
         override val endDate: LocalDate?,
         val otherInfo: String,
-        val attachmentIds: List<AttachmentId>
+        val attachmentIds: List<AttachmentId>,
     ) : IncomeStatementBody(startDate, endDate)
 }
 
@@ -153,7 +153,7 @@ fun createIncomeStatement(
     dbc: Database.Connection,
     incomeStatementPersonId: PersonId,
     uploadedBy: AuthenticatedUser.Citizen,
-    body: IncomeStatementBody
+    body: IncomeStatementBody,
 ): IncomeStatementId {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
@@ -172,13 +172,13 @@ fun createIncomeStatement(
                 tx.associateOrphanAttachments(
                     uploadedBy.evakaUserId,
                     AttachmentParent.IncomeStatement(incomeStatementId),
-                    body.attachmentIds
+                    body.attachmentIds,
                 )
             is IncomeStatementBody.ChildIncome -> {
                 tx.associateOrphanAttachments(
                     uploadedBy.evakaUserId,
                     AttachmentParent.IncomeStatement(incomeStatementId),
-                    body.attachmentIds
+                    body.attachmentIds,
                 )
             }
             else -> {}
@@ -196,7 +196,7 @@ data class Attachment(
     val id: AttachmentId,
     val name: String,
     val contentType: String,
-    val uploadedByEmployee: Boolean
+    val uploadedByEmployee: Boolean,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -223,7 +223,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val created: HelsinkiDateTime,
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
-        override val handlerNote: String
+        override val handlerNote: String,
     ) : IncomeStatement(IncomeStatementType.HIGHEST_FEE)
 
     @JsonTypeName("INCOME")
@@ -243,7 +243,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
         override val handlerNote: String,
-        val attachments: List<Attachment>
+        val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.INCOME)
 
     @JsonTypeName("CHILD_INCOME")
@@ -259,6 +259,6 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
         override val handlerNote: String,
-        val attachments: List<Attachment>
+        val attachments: List<Attachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }

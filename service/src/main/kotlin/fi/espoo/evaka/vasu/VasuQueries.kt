@@ -18,7 +18,7 @@ import org.jdbi.v3.json.Json
 fun Database.Transaction.insertVasuDocument(
     now: HelsinkiDateTime,
     childId: ChildId,
-    template: VasuTemplate
+    template: VasuTemplate,
 ): VasuDocumentId {
     val child =
         createQuery {
@@ -57,7 +57,7 @@ fun Database.Transaction.insertVasuDocument(
                 when (template.type) {
                     CurriculumType.DAYCARE -> null
                     CurriculumType.PRESCHOOL -> ChildLanguage("", "")
-                }
+                },
         )
 
     val documentId =
@@ -133,7 +133,7 @@ fun Database.Read.getVasuDocumentMaster(today: LocalDate, id: VasuDocumentId): V
 
 fun Database.Read.getLatestPublishedVasuDocument(
     today: LocalDate,
-    id: VasuDocumentId
+    id: VasuDocumentId,
 ): VasuDocument? {
     return createQuery {
             sql(
@@ -189,7 +189,7 @@ fun Database.Transaction.updateVasuDocumentMaster(
     now: HelsinkiDateTime,
     id: VasuDocumentId,
     content: VasuContent,
-    childLanguage: ChildLanguage?
+    childLanguage: ChildLanguage?,
 ) {
     createUpdate {
             sql(
@@ -242,7 +242,7 @@ data class SummaryResultRow(
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null,
     val eventCreatedBy: EvakaUserId? = null,
-    val type: CurriculumType
+    val type: CurriculumType,
 )
 
 fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> {
@@ -310,7 +310,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                             }
                         }
                         .sortedBy { it.created },
-                type = documents[0].type
+                type = documents[0].type,
             )
         }
 }
@@ -318,7 +318,7 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
 fun Database.Transaction.insertVasuDocumentEvent(
     documentId: VasuDocumentId,
     eventType: VasuDocumentEventType,
-    createdBy: EvakaUserId
+    createdBy: EvakaUserId,
 ): VasuDocumentEvent {
     return createQuery {
             sql(
@@ -348,7 +348,7 @@ fun Database.Transaction.freezeVasuPlacements(today: LocalDate, id: VasuDocument
 
 private fun Database.Read.getVasuPlacements(
     today: LocalDate,
-    id: VasuDocumentId
+    id: VasuDocumentId,
 ): List<VasuPlacement> {
     return createQuery {
             sql(
@@ -380,7 +380,7 @@ private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics 
 
 fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
     docId: VasuDocumentId,
-    guardianId: PersonId
+    guardianId: PersonId,
 ) {
     val currentBasics = getVasuDocumentBasics(docId)
 

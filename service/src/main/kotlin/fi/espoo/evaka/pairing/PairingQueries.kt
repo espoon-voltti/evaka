@@ -19,7 +19,7 @@ const val expiresInMinutes = 60L
 fun Database.Transaction.initPairing(
     clock: EvakaClock,
     unitId: DaycareId? = null,
-    employeeId: EmployeeId? = null
+    employeeId: EmployeeId? = null,
 ): Pairing {
     val expires = clock.now().plusMinutes(expiresInMinutes)
     val challenge = generatePairingKey()
@@ -54,7 +54,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(
     clock: EvakaClock,
     id: PairingId,
     challengeKey: String,
-    responseKey: String
+    responseKey: String,
 ): Pairing {
     val defaultDeviceName = "Nimeämätön laite"
     val now = clock.now()
@@ -87,7 +87,7 @@ fun Database.Transaction.validatePairing(
     clock: EvakaClock,
     id: PairingId,
     challengeKey: String,
-    responseKey: String
+    responseKey: String,
 ): MobileDeviceIdentity {
     val now = clock.now()
     val longTermToken = UUID.randomUUID()

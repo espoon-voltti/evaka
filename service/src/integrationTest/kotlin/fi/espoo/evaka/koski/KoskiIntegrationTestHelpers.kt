@@ -21,7 +21,7 @@ internal data class KoskiStudyRightRaw(
     val version: Int,
     val studyRightOid: String?,
     val personOid: String?,
-    val payload: String
+    val payload: String,
 )
 
 internal fun Database.Read.getStoredResults() =

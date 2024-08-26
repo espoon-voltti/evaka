@@ -54,7 +54,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 adminLoginUser,
                 mockToday,
                 mockToday.today().minusDays(7),
-                mockToday.today()
+                mockToday.today(),
             )
 
         val expectedBaseResult =
@@ -89,9 +89,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lunchCount = 1,
                                                         snackCount = 1,
                                                     )
-                                            )
+                                            ),
                                     )
-                                )
+                                ),
                         ),
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
                             areaName = "Area B",
@@ -118,11 +118,11 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lunchCount = 1,
                                                         snackCount = 1,
                                                     )
-                                            )
+                                            ),
                                     )
-                                )
-                        )
-                    )
+                                ),
+                        ),
+                    ),
             )
 
         assertEquals(expectedBaseResult, reportAll)
@@ -139,7 +139,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 unitSupervisorUser,
                 mockToday,
                 mockToday.today().minusDays(7),
-                mockToday.today()
+                mockToday.today(),
             )
 
         val expectedResult =
@@ -174,11 +174,11 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lunchCount = 1,
                                                         snackCount = 1,
                                                     )
-                                            )
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         assertEquals(expectedResult, reportAll)
@@ -195,7 +195,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childMId =
                     tx.insert(
                         DevPerson(firstName = "Mark", lastName = "Multiple"),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
                 tx.insert(
                     DevPlacement(
@@ -203,28 +203,28 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         childId = childMId,
                         unitId = testData.daycareBId,
                         startDate = mockToday.today().minusMonths(1),
-                        endDate = mockToday.today().plusMonths(1)
+                        endDate = mockToday.today().plusMonths(1),
                     )
                 )
                 tx.insertTestChildAttendance(
                     childMId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(mockToday.today(), LocalTime.of(10, 30)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 0))
+                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 0)),
                 )
 
                 tx.insertTestChildAttendance(
                     childMId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 30)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0))
+                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
                 )
 
                 tx.insertTestChildAttendance(
                     childMId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 30))
+                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 30)),
                 )
                 childMId
             }
@@ -234,7 +234,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 unitSupervisorUser,
                 mockToday,
                 mockToday.today().minusDays(7),
-                mockToday.today()
+                mockToday.today(),
             )
 
         val expectedResult =
@@ -277,12 +277,12 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 0,
                                                         lunchCount = 1,
                                                         snackCount = 0,
-                                                    )
-                                            )
+                                                    ),
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         assertEquals(expectedResult, reportAll)
@@ -300,7 +300,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childPId =
                     tx.insert(
                         DevPerson(firstName = "Peter", lastName = "Placer"),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
                 tx.insert(
                     DevPlacement(
@@ -308,7 +308,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         childId = childPId,
                         unitId = testData.daycareBId,
                         startDate = previousAttendanceDay.minusMonths(1),
-                        endDate = previousAttendanceDay.plusDays(1)
+                        endDate = previousAttendanceDay.plusDays(1),
                     )
                 )
                 tx.insert(
@@ -317,21 +317,21 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         childId = childPId,
                         unitId = testData.daycareBId,
                         startDate = previousAttendanceDay.plusDays(2),
-                        endDate = examinationDay.plusMonths(1)
+                        endDate = examinationDay.plusMonths(1),
                     )
                 )
                 tx.insertTestChildAttendance(
                     childPId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0))
+                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0)),
                 )
 
                 tx.insertTestChildAttendance(
                     childPId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(examinationDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0))
+                    HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0)),
                 )
 
                 childPId
@@ -342,7 +342,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 unitSupervisorUser,
                 mockToday,
                 mockToday.today().minusDays(7),
-                mockToday.today()
+                mockToday.today(),
             )
 
         val expectedResult =
@@ -385,12 +385,12 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 2,
                                                         lunchCount = 2,
                                                         snackCount = 2,
-                                                    )
-                                            )
+                                                    ),
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         assertEquals(expectedResult, reportAll)
@@ -408,7 +408,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 val childPId =
                     tx.insert(
                         DevPerson(firstName = "Peter", lastName = "Placer"),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
 
                 val backupDaycareId =
@@ -417,7 +417,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                             name = "Backup Daycare",
                             areaId = testData.areaBId,
                             openingDate = previousAttendanceDay.minusDays(7),
-                            type = setOf(CareType.FAMILY)
+                            type = setOf(CareType.FAMILY),
                         )
                     )
 
@@ -427,7 +427,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         childId = childPId,
                         unitId = testData.daycareBId,
                         startDate = previousAttendanceDay.minusMonths(1),
-                        endDate = examinationDay.plusMonths(1)
+                        endDate = examinationDay.plusMonths(1),
                     )
                 )
 
@@ -435,7 +435,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     DevBackupCare(
                         childId = childPId,
                         unitId = backupDaycareId,
-                        period = FiniteDateRange(previousAttendanceDay, previousAttendanceDay)
+                        period = FiniteDateRange(previousAttendanceDay, previousAttendanceDay),
                     )
                 )
 
@@ -443,14 +443,14 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     childPId,
                     backupDaycareId,
                     HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0))
+                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0)),
                 )
 
                 tx.insertTestChildAttendance(
                     childPId,
                     testData.daycareBId,
                     HelsinkiDateTime.of(examinationDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0))
+                    HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0)),
                 )
 
                 childPId
@@ -461,7 +461,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 adminLoginUser,
                 mockToday,
                 examinationDay.minusDays(7),
-                examinationDay
+                examinationDay,
             )
 
         val expectedResult =
@@ -496,9 +496,9 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         lunchCount = 1,
                                                         snackCount = 1,
                                                     )
-                                            )
+                                            ),
                                     )
-                                )
+                                ),
                         ),
                         FamilyDaycareMealReport.FamilyDaycareMealAreaResult(
                             areaName = "Area B",
@@ -533,12 +533,12 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                                                         breakfastCount = 1,
                                                         lunchCount = 1,
                                                         snackCount = 1,
-                                                    )
-                                            )
+                                                    ),
+                                            ),
                                     )
-                                )
-                        )
-                    )
+                                ),
+                        ),
+                    ),
             )
 
         assertEquals(expectedResult, reportAll)
@@ -557,7 +557,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         name = "Family Daycare A",
                         areaId = areaAId,
                         openingDate = keyDate.minusDays(7),
-                        type = setOf(CareType.FAMILY)
+                        type = setOf(CareType.FAMILY),
                     )
                 )
             val daycareBId =
@@ -566,7 +566,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                         name = "Family Daycare B",
                         areaId = areaBId,
                         openingDate = keyDate.minusDays(7),
-                        type = setOf(CareType.FAMILY)
+                        type = setOf(CareType.FAMILY),
                     )
                 )
 
@@ -577,18 +577,18 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     DevPerson(
                         dateOfBirth = keyDate.minusYears(4),
                         firstName = "Aapo",
-                        lastName = "Aarnio"
+                        lastName = "Aarnio",
                     ),
-                    DevPersonType.CHILD
+                    DevPersonType.CHILD,
                 )
             val childBId =
                 tx.insert(
                     DevPerson(
                         dateOfBirth = keyDate.minusYears(4),
                         firstName = "Bertil",
-                        lastName = "Becker"
+                        lastName = "Becker",
                     ),
-                    DevPersonType.CHILD
+                    DevPersonType.CHILD,
                 )
             tx.insert(
                 DevPlacement(
@@ -596,7 +596,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     childId = childAId,
                     unitId = daycareAId,
                     startDate = keyDate.minusMonths(1),
-                    endDate = keyDate.plusMonths(1)
+                    endDate = keyDate.plusMonths(1),
                 )
             )
 
@@ -606,7 +606,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                     childId = childBId,
                     unitId = daycareBId,
                     startDate = keyDate.minusMonths(1),
-                    endDate = keyDate.plusMonths(1)
+                    endDate = keyDate.plusMonths(1),
                 )
             )
 
@@ -614,14 +614,14 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 childAId,
                 daycareAId,
                 HelsinkiDateTime.of(keyDate, LocalTime.of(8, 0)),
-                HelsinkiDateTime.of(keyDate, LocalTime.of(16, 0))
+                HelsinkiDateTime.of(keyDate, LocalTime.of(16, 0)),
             )
 
             tx.insertTestChildAttendance(
                 childBId,
                 daycareBId,
                 HelsinkiDateTime.of(keyDate, LocalTime.of(9, 0)),
-                HelsinkiDateTime.of(keyDate, LocalTime.of(16, 0))
+                HelsinkiDateTime.of(keyDate, LocalTime.of(16, 0)),
             )
 
             FamilyDaycareReportTestData(
@@ -630,7 +630,7 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
                 daycareAId,
                 daycareBId,
                 areaAId,
-                areaBId
+                areaBId,
             )
         }
     }
@@ -641,6 +641,6 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         val daycareAId: DaycareId,
         val daycareBId: DaycareId,
         val areaAId: AreaId,
-        val areaBId: AreaId
+        val areaBId: AreaId,
     )
 }

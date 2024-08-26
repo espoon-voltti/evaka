@@ -52,7 +52,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun getUpToDatePersonFromVtj(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: PersonId
+        id: PersonId,
     ): PersonDTO? {
         val person = tx.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN) {
@@ -69,7 +69,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun personsLiveInTheSameAddress(
         db: Database.Read,
         person1Id: PersonId,
-        person2Id: PersonId
+        person2Id: PersonId,
     ): Boolean {
         val person1 = db.getPersonById(person1Id)
         val person2 = db.getPersonById(person2Id)
@@ -111,7 +111,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         id: PersonId,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
     ): PersonWithChildrenDTO? {
         val guardian = tx.getPersonById(id) ?: return null
 
@@ -127,7 +127,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                                 guardian.preferredName,
                                 guardian.phone,
                                 guardian.backupPhone,
-                                guardian.email
+                                guardian.email,
                             )
                         }
                 } else {
@@ -143,7 +143,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         id: ChildId,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
     ): List<PersonDTO> {
         val child = tx.getPersonById(id) ?: return emptyList()
 
@@ -169,7 +169,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         otherGuardianId: PersonId,
-        childId: ChildId
+        childId: ChildId,
     ): PersonDTO? =
         getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
@@ -179,7 +179,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,
-        readonly: Boolean = false
+        readonly: Boolean = false,
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
         return if (person?.updatedFromVtj == null) {
@@ -212,7 +212,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         tx: Database.Transaction,
         user: AuthenticatedUser,
         id: PersonId,
-        ssn: ExternalIdentifier.SSN
+        ssn: ExternalIdentifier.SSN,
     ): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
@@ -231,7 +231,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                 val updatedPerson =
                     getPersonWithUpdatedProperties(
                         personDetails.mapToDto(),
-                        person.copy(identity = ssn)
+                        person.copy(identity = ssn),
                     )
 
                 tx.updatePersonSsnAddingDisabled(id, false)
@@ -254,7 +254,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     // Does a request to VTJ
     private fun getPersonWithDependants(
         user: AuthenticatedUser,
-        ssn: ExternalIdentifier.SSN
+        ssn: ExternalIdentifier.SSN,
     ): VtjPersonDTO {
         return personDetailsService
             .getPersonWithDependants(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
@@ -264,7 +264,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     // Does a request to VTJ
     private fun getPersonWithGuardians(
         user: AuthenticatedUser,
-        ssn: ExternalIdentifier.SSN
+        ssn: ExternalIdentifier.SSN,
     ): VtjPersonDTO {
         return personDetailsService
             .getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user.evakaUserId, ssn))
@@ -291,7 +291,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             postOffice = person.city,
             residenceCode = person.residenceCode,
             restrictedDetailsEnabled = person.restrictedDetailsEnabled,
-            restrictedDetailsEndDate = person.restrictedDetailsEndDate
+            restrictedDetailsEndDate = person.restrictedDetailsEndDate,
         )
 
     private fun toPersonWithChildrenDTO(
@@ -299,7 +299,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         preferredName: String = "",
         phone: String = "",
         backupPhone: String = "",
-        email: String? = null
+        email: String? = null,
     ): PersonWithChildrenDTO =
         PersonWithChildrenDTO(
             id = PersonId(person.id),
@@ -315,7 +315,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             restrictedDetails =
                 RestrictedDetails(
                     enabled = person.restrictedDetailsEnabled,
-                    endDate = person.restrictedDetailsEndDate
+                    endDate = person.restrictedDetailsEndDate,
                 ),
             address =
                 if (hasAddress(person) && !hasRestriction(person)) {
@@ -324,7 +324,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         streetAddress = person.streetAddress,
                         postalCode = person.postalCode,
                         city = person.city,
-                        residenceCode = person.residenceCode
+                        residenceCode = person.residenceCode,
                     )
                 } else {
                     PersonAddressDTO(
@@ -332,14 +332,14 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                         streetAddress = "",
                         postalCode = "",
                         city = "",
-                        residenceCode = ""
+                        residenceCode = "",
                     )
                 },
             residenceCode = person.residenceCode,
             phone = phone,
             backupPhone = backupPhone,
             email = email,
-            children = person.children.map(::toPersonWithChildrenDTO)
+            children = person.children.map(::toPersonWithChildrenDTO),
         )
 
     private fun toPersonWithChildrenDTO(person: PersonDTO): PersonWithChildrenDTO =
@@ -361,13 +361,13 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
                     streetAddress = person.streetAddress,
                     postalCode = person.postalCode,
                     city = person.postOffice,
-                    residenceCode = person.residenceCode
+                    residenceCode = person.residenceCode,
                 ),
             residenceCode = person.residenceCode,
             phone = person.phone,
             backupPhone = person.backupPhone,
             email = person.email,
-            children = emptyList()
+            children = emptyList(),
         )
 
     private fun hasRestriction(person: VtjPersonDTO) = person.restrictedDetailsEnabled
@@ -423,7 +423,7 @@ data class PersonDTO(
             city = this.postOffice,
             streetAddressSe = "",
             citySe = "",
-            residenceCode = this.residenceCode
+            residenceCode = this.residenceCode,
         )
 }
 
@@ -437,7 +437,7 @@ fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, include
                     invoicingStreetAddress = "",
                     invoicingPostalCode = "",
                     invoicingPostOffice = "",
-                    forceManualFeeDecisions = false
+                    forceManualFeeDecisions = false,
                 )
             }
         }
@@ -501,7 +501,7 @@ data class PersonJSON(
                 invoicingPostOffice = p.invoicingPostOffice,
                 forceManualFeeDecisions = p.forceManualFeeDecisions,
                 ophPersonOid = p.ophPersonOid,
-                updatedFromVtj = p.updatedFromVtj
+                updatedFromVtj = p.updatedFromVtj,
             )
     }
 }
@@ -521,7 +521,7 @@ data class PersonPatch(
     val invoicingPostalCode: String? = null,
     val invoicingPostOffice: String? = null,
     val forceManualFeeDecisions: Boolean? = null,
-    val ophPersonOid: String? = null
+    val ophPersonOid: String? = null,
 )
 
 data class PersonWithChildrenDTO(
@@ -541,7 +541,7 @@ data class PersonWithChildrenDTO(
     val children: List<PersonWithChildrenDTO>,
     val nationalities: Set<Nationality>,
     val nativeLanguage: NativeLanguage?,
-    val restrictedDetails: RestrictedDetails
+    val restrictedDetails: RestrictedDetails,
 ) {
     fun toPersonDTO() =
         PersonDTO(
@@ -567,7 +567,7 @@ data class PersonWithChildrenDTO(
             language = nativeLanguage?.code,
             email = email,
             phone = phone,
-            backupPhone = backupPhone
+            backupPhone = backupPhone,
         )
 }
 
@@ -576,12 +576,12 @@ data class PersonAddressDTO(
     val streetAddress: String,
     val postalCode: String,
     val city: String,
-    val residenceCode: String
+    val residenceCode: String,
 ) {
     enum class Origin {
         VTJ,
         MUNICIPAL,
-        EVAKA
+        EVAKA,
     }
 }
 
@@ -608,7 +608,7 @@ private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonD
     createOrReplaceGuardianRelationships(
         tx,
         guardianId = guardian.id,
-        childIds = children.map { it.id }
+        childIds = children.map { it.id },
     )
     logger.info("Created or replaced guardian ${guardian.id} children as ${children.map { it.id }}")
 
@@ -636,7 +636,7 @@ private fun initChildIfNotExists(tx: Database.Transaction, childId: ChildId) {
 private fun createOrReplaceGuardianRelationships(
     tx: Database.Transaction,
     guardianId: PersonId,
-    childIds: List<ChildId>
+    childIds: List<ChildId>,
 ) {
     tx.deleteGuardianChildRelationShips(guardianId)
     tx.insertGuardianChildren(guardianId, childIds)
@@ -646,7 +646,7 @@ private fun createOrReplaceGuardianRelationships(
 private fun createOrReplaceChildRelationships(
     tx: Database.Transaction,
     childId: ChildId,
-    guardianIds: List<PersonId>
+    guardianIds: List<PersonId>,
 ) {
     tx.deleteChildGuardianRelationships(childId)
     tx.insertChildGuardians(childId, guardianIds)
@@ -674,12 +674,12 @@ private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO =
         dateOfDeath = inputPerson.dateOfDeath,
         email = null,
         phone = "",
-        backupPhone = ""
+        backupPhone = "",
     )
 
 private fun getPersonWithUpdatedProperties(
     sourcePerson: VtjPersonDTO,
-    existingPerson: PersonDTO
+    existingPerson: PersonDTO,
 ): PersonDTO =
     existingPerson.copy(
         firstName = sourcePerson.firstName,
@@ -693,7 +693,7 @@ private fun getPersonWithUpdatedProperties(
         restrictedDetailsEnabled = sourcePerson.restrictedDetailsEnabled,
         restrictedDetailsEndDate = sourcePerson.restrictedDetailsEndDate,
         nationalities = sourcePerson.nationalities.map { it.countryCode },
-        language = sourcePerson.nativeLanguage?.code ?: ""
+        language = sourcePerson.nativeLanguage?.code ?: "",
     )
 
 private fun getStreetAddressByLanguage(vtjPerson: VtjPersonDTO): String {
@@ -738,7 +738,7 @@ fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,
     today: LocalDate,
     envelopeWindowPosition: Rectangle,
-    guardian: PersonDTO
+    guardian: PersonDTO,
 ): Document {
     // template path hardcoded to prevent need for customization
     val template = "address-page/address-page"
@@ -754,7 +754,7 @@ fun createAddressPagePdf(
                 firstName = firstWordOfFirstName,
                 lastName = it.lastName,
                 restrictedDetailsEnabled = it.restrictedDetailsEnabled,
-                id = it.id
+                id = it.id,
             )
         }
 
@@ -765,12 +765,12 @@ fun createAddressPagePdf(
                 setVariable("window", envelopeWindowPosition)
                 setVariable("guardian", personDetails)
                 setVariable("sendAddress", DecisionSendAddress.fromPerson(personDetails))
-            }
+            },
         )
 
     return Document(
         name = "osoitesivu_${guardian.lastName}_$today.pdf",
         bytes = pdfGenerator.render(page),
-        contentType = "application/pdf"
+        contentType = "application/pdf",
     )
 }

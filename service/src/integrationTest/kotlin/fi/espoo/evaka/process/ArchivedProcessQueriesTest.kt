@@ -27,32 +27,32 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             1,
             db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
-                .number
+                .number,
         )
         assertEquals(
             2,
             db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
-                .number
+                .number,
         )
         assertEquals(
             1,
             db.transaction { it.insertProcess(definition2, year1, organization, archiveMonths) }
-                .number
+                .number,
         )
         assertEquals(
             1,
             db.transaction { it.insertProcess(definition1, year2, organization, archiveMonths) }
-                .number
+                .number,
         )
         assertEquals(
             1,
             db.transaction { it.insertProcess(definition2, year2, organization, archiveMonths) }
-                .number
+                .number,
         )
         assertEquals(
             3,
             db.transaction { it.insertProcess(definition1, year1, organization, archiveMonths) }
-                .number
+                .number,
         )
     }
 
@@ -67,7 +67,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         processDefinitionNumber = "123.456.789",
                         year = 2022,
                         organization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
-                        archiveDurationMonths = 120
+                        archiveDurationMonths = 120,
                     )
                 }
                 .id
@@ -82,7 +82,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 processId = processId,
                 state = ArchivedProcessState.INITIAL,
                 now = now1,
-                userId = employee.evakaUserId
+                userId = employee.evakaUserId,
             )
         }
         db.transaction {
@@ -90,7 +90,7 @@ class ArchivedProcessQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 processId = processId,
                 state = ArchivedProcessState.COMPLETED,
                 now = now2,
-                userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
         }
 

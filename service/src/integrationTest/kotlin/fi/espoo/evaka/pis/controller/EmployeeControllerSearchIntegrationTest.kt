@@ -40,7 +40,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
             tx.insert(testDaycare)
             tx.insert(
                 unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
             )
         }
     }
@@ -53,7 +53,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, pageSize = 4, searchTerm = null)
+                SearchEmployeeRequest(page = 1, pageSize = 4, searchTerm = null),
             )
 
         assertEquals(4, body.total)
@@ -73,10 +73,10 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 DaycareRole(
                     daycareId = testDaycare.id,
                     daycareName = testDaycare.name,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
             ),
-            supervisor.daycareRoles
+            supervisor.daycareRoles,
         )
     }
 
@@ -88,7 +88,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super")
+                SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"),
             )
         assertEquals(1, body.data.size)
         assertEquals("Sammy", body.data[0].firstName)

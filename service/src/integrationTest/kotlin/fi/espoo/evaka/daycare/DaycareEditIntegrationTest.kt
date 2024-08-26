@@ -63,7 +63,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 VisitingAddress(
                     streetAddress = "Testikatu 1",
                     postalCode = "00000",
-                    postOffice = "Espoo"
+                    postOffice = "Espoo",
                 ),
             location = Coordinate(1.0, 2.0),
             mailingAddress =
@@ -72,14 +72,14 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 UnitManager(
                     name = "Joh taja",
                     email = "joh.taja@example.com",
-                    phone = "000-0000000"
+                    phone = "000-0000000",
                 ),
             decisionCustomization =
                 DaycareDecisionCustomization(
                     daycareName = "Uusi päiväkoti (vaka)",
                     preschoolName = "Uusi päiväkoti (eskari)",
                     handler = "Käsittelijä",
-                    handlerAddress = "Käsittelijänkuja 1"
+                    handlerAddress = "Käsittelijänkuja 1",
                 ),
             ophUnitOid = "1.2.3.4.5",
             ophOrganizerOid = "1.22.33.44.55",
@@ -91,7 +91,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     standardOpTime,
                     standardOpTime,
                     null,
-                    null
+                    null,
                 ),
             shiftCareOperationTimes =
                 listOf(
@@ -101,7 +101,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     standardOpTime,
                     standardOpTime,
                     standardOpTime,
-                    standardOpTime
+                    standardOpTime,
                 ),
             shiftCareOpenOnHolidays = true,
             financeDecisionHandlerId = null,
@@ -114,8 +114,8 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                     lunch = null,
                     snack = null,
                     supper = null,
-                    eveningSnack = null
-                )
+                    eveningSnack = null,
+                ),
         )
 
     @BeforeEach
@@ -141,7 +141,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             admin,
             RealEvakaClock(),
             testDaycare.id,
-            fields
+            fields,
         )
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
@@ -154,14 +154,14 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 dailyPreschoolTime = TimeRange(LocalTime.of(9, 30), LocalTime.of(13, 30)),
                 dailyPreparatoryTime = TimeRange(LocalTime.of(8, 45), LocalTime.of(13, 45)),
                 preschoolApplyPeriod = DateRange(LocalDate.of(2021, 2, 1), null),
-                uploadToKoski = true
+                uploadToKoski = true,
             )
         daycareController.updateDaycare(
             dbInstance(),
             admin,
             RealEvakaClock(),
             testDaycare.id,
-            preschoolFields
+            preschoolFields,
         )
         getAndAssertDaycareFields(testDaycare.id, preschoolFields)
     }

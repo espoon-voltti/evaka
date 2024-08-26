@@ -12,7 +12,7 @@ object EspooInvoiceProducts {
         val nameFi: String,
         val code: String,
         val nameOnInvoiceFi: String,
-        val nameOnInvoiceSv: String
+        val nameOnInvoiceSv: String,
     ) {
         DAYCARE("Varhaiskasvatus", "01001", "Varhaiskasvatus", "Småbarnspedagogik"),
         DAYCARE_DISCOUNT("Alennus (maksup.)", "01001", "Alennus", "Avdrag"),
@@ -21,7 +21,7 @@ object EspooInvoiceProducts {
             "Varhaiskasvatus + Esiopetus",
             "01002",
             "Varhaiskasvatus + esiopetus",
-            "Småbarnspedagogik + FKL"
+            "Småbarnspedagogik + FKL",
         ),
         PRESCHOOL_WITH_DAYCARE_DISCOUNT("Alennus (maksup.)", "01002", "Alennus", "Avdrag"),
         PRESCHOOL_WITH_DAYCARE_INCREASE("Korotus (maksup.)", "01002", "Lisä", "Lisä"),
@@ -29,19 +29,19 @@ object EspooInvoiceProducts {
             "Tilapäinen varhaiskasvatus",
             "01005",
             "Tilapäinen varhaiskasvatus",
-            "Temporär småbarnspedagogik"
+            "Temporär småbarnspedagogik",
         ),
         SICK_LEAVE_100(
             "Laskuun vaikuttava poissaolo 100%",
             "01101",
             "Laskuun vaikuttava poissaolo 100%",
-            "Frånvaro som påverkar faktureringen 100%"
+            "Frånvaro som påverkar faktureringen 100%",
         ),
         SICK_LEAVE_50(
             "Laskuun vaikuttava poissaolo 50%",
             "01102",
             "Laskuun vaikuttava poissaolo 50%",
-            "Frånvaro som påverkar faktureringen 50%"
+            "Frånvaro som påverkar faktureringen 50%",
         ),
         ABSENCE("Poissaolovähennys", "01103", "Poissaolovähennys", "Avdrag annan frånvaro");
 
@@ -86,7 +86,7 @@ object EspooInvoiceProducts {
 
         override fun mapToFeeAlterationProduct(
             productKey: ProductKey,
-            feeAlterationType: FeeAlterationType
+            feeAlterationType: FeeAlterationType,
         ): ProductKey {
             val product =
                 when (findProduct(productKey) to feeAlterationType) {

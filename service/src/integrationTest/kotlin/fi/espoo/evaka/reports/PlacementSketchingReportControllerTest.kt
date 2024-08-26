@@ -52,7 +52,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                 serviceWorker,
                 clock,
                 LocalDate.of(2022, 1, 1),
-                LocalDate.of(2022, 8, 1)
+                LocalDate.of(2022, 8, 1),
             )
 
         assertThat(report).isEmpty()
@@ -69,7 +69,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                 financeAdmin,
                 clock,
                 LocalDate.of(2022, 1, 1),
-                LocalDate.of(2022, 8, 1)
+                LocalDate.of(2022, 8, 1),
             )
         }
 
@@ -100,7 +100,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                         preferredStartDate = LocalDate.of(2022, 12, 1),
                         apply = Apply(preferredUnits = listOf(unitId)),
                         serviceNeedOption = serviceNeedOption,
-                    )
+                    ),
             )
         }
 
@@ -110,7 +110,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                 serviceWorker,
                 clock,
                 LocalDate.of(2022, 1, 1),
-                LocalDate.of(2022, 8, 1)
+                LocalDate.of(2022, 8, 1),
             )
 
         assertThat(report)
@@ -143,7 +143,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                         preferredStartDate = LocalDate.of(2022, 12, 1),
                         apply = Apply(preferredUnits = listOf(unitId)),
                         serviceNeedOption = serviceNeedOption,
-                    )
+                    ),
             )
         }
 
@@ -153,7 +153,7 @@ class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBefore
                 serviceWorker,
                 clock,
                 LocalDate.of(2022, 1, 1),
-                LocalDate.of(2022, 8, 1)
+                LocalDate.of(2022, 8, 1),
             )
 
         assertThat(report)

@@ -53,6 +53,7 @@ fun Database.Transaction.resetMealTexturesNotContainedWithin(
     }
     return affectedRows
 }
+
 /** Replaces special_diet list with the given list. Returns count of removed diets */
 fun Database.Transaction.setSpecialDiets(specialDietList: List<SpecialDiet>): Int {
     val newSpecialDietIds = specialDietList.map { it.id }

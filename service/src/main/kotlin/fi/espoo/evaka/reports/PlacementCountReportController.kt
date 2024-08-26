@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class PlacementCountReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/placement-count", // deprecated
-        "/employee/reports/placement-count"
+        "/employee/reports/placement-count",
     )
     fun getPlacementCountReport(
         db: Database,
@@ -33,7 +33,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam examinationDate: LocalDate,
         @RequestParam providerTypes: List<ProviderType>?,
-        @RequestParam placementTypes: List<PlacementType>?
+        @RequestParam placementTypes: List<PlacementType>?,
     ): PlacementCountReportResult {
         return db.connect { dbc ->
                 dbc.read {
@@ -41,13 +41,13 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_PLACEMENT_COUNT_REPORT
+                        Action.Global.READ_PLACEMENT_COUNT_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementCountReportRows(
                         examinationDate,
                         providerTypes ?: ProviderType.entries,
-                        placementTypes ?: PlacementType.entries
+                        placementTypes ?: PlacementType.entries,
                     )
                 }
             }
@@ -57,7 +57,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
                         mapOf(
                             "examinationDate" to examinationDate,
                             "providerTypes" to providerTypes,
-                            "careTypes" to placementTypes
+                            "careTypes" to placementTypes,
                         )
                 )
             }
@@ -66,7 +66,7 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
     private fun Database.Read.getPlacementCountReportRows(
         examinationDate: LocalDate,
         providerTypes: List<ProviderType>,
-        placementTypes: List<PlacementType>
+        placementTypes: List<PlacementType>,
     ): PlacementCountReportResult {
         val resultRows =
             createQuery {
@@ -122,7 +122,7 @@ ORDER BY ca.name, d.name ASC
                 placementCount = 0,
                 placementCountUnder3v = 0,
                 placementCount3vAndOver = 0,
-                calculatedPlacements = BigDecimal(0.0)
+                calculatedPlacements = BigDecimal(0.0),
             )
 
         resultRows.forEach { row ->
@@ -135,7 +135,7 @@ ORDER BY ca.name, d.name ASC
                         placementCount = row.placementCount,
                         placementCountUnder3v = row.placementCountUnder3v,
                         placementCount3vAndOver = row.placementCount3vAndOver,
-                        calculatedPlacements = row.calculatedPlacements
+                        calculatedPlacements = row.calculatedPlacements,
                     )
                 )
             } else if (row.areaId != null && row.areaName != null) {
@@ -147,7 +147,7 @@ ORDER BY ca.name, d.name ASC
                         placementCountUnder3v = row.placementCountUnder3v,
                         placementCount3vAndOver = row.placementCount3vAndOver,
                         calculatedPlacements = row.calculatedPlacements,
-                        daycareResults = daycaresByArea[row.areaId.toString()].orEmpty()
+                        daycareResults = daycaresByArea[row.areaId.toString()].orEmpty(),
                     )
                 )
             } else {
@@ -157,7 +157,7 @@ ORDER BY ca.name, d.name ASC
                         placementCountUnder3v = row.placementCountUnder3v,
                         placementCount3vAndOver = row.placementCount3vAndOver,
                         calculatedPlacements = row.calculatedPlacements,
-                        areaResults = collectedAreaResults
+                        areaResults = collectedAreaResults,
                     )
             }
         }
@@ -173,7 +173,7 @@ ORDER BY ca.name, d.name ASC
         val placementCount3vAndOver: Int,
         val placementCountUnder3v: Int,
         val placementCount: Int,
-        val calculatedPlacements: BigDecimal
+        val calculatedPlacements: BigDecimal,
     )
 
     data class PlacementCountReportResult(
@@ -181,7 +181,7 @@ ORDER BY ca.name, d.name ASC
         val placementCount3vAndOver: Int,
         val placementCountUnder3v: Int,
         val calculatedPlacements: BigDecimal,
-        val areaResults: List<PlacementCountAreaResult>
+        val areaResults: List<PlacementCountAreaResult>,
     )
 
     data class PlacementCountAreaResult(
@@ -191,7 +191,7 @@ ORDER BY ca.name, d.name ASC
         val placementCount3vAndOver: Int,
         val placementCountUnder3v: Int,
         val calculatedPlacements: BigDecimal,
-        val daycareResults: List<PlacementCountDaycareResult>
+        val daycareResults: List<PlacementCountDaycareResult>,
     )
 
     data class PlacementCountDaycareResult(
@@ -200,6 +200,6 @@ ORDER BY ca.name, d.name ASC
         val placementCount: Int,
         val placementCount3vAndOver: Int,
         val placementCountUnder3v: Int,
-        val calculatedPlacements: BigDecimal
+        val calculatedPlacements: BigDecimal,
     )
 }

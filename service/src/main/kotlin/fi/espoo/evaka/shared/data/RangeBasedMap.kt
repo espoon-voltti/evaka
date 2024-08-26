@@ -19,7 +19,7 @@ abstract class RangeBasedMap<
     T,
     Point : Comparable<Point>,
     Range : BoundedRange<Point, Range>,
-    This : RangeBasedMap<T, Point, Range, This>
+    This : RangeBasedMap<T, Point, Range, This>,
 >(protected val entries: List<Pair<Range, T>>) {
     /**
      * Returns a sequence of all ranges in the map, sorted in ascending order.
@@ -28,8 +28,10 @@ abstract class RangeBasedMap<
      * values in the map.
      */
     fun ranges(): Sequence<Range> = entries.asSequence().map { it.first }
+
     /** Returns a sequence of all entries in the map, sorted by range in ascending order. */
     fun entries(): Sequence<Pair<Range, T>> = this.entries.asSequence()
+
     /**
      * Returns the largest range that covers all the points in all the ranges in the map, or null if
      * the map is empty.
@@ -38,6 +40,7 @@ abstract class RangeBasedMap<
         this.entries.firstOrNull()?.let { (first, _) ->
             this.entries.lastOrNull()?.let { (last, _) -> range(first.start, last.end) }
         }
+
     /**
      * Returns a sequence of all the non-adjacent gaps between the ranges in the map.
      *
@@ -53,32 +56,38 @@ abstract class RangeBasedMap<
      * overlapping in any way with the given range are *overwritten*.
      */
     fun set(entry: Pair<Range, T>): This = update(entry.first, entry.second) { _, _, new -> new }
+
     /**
      * Returns a new map with the given range set to the given value. Any existing values
      * overlapping in any way with the given range are *overwritten*.
      */
     fun set(range: Range, value: T): This = update(range, value) { _, _, new -> new }
+
     /**
      * Returns a new map with all the given ranges set to the given value. Any existing values
      * overlapping in any way with the given ranges are *overwritten*.
      */
     fun set(ranges: Iterable<Range>, value: T): This = update(ranges, value) { _, _, new -> new }
+
     /**
      * Returns a new map with all the given ranges set to the given value. Any existing values
      * overlapping in any way with the given ranges are *overwritten*.
      */
     fun set(ranges: Sequence<Range>, value: T): This = update(ranges, value) { _, _, new -> new }
+
     /**
      * Returns a new map with all the ranges in the given map set to the given values. Any existing
      * values overlapping in any way with the given ranges are *overwritten*.
      */
     fun setAll(map: RangeBasedMap<T, Point, Range, This>): This =
         update(map.entries) { _, _, new -> new }
+
     /**
      * Returns a new map with all the given ranges set to the given values. Any existing values
      * overlapping in any way with the given ranges are *overwritten*.
      */
     fun setAll(ranges: Iterable<Pair<Range, T>>): This = update(ranges) { _, _, new -> new }
+
     /**
      * Returns a new map with all the given ranges set to the given values. Any existing values
      * overlapping in any way with the given ranges are *overwritten*.
@@ -92,11 +101,12 @@ abstract class RangeBasedMap<
      */
     fun update(
         map: RangeBasedMap<T, Point, Range, This>,
-        resolve: (range: Range, old: T, new: T) -> T
+        resolve: (range: Range, old: T, new: T) -> T,
     ): This =
         map.entries
             .fold(this.entries) { acc, (range, value) -> update(acc, range, value, resolve) }
             .toThis()
+
     /**
      * Returns a new map with all the given ranges updated with the given values. Any existing
      * values overlapping in any way with the given ranges are resolved using the given resolve
@@ -104,11 +114,12 @@ abstract class RangeBasedMap<
      */
     fun update(
         entries: Iterable<Pair<Range, T>>,
-        resolve: (range: Range, old: T, new: T) -> T
+        resolve: (range: Range, old: T, new: T) -> T,
     ): This =
         entries
             .fold(this.entries) { acc, (range, value) -> update(acc, range, value, resolve) }
             .toThis()
+
     /**
      * Returns a new map with all the given ranges updated with the given values. Any existing
      * values overlapping in any way with the given ranges are resolved using the given resolve
@@ -116,11 +127,12 @@ abstract class RangeBasedMap<
      */
     fun update(
         entries: Sequence<Pair<Range, T>>,
-        resolve: (range: Range, old: T, new: T) -> T
+        resolve: (range: Range, old: T, new: T) -> T,
     ): This =
         entries
             .fold(this.entries) { acc, (range, value) -> update(acc, range, value, resolve) }
             .toThis()
+
     /**
      * Returns a new map with all the given ranges updated with the given value. Any existing values
      * overlapping in any way with the given ranges are resolved using the given resolve function.
@@ -128,9 +140,10 @@ abstract class RangeBasedMap<
     fun update(
         ranges: Iterable<Range>,
         value: T,
-        resolve: (range: Range, old: T, new: T) -> T
+        resolve: (range: Range, old: T, new: T) -> T,
     ): This =
         ranges.fold(this.entries) { acc, range -> update(acc, range, value, resolve) }.toThis()
+
     /**
      * Returns a new map with all the given ranges updated with the given value. Any existing values
      * overlapping in any way with the given ranges are resolved using the given resolve function.
@@ -138,9 +151,10 @@ abstract class RangeBasedMap<
     fun update(
         ranges: Sequence<Range>,
         value: T,
-        resolve: (range: Range, old: T, new: T) -> T
+        resolve: (range: Range, old: T, new: T) -> T,
     ): This =
         ranges.fold(this.entries) { acc, range -> update(acc, range, value, resolve) }.toThis()
+
     /**
      * Returns a new map with the given range updated with the given value. Any existing values
      * overlapping in any way with the given range are resolved using the given resolve function.
@@ -150,8 +164,10 @@ abstract class RangeBasedMap<
 
     /** Returns a new map with the given range removed from the current contained ranges. */
     fun remove(range: Range): This = remove(entries, range).toThis()
+
     /** Returns a new map with all the given ranges removed from the current contained ranges. */
     fun removeAll(ranges: Iterable<Range>): This = ranges.fold(this.entries, ::remove).toThis()
+
     /** Returns a new map with all the given ranges removed from the current contained ranges. */
     fun removeAll(ranges: Sequence<Range>): This = ranges.fold(this.entries, ::remove).toThis()
 
@@ -201,7 +217,7 @@ abstract class RangeBasedMap<
             entries: List<Pair<Range, T>>,
             range: Range,
             newValue: T,
-            resolve: (range: Range, old: T, new: T) -> T
+            resolve: (range: Range, old: T, new: T) -> T,
         ): List<Pair<Range, T>> {
             val result = mutableListOf<Pair<Range, T>>()
 

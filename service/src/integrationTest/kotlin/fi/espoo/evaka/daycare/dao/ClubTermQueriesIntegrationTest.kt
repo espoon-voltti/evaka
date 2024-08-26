@@ -24,12 +24,12 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertClubTerm(
                 FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
                 FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-                DateSet.empty()
+                DateSet.empty(),
             )
             tx.insertClubTerm(
                 FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
                 FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-                DateSet.empty()
+                DateSet.empty(),
             )
         }
     }
@@ -40,7 +40,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(2, data.size)
         assertEquals(
             FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-            data[0].term
+            data[0].term,
         )
     }
 
@@ -54,7 +54,7 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 val clubTerm = dbRead.getActiveClubTermAt(date)
                 assertEquals(
                     FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
-                    clubTerm?.term
+                    clubTerm?.term,
                 )
             }
         }

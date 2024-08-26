@@ -20,7 +20,7 @@ class EspooBiJob(private val client: EspooBiClient) {
         db: Database.Connection,
         clock: EvakaClock,
         tableName: String,
-        query: CsvQuery
+        query: CsvQuery,
     ) {
         val timestamp = clock.now().toInstant().toEpochMilli()
         val fileName = "evaka_${tableName}_$timestamp.csv"

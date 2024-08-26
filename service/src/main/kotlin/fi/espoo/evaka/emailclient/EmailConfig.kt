@@ -19,7 +19,7 @@ class EmailConfig {
                 SESEmailClient(
                     client = client.getObject(),
                     whitelist = env.whitelist,
-                    subjectPostfix = env.subjectPostfix
+                    subjectPostfix = env.subjectPostfix,
                 )
             false -> MockEmailClient()
         }

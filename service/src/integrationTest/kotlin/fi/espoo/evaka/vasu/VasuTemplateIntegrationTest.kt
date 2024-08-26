@@ -32,7 +32,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                 type = CurriculumType.DAYCARE,
-                language = OfficialLanguage.FI
+                language = OfficialLanguage.FI,
             )
         )
 
@@ -65,7 +65,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 name = "vasu",
                 valid = FiniteDateRange(LocalDate.now(), LocalDate.now().plusYears(1)),
                 type = CurriculumType.DAYCARE,
-                language = OfficialLanguage.FI
+                language = OfficialLanguage.FI,
             )
         )
 
@@ -85,34 +85,34 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                                         VasuQuestion.TextQuestion(
                                             name = "kysymys 1",
                                             multiline = false,
-                                            value = ""
+                                            value = "",
                                         ),
                                         VasuQuestion.CheckboxQuestion(
                                             name = "kysymys 2",
-                                            value = false
+                                            value = false,
                                         ),
                                         VasuQuestion.RadioGroupQuestion(
                                             name = "kysymys 3",
                                             options =
                                                 listOf(
                                                     QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
-                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2")
+                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2"),
                                                 ),
-                                            value = "vaihtoehto 1"
+                                            value = "vaihtoehto 1",
                                         ),
                                         VasuQuestion.MultiSelectQuestion(
                                             name = "kysymys 4",
                                             options =
                                                 listOf(
                                                     QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
-                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2")
+                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2"),
                                                 ),
                                             minSelections = 1,
                                             maxSelections = 2,
                                             value = listOf("vaihtoehto 1"),
-                                            textValue = emptyMap()
-                                        )
-                                    )
+                                            textValue = emptyMap(),
+                                        ),
+                                    ),
                             )
                         )
             )
@@ -140,7 +140,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             adminUser,
             RealEvakaClock(),
             id,
-            request
+            request,
         )
     }
 

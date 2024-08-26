@@ -41,11 +41,11 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
         assertEquals(emptyList(), getAllSystemNotifications(now))
         assertEquals(
             SystemNotificationsController.CurrentNotificationResponse(null),
-            getCurrentSystemNotificationCitizen(now)
+            getCurrentSystemNotificationCitizen(now),
         )
         assertEquals(
             SystemNotificationsController.CurrentNotificationResponse(null),
-            getCurrentSystemNotificationEmployeeMobile(now)
+            getCurrentSystemNotificationEmployeeMobile(now),
         )
 
         val validTo = now.plusDays(1)
@@ -55,21 +55,21 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
             SystemNotification(
                 targetGroup = SystemNotificationTargetGroup.CITIZENS,
                 text = "old text",
-                validTo = now
-            )
+                validTo = now,
+            ),
         )
         val citizenNotification =
             SystemNotification(
                 targetGroup = SystemNotificationTargetGroup.CITIZENS,
                 text = "new text for citizens",
-                validTo = validTo
+                validTo = validTo,
             )
         putSystemNotification(now, citizenNotification)
         val employeeNotification =
             SystemNotification(
                 targetGroup = SystemNotificationTargetGroup.EMPLOYEES,
                 text = "text for employees",
-                validTo = validTo
+                validTo = validTo,
             )
         putSystemNotification(now, employeeNotification)
 
@@ -78,16 +78,16 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
 
         assertEquals(
             setOf(citizenNotification, employeeNotification),
-            getAllSystemNotifications(afterValidTo).toSet()
+            getAllSystemNotifications(afterValidTo).toSet(),
         )
         assertEquals(
             citizenNotification,
-            getCurrentSystemNotificationCitizen(beforeValidTo).notification
+            getCurrentSystemNotificationCitizen(beforeValidTo).notification,
         )
         assertNull(getCurrentSystemNotificationCitizen(afterValidTo).notification)
         assertEquals(
             employeeNotification,
-            getCurrentSystemNotificationEmployeeMobile(beforeValidTo).notification
+            getCurrentSystemNotificationEmployeeMobile(beforeValidTo).notification,
         )
         assertNull(getCurrentSystemNotificationEmployeeMobile(afterValidTo).notification)
 
@@ -101,13 +101,13 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
 
     private fun deleteSystemNotification(
         now: HelsinkiDateTime,
-        targetGroup: SystemNotificationTargetGroup
+        targetGroup: SystemNotificationTargetGroup,
     ) =
         controller.deleteSystemNotification(
             dbInstance(),
             admin.user,
             MockEvakaClock(now),
-            targetGroup
+            targetGroup,
         )
 
     private fun getAllSystemNotifications(now: HelsinkiDateTime) =
@@ -120,6 +120,6 @@ class SystemNotificationsControllerIntegrationTest : FullApplicationTest(resetDb
         controller.getCurrentSystemNotificationEmployeeMobile(
             dbInstance(),
             AuthenticatedUser.MobileDevice(mobile.id),
-            MockEvakaClock(now)
+            MockEvakaClock(now),
         )
 }

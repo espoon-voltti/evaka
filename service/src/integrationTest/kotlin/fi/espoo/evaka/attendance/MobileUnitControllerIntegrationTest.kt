@@ -72,13 +72,13 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     testChild_4,
                     testChild_5,
                     testChild_6,
-                    testChild_7
+                    testChild_7,
                 )
                 .forEach { tx.insert(it, DevPersonType.CHILD) }
             tx.insertServiceNeedOptions()
             tx.addUnitFeatures(
                 listOf(testDaycare.id),
-                listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE)
+                listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE),
             )
             groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
             tx.insert(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
@@ -92,7 +92,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = child.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insert(
@@ -100,7 +100,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         daycarePlacementId = daycarePlacementId,
                         daycareGroupId = groupId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             }
@@ -114,7 +114,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_6.id,
                     unitId = testDaycare.id,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
             tx.insert(
@@ -122,7 +122,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = daycarePlacementId,
                     daycareGroupId = groupId2,
                     startDate = placementStart,
-                    endDate = today.minusDays(1)
+                    endDate = today.minusDays(1),
                 )
             )
             tx.insert(
@@ -130,7 +130,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = daycarePlacementId,
                     daycareGroupId = groupId,
                     startDate = today,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
 
@@ -140,44 +140,44 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 testChild_1.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(8, 30), null)
+                TimeInterval(LocalTime.of(8, 30), null),
             )
             tx.insertAttendance(
                 testChild_2.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(9, 0), null)
+                TimeInterval(LocalTime.of(9, 0), null),
             )
             tx.insertAttendance(
                 testChild_3.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(9, 30), null)
+                TimeInterval(LocalTime.of(9, 30), null),
             )
             tx.insertAttendance(
                 testChild_4.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(10, 0), null)
+                TimeInterval(LocalTime.of(10, 0), null),
             )
             tx.insertAttendance(
                 testChild_5.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(10, 15), null)
+                TimeInterval(LocalTime.of(10, 15), null),
             )
             tx.insertAttendance(
                 testChild_6.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(10, 30), null)
+                TimeInterval(LocalTime.of(10, 30), null),
             )
 
             val employee1 = DevEmployee(firstName = "One", lastName = "in group 1")
             tx.insert(
                 employee1,
                 mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId))
+                mapOf(testDaycare.id to listOf(groupId)),
             )
             tx.markStaffArrival(employee1.id, groupId, now.minusDays(1), BigDecimal(7.0))
 
@@ -185,7 +185,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 employee2,
                 mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId))
+                mapOf(testDaycare.id to listOf(groupId)),
             )
             tx.markStaffArrival(employee2.id, groupId, now.minusDays(1), BigDecimal(7.0))
 
@@ -193,7 +193,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(
                 employee3,
                 mapOf(testDaycare.id to UserRole.STAFF),
-                mapOf(testDaycare.id to listOf(groupId2))
+                mapOf(testDaycare.id to listOf(groupId2)),
             )
             tx.markStaffArrival(employee3.id, groupId2, now.minusDays(1), BigDecimal(7.0))
         }
@@ -218,7 +218,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     unitId = testDaycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                    type = PlacementType.PRESCHOOL_DAYCARE
+                    type = PlacementType.PRESCHOOL_DAYCARE,
                 )
             )
             tx.insert(
@@ -226,14 +226,14 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = child.id,
                     unitId = testDaycare.id,
                     period = FiniteDateRange(placementStart, placementEnd),
-                    groupId = groupId
+                    groupId = groupId,
                 )
             )
             tx.insertAttendance(
                 child.id,
                 testDaycare.id,
                 today,
-                TimeInterval(LocalTime.of(6, 0), null)
+                TimeInterval(LocalTime.of(6, 0), null),
             )
         }
         val unitInfo = fetchUnitInfo(testDaycare.id)
@@ -260,7 +260,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .get(
                     "/mobile/units/stats",
-                    listOf(Pair("unitIds", unitIds.joinToString { it.toString() }))
+                    listOf(Pair("unitIds", unitIds.joinToString { it.toString() })),
                 )
                 .asUser(mobileUser)
                 .withMockedTime(now)

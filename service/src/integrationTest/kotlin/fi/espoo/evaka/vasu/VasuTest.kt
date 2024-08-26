@@ -49,7 +49,7 @@ class VasuTest {
                             listOf(
                                 VasuSection(
                                     name = "foo",
-                                    questions = listOf(getSampleQuestion().copy(name = "babar"))
+                                    questions = listOf(getSampleQuestion().copy(name = "babar")),
                                 )
                             )
                     )
@@ -75,11 +75,11 @@ class VasuTest {
             options =
                 listOf(
                     QuestionOption(key = "1", name = "Kyllä"),
-                    QuestionOption(key = "2", name = "Ei")
+                    QuestionOption(key = "2", name = "Ei"),
                 ),
             minSelections = 1,
             maxSelections = null,
             value = value,
-            textValue = emptyMap()
+            textValue = emptyMap(),
         )
 }

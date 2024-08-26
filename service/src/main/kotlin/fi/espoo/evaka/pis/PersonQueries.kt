@@ -51,7 +51,7 @@ val personDTOColumns =
         "invoicing_post_office",
         "force_manual_fee_decisions",
         "oph_person_oid",
-        "updated_from_vtj"
+        "updated_from_vtj",
     )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
@@ -173,7 +173,7 @@ data class PersonSummary(
     val dateOfDeath: LocalDate?,
     val socialSecurityNumber: String?,
     val streetAddress: String,
-    val restrictedDetailsEnabled: Boolean
+    val restrictedDetailsEnabled: Boolean,
 )
 
 fun Database.Read.searchPeople(
@@ -181,7 +181,7 @@ fun Database.Read.searchPeople(
     searchTerms: String,
     sortColumns: String,
     sortDirection: String,
-    restricted: Boolean
+    restricted: Boolean,
 ): List<PersonSummary> {
     if (searchTerms.isBlank()) return listOf()
 
@@ -391,7 +391,7 @@ RETURNING *
 fun Database.Transaction.updatePersonBasicContactInfo(
     id: PersonId,
     email: String?,
-    phone: String
+    phone: String,
 ): Boolean {
     return createQuery {
             sql(
@@ -498,14 +498,14 @@ private val toPersonDTO: Row.() -> PersonDTO = {
         invoicingPostalCode = column("invoicing_postal_code"),
         invoicingPostOffice = column("invoicing_post_office"),
         forceManualFeeDecisions = column("force_manual_fee_decisions"),
-        ophPersonOid = column("oph_person_oid")
+        ophPersonOid = column("oph_person_oid"),
     )
 }
 
 fun Database.Transaction.updateCitizenOnLogin(
     clock: EvakaClock,
     id: PersonId,
-    keycloakEmail: String?
+    keycloakEmail: String?,
 ) =
     createUpdate {
             sql(

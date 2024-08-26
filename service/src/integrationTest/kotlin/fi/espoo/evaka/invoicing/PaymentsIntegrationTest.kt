@@ -158,7 +158,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -166,7 +166,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 134850,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -198,7 +198,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -206,7 +206,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 134850,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -229,7 +229,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 134850,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -238,7 +238,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -286,7 +286,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 134850,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -295,7 +295,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -345,7 +345,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 134850,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -354,7 +354,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -366,7 +366,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             today = febFirst,
             paymentDate = febSecond,
             dueDate = febLast,
-            paymentIds = paymentDraftIds
+            paymentIds = paymentDraftIds,
         )
 
         val payments = db.read { it.readPayments() }
@@ -405,7 +405,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             page = 1,
             pageSize = 50,
             sortBy = PaymentSortParam.AMOUNT,
-            sortDirection = SortDirection.ASC
+            sortDirection = SortDirection.ASC,
         )
 
     private fun createSearchTestData(): List<PaymentId> {
@@ -415,7 +415,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_1.id,
             childId = testChild_1.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         createVoucherDecision(
             janFirst,
@@ -423,7 +423,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_2.id,
             childId = testChild_2.id,
             value = 87000,
-            coPayment = 7000
+            coPayment = 7000,
         )
         createVoucherDecision(
             febFirst,
@@ -432,7 +432,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             headOfFamilyId = testAdult_3.id,
             childId = testChild_3.id,
             value = 134850,
-            coPayment = 0
+            coPayment = 0,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -445,7 +445,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             today = febFirst,
             paymentDate = febSecond,
             dueDate = febLast,
-            paymentIds = paymentDraftIds1
+            paymentIds = paymentDraftIds1,
         )
 
         db.transaction {
@@ -459,7 +459,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val financeUser =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN)
+            roles = setOf(UserRole.FINANCE_ADMIN),
         )
 
     private fun createVoucherDecision(
@@ -471,7 +471,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId,
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
         alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
-        feeAlterations: List<FeeAlterationWithEffect> = listOf()
+        feeAlterations: List<FeeAlterationWithEffect> = listOf(),
     ) {
         db.transaction {
             val decision =
@@ -487,7 +487,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     coPayment = coPayment,
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                    feeAlterations = feeAlterations
+                    feeAlterations = feeAlterations,
                 )
             it.upsertValueDecisions(listOf(decision))
 
@@ -499,7 +499,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 now = approvedAt,
                 ids = listOf(decision.id),
                 decisionHandlerId = null,
-                alwaysUseDaycareFinanceDecisionHandler
+                alwaysUseDaycareFinanceDecisionHandler,
             )
             decision.id
         }
@@ -521,7 +521,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         paymentController.createPaymentDrafts(
             dbInstance(),
             financeUser,
-            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
+            MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
         )
 
         return db.read { tx ->
@@ -535,7 +535,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             financeUser,
             MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
-            ids
+            ids,
         )
     }
 
@@ -544,7 +544,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             financeUser,
             MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
-            ids
+            ids,
         )
     }
 
@@ -553,7 +553,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             financeUser,
             MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
-            paymentIds
+            paymentIds,
         )
     }
 
@@ -561,13 +561,13 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         today: LocalDate,
         paymentDate: LocalDate,
         dueDate: LocalDate,
-        paymentIds: List<PaymentId>
+        paymentIds: List<PaymentId>,
     ) {
         paymentController.sendPayments(
             dbInstance(),
             financeUser,
             MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(10, 0))),
-            PaymentController.SendPaymentsRequest(paymentDate, dueDate, paymentIds)
+            PaymentController.SendPaymentsRequest(paymentDate, dueDate, paymentIds),
         )
     }
 }
