@@ -4602,6 +4602,7 @@ export const fi = {
       type: 'Tyyppi',
       language: 'Kieli',
       validity: 'Voimassa',
+      documentCount: 'Dokumentteja',
       status: 'Tila',
       published: 'Julkaistu',
       draft: 'Luonnos',

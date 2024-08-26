@@ -251,6 +251,7 @@ export interface DocumentTemplateContent {
 * Generated from fi.espoo.evaka.document.DocumentTemplateSummary
 */
 export interface DocumentTemplateSummary {
+  documentCount: number
   id: UUID
   language: OfficialLanguage
   name: string
