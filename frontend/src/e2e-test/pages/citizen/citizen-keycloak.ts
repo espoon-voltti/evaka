@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Page, Element, TextInput } from '../../utils/page'
+import { Page, Element, TextInput, ElementCollection } from '../../utils/page'
 
 export class KeycloakLoginPage {
   email: TextInput
@@ -47,13 +47,15 @@ export class UpdatePasswordPage {
 }
 
 export class ConfirmPage {
+  heading: Element
   email: TextInput
-  confirmEmail: TextInput
   sendButton: Element
+  allLabels: ElementCollection
 
   constructor(page: Page) {
-    this.email = new TextInput(page.findTextExact('Sähköposti'))
-    this.confirmEmail = new TextInput(page.findTextExact('Vahvista sähköposti'))
+    this.heading = page.find('.evaka-info-text')
+    this.email = new TextInput(page.findTextExact('Sähköpostiosoite'))
     this.sendButton = page.findTextExact('Lähetä')
+    this.allLabels = page.findAll('label')
   }
 }

@@ -48,7 +48,3 @@ Mock KeyCloak Evaka realm is imported from `compose-resources/configuration/evak
 ## Update
 
 Update KeyCloak by changing version in `Dockerfile` and `pom.xml` files.
-
-To check changes to base provider and `pom.xml` run`./update.sh <old-version> <new-versions>` example `./update.sh 21.1.2 22.0.1`.
-
-Results are stored into `./update` path.
