@@ -123,6 +123,7 @@ export default React.memo(function TabCalendar() {
             shiftCareUnit={
               unitInformation.daycare.shiftCareOperationDays !== null
             }
+            groups={unitInformation.groups}
           />
           <Gap size="s" />
         </>

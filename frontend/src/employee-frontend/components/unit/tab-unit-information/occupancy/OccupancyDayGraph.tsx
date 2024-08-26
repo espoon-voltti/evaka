@@ -25,12 +25,18 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { mockNow } from 'lib-common/utils/helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { Translations, useTranslation } from '../../../../state/i18n'
 
 import { ChartTooltip } from './ChartTooltip'
+import { LegendSquare } from './OccupanciesForSingleDay'
 
 type DatePoint = { x: Date; y: number | null }
 
@@ -52,11 +58,24 @@ export default React.memo(function OccupancyDayGraph({
       {i18n.unit.occupancy.realtime.noData}
     </GraphPlaceholder>
   ) : (
-    <Graph
-      queryDate={queryDate}
-      occupancy={occupancy}
-      shiftCareUnit={shiftCareUnit}
-    />
+    <FixedSpaceColumn>
+      <Graph
+        queryDate={queryDate}
+        occupancy={occupancy}
+        shiftCareUnit={shiftCareUnit}
+      />
+      <H3>{i18n.unit.occupancy.realtime.legendTitle}</H3>
+      <FixedSpaceColumn>
+        <FixedSpaceRow>
+          <LegendSquare color={colors.status.danger} />
+          <Label>{i18n.unit.occupancy.realtime.childrenMax}</Label>
+        </FixedSpaceRow>
+        <FixedSpaceRow>
+          <LegendSquare color={colors.grayscale.g100} />
+          <Label>{i18n.unit.occupancy.realtime.children}</Label>
+        </FixedSpaceRow>
+      </FixedSpaceColumn>
+    </FixedSpaceColumn>
   )
 })
 
@@ -80,6 +99,7 @@ const Graph = React.memo(function Graph({
       utilization: number
       children: number
       childrenPresent: number
+      childrenMax: number
       staffPresent: number
       staffRequired: number
     }
@@ -139,6 +159,7 @@ const Graph = React.memo(function Graph({
           utilization,
           children,
           childrenPresent,
+          childrenMax: staffPresent * 7,
           staffPresent,
           staffRequired
         }
@@ -171,30 +192,68 @@ const Graph = React.memo(function Graph({
           <table>
             <tbody>
               <tr>
-                <td>{i18n.unit.occupancy.realtime.utilization}</td>
-                <td>{tooltipParams.data.utilization}%</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.children}</td>
-                <td>{parseFloat(tooltipParams.data.children.toFixed(1))}</td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.childrenPresent}</td>
                 <td>
-                  {parseFloat(tooltipParams.data.childrenPresent.toFixed(1))}
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color="transparent" />
+                    <span>{i18n.unit.occupancy.realtime.staffPresent}</span>
+                  </FixedSpaceRow>
                 </td>
-              </tr>
-              <tr>
-                <td>{i18n.unit.occupancy.realtime.staffPresent}</td>
-                <td>
+                <td align="right">
                   {parseFloat(tooltipParams.data.staffPresent.toFixed(1))}
                 </td>
               </tr>
               <tr>
-                <td>{i18n.unit.occupancy.realtime.staffRequired}</td>
                 <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color="transparent" />
+                    <span>{i18n.unit.occupancy.realtime.staffRequired}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">
                   {parseFloat(tooltipParams.data.staffRequired.toFixed(1))}
                 </td>
+              </tr>
+              <tr>
+                <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color={colors.status.danger} />
+                    <span>{i18n.unit.occupancy.realtime.childrenMax}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">
+                  {parseFloat(tooltipParams.data.childrenMax.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color={colors.grayscale.g100} />
+                    <span>{i18n.unit.occupancy.realtime.children}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">
+                  {parseFloat(tooltipParams.data.children.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color="transparent" />
+                    <span>{i18n.unit.occupancy.realtime.childrenPresent}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">
+                  {parseFloat(tooltipParams.data.childrenPresent.toFixed(1))}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <FixedSpaceRow alignItems="center" spacing="xs">
+                    <LegendSquare small color="transparent" />
+                    <span>{i18n.unit.occupancy.realtime.utilization}</span>
+                  </FixedSpaceRow>
+                </td>
+                <td align="right">{tooltipParams.data.utilization}%</td>
               </tr>
             </tbody>
           </table>

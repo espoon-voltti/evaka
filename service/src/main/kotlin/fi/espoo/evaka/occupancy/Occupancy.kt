@@ -153,12 +153,22 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null,
+    groupId: GroupId? = null,
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getDailyGroupCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId)
+        getDailyGroupCaretakers(
+            type,
+            period,
+            unitFilter,
+            areaId,
+            providerType,
+            unitTypes,
+            unitId,
+            groupId,
+        )
 
     val placements =
         when (type) {
@@ -401,6 +411,7 @@ private fun Database.Read.getDailyGroupCaretakers(
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     unitId: DaycareId?,
+    groupId: GroupId? = null,
 ): Map<UnitGroupKey, DateMap<BigDecimal>> {
     val unitPredicate =
         Predicate.allNotNull(
@@ -416,6 +427,10 @@ private fun Database.Read.getDailyGroupCaretakers(
             if (unitTypes?.isEmpty() == false) Predicate { where("$it.type && ${bind(unitTypes)}") }
             else null,
         )
+
+    val groupPredicate =
+        if (groupId == null) Predicate.alwaysTrue()
+        else Predicate { where("$it.id = ${bind(groupId)}") }
 
     val holidays = getHolidays(period)
 
@@ -442,7 +457,7 @@ SELECT
 FROM daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') && ${bind(period)}
 JOIN care_area a ON a.id = u.care_area_id
-WHERE ${predicate(unitPredicate.forTable("u"))}
+WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))}
 """
                 )
             }

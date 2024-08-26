@@ -69,6 +69,7 @@ class OccupancyController(
                         FiniteDateRange(from, to),
                         type,
                         AccessControlFilter.PermitAll,
+                        groupId = null,
                     )
                 }
             }
@@ -188,6 +189,7 @@ class OccupancyController(
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam groupId: GroupId?,
     ): UnitOccupancies {
         val period = FiniteDateRange(from, to)
         val occupancies =
@@ -206,6 +208,43 @@ class OccupancyController(
                         unitId,
                         period,
                         AccessControlFilter.PermitAll,
+                        groupId,
+                    )
+                }
+            }
+        Audit.OccupancyRead.log(targetId = AuditId(unitId))
+        return occupancies
+    }
+
+    @GetMapping("/employee/occupancy/units/{unitId}/day/realized")
+    fun getUnitRealizedOccupanciesForDay(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam groupId: GroupId?,
+    ): RealtimeOccupancy {
+        val occupancies =
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId,
+                    )
+                    val queryTimeRange =
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.of(date, LocalTime.MIN),
+                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.MIN),
+                        )
+                    RealtimeOccupancy(
+                        childAttendances =
+                            tx.getChildOccupancyAttendances(unitId, queryTimeRange, groupId),
+                        staffAttendances =
+                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId),
                     )
                 }
             }
@@ -279,7 +318,6 @@ data class UnitOccupancies(
     val planned: OccupancyResponse,
     val confirmed: OccupancyResponse,
     val realized: OccupancyResponse,
-    val realtime: RealtimeOccupancy?,
     val caretakers: Caretakers,
 )
 
@@ -289,6 +327,7 @@ private fun getUnitOccupancies(
     unitId: DaycareId,
     period: FiniteDateRange,
     unitFilter: AccessControlFilter<DaycareId>,
+    groupId: GroupId?,
 ): UnitOccupancies {
     return UnitOccupancies(
         planned =
@@ -299,6 +338,7 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.PLANNED,
                     unitFilter,
+                    groupId,
                 )
             ),
         confirmed =
@@ -309,6 +349,7 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.CONFIRMED,
                     unitFilter,
+                    groupId,
                 )
             ),
         realized =
@@ -319,26 +360,9 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.REALIZED,
                     unitFilter,
+                    groupId,
                 )
             ),
-        realtime =
-            if (period.start == period.end) {
-                val queryTimeRange =
-                    if (period.start == now.toLocalDate()) {
-                        HelsinkiDateTimeRange(now.minusHours(16), now)
-                    } else {
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0)),
-                        )
-                    }
-                RealtimeOccupancy(
-                    childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
-                    staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange),
-                )
-            } else {
-                null
-            },
         caretakers = tx.getUnitStats(unitId, period.start, period.end),
     )
 }
@@ -380,6 +404,7 @@ fun Database.Read.calculateOccupancyPeriods(
     period: FiniteDateRange,
     type: OccupancyType,
     unitFilter: AccessControlFilter<DaycareId>,
+    groupId: GroupId?,
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -387,10 +412,26 @@ fun Database.Read.calculateOccupancyPeriods(
         )
     }
 
-    return reduceDailyOccupancyValues(
-            calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
-        )
-        .flatMap { (_, values) -> values }
+    return if (groupId == null) {
+        reduceDailyOccupancyValues(
+                calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
+            )
+            .flatMap { (_, values) -> values }
+    } else {
+        val valueMap =
+            reduceDailyOccupancyValues(
+                calculateDailyGroupOccupancyValues(
+                    today,
+                    period,
+                    type,
+                    unitFilter,
+                    unitId = unitId,
+                    groupId = groupId,
+                )
+            )
+        val key = valueMap.keys.find { it.groupId == groupId } ?: return emptyList()
+        return valueMap.getOrDefault(key, emptyList())
+    }
 }
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(

@@ -31,7 +31,8 @@ import {
 } from '../../generated/api-clients/daycare'
 import {
   getOccupancyPeriodsSpeculated,
-  getUnitOccupancies
+  getUnitOccupancies,
+  getUnitRealizedOccupanciesForDay
 } from '../../generated/api-clients/occupancy'
 import {
   createGroupPlacement,
@@ -51,11 +52,17 @@ export const queryKeys = createQueryKeys('unit', {
   units: (arg: Arg0<typeof getDaycares>) => ['units', arg],
   unit: (unitId: UUID) => ['unit', unitId],
   unitNotifications: (unitId: UUID) => ['unitNotifications', unitId],
-  unitOccupancies: (unitId: UUID, from: LocalDate, to: LocalDate) => [
-    'unitOccupancies',
-    unitId,
-    { from, to }
-  ],
+  unitOccupancies: (
+    unitId: UUID,
+    from: LocalDate,
+    to: LocalDate,
+    groupId: UUID | null
+  ) => ['unitOccupancies', unitId, { from, to }, groupId],
+  unitRealizedOccupanciesForDay: (
+    unitId: UUID,
+    date: LocalDate,
+    groupId: UUID | null
+  ) => ['unitRealizedOccupanciesForDay', unitId, date, groupId],
   unitApplications: (unitId: UUID) => ['unitApplications', unitId],
   unitGroups: (unitId: UUID) => ['unitGroups', unitId],
   unitSpeculatedOccupancyRates: (
@@ -101,8 +108,14 @@ export const unitNotificationsQuery = query({
 
 export const unitOccupanciesQuery = query({
   api: getUnitOccupancies,
-  queryKey: ({ unitId, from, to }) =>
-    queryKeys.unitOccupancies(unitId, from, to)
+  queryKey: ({ unitId, from, to, groupId }) =>
+    queryKeys.unitOccupancies(unitId, from, to, groupId ?? null)
+})
+
+export const unitRealizedOccupanciesForDayQuery = query({
+  api: getUnitRealizedOccupanciesForDay,
+  queryKey: ({ unitId, date, groupId }) =>
+    queryKeys.unitRealizedOccupanciesForDay(unitId, date, groupId ?? null)
 })
 
 export const unitApplicationsQuery = query({
