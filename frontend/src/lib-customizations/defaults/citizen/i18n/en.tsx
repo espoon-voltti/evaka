@@ -545,6 +545,7 @@ const en: Translations = {
       deleteDraft: 'Delete draft',
       send: 'Send',
       discard: 'Discard',
+      addShiftCareAttachment: 'Attach a work schedule',
       search: 'Search',
       noResults: 'No results, select a child or children first',
       messageSendError: 'Failed to send the message'

@@ -62,6 +62,10 @@ export default class MessagesPage {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
   }
 
+  async getThreadAttachmentCount(): Promise<number> {
+    return this.page.findAll('[data-qa="attachment"]').count()
+  }
+
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
     await this.page
       .findAllByDataQa('received-message-row')

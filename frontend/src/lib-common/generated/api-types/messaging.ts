@@ -32,6 +32,7 @@ export interface AuthorizedMessageAccount {
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
+  attachmentIds: UUID[]
   children: UUID[]
   content: string
   recipients: UUID[]
@@ -218,6 +219,14 @@ export interface MessageThread {
 export type MessageType =
   | 'MESSAGE'
   | 'BULLETIN'
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.MyAccountResponse
+*/
+export interface MyAccountResponse {
+  accountId: UUID
+  messageAttachmentsAllowed: boolean
+}
 
 /**
 * Generated from fi.espoo.evaka.messaging.PagedCitizenMessageThreads

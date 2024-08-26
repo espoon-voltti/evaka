@@ -45,7 +45,7 @@ const StyledFlex = styled(AdaptiveFlex)`
 export default React.memo(function MessagesPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { accountId, selectedThread, setSelectedThread } =
+  const { messageAccount, selectedThread, setSelectedThread } =
     useContext(MessageContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
@@ -97,7 +97,7 @@ export default React.memo(function MessagesPage() {
 
   return (
     <Container>
-      {renderResult(accountId, (id) => (
+      {renderResult(messageAccount, (messageAccount) => (
         <>
           <Main>
             <TabletAndDesktop>
@@ -105,7 +105,7 @@ export default React.memo(function MessagesPage() {
             </TabletAndDesktop>
             <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
               <ThreadList
-                accountId={id}
+                accountId={messageAccount.accountId}
                 selectThread={selectThread}
                 setEditorVisible={changeEditorVisibility}
                 newMessageButtonEnabled={canSendNewMessage}
@@ -113,7 +113,7 @@ export default React.memo(function MessagesPage() {
               {selectedThread ? (
                 isRegularThread(selectedThread) ? (
                   <ThreadView
-                    accountId={id}
+                    accountId={messageAccount.accountId}
                     closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
                     onThreadDeleted={() => onSelectedThreadDeleted()}
@@ -135,6 +135,9 @@ export default React.memo(function MessagesPage() {
                   <MessageEditor
                     children_={children}
                     receiverOptions={receiverOptions}
+                    messageAttachmentsAllowed={
+                      messageAccount.messageAttachmentsAllowed
+                    }
                     onSend={(body) => sendMessage({ body })}
                     onSuccess={() => {
                       changeEditorVisibility(false)

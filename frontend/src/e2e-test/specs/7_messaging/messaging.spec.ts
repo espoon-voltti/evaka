@@ -30,7 +30,11 @@ import {
   insertGuardians,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevCareArea, DevEmployee } from '../../generated/api-types'
+import {
+  DevCareArea,
+  DevEmployee,
+  DevPlacement
+} from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
@@ -50,6 +54,7 @@ let childId: UUID
 let unitSupervisor: DevEmployee
 let account: CitizenWeakAccount
 let careArea: DevCareArea
+let daycarePlacementFixture: DevPlacement
 let backupDaycareId: UUID
 let backupGroupFixtureId: UUID
 
@@ -98,12 +103,13 @@ beforeEach(async () => {
   const unitId = testDaycare.id
   childId = testChild.id
 
-  const daycarePlacementFixture = await Fixture.placement({
+  daycarePlacementFixture = await Fixture.placement({
     childId,
     unitId,
     startDate: mockedDate,
     endDate: mockedDate.addYears(1)
   }).save()
+
   await Fixture.groupPlacement({
     daycarePlacementId: daycarePlacementFixture.id,
     daycareGroupId: testDaycareGroup.id,
@@ -295,7 +301,8 @@ describe('Sending and receiving messages', () => {
           'Test message',
           'Test message content',
           [],
-          ['Varayksikön ryhmä (Henkilökunta)']
+          ['Varayksikön ryhmä (Henkilökunta)'],
+          false
         )
       })
 
@@ -382,7 +389,8 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers
+          receivers,
+          false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -395,6 +403,42 @@ describe('Sending and receiving messages', () => {
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
 
+      test('Citizen with shift care child can send attachments', async () => {
+        const serviceNeedOption = await Fixture.serviceNeedOption({
+          validPlacementType: daycarePlacementFixture.type,
+          defaultOption: false
+        }).save()
+        await Fixture.serviceNeed({
+          placementId: daycarePlacementFixture.id,
+          optionId: serviceNeedOption.id,
+          confirmedBy: unitSupervisor.id,
+          shiftCare: 'FULL',
+          startDate: daycarePlacementFixture.startDate,
+          endDate: daycarePlacementFixture.endDate
+        }).save()
+
+        const receivers = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          [],
+          receivers,
+          true
+        )
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openSupervisorPage(mockedDateAt11)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.receivedMessage.click()
+        await messagesPage.assertMessageContent(0, defaultContent)
+        await waitUntilEqual(() => messagesPage.getThreadAttachmentCount(), 1)
+      })
+
       test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
         const receivers = ['Esimies Essi']
         await openCitizen(mockedDateAt10)
@@ -404,7 +448,8 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers
+          receivers,
+          false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -545,7 +590,8 @@ describe('Sending and receiving messages', () => {
           defaultTitle,
           defaultContent,
           [],
-          receivers
+          receivers,
+          false
         )
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 

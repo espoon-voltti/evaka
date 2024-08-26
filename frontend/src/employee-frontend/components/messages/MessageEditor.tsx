@@ -51,7 +51,10 @@ import {
   ExpandingInfoBox,
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
-import FileUpload from 'lib-components/molecules/FileUpload'
+import FileUpload, {
+  initialUploadStatus,
+  UploadStatus
+} from 'lib-components/molecules/FileUpload'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { SelectOption } from 'lib-components/molecules/Select'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -226,6 +229,8 @@ export default React.memo(function MessageEditor({
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender, defaultTitle)
   )
+  const [uploadStatus, setUploadStatus] =
+    useState<UploadStatus>(initialUploadStatus)
   const [filters, setFilters] = useState<Filters>(() => getEmptyFilters())
   const {
     draftId,
@@ -456,7 +461,8 @@ export default React.memo(function MessageEditor({
     draftState === 'clean' &&
     areRequiredFieldsFilled(message, selectedReceivers) &&
     isEqual(debouncedReceivers, selectedReceivers) &&
-    preflightResult.isSuccess
+    preflightResult.isSuccess &&
+    uploadStatus.inProgress === 0
 
   const shiftCareCheckBox = (
     <Checkbox
@@ -808,6 +814,7 @@ export default React.memo(function MessageEditor({
               getDownloadUrl={getAttachmentUrl}
               onUpload={handleAttachmentUpload}
               onDelete={handleAttachmentDelete}
+              onStateChange={setUploadStatus}
             />
           )}
           <Gap size="L" />

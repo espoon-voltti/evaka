@@ -8,6 +8,7 @@ import { CitizenMessageBody } from 'lib-common/generated/api-types/messaging'
 import { GetReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { MyAccountResponse } from 'lib-common/generated/api-types/messaging'
 import { PagedCitizenMessageThreads } from 'lib-common/generated/api-types/messaging'
 import { ReplyToMessageBody } from 'lib-common/generated/api-types/messaging'
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
@@ -38,8 +39,8 @@ export async function archiveThread(
 /**
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getMyAccount
 */
-export async function getMyAccount(): Promise<UUID> {
-  const { data: json } = await client.request<JsonOf<UUID>>({
+export async function getMyAccount(): Promise<MyAccountResponse> {
+  const { data: json } = await client.request<JsonOf<MyAccountResponse>>({
     url: uri`/citizen/messages/my-account`.toString(),
     method: 'GET'
   })

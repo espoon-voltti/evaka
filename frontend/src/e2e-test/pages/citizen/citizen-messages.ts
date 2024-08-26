@@ -5,6 +5,7 @@
 import {
   Element,
   ElementCollection,
+  FileInput,
   MultiSelect,
   Page,
   TextInput
@@ -35,6 +36,7 @@ export default class CitizenMessagesPage {
   #threadContent: ElementCollection
   #threadUrgent: Element
   newMessageButton: Element
+  fileUpload: Element
   constructor(private readonly page: Page) {
     this.#messageReplyContent = new TextInput(
       page.findByDataQa('message-reply-content')
@@ -57,6 +59,7 @@ export default class CitizenMessagesPage {
       .findByDataQa('thread-reader')
       .findByDataQa('urgent')
     this.newMessageButton = page.findAllByDataQa('new-message-btn').first()
+    this.fileUpload = page.findByDataQa('upload-message-attachment')
   }
 
   replyButtonTag = 'message-reply-editor-btn'
@@ -144,11 +147,20 @@ export default class CitizenMessagesPage {
     await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
   }
 
+  async addAttachment() {
+    const testFileName = 'test_file.png'
+    const testFilePath = `src/e2e-test/assets/${testFileName}`
+    await new FileInput(
+      this.fileUpload.find('[data-qa="btn-upload-file"]')
+    ).setInputFiles(testFilePath)
+  }
+
   async sendNewMessage(
     title: string,
     content: string,
     childIds: string[],
-    recipients: string[]
+    recipients: string[],
+    addAttachment: boolean
   ) {
     const editor = await this.createNewMessage()
     if (childIds.length > 0) {
@@ -156,6 +168,14 @@ export default class CitizenMessagesPage {
     }
     await editor.selectRecipients(recipients)
     await editor.fillMessage(title, content)
+
+    if (addAttachment) {
+      await this.addAttachment()
+      await this.fileUpload
+        .findByDataQa('file-download-button')
+        .waitUntilVisible()
+    }
+
     await editor.sendMessage()
   }
 }

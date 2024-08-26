@@ -63,6 +63,17 @@ const isErrorCode = (code: string | undefined): code is FileUploadError =>
 const getErrorCode = (res: Failure<string>): FileUploadError =>
   isErrorCode(res.errorCode) ? res.errorCode : 'SERVER_ERROR'
 
+export interface UploadStatus {
+  success: number
+  inProgress: number
+  error: number
+}
+export const initialUploadStatus: UploadStatus = {
+  success: 0,
+  inProgress: 0,
+  error: 0
+}
+
 interface FileUploadProps {
   files: Attachment[]
   onUpload: (
@@ -70,12 +81,14 @@ interface FileUploadProps {
     onUploadProgress: (percentage: number) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+  onStateChange?: (status: UploadStatus) => void
   getDownloadUrl: (id: UUID, fileName: string) => string
   disabled?: boolean
   slim?: boolean
   'data-qa'?: string
   slimSingleFile?: boolean
   allowedFileTypes?: FileType[]
+  buttonText?: string
 }
 
 const FileUploadContainer = styled.div<{
@@ -287,12 +300,14 @@ export default React.memo(function FileUpload({
   files,
   onUpload,
   onDelete,
+  onStateChange,
   getDownloadUrl,
   slimSingleFile = false,
   slim = false,
   disabled = false,
   'data-qa': dataQa,
-  allowedFileTypes = defaultAllowedFileTypes
+  allowedFileTypes = defaultAllowedFileTypes,
+  buttonText
 }: FileUploadProps) {
   const i18n = useTranslations().fileUpload
 
@@ -302,6 +317,21 @@ export default React.memo(function FileUpload({
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
     files.map(attachmentToFile)
   )
+
+  const setUploadedFilesAndNotify = (files: FileObject[]) => {
+    setUploadedFiles(files)
+    if (onStateChange) {
+      onStateChange({
+        success: files.filter(
+          (f) => f.uploaded && !f.error && !f.deleteInProgress
+        ).length,
+        inProgress: files.filter(
+          (f) => (!f.uploaded && !f.error) || f.deleteInProgress
+        ).length,
+        error: files.filter((f) => f.error).length
+      })
+    }
+  }
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -326,8 +356,8 @@ export default React.memo(function FileUpload({
   const errorMessage = ({ error }: FileObject) => error && i18n.error[error]
 
   const deleteFile = async (file: FileObject) => {
-    setUploadedFiles((old) =>
-      old.map((item) =>
+    setUploadedFilesAndNotify(
+      uploadedFiles.map((item) =>
         item.id === file.id ? { ...item, deleteInProgress: true } : item
       )
     )
@@ -336,12 +366,14 @@ export default React.memo(function FileUpload({
         ? Success.of(true)
         : await onDelete(file.id)
       if (isSuccess) {
-        setUploadedFiles((old) => old.filter((item) => item.id !== file.id))
+        setUploadedFilesAndNotify(
+          uploadedFiles.filter((item) => item.id !== file.id)
+        )
       }
     } catch (e) {
       console.error(e)
-      setUploadedFiles((old) =>
-        old.map((item) =>
+      setUploadedFilesAndNotify(
+        uploadedFiles.map((item) =>
           item.id === file.id ? { ...item, deleteInProgress: false } : item
         )
       )
@@ -351,11 +383,10 @@ export default React.memo(function FileUpload({
   const updateUploadedFile = (
     file: FileObject,
     id: UUID | undefined = undefined
-  ) =>
-    setUploadedFiles((old) => {
-      const others = old.filter((item) => item.id !== (id ?? file.id))
-      return [...others, file]
-    })
+  ) => {
+    const others = uploadedFiles.filter((item) => item.id !== (id ?? file.id))
+    setUploadedFilesAndNotify([...others, file])
+  }
 
   const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024 // 25 MB
 
@@ -447,7 +478,7 @@ export default React.memo(function FileUpload({
               className="file-input-button"
               disabled={disabled}
               icon={faPlus}
-              text={i18n.input.title}
+              text={buttonText ?? i18n.input.title}
               onClick={() => inputRef?.current?.click()}
             />
             {fileInput}
@@ -463,7 +494,7 @@ export default React.memo(function FileUpload({
             appearance="inline"
             disabled={disabled}
             icon={faPaperclip}
-            text={i18n.input.title}
+            text={buttonText ?? i18n.input.title}
             onClick={() => inputRef?.current?.click()}
           />
           {fileInput}
@@ -478,7 +509,7 @@ export default React.memo(function FileUpload({
         >
           <span role="button" tabIndex={0}>
             {fileInput}
-            <H4>{i18n.input.title}</H4>
+            <H4>{buttonText ?? i18n.input.title}</H4>
             <P>
               <InformationText>
                 {i18n.input.text(allowedFileTypes)}
@@ -509,7 +540,7 @@ export default React.memo(function FileUpload({
                         {file.name}
                       </span>
                     )}
-                    {!inProgress(file) && (
+                    {(!inProgress(file) || file.error) && (
                       <FileDeleteButton
                         icon={faTimes}
                         disabled={file.deleteInProgress}

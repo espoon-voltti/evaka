@@ -437,6 +437,79 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `citizen can not add attachments by default`() {
+        val child = DevPerson()
+        db.transaction { tx ->
+            insertChild(tx, child, groupId1, shiftCare = ShiftCareType.NONE)
+            tx.insertGuardian(person1.id, child.id)
+        }
+        assertEquals(
+            MessageControllerCitizen.MyAccountResponse(
+                accountId = person1Account,
+                messageAttachmentsAllowed = false,
+            ),
+            getMyAccount(person1),
+        )
+
+        assertThrows<Forbidden> { uploadMessageAttachmentCitizen(person1) }
+
+        assertThrows<Forbidden> {
+            postNewThread(
+                user = person1,
+                title = "title",
+                message = "content",
+                children = listOf(child.id),
+                recipients = listOf(employee1Account),
+                attachmentIds = listOf(AttachmentId(UUID.randomUUID())),
+            )
+        }
+    }
+
+    @Test
+    fun `citizen with child in shift care can add attachment`() {
+        val child = DevPerson()
+        db.transaction { tx ->
+            insertChild(tx, child, groupId1, shiftCare = ShiftCareType.FULL)
+            tx.insertGuardian(person1.id, child.id)
+        }
+        assertEquals(
+            MessageControllerCitizen.MyAccountResponse(
+                accountId = person1Account,
+                messageAttachmentsAllowed = true,
+            ),
+            getMyAccount(person1),
+        )
+
+        val attachmentId = uploadMessageAttachmentCitizen(person1)
+        postNewThread(
+            user = person1,
+            title = "title",
+            message = "content",
+            children = listOf(child.id),
+            recipients = listOf(employee1Account),
+            attachmentIds = listOf(attachmentId),
+        )
+
+        attachmentsController.getAttachment(
+            dbInstance(),
+            employee1,
+            clock,
+            attachmentId,
+            "evaka-logo.png",
+        )
+
+        assertEquals(
+            1,
+            db.read {
+                it.createQuery {
+                        sql("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL")
+                    }
+                    .exactlyOne<Int>()
+            },
+        )
+    }
+
+    @Test
     fun `guardian can send a message only to group and other guardian, not group staff`() {
         fun getRecipients() = getCitizenReceivers(person1).messageAccounts.map { it.id }.toSet()
 
@@ -1340,6 +1413,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes()),
         )
 
+    private fun uploadMessageAttachmentCitizen(user: AuthenticatedUser.Citizen): AttachmentId =
+        attachmentsController.uploadMessageAttachmentCitizen(
+            dbInstance(),
+            user,
+            MockEvakaClock(readTime),
+            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes()),
+        )
+
     private fun postNewThreadPreflightCheck(
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
@@ -1408,6 +1489,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         message: String,
         recipients: List<MessageAccountId>,
         children: List<ChildId>,
+        attachmentIds: List<AttachmentId> = emptyList(),
         now: HelsinkiDateTime = sendTime,
     ): MessageThreadId {
         val messageThreadId =
@@ -1420,6 +1502,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     children = children.toSet(),
                     title = title,
                     content = message,
+                    attachmentIds = attachmentIds,
                 ),
             )
         if (asyncJobRunningEnabled) {
@@ -1518,6 +1601,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 pageSize = 100,
             )
             .data
+    }
+
+    private fun getMyAccount(
+        user: AuthenticatedUser.Citizen
+    ): MessageControllerCitizen.MyAccountResponse {
+        return messageControllerCitizen.getMyAccount(dbInstance(), user, MockEvakaClock(readTime))
     }
 
     private fun getCitizenReceivers(
