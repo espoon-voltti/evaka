@@ -156,7 +156,7 @@ const TemplateView = React.memo(function TemplateView({
       </FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
-        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+        <TextAreaF bind={infoText} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
       <CheckboxF
         bind={multiline}

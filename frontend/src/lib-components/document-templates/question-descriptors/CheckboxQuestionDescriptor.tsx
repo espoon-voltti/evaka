@@ -21,6 +21,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 
+import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
 
 import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
@@ -131,7 +132,7 @@ const TemplateView = React.memo(function TemplateView({
       </FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
-        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+        <TextAreaF bind={infoText} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
     </FixedSpaceColumn>
   )

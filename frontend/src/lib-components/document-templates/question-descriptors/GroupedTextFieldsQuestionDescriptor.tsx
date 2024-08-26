@@ -33,6 +33,7 @@ import { Label } from 'lib-components/typography'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { IconOnlyButton } from '../../atoms/buttons/IconOnlyButton'
+import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
 
 import { DocumentQuestionDescriptor, TemplateQuestionDescriptor } from './types'
@@ -291,7 +292,7 @@ const TemplateView = React.memo(function TemplateView({
       </FixedSpaceColumn>
       <FixedSpaceColumn>
         <Label>{i18n.documentTemplates.templateQuestions.infoText}</Label>
-        <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+        <TextAreaF bind={infoText} hideErrorsBeforeTouched />
       </FixedSpaceColumn>
       <CheckboxF
         bind={allowMultipleRows}
