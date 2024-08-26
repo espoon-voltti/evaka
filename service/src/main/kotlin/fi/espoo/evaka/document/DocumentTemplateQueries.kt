@@ -53,8 +53,15 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
     return createQuery {
             sql(
                 """
-                SELECT id, name, type, language, validity, published
-                FROM document_template
+                SELECT
+                    id,
+                    name,
+                    type,
+                    language,
+                    validity,
+                    published,
+                    (SELECT count(*) FROM child_document WHERE template_id = dt.id) AS document_count
+                FROM document_template dt
                 """
             )
         }

@@ -6,6 +6,8 @@ package fi.espoo.evaka.document
 
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.document.childdocument.ChildDocumentController
+import fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -34,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: DocumentTemplateController
+    @Autowired lateinit var childDocumentController: ChildDocumentController
 
     lateinit var employeeUser: AuthenticatedUser.Employee
 
@@ -112,6 +115,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     type = created.type,
                     language = created.language,
                     validity = created.validity,
+                    documentCount = 0,
                     published = false,
                 )
             ),
@@ -216,6 +220,38 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             created.id,
             DateRange(LocalDate.of(2000, 1, 1), null),
         )
+    }
+
+    @Test
+    fun `document count`() {
+        val child = DevPerson()
+        db.transaction { tx -> tx.insert(child, DevPersonType.CHILD) }
+
+        val created =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(validity = DateRange(now.today(), null)),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, created.id)
+
+        controller.getTemplates(dbInstance(), employeeUser, now).also {
+            assertEquals(1, it.size)
+            assertEquals(0, it.first().documentCount)
+        }
+
+        childDocumentController.createDocument(
+            dbInstance(),
+            employeeUser,
+            now,
+            ChildDocumentCreateRequest(child.id, created.id),
+        )
+
+        controller.getTemplates(dbInstance(), employeeUser, now).also {
+            assertEquals(1, it.size)
+            assertEquals(1, it.first().documentCount)
+        }
     }
 
     @Test

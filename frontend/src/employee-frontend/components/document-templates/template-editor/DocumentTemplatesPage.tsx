@@ -142,6 +142,7 @@ const TemplateRow = React.memo(function TemplateRow({
           </FixedSpaceRow>
         )}
       </Td>
+      <Td>{template.documentCount}</Td>
       <Td>
         {template.published
           ? i18n.documentTemplates.templatesPage.published
@@ -226,6 +227,7 @@ export default React.memo(function DocumentTemplatesPage() {
                   <Th>{i18n.documentTemplates.templatesPage.type}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.language}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.validity}</Th>
+                  <Th>{i18n.documentTemplates.templatesPage.documentCount}</Th>
                   <Th>{i18n.documentTemplates.templatesPage.status}</Th>
                   <Th />
                 </Tr>

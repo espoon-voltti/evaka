@@ -381,4 +381,5 @@ data class DocumentTemplateSummary(
     val language: OfficialLanguage,
     val validity: DateRange,
     val published: Boolean,
+    val documentCount: Int,
 )
