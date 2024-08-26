@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { StateOf } from 'lib-common/form/types'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import { TextAreaF } from 'lib-components/atoms/form/TextArea'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
@@ -68,7 +69,7 @@ export default React.memo(function TemplateSectionModal({
         </FixedSpaceColumn>
         <FixedSpaceColumn>
           <Label>{i18n.documentTemplates.templateEditor.infoText}</Label>
-          <InputFieldF bind={infoText} hideErrorsBeforeTouched />
+          <TextAreaF bind={infoText} hideErrorsBeforeTouched />
         </FixedSpaceColumn>
       </FixedSpaceColumn>
     </AsyncFormModal>
