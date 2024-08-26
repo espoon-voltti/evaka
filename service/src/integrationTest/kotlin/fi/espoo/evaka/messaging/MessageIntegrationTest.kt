@@ -446,9 +446,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             MessageControllerCitizen.MyAccountResponse(
                 accountId = person1Account,
-                messageAttachmentsAllowed = false
+                messageAttachmentsAllowed = false,
             ),
-            getMyAccount(person1)
+            getMyAccount(person1),
         )
 
         assertThrows<Forbidden> { uploadMessageAttachmentCitizen(person1) }
@@ -460,7 +460,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 message = "content",
                 children = listOf(child.id),
                 recipients = listOf(employee1Account),
-                attachmentIds = listOf(AttachmentId(UUID.randomUUID()))
+                attachmentIds = listOf(AttachmentId(UUID.randomUUID())),
             )
         }
     }
@@ -475,9 +475,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             MessageControllerCitizen.MyAccountResponse(
                 accountId = person1Account,
-                messageAttachmentsAllowed = true
+                messageAttachmentsAllowed = true,
             ),
-            getMyAccount(person1)
+            getMyAccount(person1),
         )
 
         val attachmentId = uploadMessageAttachmentCitizen(person1)
@@ -487,7 +487,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "content",
             children = listOf(child.id),
             recipients = listOf(employee1Account),
-            attachmentIds = listOf(attachmentId)
+            attachmentIds = listOf(attachmentId),
         )
 
         attachmentsController.getAttachment(
@@ -495,7 +495,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             employee1,
             clock,
             attachmentId,
-            "evaka-logo.png"
+            "evaka-logo.png",
         )
 
         assertEquals(
@@ -505,7 +505,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         sql("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL")
                     }
                     .exactlyOne<Int>()
-            }
+            },
         )
     }
 
@@ -1418,7 +1418,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             user,
             MockEvakaClock(readTime),
-            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes())
+            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes()),
         )
 
     private fun postNewThreadPreflightCheck(

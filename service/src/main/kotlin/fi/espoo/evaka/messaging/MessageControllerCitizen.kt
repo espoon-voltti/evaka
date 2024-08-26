@@ -50,21 +50,21 @@ class MessageControllerCitizen(
 
     data class MyAccountResponse(
         val accountId: MessageAccountId,
-        val messageAttachmentsAllowed: Boolean
+        val messageAttachmentsAllowed: Boolean,
     )
 
     @GetMapping("/my-account")
     fun getMyAccount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): MyAccountResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     MyAccountResponse(
                         accountId = tx.getCitizenMessageAccount(user.id),
                         messageAttachmentsAllowed =
-                            tx.messageAttachmentsAllowedForCitizen(user.id, clock.today())
+                            tx.messageAttachmentsAllowedForCitizen(user.id, clock.today()),
                     )
                 }
             }
@@ -279,7 +279,7 @@ class MessageControllerCitizen(
                             tx.associateOrphanAttachments(
                                 user.evakaUserId,
                                 AttachmentParent.MessageContent(sentMessage.contentId),
-                                body.attachmentIds
+                                body.attachmentIds,
                             )
                         }
 

@@ -1369,7 +1369,7 @@ fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
 // has a child in shift care during next two weeks
 fun Database.Read.messageAttachmentsAllowedForCitizen(
     personId: PersonId,
-    today: LocalDate
+    today: LocalDate,
 ): Boolean {
     val childIds = getCitizenChildren(today, personId).map { it.id }.toSet()
     val nearFuture = FiniteDateRange(today, today.plusWeeks(2))
