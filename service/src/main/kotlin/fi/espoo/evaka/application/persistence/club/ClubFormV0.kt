@@ -18,7 +18,7 @@ const val DEFAULT_CHILD_LANGUAGE = "fi"
     "guardiansSeparated",
     "guardianInformed",
     "careFactor",
-    "term"
+    "term",
 )
 data class ClubFormV0(
     val child: Child,
@@ -29,7 +29,7 @@ data class ClubFormV0(
     val wasOnClubCare: Boolean = false,
     val clubCare: ClubCare = ClubCare(),
     val docVersion: Long = 0L,
-    val additionalDetails: ClubAdditionalDetails = ClubAdditionalDetails()
+    val additionalDetails: ClubAdditionalDetails = ClubAdditionalDetails(),
 ) : DatabaseForm.ClubForm() {
     override fun hideGuardianAddress(): ClubFormV0 {
         return this.copy(
@@ -37,7 +37,7 @@ data class ClubFormV0(
                 this.guardian.copy(
                     address = Address(),
                     correctingAddress = Address(),
-                    restricted = true
+                    restricted = true,
                 )
         )
     }
@@ -48,7 +48,7 @@ data class ClubFormV0(
                 this.child.copy(
                     address = Address(),
                     correctingAddress = Address(),
-                    restricted = true
+                    restricted = true,
                 )
         )
     }
@@ -57,7 +57,7 @@ data class ClubFormV0(
         fun fromForm2(
             form: fi.espoo.evaka.application.ApplicationForm,
             childRestricted: Boolean,
-            guardianRestricted: Boolean
+            guardianRestricted: Boolean,
         ) =
             ClubFormV0(
                 child =
@@ -72,7 +72,7 @@ data class ClubFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = false
+                                    editable = false,
                                 )
                             } ?: Address(),
                         nationality = form.child.nationality,
@@ -84,11 +84,11 @@ data class ClubFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = true
+                                    editable = true,
                                 )
                             } ?: Address(editable = true),
                         childMovingDate = form.child.futureAddress?.movingDate,
-                        restricted = childRestricted
+                        restricted = childRestricted,
                     ),
                 guardian =
                     Adult(
@@ -101,7 +101,7 @@ data class ClubFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = false
+                                    editable = false,
                                 )
                             } ?: Address(),
                         phoneNumber = form.guardian.phoneNumber,
@@ -113,28 +113,28 @@ data class ClubFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = true
+                                    editable = true,
                                 )
                             } ?: Address(editable = true),
                         guardianMovingDate = form.guardian.futureAddress?.movingDate,
-                        restricted = guardianRestricted
+                        restricted = guardianRestricted,
                     ),
                 apply =
                     Apply(
                         preferredUnits = form.preferences.preferredUnits.map { it.id },
                         siblingBasis = form.preferences.siblingBasis != null,
                         siblingName = form.preferences.siblingBasis?.siblingName ?: "",
-                        siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: ""
+                        siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: "",
                     ),
                 preferredStartDate = form.preferences.preferredStartDate,
                 clubCare =
                     ClubCare(
                         assistanceNeeded = form.child.assistanceNeeded,
-                        assistanceDescription = form.child.assistanceDescription
+                        assistanceDescription = form.child.assistanceDescription,
                     ),
                 additionalDetails = ClubAdditionalDetails(otherInfo = form.otherInfo),
                 wasOnClubCare = form.clubDetails?.wasOnClubCare ?: false,
-                wasOnDaycare = form.clubDetails?.wasOnDaycare ?: false
+                wasOnDaycare = form.clubDetails?.wasOnDaycare ?: false,
             )
     }
 }
@@ -150,7 +150,7 @@ data class Child(
     val hasCorrectingAddress: Boolean? = null,
     val correctingAddress: Address = Address(editable = true),
     val childMovingDate: LocalDate? = null,
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
 )
 
 @JsonIgnoreProperties("workStatus", "workAddress")
@@ -164,14 +164,14 @@ data class Adult(
     val hasCorrectingAddress: Boolean? = null,
     val correctingAddress: Address = Address(editable = true),
     val guardianMovingDate: LocalDate? = null,
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
 )
 
 data class Address(
     val street: String = "",
     val postalCode: String = "",
     val city: String = "",
-    val editable: Boolean = false
+    val editable: Boolean = false,
 )
 
 data class ClubAdditionalDetails(val otherInfo: String = "")
@@ -180,11 +180,11 @@ data class Apply(
     val preferredUnits: List<DaycareId> = emptyList(),
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
-    val siblingSsn: String = ""
+    val siblingSsn: String = "",
 )
 
 data class ClubCare(
     val assistanceNeeded: Boolean = false,
     val assistanceDescription: String = "",
-    val assistanceAdditionalDetails: String = ""
+    val assistanceAdditionalDetails: String = "",
 )

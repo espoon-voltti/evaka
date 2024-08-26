@@ -23,7 +23,7 @@ class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendMessageNotification)
@@ -31,7 +31,7 @@ class MessageNotificationEmailService(
 
     fun getMessageNotifications(
         tx: Database.Transaction,
-        messageIds: List<MessageId>
+        messageIds: List<MessageId>,
     ): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery {
                 sql(
@@ -68,21 +68,21 @@ WHERE m.id = ANY(${bind(messageIds)})
     fun scheduleSendingMessageNotifications(
         tx: Database.Transaction,
         messageIds: List<MessageId>,
-        runAt: HelsinkiDateTime
+        runAt: HelsinkiDateTime,
     ) {
         asyncJobRunner.plan(
             tx,
             getMessageNotifications(tx, messageIds),
             retryCount = 10,
             retryInterval = Duration.ofMinutes(5),
-            runAt = runAt
+            runAt = runAt,
         )
     }
 
     fun sendMessageNotification(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendMessageNotificationEmail
+        msg: AsyncJob.SendMessageNotificationEmail,
     ) {
         val thread =
             db.transaction { tx ->
@@ -111,7 +111,7 @@ WHERE m.id = ANY(${bind(messageIds)})
                     emailMessageProvider.messageNotification(
                         msg.language,
                         thread,
-                        isSenderMunicipalAccount
+                        isSenderMunicipalAccount,
                     ),
                 traceId = msg.messageRecipientId.toString(),
             )

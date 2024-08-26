@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class FeeDecisionGenerationJobProcessor(
     private val generator: FinanceDecisionGenerator,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
@@ -33,7 +33,7 @@ class FeeDecisionGenerationJobProcessor(
                     generator.generateNewDecisionsForAdult(
                         tx,
                         msg.person.adultId,
-                        skipPropagation = msg.person.skipPropagation == true
+                        skipPropagation = msg.person.skipPropagation == true,
                     )
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
                     generator.generateNewDecisionsForChild(tx, msg.person.childId)
@@ -47,7 +47,7 @@ fun planFinanceDecisionGeneration(
     clock: EvakaClock,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     dateRange: DateRange,
-    targetHeadsOfFamily: List<PersonId>
+    targetHeadsOfFamily: List<PersonId>,
 ) {
     val heads =
         targetHeadsOfFamily.ifEmpty {
@@ -62,6 +62,6 @@ fun planFinanceDecisionGeneration(
     asyncJobRunner.plan(
         tx,
         heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) },
-        runAt = clock.now()
+        runAt = clock.now(),
     )
 }

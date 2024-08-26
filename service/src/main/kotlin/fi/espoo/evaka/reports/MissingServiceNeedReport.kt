@@ -26,14 +26,14 @@ import org.springframework.web.bind.annotation.RestController
 class MissingServiceNeedReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/missing-service-need", // deprecated
-        "/employee/reports/missing-service-need"
+        "/employee/reports/missing-service-need",
     )
     fun getMissingServiceNeedReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
     ): List<MissingServiceNeedReportRow> {
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
@@ -44,7 +44,7 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_MISSING_SERVICE_NEED_REPORT
+                            Action.Unit.READ_MISSING_SERVICE_NEED_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getMissingServiceNeedRows(from, to, filter)
@@ -61,7 +61,7 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
 private fun Database.Read.getMissingServiceNeedRows(
     from: LocalDate,
     to: LocalDate?,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<MissingServiceNeedReportRow> =
     createQuery {
             val dateRange = DateRange(from, to)
@@ -123,5 +123,5 @@ data class MissingServiceNeedReportRow(
     val childId: ChildId,
     val firstName: String?,
     val lastName: String?,
-    val daysWithoutServiceNeed: Int
+    val daysWithoutServiceNeed: Int,
 )

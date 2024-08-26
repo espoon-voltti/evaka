@@ -17,7 +17,7 @@ data class ChildDocumentCitizenSummary(
     val type: DocumentType,
     val templateName: String,
     val publishedAt: HelsinkiDateTime,
-    val unread: Boolean
+    val unread: Boolean,
 )
 
 data class ChildDocumentCitizenDetails(
@@ -27,5 +27,5 @@ data class ChildDocumentCitizenDetails(
     val downloadable: Boolean,
     @Json val content: DocumentContent,
     @Nested("child") val child: ChildBasics,
-    @Nested("template") val template: DocumentTemplate
+    @Nested("template") val template: DocumentTemplate,
 )

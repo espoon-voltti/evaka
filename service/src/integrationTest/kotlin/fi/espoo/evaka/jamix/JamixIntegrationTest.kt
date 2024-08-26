@@ -109,11 +109,11 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     AsyncJob.SendJamixOrder(
                         customerNumber = customerNumber,
                         customerId = customerId,
-                        date
+                        date,
                     )
                 }
             },
-            jobs.sortedWith(compareBy({ it.date }, { it.customerId }))
+            jobs.sortedWith(compareBy({ it.date }, { it.customerId })),
         )
     }
 
@@ -151,7 +151,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = child.id,
                         unitId = daycare.id,
                         startDate = monday,
-                        endDate = tuesday
+                        endDate = tuesday,
                     )
                 )
                 .also { placementId ->
@@ -160,7 +160,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycarePlacementId = placementId,
                             daycareGroupId = group1.id,
                             startDate = monday,
-                            endDate = tuesday
+                            endDate = tuesday,
                         )
                     )
                 }
@@ -171,7 +171,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         date = monday,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = employee.evakaUserId
+                        createdBy = employee.evakaUserId,
                     ),
                     // Breakfast only on Tuesday
                     DevReservation(
@@ -179,8 +179,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         date = tuesday,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(9, 0),
-                        createdBy = employee.evakaUserId
-                    )
+                        createdBy = employee.evakaUserId,
+                    ),
                 )
                 .forEach { tx.insert(it) }
 
@@ -194,7 +194,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = childWithSpecialDiet.id,
                         unitId = daycare.id,
                         startDate = monday,
-                        endDate = tuesday
+                        endDate = tuesday,
                     )
                 )
                 .also { placementId ->
@@ -203,7 +203,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             daycarePlacementId = placementId,
                             daycareGroupId = group2.id,
                             startDate = monday,
-                            endDate = tuesday
+                            endDate = tuesday,
                         )
                     )
                 }
@@ -214,7 +214,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     date = monday,
                     startTime = LocalTime.of(11, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
             // Absent on Tuesday
@@ -222,7 +222,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 DevAbsence(
                     childId = childWithSpecialDiet.id,
                     date = tuesday,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -249,23 +249,23 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 mealTypeID = 162,
                                 dietID = null,
                                 additionalInfo = null,
-                                textureID = null
+                                textureID = null,
                             ),
                             JamixClient.MealOrderRow(
                                 orderAmount = 1,
                                 mealTypeID = 175,
                                 dietID = null,
                                 additionalInfo = null,
-                                textureID = null
+                                textureID = null,
                             ),
                             JamixClient.MealOrderRow(
                                 orderAmount = 1,
                                 mealTypeID = 152,
                                 dietID = null,
                                 additionalInfo = null,
-                                textureID = null
-                            )
-                        )
+                                textureID = null,
+                            ),
+                        ),
                 ),
                 JamixClient.MealOrder(
                     deliveryDate = tuesday,
@@ -277,9 +277,9 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 mealTypeID = 162,
                                 dietID = null,
                                 additionalInfo = null,
-                                textureID = null
-                            ),
-                        )
+                                textureID = null,
+                            )
+                        ),
                 ),
                 JamixClient.MealOrder(
                     deliveryDate = monday,
@@ -291,12 +291,12 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 mealTypeID = 145,
                                 dietID = 1,
                                 additionalInfo = "Johnson Diet",
-                                textureID = 42
+                                textureID = 42,
                             )
-                        )
-                )
+                        ),
+                ),
             ),
-            client.orders
+            client.orders,
         )
     }
 
@@ -308,7 +308,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 client,
                 db,
                 clock = MockEvakaClock(2024, 4, 8, 12, 0),
-                fromAddress = "Foobar <foobar@example.com>"
+                fromAddress = "Foobar <foobar@example.com>",
             )
         }
     }
@@ -320,14 +320,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 specialDiets =
                     listOf(
                         JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")),
-                        JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello"))
+                        JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello")),
                     )
             )
         fetchAndUpdateJamixDiets(
             client,
             db,
             clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>"
+            fromAddress = "Foobar <foobar@example.com>",
         )
         db.transaction { tx ->
             val diets = tx.getSpecialDiets().toSet()
@@ -352,14 +352,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             client,
             db,
             clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>"
+            fromAddress = "Foobar <foobar@example.com>",
         ) { s ->
             warnings.add(s)
         }
         // assert that logger.warn has been called
         assertEquals(
             setOf("Jamix diet list update caused 1 child special diets to be set to null"),
-            warnings.toSet()
+            warnings.toSet(),
         )
         db.transaction { tx ->
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
@@ -404,7 +404,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = childWithSpecialDiet.id,
                     unitId = daycare.id,
                     startDate = monday,
-                    endDate = tuesday
+                    endDate = tuesday,
                 )
             )
         }
@@ -417,14 +417,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 client,
                 db,
                 clock = MockEvakaClock(2024, 4, 8, 12, 0),
-                fromAddress = "Foobar <foobar@example.com>"
+                fromAddress = "Foobar <foobar@example.com>",
             )
         assertEquals(2, emails.size)
         val s = childWithSpecialDiet.id.raw
         assertEquals(
             "Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:\n" +
                 "Lapsen tunniste: '$s', Alkuperäinen erityisruokavalio: 'diet abbreviation' ERV tunniste: 1",
-            emails[0].content.text
+            emails[0].content.text,
         )
     }
 
@@ -442,7 +442,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     listOf(
                         JamixSpecialDiet(
                             1,
-                            JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed")
+                            JamixSpecialDietFields("diet name fixed", "diet abbreviation fixed"),
                         )
                     )
             )
@@ -450,14 +450,14 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             client,
             db,
             clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>"
+            fromAddress = "Foobar <foobar@example.com>",
         )
         db.transaction { tx ->
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
             assertNotNull(childAfterSync)
             assertEquals(
                 SpecialDiet(1, "diet abbreviation fixed"),
-                childAfterSync.additionalInformation.specialDiet
+                childAfterSync.additionalInformation.specialDiet,
             )
         }
     }
@@ -466,7 +466,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         client: JamixClient,
         customerNumber: Int,
         customerId: Int,
-        date: LocalDate
+        date: LocalDate,
     ) {
         createAndSendJamixOrder(client, db, DefaultMealTypeMapper, customerNumber, customerId, date)
     }
@@ -475,7 +475,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 class TestJamixClient(
     val customers: Map<Int, Int> = mapOf(),
     val specialDiets: List<JamixSpecialDiet> = emptyList(),
-    val mealTextures: List<JamixTexture> = emptyList()
+    val mealTextures: List<JamixTexture> = emptyList(),
 ) : JamixClient {
     val orders = mutableListOf<JamixClient.MealOrder>()
 

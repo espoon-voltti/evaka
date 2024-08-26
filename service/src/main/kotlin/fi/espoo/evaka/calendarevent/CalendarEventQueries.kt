@@ -22,7 +22,7 @@ import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<CalendarEvent> =
     getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
 
@@ -31,7 +31,7 @@ private fun Database.Read.getCalendarEventsQuery(
     unitId: DaycareId? = null,
     range: FiniteDateRange? = null,
     groupId: GroupId? = null,
-    eventTypes: List<CalendarEventType>? = null
+    eventTypes: List<CalendarEventType>? = null,
 ) =
     createQuery {
             sql(
@@ -93,7 +93,7 @@ GROUP BY ce.id, cea.unit_id
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
     createdAt: HelsinkiDateTime,
-    createdBy: EvakaUserId
+    createdBy: EvakaUserId,
 ): CalendarEventId {
     val eventId =
         createUpdate {
@@ -120,7 +120,7 @@ RETURNING id
 fun Database.Transaction.createCalendarEventAttendees(
     eventId: CalendarEventId,
     unitId: DaycareId,
-    tree: Map<GroupId, Set<ChildId>?>?
+    tree: Map<GroupId, Set<ChildId>?>?,
 ) {
     if (tree != null) {
         val rows: Sequence<Pair<GroupId, ChildId?>> =
@@ -147,7 +147,7 @@ fun Database.Transaction.deleteCalendarEventAttendees(eventId: CalendarEventId) 
 
 fun Database.Read.getReservableCalendarEventTimes(
     calendarEventId: CalendarEventId,
-    childId: ChildId
+    childId: ChildId,
 ) =
     createQuery {
             sql(
@@ -165,7 +165,7 @@ fun Database.Transaction.createCalendarEventTime(
     calendarEventId: CalendarEventId,
     time: CalendarEventTimeForm,
     createdAt: HelsinkiDateTime,
-    createdBy: EvakaUserId
+    createdBy: EvakaUserId,
 ) =
     createUpdate {
             sql(
@@ -189,7 +189,7 @@ fun Database.Read.getCalendarEventById(id: CalendarEventId) =
 
 fun Database.Read.getCalendarEventsByGroupAndType(
     groupId: GroupId,
-    eventTypes: List<CalendarEventType>
+    eventTypes: List<CalendarEventType>,
 ) = getCalendarEventsQuery(groupId = groupId, eventTypes = eventTypes).toList<CalendarEvent>()
 
 fun Database.Read.getCalendarEventsByUnitWithRange(unitId: DaycareId, range: FiniteDateRange) =
@@ -203,7 +203,7 @@ fun Database.Transaction.createCalendarEventAttendee(
     eventId: CalendarEventId,
     unitId: DaycareId,
     groupId: GroupId?,
-    childId: ChildId?
+    childId: ChildId?,
 ) =
     this.createUpdate {
             sql(
@@ -234,7 +234,7 @@ WHERE calendar_event_id = ${bind(calendarEventId)}
 fun Database.Transaction.updateCalendarEvent(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
-    updateForm: CalendarEventUpdateForm
+    updateForm: CalendarEventUpdateForm,
 ) =
     createUpdate {
             sql(
@@ -251,7 +251,7 @@ fun Database.Transaction.insertCalendarEventTimeReservation(
     eventTimeId: CalendarEventTimeId,
     childId: ChildId?,
     modifiedAt: HelsinkiDateTime,
-    modifiedBy: EvakaUserId
+    modifiedBy: EvakaUserId,
 ) =
     createUpdate {
             sql(
@@ -266,7 +266,7 @@ WHERE id = ${bind(eventTimeId)} AND (child_id IS NULL OR child_id = ${bind(child
 
 fun Database.Transaction.deleteCalendarEventTimeReservations(
     calendarEventId: CalendarEventId,
-    childId: ChildId
+    childId: ChildId,
 ) = execute {
     sql(
         """
@@ -301,13 +301,13 @@ data class CitizenCalendarEventRow(
     val groupId: GroupId?,
     val groupName: String?,
     val unitId: DaycareId,
-    val unitName: String
+    val unitName: String,
 )
 
 enum class AttendanceType {
     INDIVIDUAL,
     GROUP,
-    UNIT
+    UNIT,
 }
 
 data class CitizenDiscussionSurveyRow(
@@ -326,12 +326,12 @@ data class CitizenDiscussionSurveyRow(
     val eventTimeOccupant: ChildId?,
     val eventTimeDate: LocalDate,
     val eventTimeStart: LocalTime,
-    val eventTimeEnd: LocalTime
+    val eventTimeEnd: LocalTime,
 )
 
 fun Database.Read.getDaycareEventsForGuardian(
     guardianId: PersonId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<CitizenCalendarEventRow> =
     createQuery {
             sql(
@@ -395,7 +395,7 @@ WHERE cp.period && ce.period
 
 fun Database.Read.getDiscussionSurveysForGuardian(
     guardianId: PersonId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<CitizenDiscussionSurveyRow> =
     createQuery {
             sql(
@@ -467,7 +467,7 @@ fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
 data class ParentWithEvents(
     val parentId: PersonId,
     val language: Language,
-    val events: List<CalendarEventNotificationData>
+    val events: List<CalendarEventNotificationData>,
 )
 
 fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
@@ -560,7 +560,7 @@ GROUP BY mp.parent_id, p.language
             ParentWithEvents(
                 parentId = column("parent_id"),
                 language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                events = jsonColumn<List<CalendarEventNotificationData>>("events")
+                events = jsonColumn<List<CalendarEventNotificationData>>("events"),
             )
         }
 }
@@ -568,7 +568,7 @@ GROUP BY mp.parent_id, p.language
 fun Database.Transaction.updateCalendarEventPeriod(
     eventId: CalendarEventId,
     modifiedAt: HelsinkiDateTime,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ) =
     this.createUpdate {
             sql(
@@ -584,7 +584,7 @@ WHERE id = ${bind(eventId)}
 data class DiscussionTimeDetailsRow(
     @Nested("et") val eventTime: CalendarEventTime,
     val title: String,
-    val unitName: String
+    val unitName: String,
 )
 
 fun Database.Read.getDiscussionTimeDetailsByEventTimeId(id: CalendarEventTimeId) =

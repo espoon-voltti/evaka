@@ -51,15 +51,15 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                             nameFi = snDefaultDaycare.nameFi,
                             nameEn = snDefaultDaycare.nameEn,
                             nameSv = snDefaultDaycare.nameSv,
-                            validPlacementType = null
-                        )
+                            validPlacementType = null,
+                        ),
                 )
             applicationId =
                 tx.insertTestApplication(
                     childId = childId,
                     guardianId = guardianId,
                     type = ApplicationType.DAYCARE,
-                    document = form
+                    document = form,
                 )
             tx.insertServiceNeedOptions()
         }
@@ -89,11 +89,11 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                             periodEnd = null,
                             searchTerms = null,
                             transferApplications = TransferApplicationFilter.ALL,
-                            voucherApplications = null
+                            voucherApplications = null,
                         ),
                     readWithAssistanceNeed = AccessControlFilter.PermitAll,
                     readWithoutAssistanceNeed = AccessControlFilter.PermitAll,
-                    canReadServiceWorkerNotes = true
+                    canReadServiceWorkerNotes = true,
                 )
             }
         val application = applications.data.single()

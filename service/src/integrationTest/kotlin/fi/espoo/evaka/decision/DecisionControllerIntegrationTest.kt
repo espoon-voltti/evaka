@@ -106,7 +106,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     tx,
                     serviceWorker.id,
                     childRestricted = true,
-                    legacyPdfWithContactInfo = true
+                    legacyPdfWithContactInfo = true,
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -122,7 +122,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     tx,
                     serviceWorker.id,
                     guardianRestricted = true,
-                    legacyPdfWithContactInfo = true
+                    legacyPdfWithContactInfo = true,
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -138,7 +138,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     tx,
                     serviceWorker.id,
                     childRestricted = true,
-                    legacyPdfWithContactInfo = true
+                    legacyPdfWithContactInfo = true,
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -154,7 +154,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     tx,
                     serviceWorker.id,
                     guardianRestricted = true,
-                    legacyPdfWithContactInfo = true
+                    legacyPdfWithContactInfo = true,
                 )
             }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -170,7 +170,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         serviceWorker: EmployeeId,
         guardianRestricted: Boolean = false,
         childRestricted: Boolean = false,
-        legacyPdfWithContactInfo: Boolean = false
+        legacyPdfWithContactInfo: Boolean = false,
     ): DecisionId {
         val guardianId =
             tx.insert(DevPerson(restrictedDetailsEnabled = guardianRestricted), DevPersonType.ADULT)
@@ -178,9 +178,9 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(
                 DevPerson(
                     dateOfBirth = clock.today().minusYears(3),
-                    restrictedDetailsEnabled = childRestricted
+                    restrictedDetailsEnabled = childRestricted,
                 ),
-                DevPersonType.CHILD
+                DevPersonType.CHILD,
             )
         val areaId = tx.insert(DevCareArea())
         val unitId = tx.insert(DevDaycare(areaId = areaId))
@@ -190,7 +190,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 guardianId = guardianId,
                 childId = childId,
                 unitId = unitId,
-                serviceWorker = serviceWorker
+                serviceWorker = serviceWorker,
             )
         if (legacyPdfWithContactInfo) {
             tx.execute {
@@ -210,7 +210,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         guardianId: PersonId,
         childId: ChildId,
         unitId: DaycareId,
-        serviceWorker: EmployeeId
+        serviceWorker: EmployeeId,
     ): DecisionId {
         val applicationId =
             tx.insertTestApplication(
@@ -226,8 +226,8 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         child = Child(dateOfBirth = clock.today().minusYears(3)),
                         guardian = Adult(),
                         apply = Apply(preferredUnits = listOf(unitId)),
-                        preferredStartDate = clock.today().plusMonths(5)
-                    )
+                        preferredStartDate = clock.today().plusMonths(5),
+                    ),
             )
         applicationStateService.createPlacementPlan(
             tx = tx,
@@ -240,15 +240,15 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     period =
                         FiniteDateRange(
                             clock.today().plusMonths(5),
-                            clock.today().plusMonths(5).plusYears(3)
-                        )
-                )
+                            clock.today().plusMonths(5).plusYears(3),
+                        ),
+                ),
         )
         applicationStateService.sendDecisionsWithoutProposal(
             tx = tx,
             user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),
             clock = clock,
-            applicationId = applicationId
+            applicationId = applicationId,
         )
 
         return tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll).first().id

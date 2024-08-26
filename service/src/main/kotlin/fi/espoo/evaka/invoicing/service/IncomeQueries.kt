@@ -42,7 +42,7 @@ fun Database.Read.expiringIncomes(
     today: LocalDate,
     checkForExpirationRange: FiniteDateRange,
     checkForExistingRecentIncomeNotificationType: IncomeNotificationType? = null,
-    aPersonId: PersonId? = null
+    aPersonId: PersonId? = null,
 ): List<PersonIncomeExpirationDate> {
     val dayAfterExpiration = checkForExpirationRange.end.plusDays(1)
     return createQuery {
@@ -98,7 +98,7 @@ ${if (aPersonId != null) " AND person_id = ${bind(aPersonId)}" else ""}
 
 fun Database.Read.newCustomerIdsForIncomeNotifications(
     today: LocalDate,
-    guardianId: PersonId?
+    guardianId: PersonId?,
 ): List<PersonId> {
     val currentMonth = FiniteDateRange.ofMonth(today)
 
@@ -152,12 +152,12 @@ SELECT DISTINCT person_id FROM (
 data class IncomeNotification(
     val receiverId: PersonId,
     val notificationType: IncomeNotificationType,
-    val created: HelsinkiDateTime
+    val created: HelsinkiDateTime,
 )
 
 fun Database.Transaction.createIncomeNotification(
     receiverId: PersonId,
-    notificationType: IncomeNotificationType
+    notificationType: IncomeNotificationType,
 ): IncomeNotificationId {
     return createUpdate {
             sql(

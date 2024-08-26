@@ -66,7 +66,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertNull(db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -82,7 +82,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employeeNumber = "666666",
                 firstName = "Teppo",
                 lastName = "Testaaja",
-                email = null
+                email = null,
             )
 
         val (_, res, result) =
@@ -100,7 +100,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -116,7 +116,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employeeNumber = "666666",
                 firstName = "Teppo",
                 lastName = "Testaaja",
-                email = null
+                email = null,
             )
         db.transaction { tx ->
             tx.insert(
@@ -124,7 +124,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     id = employeeId,
                     externalId = externalId,
                     roles = setOf(UserRole.FINANCE_ADMIN),
-                    preferredFirstName = "Kutsumanimi"
+                    preferredFirstName = "Kutsumanimi",
                 )
             )
         }
@@ -144,7 +144,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(UserRole.FINANCE_ADMIN),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -160,7 +160,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employeeNumber = "666666",
                 firstName = "Teppo",
                 lastName = "Testaaja",
-                email = null
+                email = null,
             )
         db.transaction { tx ->
             tx.insert(
@@ -169,7 +169,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                     externalId = null,
                     employeeNumber = "666666",
                     roles = setOf(UserRole.FINANCE_ADMIN),
-                    preferredFirstName = "Kutsumanimi"
+                    preferredFirstName = "Kutsumanimi",
                 )
             )
         }
@@ -189,7 +189,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(UserRole.FINANCE_ADMIN),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
@@ -207,7 +207,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employeeNumber = employeeNumber,
                 firstName = "Teppo",
                 lastName = "Testaaja",
-                email = null
+                email = null,
             )
         val (_, res1, result1) =
             http
@@ -223,7 +223,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected1, result1.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result1.get().id) })
@@ -236,7 +236,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 employeeNumber = employeeNumber,
                 firstName = "Teppo",
                 lastName = "Testaaja",
-                email = null
+                email = null,
             )
         val (_, res, result) =
             http
@@ -252,7 +252,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 lastName = "Testaaja",
                 globalRoles = setOf(),
                 allScopedRoles = setOf(),
-                active = true
+                active = true,
             )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result.get().id) })

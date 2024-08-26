@@ -13,7 +13,7 @@ import java.math.BigDecimal
 
 fun Database.Read.getOccupancyCoefficientForEmployeeInUnit(
     employeeId: EmployeeId,
-    unitId: DaycareId
+    unitId: DaycareId,
 ): BigDecimal? =
     createQuery {
             sql(
@@ -28,7 +28,7 @@ WHERE daycare_id = ${bind(unitId)} AND employee_id = ${bind(employeeId)}
 
 fun Database.Read.getOccupancyCoefficientForEmployee(
     employeeId: EmployeeId,
-    groupId: GroupId
+    groupId: GroupId,
 ): BigDecimal? =
     createQuery {
             sql(

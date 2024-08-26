@@ -34,7 +34,7 @@ class VardaResetService(
     private val mapper: JsonMapper,
     private val vardaEnv: VardaEnv,
     private val evakaEnv: EvakaEnv,
-    private val ophEnv: OphEnv
+    private val ophEnv: OphEnv,
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
     private val municipalOrganizerOid = ophEnv.organizerOid
@@ -49,7 +49,7 @@ class VardaResetService(
         db: Database.Connection,
         clock: EvakaClock,
         addNewChildren: Boolean,
-        maxChildren: Int = 1000
+        maxChildren: Int = 1000,
     ) {
         logger.info("VardaUpdate: starting reset process")
         val resetChildIds =
@@ -63,7 +63,7 @@ class VardaResetService(
                 tx,
                 resetChildIds.map { AsyncJob.ResetVardaChildOld(it) },
                 retryCount = 1,
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
     }
@@ -71,7 +71,7 @@ class VardaResetService(
     fun oldResetVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.ResetVardaChildOld
+        msg: AsyncJob.ResetVardaChildOld,
     ) {
         logger.info("VardaUpdate (old): starting to reset child ${msg.childId}")
         resetVardaChild(db, clock, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
@@ -84,7 +84,7 @@ private fun resetVardaChild(
     client: VardaClient,
     childId: ChildId,
     feeDecisionMinDate: LocalDate,
-    municipalOrganizerOid: String
+    municipalOrganizerOid: String,
 ) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
@@ -101,7 +101,7 @@ private fun resetVardaChild(
                     client,
                     serviceNeedId,
                     feeDecisionMinDate,
-                    municipalOrganizerOid
+                    municipalOrganizerOid,
                 )
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
@@ -117,7 +117,7 @@ private fun resetVardaChild(
 fun deleteChildDataFromVardaAndDb(
     db: Database.Connection,
     vardaClient: VardaClient,
-    evakaChildId: ChildId
+    evakaChildId: ChildId,
 ): Boolean {
     val vardaChildIds = getVardaChildIdsByEvakaChildId(db, evakaChildId)
 
@@ -136,7 +136,7 @@ fun deleteChildDataFromVardaAndDb(
             } catch (e: Exception) {
                 logger.warn(
                     "VardaUpdate: failed to delete varda data for child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}",
-                    e
+                    e,
                 )
                 false
             }
@@ -148,7 +148,7 @@ fun deleteChildDataFromVardaAndDb(
 fun deleteChildDataFromVardaAndDbByVardaId(
     db: Database.Connection,
     vardaClient: VardaClient,
-    vardaChildId: Long
+    vardaChildId: Long,
 ) {
     logger.info("VardaUpdate: deleting all child data from varda (child id: $vardaChildId)")
     try {
@@ -166,7 +166,7 @@ fun deleteChildDataFromVardaAndDbByVardaId(
 
 private fun getVardaChildIdsByEvakaChildId(
     db: Database.Connection,
-    evakaChildId: ChildId
+    evakaChildId: ChildId,
 ): List<Long> {
     return db.read {
         it.createQuery {

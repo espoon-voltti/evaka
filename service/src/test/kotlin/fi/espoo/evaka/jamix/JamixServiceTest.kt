@@ -22,7 +22,7 @@ class JamixServiceTest {
             listOf(
                 JamixSpecialDiet(
                     1,
-                    JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkasta   \nFoo")
+                    JamixSpecialDietFields("tsekattava   \nFoobar  ", "ätarkasta   \nFoo"),
                 )
             )
         val result = cleanupJamixDietList(testData)

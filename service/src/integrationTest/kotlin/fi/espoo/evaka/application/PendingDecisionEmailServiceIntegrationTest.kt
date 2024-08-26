@@ -65,7 +65,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                 childId = childId,
                 guardianId = guardianId,
                 type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                document = DaycareFormV0.fromApplication2(validDaycareApplication),
             )
         }
     }
@@ -84,14 +84,14 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             null,
             null,
             0,
-            type = DecisionType.PRESCHOOL
+            type = DecisionType.PRESCHOOL,
         )
         createPendingDecision(
             LocalDate.now().minusDays(8),
             null,
             null,
             0,
-            type = DecisionType.PRESCHOOL_DAYCARE
+            type = DecisionType.PRESCHOOL_DAYCARE,
         )
 
         runPendingDecisionEmailAsyncJobs()
@@ -104,7 +104,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             "kirjautumalla osoitteeseen <a",
-            "kirjautumalla osoitteeseen https"
+            "kirjautumalla osoitteeseen https",
         )
     }
 
@@ -123,7 +123,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             LocalDate.now().minusDays(16),
             null,
             HelsinkiDateTime.now().minusSeconds(eightDaySeconds),
-            1
+            1,
         )
         runPendingDecisionEmailAsyncJobs()
 
@@ -135,7 +135,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
             "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education",
             "kirjautumalla osoitteeseen <a",
-            "kirjautumalla osoitteeseen https"
+            "kirjautumalla osoitteeseen https",
         )
     }
 
@@ -155,7 +155,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             HelsinkiDateTime.from(
                 LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)
             ),
-            2
+            2,
         )
         runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
@@ -176,7 +176,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         expectedFromAddress: String,
         expectedSubject: String,
         expectedHtmlPart: String,
-        expectedTextPart: String
+        expectedTextPart: String,
     ) {
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
@@ -191,7 +191,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         resolved: HelsinkiDateTime?,
         pendingDecisionEmailSent: HelsinkiDateTime?,
         pendingDecisionEmailsSentCount: Int,
-        type: DecisionType = DecisionType.DAYCARE
+        type: DecisionType = DecisionType.DAYCARE,
     ) {
         db.transaction { tx ->
             tx.insertTestDecision(
@@ -207,7 +207,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                     sentDate = sentDate,
                     resolved = resolved,
                     pendingDecisionEmailSent = pendingDecisionEmailSent,
-                    pendingDecisionEmailsSentCount = pendingDecisionEmailsSentCount
+                    pendingDecisionEmailsSentCount = pendingDecisionEmailsSentCount,
                 )
             )
         }

@@ -68,7 +68,7 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                             listOf(
                                 KoskiClient.Error(
                                     key = "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia",
-                                    message = "Not found"
+                                    message = "Not found",
                                 )
                             )
                         )
@@ -110,7 +110,7 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                                     studyRights[studyRightOid] =
                                         MockStudyRight(
                                             version,
-                                            opiskeluoikeus = it.copy(oid = studyRightOid)
+                                            opiskeluoikeus = it.copy(oid = studyRightOid),
                                         )
                                     personStudyRights.get(personOid).add(studyRightOid)
                                 }
@@ -123,11 +123,11 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
                                         putObject("lähdejärjestelmä").apply {
                                             put(
                                                 "koodiarvo",
-                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodiarvo
+                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodiarvo,
                                             )
                                             put(
                                                 "koodistoUri",
-                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodistoUri
+                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodistoUri,
                                             )
                                             put("koodistoVersio", 1)
                                             putObject("nimi").apply { put("fi", "EvakaEspoo") }

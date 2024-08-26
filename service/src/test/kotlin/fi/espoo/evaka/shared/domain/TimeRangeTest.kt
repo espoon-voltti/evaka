@@ -492,12 +492,8 @@ class TimeRangeTest {
         // A ------------_
         val a = testRange(1, 5)
         assertEquals(
-            BoundedRange.Relation.Overlap(
-                left = null,
-                overlap = a,
-                right = null,
-            ),
-            a.relationTo(a)
+            BoundedRange.Relation.Overlap(left = null, overlap = a, right = null),
+            a.relationTo(a),
         )
     }
 
@@ -512,17 +508,17 @@ class TimeRangeTest {
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = true),
                 overlap = testRange(3, 6),
-                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = false)
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = false),
             ),
-            a.relationTo(b)
+            a.relationTo(b),
         )
         assertEquals(
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = false),
                 overlap = testRange(3, 6),
-                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = true)
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = true),
             ),
-            b.relationTo(a)
+            b.relationTo(a),
         )
 
         //   00 01 02 ... 22 23 00
@@ -534,17 +530,17 @@ class TimeRangeTest {
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(0, 22), isFirst = true),
                 overlap = testRange(22, 23),
-                right = BoundedRange.Relation.Remainder(testRange(23, 0), isFirst = false)
+                right = BoundedRange.Relation.Remainder(testRange(23, 0), isFirst = false),
             ),
-            c.relationTo(d)
+            c.relationTo(d),
         )
         assertEquals(
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(0, 22), isFirst = false),
                 overlap = testRange(22, 23),
-                right = BoundedRange.Relation.Remainder(testRange(23, 0), isFirst = true)
+                right = BoundedRange.Relation.Remainder(testRange(23, 0), isFirst = true),
             ),
-            d.relationTo(c)
+            d.relationTo(c),
         )
     }
 

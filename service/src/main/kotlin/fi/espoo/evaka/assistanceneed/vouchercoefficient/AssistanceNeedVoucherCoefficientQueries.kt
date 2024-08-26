@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 
 fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     childId: ChildId,
-    data: AssistanceNeedVoucherCoefficientRequest
+    data: AssistanceNeedVoucherCoefficientRequest,
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
             sql(
@@ -55,7 +55,7 @@ WHERE child_id = ${bind(childId)}
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId,
-    data: AssistanceNeedVoucherCoefficientRequest
+    data: AssistanceNeedVoucherCoefficientRequest,
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
             sql(
@@ -86,7 +86,7 @@ RETURNING id, child_id, coefficient, validity_period
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<AssistanceNeedVoucherCoefficient> =
     createQuery {
             sql(

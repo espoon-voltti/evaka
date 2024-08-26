@@ -39,7 +39,7 @@ class LocationController {
         user: AuthenticatedUser.Employee,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-        @RequestParam shiftCare: Boolean?
+        @RequestParam shiftCare: Boolean?,
     ): List<PublicUnit> {
         return db.connect { dbc ->
             dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = false) }
@@ -50,19 +50,19 @@ class LocationController {
         path =
             [
                 "/public/units/{applicationType}", // deprecated
-                "/employee/public/units/{applicationType}"
+                "/employee/public/units/{applicationType}",
             ]
     )
     fun getAllApplicableUnits(
         db: Database,
-        @PathVariable applicationType: ApplicationType
+        @PathVariable applicationType: ApplicationType,
     ): List<PublicUnit> {
         return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
     }
 
     @GetMapping(
         "/areas", // deprecated
-        "/employee/areas"
+        "/employee/areas",
     )
     fun getAreas(db: Database, user: AuthenticatedUser.Employee): List<AreaJSON> {
         return db.connect { dbc ->
@@ -74,7 +74,7 @@ class LocationController {
 
     @GetMapping(
         "/filters/units", // deprecated
-        "/employee/filters/units"
+        "/employee/filters/units",
     )
     fun getUnits(
         db: Database,
@@ -92,7 +92,7 @@ enum class ApplicationUnitType {
     CLUB,
     DAYCARE,
     PRESCHOOL,
-    PREPARATORY
+    PREPARATORY,
 }
 
 data class PublicUnit(
@@ -112,7 +112,7 @@ data class PublicUnit(
     val providesShiftCare: Boolean,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
-    val clubApplyPeriod: DateRange?
+    val clubApplyPeriod: DateRange?,
 )
 
 data class AreaJSON(val id: AreaId, val name: String, val shortName: String)
@@ -121,13 +121,13 @@ enum class UnitTypeFilter {
     ALL,
     CLUB,
     DAYCARE,
-    PRESCHOOL
+    PRESCHOOL,
 }
 
 private fun Database.Read.getUnits(
     areaIds: List<AreaId>?,
     type: UnitTypeFilter,
-    from: LocalDate?
+    from: LocalDate?,
 ): List<UnitStub> {
     val areaIdsParam = areaIds?.takeIf { it.isNotEmpty() }
     return createQuery {

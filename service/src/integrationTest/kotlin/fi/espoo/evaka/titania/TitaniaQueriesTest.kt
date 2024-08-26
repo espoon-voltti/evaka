@@ -67,9 +67,9 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 5, 31),
-                                    LocalTime.of(14, 54)
+                                    LocalTime.of(14, 54),
                                 ),
-                            description = null
+                            description = null,
                         ),
                         StaffAttendancePlan(
                             employeeId = employee2.id,
@@ -79,9 +79,9 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 5, 31),
-                                    LocalTime.of(14, 54)
+                                    LocalTime.of(14, 54),
                                 ),
-                            description = null
+                            description = null,
                         ),
                         StaffAttendancePlan(
                             employeeId = employee2.id,
@@ -90,7 +90,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 HelsinkiDateTime.of(LocalDate.of(2022, 6, 1), LocalTime.of(7, 32)),
                             endTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 6, 1), LocalTime.of(14, 54)),
-                            description = null
+                            description = null,
                         ),
                         StaffAttendancePlan(
                             employeeId = employee3.id,
@@ -100,10 +100,10 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 5, 31),
-                                    LocalTime.of(14, 54)
+                                    LocalTime.of(14, 54),
                                 ),
-                            description = null
-                        )
+                            description = null,
+                        ),
                     )
                 )
             assertThat(inserted).containsExactlyInAnyOrder(1, 1, 1, 1)
@@ -111,7 +111,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val deleted =
                 tx.deleteStaffAttendancePlansBy(
                     employeeIds = listOf(employee2.id, employee3.id),
-                    period = LocalDate.of(2022, 5, 31).let { FiniteDateRange(it, it) }
+                    period = LocalDate.of(2022, 5, 31).let { FiniteDateRange(it, it) },
                 )
             assertThat(deleted)
                 .extracting<EmployeeId> { it.employeeId }
@@ -204,7 +204,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val attendances =
                 tx.findStaffAttendancesBy(
                     null,
-                    FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7))
+                    FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
             assertThat(attendances)
                 .extracting<Int> { it.arrived.dayOfMonth }
@@ -230,7 +230,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val attendances =
                 tx.findStaffAttendancesBy(
                     listOf(employeeIds[0]),
-                    FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7))
+                    FiniteDateRange(LocalDate.of(2023, 11, 1), LocalDate.of(2023, 11, 7)),
                 )
             assertThat(attendances).extracting<Int> { it.arrived.dayOfMonth }.containsExactly(1)
         }
@@ -242,7 +242,7 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             type = StaffAttendanceType.PRESENT,
             startTime = HelsinkiDateTime.of(LocalDate.of(2022, 6, 7), LocalTime.of(8, 12)),
             endTime = HelsinkiDateTime.of(LocalDate.of(2022, 6, 7), LocalTime.of(15, 41)),
-            description = null
+            description = null,
         )
 }
 
@@ -258,7 +258,7 @@ fun Database.Transaction.insertRealtimeStaffAttendanceTestData(): List<EmployeeI
             groupId,
             LocalDate.of(2023, 11, it.first),
             LocalTime.of(8, 0),
-            LocalTime.of(16, 0)
+            LocalTime.of(16, 0),
         )
     }
     return listOf(employee1.id, employee2.id)
@@ -269,7 +269,7 @@ fun Database.Transaction.addAttendance(
     groupId: GroupId,
     date: LocalDate,
     arrival: LocalTime,
-    departure: LocalTime
+    departure: LocalTime,
 ) {
     upsertStaffAttendance(
         null,
@@ -278,6 +278,6 @@ fun Database.Transaction.addAttendance(
         HelsinkiDateTime.of(date, arrival),
         HelsinkiDateTime.of(date, departure),
         BigDecimal(1.0),
-        StaffAttendanceType.PRESENT
+        StaffAttendanceType.PRESENT,
     )
 }

@@ -28,7 +28,7 @@ fun Database.Transaction.insertAttendance(
     childId: ChildId,
     unitId: DaycareId,
     date: LocalDate,
-    range: TimeInterval
+    range: TimeInterval,
 ): ChildAttendanceId {
     return createUpdate {
             sql(
@@ -46,7 +46,7 @@ fun Database.Transaction.insertAttendance(
 fun Database.Read.getChildAttendanceId(
     childId: ChildId,
     unitId: DaycareId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): ChildAttendanceId? {
     return createQuery {
             sql(
@@ -70,7 +70,7 @@ fun Database.Read.getChildAttendanceId(
 fun Database.Read.getCompletedChildAttendanceTimes(
     childId: ChildId,
     unitId: DaycareId,
-    date: LocalDate
+    date: LocalDate,
 ): List<TimeRange> {
     return createQuery {
             sql(
@@ -87,18 +87,18 @@ fun Database.Read.getCompletedChildAttendanceTimes(
 data class OngoingAttendance(
     val id: ChildAttendanceId,
     val date: LocalDate,
-    val startTime: LocalTime
+    val startTime: LocalTime,
 ) {
     fun toTimeRange(departed: HelsinkiDateTime) =
         TimeRange(
             if (date.isBefore(departed.toLocalDate())) LocalTime.of(0, 0) else startTime,
-            departed.toLocalTime()
+            departed.toLocalTime(),
         )
 }
 
 fun Database.Read.getChildOngoingAttendance(
     childId: ChildId,
-    unitId: DaycareId
+    unitId: DaycareId,
 ): OngoingAttendance? =
     createQuery {
             sql(
@@ -117,7 +117,7 @@ data class ChildBasics(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    val imageUrl: String?
+    val imageUrl: String?,
 )
 
 data class ChildBasicsRow(
@@ -130,7 +130,7 @@ data class ChildBasicsRow(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    val imageId: String?
+    val imageId: String?,
 ) {
     fun toChildBasics() =
         ChildBasics(
@@ -143,7 +143,7 @@ data class ChildBasicsRow(
             placementType,
             groupId,
             backup,
-            imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
+            imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" },
         )
 }
 
@@ -254,12 +254,12 @@ LEFT JOIN child_images cimg ON pe.id = cimg.child_id
 private data class UnitChildAttendancesRow(
     val childId: ChildId,
     val arrived: HelsinkiDateTime,
-    var departed: HelsinkiDateTime?
+    var departed: HelsinkiDateTime?,
 )
 
 fun Database.Read.getUnitChildAttendances(
     unitId: DaycareId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): Map<ChildId, List<AttendanceTimes>> {
     // get attendances for last week to include possible overnight stays
     val range = FiniteDateRange(now.toLocalDate().minusWeeks(1), now.toLocalDate())
@@ -281,7 +281,7 @@ WHERE
         .toList<UnitChildAttendancesRow>()
         .groupBy(
             keySelector = { it.childId },
-            valueTransform = { AttendanceTimes(it.arrived, it.departed) }
+            valueTransform = { AttendanceTimes(it.arrived, it.departed) },
         )
         .mapValues {
             mergeOverNightRanges(it.value)
@@ -336,7 +336,7 @@ GROUP BY a.child_id
 
 fun Database.Read.getChildPlacementTypes(
     childIds: Set<ChildId>,
-    today: LocalDate
+    today: LocalDate,
 ): Map<ChildId, PlacementType> =
     createQuery {
             sql(
@@ -363,10 +363,12 @@ fun Database.Transaction.updateAttendanceEnd(attendanceId: ChildAttendanceId, en
 
 fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
     execute {
-        sql("""
+        sql(
+            """
         DELETE FROM child_attendance
         WHERE id = ${bind(id)}
-        """)
+        """
+        )
     }
 }
 
@@ -385,7 +387,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
 
 fun Database.Transaction.deleteAttendancesByDate(
     childId: ChildId,
-    date: LocalDate
+    date: LocalDate,
 ): List<ChildAttendanceId> =
     createUpdate {
             sql(
@@ -397,7 +399,7 @@ fun Database.Transaction.deleteAttendancesByDate(
 
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(
     childId: ChildId,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): List<AbsenceId> =
     createUpdate {
             sql(
@@ -413,7 +415,7 @@ RETURNING id
 
 fun Database.Read.childrenHaveAttendanceInRange(
     childIds: Set<PersonId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Boolean {
     return createQuery {
             sql(
@@ -440,7 +442,7 @@ WHERE ${predicate(where.forTable("ca"))}
 fun Database.Read.getChildAttendancesCitizen(
     today: LocalDate,
     guardianId: PersonId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): List<ChildAttendanceRow> =
     getChildAttendances(
         Predicate {

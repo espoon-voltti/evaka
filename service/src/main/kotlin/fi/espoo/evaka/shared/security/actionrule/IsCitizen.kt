@@ -50,7 +50,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
 
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
-            targets: Set<T>
+            targets: Set<T>,
         ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> =
             when (ctx.user) {
                 is AuthenticatedUser.Citizen -> {
@@ -78,7 +78,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
 
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
-            params: IsCitizen
+            params: IsCitizen,
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Citizen ->
@@ -121,7 +121,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
 
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
-                        targets: Set<PersonId>
+                        targets: Set<PersonId>,
                     ): Map<PersonId, DatabaseActionRule.Deferred<IsCitizen>> =
                         when (ctx.user) {
                             is AuthenticatedUser.Citizen ->
@@ -133,7 +133,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
 
                     override fun queryWithParams(
                         ctx: DatabaseActionRule.QueryContext,
-                        params: IsCitizen
+                        params: IsCitizen,
                     ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Citizen ->

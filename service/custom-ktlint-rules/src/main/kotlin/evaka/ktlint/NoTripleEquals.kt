@@ -21,7 +21,7 @@ class NoTripleEquals : EvakaRule("no-triple-equals"), RuleAutocorrectApproveHand
     override fun beforeVisitChildNodes(
         node: ASTNode,
         emit:
-            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
+            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
         val expression = node.psi as? KtOperationReferenceExpression ?: return
         val correctOperator =

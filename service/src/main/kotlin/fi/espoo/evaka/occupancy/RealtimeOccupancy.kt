@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 
 data class RealtimeOccupancy(
     val childAttendances: List<ChildOccupancyAttendance>,
-    val staffAttendances: List<StaffOccupancyAttendance>
+    val staffAttendances: List<StaffOccupancyAttendance>,
 ) {
     val childCapacitySumSeries: List<ChildCapacityPoint> by lazy {
         val isMidnight = { time: HelsinkiDateTime -> time.hour == 0 && time.minute == 0 }
@@ -25,17 +25,15 @@ data class RealtimeOccupancy(
             }
 
         val attns: List<ChildOccupancyAttendance> =
-            childAttendances
-                .sortedWith(
-                    compareBy({ it.childId }, { it.arrived }),
-                )
-                .fold(listOf()) { list, child ->
-                    if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
-                        list.dropLast(1) + list.last().copy(departed = child.departed)
-                    } else {
-                        list + child
-                    }
+            childAttendances.sortedWith(compareBy({ it.childId }, { it.arrived })).fold(listOf()) {
+                list,
+                child ->
+                if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
+                    list.dropLast(1) + list.last().copy(departed = child.departed)
+                } else {
+                    list + child
                 }
+            }
         val arrivals = attns.map { child -> ChildCapacityPoint(child.arrived, child.capacity) }
         val departures =
             attns.mapNotNull { child ->
@@ -85,7 +83,7 @@ data class RealtimeOccupancy(
                 childCapacity =
                     childCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0,
                 staffCapacity =
-                    staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0
+                    staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0,
             )
         }
     }
@@ -95,7 +93,7 @@ data class ChildOccupancyAttendance(
     val childId: ChildId,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val capacity: Double
+    val capacity: Double,
 )
 
 data class ChildCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
@@ -103,7 +101,7 @@ data class ChildCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
 data class StaffOccupancyAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
-    val capacity: Double
+    val capacity: Double,
 )
 
 data class StaffCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
@@ -111,7 +109,7 @@ data class StaffCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
 data class OccupancyPoint(
     val time: HelsinkiDateTime,
     val childCapacity: Double,
-    val staffCapacity: Double
+    val staffCapacity: Double,
 ) {
     val occupancyRatio: Double?
         get() =
@@ -124,7 +122,7 @@ data class OccupancyPoint(
 
 fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
-    timeRange: HelsinkiDateTimeRange
+    timeRange: HelsinkiDateTimeRange,
 ): List<ChildOccupancyAttendance> =
     createQuery {
             sql(
@@ -159,7 +157,7 @@ val presentStaffAttendanceTypes =
 
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
-    timeRange: HelsinkiDateTimeRange
+    timeRange: HelsinkiDateTimeRange,
 ): List<StaffOccupancyAttendance> =
     createQuery {
             sql(

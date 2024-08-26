@@ -23,10 +23,7 @@ data class AssistanceFactor(
     val modifiedBy: String,
 )
 
-data class AssistanceFactorUpdate(
-    val validDuring: FiniteDateRange,
-    val capacityFactor: Double,
-)
+data class AssistanceFactorUpdate(val validDuring: FiniteDateRange, val capacityFactor: Double)
 
 @ConstList("daycareAssistanceLevels")
 enum class DaycareAssistanceLevel : DatabaseEnum {

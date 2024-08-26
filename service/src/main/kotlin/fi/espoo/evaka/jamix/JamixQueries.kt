@@ -21,7 +21,7 @@ data class JamixChildData(
     val firstName: String,
     val lastName: String,
     @Json val reservations: List<TimeRange>,
-    val absences: Set<AbsenceCategory>
+    val absences: Set<AbsenceCategory>,
 )
 
 fun Database.Read.getJamixCustomerNumbers(): Set<Int> =
@@ -34,7 +34,7 @@ fun Database.Read.getJamixCustomerNumbers(): Set<Int> =
 
 fun Database.Read.getJamixChildData(
     jamixCustomerNumber: Int,
-    date: LocalDate
+    date: LocalDate,
 ): List<JamixChildData> =
     createQuery {
             sql(

@@ -45,7 +45,7 @@ class NewCustomerIncomeNotification(
                 guardiansForNotification.map {
                     AsyncJob.SendNewCustomerIncomeNotificationEmail(it)
                 },
-            runAt = clock.now()
+            runAt = clock.now(),
         )
 
         logger.info(
@@ -58,7 +58,7 @@ class NewCustomerIncomeNotification(
     fun sendEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendNewCustomerIncomeNotificationEmail
+        msg: AsyncJob.SendNewCustomerIncomeNotificationEmail,
     ) {
         val language =
             db.read { tx ->
@@ -94,9 +94,9 @@ class NewCustomerIncomeNotification(
                     content =
                         emailMessageProvider.incomeNotification(
                             IncomeNotificationType.NEW_CUSTOMER,
-                            language
+                            language,
                         ),
-                    traceId = msg.guardianId.toString()
+                    traceId = msg.guardianId.toString(),
                 )
                 ?.also { emailClient.send(it) }
 

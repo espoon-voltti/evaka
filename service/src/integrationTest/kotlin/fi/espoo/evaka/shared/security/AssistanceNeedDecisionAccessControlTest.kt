@@ -65,7 +65,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                                 smallGroup = false,
                                 groupAssistant = false,
                                 childAssistant = false,
-                                additionalStaff = false
+                                additionalStaff = false,
                             ),
                         structuralMotivationDescription = null,
                         careMotivation = null,
@@ -75,7 +75,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                                 partTimeSpecialEd = false,
                                 fullTimeSpecialEd = false,
                                 interpretationAndAssistanceServices = false,
-                                specialAides = false
+                                specialAides = false,
                             ),
                         servicesMotivation = null,
                         expertResponsibilities = null,
@@ -88,7 +88,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
-                    )
+                    ),
                 )
             }
     }
@@ -121,7 +121,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                                 smallGroup = false,
                                 groupAssistant = false,
                                 childAssistant = false,
-                                additionalStaff = false
+                                additionalStaff = false,
                             ),
                         structuralMotivationDescription = null,
                         careMotivation = null,
@@ -131,7 +131,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                                 partTimeSpecialEd = false,
                                 fullTimeSpecialEd = false,
                                 interpretationAndAssistanceServices = false,
-                                specialAides = false
+                                specialAides = false,
                             ),
                         servicesMotivation = null,
                         expertResponsibilities = null,
@@ -144,7 +144,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                         motivationForDecision = null,
                         unreadGuardianIds = null,
                         annulmentReason = "",
-                    )
+                    ),
                 )
             }
 
@@ -152,12 +152,12 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
         rules.add(
             action,
             HasUnitRole(UserRole.UNIT_SUPERVISOR)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(true)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(true),
         )
         rules.add(
             action,
             HasUnitRole(UserRole.SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfChildOfAssistanceNeedDecision(false)
+                .inPlacementUnitOfChildOfAssistanceNeedDecision(false),
         )
         val daycareId =
             db.transaction { tx ->
@@ -167,7 +167,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
                 daycareId
@@ -183,7 +183,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     unitSupervisor,
                     clock,
                     action,
-                    assistanceNeedDecisionId
+                    assistanceNeedDecisionId,
                 )
             )
             assertFalse(
@@ -192,7 +192,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     unitSupervisor,
                     clock,
                     action,
-                    closedAssistanceNeedDecisionId
+                    closedAssistanceNeedDecisionId,
                 )
             )
             assertTrue(
@@ -201,7 +201,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     veo,
                     clock,
                     action,
-                    closedAssistanceNeedDecisionId
+                    closedAssistanceNeedDecisionId,
                 )
             )
         }
@@ -219,7 +219,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
         val action = Action.AssistanceNeedDecision.READ
         rules.add(
             action,
-            HasUnitRole(UserRole.UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedDecision()
+            HasUnitRole(UserRole.UNIT_SUPERVISOR).inSelectedUnitOfAssistanceNeedDecision(),
         )
         val daycareId =
             db.transaction { tx ->
@@ -229,7 +229,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     DevPlacement(
                         childId = childId,
                         unitId = daycareId,
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
                 daycareId
@@ -252,7 +252,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
                     unitSupervisor,
                     clock,
                     action,
-                    assistanceNeedDecisionId
+                    assistanceNeedDecisionId,
                 )
             )
         }

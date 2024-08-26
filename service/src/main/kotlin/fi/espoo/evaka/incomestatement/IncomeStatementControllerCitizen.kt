@@ -40,7 +40,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int
+        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -49,20 +49,20 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Person.READ_INCOME_STATEMENTS,
-                        user.id
+                        user.id,
                     )
                     tx.readIncomeStatementsForPerson(
                         user.id,
                         includeEmployeeContent = false,
                         page = page,
-                        pageSize = pageSize
+                        pageSize = pageSize,
                     )
                 }
             }
             .also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total),
                 )
             }
     }
@@ -74,7 +74,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int
+        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -83,20 +83,20 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Child.READ_INCOME_STATEMENTS,
-                        childId
+                        childId,
                     )
                     tx.readIncomeStatementsForPerson(
                         childId,
                         includeEmployeeContent = false,
                         page = page,
-                        pageSize = pageSize
+                        pageSize = pageSize,
                     )
                 }
             }
             .also {
                 Audit.IncomeStatementsOfChild.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total),
                 )
             }
     }
@@ -106,7 +106,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<LocalDate> {
         return db.connect { dbc ->
                 dbc.read {
@@ -115,7 +115,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Child.READ_INCOME_STATEMENTS,
-                        childId
+                        childId,
                     )
                     it.readIncomeStatementStartDates(childId)
                 }
@@ -123,7 +123,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementStartDatesOfChild.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -132,7 +132,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     fun getIncomeStatementStartDates(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<LocalDate> {
         return db.connect { dbc ->
                 dbc.read {
@@ -141,7 +141,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Person.READ_INCOME_STATEMENTS,
-                        user.id
+                        user.id,
                     )
                     it.readIncomeStatementStartDates(user.id)
                 }
@@ -149,7 +149,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementStartDates.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -159,7 +159,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable incomeStatementId: IncomeStatementId
+        @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -168,12 +168,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.IncomeStatement.READ,
-                        incomeStatementId
+                        incomeStatementId,
                     )
                     tx.readIncomeStatementForPerson(
                         user.id,
                         incomeStatementId,
-                        includeEmployeeContent = false
+                        includeEmployeeContent = false,
                     ) ?: throw NotFound("No such income statement")
                 }
             }
@@ -186,7 +186,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @PathVariable incomeStatementId: IncomeStatementId
+        @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -195,12 +195,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.IncomeStatement.READ,
-                        incomeStatementId
+                        incomeStatementId,
                     )
                     tx.readIncomeStatementForPerson(
                         PersonId(childId.raw),
                         incomeStatementId,
-                        includeEmployeeContent = false
+                        includeEmployeeContent = false,
                     ) ?: throw NotFound("No such child income statement")
                 }
             }
@@ -212,7 +212,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: IncomeStatementBody
+        @RequestBody body: IncomeStatementBody,
     ) {
         val id =
             db.connect { dbc ->
@@ -222,7 +222,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Person.CREATE_INCOME_STATEMENT,
-                        user.id
+                        user.id,
                     )
                 }
                 createIncomeStatement(dbc, user.id, user, body)
@@ -236,7 +236,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: IncomeStatementBody
+        @RequestBody body: IncomeStatementBody,
     ) {
         val id =
             db.connect { dbc ->
@@ -246,7 +246,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Child.CREATE_INCOME_STATEMENT,
-                        childId
+                        childId,
                     )
                 }
                 createIncomeStatement(dbc, childId, user, body)
@@ -260,7 +260,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: IncomeStatementBody
+        @RequestBody body: IncomeStatementBody,
     ) {
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
@@ -270,7 +270,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.IncomeStatement.UPDATE,
-                        incomeStatementId
+                        incomeStatementId,
                     )
                     verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
@@ -282,7 +282,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                                     tx.associateOrphanAttachments(
                                         user.evakaUserId,
                                         parent,
-                                        body.attachmentIds
+                                        body.attachmentIds,
                                     )
                                 else -> Unit
                             }
@@ -301,7 +301,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId,
-        @RequestBody body: IncomeStatementBody
+        @RequestBody body: IncomeStatementBody,
     ) {
         if (!validateIncomeStatementBody(body))
             throw BadRequest("Invalid child income statement body")
@@ -313,12 +313,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.IncomeStatement.UPDATE,
-                        incomeStatementId
+                        incomeStatementId,
                     )
                     verifyIncomeStatementModificationsAllowed(
                         tx,
                         PersonId(childId.raw),
-                        incomeStatementId
+                        incomeStatementId,
                     )
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
@@ -329,7 +329,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                                     tx.associateOrphanAttachments(
                                         user.evakaUserId,
                                         parent,
-                                        body.attachmentIds
+                                        body.attachmentIds,
                                     )
                                 else -> Unit
                             }
@@ -346,7 +346,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable id: IncomeStatementId
+        @PathVariable id: IncomeStatementId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -355,7 +355,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     user,
                     clock,
                     Action.Citizen.IncomeStatement.DELETE,
-                    id
+                    id,
                 )
                 verifyIncomeStatementModificationsAllowed(tx, user.id, id)
                 tx.removeIncomeStatement(id)
@@ -370,7 +370,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @PathVariable id: IncomeStatementId
+        @PathVariable id: IncomeStatementId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -379,7 +379,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     user,
                     clock,
                     Action.Citizen.IncomeStatement.DELETE,
-                    id
+                    id,
                 )
                 verifyIncomeStatementModificationsAllowed(tx, childId, id)
                 tx.removeIncomeStatement(id)
@@ -392,7 +392,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     fun getIncomeStatementChildren(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ChildBasicInfo> {
         val personId = user.id
         return db.connect { dbc ->
@@ -402,7 +402,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
-                        personId
+                        personId,
                     )
                     it.getIncomeStatementChildrenByGuardian(personId, clock.today())
                 }
@@ -410,7 +410,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.CitizenChildrenRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -418,7 +418,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     private fun verifyIncomeStatementModificationsAllowed(
         tx: Database.Transaction,
         personId: PersonId,
-        id: IncomeStatementId
+        id: IncomeStatementId,
     ) {
         val incomeStatement =
             tx.readIncomeStatementForPerson(personId, id, includeEmployeeContent = false)

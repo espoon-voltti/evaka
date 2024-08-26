@@ -32,7 +32,7 @@ interface VardaReadClient {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class HaeHenkiloRequest(
         val henkilotunnus: String? = null,
-        val henkilo_oid: String? = null
+        val henkilo_oid: String? = null,
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
@@ -51,7 +51,7 @@ interface VardaReadClient {
         val etunimet: String,
         val sukunimi: String,
         val henkilotunnus: String?,
-        val henkilo_oid: String?
+        val henkilo_oid: String?,
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
@@ -174,7 +174,7 @@ interface VardaWriteClient {
         val paivittainen_vaka_kytkin: Boolean,
         val vuorohoito_kytkin: Boolean,
         val jarjestamismuoto_koodi: String,
-        val lahdejarjestelma: String
+        val lahdejarjestelma: String,
     )
 
     fun createVarhaiskasvatuspaatos(body: CreateVarhaiskasvatuspaatosRequest): CreateResponse
@@ -217,7 +217,7 @@ data class Huoltaja(
     val henkilotunnus: String?,
     val henkilo_oid: String?,
     val etunimet: String,
-    val sukunimi: String
+    val sukunimi: String,
 ) {
     init {
         check(henkilotunnus != null || henkilo_oid != null) {
@@ -301,7 +301,7 @@ class VardaClient(
     override fun findToimipaikkaByOid(oid: String): VardaEntity {
         class FindToimipaikkaResponse(
             override val url: URI,
-            override val lahdejarjestelma: String?
+            override val lahdejarjestelma: String?,
         ) : VardaEntity
 
         val escapedOid = URLEncoder.encode(oid, Charsets.UTF_8)
@@ -316,7 +316,7 @@ class VardaClient(
 
     override fun updateToimipaikka(
         url: URI,
-        unit: VardaUnitRequest
+        unit: VardaUnitRequest,
     ): VardaUnitClient.ToimipaikkaResponse = put(url, unit)
 
     private inline fun <reified R> get(url: URI): R = request("GET", url)
@@ -325,7 +325,7 @@ class VardaClient(
         val count: Int,
         val next: URI?,
         val previous: String?,
-        val results: List<T>
+        val results: List<T>,
     )
 
     private inline fun <reified T> getAllPages(initialUrl: URI): List<T> {
@@ -358,7 +358,7 @@ class VardaClient(
                         jsonMapper
                             .writeValueAsString(it)
                             .toRequestBody("application/json".toMediaType())
-                    }
+                    },
                 )
                 .url(validateUrl(url))
                 .build()
@@ -390,7 +390,7 @@ class VardaClient(
 
     private fun <T> OkHttpClient.executeAuthenticated(
         request: Request,
-        fn: (response: Response) -> T
+        fn: (response: Response) -> T,
     ): T {
         val token = getToken()
         return executeWithToken(request, token).use { response ->

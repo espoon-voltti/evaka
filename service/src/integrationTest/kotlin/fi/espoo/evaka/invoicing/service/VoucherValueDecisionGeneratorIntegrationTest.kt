@@ -150,25 +150,25 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(
             dad.id,
             listOf(youngerChild.id),
-            DateRange(LocalDate.of(2021, 1, 1), youngerChild.dateOfBirth.plusYears(18))
+            DateRange(LocalDate.of(2021, 1, 1), youngerChild.dateOfBirth.plusYears(18)),
         )
         insertFamilyRelations(
             mom.id,
             listOf(olderChild.id),
-            DateRange(LocalDate.of(2021, 1, 1), olderChild.dateOfBirth.plusYears(18))
+            DateRange(LocalDate.of(2021, 1, 1), olderChild.dateOfBirth.plusYears(18)),
         )
         val placementPeriod = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 10, 31))
         insertPlacement(
             childId = olderChild.id,
             period = placementPeriod,
             type = PlacementType.DAYCARE,
-            daycareId = testVoucherDaycare.id
+            daycareId = testVoucherDaycare.id,
         )
         insertPlacement(
             childId = youngerChild.id,
             period = placementPeriod,
             type = PlacementType.DAYCARE,
-            daycareId = testVoucherDaycare.id
+            daycareId = testVoucherDaycare.id,
         )
 
         db.transaction {
@@ -294,7 +294,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertServiceNeed(
             placementId,
             serviceNeedPeriod.asFiniteDateRange()!!,
-            snDaycareFullDayPartWeek25.id
+            snDaycareFullDayPartWeek25.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -318,7 +318,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(87000, decision.baseValue)
             assertEquals(
                 snDaycareFullDayPartWeek25.toValueDecisionServiceNeed(),
-                decision.serviceNeed
+                decision.serviceNeed,
             )
             assertEquals(52200, decision.voucherValue)
         }
@@ -332,7 +332,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_2.id,
             period,
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -347,7 +347,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(87000, decision.baseValue)
             assertEquals(
                 snDefaultFiveYearOldsDaycare.toValueDecisionServiceNeed(),
-                decision.serviceNeed
+                decision.serviceNeed,
             )
             assertEquals(87000, decision.voucherValue)
         }
@@ -361,7 +361,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_2.id,
             period,
             PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -376,7 +376,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(87000, decision.baseValue)
             assertEquals(
                 snDefaultFiveYearOldsPartDayDaycare.toValueDecisionServiceNeed(),
-                decision.serviceNeed
+                decision.serviceNeed,
             )
             assertEquals(52200, decision.voucherValue)
         }
@@ -424,7 +424,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertServiceNeed(
             placementId,
             period.asFiniteDateRange()!!,
-            snDaycareFiveYearOldsFullDayPartWeek25.id
+            snDaycareFiveYearOldsFullDayPartWeek25.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -439,7 +439,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             assertEquals(87000, decision.baseValue)
             assertEquals(
                 snDaycareFiveYearOldsFullDayPartWeek25.toValueDecisionServiceNeed(),
-                decision.serviceNeed
+                decision.serviceNeed,
             )
             assertEquals(52200, decision.voucherValue)
         }
@@ -454,7 +454,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_2.id,
             period.copy(start = period.start.plusMonths(1)),
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, testAdult_1.id) }
@@ -490,7 +490,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_1.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A902X"
+                ssn = "010117A902X",
             )
 
         // Older
@@ -498,7 +498,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_2.copy(
                 id = ChildId(UUID.randomUUID()),
                 dateOfBirth = LocalDate.of(2019, 1, 1),
-                ssn = "010117A901W"
+                ssn = "010117A901W",
             )
 
         db.transaction { tx -> listOf(twin1, twin2).forEach { tx.insert(it, DevPersonType.CHILD) } }
@@ -615,7 +615,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_2.id,
             period.copy(start = period.start.plusMonths(1)),
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         // Adult minimal income
@@ -659,7 +659,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_1.id,
             period,
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction { generator.generateNewDecisionsForChild(it, testChild_1.id) }
@@ -677,7 +677,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_1.id,
             period,
             PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction {
@@ -702,11 +702,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.headOfFamilyId }
+                { it.headOfFamilyId },
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id)
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id),
             )
     }
 
@@ -727,11 +727,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.partnerId }
+                { it.partnerId },
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_2.id),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id)
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id),
             )
     }
 
@@ -755,7 +755,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.headOfFamilyId }
+                { it.headOfFamilyId },
             )
             .containsExactly(
                 Tuple(period, emptySet<VoucherValueDecisionDifference>(), expectedHeadOfFamily.id)
@@ -782,9 +782,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     setOf(
                         VoucherValueDecisionDifference.INCOME,
                         VoucherValueDecisionDifference.CO_PAYMENT,
-                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
-                    )
-                )
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT,
+                    ),
+                ),
             )
     }
 
@@ -805,7 +805,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME))
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
             )
     }
 
@@ -824,7 +824,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME))
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
             )
     }
 
@@ -843,7 +843,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.familySize }
+                { it.familySize },
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), 2),
@@ -851,10 +851,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     subPeriod2,
                     setOf(
                         VoucherValueDecisionDifference.FAMILY_SIZE,
-                        VoucherValueDecisionDifference.FEE_THRESHOLDS
+                        VoucherValueDecisionDifference.FEE_THRESHOLDS,
                     ),
-                    3
-                )
+                    3,
+                ),
             )
     }
 
@@ -873,19 +873,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.placement?.unitId }
+                { it.placement?.unitId },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
-                    testVoucherDaycare.id
+                    testVoucherDaycare.id,
                 ),
                 Tuple(
                     subPeriod2,
                     setOf(VoucherValueDecisionDifference.PLACEMENT),
-                    testVoucherDaycare2.id
-                )
+                    testVoucherDaycare2.id,
+                ),
             )
     }
 
@@ -900,7 +900,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             testChild_1.id,
             subPeriod2,
             PlacementType.DAYCARE_PART_TIME,
-            testVoucherDaycare.id
+            testVoucherDaycare.id,
         )
 
         db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, testAdult_1.id) }
@@ -909,23 +909,23 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.placement?.type }
+                { it.placement?.type },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
-                    PlacementType.DAYCARE
+                    PlacementType.DAYCARE,
                 ),
                 Tuple(
                     subPeriod2,
                     setOf(
                         VoucherValueDecisionDifference.PLACEMENT,
                         VoucherValueDecisionDifference.SERVICE_NEED,
-                        VoucherValueDecisionDifference.VOUCHER_VALUE
+                        VoucherValueDecisionDifference.VOUCHER_VALUE,
                     ),
-                    PlacementType.DAYCARE_PART_TIME
-                )
+                    PlacementType.DAYCARE_PART_TIME,
+                ),
             )
     }
 
@@ -940,7 +940,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 testChild_1.id,
                 period.asDateRange(),
                 PlacementType.DAYCARE,
-                testVoucherDaycare.id
+                testVoucherDaycare.id,
             )
         insertServiceNeed(placementId, subPeriod1, snDefaultDaycare.id)
         insertServiceNeed(placementId, subPeriod2, snDaycareFullDay35.id)
@@ -951,19 +951,19 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting(
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.serviceNeed?.voucherValueCoefficient }
+                { it.serviceNeed?.voucherValueCoefficient },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     subPeriod1.asDateRange(),
                     emptySet<VoucherValueDecisionDifference>(),
-                    serviceNeedOptionVoucherValueCoefficients[snDefaultDaycare.id]
+                    serviceNeedOptionVoucherValueCoefficients[snDefaultDaycare.id],
                 ),
                 Tuple(
                     subPeriod2.asDateRange(),
                     setOf(VoucherValueDecisionDifference.SERVICE_NEED),
-                    serviceNeedOptionVoucherValueCoefficients[snDaycareFullDay35.id]
-                )
+                    serviceNeedOptionVoucherValueCoefficients[snDaycareFullDay35.id],
+                ),
             )
     }
 
@@ -984,14 +984,14 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 { it.child.dateOfBirth },
                 { DateRange(it.validFrom, it.validTo) },
                 { it.difference },
-                { it.siblingDiscount }
+                { it.siblingDiscount },
             )
             .containsExactlyInAnyOrder(
                 Tuple(
                     testChild_2.dateOfBirth,
                     subPeriod1,
                     emptySet<VoucherValueDecisionDifference>(),
-                    0
+                    0,
                 ),
                 Tuple(
                     testChild_2.dateOfBirth,
@@ -999,16 +999,16 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     setOf(
                         VoucherValueDecisionDifference.SIBLING_DISCOUNT,
                         VoucherValueDecisionDifference.CO_PAYMENT,
-                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT,
                     ),
-                    50
+                    50,
                 ),
                 Tuple(
                     testChild_1.dateOfBirth,
                     subPeriod2,
                     emptySet<VoucherValueDecisionDifference>(),
-                    0
-                )
+                    0,
+                ),
             )
     }
 
@@ -1031,9 +1031,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     subPeriod2,
                     setOf(
                         VoucherValueDecisionDifference.FEE_ALTERATIONS,
-                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
-                    )
-                )
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT,
+                    ),
+                ),
             )
     }
 
@@ -1055,9 +1055,9 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     subPeriod2,
                     setOf(
                         VoucherValueDecisionDifference.BASE_VALUE,
-                        VoucherValueDecisionDifference.VOUCHER_VALUE
-                    )
-                )
+                        VoucherValueDecisionDifference.VOUCHER_VALUE,
+                    ),
+                ),
             )
     }
 
@@ -1101,7 +1101,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     temporaryFee = 2900,
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
-                    temporaryFeeSiblingPartDay = 800
+                    temporaryFeeSiblingPartDay = 800,
                 )
             )
             tx.insert(
@@ -1115,11 +1115,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                     amount = 0,
                                     coefficient = IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
                                     multiplier = 1,
-                                    monthlyAmount = 0
+                                    monthlyAmount = 0,
                                 )
                         ),
                     effect = IncomeEffect.INCOME,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -1133,8 +1133,8 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     subPeriod2.start,
                     subPeriod2.end,
-                    setOf(VoucherValueDecisionDifference.FEE_THRESHOLDS)
-                )
+                    setOf(VoucherValueDecisionDifference.FEE_THRESHOLDS),
+                ),
             )
     }
 
@@ -1157,23 +1157,23 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     LocalDate.of(2022, 1, 1),
                     LocalDate.of(2022, 3, 31),
-                    emptySet<VoucherValueDecisionDifference>()
+                    emptySet<VoucherValueDecisionDifference>(),
                 ),
                 Tuple(
                     LocalDate.of(2022, 4, 1),
                     LocalDate.of(2022, 6, 30),
-                    setOf(VoucherValueDecisionDifference.INCOME)
+                    setOf(VoucherValueDecisionDifference.INCOME),
                 ),
                 Tuple(
                     LocalDate.of(2022, 7, 1),
                     LocalDate.of(2022, 9, 1),
-                    setOf(VoucherValueDecisionDifference.PLACEMENT)
+                    setOf(VoucherValueDecisionDifference.PLACEMENT),
                 ),
                 Tuple(
                     LocalDate.of(2022, 9, 2),
                     LocalDate.of(2022, 12, 31),
-                    setOf(VoucherValueDecisionDifference.INCOME)
-                )
+                    setOf(VoucherValueDecisionDifference.INCOME),
+                ),
             )
     }
 
@@ -1198,13 +1198,13 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     subPeriod1,
                     VoucherValueDecisionStatus.SENT,
-                    emptySet<VoucherValueDecisionDifference>()
+                    emptySet<VoucherValueDecisionDifference>(),
                 ),
                 Tuple(
                     subPeriod2,
                     VoucherValueDecisionStatus.DRAFT,
-                    setOf(VoucherValueDecisionDifference.PLACEMENT)
-                )
+                    setOf(VoucherValueDecisionDifference.PLACEMENT),
+                ),
             )
     }
 
@@ -1231,18 +1231,18 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     period,
                     VoucherValueDecisionStatus.SENT,
-                    emptySet<VoucherValueDecisionDifference>()
+                    emptySet<VoucherValueDecisionDifference>(),
                 ),
                 Tuple(
                     subPeriod1,
                     VoucherValueDecisionStatus.DRAFT,
-                    setOf(VoucherValueDecisionDifference.PLACEMENT)
+                    setOf(VoucherValueDecisionDifference.PLACEMENT),
                 ),
                 Tuple(
                     subPeriod2,
                     VoucherValueDecisionStatus.DRAFT,
-                    setOf(VoucherValueDecisionDifference.PLACEMENT)
-                )
+                    setOf(VoucherValueDecisionDifference.PLACEMENT),
+                ),
             )
     }
 
@@ -1261,7 +1261,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>())
+                Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>()),
             )
     }
 
@@ -1286,13 +1286,13 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     subPeriod1,
                     VoucherValueDecisionStatus.SENT,
-                    emptySet<VoucherValueDecisionDifference>()
+                    emptySet<VoucherValueDecisionDifference>(),
                 ),
                 Tuple(
                     subPeriod2,
                     VoucherValueDecisionStatus.DRAFT,
-                    emptySet<VoucherValueDecisionDifference>()
-                )
+                    emptySet<VoucherValueDecisionDifference>(),
+                ),
             )
     }
 
@@ -1318,7 +1318,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN)),
             testClock,
             listOf(firstDecision.id),
-            null
+            null,
         )
 
         asyncJobRunner.runPendingJobsSync(testClock)
@@ -1342,7 +1342,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         childId: ChildId,
         period: DateRange,
         type: PlacementType,
-        daycareId: DaycareId
+        daycareId: DaycareId,
     ): PlacementId {
         return db.transaction { tx ->
             tx.insert(
@@ -1351,7 +1351,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     childId = childId,
                     unitId = daycareId,
                     startDate = period.start,
-                    endDate = period.end!!
+                    endDate = period.end!!,
                 )
             )
         }
@@ -1360,7 +1360,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     private fun insertFamilyRelations(
         headOfFamilyId: PersonId,
         childIds: List<ChildId>,
-        period: DateRange
+        period: DateRange,
     ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
@@ -1369,7 +1369,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         childId = childId,
                         headOfChildId = headOfFamilyId,
                         startDate = period.start,
-                        endDate = period.end!!
+                        endDate = period.end!!,
                     )
                 )
             }
@@ -1380,7 +1380,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         adultId1: PersonId,
         adultId2: PersonId,
         period: DateRange,
-        createdAt: HelsinkiDateTime
+        createdAt: HelsinkiDateTime,
     ) {
         db.transaction { tx ->
             tx.insertTestPartnership(
@@ -1388,7 +1388,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 adultId2,
                 startDate = period.start,
                 endDate = period.end,
-                createdAt = createdAt
+                createdAt = createdAt,
             )
         }
     }
@@ -1396,7 +1396,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     private fun insertServiceNeed(
         placementId: PlacementId,
         period: FiniteDateRange,
-        optionId: ServiceNeedOptionId
+        optionId: ServiceNeedOptionId,
     ) {
         db.transaction { tx ->
             tx.insert(
@@ -1408,7 +1408,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     shiftCare = ShiftCareType.NONE,
                     partWeek = false,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
         }
@@ -1417,12 +1417,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
     private fun insertAssistanceNeedCoefficient(
         childId: ChildId,
         period: FiniteDateRange,
-        coefficient: Double
+        coefficient: Double,
     ) {
         db.transaction { tx ->
             tx.insertAssistanceNeedVoucherCoefficient(
                 childId,
-                AssistanceNeedVoucherCoefficientRequest(coefficient, period)
+                AssistanceNeedVoucherCoefficientRequest(coefficient, period),
             )
         }
     }
@@ -1454,11 +1454,11 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                                         amount,
                                         coefficientMultiplierProvider.multiplier(
                                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                        )
-                                    )
+                                        ),
+                                    ),
                                 )
                         ),
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -1475,7 +1475,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     isAbsolute = false,
                     validFrom = period.start,
                     validTo = period.end,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }

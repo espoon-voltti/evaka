@@ -37,7 +37,7 @@ data object IsEmployee : DatabaseActionRule.Params {
 
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
-            targets: Set<T>
+            targets: Set<T>,
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> =
             when (ctx.user) {
                 is AuthenticatedUser.Employee -> {
@@ -65,7 +65,7 @@ data object IsEmployee : DatabaseActionRule.Params {
 
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
-            params: IsEmployee
+            params: IsEmployee,
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee -> QuerySql { filter(ctx.user, ctx.now) }
@@ -92,7 +92,7 @@ data object IsEmployee : DatabaseActionRule.Params {
 
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
-                        targets: Set<EmployeeId>
+                        targets: Set<EmployeeId>,
                     ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
@@ -104,7 +104,7 @@ data object IsEmployee : DatabaseActionRule.Params {
 
                     override fun queryWithParams(
                         ctx: DatabaseActionRule.QueryContext,
-                        params: IsEmployee
+                        params: IsEmployee,
                     ): QuerySql? =
                         when (ctx.user) {
                             is AuthenticatedUser.Employee ->
@@ -146,7 +146,7 @@ SELECT EXISTS (
                                 }
                         else -> DatabaseActionRule.Deferred.None
                     }
-            }
+            },
         )
 
     fun ownerOfMobileDevice() =
@@ -296,6 +296,6 @@ SELECT EXISTS (
                                 }
                         else -> DatabaseActionRule.Deferred.None
                     }
-            }
+            },
         )
 }

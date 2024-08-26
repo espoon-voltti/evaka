@@ -29,7 +29,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<PedagogicalDocumentCitizen> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -38,7 +38,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                         user,
                         clock,
                         Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
-                        childId
+                        childId,
                     )
                     tx.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
                         pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
@@ -48,7 +48,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
             .also {
                 Audit.PedagogicalDocumentReadByGuardian.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -58,7 +58,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable documentId: PedagogicalDocumentId
+        @PathVariable documentId: PedagogicalDocumentId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -67,7 +67,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                     user,
                     clock,
                     Action.Citizen.PedagogicalDocument.READ,
-                    documentId
+                    documentId,
                 )
                 it.markDocumentReadByGuardian(clock, documentId, user.id)
             }
@@ -79,7 +79,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
     fun getUnreadPedagogicalDocumentCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<ChildId, Int> {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -88,7 +88,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                         user,
                         clock,
                         Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS,
-                        user.id
+                        user.id,
                     )
                     it.countUnreadDocumentsByUser(clock.today(), user.id)
                 }
@@ -100,7 +100,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
 private fun Database.Transaction.markDocumentReadByGuardian(
     clock: EvakaClock,
     documentId: PedagogicalDocumentId,
-    guardianId: PersonId
+    guardianId: PersonId,
 ) =
     createUpdate {
             sql(
@@ -115,7 +115,7 @@ ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
 
 private fun Database.Read.countUnreadDocumentsByUser(
     today: LocalDate,
-    userId: PersonId
+    userId: PersonId,
 ): Map<ChildId, Int> =
     createQuery {
             sql(

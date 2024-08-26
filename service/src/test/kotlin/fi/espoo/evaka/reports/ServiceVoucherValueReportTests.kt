@@ -42,7 +42,7 @@ class ServiceVoucherValueReportTests {
                 row(child2, unit1, range2, VoucherReportRowType.REFUND, -600),
                 row(child2, unit1, range2, VoucherReportRowType.CORRECTION, 500),
             ),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -51,7 +51,7 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500)
+                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500),
                 )
                 .shuffled()
 
@@ -63,13 +63,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child2, unit1, range1, VoucherReportRowType.CORRECTION, 500)
+                    row(child2, unit1, range1, VoucherReportRowType.CORRECTION, 500),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -78,13 +78,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child1, unit2, range1, VoucherReportRowType.CORRECTION, 500)
+                    row(child1, unit2, range1, VoucherReportRowType.CORRECTION, 500),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -93,13 +93,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child1, unit1, range2, VoucherReportRowType.CORRECTION, 500)
+                    row(child1, unit1, range2, VoucherReportRowType.CORRECTION, 500),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -108,13 +108,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 501)
+                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 501),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -123,13 +123,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, 500),
-                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500)
+                    row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -139,13 +139,13 @@ class ServiceVoucherValueReportTests {
         val input =
             listOf(
                     row(child1, unit1, range1, VoucherReportRowType.REFUND, -500),
-                    row(child1, unit1, range1, VoucherReportRowType.ORIGINAL, 500)
+                    row(child1, unit1, range1, VoucherReportRowType.ORIGINAL, 500),
                 )
                 .shuffled()
 
         assertEquals(
             input.toSet(),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -161,7 +161,7 @@ class ServiceVoucherValueReportTests {
 
         assertEquals(
             setOf(row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500)),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -177,7 +177,7 @@ class ServiceVoucherValueReportTests {
 
         assertEquals(
             setOf(row(child1, unit1, range1, VoucherReportRowType.CORRECTION, 500)),
-            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet()
+            removeRefundsAndCorrectionsThatCancelEachOthersOut(input).toSet(),
         )
     }
 
@@ -195,7 +195,7 @@ class ServiceVoucherValueReportTests {
         unitId: DaycareId,
         range: FiniteDateRange,
         type: VoucherReportRowType,
-        amount: Int
+        amount: Int,
     ): ServiceVoucherValueRow {
         return ServiceVoucherValueRow(
             childId = childId,
@@ -218,7 +218,7 @@ class ServiceVoucherValueReportTests {
             serviceNeedDescription = "",
             assistanceNeedCoefficient = BigDecimal.ZERO,
             numberOfDays = 0,
-            isNew = false
+            isNew = false,
         )
     }
 }

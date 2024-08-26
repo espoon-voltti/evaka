@@ -73,7 +73,7 @@ class MockDataServiceTest {
         assertThat(children)
             .allMatch(
                 { !it.restrictedDetails!!.enabled },
-                "restricted details should not be enabled"
+                "restricted details should not be enabled",
             )
         assertThat(children)
             .extracting("address.streetAddress")
@@ -154,6 +154,6 @@ class MockDataServiceTest {
     private fun mapToQuery(ssn: String) =
         DetailsQuery(
             targetIdentifier = getInstance(ssn),
-            requestingUser = EvakaUserId(UUID.randomUUID())
+            requestingUser = EvakaUserId(UUID.randomUUID()),
         )
 }

@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.security.actionrule.forTable
 
 fun Database.Transaction.upsertPushSubscription(
     device: MobileDeviceId,
-    subscription: WebPushSubscription
+    subscription: WebPushSubscription,
 ) =
     createUpdate {
             sql(
@@ -39,7 +39,7 @@ ON CONFLICT (device) DO UPDATE SET
 fun Database.Transaction.upsertPushGroup(
     now: HelsinkiDateTime,
     device: MobileDeviceId,
-    group: GroupId
+    group: GroupId,
 ) =
     createUpdate {
             sql(
@@ -53,15 +53,17 @@ VALUES (${bind(device)}, ${bind(group)}, ${bind(now)})
 
 fun Database.Transaction.deletePushSubscription(device: MobileDeviceId) =
     createUpdate {
-            sql("""
+            sql(
+                """
 DELETE FROM mobile_device_push_subscription WHERE device = ${bind(device)}
-""")
+"""
+            )
         }
         .execute()
 
 fun Database.Transaction.getOrRefreshToken(
     newToken: VapidJwt,
-    minValidThreshold: HelsinkiDateTime
+    minValidThreshold: HelsinkiDateTime,
 ): VapidJwt {
     // Try to save a new token if there's none or it doesn't match our min valid threshold
     // requirement
@@ -108,7 +110,7 @@ WHERE id = ${bind(device)}
 
 fun Database.Transaction.setPushCategories(
     device: MobileDeviceId,
-    categories: Set<PushNotificationCategory>
+    categories: Set<PushNotificationCategory>,
 ) {
     createUpdate {
             sql(
@@ -123,7 +125,7 @@ WHERE id = ${bind(device)}
 
 fun Database.Read.getPushGroups(
     filter: AccessControlFilter<GroupId>,
-    device: MobileDeviceId
+    device: MobileDeviceId,
 ): Set<GroupId> =
     createQuery {
             sql(
@@ -141,7 +143,7 @@ AND ${predicate(filter.forTable("dg"))}
 fun Database.Transaction.setPushGroups(
     now: HelsinkiDateTime,
     device: MobileDeviceId,
-    groups: Set<GroupId>
+    groups: Set<GroupId>,
 ) {
     createUpdate {
             sql(

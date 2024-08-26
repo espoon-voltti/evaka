@@ -35,18 +35,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/parentships", // deprecated
-    "/employee/parentships"
+    "/employee/parentships",
 )
 class ParentshipController(
     private val parentshipService: ParentshipService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @PostMapping
     fun createParentship(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ParentshipRequest
+        @RequestBody body: ParentshipRequest,
     ) {
         val parentship =
             db.connect { dbc ->
@@ -56,7 +56,7 @@ class ParentshipController(
                         user,
                         clock,
                         Action.Person.CREATE_PARENTSHIP,
-                        body.headOfChildId
+                        body.headOfChildId,
                     )
                     parentshipService.createParentship(
                         it,
@@ -65,13 +65,13 @@ class ParentshipController(
                         body.headOfChildId,
                         body.startDate,
                         body.endDate,
-                        Creator.User(user.evakaUserId)
+                        Creator.User(user.evakaUserId),
                     )
                 }
             }
         Audit.ParentShipsCreate.log(
             targetId = AuditId(listOf(body.headOfChildId, body.childId)),
-            objectId = AuditId(parentship.id)
+            objectId = AuditId(parentship.id),
         )
     }
 
@@ -81,7 +81,7 @@ class ParentshipController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam headOfChildId: PersonId? = null,
-        @RequestParam childId: PersonId? = null
+        @RequestParam childId: PersonId? = null,
     ): List<ParentshipWithPermittedActions> {
         if ((childId != null) == (headOfChildId != null)) {
             throw BadRequest("One and only one of parameters headOfChildId and childId is required")
@@ -101,20 +101,20 @@ class ParentshipController(
                         user,
                         clock,
                         Action.Person.READ_PARENTSHIPS,
-                        personId
+                        personId,
                     )
                     val parentships =
                         tx.getParentships(
                             headOfChildId = headOfChildId,
                             childId = childId,
-                            includeConflicts = true
+                            includeConflicts = true,
                         )
                     val permittedActions =
                         accessControl.getPermittedActions<ParentshipId, Action.Parentship>(
                             tx,
                             user,
                             clock,
-                            parentships.map { it.id }
+                            parentships.map { it.id },
                         )
                     parentships.map {
                         ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
@@ -124,7 +124,7 @@ class ParentshipController(
             .also {
                 Audit.ParentShipsRead.log(
                     targetId = AuditId(listOfNotNull(headOfChildId, childId)),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -134,7 +134,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ParentshipId
+        @PathVariable id: ParentshipId,
     ): Parentship {
         return db.connect { dbc ->
                 dbc.read {
@@ -151,7 +151,7 @@ class ParentshipController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ParentshipId,
-        @RequestBody body: ParentshipUpdateRequest
+        @RequestBody body: ParentshipUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -162,13 +162,13 @@ class ParentshipController(
                     user = user,
                     id = id,
                     startDate = body.startDate,
-                    endDate = body.endDate
+                    endDate = body.endDate,
                 )
             }
         }
         Audit.ParentShipsUpdate.log(
             targetId = AuditId(id),
-            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
         )
     }
 
@@ -177,7 +177,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ParentshipId
+        @PathVariable id: ParentshipId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -193,7 +193,7 @@ class ParentshipController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ParentshipId
+        @PathVariable id: ParentshipId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -205,7 +205,7 @@ class ParentshipController(
                         user,
                         clock,
                         Action.Parentship.DELETE,
-                        id
+                        id,
                     )
                 } else {
                     accessControl.requirePermissionFor(
@@ -213,7 +213,7 @@ class ParentshipController(
                         user,
                         clock,
                         Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
-                        id
+                        id,
                     )
                 }
 
@@ -227,13 +227,13 @@ class ParentshipController(
         val headOfChildId: PersonId,
         val childId: PersonId,
         val startDate: LocalDate,
-        val endDate: LocalDate
+        val endDate: LocalDate,
     )
 
     data class ParentshipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate)
 
     data class ParentshipWithPermittedActions(
         val data: ParentshipDetailed,
-        val permittedActions: Set<Action.Parentship>
+        val permittedActions: Set<Action.Parentship>,
     )
 }

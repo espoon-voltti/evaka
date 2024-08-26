@@ -14,5 +14,5 @@ data class DecisionDraft(
     val type: DecisionType,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val planned: Boolean
+    val planned: Boolean,
 )

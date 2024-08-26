@@ -41,16 +41,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/finance-basics", // deprecated
-    "/employee/finance-basics"
+    "/employee/finance-basics",
 )
-class FinanceBasicsController(
-    private val accessControl: AccessControl,
-) {
+class FinanceBasicsController(private val accessControl: AccessControl) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<FeeThresholdsWithId> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -58,7 +56,7 @@ class FinanceBasicsController(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_FEE_THRESHOLDS
+                        Action.Global.READ_FEE_THRESHOLDS,
                     )
                     tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start }
                 }
@@ -71,7 +69,7 @@ class FinanceBasicsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: FeeThresholds
+        @RequestBody body: FeeThresholds,
     ) {
         validateFeeThresholds(body)
         val id =
@@ -81,7 +79,7 @@ class FinanceBasicsController(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_FEE_THRESHOLDS
+                        Action.Global.CREATE_FEE_THRESHOLDS,
                     )
 
                     val latest =
@@ -100,7 +98,7 @@ class FinanceBasicsController(
                                 latest.id,
                                 latest.thresholds.validDuring.copy(
                                     end = body.validDuring.start.minusDays(1)
-                                )
+                                ),
                             )
                         }
                     }
@@ -117,7 +115,7 @@ class FinanceBasicsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FeeThresholdsId,
-        @RequestBody thresholds: FeeThresholds
+        @RequestBody thresholds: FeeThresholds,
     ) {
         validateFeeThresholds(thresholds)
         db.connect { dbc ->
@@ -134,7 +132,7 @@ class FinanceBasicsController(
     fun getVoucherValues(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<ServiceNeedOptionId, List<ServiceNeedOptionVoucherValueRangeWithId>> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -142,7 +140,7 @@ class FinanceBasicsController(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_VOUCHER_VALUES
+                        Action.Global.READ_VOUCHER_VALUES,
                     )
                     tx.getVoucherValuesByServiceNeedOption()
                 }
@@ -155,7 +153,7 @@ class FinanceBasicsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ServiceNeedOptionVoucherValueRange
+        @RequestBody body: ServiceNeedOptionVoucherValueRange,
     ) {
         val id =
             db.connect { dbc ->
@@ -164,7 +162,7 @@ class FinanceBasicsController(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_VOUCHER_VALUE
+                        Action.Global.CREATE_VOUCHER_VALUE,
                     )
 
                     val serviceNeedOption =
@@ -196,7 +194,7 @@ class FinanceBasicsController(
                             if (latest.voucherValues.range.overlaps(body.range)) {
                                 tx.updateVoucherValueEndDate(
                                     latest.id,
-                                    body.range.start.minusDays(1)
+                                    body.range.start.minusDays(1),
                                 )
                             }
                         }
@@ -213,7 +211,7 @@ class FinanceBasicsController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceNeedOptionVoucherValueId,
-        @RequestBody body: ServiceNeedOptionVoucherValueRange
+        @RequestBody body: ServiceNeedOptionVoucherValueRange,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -221,7 +219,7 @@ class FinanceBasicsController(
                     tx,
                     user,
                     clock,
-                    Action.Global.UPDATE_VOUCHER_VALUE
+                    Action.Global.UPDATE_VOUCHER_VALUE,
                 )
 
                 val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
@@ -255,7 +253,7 @@ class FinanceBasicsController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: ServiceNeedOptionVoucherValueId
+        @PathVariable id: ServiceNeedOptionVoucherValueId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -263,7 +261,7 @@ class FinanceBasicsController(
                     tx,
                     user,
                     clock,
-                    Action.Global.DELETE_VOUCHER_VALUE
+                    Action.Global.DELETE_VOUCHER_VALUE,
                 )
 
                 val values = tx.getServiceNeedVoucherValuesByVoucherValueRangeId(id)
@@ -281,7 +279,7 @@ class FinanceBasicsController(
 
 data class ServiceNeedOptionVoucherValueRangeWithId(
     val id: ServiceNeedOptionVoucherValueId,
-    @Nested val voucherValues: ServiceNeedOptionVoucherValueRange
+    @Nested val voucherValues: ServiceNeedOptionVoucherValueRange,
 )
 
 data class FeeThresholdsWithId(val id: FeeThresholdsId, @Nested val thresholds: FeeThresholds)
@@ -292,28 +290,28 @@ private fun validateFeeThresholds(thresholds: FeeThresholds) {
                 calculateMaxFeeFromThresholds(
                     thresholds.minIncomeThreshold2,
                     thresholds.maxIncomeThreshold2,
-                    thresholds.incomeMultiplier2
+                    thresholds.incomeMultiplier2,
                 ),
                 calculateMaxFeeFromThresholds(
                     thresholds.minIncomeThreshold3,
                     thresholds.maxIncomeThreshold3,
-                    thresholds.incomeMultiplier3
+                    thresholds.incomeMultiplier3,
                 ),
                 calculateMaxFeeFromThresholds(
                     thresholds.minIncomeThreshold4,
                     thresholds.maxIncomeThreshold4,
-                    thresholds.incomeMultiplier4
+                    thresholds.incomeMultiplier4,
                 ),
                 calculateMaxFeeFromThresholds(
                     thresholds.minIncomeThreshold5,
                     thresholds.maxIncomeThreshold5,
-                    thresholds.incomeMultiplier5
+                    thresholds.incomeMultiplier5,
                 ),
                 calculateMaxFeeFromThresholds(
                     thresholds.minIncomeThreshold6,
                     thresholds.maxIncomeThreshold6,
-                    thresholds.incomeMultiplier6
-                )
+                    thresholds.incomeMultiplier6,
+                ),
             )
             .all { it == thresholds.maxFee }
 
@@ -324,7 +322,7 @@ private fun validateFeeThresholds(thresholds: FeeThresholds) {
 private fun calculateMaxFeeFromThresholds(
     minThreshold: Int,
     maxThreshold: Int,
-    multiplier: BigDecimal
+    multiplier: BigDecimal,
 ): Int {
     return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 }
@@ -540,7 +538,7 @@ RETURNING id
 
 fun Database.Transaction.updateVouchervalue(
     id: ServiceNeedOptionVoucherValueId,
-    voucherValue: ServiceNeedOptionVoucherValueRange
+    voucherValue: ServiceNeedOptionVoucherValueRange,
 ) {
     execute {
         sql(
@@ -576,7 +574,7 @@ fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId)
 
 fun Database.Transaction.updateVoucherValueEndDate(
     id: ServiceNeedOptionVoucherValueId,
-    endDate: LocalDate?
+    endDate: LocalDate?,
 ) {
     createUpdate {
             sql(

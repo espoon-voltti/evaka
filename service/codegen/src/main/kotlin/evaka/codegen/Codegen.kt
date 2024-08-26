@@ -41,7 +41,7 @@ fun generate() {
             srcPath / "citizen-frontend" / "generated" / "api-clients",
             srcPath / "employee-frontend" / "generated" / "api-clients",
             srcPath / "employee-mobile-frontend" / "generated" / "api-clients",
-            srcPath / "e2e-test" / "generated"
+            srcPath / "e2e-test" / "generated",
         )
     apiPaths.forEach {
         it.toFile().deleteRecursively()

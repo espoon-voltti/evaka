@@ -51,25 +51,25 @@ enum class InvoiceSortParam {
     END,
     SUM,
     STATUS,
-    CREATED_AT
+    CREATED_AT,
 }
 
 @RestController
 @RequestMapping(
     "/invoices", // deprecated
-    "/employee/invoices"
+    "/employee/invoices",
 )
 class InvoiceController(
     private val service: InvoiceService,
     private val generator: InvoiceGenerator,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @PostMapping("/search")
     fun searchInvoices(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchInvoicesRequest
+        @RequestBody body: SearchInvoicesRequest,
     ): PagedInvoiceSummaryResponses {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -79,7 +79,7 @@ class InvoiceController(
                         tx,
                         user,
                         clock,
-                        Action.Global.SEARCH_INVOICES
+                        Action.Global.SEARCH_INVOICES,
                     )
                     val paged =
                         tx.paginatedSearch(
@@ -93,14 +93,14 @@ class InvoiceController(
                             body.distinctions ?: emptyList(),
                             body.searchTerms ?: "",
                             body.periodStart,
-                            body.periodEnd
+                            body.periodEnd,
                         )
                     val permittedActions =
                         accessControl.getPermittedActions<InvoiceId, Action.Invoice>(
                             tx,
                             user,
                             clock,
-                            paged.data.map { it.id }
+                            paged.data.map { it.id },
                         )
                     PagedInvoiceSummaryResponses(
                         data =
@@ -108,7 +108,7 @@ class InvoiceController(
                                 InvoiceSummaryResponse(it, permittedActions[it.id] ?: emptySet())
                             },
                         total = paged.total,
-                        pages = paged.pages
+                        pages = paged.pages,
                     )
                 }
             }
@@ -117,7 +117,7 @@ class InvoiceController(
 
     data class InvoiceSummaryResponse(
         val data: InvoiceSummary,
-        val permittedActions: Set<Action.Invoice>
+        val permittedActions: Set<Action.Invoice>,
     )
 
     data class PagedInvoiceSummaryResponses(
@@ -134,7 +134,7 @@ class InvoiceController(
                     it,
                     user,
                     clock,
-                    Action.Global.CREATE_DRAFT_INVOICES
+                    Action.Global.CREATE_DRAFT_INVOICES,
                 )
                 val lastMonth =
                     FiniteDateRange.ofMonth(clock.today().withDayOfMonth(1).minusMonths(1))
@@ -149,7 +149,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody invoiceIds: List<InvoiceId>
+        @RequestBody invoiceIds: List<InvoiceId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -158,7 +158,7 @@ class InvoiceController(
                     user,
                     clock,
                     Action.Invoice.DELETE,
-                    invoiceIds
+                    invoiceIds,
                 )
                 it.deleteDraftInvoices(invoiceIds)
             }
@@ -173,7 +173,7 @@ class InvoiceController(
         clock: EvakaClock,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam invoiceDate: LocalDate?,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam dueDate: LocalDate?,
-        @RequestBody invoiceIds: List<InvoiceId>
+        @RequestBody invoiceIds: List<InvoiceId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -183,7 +183,7 @@ class InvoiceController(
         }
         Audit.InvoicesSend.log(
             targetId = AuditId(invoiceIds),
-            meta = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate)
+            meta = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate),
         )
     }
 
@@ -192,7 +192,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody payload: InvoicePayload
+        @RequestBody payload: InvoicePayload,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -204,7 +204,7 @@ class InvoiceController(
                     clock,
                     invoiceIds,
                     payload.invoiceDate,
-                    payload.dueDate
+                    payload.dueDate,
                 )
             }
         }
@@ -215,7 +215,7 @@ class InvoiceController(
                     "to" to payload.to,
                     "areas" to payload.areas,
                     "invoiceDate" to payload.invoiceDate,
-                    "dueDate" to payload.dueDate
+                    "dueDate" to payload.dueDate,
                 )
         )
     }
@@ -225,7 +225,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody invoiceIds: List<InvoiceId>
+        @RequestBody invoiceIds: List<InvoiceId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -234,7 +234,7 @@ class InvoiceController(
                     user,
                     clock,
                     Action.Invoice.UPDATE,
-                    invoiceIds
+                    invoiceIds,
                 )
                 it.markManuallySent(user, clock.now(), invoiceIds)
             }
@@ -247,7 +247,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: InvoiceId
+        @PathVariable id: InvoiceId,
     ): InvoiceDetailedResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -260,7 +260,7 @@ class InvoiceController(
                             tx,
                             user,
                             clock,
-                            invoice.id
+                            invoice.id,
                         )
                     InvoiceDetailedResponse(invoice, permittedActions)
                 }
@@ -270,7 +270,7 @@ class InvoiceController(
 
     data class InvoiceDetailedResponse(
         val data: InvoiceDetailed,
-        val permittedActions: Set<Action.Invoice>
+        val permittedActions: Set<Action.Invoice>,
     )
 
     @GetMapping("/head-of-family/{id}")
@@ -278,7 +278,7 @@ class InvoiceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PersonId
+        @PathVariable id: PersonId,
     ): List<Invoice> {
         return db.connect { dbc ->
                 dbc.read {
@@ -287,7 +287,7 @@ class InvoiceController(
                         user,
                         clock,
                         Action.Person.READ_INVOICES,
-                        id
+                        id,
                     )
                     it.getHeadOfFamilyInvoices(id)
                 }
@@ -303,7 +303,7 @@ class InvoiceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: InvoiceId,
-        @RequestBody invoice: Invoice
+        @RequestBody invoice: Invoice,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -318,7 +318,7 @@ class InvoiceController(
     fun getInvoiceCodes(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): InvoiceCodes {
         return db.connect { dbc ->
             dbc.read {
@@ -326,7 +326,7 @@ class InvoiceController(
                     it,
                     user,
                     clock,
-                    Action.Global.READ_INVOICE_CODES
+                    Action.Global.READ_INVOICE_CODES,
                 )
                 service.getInvoiceCodes(it)
             }
@@ -339,7 +339,7 @@ data class InvoicePayload(
     val to: LocalDate,
     val areas: List<String>,
     val invoiceDate: LocalDate?,
-    val dueDate: LocalDate?
+    val dueDate: LocalDate?,
 )
 
 data class SearchInvoicesRequest(

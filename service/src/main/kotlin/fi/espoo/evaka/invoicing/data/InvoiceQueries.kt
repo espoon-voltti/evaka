@@ -212,7 +212,7 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invo
 
 fun Database.Read.getInvoiceIdsByDates(
     range: FiniteDateRange,
-    areas: List<String>
+    areas: List<String>,
 ): List<InvoiceId> {
     return createQuery {
             sql(
@@ -227,11 +227,7 @@ fun Database.Read.getInvoiceIdsByDates(
         .toList<InvoiceId>()
 }
 
-data class PagedInvoiceSummaries(
-    val data: List<InvoiceSummary>,
-    val total: Int,
-    val pages: Int,
-)
+data class PagedInvoiceSummaries(val data: List<InvoiceSummary>, val total: Int, val pages: Int)
 
 fun Database.Read.paginatedSearch(
     page: Int = 1,
@@ -244,7 +240,7 @@ fun Database.Read.paginatedSearch(
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
     searchTerms: String = "",
     periodStart: LocalDate? = null,
-    periodEnd: LocalDate? = null
+    periodEnd: LocalDate? = null,
 ): PagedInvoiceSummaries {
     val sortColumn =
         when (sortBy) {
@@ -262,7 +258,7 @@ fun Database.Read.paginatedSearch(
                 Binding.of("page", page),
                 Binding.of("pageSize", pageSize),
                 Binding.of("periodStart", periodStart),
-                Binding.of("periodEnd", periodEnd)
+                Binding.of("periodEnd", periodEnd),
             )
             .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
             .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
@@ -284,7 +280,7 @@ fun Database.Read.paginatedSearch(
             else null,
             if (searchTerms.isNotBlank()) freeTextQuery else null,
             if (periodStart != null) "invoice_date  >= :periodStart" else null,
-            if (periodEnd != null) "invoice_date  <= :periodEnd" else null
+            if (periodEnd != null) "invoice_date  <= :periodEnd" else null,
         )
 
     val sql =
@@ -363,13 +359,13 @@ fun Database.Read.paginatedSearch(
 
 fun Database.Read.searchInvoices(
     status: InvoiceStatus? = null,
-    sentAt: HelsinkiDateTimeRange? = null
+    sentAt: HelsinkiDateTimeRange? = null,
 ): List<InvoiceDetailed> {
     val predicate =
         Predicate.all(
             listOfNotNull(
                 if (status != null) Predicate { where("$it.status = ${bind(status)}") } else null,
-                if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null
+                if (sentAt != null) Predicate { where("$it.sent_at <@ ${bind(sentAt)}") } else null,
             )
         )
 
@@ -404,7 +400,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
 fun Database.Transaction.setDraftsSent(
     clock: EvakaClock,
     invoices: List<InvoiceDetailed>,
-    sentBy: EvakaUserId
+    sentBy: EvakaUserId,
 ) {
     if (invoices.isEmpty()) return
 
@@ -477,7 +473,7 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
 
 fun Database.Transaction.insertInvoices(
     invoices: List<Invoice>,
-    relatedFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap()
+    relatedFeeDecisions: Map<InvoiceId, List<FeeDecisionId>> = emptyMap(),
 ) {
     upsertInvoicesWithoutRows(invoices)
     insertInvoiceRows(invoices.map { it.id to it.rows })
@@ -612,14 +608,14 @@ fun Row.toInvoice() =
                         product = column("product"),
                         unitId = column("unit_id"),
                         description = column("description"),
-                        correctionId = column("correction_id")
+                        correctionId = column("correction_id"),
                     )
                 )
             } ?: listOf(),
         headOfFamily = column("head_of_family"),
         codebtor = column("codebtor"),
         sentBy = column("sent_by"),
-        sentAt = column("sent_at")
+        sentAt = column("sent_at"),
     )
 
 fun Row.toInvoiceSummary() =
@@ -639,10 +635,10 @@ fun Row.toInvoiceSummary() =
                                 dateOfBirth = column("child_date_of_birth"),
                                 firstName = column("child_first_name"),
                                 lastName = column("child_last_name"),
-                                ssn = column("child_ssn")
+                                ssn = column("child_ssn"),
                             ),
                         amount = column("amount"),
-                        unitPrice = column("unit_price")
+                        unitPrice = column("unit_price"),
                     )
                 )
             } ?: listOf(),
@@ -656,7 +652,7 @@ fun Row.toInvoiceSummary() =
                 streetAddress = column("head_street_address"),
                 postalCode = column("head_postal_code"),
                 postOffice = column("head_post_office"),
-                restrictedDetailsEnabled = column("head_restricted_details_enabled")
+                restrictedDetailsEnabled = column("head_restricted_details_enabled"),
             ),
         codebtor =
             column<PersonId?>("codebtor")?.let { id ->
@@ -669,12 +665,12 @@ fun Row.toInvoiceSummary() =
                     streetAddress = column("codebtor_street_address"),
                     postalCode = column("codebtor_postal_code"),
                     postOffice = column("codebtor_post_office"),
-                    restrictedDetailsEnabled = column("codebtor_restricted_details_enabled")
+                    restrictedDetailsEnabled = column("codebtor_restricted_details_enabled"),
                 )
             },
         sentBy = column("sent_by"),
         sentAt = column("sent_at"),
-        createdAt = column("created_at")
+        createdAt = column("created_at"),
     )
 
 fun flattenSummary(invoices: List<InvoiceSummary>): List<InvoiceSummary> {

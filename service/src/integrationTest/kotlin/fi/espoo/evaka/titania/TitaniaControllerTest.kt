@@ -77,7 +77,7 @@ internal class TitaniaControllerTest : FullApplicationTest(resetDbBeforeEach = t
     ]
 }""",
             res.body().asString("application/json"),
-            JSONCompareMode.STRICT
+            JSONCompareMode.STRICT,
         )
     }
 

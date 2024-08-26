@@ -68,7 +68,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 tx.insert(
                     DevDaycare(
                         areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                     )
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
@@ -78,7 +78,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 DevHolidayPeriod(
                     period = holidayPeriod,
                     reservationsOpenOn = clockToday.today(),
-                    reservationDeadline = clockToday.today().plusDays(2)
+                    reservationDeadline = clockToday.today().plusDays(2),
                 )
             )
         }
@@ -93,7 +93,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     unitId = daycareId,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
-                    type = PlacementType.DAYCARE
+                    type = PlacementType.DAYCARE,
                 )
             )
         }
@@ -107,7 +107,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     date = holidayPeriod.start,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         }
@@ -121,7 +121,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     childId = child,
                     absenceType = AbsenceType.PLANNED_ABSENCE,
                     date = holidayPeriod.end,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -138,7 +138,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     DevDaycare(
                         areaId = areaId,
                         // enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                        providerType = ProviderType.MUNICIPAL
+                        providerType = ProviderType.MUNICIPAL,
                     )
                 )
 
@@ -148,7 +148,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     unitId = voucherDaycare,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
-                    type = PlacementType.DAYCARE
+                    type = PlacementType.DAYCARE,
                 )
             )
         }
@@ -164,7 +164,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     DevDaycare(
                         areaId = areaId,
                         enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
-                        providerType = ProviderType.MUNICIPAL
+                        providerType = ProviderType.MUNICIPAL,
                     )
                 )
 
@@ -174,7 +174,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                     unitId = voucherDaycare,
                     startDate = holidayPeriod.start,
                     endDate = holidayPeriod.end,
-                    type = PlacementType.DAYCARE
+                    type = PlacementType.DAYCARE,
                 )
             )
 
@@ -184,7 +184,7 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
                 DevFosterParent(
                     childId = child,
                     parentId = fosterParentId,
-                    validDuring = DateRange(clockToday.today(), clockToday.today())
+                    validDuring = DateRange(clockToday.today(), clockToday.today()),
                 )
             )
             it.blockGuardian(childId = child, guardianId = guardian)

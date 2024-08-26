@@ -9,7 +9,7 @@ data class PersonAddress(
     val postalCode: String?,
     val postOffice: String?,
     val streetAddressSe: String? = null,
-    val postOfficeSe: String? = null
+    val postOfficeSe: String? = null,
 )
 
 data class Nationality(val countryName: String = "", val countryCode: String)

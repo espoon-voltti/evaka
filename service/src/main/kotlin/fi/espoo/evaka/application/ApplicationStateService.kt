@@ -86,7 +86,7 @@ class ApplicationStateService(
     private val decisionService: DecisionService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     fun createApplication(
         tx: Database.Transaction,
@@ -120,16 +120,16 @@ class ApplicationStateService(
                     ClubFormV0.fromForm2(
                         form,
                         child.restrictedDetailsEnabled,
-                        guardian.restrictedDetailsEnabled
+                        guardian.restrictedDetailsEnabled,
                     )
                 } else {
                     DaycareFormV0.fromForm2(
                         form,
                         type,
                         child.restrictedDetailsEnabled,
-                        guardian.restrictedDetailsEnabled
+                        guardian.restrictedDetailsEnabled,
                     )
-                }
+                },
         )
     }
 
@@ -137,7 +137,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         today: LocalDate,
         type: ApplicationType,
-        form: ApplicationForm
+        form: ApplicationForm,
     ): ApplicationForm {
         val startDate =
             when (type) {
@@ -164,7 +164,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         guardian: PersonDTO,
         child: PersonDTO,
-        form: ApplicationForm
+        form: ApplicationForm,
     ): ApplicationForm {
         val vtjChildren =
             personService.getPersonWithChildren(tx, user, guardian.id)?.children ?: listOf()
@@ -183,7 +183,7 @@ class ApplicationStateService(
                         PersonBasics(
                             firstName = it.firstName,
                             lastName = it.lastName,
-                            socialSecurityNumber = it.socialSecurityNumber
+                            socialSecurityNumber = it.socialSecurityNumber,
                         )
                     }
             }
@@ -196,7 +196,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(tx, user, clock, Action.Application.SEND, applicationId)
 
@@ -208,7 +208,7 @@ class ApplicationStateService(
             application.type,
             application.form,
             currentDate,
-            strict = user is AuthenticatedUser.Citizen
+            strict = user is AuthenticatedUser.Citizen,
         )
 
         personService.getGuardians(tx, user, application.childId)
@@ -225,7 +225,7 @@ class ApplicationStateService(
                     application.form.preferences.preferredStartDate,
                     application.form.preferences.urgent,
                     applicationFlags.isTransferApplication,
-                    application.attachments
+                    application.attachments,
                 )
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
@@ -238,7 +238,7 @@ class ApplicationStateService(
             tx.updatePersonBasicContactInfo(
                 id = application.guardianId,
                 email = email,
-                phone = application.form.guardian.phoneNumber
+                phone = application.form.guardian.phoneNumber,
             )
         }
 
@@ -254,10 +254,10 @@ class ApplicationStateService(
                     AsyncJob.SendApplicationEmail(
                         application.guardianId,
                         preferredUnit.language,
-                        ApplicationType.DAYCARE
+                        ApplicationType.DAYCARE,
                     )
                 ),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
 
@@ -268,10 +268,10 @@ class ApplicationStateService(
                     AsyncJob.SendApplicationEmail(
                         application.guardianId,
                         Language.fi,
-                        ApplicationType.CLUB
+                        ApplicationType.CLUB,
                     )
                 ),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
 
@@ -285,10 +285,10 @@ class ApplicationStateService(
                         application.guardianId,
                         Language.fi,
                         ApplicationType.PRESCHOOL,
-                        sentWithinPreschoolApplicationPeriod
+                        sentWithinPreschoolApplicationPeriod,
                     )
                 ),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
         }
 
@@ -303,14 +303,14 @@ class ApplicationStateService(
                             processDefinitionNumber = config.processDefinitionNumber,
                             year = clock.now().year,
                             organization = featureConfig.archiveMetadataOrganization,
-                            archiveDurationMonths = config.archiveDurationMonths
+                            archiveDurationMonths = config.archiveDurationMonths,
                         )
                         .id
                 tx.insertProcessHistoryRow(
                     processId = processId,
                     state = ArchivedProcessState.INITIAL,
                     now = clock.now(),
-                    userId = user.evakaUserId
+                    userId = user.evakaUserId,
                 )
                 tx.setApplicationProcessId(applicationId, processId)
             }
@@ -322,14 +322,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.MOVE_TO_WAITING_PLACEMENT,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -341,8 +341,8 @@ class ApplicationStateService(
                 additionalInformation =
                     AdditionalInformation(
                         allergies = application.form.child.allergies,
-                        diet = application.form.child.diet
-                    )
+                        diet = application.form.child.diet,
+                    ),
             )
         )
 
@@ -351,7 +351,7 @@ class ApplicationStateService(
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
@@ -362,7 +362,7 @@ class ApplicationStateService(
                     processId = process.id,
                     state = ArchivedProcessState.PREPARATION,
                     now = clock.now(),
-                    userId = user.evakaUserId
+                    userId = user.evakaUserId,
                 )
             }
         }
@@ -374,14 +374,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.RETURN_TO_SENT,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -395,14 +395,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.CANCEL,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -415,7 +415,7 @@ class ApplicationStateService(
                     processId = process.id,
                     state = ArchivedProcessState.COMPLETED,
                     now = clock.now(),
-                    userId = user.evakaUserId
+                    userId = user.evakaUserId,
                 )
             }
         }
@@ -427,14 +427,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.VERIFY,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -447,14 +447,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.VERIFY,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -468,7 +468,7 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
-        placementPlan: DaycarePlacementPlan
+        placementPlan: DaycarePlacementPlan,
     ): PlacementPlanId {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -487,14 +487,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.CANCEL_PLACEMENT_PLAN,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -510,14 +510,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.SEND_DECISIONS_WITHOUT_PROPOSAL,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -525,7 +525,7 @@ class ApplicationStateService(
         val decisionIds = finalizeDecisions(tx, user, clock, application)
         Audit.ApplicationSendDecisionsWithoutProposal.log(
             targetId = AuditId(applicationId),
-            objectId = AuditId(decisionIds)
+            objectId = AuditId(decisionIds),
         )
     }
 
@@ -533,14 +533,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.SEND_PLACEMENT_PROPOSAL,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -554,14 +554,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.WITHDRAW_PLACEMENT_PROPOSAL,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -578,14 +578,14 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         status: PlacementPlanConfirmationStatus,
         rejectReason: PlacementPlanRejectReason? = null,
-        rejectOtherReason: String? = null
+        rejectOtherReason: String? = null,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.RESPOND_TO_PLACEMENT_PROPOSAL,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -608,14 +608,14 @@ class ApplicationStateService(
                 applicationId,
                 status,
                 rejectReason,
-                rejectOtherReason
+                rejectOtherReason,
             )
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
         Audit.PlacementPlanRespond.log(
             targetId = AuditId(applicationId),
-            meta = mapOf("status" to status)
+            meta = mapOf("status" to status),
         )
     }
 
@@ -623,14 +623,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        unitId: DaycareId
+        unitId: DaycareId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Unit.ACCEPT_PLACEMENT_PROPOSAL,
-            unitId
+            unitId,
         )
 
         tx.execute {
@@ -669,14 +669,14 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.CONFIRM_DECISIONS_MAILED,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -693,14 +693,14 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId,
         decisionId: DecisionId,
-        requestedStartDate: LocalDate
+        requestedStartDate: LocalDate,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.ACCEPT_DECISION,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -730,7 +730,7 @@ class ApplicationStateService(
         if (!decision.validRequestedStartDatePeriod(featureConfig).includes(requestedStartDate)) {
             throw BadRequest(
                 "Invalid start date $requestedStartDate for ${decision.type} [${decision.startDate}, ${decision.endDate}]",
-                "decision.validation.invalid-requested-start-date"
+                "decision.validation.invalid-requested-start-date",
             )
         }
 
@@ -773,7 +773,7 @@ class ApplicationStateService(
             application,
             if (featureConfig.applyPlacementUnitFromDecision) decision.unit.id else plan.unitId,
             plan.type,
-            extent
+            extent,
         )
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
@@ -787,7 +787,7 @@ class ApplicationStateService(
                         processId = process.id,
                         state = ArchivedProcessState.COMPLETED,
                         now = clock.now(),
-                        userId = user.evakaUserId
+                        userId = user.evakaUserId,
                     )
                 }
             }
@@ -799,8 +799,8 @@ class ApplicationStateService(
                 mapOf(
                     "applicationId" to applicationId,
                     "requestedStartDate" to requestedStartDate,
-                    "childId" to decision.childId
-                )
+                    "childId" to decision.childId,
+                ),
         )
     }
 
@@ -809,14 +809,14 @@ class ApplicationStateService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
-        decisionId: DecisionId
+        decisionId: DecisionId,
     ) {
         accessControl.requirePermissionFor(
             tx,
             user,
             clock,
             Action.Application.REJECT_DECISION,
-            applicationId
+            applicationId,
         )
 
         val application = getApplication(tx, applicationId)
@@ -859,14 +859,14 @@ class ApplicationStateService(
                     processId = process.id,
                     state = ArchivedProcessState.COMPLETED,
                     now = clock.now(),
-                    userId = user.evakaUserId
+                    userId = user.evakaUserId,
                 )
             }
         }
 
         Audit.DecisionReject.log(
             targetId = AuditId(decisionId),
-            meta = mapOf("childId" to decision.childId)
+            meta = mapOf("childId" to decision.childId),
         )
     }
 
@@ -878,7 +878,7 @@ class ApplicationStateService(
         now: HelsinkiDateTime,
         applicationId: ApplicationId,
         update: CitizenApplicationUpdate,
-        asDraft: Boolean = false
+        asDraft: Boolean = false,
     ): ApplicationDetails {
         val original =
             tx.fetchApplicationDetails(applicationId)?.takeIf { it.guardianId == user.id }
@@ -890,7 +890,7 @@ class ApplicationStateService(
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
                 AttachmentType.URGENCY,
-                user.evakaUserId
+                user.evakaUserId,
             )
         }
 
@@ -898,7 +898,7 @@ class ApplicationStateService(
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
                 AttachmentType.EXTENDED_CARE,
-                user.evakaUserId
+                user.evakaUserId,
             )
         }
 
@@ -933,7 +933,7 @@ class ApplicationStateService(
         now: HelsinkiDateTime,
         applicationId: ApplicationId,
         update: ApplicationUpdate,
-        userId: EvakaUserId
+        userId: EvakaUserId,
     ) {
         val original =
             tx.fetchApplicationDetails(applicationId)
@@ -946,7 +946,7 @@ class ApplicationStateService(
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
                 AttachmentType.URGENCY,
-                userId
+                userId,
             )
         }
 
@@ -954,7 +954,7 @@ class ApplicationStateService(
             tx.dissociateAttachmentsByApplicationAndType(
                 applicationId,
                 AttachmentType.EXTENDED_CARE,
-                userId
+                userId,
             )
         }
 
@@ -962,7 +962,7 @@ class ApplicationStateService(
             now,
             original,
             updatedForm,
-            manuallySetDueDate = update.dueDate
+            manuallySetDueDate = update.dueDate,
         )
     }
 
@@ -978,7 +978,7 @@ class ApplicationStateService(
         now: HelsinkiDateTime,
         original: ApplicationDetails,
         updatedForm: ApplicationForm,
-        manuallySetDueDate: LocalDate? = null
+        manuallySetDueDate: LocalDate? = null,
     ) {
         if (!listOf(CREATED, SENT).contains(original.status)) {
             throw BadRequest("Cannot update application with status ${original.status}")
@@ -990,7 +990,7 @@ class ApplicationStateService(
             original.type,
             original.childRestricted,
             original.guardianRestricted,
-            now
+            now,
         )
         setCheckedByAdminToDefault(original.id, updatedForm)
         when (manuallySetDueDate) {
@@ -1003,7 +1003,7 @@ class ApplicationStateService(
                         now.toLocalDate(),
                         original,
                         updatedForm.preferences.preferredStartDate,
-                        updatedForm.preferences.urgent
+                        updatedForm.preferences.urgent,
                     )
                 }
             else -> updateManuallySetDueDate(original.id, manuallySetDueDate)
@@ -1012,7 +1012,7 @@ class ApplicationStateService(
 
     private fun Database.Transaction.updateManuallySetDueDate(
         applicationId: ApplicationId,
-        manuallySetDueDate: LocalDate
+        manuallySetDueDate: LocalDate,
     ) {
         execute {
             sql(
@@ -1030,7 +1030,7 @@ class ApplicationStateService(
         today: LocalDate,
         original: ApplicationDetails,
         updatedPreferredStartDate: LocalDate?,
-        urgent: Boolean
+        urgent: Boolean,
     ) {
         if (original.sentDate == null || original.dueDateSetManuallyAt != null) return
 
@@ -1044,7 +1044,7 @@ class ApplicationStateService(
                 updatedPreferredStartDate ?: original.form.preferences.preferredStartDate,
                 urgent,
                 original.transferApplication,
-                original.attachments
+                original.attachments,
             )
 
         if (newDueDate == original.dueDate) return
@@ -1059,7 +1059,7 @@ class ApplicationStateService(
     fun reCalculateDueDate(
         tx: Database.Transaction,
         today: LocalDate,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ) {
         val application =
             tx.fetchApplicationDetails(applicationId)
@@ -1068,7 +1068,7 @@ class ApplicationStateService(
             today,
             application,
             application.form.preferences.preferredStartDate,
-            application.form.preferences.urgent
+            application.form.preferences.urgent,
         )
     }
 
@@ -1079,7 +1079,7 @@ class ApplicationStateService(
         isUrgent: Boolean,
         isTransferApplication: Boolean,
         attachments: List<ApplicationAttachment>,
-        config: FeatureConfig = featureConfig
+        config: FeatureConfig = featureConfig,
     ): LocalDate? {
         return if (isTransferApplication) {
             null
@@ -1107,7 +1107,7 @@ class ApplicationStateService(
 
     private fun getApplication(
         tx: Database.Read,
-        applicationId: ApplicationId
+        applicationId: ApplicationId,
     ): ApplicationDetails {
         return tx.fetchApplicationDetails(applicationId)
             ?: throw NotFound("Application $applicationId not found")
@@ -1132,7 +1132,7 @@ class ApplicationStateService(
         type: ApplicationType,
         application: ApplicationForm,
         currentDate: LocalDate,
-        strict: Boolean
+        strict: Boolean,
     ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
@@ -1219,7 +1219,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        application: ApplicationDetails
+        application: ApplicationDetails,
     ): List<DecisionId> {
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
@@ -1229,7 +1229,7 @@ class ApplicationStateService(
             tx.syncApplicationOtherGuardians(application.id, clock.today())
             tx.updateApplicationStatus(
                 application.id,
-                if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
+                if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING,
             )
 
             tx.getArchiveProcessByApplicationId(application.id)?.also { process ->
@@ -1238,7 +1238,7 @@ class ApplicationStateService(
                         processId = process.id,
                         state = ArchivedProcessState.DECIDING,
                         now = clock.now(),
-                        userId = user.evakaUserId
+                        userId = user.evakaUserId,
                     )
                 }
             }
@@ -1252,7 +1252,7 @@ class ApplicationStateService(
     private fun canSendDecisionsBySfi(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        application: ApplicationDetails
+        application: ApplicationDetails,
     ): Boolean {
         val hasSsn =
             (tx.getPersonById(application.guardianId)!!.identity is ExternalIdentifier.SSN &&

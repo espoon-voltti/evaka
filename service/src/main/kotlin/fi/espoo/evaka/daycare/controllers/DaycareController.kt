@@ -79,14 +79,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping
     fun getDaycares(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam includeClosed: Boolean = true
+        @RequestParam includeClosed: Boolean = true,
     ): List<Daycare> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -102,7 +102,7 @@ class DaycareController(
     fun getUnitFeatures(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<UnitFeatures> {
         return db.connect { dbc ->
                 dbc.read {
@@ -110,7 +110,7 @@ class DaycareController(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_UNIT_FEATURES
+                        Action.Global.READ_UNIT_FEATURES,
                     )
                     it.getUnitFeatures(clock.today())
                 }
@@ -123,7 +123,7 @@ class DaycareController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody request: UpdateFeaturesRequest
+        @RequestBody request: UpdateFeaturesRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -132,7 +132,7 @@ class DaycareController(
                     user,
                     clock,
                     Action.Unit.UPDATE_FEATURES,
-                    request.unitIds
+                    request.unitIds,
                 )
 
                 if (request.enable) {
@@ -150,7 +150,7 @@ class DaycareController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable daycareId: DaycareId
+        @PathVariable daycareId: DaycareId,
     ): DaycareResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -164,7 +164,7 @@ class DaycareController(
                             tx,
                             user,
                             clock,
-                            groups.map { it.id }
+                            groups.map { it.id },
                         )
                     DaycareResponse(
                         daycare,
@@ -173,11 +173,11 @@ class DaycareController(
                                 id = it.id,
                                 name = it.name,
                                 endDate = it.endDate,
-                                permittedActions = permittedActions[it.id]!!
+                                permittedActions = permittedActions[it.id]!!,
                             )
                         },
                         lastPlacementDate,
-                        accessControl.getPermittedActions(tx, user, clock, daycareId)
+                        accessControl.getPermittedActions(tx, user, clock, daycareId),
                     )
                 }
             }
@@ -191,7 +191,7 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null,
     ): List<DaycareGroup> {
         return db.connect { dbc ->
                 dbc.read {
@@ -200,7 +200,7 @@ class DaycareController(
                         user,
                         clock,
                         Action.Unit.READ_GROUPS,
-                        daycareId
+                        daycareId,
                     )
                     daycareService.getDaycareGroups(it, daycareId, from, to)
                 }
@@ -208,7 +208,7 @@ class DaycareController(
             .also {
                 Audit.UnitGroupsSearch.log(
                     targetId = AuditId(daycareId),
-                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size),
                 )
             }
     }
@@ -219,7 +219,7 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @RequestBody body: CreateGroupRequest
+        @RequestBody body: CreateGroupRequest,
     ): DaycareGroup {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -228,21 +228,21 @@ class DaycareController(
                         user,
                         clock,
                         Action.Unit.CREATE_GROUP,
-                        daycareId
+                        daycareId,
                     )
                     daycareService.createGroup(
                         it,
                         daycareId,
                         body.name,
                         body.startDate,
-                        body.initialCaretakers
+                        body.initialCaretakers,
                     )
                 }
             }
             .also { group ->
                 Audit.UnitGroupsCreate.log(
                     targetId = AuditId(daycareId),
-                    objectId = AuditId(group.id)
+                    objectId = AuditId(group.id),
                 )
             }
     }
@@ -251,7 +251,7 @@ class DaycareController(
         val name: String,
         val startDate: LocalDate,
         val endDate: LocalDate?,
-        val jamixCustomerNumber: Int?
+        val jamixCustomerNumber: Int?,
     )
 
     @PutMapping("/{daycareId}/groups/{groupId}")
@@ -261,7 +261,7 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
-        @RequestBody body: GroupUpdateRequest
+        @RequestBody body: GroupUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -271,7 +271,7 @@ class DaycareController(
                     body.name,
                     body.startDate,
                     body.endDate,
-                    body.jamixCustomerNumber
+                    body.jamixCustomerNumber,
                 )
             }
         }
@@ -284,7 +284,7 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -301,7 +301,7 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ): CaretakersResponse {
         return db.connect { dbc ->
                 dbc.read {
@@ -310,19 +310,19 @@ class DaycareController(
                         user,
                         clock,
                         Action.Group.READ_CARETAKERS,
-                        groupId
+                        groupId,
                     )
                     CaretakersResponse(
                         caretakers = getCaretakers(it, groupId),
                         unitName = it.getDaycareStub(daycareId)?.name ?: "",
-                        groupName = it.getDaycareGroup(groupId)?.name ?: ""
+                        groupName = it.getDaycareGroup(groupId)?.name ?: "",
                     )
                 }
             }
             .also {
                 Audit.UnitGroupsCaretakersRead.log(
                     targetId = AuditId(groupId),
-                    meta = mapOf("count" to it.caretakers.size)
+                    meta = mapOf("count" to it.caretakers.size),
                 )
             }
     }
@@ -334,7 +334,7 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
-        @RequestBody body: CaretakerRequest
+        @RequestBody body: CaretakerRequest,
     ) {
         val daycareCaretakerId =
             db.connect { dbc ->
@@ -344,20 +344,20 @@ class DaycareController(
                         user,
                         clock,
                         Action.Group.CREATE_CARETAKERS,
-                        groupId
+                        groupId,
                     )
                     insertCaretakers(
                         it,
                         groupId = groupId,
                         startDate = body.startDate,
                         endDate = body.endDate,
-                        amount = body.amount
+                        amount = body.amount,
                     )
                 }
             }
         Audit.UnitGroupsCaretakersCreate.log(
             targetId = AuditId(groupId),
-            objectId = AuditId(daycareCaretakerId)
+            objectId = AuditId(daycareCaretakerId),
         )
     }
 
@@ -369,7 +369,7 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
         @PathVariable id: DaycareCaretakerId,
-        @RequestBody body: CaretakerRequest
+        @RequestBody body: CaretakerRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -378,7 +378,7 @@ class DaycareController(
                     user,
                     clock,
                     Action.Group.UPDATE_CARETAKERS,
-                    groupId
+                    groupId,
                 )
                 updateCaretakers(
                     it,
@@ -386,7 +386,7 @@ class DaycareController(
                     id = id,
                     startDate = body.startDate,
                     endDate = body.endDate,
-                    amount = body.amount
+                    amount = body.amount,
                 )
             }
         }
@@ -400,7 +400,7 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
-        @PathVariable id: DaycareCaretakerId
+        @PathVariable id: DaycareCaretakerId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -409,7 +409,7 @@ class DaycareController(
                     user,
                     clock,
                     Action.Group.DELETE_CARETAKERS,
-                    groupId
+                    groupId,
                 )
                 deleteCaretakers(it, groupId = groupId, id = id)
             }
@@ -423,7 +423,7 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @RequestBody fields: DaycareFields
+        @RequestBody fields: DaycareFields,
     ) {
         fields.validate()
         db.connect { dbc ->
@@ -433,7 +433,7 @@ class DaycareController(
                         user,
                         clock,
                         Action.Unit.UPDATE,
-                        daycareId
+                        daycareId,
                     )
                     fields.validateClosingDate(tx, daycareId)
                     tx.updateDaycareManager(daycareId, fields.unitManager)
@@ -448,7 +448,7 @@ class DaycareController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody fields: DaycareFields
+        @RequestBody fields: DaycareFields,
     ): CreateDaycareResponse {
         fields.validate()
         return CreateDaycareResponse(
@@ -458,7 +458,7 @@ class DaycareController(
                             it,
                             user,
                             clock,
-                            Action.Global.CREATE_UNIT
+                            Action.Global.CREATE_UNIT,
                         )
                         val id = it.createDaycare(fields.areaId, fields.name)
                         it.updateDaycareManager(id, fields.unitManager)
@@ -477,7 +477,7 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): UnitGroupDetails {
         val terminatedPlacementsViewWeeks = 2L
         val period = FiniteDateRange(from, to)
@@ -488,7 +488,7 @@ class DaycareController(
                         user,
                         clock,
                         Action.Unit.READ_GROUP_DETAILS,
-                        unitId
+                        unitId,
                     )
                     val groups = tx.getDaycareGroups(unitId, from, to)
                     val placements =
@@ -501,7 +501,7 @@ class DaycareController(
                                 user,
                                 clock,
                                 Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
-                                unitId
+                                unitId,
                             )
                         ) {
                             getMissingGroupPlacements(tx, unitId)
@@ -515,14 +515,14 @@ class DaycareController(
                                 user,
                                 clock,
                                 Action.Unit.READ_TERMINATED_PLACEMENTS,
-                                unitId
+                                unitId,
                             )
                         ) {
                             tx.getTerminatedPlacements(
                                 clock.today(),
                                 unitId,
                                 clock.today().minusWeeks(terminatedPlacementsViewWeeks),
-                                clock.today()
+                                clock.today(),
                             )
                         } else {
                             emptyList()
@@ -562,7 +562,7 @@ class DaycareController(
                                 user,
                                 clock,
                                 Action.Unit.READ_CHILD_CAPACITY_FACTORS,
-                                unitId
+                                unitId,
                             )
                         ) {
                             tx.getUnitChildrenCapacities(childIds, from)
@@ -577,7 +577,7 @@ class DaycareController(
                                 user,
                                 clock,
                                 Action.Unit.READ_OCCUPANCIES,
-                                unitId
+                                unitId,
                             )
                         ) {
                             getGroupOccupancies(
@@ -585,7 +585,7 @@ class DaycareController(
                                 clock.today(),
                                 unitId,
                                 period,
-                                AccessControlFilter.PermitAll
+                                AccessControlFilter.PermitAll,
                             )
                         } else null
 
@@ -611,8 +611,8 @@ class DaycareController(
                                     placement.groupPlacements.mapNotNull { groupPlacement ->
                                         groupPlacement.id
                                     }
-                                }
-                            )
+                                },
+                            ),
                     )
                 }
             }
@@ -624,7 +624,7 @@ class DaycareController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable daycareId: DaycareId
+        @PathVariable daycareId: DaycareId,
     ): UnitNotifications {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -636,7 +636,7 @@ class DaycareController(
                                     user,
                                     clock,
                                     Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
-                                    daycareId
+                                    daycareId,
                                 )
                             )
                                 tx.getUnitApplicationNotifications(daycareId)
@@ -648,11 +648,11 @@ class DaycareController(
                                     user,
                                     clock,
                                     Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
-                                    daycareId
+                                    daycareId,
                                 )
                             )
                                 getMissingGroupPlacements(tx, daycareId).size
-                            else 0
+                            else 0,
                     )
                 }
             }
@@ -664,39 +664,39 @@ class DaycareController(
     data class CreateGroupRequest(
         val name: String,
         val startDate: LocalDate,
-        val initialCaretakers: Double
+        val initialCaretakers: Double,
     )
 
     data class CaretakerRequest(
         val startDate: LocalDate,
         val endDate: LocalDate?,
-        val amount: Double
+        val amount: Double,
     )
 
     data class CaretakersResponse(
         val unitName: String,
         val groupName: String,
-        val caretakers: List<CaretakerAmount>
+        val caretakers: List<CaretakerAmount>,
     )
 
     data class DaycareGroupResponse(
         val id: GroupId,
         val name: String,
         val endDate: LocalDate?,
-        val permittedActions: Set<Action.Group>
+        val permittedActions: Set<Action.Group>,
     )
 
     data class DaycareResponse(
         val daycare: Daycare,
         val groups: List<DaycareGroupResponse>,
         val lastPlacementDate: LocalDate?,
-        val permittedActions: Set<Action.Unit>
+        val permittedActions: Set<Action.Unit>,
     )
 
     data class UpdateFeaturesRequest(
         val unitIds: List<DaycareId>,
         val features: List<PilotFeature>,
-        val enable: Boolean
+        val enable: Boolean,
     )
 
     data class UnitNotifications(val applications: Int, val groups: Int)
@@ -713,12 +713,12 @@ data class UnitGroupDetails(
     val groupOccupancies: GroupOccupancies?,
     val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
     val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
-    val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>
+    val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>,
 )
 
 data class GroupOccupancies(
     val confirmed: Map<GroupId, OccupancyResponse>,
-    val realized: Map<GroupId, OccupancyResponse>
+    val realized: Map<GroupId, OccupancyResponse>,
 )
 
 private fun getGroupOccupancies(
@@ -726,7 +726,7 @@ private fun getGroupOccupancies(
     today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed =
@@ -736,7 +736,7 @@ private fun getGroupOccupancies(
                     unitId,
                     period,
                     OccupancyType.CONFIRMED,
-                    unitFilter
+                    unitFilter,
                 )
             ),
         realized =
@@ -746,9 +746,9 @@ private fun getGroupOccupancies(
                     unitId,
                     period,
                     OccupancyType.REALIZED,
-                    unitFilter
+                    unitFilter,
                 )
-            )
+            ),
     )
 }
 
@@ -765,7 +765,7 @@ private fun getGroupOccupancyResponses(
                         sum = it.sum,
                         headcount = it.headcount,
                         caretakers = it.caretakers,
-                        percentage = it.percentage
+                        percentage = it.percentage,
                     )
                 }
 
@@ -778,7 +778,7 @@ private fun getGroupOccupancyResponses(
                 min =
                     occupancyPeriods
                         .filter { it.percentage != null }
-                        .minByOrNull { it.percentage!! }
+                        .minByOrNull { it.percentage!! },
             )
         }
 }

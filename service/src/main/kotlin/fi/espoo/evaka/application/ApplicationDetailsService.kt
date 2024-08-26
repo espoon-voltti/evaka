@@ -12,14 +12,14 @@ import java.time.LocalDate
 
 fun Database.Read.applicationFlags(
     application: ApplicationDetails,
-    today: LocalDate
+    today: LocalDate,
 ): ApplicationFlags {
     return applicationFlags(
         childId = application.childId,
         formType = application.type,
         startDate = application.form.preferences.preferredStartDate ?: today,
         preparatory = application.form.preferences.preparatory,
-        connectedDaycare = application.form.preferences.serviceNeed != null
+        connectedDaycare = application.form.preferences.serviceNeed != null,
     )
 }
 
@@ -28,7 +28,7 @@ fun Database.Read.applicationFlags(
     formType: ApplicationType,
     startDate: LocalDate,
     preparatory: Boolean,
-    connectedDaycare: Boolean
+    connectedDaycare: Boolean,
 ): ApplicationFlags {
     return when (formType) {
         ApplicationType.CLUB ->
@@ -46,7 +46,7 @@ fun Database.Read.applicationFlags(
                                 PlacementType.DAYCARE,
                                 PlacementType.DAYCARE_PART_TIME,
                                 PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                             )
                             .contains(it.type)
                     }
@@ -59,7 +59,7 @@ fun Database.Read.applicationFlags(
                             PlacementType.PRESCHOOL_DAYCARE,
                             PlacementType.PRESCHOOL_CLUB,
                             PlacementType.PREPARATORY,
-                            PlacementType.PREPARATORY_DAYCARE
+                            PlacementType.PREPARATORY_DAYCARE,
                         )
                         .contains(it.type)
                 }
@@ -80,7 +80,7 @@ fun Database.Read.applicationFlags(
 
             ApplicationFlags(
                 isTransferApplication = isTransferApplication,
-                isAdditionalDaycareApplication = isAdditionalDaycareApplication
+                isAdditionalDaycareApplication = isAdditionalDaycareApplication,
             )
         }
     }

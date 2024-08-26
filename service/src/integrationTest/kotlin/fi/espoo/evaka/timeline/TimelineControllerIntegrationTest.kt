@@ -33,11 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var controller: TimelineController
 
-    private val range =
-        FiniteDateRange(
-            LocalDate.of(2022, 1, 1),
-            LocalDate.of(2023, 1, 1),
-        )
+    private val range = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2023, 1, 1))
 
     @BeforeEach
     fun beforeEach() {
@@ -60,9 +56,9 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 valueDecisions = emptyList(),
                 incomes = emptyList(),
                 partners = emptyList(),
-                children = emptyList()
+                children = emptyList(),
             ),
-            timeline
+            timeline,
         )
     }
 
@@ -81,7 +77,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         headOfChildId = testAdult_1.id,
                         startDate = childRange.start,
                         endDate = childRange.end,
-                        createdAt = createdAt
+                        createdAt = createdAt,
                     )
                 )
 
@@ -92,7 +88,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     headOfChildId = testAdult_1.id,
                     startDate = range.start.minusYears(2),
                     endDate = range.start.minusYears(1),
-                    createdAt = createdAt
+                    createdAt = createdAt,
                 )
             )
 
@@ -103,7 +99,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     validFrom = childRange.start,
                     validTo = childRange.end,
                     effect = IncomeEffect.INCOME,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -132,7 +128,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     TimelineIncome(
                                         incomeId,
                                         childRange.asDateRange(),
-                                        IncomeEffect.INCOME
+                                        IncomeEffect.INCOME,
                                     )
                                 ),
                             placements = emptyList(),
@@ -140,11 +136,11 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             feeAlterations = emptyList(),
                             creationModificationMetadata =
                                 CreationModificationMetadata.empty().copy(createdAt = createdAt),
-                            originApplicationAccessible = false
+                            originApplicationAccessible = false,
                         )
-                    )
+                    ),
             ),
-            timeline
+            timeline,
         )
     }
 
@@ -155,7 +151,7 @@ class TimelineControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             MockEvakaClock(2022, 9, 1, 0, 0),
             personId,
             range.start,
-            range.end
+            range.end,
         )
     }
 }

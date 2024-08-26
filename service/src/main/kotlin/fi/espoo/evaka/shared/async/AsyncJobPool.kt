@@ -36,7 +36,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     config: Config,
     private val jdbi: Jdbi,
     private val tracer: Tracer,
-    private val registration: Registration<T>
+    private val registration: Registration<T>,
 ) : AutoCloseable {
     data class Id<T : Any>(val jobType: KClass<T>, val pool: String) {
         override fun toString(): String = "${jobType.simpleName}.$pool"
@@ -82,7 +82,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                         } catch (e: Exception) {
                             logger.error(e) { "Error running pool $fullName worker" }
                         }
-                    }
+                    },
                 )
             }
             ThreadPoolExecutor(
@@ -92,7 +92,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                 keepAliveTime.second,
                 workQueue,
                 threadFactory,
-                ThreadPoolExecutor.DiscardPolicy()
+                ThreadPoolExecutor.DiscardPolicy(),
             )
         }
 
@@ -113,7 +113,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                 Counter.builder("asyncJobsFailed")
                     .tag("jobType", id.jobType.simpleName!!)
                     .tag("pool", id.pool)
-                    .register(meterRegistry)
+                    .register(meterRegistry),
             )
         )
     }
@@ -153,7 +153,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
                             Thread.sleep(
                                 Duration.between(
                                     clock.now().toInstant(),
-                                    permit.availableAt.toInstant()
+                                    permit.availableAt.toInstant(),
                                 )
                             )
                             tx.claimJob(clock.now(), registration.jobTypes())?.also {
@@ -183,7 +183,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
             mapOf(
                 "jobId" to job.jobId,
                 "jobType" to job.jobType.name,
-                "remainingAttempts" to job.remainingAttempts
+                "remainingAttempts" to job.remainingAttempts,
             )
         try {
             val traceId = randomTracingId()

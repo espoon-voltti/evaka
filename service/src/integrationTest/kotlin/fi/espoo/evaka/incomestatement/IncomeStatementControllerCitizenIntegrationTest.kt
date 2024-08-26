@@ -75,10 +75,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
                     handled = false,
-                    handlerNote = ""
+                    handlerNote = "",
                 )
             ),
-            incomeStatements
+            incomeStatements,
         )
     }
 
@@ -93,7 +93,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150"
+                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                     ),
                 entrepreneur =
                     Entrepreneur(
@@ -109,8 +109,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                     EstimatedIncome(
                                         estimatedMonthlyIncome = 1000,
                                         incomeStartDate = LocalDate.of(2005, 6, 6),
-                                        incomeEndDate = LocalDate.of(2021, 7, 7)
-                                    )
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    ),
                             ),
                         limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
                         partnership = false,
@@ -120,13 +120,13 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                 name = "Foo",
                                 address = "Bar",
                                 phone = "123",
-                                email = "foo.bar@example.com"
-                            )
+                                email = "foo.bar@example.com",
+                            ),
                     ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf()
+                attachmentIds = listOf(),
             )
         )
 
@@ -145,7 +145,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             incomeSource = IncomeSource.INCOMES_REGISTER,
                             estimatedMonthlyIncome = 500,
                             otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                            otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150"
+                            otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                         ),
                     entrepreneur =
                         Entrepreneur(
@@ -161,8 +161,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                         EstimatedIncome(
                                             estimatedMonthlyIncome = 1000,
                                             incomeStartDate = LocalDate.of(2005, 6, 6),
-                                            incomeEndDate = LocalDate.of(2021, 7, 7)
-                                        )
+                                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                                        ),
                                 ),
                             limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
                             partnership = false,
@@ -172,8 +172,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                     name = "Foo",
                                     address = "Bar",
                                     phone = "123",
-                                    email = "foo.bar@example.com"
-                                )
+                                    email = "foo.bar@example.com",
+                                ),
                         ),
                     student = false,
                     alimonyPayer = true,
@@ -182,10 +182,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf()
+                    attachments = listOf(),
                 )
             ),
-            incomeStatements
+            incomeStatements,
         )
     }
 
@@ -197,7 +197,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
+                    attachmentIds = listOf(),
                 ),
                 testChild_1.id,
             )
@@ -213,9 +213,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
                 otherInfo = "foo bar",
-                attachmentIds = listOf()
+                attachmentIds = listOf(),
             ),
-            testChild_1.id
+            testChild_1.id,
         )
 
         val incomeStatements = getIncomeStatementsForChild(testChild_1.id).data
@@ -233,10 +233,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf()
+                    attachments = listOf(),
                 )
             ),
-            incomeStatements
+            incomeStatements,
         )
     }
 
@@ -253,8 +253,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
-                ),
+                    attachmentIds = listOf(),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -268,14 +268,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             incomeSource = IncomeSource.INCOMES_REGISTER,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
-                            otherIncomeInfo = ""
+                            otherIncomeInfo = "",
                         ),
                     entrepreneur = null,
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
-                ),
+                    attachmentIds = listOf(),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -301,14 +301,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                     name = "Foo",
                                     address = "Bar",
                                     phone = "123",
-                                    email = "foo.bar@example.com"
-                                )
+                                    email = "foo.bar@example.com",
+                                ),
                         ),
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
-                ),
+                    attachmentIds = listOf(),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -329,13 +329,13 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             partnership = true,
                             lightEntrepreneur = false,
                             // Accountant is required if limitedCompany or partnership is given
-                            accountant = null
+                            accountant = null,
                         ),
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
-                ),
+                    attachmentIds = listOf(),
+                )
             )
         }
         assertThrows<BadRequest> {
@@ -356,13 +356,13 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             partnership = true,
                             lightEntrepreneur = false,
                             // Accountant name, phone or email cannot be empty
-                            accountant = Accountant(name = "", address = "", phone = "", email = "")
+                            accountant = Accountant(name = "", address = "", phone = "", email = ""),
                         ),
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf()
-                ),
+                    attachmentIds = listOf(),
+                )
             )
         }
     }
@@ -380,13 +380,13 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 1500,
                         otherIncome = setOf(),
-                        otherIncomeInfo = ""
+                        otherIncomeInfo = "",
                     ),
                 entrepreneur = null,
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachmentId)
+                attachmentIds = listOf(attachmentId),
             )
         )
 
@@ -405,7 +405,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
-                            otherIncomeInfo = ""
+                            otherIncomeInfo = "",
                         ),
                     entrepreneur = null,
                     student = false,
@@ -415,10 +415,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(idToAttachment(attachmentId))
+                    attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
-            incomeStatements
+            incomeStatements,
         )
     }
 
@@ -432,9 +432,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachmentId)
+                attachmentIds = listOf(attachmentId),
             ),
-            testChild_1.id
+            testChild_1.id,
         )
 
         val incomeStatements = getIncomeStatementsForChild(testChild_1.id).data
@@ -452,10 +452,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(idToAttachment(attachmentId))
+                    attachments = listOf(idToAttachment(attachmentId)),
                 )
             ),
-            incomeStatements
+            incomeStatements,
         )
     }
 
@@ -473,14 +473,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
-                            otherIncomeInfo = ""
+                            otherIncomeInfo = "",
                         ),
                     entrepreneur = null,
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf(nonExistingAttachmentId)
-                ),
+                    attachmentIds = listOf(nonExistingAttachmentId),
+                )
             )
         }
     }
@@ -500,14 +500,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             incomeSource = IncomeSource.ATTACHMENTS,
                             estimatedMonthlyIncome = 1500,
                             otherIncome = setOf(),
-                            otherIncomeInfo = ""
+                            otherIncomeInfo = "",
                         ),
                     entrepreneur = null,
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "foo bar",
-                    attachmentIds = listOf(attachmentId)
-                ),
+                    attachmentIds = listOf(attachmentId),
+                )
             )
         }
     }
@@ -527,7 +527,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150"
+                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                     ),
                 entrepreneur =
                     Entrepreneur(
@@ -543,8 +543,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                                     EstimatedIncome(
                                         estimatedMonthlyIncome = 1000,
                                         incomeStartDate = LocalDate.of(2005, 6, 6),
-                                        incomeEndDate = LocalDate.of(2021, 7, 7)
-                                    )
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    ),
                             ),
                         limitedCompany =
                             LimitedCompany(incomeSource = IncomeSource.INCOMES_REGISTER),
@@ -554,13 +554,13 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             name = "Foo",
                             address = "Bar",
                             phone = "123",
-                            email = "foo.bar@example.com"
-                        )
+                            email = "foo.bar@example.com",
+                        ),
                     ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachment1)
+                attachmentIds = listOf(attachment1),
             )
         )
 
@@ -587,14 +587,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             name = "Baz",
                             address = "Quux",
                             phone = "456",
-                            email = "baz.quux@example.com"
-                        )
+                            email = "baz.quux@example.com",
+                        ),
                     ),
                 student = true,
                 alimonyPayer = false,
                 otherInfo = "",
-                attachmentIds = listOf(attachment2, attachment3)
-            )
+                attachmentIds = listOf(attachment2, attachment3),
+            ),
         )
 
         val updated = getIncomeStatement(incomeStatement.id).updated
@@ -624,8 +624,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             name = "Baz",
                             address = "Quux",
                             phone = "456",
-                            email = "baz.quux@example.com"
-                        )
+                            email = "baz.quux@example.com",
+                        ),
                     ),
                 student = true,
                 alimonyPayer = false,
@@ -634,9 +634,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 updated = updated,
                 handled = false,
                 handlerNote = "",
-                attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3))
+                attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
             ),
-            getIncomeStatement(incomeStatement.id)
+            getIncomeStatement(incomeStatement.id),
         )
     }
 
@@ -655,10 +655,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertThrows<Forbidden> {
             updateIncomeStatement(
                 id,
-                IncomeStatementBody.HighestFee(
-                    startDate = LocalDate.of(2030, 4, 3),
-                    endDate = null
-                ),
+                IncomeStatementBody.HighestFee(startDate = LocalDate.of(2030, 4, 3), endDate = null),
             )
         }
     }
@@ -688,7 +685,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2020, 4, 3),
-                endDate = LocalDate.of(2020, 12, 31)
+                endDate = LocalDate.of(2020, 12, 31),
             )
         )
         createIncomeStatement(
@@ -715,10 +712,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         )
         assertThrows<BadRequest> {
             createIncomeStatement(
-                IncomeStatementBody.HighestFee(
-                    startDate = LocalDate.of(2021, 4, 3),
-                    endDate = null
-                ),
+                IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
             )
         }
     }
@@ -726,7 +720,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
     private fun markIncomeStatementHandled(
         id: IncomeStatementId,
         handlerId: EmployeeId,
-        note: String
+        note: String,
     ) =
         db.transaction { tx ->
             tx.execute {
@@ -759,7 +753,7 @@ WHERE id = ${bind(id)}
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150"
+                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                     ),
                 entrepreneur =
                     Entrepreneur(
@@ -775,8 +769,8 @@ WHERE id = ${bind(id)}
                                     EstimatedIncome(
                                         estimatedMonthlyIncome = 1000,
                                         incomeStartDate = LocalDate.of(2005, 6, 6),
-                                        incomeEndDate = LocalDate.of(2021, 7, 7)
-                                    )
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    ),
                             ),
                         limitedCompany =
                             LimitedCompany(incomeSource = IncomeSource.INCOMES_REGISTER),
@@ -787,13 +781,13 @@ WHERE id = ${bind(id)}
                                 name = "Foo",
                                 address = "Bar",
                                 phone = "123",
-                                email = "foo.bar@example.com"
-                            )
+                                email = "foo.bar@example.com",
+                            ),
                     ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(attachment1)
+                attachmentIds = listOf(attachment1),
             )
         )
 
@@ -807,7 +801,7 @@ WHERE id = ${bind(id)}
             when (incomeStatement) {
                 is IncomeStatement.Income -> incomeStatement.attachments
                 else -> throw Error("No attachments")
-            }
+            },
         )
     }
 
@@ -827,7 +821,7 @@ WHERE id = ${bind(id)}
                     startDate = LocalDate.now(),
                     endDate = LocalDate.now(),
                     type = PlacementType.DAYCARE,
-                    unitId = testDaycare.id
+                    unitId = testDaycare.id,
                 )
             )
         }
@@ -846,7 +840,7 @@ WHERE id = ${bind(id)}
                     startDate = LocalDate.now().minusWeeks(1),
                     endDate = LocalDate.now().minusWeeks(1),
                     type = PlacementType.DAYCARE,
-                    unitId = testDaycare.id
+                    unitId = testDaycare.id,
                 )
             )
         }
@@ -860,14 +854,14 @@ WHERE id = ${bind(id)}
             citizen,
             RealEvakaClock(),
             page = page,
-            pageSize = pageSize
+            pageSize = pageSize,
         )
     }
 
     private fun getIncomeStatementsForChild(
         childId: ChildId,
         pageSize: Int = 10,
-        page: Int = 1
+        page: Int = 1,
     ): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getChildIncomeStatements(
             dbInstance(),
@@ -875,7 +869,7 @@ WHERE id = ${bind(id)}
             RealEvakaClock(),
             childId,
             page = page,
-            pageSize = pageSize
+            pageSize = pageSize,
         )
     }
 
@@ -884,7 +878,7 @@ WHERE id = ${bind(id)}
             dbInstance(),
             citizen,
             RealEvakaClock(),
-            id
+            id,
         )
     }
 
@@ -914,20 +908,17 @@ WHERE id = ${bind(id)}
             citizen,
             RealEvakaClock(),
             childId,
-            body
+            body,
         )
     }
 
-    private fun updateIncomeStatement(
-        id: IncomeStatementId,
-        body: IncomeStatementBody,
-    ) {
+    private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody) {
         incomeStatementControllerCitizen.updateIncomeStatement(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             id,
-            body
+            body,
         )
     }
 
@@ -946,7 +937,7 @@ WHERE id = ${bind(id)}
             user,
             RealEvakaClock(),
             incomeStatementId = null,
-            file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+            file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }
 
@@ -955,14 +946,14 @@ WHERE id = ${bind(id)}
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser.Employee,
-        incomeStatementId: IncomeStatementId
+        incomeStatementId: IncomeStatementId,
     ): AttachmentId {
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             user,
             RealEvakaClock(),
             incomeStatementId,
-            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }
 }

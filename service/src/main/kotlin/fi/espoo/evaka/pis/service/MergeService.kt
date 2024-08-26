@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service
 class MergeService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val documentClient: DocumentService,
-    private val env: BucketEnv
+    private val env: BucketEnv,
 ) {
     private val logger = KotlinLogging.logger {}
     private val imageBucket = env.data
@@ -34,7 +34,7 @@ class MergeService(
         tx: Database.Transaction,
         clock: EvakaClock,
         master: PersonId,
-        duplicate: PersonId
+        duplicate: PersonId,
     ) {
         val feeAffectingDateRange =
             tx.createQuery {
@@ -60,7 +60,7 @@ SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING mi
                         column("min_date"),
                         column<LocalDate?>("max_date")?.takeIf {
                             it.isBefore(LocalDate.of(2200, 1, 1))
-                        } // infinity -> null
+                        }, // infinity -> null
                     )
                 }
 
@@ -182,12 +182,12 @@ DELETE FROM person WHERE id = ${bind(id)};
         tx: Database.Transaction,
         clock: EvakaClock,
         adultId: PersonId,
-        dateRange: DateRange
+        dateRange: DateRange,
     ) {
         asyncJobRunner.plan(
             tx,
             listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
     }
 }

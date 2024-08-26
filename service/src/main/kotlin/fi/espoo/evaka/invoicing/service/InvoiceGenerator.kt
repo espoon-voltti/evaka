@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
     private val featureConfig: FeatureConfig,
-    private val tracer: Tracer = NoopTracerFactory.create()
+    private val tracer: Tracer = NoopTracerFactory.create(),
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
@@ -76,7 +76,7 @@ class InvoiceGenerator(
                         invoiceCalculationData.decisions
                             .getOrDefault(invoice.headOfFamily, emptyList())
                             .map { it.id }
-                }
+                },
         )
     }
 
@@ -174,7 +174,7 @@ class InvoiceGenerator(
     private fun getInvoiceCodebtor(
         tx: Database.Read,
         decisions: List<FeeDecision>,
-        dateRange: FiniteDateRange
+        dateRange: FiniteDateRange,
     ): PersonId? {
         val partners = decisions.map { it.partnerId }.distinct()
         if (partners.size != 1) return null
@@ -189,7 +189,7 @@ class InvoiceGenerator(
                         decision.partnerId,
                         decision.children.map { it.child.id },
                         decision.validDuring.intersection(dateRange)?.asDateRange()
-                            ?: error("Decision is not valid during invoice period $dateRange")
+                            ?: error("Decision is not valid during invoice period $dateRange"),
                     )
                 }
             }
@@ -200,7 +200,7 @@ class InvoiceGenerator(
         tx: Database.Read,
         invoices: List<Invoice>,
         invoicePeriod: FiniteDateRange,
-        areaIds: Map<DaycareId, AreaId>
+        areaIds: Map<DaycareId, AreaId>,
     ): List<Invoice> {
         val corrections = getUninvoicedCorrections(tx)
 
@@ -220,7 +220,7 @@ class InvoiceGenerator(
                                     },
                                 headOfFamily = headOfFamily,
                                 codebtor = null,
-                                rows = listOf()
+                                rows = listOf(),
                             )
 
                     val (additions, subtractions) =
@@ -327,7 +327,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
     private data class InvoicedTotal(
         val amount: Int,
         val unitPrice: Int,
-        val periodStart: LocalDate
+        val periodStart: LocalDate,
     )
 
     private data class InvoiceCorrection(
@@ -339,7 +339,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
         val period: FiniteDateRange,
         val amount: Int,
         val unitPrice: Int,
-        val description: String
+        val description: String,
     ) {
         fun toInvoiceRow() =
             InvoiceRow(
@@ -352,7 +352,7 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
                 product = product,
                 unitId = unitId,
                 description = description,
-                correctionId = id
+                correctionId = id,
             )
     }
 }
@@ -387,12 +387,12 @@ data class AbsenceStub(
     val childId: ChildId,
     val date: LocalDate,
     val category: AbsenceCategory,
-    val absenceType: AbsenceType
+    val absenceType: AbsenceType,
 )
 
 fun Database.Read.getAbsenceStubs(
     spanningRange: FiniteDateRange,
-    categories: Collection<AbsenceCategory>
+    categories: Collection<AbsenceCategory>,
 ): List<AbsenceStub> {
     return createQuery {
             sql(
@@ -410,12 +410,12 @@ AND category = ANY(${bind(categories)})
 data class PlacementStub(
     @Nested("child") val child: ChildWithDateOfBirth,
     val unit: DaycareId,
-    val type: PlacementType
+    val type: PlacementType,
 )
 
 private fun Database.Read.getInvoiceablePlacements(
     spanningPeriod: FiniteDateRange,
-    placementTypes: List<PlacementType>
+    placementTypes: List<PlacementType>,
 ): Map<ChildId, List<Pair<FiniteDateRange, PlacementStub>>> {
     return createQuery {
             sql(
@@ -441,7 +441,7 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
     val familyCompositions =
         toFamilyCompositions(
             getChildrenWithHeadOfFamilies(placements.keys, spanningPeriod),
-            spanningPeriod
+            spanningPeriod,
         )
 
     return familyCompositions
@@ -484,7 +484,7 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
 
 internal fun toFamilyCompositions(
     relationships: List<Triple<FiniteDateRange, PersonId, ChildWithDateOfBirth>>,
-    spanningPeriod: FiniteDateRange
+    spanningPeriod: FiniteDateRange,
 ): Map<PersonId, List<Pair<DateRange, List<ChildWithDateOfBirth>>>> {
     return relationships
         .groupBy { (_, headOfFamily) -> headOfFamily }
@@ -504,7 +504,7 @@ internal fun toFamilyCompositions(
 
 fun Database.Read.getChildrenWithHeadOfFamilies(
     childIds: Collection<ChildId>,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): List<Triple<FiniteDateRange, PersonId, ChildWithDateOfBirth>> {
     if (childIds.isEmpty()) return listOf()
 
@@ -531,18 +531,20 @@ WHERE fridge_child.child_id = ANY(${bind(childIds)})
                 column<PersonId>("head_of_child"),
                 ChildWithDateOfBirth(
                     id = column("child_id"),
-                    dateOfBirth = column("child_date_of_birth")
-                )
+                    dateOfBirth = column("child_date_of_birth"),
+                ),
             )
         }
 }
 
 fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> =
     createQuery {
-            sql("""
+            sql(
+                """
 SELECT daycare.id AS unit_id, daycare.care_area_id AS area_id
 FROM daycare
-""")
+"""
+            )
         }
         .toMap { columnPair("unit_id", "area_id") }
 

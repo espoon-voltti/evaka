@@ -98,12 +98,12 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
 fun freeTextSearchQueryForColumns(
     tables: List<String>,
     columns: List<String>,
-    searchText: String
+    searchText: String,
 ): DBQuery {
     val query =
         listOfNotNull(
                 "true",
-                freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() }
+                freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() },
             )
             .joinToString(" AND ")
     val params =
@@ -118,7 +118,7 @@ fun freeTextSearchQueryForColumns(
 fun disjointNumberQuery(
     table: String,
     column: String,
-    params: Collection<String>
+    params: Collection<String>,
 ): Pair<String, List<Binding<String>>> {
     val numberParamName = { index: Int -> "${table}_${column}_$index" }
     val numberParams =
@@ -137,7 +137,7 @@ private val freeTextSearchColumns =
 private fun freeTextQuery(
     tables: List<String>,
     param: String,
-    columns: List<String> = freeTextSearchColumns
+    columns: List<String> = freeTextSearchColumns,
 ): String {
     val tsVector =
         tables

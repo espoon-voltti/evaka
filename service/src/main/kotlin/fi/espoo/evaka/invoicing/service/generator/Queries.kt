@@ -88,7 +88,7 @@ WHERE head_of_child = ANY(${bind(parentIds)}) AND NOT conflict
             val under18 =
                 FiniteDateRange(
                     it.child.dateOfBirth,
-                    it.child.dateOfBirth.plusYears(18).minusDays(1)
+                    it.child.dateOfBirth.plusYears(18).minusDays(1),
                 )
             it.range.intersection(under18)?.let { range -> it.copy(finiteRange = range) }
         }

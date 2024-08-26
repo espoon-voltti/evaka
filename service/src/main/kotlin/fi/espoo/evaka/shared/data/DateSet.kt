@@ -34,14 +34,19 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
 
     companion object {
         private val EMPTY = DateSet(emptyList())
+
         /** Returns an empty date set */
         fun empty(): DateSet = EMPTY
+
         /** Returns a new date set containing all the given ranges */
         fun of(vararg ranges: FiniteDateRange): DateSet = empty().addAll(ranges.asSequence())
+
         /** Returns a new date set containing all the given ranges */
         fun of(ranges: Iterable<FiniteDateRange>): DateSet = empty().addAll(ranges)
+
         /** Returns a new date set containing all the given ranges */
         fun of(ranges: Sequence<FiniteDateRange>): DateSet = empty().addAll(ranges)
+
         /**
          * Returns a new date set containing all the given dates.
          *
@@ -51,6 +56,7 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
          */
         fun ofDates(vararg dates: LocalDate): DateSet =
             empty().addAll(dates.asSequence().map { it.toFiniteDateRange() })
+
         /**
          * Returns a new date set containing all the given dates.
          *
@@ -60,6 +66,7 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
          */
         fun ofDates(dates: Iterable<LocalDate>): DateSet =
             empty().addAll(dates.asSequence().map { it.toFiniteDateRange() })
+
         /**
          * Returns a new date set containing all the given dates.
          *

@@ -88,7 +88,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 childId = childId,
                 guardianId = guardianId,
                 type = ApplicationType.DAYCARE,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                document = DaycareFormV0.fromApplication2(validDaycareApplication),
             )
         }
     }

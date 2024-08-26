@@ -73,7 +73,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testVoucherDaycare.id,
                     startDate = originalRange.start,
-                    endDate = originalRange.end!!
+                    endDate = originalRange.end!!,
                 )
             )
             tx.insert(
@@ -81,7 +81,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1)
+                    endDate = originalRange.end!!.plusYears(1),
                 )
             )
         }
@@ -123,12 +123,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(15), day(20)) }
         generate()
 
-        assertDrafts(
-            listOf(
-                dateRange(10, 14) to true,
-                dateRange(15, 20) to false,
-            )
-        )
+        assertDrafts(listOf(dateRange(10, 14) to true, dateRange(15, 20) to false))
 
         sendAllVoucherValueDecisions()
 
@@ -149,11 +144,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
 
         sendAllVoucherValueDecisions()
 
-        assertFinal(
-            listOf(
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false),
-            )
-        )
+        assertFinal(listOf(Triple(VoucherValueDecisionStatus.SENT, dateRange(10, 15), false)))
     }
 
     @Test
@@ -222,7 +213,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.ANNULLED, dateRange(10, 20), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 15), false)
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 15), false),
             )
         )
     }
@@ -239,7 +230,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(VoucherValueDecisionStatus.ANNULLED, dateRange(10, 20), false),
-                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 25), false)
+                Triple(VoucherValueDecisionStatus.SENT, dateRange(15, 25), false),
             )
         )
     }
@@ -254,19 +245,14 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testVoucherDaycare.id,
                     startDate = day(16),
-                    endDate = originalRange.end!!
+                    endDate = originalRange.end!!,
                 )
             )
         }
 
         generate()
 
-        assertDrafts(
-            listOf(
-                dateRange(14, 15) to true,
-                dateRange(16, 20) to false,
-            )
-        )
+        assertDrafts(listOf(dateRange(14, 15) to true, dateRange(16, 20) to false))
 
         sendAllVoucherValueDecisions()
 
@@ -308,7 +294,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                         childId = testChild_2.id,
                         headOfChildId = testAdult_1.id,
                         startDate = originalRange.start.minusYears(1),
-                        endDate = originalRange.end!!.plusYears(1)
+                        endDate = originalRange.end!!.plusYears(1),
                     )
                 )
             }
@@ -334,7 +320,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     validTo = originalRange.end,
                     data = emptyMap(),
                     effect = IncomeEffect.INCOMPLETE,
-                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw),
                 )
             )
         }
@@ -356,7 +342,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         val decisions = getAllVoucherValueDecisions()
         assertEquals(
             expectedDrafts.size,
-            decisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size
+            decisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }.size,
         )
         assertEquals(sentDecision, decisions.find { it.status == VoucherValueDecisionStatus.SENT })
         expectedDrafts.forEach { (range, empty) ->
@@ -403,7 +389,7 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
                     admin,
                     now,
                     ids,
-                    null
+                    null,
                 )
             }
         asyncJobRunner.runPendingJobsSync(now)

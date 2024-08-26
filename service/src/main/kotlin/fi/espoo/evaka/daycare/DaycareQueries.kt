@@ -68,7 +68,7 @@ data class DaycareFields(
     val businessId: String,
     val iban: String,
     val providerId: String,
-    val mealtimes: DaycareMealtimes
+    val mealtimes: DaycareMealtimes,
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -175,7 +175,7 @@ WHERE ${predicate(predicate.forTable("daycare"))}
 fun Database.Read.getDaycares(
     clock: EvakaClock,
     filter: AccessControlFilter<DaycareId>,
-    includeClosed: Boolean = true
+    includeClosed: Boolean = true,
 ): List<Daycare> {
     val predicate =
         if (includeClosed) Predicate.alwaysTrue()
@@ -197,7 +197,7 @@ data class UnitApplyPeriods(
     val id: DaycareId,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
-    val clubApplyPeriod: DateRange?
+    val clubApplyPeriod: DateRange?,
 )
 
 fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> =
@@ -336,7 +336,7 @@ fun Database.Read.getApplicationUnits(
     type: ApplicationUnitType,
     date: LocalDate,
     shiftCare: Boolean?,
-    onlyApplicable: Boolean
+    onlyApplicable: Boolean,
 ): List<PublicUnit> =
     createQuery {
             sql(
@@ -454,7 +454,7 @@ ORDER BY name
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
-    features: List<PilotFeature>
+    features: List<PilotFeature>,
 ) {
     execute {
         sql(
@@ -469,7 +469,7 @@ WHERE id = ANY(${bind(daycareIds)})
 
 fun Database.Transaction.removeUnitFeatures(
     daycareIds: List<DaycareId>,
-    features: List<PilotFeature>
+    features: List<PilotFeature>,
 ) {
     execute {
         sql(

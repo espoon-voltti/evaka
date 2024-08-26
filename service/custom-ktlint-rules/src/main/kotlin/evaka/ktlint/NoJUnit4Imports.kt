@@ -13,7 +13,7 @@ class NoJUnit4Imports : EvakaRule("no-old-junit-imports"), RuleAutocorrectApprov
     override fun afterVisitChildNodes(
         node: ASTNode,
         emit:
-            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision
+            (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,
     ) {
         val importDirective = (node.psi as? KtImportDirective) ?: return
         val path = importDirective.importPath?.pathStr ?: return
@@ -21,7 +21,7 @@ class NoJUnit4Imports : EvakaRule("no-old-junit-imports"), RuleAutocorrectApprov
             emit(
                 node.startOffset,
                 "Importing from JUnit 4, use org.junit.jupiter.* for JUnit 5 instead.",
-                false
+                false,
             )
         }
 
@@ -29,7 +29,7 @@ class NoJUnit4Imports : EvakaRule("no-old-junit-imports"), RuleAutocorrectApprov
             emit(
                 node.startOffset,
                 "Use kotlin.test assertions instead of junit assertions for better type-safety",
-                false
+                false,
             )
         }
     }

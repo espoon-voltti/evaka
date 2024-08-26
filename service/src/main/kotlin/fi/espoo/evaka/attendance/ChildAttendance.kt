@@ -27,7 +27,7 @@ data class ContactInfo(
     val phone: String,
     val backupPhone: String,
     val email: String,
-    val priority: Int?
+    val priority: Int?,
 )
 
 data class AttendanceChild(
@@ -44,14 +44,14 @@ data class AttendanceChild(
     val dailyNote: ChildDailyNote?,
     val stickyNotes: List<ChildStickyNote>,
     val imageUrl: String?,
-    val reservations: List<ReservationResponse>
+    val reservations: List<ReservationResponse>,
 )
 
 enum class AttendanceStatus {
     COMING,
     PRESENT,
     DEPARTED,
-    ABSENT
+    ABSENT,
 }
 
 data class ChildAttendanceRow(
@@ -59,7 +59,7 @@ data class ChildAttendanceRow(
     val unitId: DaycareId,
     val date: LocalDate,
     val startTime: LocalTime,
-    val endTime: LocalTime?
+    val endTime: LocalTime?,
 ) {
     fun asTimeInterval(): TimeInterval = TimeInterval(startTime, endTime)
 }

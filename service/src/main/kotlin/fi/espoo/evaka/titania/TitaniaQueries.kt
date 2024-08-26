@@ -48,7 +48,7 @@ fun Database.Read.getEmployeeIdsByNumbersMapById(
 
 fun Database.Read.findStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
-    period: FiniteDateRange? = null
+    period: FiniteDateRange? = null,
 ): List<StaffAttendancePlan> =
     createQuery {
             val employeeIdFilter: Predicate =
@@ -85,7 +85,7 @@ VALUES (${bind { it.employeeId }}, ${bind { it.type }}, ${bind { it.startTime }}
 
 fun Database.Transaction.deleteStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
-    period: FiniteDateRange? = null
+    period: FiniteDateRange? = null,
 ): List<StaffAttendancePlan> =
     createQuery {
             val employeeIdFilter: Predicate =
@@ -108,7 +108,7 @@ fun Database.Transaction.deleteStaffAttendancePlansBy(
 
 fun Database.Read.findStaffAttendancesBy(
     employeeIds: Collection<EmployeeId>? = null,
-    period: FiniteDateRange? = null
+    period: FiniteDateRange? = null,
 ): List<RawAttendance> =
     createQuery {
             val employeeIdFilter: Predicate =

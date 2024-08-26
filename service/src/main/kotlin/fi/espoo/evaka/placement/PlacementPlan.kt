@@ -18,7 +18,7 @@ data class PlacementPlan(
     val applicationId: ApplicationId,
     val type: PlacementType,
     val period: FiniteDateRange,
-    val preschoolDaycarePeriod: FiniteDateRange?
+    val preschoolDaycarePeriod: FiniteDateRange?,
 )
 
 sealed interface PlacementPlanExtent {
@@ -34,7 +34,7 @@ sealed interface PlacementPlanExtent {
     /** Double placement plan, both parts */
     data class FullDouble(
         val period: FiniteDateRange,
-        val preschoolDaycarePeriod: FiniteDateRange
+        val preschoolDaycarePeriod: FiniteDateRange,
     ) : PlacementPlanExtent
 }
 
@@ -50,14 +50,14 @@ data class PlacementPlanDetails(
         PlacementPlanConfirmationStatus.PENDING,
     val unitRejectReason: PlacementPlanRejectReason? = null,
     val unitRejectOtherReason: String? = null,
-    val rejectedByCitizen: Boolean = false
+    val rejectedByCitizen: Boolean = false,
 )
 
 data class PlacementPlanChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
 )
 
 enum class PlacementPlanConfirmationStatus : DatabaseEnum {

@@ -65,7 +65,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = originalRange.start,
-                    endDate = originalRange.end!!
+                    endDate = originalRange.end!!,
                 )
             )
             tx.insert(
@@ -73,7 +73,7 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1)
+                    endDate = originalRange.end!!.plusYears(1),
                 )
             )
             feeThresholdId =
@@ -94,12 +94,12 @@ class FeeDecisionGenerationThresholdsIntegrationTest :
         db.transaction { tx ->
             tx.updateFeeThresholdsValidity(
                 feeThresholdId,
-                DateRange(originalFeeThresholdRange.start, day(9))
+                DateRange(originalFeeThresholdRange.start, day(9)),
             )
             tx.insert(
                 testFeeThresholds.copy(
                     validDuring = newFeeThresholdRange,
-                    maxFee = 2 * testFeeThresholds.maxFee
+                    maxFee = 2 * testFeeThresholds.maxFee,
                 )
             )
         }

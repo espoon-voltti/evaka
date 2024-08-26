@@ -54,7 +54,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     id = employeeId,
                     firstName = "Test",
                     lastName = "Employee",
-                    roles = setOf(UserRole.ADMIN)
+                    roles = setOf(UserRole.ADMIN),
                 )
             )
         }
@@ -73,7 +73,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate.plusDays(3)
+                    endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
@@ -81,7 +81,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusDays(6),
-                    endDate = startDate.plusDays(9)
+                    endDate = startDate.plusDays(9),
                 )
             )
         }
@@ -115,7 +115,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate.plusDays(3)
+                    endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
@@ -123,7 +123,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusDays(6),
-                    endDate = startDate.plusDays(9)
+                    endDate = startDate.plusDays(9),
                 )
             )
         }
@@ -161,7 +161,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate.plusDays(3)
+                    endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
@@ -169,7 +169,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusDays(6),
-                    endDate = startDate.plusDays(9)
+                    endDate = startDate.plusDays(9),
                 )
             )
         }
@@ -203,7 +203,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate.plusDays(3)
+                    endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
@@ -211,7 +211,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusDays(6),
-                    endDate = startDate.plusDays(9)
+                    endDate = startDate.plusDays(9),
                 )
             )
         }
@@ -249,7 +249,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate.plusDays(3)
+                    endDate = startDate.plusDays(3),
                 )
             )
             it.insert(
@@ -257,7 +257,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate.plusDays(6),
-                    endDate = startDate.plusDays(9)
+                    endDate = startDate.plusDays(9),
                 )
             )
         }
@@ -345,8 +345,8 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                             validDuring =
                                 DateRange(
                                     startDate.plusDays(start.toLong()),
-                                    startDate.plusDays(end.toLong())
-                                )
+                                    startDate.plusDays(end.toLong()),
+                                ),
                         )
                     )
                 }
@@ -360,12 +360,12 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                         expected.map { (start, end) ->
                             FiniteDateRange(
                                 startDate.plusDays(start.toLong()),
-                                startDate.plusDays(end.toLong())
+                                startDate.plusDays(end.toLong()),
                             )
-                        }
+                        },
                     )
                 ),
-            getReport(startDate.minusDays(10), startDate.plusDays(10))
+            getReport(startDate.minusDays(10), startDate.plusDays(10)),
         )
         db.transaction { tx ->
             headIds.forEach { tx.deleteParentship(it) }
@@ -381,14 +381,14 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
         }
 
         assertEquals(
             listOf(toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate)))),
-            getReport(startDate, startDate)
+            getReport(startDate, startDate),
         )
     }
 
@@ -400,7 +400,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
             it.execute { sql("UPDATE person set date_of_death = ${bind(startDate.minusDays(1))}") }
@@ -417,7 +417,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
             it.insert(
@@ -425,7 +425,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     startDate = startDate,
                     endDate = startDate,
-                    headOfChild = testAdult_1.id
+                    headOfChild = testAdult_1.id,
                 )
             )
         }
@@ -451,7 +451,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
         }
@@ -459,7 +459,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         assertEquals(listOf(), getReport(startDate, startDate, showIntentionalDuplicates = false))
         assertEquals(
             listOf(toReportRow(testChild_1, listOf(FiniteDateRange(startDate, startDate)))),
-            getReport(startDate, startDate, showIntentionalDuplicates = true)
+            getReport(startDate, startDate, showIntentionalDuplicates = true),
         )
     }
 
@@ -471,7 +471,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
             it.insert(
@@ -479,7 +479,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     childId = testChild_2.id,
                     unitId = testDaycare2.id,
                     startDate = startDate,
-                    endDate = startDate
+                    endDate = startDate,
                 )
             )
         }
@@ -490,14 +490,14 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
                     toReportRow(testChild_2, listOf(FiniteDateRange(startDate, startDate))),
                 )
                 .sortedWith(compareBy({ it.lastName }, { it.firstName })),
-            getReport(startDate, startDate)
+            getReport(startDate, startDate),
         )
     }
 
     private fun getReport(
         from: LocalDate,
         to: LocalDate? = null,
-        showIntentionalDuplicates: Boolean = false
+        showIntentionalDuplicates: Boolean = false,
     ): List<MissingHeadOfFamilyReportRow> =
         missingHeadOfFamilyReportController.getMissingHeadOfFamilyReport(
             dbInstance(),
@@ -505,7 +505,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             RealEvakaClock(),
             from,
             to,
-            showIntentionalDuplicates = showIntentionalDuplicates
+            showIntentionalDuplicates = showIntentionalDuplicates,
         )
 
     private fun toReportRow(child: DevPerson, rangesWithoutHead: List<FiniteDateRange>) =
@@ -513,6 +513,6 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             childId = child.id,
             firstName = child.firstName,
             lastName = child.lastName,
-            rangesWithoutHead = rangesWithoutHead
+            rangesWithoutHead = rangesWithoutHead,
         )
 }

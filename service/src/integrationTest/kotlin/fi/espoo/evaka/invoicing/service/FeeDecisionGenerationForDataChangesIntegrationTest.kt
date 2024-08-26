@@ -71,7 +71,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = originalRange.start,
-                    endDate = originalRange.end!!
+                    endDate = originalRange.end!!,
                 )
             )
             tx.insert(
@@ -79,7 +79,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = originalRange.start.minusYears(1),
-                    endDate = originalRange.end!!.plusYears(1)
+                    endDate = originalRange.end!!.plusYears(1),
                 )
             )
         }
@@ -121,12 +121,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         db.transaction { tx -> tx.updatePlacementStartAndEndDate(placementId, day(15), day(20)) }
         generate()
 
-        assertDrafts(
-            listOf(
-                dateRange(10, 14) to 0,
-                dateRange(15, 20) to 1,
-            )
-        )
+        assertDrafts(listOf(dateRange(10, 14) to 0, dateRange(15, 20) to 1))
 
         sendAllFeeDecisions()
 
@@ -147,11 +142,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
 
         sendAllFeeDecisions()
 
-        assertFinal(
-            listOf(
-                Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1),
-            )
-        )
+        assertFinal(listOf(Triple(FeeDecisionStatus.SENT, dateRange(10, 15), 1)))
     }
 
     @Test
@@ -218,7 +209,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(15, 15), 1)
+                Triple(FeeDecisionStatus.SENT, dateRange(15, 15), 1),
             )
         )
     }
@@ -235,7 +226,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         assertFinal(
             listOf(
                 Triple(FeeDecisionStatus.ANNULLED, dateRange(10, 20), 1),
-                Triple(FeeDecisionStatus.SENT, dateRange(15, 25), 1)
+                Triple(FeeDecisionStatus.SENT, dateRange(15, 25), 1),
             )
         )
     }
@@ -250,19 +241,14 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = day(16),
-                    endDate = originalRange.end!!
+                    endDate = originalRange.end!!,
                 )
             )
         }
 
         generate()
 
-        assertDrafts(
-            listOf(
-                dateRange(14, 15) to 0,
-                dateRange(16, 20) to 1,
-            )
-        )
+        assertDrafts(listOf(dateRange(14, 15) to 0, dateRange(16, 20) to 1))
 
         sendAllFeeDecisions()
 
@@ -304,7 +290,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                         childId = testChild_2.id,
                         headOfChildId = testAdult_1.id,
                         startDate = originalRange.start.minusYears(1),
-                        endDate = originalRange.end!!.plusYears(1)
+                        endDate = originalRange.end!!.plusYears(1),
                     )
                 )
             }
@@ -330,7 +316,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
                     validTo = originalRange.end,
                     data = emptyMap(),
                     effect = IncomeEffect.INCOMPLETE,
-                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_2.id.raw),
                 )
             )
         }
@@ -352,7 +338,7 @@ class FeeDecisionGenerationForDataChangesIntegrationTest :
         val decisions = getAllFeeDecisions()
         assertEquals(
             expectedDrafts.size,
-            decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size
+            decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size,
         )
         assertEquals(sentDecision, decisions.find { it.status == FeeDecisionStatus.SENT })
         expectedDrafts.forEach { (range, children) ->

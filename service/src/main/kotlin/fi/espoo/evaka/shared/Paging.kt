@@ -24,7 +24,7 @@ fun <T, R> Database.Query.mapToPaged(
     f: PagedFactory<T, R>,
     pageSize: Int,
     countColumn: String,
-    mapper: Row.() -> T
+    mapper: Row.() -> T,
 ): R = this.toList { WithCount(column(countColumn), mapper()) }.mapToPaged(f, pageSize)
 
 fun <T, R> Database.Query.mapToPaged(f: PagedFactory<T, R>, pageSize: Int, mapper: Row.() -> T): R =
@@ -32,7 +32,7 @@ fun <T, R> Database.Query.mapToPaged(f: PagedFactory<T, R>, pageSize: Int, mappe
 
 inline fun <reified T, reified R> Database.Query.mapToPaged(
     noinline f: PagedFactory<T, R>,
-    pageSize: Int
+    pageSize: Int,
 ): R = this.map(withCountMapper<T>()).toList().mapToPaged(f, pageSize)
 
 data class WithCount<T>(val count: Int, val data: T)

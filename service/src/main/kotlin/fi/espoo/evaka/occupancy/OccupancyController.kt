@@ -37,12 +37,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class OccupancyController(
     private val accessControl: AccessControl,
-    private val placementPlanService: PlacementPlanService
+    private val placementPlanService: PlacementPlanService,
 ) {
 
     @GetMapping(
         "/occupancy/by-unit/{unitId}", // deprecated
-        "/employee-mobile/occupancy/by-unit/{unitId}"
+        "/employee-mobile/occupancy/by-unit/{unitId}",
     )
     fun getOccupancyPeriods(
         db: Database,
@@ -51,7 +51,7 @@ class OccupancyController(
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType
+        @RequestParam type: OccupancyType,
     ): OccupancyResponse {
         val occupancies =
             db.connect { dbc ->
@@ -61,32 +61,32 @@ class OccupancyController(
                         user,
                         clock,
                         Action.Unit.READ_OCCUPANCIES,
-                        unitId
+                        unitId,
                     )
                     it.calculateOccupancyPeriods(
                         clock.today(),
                         unitId,
                         FiniteDateRange(from, to),
                         type,
-                        AccessControlFilter.PermitAll
+                        AccessControlFilter.PermitAll,
                     )
                 }
             }
         Audit.OccupancyRead.log(
             targetId = AuditId(unitId),
-            meta = mapOf("count" to occupancies.size)
+            meta = mapOf("count" to occupancies.size),
         )
 
         return OccupancyResponse(
             occupancies = occupancies,
             max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
-            min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
+            min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! },
         )
     }
 
     @GetMapping(
         "/occupancy/by-unit/{unitId}/speculated/{applicationId}",
-        "/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}"
+        "/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}",
     )
     fun getOccupancyPeriodsSpeculated(
         db: Database,
@@ -99,7 +99,7 @@ class OccupancyController(
         @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         preschoolDaycareFrom: LocalDate?,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?,
     ): OccupancyResponseSpeculated {
         val period = FiniteDateRange(from, to)
         val preschoolDaycarePeriod =
@@ -116,14 +116,14 @@ class OccupancyController(
                         user,
                         clock,
                         Action.Unit.READ_OCCUPANCIES,
-                        unitId
+                        unitId,
                     )
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
                         Action.Application.READ,
-                        applicationId
+                        applicationId,
                     )
 
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
@@ -138,7 +138,7 @@ class OccupancyController(
                                 unitId,
                                 application,
                                 period,
-                                preschoolDaycarePeriod
+                                preschoolDaycarePeriod,
                             )
                             .map {
                                 Placement(
@@ -150,7 +150,7 @@ class OccupancyController(
                                     familyUnitPlacement =
                                         unit.type.contains(CareType.FAMILY) ||
                                             unit.type.contains(CareType.GROUP_FAMILY),
-                                    period = FiniteDateRange(it.startDate, it.endDate)
+                                    period = FiniteDateRange(it.startDate, it.endDate),
                                 )
                             }
 
@@ -162,13 +162,13 @@ class OccupancyController(
                             unitId,
                             speculatedPlacements,
                             from,
-                            lengthsInMonths = listOf(3, 6)
+                            lengthsInMonths = listOf(3, 6),
                         )
                     OccupancyResponseSpeculated(
                         max3Months = threeMonths.current,
                         max6Months = sixMonths.current,
                         max3MonthsSpeculated = threeMonths.speculated,
-                        max6MonthsSpeculated = sixMonths.speculated
+                        max6MonthsSpeculated = sixMonths.speculated,
                     )
                 }
             }
@@ -179,7 +179,7 @@ class OccupancyController(
 
     @GetMapping(
         "/occupancy/units/{unitId}", // deprecated
-        "/employee/occupancy/units/{unitId}"
+        "/employee/occupancy/units/{unitId}",
     )
     fun getUnitOccupancies(
         db: Database,
@@ -187,7 +187,7 @@ class OccupancyController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): UnitOccupancies {
         val period = FiniteDateRange(from, to)
         val occupancies =
@@ -198,14 +198,14 @@ class OccupancyController(
                         user,
                         clock,
                         Action.Unit.READ_OCCUPANCIES,
-                        unitId
+                        unitId,
                     )
                     getUnitOccupancies(
                         tx,
                         clock.now(),
                         unitId,
                         period,
-                        AccessControlFilter.PermitAll
+                        AccessControlFilter.PermitAll,
                     )
                 }
             }
@@ -215,7 +215,7 @@ class OccupancyController(
 
     @GetMapping(
         "/occupancy/by-unit/{unitId}/groups", // deprecated
-        "/employee-mobile/occupancy/by-unit/{unitId}/groups"
+        "/employee-mobile/occupancy/by-unit/{unitId}/groups",
     )
     fun getOccupancyPeriodsOnGroups(
         db: Database,
@@ -224,7 +224,7 @@ class OccupancyController(
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam type: OccupancyType
+        @RequestParam type: OccupancyType,
     ): List<OccupancyResponseGroupLevel> {
         val occupancies =
             db.connect { dbc ->
@@ -234,20 +234,20 @@ class OccupancyController(
                         user,
                         clock,
                         Action.Unit.READ_OCCUPANCIES,
-                        unitId
+                        unitId,
                     )
                     it.calculateOccupancyPeriodsGroupLevel(
                         clock.today(),
                         unitId,
                         FiniteDateRange(from, to),
                         type,
-                        AccessControlFilter.PermitAll
+                        AccessControlFilter.PermitAll,
                     )
                 }
             }
         Audit.OccupancyRead.log(
             targetId = AuditId(unitId),
-            meta = mapOf("count" to occupancies.size)
+            meta = mapOf("count" to occupancies.size),
         )
 
         return occupancies
@@ -268,8 +268,8 @@ class OccupancyController(
                             min =
                                 value
                                     .filter { it.percentage != null }
-                                    .minByOrNull { it.percentage!! }
-                        )
+                                    .minByOrNull { it.percentage!! },
+                        ),
                 )
             }
     }
@@ -280,7 +280,7 @@ data class UnitOccupancies(
     val confirmed: OccupancyResponse,
     val realized: OccupancyResponse,
     val realtime: RealtimeOccupancy?,
-    val caretakers: Caretakers
+    val caretakers: Caretakers,
 )
 
 private fun getUnitOccupancies(
@@ -288,7 +288,7 @@ private fun getUnitOccupancies(
     now: HelsinkiDateTime,
     unitId: DaycareId,
     period: FiniteDateRange,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): UnitOccupancies {
     return UnitOccupancies(
         planned =
@@ -298,7 +298,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.PLANNED,
-                    unitFilter
+                    unitFilter,
                 )
             ),
         confirmed =
@@ -308,7 +308,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.CONFIRMED,
-                    unitFilter
+                    unitFilter,
                 )
             ),
         realized =
@@ -318,7 +318,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.REALIZED,
-                    unitFilter
+                    unitFilter,
                 )
             ),
         realtime =
@@ -329,17 +329,17 @@ private fun getUnitOccupancies(
                     } else {
                         HelsinkiDateTimeRange(
                             HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
+                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0)),
                         )
                     }
                 RealtimeOccupancy(
                     childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
-                    staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
+                    staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange),
                 )
             } else {
                 null
             },
-        caretakers = tx.getUnitStats(unitId, period.start, period.end)
+        caretakers = tx.getUnitStats(unitId, period.start, period.end),
     )
 }
 
@@ -347,7 +347,7 @@ private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyR
     return OccupancyResponse(
         occupancies = occupancies,
         max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
-        min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
+        min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! },
     )
 }
 
@@ -356,14 +356,14 @@ data class OccupancyResponseGroupLevel(val groupId: GroupId, val occupancies: Oc
 data class OccupancyResponse(
     val occupancies: List<OccupancyPeriod>,
     val max: OccupancyPeriod?,
-    val min: OccupancyPeriod?
+    val min: OccupancyPeriod?,
 )
 
 data class OccupancyResponseSpeculated(
     val max3Months: OccupancyValues?,
     val max6Months: OccupancyValues?,
     val max3MonthsSpeculated: OccupancyValues?,
-    val max6MonthsSpeculated: OccupancyValues?
+    val max6MonthsSpeculated: OccupancyValues?,
 )
 
 /*
@@ -379,7 +379,7 @@ fun Database.Read.calculateOccupancyPeriods(
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -398,7 +398,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -417,7 +417,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
                     sum = value.sum,
                     headcount = value.headcount,
                     percentage = value.percentage,
-                    caretakers = value.caretakers
+                    caretakers = value.caretakers,
                 )
             }
         }
@@ -425,7 +425,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
 
 private data class SpeculatedMaxOccupancies(
     val current: OccupancyValues?,
-    val speculated: OccupancyValues?
+    val speculated: OccupancyValues?,
 )
 
 private fun calculateSpeculatedMaxOccupancies(
@@ -435,7 +435,7 @@ private fun calculateSpeculatedMaxOccupancies(
     unitId: DaycareId,
     speculatedPlacements: List<Placement>,
     from: LocalDate,
-    lengthsInMonths: List<Long>
+    lengthsInMonths: List<Long>,
 ): List<SpeculatedMaxOccupancies> {
     val longestLength =
         lengthsInMonths.maxOrNull() ?: throw Error("At least one period length is required")
@@ -447,7 +447,7 @@ private fun calculateSpeculatedMaxOccupancies(
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
             unitFilter = unitFilter,
-            unitId = unitId
+            unitId = unitId,
         )
     val speculatedOccupancies =
         tx.calculateDailyUnitOccupancyValues(
@@ -456,14 +456,14 @@ private fun calculateSpeculatedMaxOccupancies(
             type = OccupancyType.PLANNED,
             unitFilter = unitFilter,
             unitId = unitId,
-            speculatedPlacements = speculatedPlacements
+            speculatedPlacements = speculatedPlacements,
         )
 
     return lengthsInMonths.map { months ->
         val period = FiniteDateRange(from, from.plusMonths(months).minusDays(1))
         SpeculatedMaxOccupancies(
             current = maxUnitOccupancyValues(currentOccupancies, unitId, period),
-            speculated = maxUnitOccupancyValues(speculatedOccupancies, unitId, period)
+            speculated = maxUnitOccupancyValues(speculatedOccupancies, unitId, period),
         )
     }
 }
@@ -471,7 +471,7 @@ private fun calculateSpeculatedMaxOccupancies(
 private fun maxUnitOccupancyValues(
     occupancies: List<DailyOccupancyValues<UnitKey>>,
     unitId: DaycareId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): OccupancyValues? {
     if (occupancies.isEmpty()) return null
 

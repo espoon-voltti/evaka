@@ -65,7 +65,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     unitId = daycare.id,
                     startDate = today,
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
         }
@@ -84,7 +84,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = date,
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = employee.evakaUserId
+                        createdBy = employee.evakaUserId,
                     )
                 )
             }
@@ -96,14 +96,14 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = confirmedDate,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    category = AbsenceCategory.BILLABLE
+                    category = AbsenceCategory.BILLABLE,
                 ),
                 AbsenceUpsert(
                     childId = child1.id,
                     date = unconfirmedDate,
                     absenceType = AbsenceType.OTHER_ABSENCE,
-                    category = AbsenceCategory.BILLABLE
-                )
+                    category = AbsenceCategory.BILLABLE,
+                ),
             )
         )
 
@@ -114,10 +114,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = confirmedDate,
                     startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0)
+                    endTime = LocalTime.of(16, 0),
                 )
             ),
-            getAllReservations()
+            getAllReservations(),
         )
     }
 
@@ -135,7 +135,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child2.id,
                     unitId = daycare.id,
                     startDate = today,
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
 
@@ -145,7 +145,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         childId = child1.id,
                         date = date,
                         absenceCategory = AbsenceCategory.BILLABLE,
-                        modifiedAt = now
+                        modifiedAt = now,
                     )
                 )
                 tx.insert(
@@ -153,7 +153,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         childId = child1.id,
                         date = date,
                         absenceCategory = AbsenceCategory.NONBILLABLE,
-                        modifiedAt = now
+                        modifiedAt = now,
                     )
                 )
             }
@@ -164,7 +164,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child2.id,
                     date = firstAbsenceDate,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                    modifiedAt = now
+                    modifiedAt = now,
                 )
             )
         }
@@ -174,13 +174,13 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 Presence(
                     childId = child1.id,
                     date = firstAbsenceDate,
-                    category = AbsenceCategory.BILLABLE
+                    category = AbsenceCategory.BILLABLE,
                 ),
                 Presence(
                     childId = child1.id,
                     date = lastAbsenceDate,
-                    category = AbsenceCategory.NONBILLABLE
-                )
+                    category = AbsenceCategory.NONBILLABLE,
+                ),
             )
         )
 
@@ -192,7 +192,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.NONBILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
-                    modifiedAt = now
+                    modifiedAt = now,
                 ),
                 Absence(
                     childId = child1.id,
@@ -200,10 +200,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
-                    modifiedAt = now
+                    modifiedAt = now,
                 ),
             ),
-            getAbsencesOfChild(child1.id).sortedWith(compareBy({ it.date }, { it.category }))
+            getAbsencesOfChild(child1.id).sortedWith(compareBy({ it.date }, { it.category })),
         )
         assertEquals(
             listOf(
@@ -213,10 +213,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
-                    modifiedAt = now
-                ),
+                    modifiedAt = now,
+                )
             ),
-            getAbsencesOfChild(child2.id)
+            getAbsencesOfChild(child2.id),
         )
     }
 
@@ -234,7 +234,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertHolidayPeriod(
                 period = FiniteDateRange(startDate.plusDays(1), endDate),
                 reservationsOpenOn = today,
-                reservationDeadline = today
+                reservationDeadline = today,
             )
 
             tx.insert(
@@ -243,7 +243,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
             tx.insert(
@@ -252,7 +252,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(2),
                     startTime = null,
                     endTime = null,
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
         }
@@ -272,13 +272,13 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0)
+                    endTime = LocalTime.of(16, 0),
                 ),
                 Reservation(
                     childId = child1.id,
                     date = startDate.plusDays(2),
                     startTime = null,
-                    endTime = null
+                    endTime = null,
                 ),
 
                 // This was added
@@ -286,10 +286,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = startDate.plusDays(3),
                     startTime = null,
-                    endTime = null
+                    endTime = null,
                 ),
             ),
-            getAllReservations()
+            getAllReservations(),
         )
     }
 
@@ -309,7 +309,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertHolidayPeriod(
                 period = FiniteDateRange(startDate.plusDays(1), endDate),
                 reservationsOpenOn = today,
-                reservationDeadline = today
+                reservationDeadline = today,
             )
 
             tx.insert(
@@ -318,7 +318,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
             tx.insert(
@@ -327,7 +327,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
             tx.insert(
@@ -336,7 +336,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(2),
                     startTime = null,
                     endTime = null,
-                    createdBy = employee.evakaUserId
+                    createdBy = employee.evakaUserId,
                 )
             )
 
@@ -345,7 +345,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = startDate,
                     absenceCategory = AbsenceCategory.BILLABLE,
-                    modifiedAt = now
+                    modifiedAt = now,
                 )
             )
             tx.insert(
@@ -353,7 +353,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = startDate.plusDays(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
-                    modifiedAt = now
+                    modifiedAt = now,
                 )
             )
         }
@@ -362,10 +362,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             FiniteDateRange(startDate, endDate)
                 .dates()
                 .map { date ->
-                    AbsenceController.HolidayReservationsDelete(
-                        childId = child1.id,
-                        date = date,
-                    )
+                    AbsenceController.HolidayReservationsDelete(childId = child1.id, date = date)
                 }
                 .toList()
         )
@@ -377,10 +374,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = child1.id,
                     date = startDate,
                     startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0)
-                ),
+                    endTime = LocalTime.of(16, 0),
+                )
             ),
-            getAllReservations()
+            getAllReservations(),
         )
 
         assertEquals(
@@ -392,10 +389,10 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
-                    modifiedAt = now
-                ),
+                    modifiedAt = now,
+                )
             ),
-            getAbsencesOfChild(child1.id)
+            getAbsencesOfChild(child1.id),
         )
     }
 
@@ -406,7 +403,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             MockEvakaClock(now),
             childId,
             today.year,
-            today.monthValue
+            today.monthValue,
         )
     }
 
@@ -416,7 +413,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             employee.user,
             MockEvakaClock(now),
             absences,
-            group.id
+            group.id,
         )
     }
 
@@ -426,7 +423,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             employee.user,
             MockEvakaClock(now),
             group.id,
-            presences
+            presences,
         )
     }
 
@@ -438,7 +435,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             employee.user,
             MockEvakaClock(now),
             group.id,
-            deletions
+            deletions,
         )
     }
 
@@ -446,7 +443,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val childId: ChildId,
         val date: LocalDate,
         val startTime: LocalTime?,
-        val endTime: LocalTime?
+        val endTime: LocalTime?,
     )
 
     private fun getAllReservations(): List<Reservation> {

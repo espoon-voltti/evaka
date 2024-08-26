@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController
 class ManualDuplicationReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/manual-duplication", // deprecated
-        "/employee/reports/manual-duplication"
+        "/employee/reports/manual-duplication",
     )
     fun getManualDuplicationReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam viewMode: ManualDuplicationReportViewMode?
+        @RequestParam viewMode: ManualDuplicationReportViewMode?,
     ): List<ManualDuplicationReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -37,7 +37,7 @@ class ManualDuplicationReportController(private val accessControl: AccessControl
                         it,
                         user,
                         clock,
-                        Action.Global.READ_MANUAL_DUPLICATION_REPORT
+                        Action.Global.READ_MANUAL_DUPLICATION_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getManualDuplicationReportRows(
@@ -132,11 +132,11 @@ where connected_decision.type = 'PRESCHOOL_DAYCARE'
         val preschoolDaycareName: String,
         val preschoolDecisionType: DecisionType,
         val preschoolStartDate: LocalDate,
-        val preschoolEndDate: LocalDate
+        val preschoolEndDate: LocalDate,
     )
 }
 
 enum class ManualDuplicationReportViewMode {
     DUPLICATED,
-    NONDUPLICATED
+    NONDUPLICATED,
 }

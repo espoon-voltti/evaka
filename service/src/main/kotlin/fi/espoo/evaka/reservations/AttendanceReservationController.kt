@@ -65,11 +65,11 @@ import org.springframework.web.bind.annotation.RestController
 class AttendanceReservationController(
     private val ac: AccessControl,
     private val featureConfig: FeatureConfig,
-    private val env: EvakaEnv
+    private val env: EvakaEnv,
 ) {
     @GetMapping(
         "/attendance-reservations", // deprecated
-        "/employee/attendance-reservations"
+        "/employee/attendance-reservations",
     )
     fun getAttendanceReservations(
         db: Database,
@@ -78,7 +78,7 @@ class AttendanceReservationController(
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam includeNonOperationalDays: Boolean = false
+        @RequestParam includeNonOperationalDays: Boolean = false,
     ): UnitAttendanceReservations {
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val period = FiniteDateRange(from, to)
@@ -90,7 +90,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Unit.READ_ATTENDANCE_RESERVATIONS,
-                        unitId
+                        unitId,
                     )
                     val clubTerms = tx.getClubTerms()
                     val preschoolTerms = tx.getPreschoolTerms()
@@ -102,7 +102,7 @@ class AttendanceReservationController(
                             .map {
                                 UnitAttendanceReservations.ReservationGroup(
                                     id = it.id,
-                                    name = it.name
+                                    name = it.name,
                                 )
                             }
 
@@ -114,7 +114,7 @@ class AttendanceReservationController(
                             unit,
                             holidays,
                             holidayPeriods,
-                            includeNonOperationalDays
+                            includeNonOperationalDays,
                         )
 
                     val placementInfo = createDateMaps(tx, unitId, period)
@@ -191,33 +191,33 @@ class AttendanceReservationController(
                                                     placementStatus.placementType.scheduleType(
                                                         date,
                                                         clubTerms,
-                                                        preschoolTerms
-                                                    )
+                                                        preschoolTerms,
+                                                    ),
                                             )
                                         }
                                 )
-                            }
+                            },
                     )
                 }
             }
             .also {
                 Audit.UnitAttendanceReservationsRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("from" to from, "to" to to)
+                    meta = mapOf("from" to from, "to" to to),
                 )
             }
     }
 
     @PostMapping(
         "/attendance-reservations", // deprecated
-        "/employee/attendance-reservations"
+        "/employee/attendance-reservations",
     )
     fun postReservations(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>,
-        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false
+        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false,
     ) {
         val children = body.map { it.childId }.toSet()
 
@@ -228,7 +228,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Child.CREATE_ATTENDANCE_RESERVATION,
-                        children
+                        children,
                     )
                     createReservationsAndAbsences(
                         it,
@@ -237,7 +237,7 @@ class AttendanceReservationController(
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
-                        automaticFixedScheduleAbsencesEnabled
+                        automaticFixedScheduleAbsencesEnabled,
                     )
                 }
             }
@@ -249,21 +249,21 @@ class AttendanceReservationController(
                             "deletedAbsences" to it.deletedAbsences,
                             "deletedReservations" to it.deletedReservations,
                             "upsertedAbsences" to it.upsertedAbsences,
-                            "upsertedReservations" to it.upsertedReservations
-                        )
+                            "upsertedReservations" to it.upsertedReservations,
+                        ),
                 )
             }
     }
 
     @PostMapping(
         "/attendance-reservations/child-date", // deprecated
-        "/employee/attendance-reservations/child-date"
+        "/employee/attendance-reservations/child-date",
     )
     fun postChildDatePresence(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ChildDatePresence
+        @RequestBody body: ChildDatePresence,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -272,7 +272,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Child.UPSERT_CHILD_DATE_PRESENCE,
-                        body.childId
+                        body.childId,
                     )
 
                     upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body)
@@ -288,7 +288,7 @@ class AttendanceReservationController(
                             "deletedReservations" to result.deletedReservations,
                             "insertedAttendances" to result.insertedAttendances,
                             "deletedAttendances" to result.deletedAttendances,
-                        )
+                        ),
                 )
             }
     }
@@ -296,20 +296,20 @@ class AttendanceReservationController(
     data class ExpectedAbsencesRequest(
         val childId: ChildId,
         val date: LocalDate,
-        val attendances: List<TimeRange>
+        val attendances: List<TimeRange>,
     )
 
     data class ExpectedAbsencesResponse(val categories: Set<AbsenceCategory>?)
 
     @PostMapping(
         "/attendance-reservations/child-date/expected-absences", // deprecated
-        "/employee/attendance-reservations/child-date/expected-absences"
+        "/employee/attendance-reservations/child-date/expected-absences",
     )
     fun getExpectedAbsences(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ExpectedAbsencesRequest
+        @RequestBody body: ExpectedAbsencesRequest,
     ): ExpectedAbsencesResponse {
         if (!body.date.isBefore(clock.today())) {
             return ExpectedAbsencesResponse(categories = null)
@@ -322,7 +322,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Child.UPSERT_CHILD_DATE_PRESENCE,
-                        body.childId
+                        body.childId,
                     )
 
                     ExpectedAbsencesResponse(
@@ -331,7 +331,7 @@ class AttendanceReservationController(
                                 tx = tx,
                                 date = body.date,
                                 childId = body.childId,
-                                attendanceTimes = body.attendances
+                                attendanceTimes = body.attendances,
                             )
                     )
                 }
@@ -339,20 +339,20 @@ class AttendanceReservationController(
             .also {
                 Audit.ChildDatePresenceExpectedAbsencesCheck.log(
                     targetId = AuditId(body.childId),
-                    meta = mapOf("date" to body.date)
+                    meta = mapOf("date" to body.date),
                 )
             }
     }
 
     @GetMapping(
         "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
-        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range"
+        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range",
     )
     fun getConfirmedRangeData(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<ConfirmedRangeDate> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -361,14 +361,14 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Child.READ_NON_RESERVABLE_RESERVATIONS,
-                        childId
+                        childId,
                     )
                     val clubTerms = tx.getClubTerms()
                     val preschoolTerms = tx.getPreschoolTerms()
                     val range =
                         getConfirmedRange(
                             clock.now(),
-                            featureConfig.citizenReservationThresholdHours
+                            featureConfig.citizenReservationThresholdHours,
                         )
                     val operationalDays = tx.getOperationalDatesForChild(range, childId)
                     val placements = tx.getPlacementsForChildDuring(childId, range.start, range.end)
@@ -394,7 +394,7 @@ class AttendanceReservationController(
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms),
                                 reservations = reservationTimes,
                                 absenceType = absence?.absenceType,
-                                dailyServiceTimes = dailyServiceTime?.times
+                                dailyServiceTimes = dailyServiceTime?.times,
                             )
                         }
                         .toList()
@@ -405,14 +405,14 @@ class AttendanceReservationController(
 
     @PutMapping(
         "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
-        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range"
+        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range",
     )
     fun setConfirmedRangeReservations(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: List<ConfirmedRangeDateUpdate>
+        @RequestBody body: List<ConfirmedRangeDateUpdate>,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -421,13 +421,13 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Child.UPDATE_NON_RESERVABLE_RESERVATIONS,
-                        childId
+                        childId,
                     )
 
                     val range =
                         getConfirmedRange(
                             clock.now(),
-                            featureConfig.citizenReservationThresholdHours
+                            featureConfig.citizenReservationThresholdHours,
                         )
                     if (!body.all { range.includes(it.date) }) {
                         throw BadRequest("Request contains reservable day")
@@ -448,10 +448,10 @@ class AttendanceReservationController(
                                 ReservationInsert(
                                     childId = childId,
                                     date = it.date,
-                                    reservation.asTimeRange()
+                                    reservation.asTimeRange(),
                                 )
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -463,7 +463,7 @@ class AttendanceReservationController(
         val firstName: String,
         val lastName: String,
         val preferredName: String,
-        val dateOfBirth: LocalDate
+        val dateOfBirth: LocalDate,
     )
 
     data class ChildReservationInfo(
@@ -474,17 +474,17 @@ class AttendanceReservationController(
         val backupPlacement: BackupPlacementType?,
         val dailyServiceTimes: DailyServiceTimesValue?,
         val scheduleType: ScheduleType,
-        val isInHolidayPeriod: Boolean
+        val isInHolidayPeriod: Boolean,
     )
 
     enum class BackupPlacementType {
         OUT_ON_BACKUP_PLACEMENT,
-        IN_BACKUP_PLACEMENT
+        IN_BACKUP_PLACEMENT,
     }
 
     data class DailyChildReservationResult(
         val children: Map<ChildId, ReservationChildInfo>,
-        val childReservations: List<ChildReservationInfo>
+        val childReservations: List<ChildReservationInfo>,
     )
 
     @GetMapping(
@@ -496,7 +496,7 @@ class AttendanceReservationController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate,
     ): DailyChildReservationResult {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -505,7 +505,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Unit.READ_CHILD_RESERVATIONS,
-                        unitId
+                        unitId,
                     )
 
                     val rowsByDate =
@@ -531,15 +531,15 @@ class AttendanceReservationController(
                                     firstName = childRow.firstName,
                                     lastName = childRow.lastName,
                                     preferredName = childRow.preferredName,
-                                    dateOfBirth = childRow.dateOfBirth
-                                )
+                                    dateOfBirth = childRow.dateOfBirth,
+                                ),
                             )
 
                             val scheduleType =
                                 childRow.placementType.scheduleType(
                                     examinationDate,
                                     clubTerms,
-                                    preschoolTerms
+                                    preschoolTerms,
                                 )
 
                             val reservations =
@@ -550,7 +550,7 @@ class AttendanceReservationController(
                                                 startTime = it.start,
                                                 endTime = it.end,
                                                 date = examinationDate,
-                                                staffCreated = it.staffCreated
+                                                staffCreated = it.staffCreated,
                                             )
                                             .toReservationTimes()
                                     }
@@ -577,20 +577,20 @@ class AttendanceReservationController(
                                         it.validityPeriod.includes(examinationDate)
                                     },
                                 scheduleType = scheduleType,
-                                isInHolidayPeriod = isHolidayPeriod
+                                isInHolidayPeriod = isHolidayPeriod,
                             )
                         }
 
                     DailyChildReservationResult(
                         children = childMap,
-                        childReservations = childReservationInfos
+                        childReservations = childReservationInfos,
                     )
                 }
             }
             .also {
                 Audit.ChildReservationStatusRead.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("childCount" to it.children.size)
+                    meta = mapOf("childCount" to it.children.size),
                 )
             }
     }
@@ -599,23 +599,23 @@ class AttendanceReservationController(
         val calculatedPresent: BigDecimal,
         val presentCount: Int,
         val absentCount: Int,
-        val groupId: GroupId?
+        val groupId: GroupId?,
     )
 
     data class DayReservationStatisticsResult(
         val date: LocalDate,
-        val groupStatistics: List<GroupReservationStatisticResult>
+        val groupStatistics: List<GroupReservationStatisticResult>,
     )
 
     @GetMapping(
         "/attendance-reservations/confirmed-days/stats", // deprecated
-        "/employee-mobile/attendance-reservations/confirmed-days/stats"
+        "/employee-mobile/attendance-reservations/confirmed-days/stats",
     )
     fun getReservationStatisticsForConfirmedDays(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        @RequestParam unitId: DaycareId,
     ): List<DayReservationStatisticsResult> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -624,7 +624,7 @@ class AttendanceReservationController(
                         user,
                         clock,
                         Action.Unit.READ_UNIT_RESERVATION_STATISTICS,
-                        unitId
+                        unitId,
                     )
 
                     val unitData =
@@ -633,7 +633,7 @@ class AttendanceReservationController(
                     val confirmedRange =
                         getConfirmedRange(
                             clock.now(),
-                            featureConfig.citizenReservationThresholdHours
+                            featureConfig.citizenReservationThresholdHours,
                         )
                     val holidays = tx.getHolidays(confirmedRange)
                     val operationalDays =
@@ -642,7 +642,7 @@ class AttendanceReservationController(
                             unitData,
                             holidays,
                             emptyList(),
-                            false
+                            false,
                         )
 
                     val nextConfirmedUnitDays =
@@ -653,7 +653,7 @@ class AttendanceReservationController(
                     val rowsByDate =
                         tx.getReservationStatisticsForUnit(
                             unitId = unitId,
-                            confirmedDays = nextConfirmedUnitDays
+                            confirmedDays = nextConfirmedUnitDays,
                         )
 
                     nextConfirmedUnitDays.map { date ->
@@ -663,7 +663,7 @@ class AttendanceReservationController(
                                     presentCount = it.present,
                                     calculatedPresent = it.calculatedPresent,
                                     absentCount = it.absent,
-                                    groupId = it.groupId
+                                    groupId = it.groupId,
                                 )
                             }
                         DayReservationStatisticsResult(
@@ -675,9 +675,9 @@ class AttendanceReservationController(
                                             presentCount = 0,
                                             calculatedPresent = BigDecimal.ZERO,
                                             absentCount = 0,
-                                            groupId = null
+                                            groupId = null,
                                         )
-                                    )
+                                    ),
                         )
                     }
                 }
@@ -685,7 +685,7 @@ class AttendanceReservationController(
             .also {
                 Audit.UnitDailyReservationStatistics.log(
                     targetId = AuditId(unitId),
-                    meta = mapOf("dayCount" to it.size)
+                    meta = mapOf("dayCount" to it.size),
                 )
             }
     }
@@ -696,7 +696,7 @@ data class ConfirmedRangeDate(
     val scheduleType: ScheduleType,
     val reservations: List<ReservationResponse>,
     val absenceType: AbsenceType?,
-    val dailyServiceTimes: DailyServiceTimesValue?
+    val dailyServiceTimes: DailyServiceTimesValue?,
 )
 
 data class UnitAttendanceReservations(
@@ -710,7 +710,7 @@ data class UnitAttendanceReservations(
     data class OperationalDay(
         val date: LocalDate,
         val dateInfo: UnitDateInfo,
-        val children: List<ChildRecordOfDay>
+        val children: List<ChildRecordOfDay>,
     )
 
     data class UnitDateInfo(
@@ -718,7 +718,7 @@ data class UnitAttendanceReservations(
         val shiftCareOperatingTimes: TimeRange?,
         val shiftCareOpenOnHoliday: Boolean,
         val isHoliday: Boolean,
-        val isInHolidayPeriod: Boolean
+        val isInHolidayPeriod: Boolean,
     )
 
     data class ChildRecordOfDay(
@@ -732,7 +732,7 @@ data class UnitAttendanceReservations(
         val groupId: GroupId?,
         val backupGroupId: GroupId?,
         val inOtherUnit: Boolean,
-        val scheduleType: ScheduleType
+        val scheduleType: ScheduleType,
     )
 
     data class Child(
@@ -741,7 +741,7 @@ data class UnitAttendanceReservations(
         val lastName: String,
         val preferredName: String,
         val dateOfBirth: LocalDate,
-        @Json val serviceNeeds: List<ChildServiceNeedInfo>
+        @Json val serviceNeeds: List<ChildServiceNeedInfo>,
     )
 }
 
@@ -756,7 +756,7 @@ private fun getUnitOperationalDayData(
     unit: Daycare,
     holidays: Set<LocalDate>,
     holidayPeriods: List<HolidayPeriod>,
-    includeNonOperationalDays: Boolean
+    includeNonOperationalDays: Boolean,
 ): List<UnitAttendanceReservations.OperationalDay> {
     val holidayPeriodDates = holidayPeriods.flatMap { it.period.dates() }.toSet()
     return period
@@ -774,7 +774,7 @@ private fun getUnitOperationalDayData(
                         isHoliday = holidays.contains(date),
                         isInHolidayPeriod = holidayPeriodDates.contains(date),
                     ),
-                children = emptyList()
+                children = emptyList(),
             )
         }
         .filter {
@@ -788,7 +788,7 @@ private fun getUnitOperationalDayData(
 private fun createDateMaps(
     tx: Database.Read,
     unitId: DaycareId,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): Map<ChildId, DateMap<ChildPlacementStatus>> {
     val placements = tx.getPlacements(unitId, period)
     val groupPlacements = tx.getGroupPlacements(unitId, period)
@@ -808,7 +808,7 @@ private fun createDateMapForChild(
     unitId: DaycareId,
     placements: List<ChildPlacement>,
     groupPlacements: List<ChildGroupPlacement>,
-    backupPlacements: List<ChildBackupPlacement>
+    backupPlacements: List<ChildBackupPlacement>,
 ): DateMap<ChildPlacementStatus> {
     return DateMap.of(
             placements.map { p ->
@@ -817,7 +817,7 @@ private fun createDateMapForChild(
                         placementType = p.placementType,
                         groupId = null,
                         backupGroupId = null,
-                        backupOtherUnit = false
+                        backupOtherUnit = false,
                     )
             }
         )
@@ -829,10 +829,10 @@ private fun createDateMapForChild(
                             placementType = gp.placementType,
                             groupId = gp.groupId,
                             backupGroupId = null,
-                            backupOtherUnit = false
+                            backupOtherUnit = false,
                         )
                 },
-            resolve = { _, _, new -> new }
+            resolve = { _, _, new -> new },
         )
         .update(
             entries =
@@ -842,10 +842,10 @@ private fun createDateMapForChild(
                             placementType = bc.placementType,
                             groupId = null,
                             backupGroupId = bc.groupId,
-                            backupOtherUnit = bc.unitId != unitId
+                            backupOtherUnit = bc.unitId != unitId,
                         )
                 },
-            resolve = { _, old, new -> new.copy(groupId = old.groupId) }
+            resolve = { _, old, new -> new.copy(groupId = old.groupId) },
         )
 }
 
@@ -853,20 +853,20 @@ private data class ChildPlacementStatus(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backupGroupId: GroupId?,
-    val backupOtherUnit: Boolean
+    val backupOtherUnit: Boolean,
 )
 
 private data class ChildPlacement(
     val period: FiniteDateRange,
     val childId: ChildId,
-    val placementType: PlacementType
+    val placementType: PlacementType,
 )
 
 private data class ChildGroupPlacement(
     val period: FiniteDateRange,
     val childId: ChildId,
     val groupId: GroupId?,
-    val placementType: PlacementType
+    val placementType: PlacementType,
 )
 
 private data class ChildBackupPlacement(
@@ -874,12 +874,12 @@ private data class ChildBackupPlacement(
     val childId: ChildId,
     val unitId: DaycareId,
     val groupId: GroupId?,
-    val placementType: PlacementType
+    val placementType: PlacementType,
 )
 
 private fun Database.Read.getPlacements(
     unitId: DaycareId,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): Map<ChildId, List<ChildPlacement>> =
     createQuery {
             sql(
@@ -898,7 +898,7 @@ WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') 
 
 private fun Database.Read.getGroupPlacements(
     unitId: DaycareId,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): Map<ChildId, List<ChildGroupPlacement>> =
     createQuery {
             sql(
@@ -919,7 +919,7 @@ WHERE p.unit_id = ${bind(unitId)} AND daterange(dgp.start_date, dgp.end_date, '[
 
 private fun Database.Read.getBackupPlacements(
     unitId: DaycareId,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): Map<ChildId, List<ChildBackupPlacement>> =
     createQuery {
             sql(
@@ -944,7 +944,7 @@ data class ChildData(
     val reservations: Map<LocalDate, List<ReservationResponse>>,
     val attendances: Map<LocalDate, List<TimeInterval>>,
     val absences: Map<LocalDate, Map<AbsenceCategory, AbsenceTypeResponse>>,
-    val operationalDays: Set<LocalDate>
+    val operationalDays: Set<LocalDate>,
 )
 
 private data class ChildDataQueryResult(
@@ -955,14 +955,14 @@ private data class ChildDataQueryResult(
     val dateOfBirth: LocalDate,
     @Json val reservations: List<ReservationTimesForDate>,
     @Json val attendances: List<AttendanceTimesForDate>,
-    @Json val absences: List<AbsenceForDate>
+    @Json val absences: List<AbsenceForDate>,
 )
 
 private data class ReservationTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime?,
     val endTime: LocalTime?,
-    val staffCreated: Boolean
+    val staffCreated: Boolean,
 ) {
     fun toReservationTimes() =
         when {
@@ -974,7 +974,7 @@ private data class ReservationTimesForDate(
 private data class AttendanceTimesForDate(
     val date: LocalDate,
     val startTime: LocalTime,
-    val endTime: LocalTime?
+    val endTime: LocalTime?,
 ) {
     fun toTimeInterval() = TimeInterval(startTime, endTime)
 }
@@ -982,13 +982,13 @@ private data class AttendanceTimesForDate(
 private data class AbsenceForDate(
     val date: LocalDate,
     @Json val absenceTypeResponse: AbsenceTypeResponse,
-    val category: AbsenceCategory
+    val category: AbsenceCategory,
 )
 
 fun Database.Read.getChildData(
     unitId: DaycareId,
     childIds: Set<ChildId>,
-    dateRange: FiniteDateRange
+    dateRange: FiniteDateRange,
 ): Map<ChildId, ChildData> {
     val operationalDays = getOperationalDatesForChildren(dateRange, childIds)
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
@@ -1052,26 +1052,26 @@ WHERE p.id = ANY(${bind(childIds)})
                         serviceNeeds =
                             serviceNeedInfos
                                 .filter { it.childId == row.id }
-                                .sortedBy { it.validDuring.start }
+                                .sortedBy { it.validDuring.start },
                     ),
                 reservations =
                     row.reservations.groupBy(
                         keySelector = { it.date },
-                        valueTransform = { it.toReservationTimes() }
+                        valueTransform = { it.toReservationTimes() },
                     ),
                 attendances =
                     row.attendances.groupBy(
                         keySelector = { it.date },
-                        valueTransform = { it.toTimeInterval() }
+                        valueTransform = { it.toTimeInterval() },
                     ),
                 absences =
                     row.absences
                         .groupBy(
                             keySelector = { it.date },
-                            valueTransform = { it.category to it.absenceTypeResponse }
+                            valueTransform = { it.category to it.absenceTypeResponse },
                         )
                         .mapValues { it.value.toMap() },
-                operationalDays = operationalDays.getOrDefault(row.id, emptySet())
+                operationalDays = operationalDays.getOrDefault(row.id, emptySet()),
             )
         }
         .associateBy { it.child.id }

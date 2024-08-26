@@ -27,5 +27,5 @@ data class SfiMessage(
     val messageHeader: String,
     val messageContent: String,
     val emailHeader: String? = null,
-    val emailContent: String? = null
+    val emailContent: String? = null,
 )

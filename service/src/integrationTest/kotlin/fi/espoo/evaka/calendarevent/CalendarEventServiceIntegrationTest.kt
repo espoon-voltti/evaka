@@ -136,7 +136,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             groupPlacementId =
@@ -145,7 +145,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         daycarePlacementId = placementId,
                         daycareGroupId = groupId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -156,12 +156,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 childId = testChild_2.id,
                                 unitId = testDaycare.id,
                                 startDate = placementStart,
-                                endDate = placementEnd
+                                endDate = placementEnd,
                             )
                         ),
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -176,7 +176,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit-wide event",
                 description = "uwe",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -188,7 +188,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(4)
+                    today.plusDays(4),
                 )[0]
 
         assertEquals(form.period, event.period)
@@ -208,7 +208,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group-wide event",
                 description = "gwe",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -220,7 +220,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )[0]
 
         assertEquals(form.period, event.period)
@@ -240,7 +240,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -252,7 +252,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )[0]
 
         assertEquals(form.period, event.period)
@@ -277,10 +277,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
 
@@ -290,8 +290,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
 
         val calendarEventTimeId =
@@ -302,8 +302,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(
                     date = today.plusDays(3),
-                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
-                )
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0)),
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -311,14 +311,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTimeId
+            calendarEventTimeId,
         )
 
         deleteCalendarEvent(event.id)
@@ -338,10 +338,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
 
@@ -351,8 +351,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
 
         val calendarEventTimeId =
@@ -363,8 +363,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(
                     date = today.plusDays(3),
-                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
-                )
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0)),
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -372,14 +372,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTimeId
+            calendarEventTimeId,
         )
 
         deleteCalendarEvent(event.id)
@@ -399,10 +399,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
 
@@ -412,8 +412,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = event.times.first().id,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
 
         val calendarEventTimeId =
@@ -424,8 +424,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 event.id,
                 CalendarEventTimeForm(
                     date = today.plusDays(3),
-                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0))
-                )
+                    timeRange = TimeRange(LocalTime.of(8, 40), LocalTime.of(9, 0)),
+                ),
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
@@ -433,14 +433,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
         calendarEventController.deleteCalendarEventTime(
             dbInstance(),
             admin,
             clock,
-            calendarEventTimeId
+            calendarEventTimeId,
         )
 
         deleteCalendarEvent(event.id)
@@ -460,10 +460,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
 
@@ -471,7 +471,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_1.id))
+                tree = mapOf(groupId to setOf(testChild_1.id)),
             )
         val updated = updateCalendarEvent(created.id, updateForm)
 
@@ -486,9 +486,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 testChild_1.id,
                                 testChild_1.firstName,
                                 testChild_1.lastName,
-                                groupId
+                                groupId,
                             )
-                        )
+                        ),
                 )
             )
     }
@@ -509,10 +509,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
         calendarEventController.setCalendarEventTimeReservation(
@@ -521,8 +521,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             clock,
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = created.times.first().id,
-                childId = testChild_1.id
-            )
+                childId = testChild_1.id,
+            ),
         )
         assertThat(getReservableCalendarEventTimes(created.id, testChild_2.id)).isEmpty()
 
@@ -530,7 +530,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Child-specific event",
                 description = "cse",
-                tree = mapOf(groupId to setOf(testChild_2.id))
+                tree = mapOf(groupId to setOf(testChild_2.id)),
             )
         val updated = updateCalendarEvent(created.id, updateForm)
         assertThat(updated)
@@ -544,9 +544,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                                 testChild_2.id,
                                 testChild_2.firstName,
                                 testChild_2.lastName,
-                                groupId
+                                groupId,
                             )
-                        )
+                        ),
                 )
             )
         assertThat(getReservableCalendarEventTimes(created.id, testChild_2.id))
@@ -570,10 +570,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
         val calendarEventTimeId = event.times.first().id
@@ -588,13 +588,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val reservationForm =
             CalendarEventTimeCitizenReservationForm(
                 calendarEventTimeId = calendarEventTimeId,
-                childId = testChild_1.id
+                childId = testChild_1.id,
             )
         calendarEventController.addCalendarEventTimeReservation(
             dbInstance(),
             guardian,
             clock,
-            reservationForm
+            reservationForm,
         )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
@@ -607,8 +607,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 clock,
                 CalendarEventTimeCitizenReservationForm(
                     calendarEventTimeId = calendarEventTimeId,
-                    childId = testChild_2.id
-                )
+                    childId = testChild_2.id,
+                ),
             )
         }
 
@@ -617,7 +617,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             guardian,
             clock,
-            reservationForm
+            reservationForm,
         )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
@@ -629,7 +629,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             guardian,
             clock,
             reservationForm.calendarEventTimeId,
-            reservationForm.childId
+            reservationForm.childId,
         )
         assertThat(getReservableCalendarEventTimes(event.id, testChild_1.id))
             .extracting({ it.date }, { it.startTime }, { it.endTime })
@@ -648,7 +648,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -663,10 +663,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(4)
+                    today.plusDays(4),
                 )[0]
                 .id,
-            CalendarEventUpdateForm(title = "Updated title", description = "desc, updated")
+            CalendarEventUpdateForm(title = "Updated title", description = "desc, updated"),
         )
 
         val event =
@@ -677,7 +677,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(4)
+                    today.plusDays(4),
                 )[0]
 
         assertEquals("Updated title", event.title)
@@ -693,7 +693,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -708,9 +708,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(4)
+                    today.plusDays(4),
                 )[0]
-                .id
+                .id,
         )
 
         assert(
@@ -721,7 +721,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(4)
+                    today.plusDays(4),
                 )
                 .isEmpty()
         )
@@ -736,7 +736,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -747,7 +747,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit-wide event",
                 description = "uw",
                 period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -758,7 +758,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group event",
                 description = "gw",
                 period = FiniteDateRange(today.plusDays(1), today.plusDays(1)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form3)
 
@@ -768,7 +768,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 guardian,
                 clock,
                 today,
-                today.plusDays(10)
+                today.plusDays(10),
             )
 
         val individualEvent = guardianEvents.find { it.title == "Child-specific event" }
@@ -783,7 +783,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.INDIVIDUAL, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
-                attendee.periods
+                attendee.periods,
             )
         }
 
@@ -800,7 +800,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.UNIT, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(1), today.plusDays(1))),
-                attendee.periods
+                attendee.periods,
             )
         }
 
@@ -816,7 +816,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(1), today.plusDays(1))),
-                attendee.periods
+                attendee.periods,
             )
         }
     }
@@ -832,7 +832,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group event",
                 description = "ge",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -851,7 +851,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
-                attendee.periods
+                attendee.periods,
             )
         }
 
@@ -861,7 +861,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.GROUP, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(today.plusDays(3), today.plusDays(4))),
-                attendee.periods
+                attendee.periods,
             )
         }
     }
@@ -875,7 +875,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Individual child event (other child)",
                 description = "ie",
                 period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -886,7 +886,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     guardian,
                     clock,
                     today.minusDays(10),
-                    today.plusDays(10)
+                    today.plusDays(10),
                 )
                 .isEmpty()
         )
@@ -901,7 +901,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group event",
                 description = "ge",
                 period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -912,7 +912,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     guardian,
                     clock,
                     today.minusDays(10),
-                    today.plusDays(10)
+                    today.plusDays(10),
                 )
                 .isEmpty()
         )
@@ -927,7 +927,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit-wide event in another unit",
                 description = "uw",
                 period = FiniteDateRange(today.minusDays(1), today.plusDays(2)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -938,7 +938,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     guardian,
                     clock,
                     today.minusDays(10),
-                    today.plusDays(10)
+                    today.plusDays(10),
                 )
                 .isEmpty()
         )
@@ -953,7 +953,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group event",
                 description = "ge",
                 period = FiniteDateRange(placementStart.minusDays(10), placementStart.minusDays(8)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -965,7 +965,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 description = "uw",
                 period =
                     FiniteDateRange(placementStart.minusDays(20), placementStart.minusDays(20)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -976,7 +976,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     guardian,
                     clock,
                     placementStart.minusDays(50),
-                    placementStart.plusDays(50)
+                    placementStart.plusDays(50),
                 )
                 .isEmpty()
         )
@@ -994,7 +994,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -1002,7 +1002,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = backupCareStart.minusDays(1)
+                    endDate = backupCareStart.minusDays(1),
                 )
             )
             tx.insert(
@@ -1010,7 +1010,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = backupCareEnd.plusDays(1),
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -1019,7 +1019,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             testChild_3.id,
-            NewBackupCare(testDaycare2.id, null, FiniteDateRange(backupCareStart, backupCareEnd))
+            NewBackupCare(testDaycare2.id, null, FiniteDateRange(backupCareStart, backupCareEnd)),
         )
 
         val form =
@@ -1029,7 +1029,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Group event (unit 1)",
                 description = "u1_g",
                 period = FiniteDateRange(placementStart, placementStart.plusDays(30)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -1040,7 +1040,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit event (unit 2)",
                 description = "u1_u",
                 period = FiniteDateRange(placementStart, placementStart.plusDays(30)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
@@ -1050,7 +1050,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 AuthenticatedUser.Citizen(testAdult_3.id, CitizenAuthLevel.STRONG),
                 clock,
                 placementStart,
-                placementStart.plusDays(50)
+                placementStart.plusDays(50),
             )
 
         val mainUnitEvent = guardianEvents.find { it.title == "Group event (unit 1)" }
@@ -1066,9 +1066,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(
                 listOf(
                     FiniteDateRange(placementStart, placementStart.plusDays(9)),
-                    FiniteDateRange(placementStart.plusDays(21), placementStart.plusDays(30))
+                    FiniteDateRange(placementStart.plusDays(21), placementStart.plusDays(30)),
                 ),
-                attendee.periods.sortedBy { it.start }
+                attendee.periods.sortedBy { it.start },
             )
         }
 
@@ -1085,7 +1085,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(AttendanceType.UNIT, attendee.type)
             assertEquals(
                 listOf(FiniteDateRange(placementStart.plusDays(10), placementStart.plusDays(20))),
-                attendee.periods
+                attendee.periods,
             )
         }
     }
@@ -1099,7 +1099,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deletePlacement(dbInstance(), admin, clock, placementId)
@@ -1111,13 +1111,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1130,7 +1130,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
@@ -1138,7 +1138,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             placementId,
-            PlacementUpdateRequestBody(startDate = today.plusDays(10), endDate = placementEnd)
+            PlacementUpdateRequestBody(startDate = today.plusDays(10), endDate = placementEnd),
         )
         assert(
             this.calendarEventController
@@ -1148,13 +1148,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1167,7 +1167,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
@@ -1175,7 +1175,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             placementId,
-            PlacementUpdateRequestBody(startDate = placementStart, endDate = today.minusDays(1))
+            PlacementUpdateRequestBody(startDate = placementStart, endDate = today.minusDays(1)),
         )
         assert(
             this.calendarEventController
@@ -1185,13 +1185,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1204,7 +1204,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deleteGroupPlacement(dbInstance(), admin, clock, groupPlacementId)
@@ -1216,13 +1216,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1235,7 +1235,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
@@ -1243,7 +1243,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             groupPlacementId,
-            GroupTransferRequestBody(groupId = groupId2, startDate = today)
+            GroupTransferRequestBody(groupId = groupId2, startDate = today),
         )
         assert(
             this.calendarEventController
@@ -1253,13 +1253,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1272,7 +1272,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
@@ -1280,7 +1280,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             groupPlacementId,
-            GroupTransferRequestBody(groupId = groupId2, startDate = today.plusDays(5))
+            GroupTransferRequestBody(groupId = groupId2, startDate = today.plusDays(5)),
         )
         assert(
             this.calendarEventController
@@ -1290,7 +1290,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isNotEmpty()
         )
@@ -1305,7 +1305,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1316,8 +1316,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = null,
-                period = FiniteDateRange(today, today.plusDays(10))
-            )
+                period = FiniteDateRange(today, today.plusDays(10)),
+            ),
         )
         assert(
             this.calendarEventController
@@ -1327,13 +1327,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1346,7 +1346,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1357,8 +1357,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = null,
-                period = FiniteDateRange(today.minusDays(10), today)
-            )
+                period = FiniteDateRange(today.minusDays(10), today),
+            ),
         )
         assert(
             this.calendarEventController
@@ -1368,7 +1368,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isNotEmpty()
         )
@@ -1383,7 +1383,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1394,15 +1394,15 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = null,
-                period = FiniteDateRange(today.plusDays(10), today.plusDays(20))
-            )
+                period = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+            ),
         )
         this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
-            BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(20)), null)
+            BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(20)), null),
         )
         assert(
             this.calendarEventController
@@ -1412,13 +1412,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1431,7 +1431,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.createBackupCare(
@@ -1442,15 +1442,15 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = null,
-                period = FiniteDateRange(today.minusDays(10), today)
-            )
+                period = FiniteDateRange(today.minusDays(10), today),
+            ),
         )
         this.backupCareController.updateBackupCare(
             dbInstance(),
             admin,
             clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
-            BackupCareUpdateRequest(FiniteDateRange(today.minusDays(10), today.plusDays(20)), null)
+            BackupCareUpdateRequest(FiniteDateRange(today.minusDays(10), today.plusDays(20)), null),
         )
         assert(
             this.calendarEventController
@@ -1460,13 +1460,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1480,8 +1480,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = unit2GroupId,
-                period = FiniteDateRange(today, today.plusDays(10))
-            )
+                period = FiniteDateRange(today, today.plusDays(10)),
+            ),
         )
         val form =
             CalendarEventForm(
@@ -1490,7 +1490,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.updateBackupCare(
@@ -1498,7 +1498,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
-            BackupCareUpdateRequest(FiniteDateRange(today.plusDays(8), today.plusDays(10)), null)
+            BackupCareUpdateRequest(FiniteDateRange(today.plusDays(8), today.plusDays(10)), null),
         )
         assert(
             this.calendarEventController
@@ -1508,13 +1508,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare2.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) },
         )
     }
 
@@ -1528,8 +1528,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = unit2GroupId,
-                period = FiniteDateRange(today, today.plusDays(10))
-            )
+                period = FiniteDateRange(today, today.plusDays(10)),
+            ),
         )
         val form =
             CalendarEventForm(
@@ -1538,7 +1538,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.updateBackupCare(
@@ -1546,7 +1546,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
-            BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(1)), null)
+            BackupCareUpdateRequest(FiniteDateRange(today, today.plusDays(1)), null),
         )
         assert(
             this.calendarEventController
@@ -1556,13 +1556,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare2.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) },
         )
     }
 
@@ -1576,8 +1576,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             NewBackupCare(
                 unitId = testDaycare2.id,
                 groupId = unit2GroupId,
-                period = FiniteDateRange(today, today.plusDays(10))
-            )
+                period = FiniteDateRange(today, today.plusDays(10)),
+            ),
         )
         val form =
             CalendarEventForm(
@@ -1586,14 +1586,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.backupCareController.deleteBackupCare(
             dbInstance(),
             admin,
             clock,
-            db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id }
+            db.transaction { tx -> tx.getBackupCaresForChild(testChild_1.id).first().id },
         )
         assert(
             this.calendarEventController
@@ -1603,13 +1603,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare2.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare2.id) },
         )
     }
 
@@ -1622,7 +1622,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementControllerCitizen.postPlacementTermination(
@@ -1634,8 +1634,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 type = TerminatablePlacementType.DAYCARE,
                 unitId = testDaycare.id,
                 terminationDate = today,
-                terminateDaycareOnly = null
-            )
+                terminateDaycareOnly = null,
+            ),
         )
         assert(
             this.calendarEventController
@@ -1645,13 +1645,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     clock,
                     testDaycare.id,
                     today,
-                    today.plusDays(5)
+                    today.plusDays(5),
                 )
                 .isEmpty()
         )
         assertEquals(
             0,
-            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) }
+            db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) },
         )
     }
 
@@ -1664,7 +1664,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
 
         assertThrows<BadRequest> {
@@ -1680,7 +1680,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -1692,7 +1692,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Child-specific event",
                 description = "cse",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
 
         assertThrows<BadRequest> {
@@ -1711,7 +1711,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     phone = "",
                     backupPhone = "",
                     email = "example@example.com",
-                )
+                ),
             )
         }
 
@@ -1722,7 +1722,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit-wide event",
                 description = "uwe",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
@@ -1733,7 +1733,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals("example@example.com", email.toAddress)
             assertEquals(
                 "Uusia kalenteritapahtumia eVakassa / Nya kalenderhändelser i eVaka / New calendar events in eVaka",
-                email.content.subject
+                email.content.subject,
             )
         }
     }
@@ -1749,7 +1749,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Unit-wide event",
                 description = "uwe",
                 period = FiniteDateRange(today, today.plusDays(3)),
-                eventType = CalendarEventType.DISCUSSION_SURVEY
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
             )
         val newEventData = createCalendarEvent(form = form, clock = tickingClock)
 
@@ -1759,7 +1759,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             CalendarEventUpdateForm(
                 title = "Updated title",
                 description = form.description,
-                tree = form.tree
+                tree = form.tree,
             )
 
         val modifiedEventData =
@@ -1772,7 +1772,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             updateCalendarEvent(
                 clock = tickingClock,
                 id = newEventData.id,
-                form = updateForm.copy(tree = mapOf(groupId to setOf(testChild_1.id)))
+                form = updateForm.copy(tree = mapOf(groupId to setOf(testChild_1.id))),
             )
 
         assertThat(modifiedEventData.contentModifiedAt < updatedEventData.contentModifiedAt)
@@ -1781,14 +1781,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val eventTimeForm =
             CalendarEventTimeForm(
                 date = today.plusDays(1),
-                timeRange = TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30))
+                timeRange = TimeRange(LocalTime.of(9, 0), LocalTime.of(9, 30)),
             )
 
         val eventTimeId =
             addEventTimeAsEmployee(
                 form = eventTimeForm,
                 eventId = newEventData.id,
-                clock = tickingClock
+                clock = tickingClock,
             )
         val timeAddedEventData = readCalendarEvent(newEventData.id)
 
@@ -1798,7 +1798,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val citizenReservationForm =
             CalendarEventTimeCitizenReservationForm(
                 calendarEventTimeId = eventTimeId,
-                childId = testChild_1.id
+                childId = testChild_1.id,
             )
 
         addEventTimeReservationAsCitizen(form = citizenReservationForm, clock = tickingClock)
@@ -1806,38 +1806,38 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(
             timeAddedEventData.contentModifiedAt,
-            citizenReservedEventData.contentModifiedAt
+            citizenReservedEventData.contentModifiedAt,
         )
         tickingClock.tick()
 
         deleteEventTimeReservationAsCitizen(
             eventTimeId = eventTimeId,
             clock = tickingClock,
-            childId = testChild_1.id
+            childId = testChild_1.id,
         )
         val citizenCancelledEventData = readCalendarEvent(newEventData.id)
 
         assertEquals(
             timeAddedEventData.contentModifiedAt,
-            citizenCancelledEventData.contentModifiedAt
+            citizenCancelledEventData.contentModifiedAt,
         )
         tickingClock.tick()
 
         val employeeReservationForm =
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = eventTimeId,
-                childId = testChild_1.id
+                childId = testChild_1.id,
             )
 
         setCalendarEventTimeReservationAsEmployee(
             clock = tickingClock,
-            form = employeeReservationForm
+            form = employeeReservationForm,
         )
         val employeeReservedEventData = readCalendarEvent(newEventData.id)
 
         assertEquals(
             timeAddedEventData.contentModifiedAt,
-            employeeReservedEventData.contentModifiedAt
+            employeeReservedEventData.contentModifiedAt,
         )
         tickingClock.tick()
 
@@ -1858,13 +1858,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "This SHOULD NOT be returned",
                 description = "Red herring event that should not be returned",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         this.calendarEventController.createCalendarEvent(
             dbInstance(),
             admin,
             clock,
-            daycareEventForm
+            daycareEventForm,
         )
 
         val groupDiscussionSurveyForm =
@@ -1879,16 +1879,16 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     listOf(
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
-                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
                         )
-                    )
+                    ),
             )
         val id =
             this.calendarEventController.createCalendarEvent(
                 dbInstance(),
                 admin,
                 clock,
-                groupDiscussionSurveyForm
+                groupDiscussionSurveyForm,
             )
         val groupDiscussionSurvey = this.readCalendarEvent(id)
 
@@ -1904,15 +1904,15 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     listOf(
                         CalendarEventTimeForm(
                             today.plusDays(1),
-                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
                         )
-                    )
+                    ),
             )
         this.calendarEventController.createCalendarEvent(
             dbInstance(),
             admin,
             clock,
-            otherGroupDiscussionSurveyForm
+            otherGroupDiscussionSurveyForm,
         )
 
         val returnedSurveys = getGroupDiscussionSurveys(unitId = testDaycare.id, groupId = groupId)
@@ -1930,14 +1930,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 title = "Background event",
                 description = "Daycare event in the background",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(4)),
-                eventType = CalendarEventType.DAYCARE_EVENT
+                eventType = CalendarEventType.DAYCARE_EVENT,
             )
         val dcEventId =
             this.calendarEventController.createCalendarEvent(
                 dbInstance(),
                 admin,
                 clock,
-                daycareEventForm
+                daycareEventForm,
             )
 
         val dcEvent = readCalendarEvent(dcEventId)
@@ -1954,20 +1954,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     listOf(
                         CalendarEventTimeForm(
                             date = today.plusDays(2),
-                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
                         ),
                         CalendarEventTimeForm(
                             date = today.plusDays(4),
-                            timeRange = TimeRange(LocalTime.of(14, 0), LocalTime.of(15, 0))
-                        )
-                    )
+                            timeRange = TimeRange(LocalTime.of(14, 0), LocalTime.of(15, 0)),
+                        ),
+                    ),
             )
         val discussionSurveyId =
             this.calendarEventController.createCalendarEvent(
                 dbInstance(),
                 admin,
                 clock,
-                groupDiscussionSurveyForm
+                groupDiscussionSurveyForm,
             )
 
         val discussionSurvey = readCalendarEvent(discussionSurveyId)
@@ -1977,7 +1977,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 unitId = testDaycare.id,
                 groupId = groupId,
                 start = today.plusDays(2),
-                end = today.plusDays(4)
+                end = today.plusDays(4),
             )
 
         assertThat(reservationDays)
@@ -1989,20 +1989,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         date = today.plusDays(2),
                         events = setOf(discussionSurvey),
                         isHoliday = false,
-                        isOperationalDay = true
+                        isOperationalDay = true,
                     ),
                     DiscussionReservationDay(
                         date = today.plusDays(3),
                         events = setOf(dcEvent),
                         isHoliday = true,
-                        isOperationalDay = true
+                        isOperationalDay = true,
                     ),
                     DiscussionReservationDay(
                         date = today.plusDays(4),
                         events = setOf(discussionSurvey, dcEvent),
                         isHoliday = false,
-                        isOperationalDay = true
-                    )
+                        isOperationalDay = true,
+                    ),
                 )
             )
     }
@@ -2015,7 +2015,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 DevFosterParent(
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
-                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                 )
             )
             val placementId3 =
@@ -2024,7 +2024,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -2032,7 +2032,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId3,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -2050,10 +2050,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
         val calendarEventTimeForm = event.times.first()
@@ -2061,13 +2061,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val reservationForm =
             CalendarEventTimeCitizenReservationForm(
                 calendarEventTimeId = calendarEventTimeForm.id,
-                childId = testChild_3.id
+                childId = testChild_3.id,
             )
         calendarEventController.addCalendarEventTimeReservation(
             dbInstance(),
             guardian2,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2082,14 +2082,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         date = calendarEventTimeForm.date,
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
-                        childId = reservationForm.childId
-                    )
+                        childId = reservationForm.childId,
+                    ),
             )
 
         val reservationEmailContent =
             emailMessageProvider.discussionSurveyReservationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertEmails(expectedRecipients, reservationEmailContent, expectedFromAddress)
@@ -2101,7 +2101,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             guardian2,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2113,29 +2113,29 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             guardian2,
             clock,
             reservationForm.calendarEventTimeId,
-            reservationForm.childId
+            reservationForm.childId,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(
             expectedRecipients.mapNotNull { it.email }.toSet(),
-            MockEmailClient.emails.map { it.toAddress }.toSet()
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
         )
 
         val cancellationEmailContent =
             emailMessageProvider.discussionSurveyReservationCancellationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
 
         assertEquals(
             expectedRecipients.mapNotNull { it.email }.toSet(),
-            MockEmailClient.emails.map { it.toAddress }.toSet()
+            MockEmailClient.emails.map { it.toAddress }.toSet(),
         )
         assertEquals(cancellationEmailContent.subject, getEmailFor(testAdult_2).content.subject)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
-            getEmailFor(testAdult_2).fromAddress
+            getEmailFor(testAdult_2).fromAddress,
         )
     }
 
@@ -2147,7 +2147,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 DevFosterParent(
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
-                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                 )
             )
             val placementId3 =
@@ -2156,7 +2156,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -2164,7 +2164,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId3,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -2181,10 +2181,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
         val calendarEventTimeForm = event.times.first()
@@ -2192,13 +2192,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val reservationForm =
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeForm.id,
-                childId = testChild_3.id
+                childId = testChild_3.id,
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2213,14 +2213,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         date = calendarEventTimeForm.date,
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
-                        childId = reservationForm.childId
-                    )
+                        childId = reservationForm.childId,
+                    ),
             )
 
         val reservationEmailContent =
             emailMessageProvider.discussionSurveyReservationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
 
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
@@ -2233,7 +2233,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2244,7 +2244,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            reservationForm.copy(childId = null)
+            reservationForm.copy(childId = null),
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2252,7 +2252,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val cancellationEmailContent =
             emailMessageProvider.discussionSurveyReservationCancellationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
 
         assertEmails(expectedRecipients, cancellationEmailContent, expectedFromAddress)
@@ -2266,7 +2266,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 DevFosterParent(
                     childId = testChild_3.id,
                     parentId = testAdult_3.id,
-                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                 )
             )
             val placementId3 =
@@ -2275,7 +2275,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -2283,7 +2283,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId3,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -2300,10 +2300,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             )
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
         val calendarEventTimeForm = event.times.first()
@@ -2311,13 +2311,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val reservationForm =
             CalendarEventTimeEmployeeReservationForm(
                 calendarEventTimeId = calendarEventTimeForm.id,
-                childId = testChild_3.id
+                childId = testChild_3.id,
             )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         // clear the reservation emails
@@ -2334,14 +2334,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         date = calendarEventTimeForm.date,
                         startTime = calendarEventTimeForm.startTime,
                         endTime = calendarEventTimeForm.endTime,
-                        childId = reservationForm.childId
-                    )
+                        childId = reservationForm.childId,
+                    ),
             )
 
         val cancellationEmailContent =
             emailMessageProvider.discussionSurveyReservationCancellationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
 
         // deleting the reserved time should lead to a cancellation message
@@ -2349,7 +2349,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            calendarEventTimeForm.id
+            calendarEventTimeForm.id,
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -2366,7 +2366,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 DevFosterParent(
                     childId = testChild_4.id,
                     parentId = testAdult_3.id,
-                    validDuring = DateRange(today.minusYears(10), today.plusYears(10))
+                    validDuring = DateRange(today.minusYears(10), today.plusYears(10)),
                 )
             )
             val placementId4 =
@@ -2375,7 +2375,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_4.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -2383,7 +2383,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId4,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
 
@@ -2393,7 +2393,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -2401,7 +2401,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     daycarePlacementId = placementId3,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -2420,18 +2420,18 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         listOf(
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40))
+                                timeRange = TimeRange(LocalTime.of(8, 20), LocalTime.of(8, 40)),
                             ),
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(9, 20), LocalTime.of(9, 40))
+                                timeRange = TimeRange(LocalTime.of(9, 20), LocalTime.of(9, 40)),
                             ),
                             CalendarEventTimeForm(
                                 date = today.plusDays(3),
-                                timeRange = TimeRange(LocalTime.of(10, 20), LocalTime.of(10, 40))
-                            )
+                                timeRange = TimeRange(LocalTime.of(10, 20), LocalTime.of(10, 40)),
+                            ),
                         ),
-                    eventType = CalendarEventType.DISCUSSION_SURVEY
+                    eventType = CalendarEventType.DISCUSSION_SURVEY,
                 )
             )
 
@@ -2454,7 +2454,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = it.startTime,
                         endTime = it.endTime,
                         childId = it.childId,
-                        isEditable = true
+                        isEditable = true,
                     )
                 }
         val expectedFosterParentEventTimes =
@@ -2467,7 +2467,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         startTime = it.startTime,
                         endTime = it.endTime,
                         childId = it.childId,
-                        isEditable = true
+                        isEditable = true,
                     )
                 }
 
@@ -2477,7 +2477,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 guardianUser,
                 clock,
                 placementStart,
-                placementEnd
+                placementEnd,
             )
 
         assertEquals(1, guardianEventResult.size)
@@ -2490,7 +2490,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 fosterParentUser,
                 clock,
                 placementStart,
-                placementEnd
+                placementEnd,
             )
 
         assertEquals(1, fosterParentEventResult.size)
@@ -2503,7 +2503,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeEmployeeReservationForm(calendarEventTimeId = id, childId = childId)
+            CalendarEventTimeEmployeeReservationForm(calendarEventTimeId = id, childId = childId),
         )
     }
 
@@ -2513,7 +2513,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         unitId: DaycareId,
         groupId: GroupId,
         start: LocalDate,
-        end: LocalDate
+        end: LocalDate,
     ): Set<DiscussionReservationDay> =
         calendarEventController.getGroupDiscussionReservationDays(
             dbInstance(),
@@ -2522,27 +2522,27 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             unitId,
             groupId,
             start,
-            end
+            end,
         )
 
     private fun getGroupDiscussionSurveys(
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock,
         unitId: DaycareId,
-        groupId: GroupId
+        groupId: GroupId,
     ) =
         calendarEventController.getGroupDiscussionSurveys(
             dbInstance(),
             user,
             clock,
             unitId,
-            groupId
+            groupId,
         )
 
     private fun createCalendarEvent(
         form: CalendarEventForm,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ): CalendarEvent {
         val id = calendarEventController.createCalendarEvent(dbInstance(), user, clock, form)
         return readCalendarEvent(id, user = user, clock = clock)
@@ -2551,14 +2551,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun readCalendarEvent(
         id: CalendarEventId,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ) = calendarEventController.getCalendarEvent(dbInstance(), user, clock, id)
 
     private fun updateCalendarEvent(
         id: CalendarEventId,
         form: CalendarEventUpdateForm,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ): CalendarEvent {
         calendarEventController.updateCalendarEvent(dbInstance(), user, clock, id, form)
         return readCalendarEvent(id, user = user, clock = clock)
@@ -2568,7 +2568,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         id: CalendarEventId,
         form: CalendarEventUpdateForm,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ): CalendarEvent {
         calendarEventController.modifyCalendarEvent(dbInstance(), user, clock, id, form)
         return readCalendarEvent(id, user = user, clock = clock)
@@ -2577,7 +2577,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun deleteCalendarEvent(
         id: CalendarEventId,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ) {
         calendarEventController.deleteCalendarEvent(dbInstance(), user, clock, id)
         assertThrows<NotFound> { readCalendarEvent(id, user = admin, clock = clock) }
@@ -2590,54 +2590,54 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         calendarEventId: CalendarEventId,
         childId: ChildId,
         user: AuthenticatedUser.Citizen = guardian,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ) =
         calendarEventController.getReservableCalendarEventTimes(
             dbInstance(),
             user,
             clock,
             calendarEventId,
-            childId
+            childId,
         )
 
     private fun addEventTimeAsEmployee(
         form: CalendarEventTimeForm,
         eventId: CalendarEventId,
         user: AuthenticatedUser.Employee = admin,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ): CalendarEventTimeId =
         calendarEventController.addCalendarEventTime(dbInstance(), user, clock, eventId, form)
 
     private fun deleteEventTimeAsEmployee(
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock,
-        eventTimeId: CalendarEventTimeId
+        eventTimeId: CalendarEventTimeId,
     ) = calendarEventController.deleteCalendarEventTime(dbInstance(), user, clock, eventTimeId)
 
     private fun addEventTimeReservationAsCitizen(
         form: CalendarEventTimeCitizenReservationForm,
         user: AuthenticatedUser.Citizen = guardian,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ) = calendarEventController.addCalendarEventTimeReservation(dbInstance(), user, clock, form)
 
     private fun deleteEventTimeReservationAsCitizen(
         user: AuthenticatedUser.Citizen = guardian,
         clock: EvakaClock = this.clock,
         eventTimeId: CalendarEventTimeId,
-        childId: ChildId
+        childId: ChildId,
     ) =
         calendarEventController.deleteCalendarEventTimeReservation(
             dbInstance(),
             user,
             clock,
             eventTimeId,
-            childId
+            childId,
         )
 
     private fun setCalendarEventTimeReservationAsEmployee(
         user: AuthenticatedUser.Employee = admin,
         clock: EvakaClock = this.clock,
-        form: CalendarEventTimeEmployeeReservationForm
+        form: CalendarEventTimeEmployeeReservationForm,
     ) = calendarEventController.setCalendarEventTimeReservation(dbInstance(), user, clock, form)
 }
 
@@ -2649,11 +2649,11 @@ private fun getEmailFor(person: DevPerson): Email {
 private fun assertEmails(
     recipients: List<DevPerson>,
     expectedContent: EmailContent,
-    expectedFromAddress: String
+    expectedFromAddress: String,
 ) {
     assertEquals(
         recipients.mapNotNull { it.email }.toSet(),
-        MockEmailClient.emails.map { it.toAddress }.toSet()
+        MockEmailClient.emails.map { it.toAddress }.toSet(),
     )
     recipients.forEach {
         assertEquals(expectedContent.subject, getEmailFor(it).content.subject)

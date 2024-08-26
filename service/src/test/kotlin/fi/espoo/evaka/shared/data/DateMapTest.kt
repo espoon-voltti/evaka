@@ -77,12 +77,7 @@ class DateMapTest {
         // +    BB
         // +       C
         // =  AABB C
-        val result =
-            listOf(
-                testEntry(1..2, "A"),
-                testEntry(3..4, "B"),
-                testEntry(6..6, "C"),
-            )
+        val result = listOf(testEntry(1..2, "A"), testEntry(3..4, "B"), testEntry(6..6, "C"))
         val set =
             DateMap.of(testEntry(1..3, "A")).set(testEntry(3..4, "B")).set(testEntry(6..6, "C"))
         assertEquals(result, set.entries().toList())
@@ -96,16 +91,8 @@ class DateMapTest {
         // +      AA
         // =  AAAAAA
         val entries =
-            listOf(
-                    testEntry(1..2, "A"),
-                    testEntry(3..4, "A"),
-                    testEntry(5..6, "A"),
-                )
-                .shuffled()
-        val result =
-            listOf(
-                testEntry(1..6, "A"),
-            )
+            listOf(testEntry(1..2, "A"), testEntry(3..4, "A"), testEntry(5..6, "A")).shuffled()
+        val result = listOf(testEntry(1..6, "A"))
         val set = DateMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(result, set.entries().toList())
@@ -119,18 +106,8 @@ class DateMapTest {
         // +      CC
         // =  AABBCC
         val entries =
-            listOf(
-                    testEntry(1..2, "A"),
-                    testEntry(3..4, "B"),
-                    testEntry(5..6, "C"),
-                )
-                .shuffled()
-        val result =
-            listOf(
-                testEntry(1..2, "A"),
-                testEntry(3..4, "B"),
-                testEntry(5..6, "C"),
-            )
+            listOf(testEntry(1..2, "A"), testEntry(3..4, "B"), testEntry(5..6, "C")).shuffled()
+        val result = listOf(testEntry(1..2, "A"), testEntry(3..4, "B"), testEntry(5..6, "C"))
         val set = DateMap.of(entries)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(result, set.entries().toList())
@@ -154,19 +131,14 @@ class DateMapTest {
                     testEntry(4..6, 1),
                     testEntry(2..5, 1),
                     testEntry(5..6, 1),
-                    testEntry(1..3, 1)
+                    testEntry(1..3, 1),
                 )
                 .shuffled()
         val set = DateMap.empty<Int>().update(entries, resolve)
         assertTrue(entries.all { set.contains(it.first) })
         assertEquals(
-            listOf(
-                testEntry(1..1, 2),
-                testEntry(2..2, 4),
-                testEntry(3..5, 3),
-                testEntry(6..6, 2),
-            ),
-            set.entries().toList()
+            listOf(testEntry(1..1, 2), testEntry(2..2, 4), testEntry(3..5, 3), testEntry(6..6, 2)),
+            set.entries().toList(),
         )
     }
 

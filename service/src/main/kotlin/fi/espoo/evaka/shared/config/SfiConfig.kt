@@ -22,7 +22,7 @@ class SfiConfig {
     @Bean
     fun sfiMessagesClient(
         env: ObjectProvider<SfiEnv>,
-        documentClient: DocumentService
+        documentClient: DocumentService,
     ): SfiMessagesClient =
         env.ifAvailable?.let {
             if (it.restEnabled) {

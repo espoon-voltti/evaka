@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController
 class NonSsnChildrenReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/non-ssn-children", // deprecated
-        "/employee/reports/non-ssn-children"
+        "/employee/reports/non-ssn-children",
     )
     fun getNonSsnChildrenReportRows(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<NonSsnChildrenReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -33,7 +33,7 @@ class NonSsnChildrenReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_NON_SSN_CHILDREN_REPORT
+                        Action.Global.READ_NON_SSN_CHILDREN_REPORT,
                     )
 
                     it.getNonSsnChildren(clock.today())

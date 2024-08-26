@@ -22,7 +22,7 @@ class MealTexturesController(private val accessControl: AccessControl) {
     fun getMealTextures(
         db: Database,
         authenticatedUser: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<MealTexture> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -30,7 +30,7 @@ class MealTexturesController(private val accessControl: AccessControl) {
                         tx,
                         authenticatedUser,
                         clock,
-                        Action.Global.READ_SPECIAL_DIET_LIST
+                        Action.Global.READ_SPECIAL_DIET_LIST,
                     )
                     tx.getMealTextures()
                 }

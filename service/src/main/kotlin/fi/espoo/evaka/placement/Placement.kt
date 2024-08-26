@@ -21,7 +21,7 @@ data class Placement(
     val endDate: LocalDate,
     val terminationRequestedDate: LocalDate?,
     val terminationRequestedBy: EvakaUserId?,
-    val placeGuarantee: Boolean
+    val placeGuarantee: Boolean,
 )
 
 data class PlacementSummary(
@@ -30,5 +30,5 @@ data class PlacementSummary(
     val childId: ChildId,
     @Nested("unit") val unit: Unit,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 )

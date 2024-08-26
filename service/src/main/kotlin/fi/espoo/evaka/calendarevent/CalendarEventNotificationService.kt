@@ -26,7 +26,7 @@ class CalendarEventNotificationService(
     private val emailClient: EmailClient,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
 
     init {
@@ -47,7 +47,7 @@ class CalendarEventNotificationService(
                         emailEnv.sender(parent.language),
                         emailMessageProvider.calendarEventNotification(
                             parent.language,
-                            parent.events
+                            parent.events,
                         ),
                         "${now.toLocalDate()}:${parent.parentId}",
                     )
@@ -58,7 +58,7 @@ class CalendarEventNotificationService(
     fun runSendDiscussionSurveyReservationMessage(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendDiscussionSurveyReservationEmail
+        msg: AsyncJob.SendDiscussionSurveyReservationEmail,
     ) {
         val eventTime = msg.calendarEventTime
         logger.info {
@@ -73,8 +73,8 @@ class CalendarEventNotificationService(
                     DiscussionSurveyReservationNotificationData(
                         unitName = msg.unitName,
                         title = msg.eventTitle,
-                        calendarEventTime = eventTime
-                    )
+                        calendarEventTime = eventTime,
+                    ),
             )
         Email.create(
                 db,
@@ -94,7 +94,7 @@ class CalendarEventNotificationService(
     fun runSendDiscussionSurveyReservationCancellationMessage(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendDiscussionSurveyReservationCancellationEmail
+        msg: AsyncJob.SendDiscussionSurveyReservationCancellationEmail,
     ) {
         val eventTime = msg.calendarEventTime
         logger.info {
@@ -109,8 +109,8 @@ class CalendarEventNotificationService(
                     DiscussionSurveyReservationNotificationData(
                         unitName = msg.unitName,
                         title = msg.eventTitle,
-                        calendarEventTime = eventTime
-                    )
+                        calendarEventTime = eventTime,
+                    ),
             )
         Email.create(
                 db,

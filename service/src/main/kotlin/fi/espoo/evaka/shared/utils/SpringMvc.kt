@@ -23,7 +23,7 @@ inline fun <reified T> asArgumentResolver(
             parameter: MethodParameter,
             mavContainer: ModelAndViewContainer?,
             webRequest: NativeWebRequest,
-            binderFactory: WebDataBinderFactory?
+            binderFactory: WebDataBinderFactory?,
         ) = f(parameter, webRequest)
     }
 
@@ -35,6 +35,6 @@ inline fun <reified I, reified O> convertFrom(crossinline f: (source: I) -> O): 
         override fun convert(
             source: Any?,
             sourceType: TypeDescriptor,
-            targetType: TypeDescriptor
+            targetType: TypeDescriptor,
         ): Any? = (source as? I)?.let(f)
     }

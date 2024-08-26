@@ -37,7 +37,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     fun getChildren(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ChildAndPermittedActions> {
         return db.connect { dbc ->
                 dbc.read {
@@ -46,7 +46,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
-                        user.id
+                        user.id,
                     )
                     val children = it.getChildrenByParent(user.id, clock.today())
                     val childIds = children.map { it.id }
@@ -55,7 +55,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            childIds
+                            childIds,
                         )
                     children.map { c ->
                         ChildAndPermittedActions.fromChild(c, permittedActions[c.id]!!)
@@ -65,7 +65,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
             .also {
                 Audit.CitizenChildrenRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -75,7 +75,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<ServiceNeedSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -84,7 +84,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Child.READ_SERVICE_NEEDS,
-                        childId
+                        childId,
                     )
                     val serviceNeeds = tx.getServiceNeedSummary(childId)
                     val missingServiceNeeds = getMissingServiceNeeds(tx, childId, serviceNeeds)
@@ -97,7 +97,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     private fun getMissingServiceNeeds(
         tx: Database.Read,
         childId: ChildId,
-        serviceNeeds: List<ServiceNeedSummary>
+        serviceNeeds: List<ServiceNeedSummary>,
     ): List<ServiceNeedSummary> {
         val defaultServiceNeedOptions =
             tx.getServiceNeedOptions()
@@ -113,7 +113,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     it.end,
                     defaultServiceNeedOption?.let { sno -> ServiceNeedOptionPublicInfo.of(sno) },
                     defaultServiceNeedOption?.contractDaysPerMonth,
-                    placement.unit.name
+                    placement.unit.name,
                 )
             }
         }
@@ -125,7 +125,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @PathVariable yearMonth: YearMonth
+        @PathVariable yearMonth: YearMonth,
     ): AttendanceSummary {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -134,7 +134,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Child.READ_ATTENDANCE_SUMMARY,
-                        childId
+                        childId,
                     )
 
                     val range = FiniteDateRange(yearMonth.atDay(1), yearMonth.atEndOfMonth())
@@ -147,7 +147,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                                 setOf(
                                         AbsenceType.PLANNED_ABSENCE,
                                         AbsenceType.FREE_ABSENCE,
-                                        AbsenceType.PARENTLEAVE
+                                        AbsenceType.PARENTLEAVE,
                                     )
                                     .contains(absence.absenceType)
                         }
@@ -165,7 +165,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<DailyServiceTimes> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -174,7 +174,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Child.READ_DAILY_SERVICE_TIMES,
-                        childId
+                        childId,
                     )
                     tx.getChildDailyServiceTimes(childId)
                 }

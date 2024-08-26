@@ -31,14 +31,14 @@ private val defaultApplicationStatuses =
         ApplicationStatus.WAITING_DECISION,
         ApplicationStatus.WAITING_MAILING,
         ApplicationStatus.WAITING_UNIT_CONFIRMATION,
-        ApplicationStatus.ACTIVE
+        ApplicationStatus.ACTIVE,
     )
 
 @RestController
 class PlacementSketchingReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/placement-sketching", // deprecated
-        "/employee/reports/placement-sketching"
+        "/employee/reports/placement-sketching",
     )
     fun getPlacementSketchingReport(
         db: Database,
@@ -54,7 +54,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         earliestApplicationSentDate: LocalDate? = null,
         @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        latestApplicationSentDate: LocalDate? = null
+        latestApplicationSentDate: LocalDate? = null,
     ): List<PlacementSketchingReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -62,7 +62,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                         it,
                         user,
                         clock,
-                        Action.Global.READ_PLACEMENT_SKETCHING_REPORT
+                        Action.Global.READ_PLACEMENT_SKETCHING_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementSketchingReportRows(
@@ -70,7 +70,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                         earliestPreferredStartDate,
                         applicationStatus ?: emptySet(),
                         earliestApplicationSentDate,
-                        latestApplicationSentDate
+                        latestApplicationSentDate,
                     )
                 }
             }
@@ -80,7 +80,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                         mapOf(
                             "placementStartDate" to placementStartDate,
                             "earliestPreferredStartDate" to earliestPreferredStartDate,
-                            "count" to it.size
+                            "count" to it.size,
                         )
                 )
             }
@@ -92,7 +92,7 @@ private fun Database.Read.getPlacementSketchingReportRows(
     earliestPreferredStartDate: LocalDate?,
     applicationStatuses: Set<ApplicationStatus>,
     earliestApplicationSentDate: LocalDate?,
-    latestApplicationSentDate: LocalDate?
+    latestApplicationSentDate: LocalDate?,
 ): List<PlacementSketchingReportRow> {
     return createQuery {
             sql(
@@ -199,5 +199,5 @@ data class PlacementSketchingReportRow(
     val childMovingDate: LocalDate?,
     val childCorrectedStreetAddress: String,
     val childCorrectedPostalCode: String,
-    val childCorrectedCity: String
+    val childCorrectedCity: String,
 )

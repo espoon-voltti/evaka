@@ -55,7 +55,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 tx.insertTestApplication(
                     guardian = testAdult_1,
                     child = testChild_1,
-                    appliedType = PlacementType.DAYCARE
+                    appliedType = PlacementType.DAYCARE,
                 )
             }
 
@@ -63,7 +63,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             clock = clock,
-            applicationId = applicationDetails.id
+            applicationId = applicationDetails.id,
         )
 
         db.transaction { tx -> assertNull(tx.fetchApplicationDetails(applicationDetails.id)) }
@@ -77,13 +77,13 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     tx.insertTestApplication(
                         guardian = testAdult_1,
                         child = testChild_1,
-                        appliedType = PlacementType.DAYCARE
+                        appliedType = PlacementType.DAYCARE,
                     )
                 stateService.sendApplication(
                     tx = tx,
                     user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
                     clock = clock,
-                    applicationId = application.id
+                    applicationId = application.id,
                 )
                 application
             }
@@ -92,7 +92,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             db = dbInstance(),
             user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             clock = clock,
-            applicationId = id
+            applicationId = id,
         )
 
         db.transaction { tx ->
@@ -108,23 +108,23 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     tx.insertTestApplication(
                         guardian = testAdult_1,
                         child = testChild_1,
-                        appliedType = PlacementType.DAYCARE
+                        appliedType = PlacementType.DAYCARE,
                     )
                 stateService.sendApplication(
                     tx = tx,
                     user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
                     clock = clock,
-                    applicationId = application.id
+                    applicationId = application.id,
                 )
                 stateService.moveToWaitingPlacement(
                     tx = tx,
                     user =
                         AuthenticatedUser.Employee(
                             testDecisionMaker_1.id,
-                            setOf(UserRole.SERVICE_WORKER)
+                            setOf(UserRole.SERVICE_WORKER),
                         ),
                     clock = clock,
-                    applicationId = application.id
+                    applicationId = application.id,
                 )
                 application
             }
@@ -134,7 +134,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 db = dbInstance(),
                 user = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
                 clock = clock,
-                applicationId = id
+                applicationId = id,
             )
         }
     }

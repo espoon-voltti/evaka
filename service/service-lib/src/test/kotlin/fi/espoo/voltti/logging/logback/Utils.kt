@@ -14,11 +14,11 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.MappingJsonFactory
 import com.fasterxml.jackson.databind.json.JsonMapper
+import java.util.UUID
 import net.logstash.logback.encoder.CompositeJsonEncoder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.slf4j.LoggerFactory
-import java.util.UUID
 
 // DSL
 
@@ -31,11 +31,13 @@ fun withTestLoggers(block: (TestLoggers) -> Unit): Unit =
         }
     }
 
-private fun setUpTestLoggers() = TestLoggers(
-    audit = TestLogger("VOLTTI_AUDIT_APPENDER"),
-    default = TestLogger("VOLTTI_DEFAULT_APPENDER"),
-    sanitized = TestLogger("VOLTTI_DEFAULT_APPENDER_SANITIZED")
-).apply { start() }
+private fun setUpTestLoggers() =
+    TestLoggers(
+            audit = TestLogger("VOLTTI_AUDIT_APPENDER"),
+            default = TestLogger("VOLTTI_DEFAULT_APPENDER"),
+            sanitized = TestLogger("VOLTTI_DEFAULT_APPENDER_SANITIZED"),
+        )
+        .apply { start() }
 
 class TestLogger(name: String) {
     private val logger: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
@@ -45,9 +47,10 @@ class TestLogger(name: String) {
     init {
         (logger.getAppender(name) as ConsoleAppender).let { console ->
             encoder = console.encoder as CompositeJsonEncoder<ILoggingEvent>
-            appender = ListAppender<ILoggingEvent>().apply {
-                console.copyOfAttachedFiltersList.forEach { filter -> addFilter(filter) }
-            }
+            appender =
+                ListAppender<ILoggingEvent>().apply {
+                    console.copyOfAttachedFiltersList.forEach { filter -> addFilter(filter) }
+                }
         }
     }
 
@@ -64,11 +67,7 @@ class TestLogger(name: String) {
     }
 }
 
-data class TestLoggers(
-    val audit: TestLogger,
-    val default: TestLogger,
-    val sanitized: TestLogger
-) {
+data class TestLoggers(val audit: TestLogger, val default: TestLogger, val sanitized: TestLogger) {
 
     fun start() {
         audit.start()
@@ -87,15 +86,24 @@ data class TestLoggers(
 
 val testSSNs = listOf("130105-0872", "130105A087A", "130105a087a", "130105+0872")
 const val redactedSSN = "REDACTED-SSN"
-val UUIDWithSSNs = listOf("e1130765-2925-4549-b395-9abdd6c8e08a", "e1130765-b9b5-4549-b395-922222a8208a", "5c0250a8-a3fa-449c-a188-6010108a000a")
+val UUIDWithSSNs =
+    listOf(
+        "e1130765-2925-4549-b395-9abdd6c8e08a",
+        "e1130765-b9b5-4549-b395-922222a8208a",
+        "5c0250a8-a3fa-449c-a188-6010108a000a",
+    )
+
 fun TestLoggers.assertAudit() =
-    assertThat(audit.appender.list.map { it.toJson(audit.encoder).asMap(mapper) }).extracting(*auditEventProps)
+    assertThat(audit.appender.list.map { it.toJson(audit.encoder).asMap(mapper) })
+        .extracting(*auditEventProps)
 
 fun TestLoggers.assertDefault() =
-    assertThat(default.appender.list.map { it.toJson(default.encoder).asMap(mapper) }).extracting(*defaultEventProps)
+    assertThat(default.appender.list.map { it.toJson(default.encoder).asMap(mapper) })
+        .extracting(*defaultEventProps)
 
 fun TestLoggers.assertSanitized() =
-    assertThat(sanitized.appender.list.map { it.toJson(sanitized.encoder).asMap(mapper) }).extracting(*defaultEventProps)
+    assertThat(sanitized.appender.list.map { it.toJson(sanitized.encoder).asMap(mapper) })
+        .extracting(*defaultEventProps)
 
 fun TestLoggers.withLatestDefault(block: (Map<String, Any>) -> Unit) =
     block(default.appender.list.last().toJson(default.encoder).asMap(mapper))
@@ -111,81 +119,84 @@ data class AuditEvent(
     val targetId: Any,
     private val appName: String = "test-service",
     private val type: String = "app-audit-events",
-    private val version: Int = 1
+    private val version: Int = 1,
 ) {
-    fun tuple() = Tuple(
-        userId,
-        description,
-        eventCode,
-        targetId,
-        userIdHash,
-        appName,
-        EnvFields.appBuild,
-        EnvFields.appCommit,
-        EnvFields.env,
-        EnvFields.hostIp,
-        type,
-        version
-    )
+    fun tuple() =
+        Tuple(
+            userId,
+            description,
+            eventCode,
+            targetId,
+            userIdHash,
+            appName,
+            EnvFields.appBuild,
+            EnvFields.appCommit,
+            EnvFields.env,
+            EnvFields.hostIp,
+            type,
+            version,
+        )
 
     companion object {
-        fun dummy(prefix: String) = AuditEvent(
-            userId = "$prefix.userId",
-            userIdHash = "$prefix.userIdHash",
-            description = "$prefix.description",
-            eventCode = "$prefix.someEvent",
-            targetId = "$prefix.id"
-        )
+        fun dummy(prefix: String) =
+            AuditEvent(
+                userId = "$prefix.userId",
+                userIdHash = "$prefix.userIdHash",
+                description = "$prefix.description",
+                eventCode = "$prefix.someEvent",
+                targetId = "$prefix.id",
+            )
     }
 }
 
-private val auditEventProps = arrayOf(
-    "userId",
-    "description",
-    "eventCode",
-    "targetId",
-    "userIdHash",
-    "appName",
-    "appBuild",
-    "appCommit",
-    "env",
-    "hostIp",
-    "type",
-    "version"
-)
+private val auditEventProps =
+    arrayOf(
+        "userId",
+        "description",
+        "eventCode",
+        "targetId",
+        "userIdHash",
+        "appName",
+        "appBuild",
+        "appCommit",
+        "env",
+        "hostIp",
+        "type",
+        "version",
+    )
 
-data class DefaultEvent(
-    val userIdHash: String
-) {
+data class DefaultEvent(val userIdHash: String) {
     val message: String = "${UUID.randomUUID()}.message"
     private val appName: String = "test-service"
     private val type: String = "app-misc"
     private val version: Int = 1
 
-    fun tuple() = Tuple(
-        message,
-        appName,
-        EnvFields.appBuild,
-        EnvFields.appCommit,
-        EnvFields.env,
-        EnvFields.hostIp,
-        userIdHash,
-        type,
-        version
-    )
+    fun tuple() =
+        Tuple(
+            message,
+            appName,
+            EnvFields.appBuild,
+            EnvFields.appCommit,
+            EnvFields.env,
+            EnvFields.hostIp,
+            userIdHash,
+            type,
+            version,
+        )
 }
 
-private val defaultEventProps = arrayOf(
-    "message",
-    "appName",
-    "appBuild",
-    "appCommit",
-    "env",
-    "hostIp",
-    "userIdHash",
-    "type",
-    "version"
-)
+private val defaultEventProps =
+    arrayOf(
+        "message",
+        "appName",
+        "appBuild",
+        "appCommit",
+        "env",
+        "hostIp",
+        "userIdHash",
+        "type",
+        "version",
+    )
 
 private object EnvFields {
     const val appBuild = "APP_BUILD_IS_UNDEFINED"
@@ -203,5 +214,6 @@ private fun ILoggingEvent.toJson(encoder: CompositeJsonEncoder<ILoggingEvent>): 
     mapper.readTree(encoder.encode(this))
 
 @Suppress("DEPRECATION")
-private val factory = MappingJsonFactory().enable(JsonGenerator.Feature.ESCAPE_NON_ASCII) as JsonFactory
+private val factory =
+    MappingJsonFactory().enable(JsonGenerator.Feature.ESCAPE_NON_ASCII) as JsonFactory
 private val mapper = JsonMapper(factory)

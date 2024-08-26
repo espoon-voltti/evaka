@@ -35,7 +35,7 @@ fun DevPerson.toDaycareFormChild(
     dateOfBirth: LocalDate? = null,
     nationality: String = "FI",
     language: String = "fi",
-    restricted: Boolean = false
+    restricted: Boolean = false,
 ) =
     DaycareFormChild(
         firstName = firstName,
@@ -46,7 +46,7 @@ fun DevPerson.toDaycareFormChild(
             DaycareFormAddress(street = streetAddress, postalCode = postalCode, city = postOffice),
         nationality = nationality,
         language = language,
-        restricted = restricted
+        restricted = restricted,
     )
 
 fun DevPerson.toDaycareFormAdult(restricted: Boolean = false) =
@@ -58,5 +58,5 @@ fun DevPerson.toDaycareFormAdult(restricted: Boolean = false) =
             DaycareFormAddress(street = streetAddress, postalCode = postalCode, city = postOffice),
         phoneNumber = phone,
         email = email,
-        restricted = restricted
+        restricted = restricted,
     )

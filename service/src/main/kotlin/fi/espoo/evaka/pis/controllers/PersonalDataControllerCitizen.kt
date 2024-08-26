@@ -34,7 +34,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: PersonalDataUpdate
+        @RequestBody body: PersonalDataUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -43,7 +43,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Citizen.Person.UPDATE_PERSONAL_DATA,
-                    user.id
+                    user.id,
                 )
 
                 val person = tx.getPersonById(user.id) ?: error("User not found")
@@ -63,7 +63,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                         "invalid email"
                             .takeUnless {
                                 body.email.isBlank() || EMAIL_PATTERN.matches(body.email)
-                            }
+                            },
                     )
 
                 if (validationErrors.isNotEmpty())
@@ -79,7 +79,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
     fun getNotificationSettings(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): EmailNotificationSettings {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -88,7 +88,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Person.READ_NOTIFICATION_SETTINGS,
-                        user.id
+                        user.id,
                     )
                     EmailNotificationSettings.fromNotificationTypes(
                         tx.getEnabledEmailTypes(user.id)
@@ -103,7 +103,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: EmailNotificationSettings
+        @RequestBody body: EmailNotificationSettings,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -112,7 +112,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Citizen.Person.UPDATE_NOTIFICATION_SETTINGS,
-                    user.id
+                    user.id,
                 )
                 tx.updateEnabledEmailTypes(user.id, body.toNotificationTypes())
             }

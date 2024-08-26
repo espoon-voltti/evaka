@@ -40,7 +40,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         headOfChildId: PersonId,
         startDate: LocalDate,
         endDate: LocalDate,
-        creator: Creator
+        creator: Creator,
     ): Parentship {
         tx.getPersonById(childId)?.let { child ->
             validateDates(child.dateOfBirth, startDate, endDate)
@@ -60,7 +60,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         user: AuthenticatedUser.Employee,
         id: ParentshipId,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ): Parentship {
         val oldParentship =
             tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
@@ -72,7 +72,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                     startDate = startDate,
                     endDate = endDate,
                     now = clock.now(),
-                    modifier = Modifier.User(user.evakaUserId)
+                    modifier = Modifier.User(user.evakaUserId),
                 )
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: Exception) {
@@ -83,7 +83,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             clock,
             oldParentship.headOfChildId,
             minOf(startDate, oldParentship.startDate),
-            maxOf(endDate, oldParentship.endDate)
+            maxOf(endDate, oldParentship.endDate),
         )
 
         return oldParentship.copy(startDate = startDate, endDate = endDate)
@@ -93,7 +93,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         tx: Database.Transaction,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        id: ParentshipId
+        id: ParentshipId,
     ) {
         try {
             tx.getParentship(id)
@@ -104,7 +104,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                         clock,
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
-                        endDate = it.endDate
+                        endDate = it.endDate,
                     )
                 }
         } catch (e: Exception) {
@@ -124,7 +124,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         clock: EvakaClock,
         adultId: PersonId,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ) {
         logger.info("Sending update family message with adult $adultId")
         asyncJobRunner.plan(
@@ -132,7 +132,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             listOf(
                 AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))
             ),
-            runAt = clock.now()
+            runAt = clock.now(),
         )
     }
 }
@@ -155,7 +155,7 @@ data class Parentship(
     val headOfChild: PersonJSON,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
 )
 
 data class ParentshipDetailed(
@@ -167,7 +167,7 @@ data class ParentshipDetailed(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val conflict: Boolean = false,
-    val creationModificationMetadata: CreationModificationMetadata
+    val creationModificationMetadata: CreationModificationMetadata,
 ) {
     fun withoutDetails() =
         Parentship(
@@ -178,6 +178,6 @@ data class ParentshipDetailed(
             headOfChild = headOfChild,
             startDate = startDate,
             endDate = endDate,
-            conflict = conflict
+            conflict = conflict,
         )
 }

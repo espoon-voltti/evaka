@@ -41,12 +41,12 @@ import org.springframework.web.bind.annotation.RestController
 class ExceededServiceNeedsReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/exceeded-service-need/units", // deprecated
-        "/employee/reports/exceeded-service-need/units"
+        "/employee/reports/exceeded-service-need/units",
     )
     fun getExceededServiceNeedReportUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ExceededServiceNeedReportUnit> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -55,7 +55,7 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT
+                        Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT,
                     )
                 tx.getExceededServiceNeedReportUnits(filter)
             }
@@ -69,7 +69,7 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<ExceededServiceNeedReportRow> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -78,7 +78,7 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
                     user,
                     clock,
                     Action.Unit.READ_EXCEEDED_SERVICE_NEEDS_REPORT,
-                    unitId
+                    unitId,
                 )
                 exceededServiceNeedReport(tx, clock.today(), unitId, year, month)
             }
@@ -112,7 +112,7 @@ data class ExceededServiceNeedReportRow(
     val serviceNeedHoursPerMonth: Int,
     val usedServiceHours: Int,
     val excessHours: Int,
-    val groupName: String?
+    val groupName: String?,
 )
 
 private fun exceededServiceNeedReport(
@@ -120,7 +120,7 @@ private fun exceededServiceNeedReport(
     today: LocalDate,
     unitId: DaycareId,
     year: Int,
-    month: Int
+    month: Int,
 ): List<ExceededServiceNeedReportRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
@@ -162,7 +162,7 @@ private fun exceededServiceNeedReport(
                             shiftCareType = serviceNeed.shiftCare,
                             absences = childAbsences,
                             reservations = childReservations,
-                            attendances = childAttendances
+                            attendances = childAttendances,
                         )
                 }
             }
@@ -190,18 +190,14 @@ private fun exceededServiceNeedReport(
                 groupName = childGroups[child.id]?.groupName,
                 serviceNeedHoursPerMonth = serviceNeedHoursPerMonth,
                 usedServiceHours = usedServiceHours,
-                excessHours = excessHours
+                excessHours = excessHours,
             )
         }
         .filter { it.usedServiceHours > it.serviceNeedHoursPerMonth }
         .sortedBy { -it.excessHours }
 }
 
-private data class ReportChild(
-    val id: ChildId,
-    val firstName: String,
-    val lastName: String,
-)
+private data class ReportChild(val id: ChildId, val firstName: String, val lastName: String)
 
 private fun Database.Read.getChildren(childIds: Set<ChildId>): List<ReportChild> =
     createQuery {
@@ -227,7 +223,7 @@ private data class ReportServiceNeed(
 
 private fun Database.Read.getServiceNeedsByRange(
     unitId: DaycareId,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<ChildId, List<ReportServiceNeed>> =
     createQuery {
             sql(
@@ -257,7 +253,7 @@ private fun Database.Read.getServiceNeedsByRange(
 
 private fun Database.Read.getAbsencesByRange(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<Pair<ChildId, LocalDate>, List<Pair<AbsenceType, AbsenceCategory>>> =
     getAbsences(
             Predicate {
@@ -273,7 +269,7 @@ private fun Database.Read.getAbsencesByRange(
 
 fun Database.Read.getAttendancesByRange(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<Pair<ChildId, LocalDate>, List<ChildAttendanceRow>> =
     getChildAttendances(
             Predicate {
@@ -291,7 +287,7 @@ fun Database.Read.getAttendancesByRange(
 
 fun Database.Read.getReservationsByRange(
     childIds: Set<ChildId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<Pair<ChildId, LocalDate>, List<ReservationRow>> =
     getReservations(
             Predicate {

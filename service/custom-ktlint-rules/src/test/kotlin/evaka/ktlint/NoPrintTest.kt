@@ -15,30 +15,37 @@ class NoPrintTest {
 
     @Test
     fun `NoPrintln detects println call`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing() {
     println("test")
 }
-""")
+"""
+            )
             .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
 
     @Test
     fun `NoPrintln detects print call`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing() {
     print("test")
 }
-""")
+"""
+            )
             .hasLintViolationWithoutAutoCorrect(line = 3, col = 5, detail = NoPrint.ERROR_MESSAGE)
     }
 
     @Test
     fun `NoPrintln does not complain about a logger function`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing() {
     logger.info("test")
 }
-""").hasNoLintViolations()
+"""
+            )
+            .hasNoLintViolations()
     }
 }

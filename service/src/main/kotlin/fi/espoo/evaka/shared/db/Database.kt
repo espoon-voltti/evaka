@@ -91,7 +91,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     internal constructor(
         private val threadId: ThreadId,
         private val tracer: Tracer,
-        private val openRawHandle: () -> Handle
+        private val openRawHandle: () -> Handle,
     ) : AutoCloseable {
         private var rawHandle: Handle? = null
 
@@ -209,22 +209,22 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun <R> prepareBatch(
             rows: Iterable<R>,
-            f: BatchSql.Builder<R>.() -> BatchSql<R>
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): PreparedBatch<R> = prepareBatch(f).addAll(rows)
 
         fun <R> prepareBatch(
             rows: Sequence<R>,
-            f: BatchSql.Builder<R>.() -> BatchSql<R>
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): PreparedBatch<R> = prepareBatch(f).addAll(rows)
 
         fun <R> executeBatch(
             rows: Iterable<R>,
-            f: BatchSql.Builder<R>.() -> BatchSql<R>
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): IntArray = prepareBatch(f).addAll(rows).execute()
 
         fun <R> executeBatch(
             rows: Sequence<R>,
-            f: BatchSql.Builder<R>.() -> BatchSql<R>
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): IntArray = prepareBatch(f).addAll(rows).execute()
 
         @Deprecated(
@@ -285,10 +285,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         protected abstract val raw: org.jdbi.v3.core.statement.SqlStatement<*>
 
-        inline fun <reified T> bind(
-            name: String,
-            value: T,
-        ): This = bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
+        inline fun <reified T> bind(name: String, value: T): This =
+            bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
 
         inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): This =
             registerColumnMapper(createQualifiedType(), mapper)
@@ -321,7 +319,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             bindByType(
                 name,
                 value,
-                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java)),
             )
 
         fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): This {
@@ -456,7 +454,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun updateExactlyOne(
             notFoundMsg: String = "Not found",
-            foundMultipleMsg: String = "Found multiple"
+            foundMultipleMsg: String = "Found multiple",
         ) {
             val rows = this.execute()
             if (rows == 0) throw NotFound(notFoundMsg)
@@ -482,10 +480,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
 
-        inline fun <reified T> bind(
-            name: String,
-            value: T,
-        ): LegacyPreparedBatch =
+        inline fun <reified T> bind(name: String, value: T): LegacyPreparedBatch =
             bindByType(name, value, createQualifiedType(*defaultQualifiers<T>()))
 
         inline fun <reified T> registerColumnMapper(mapper: ColumnMapper<T>): LegacyPreparedBatch =
@@ -493,7 +488,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun <T> registerColumnMapper(
             type: QualifiedType<T>,
-            mapper: ColumnMapper<T>
+            mapper: ColumnMapper<T>,
         ): LegacyPreparedBatch {
             raw.registerColumnMapper(type, mapper)
             return this
@@ -522,7 +517,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             bindByType(
                 name,
                 value,
-                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java))
+                QualifiedType.of(value.javaClass).withAnnotationClasses(listOf(Json::class.java)),
             )
 
         fun <T> bindByType(name: String, value: T, type: QualifiedType<T>): LegacyPreparedBatch {
@@ -544,7 +539,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     class PreparedBatch<R>
     internal constructor(
         private val raw: org.jdbi.v3.core.statement.PreparedBatch,
-        private val bindings: List<BatchBinding<R, *>>
+        private val bindings: List<BatchBinding<R, *>>,
     ) {
         fun execute(): IntArray = raw.execute()
 
@@ -555,7 +550,7 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
 
         fun <T> registerColumnMapper(
             type: QualifiedType<T>,
-            mapper: ColumnMapper<T>
+            mapper: ColumnMapper<T>,
         ): PreparedBatch<R> {
             raw.registerColumnMapper(type, mapper)
             return this
@@ -676,7 +671,7 @@ data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>
         inline fun <reified T> of(
             name: String,
             value: T,
-            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
+            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>(),
         ) = Binding(name, value, createQualifiedType(*qualifiers))
     }
 }
@@ -685,14 +680,14 @@ sealed interface BatchBinding<out R, T>
 
 data class LazyBinding<R, T>(
     val getValue: (row: R) -> T,
-    val getType: (row: R) -> QualifiedType<T>
+    val getType: (row: R) -> QualifiedType<T>,
 ) : BatchBinding<R, T> {
     companion object {
         inline fun <R, reified T> of(
             noinline getValue: (row: R) -> T,
             noinline getQualifiers: (value: T) -> Array<KClass<out Annotation>> = {
                 defaultQualifiers<T>()
-            }
+            },
         ) = LazyBinding(getValue) { createQualifiedType(*getQualifiers(getValue(it))) }
     }
 }
@@ -701,7 +696,7 @@ data class ValueBinding<T>(val value: T, val type: QualifiedType<T>) : BatchBind
     companion object {
         inline fun <reified T> of(
             value: T,
-            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()
+            qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>(),
         ) = ValueBinding(value, createQualifiedType(*qualifiers))
     }
 }
@@ -740,7 +735,7 @@ abstract class SqlBuilder {
                 if (value is Any && value.javaClass != T::class.java)
                     QualifiedType.of(value.javaClass).with(Json::class.java)
                 // Use compile-time type information for other values, including nulls
-                else createQualifiedType(Json::class)
+                else createQualifiedType(Json::class),
             )
         )
 
@@ -792,7 +787,7 @@ data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out
             }
             return QuerySql(
                 QuerySqlString(queries.joinToString(separator) { it.sql.toString() }),
-                bindings
+                bindings,
             )
         }
 
@@ -860,7 +855,7 @@ data class BatchSql<R>(val sql: QuerySqlString, val bindings: List<BatchBinding<
 value class Row(private val row: RowView) {
     inline fun <reified K, reified V> columnPair(
         firstColumn: String,
-        secondColumn: String
+        secondColumn: String,
     ): Pair<K, V> = column<K>(firstColumn) to column<V>(secondColumn)
 
     inline fun <reified T> column(name: String, vararg annotations: KClass<out Annotation>): T {

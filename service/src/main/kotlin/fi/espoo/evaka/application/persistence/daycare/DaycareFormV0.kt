@@ -21,7 +21,7 @@ const val DEFAULT_CHILD_LANGUAGE = "fi"
     "hasSecondGuardian",
     "guardiansSeparated",
     "secondGuardianHasAgreed",
-    "guardianIsSingleParent"
+    "guardianIsSingleParent",
 )
 data class DaycareFormV0(
     override val type: ApplicationType,
@@ -47,7 +47,7 @@ data class DaycareFormV0(
     val otherChildren: List<OtherPerson> = emptyList(),
     val docVersion: Long = 0L,
     val additionalDetails: DaycareAdditionalDetails = DaycareAdditionalDetails(),
-    val maxFeeAccepted: Boolean = false
+    val maxFeeAccepted: Boolean = false,
 ) : DatabaseForm.DaycareForm() {
     init {
         when (type) {
@@ -63,7 +63,7 @@ data class DaycareFormV0(
                 this.guardian.copy(
                     address = Address(),
                     correctingAddress = Address(),
-                    restricted = true
+                    restricted = true,
                 )
         )
     }
@@ -74,7 +74,7 @@ data class DaycareFormV0(
                 this.child.copy(
                     address = Address(),
                     correctingAddress = Address(),
-                    restricted = true
+                    restricted = true,
                 )
         )
     }
@@ -85,14 +85,14 @@ data class DaycareFormV0(
                 application.form,
                 application.type,
                 application.childRestricted,
-                application.guardianRestricted
+                application.guardianRestricted,
             )
 
         fun fromForm2(
             form: fi.espoo.evaka.application.ApplicationForm,
             type: ApplicationType,
             childRestricted: Boolean,
-            guardianRestricted: Boolean
+            guardianRestricted: Boolean,
         ) =
             DaycareFormV0(
                 type = type,
@@ -108,7 +108,7 @@ data class DaycareFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = false
+                                    editable = false,
                                 )
                             } ?: Address(),
                         nationality = form.child.nationality,
@@ -120,11 +120,11 @@ data class DaycareFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = true
+                                    editable = true,
                                 )
                             } ?: Address(editable = true),
                         childMovingDate = form.child.futureAddress?.movingDate,
-                        restricted = childRestricted
+                        restricted = childRestricted,
                     ),
                 guardian =
                     Adult(
@@ -137,7 +137,7 @@ data class DaycareFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = false
+                                    editable = false,
                                 )
                             } ?: Address(),
                         phoneNumber = form.guardian.phoneNumber,
@@ -149,11 +149,11 @@ data class DaycareFormV0(
                                     street = it.street,
                                     postalCode = it.postalCode,
                                     city = it.postOffice,
-                                    editable = true
+                                    editable = true,
                                 )
                             } ?: Address(editable = true),
                         guardianMovingDate = form.guardian.futureAddress?.movingDate,
-                        restricted = guardianRestricted
+                        restricted = guardianRestricted,
                     ),
                 otherGuardianAgreementStatus = form.secondGuardian?.agreementStatus,
                 apply =
@@ -161,7 +161,7 @@ data class DaycareFormV0(
                         preferredUnits = form.preferences.preferredUnits.map { it.id },
                         siblingBasis = form.preferences.siblingBasis != null,
                         siblingName = form.preferences.siblingBasis?.siblingName ?: "",
-                        siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: ""
+                        siblingSsn = form.preferences.siblingBasis?.siblingSsn ?: "",
                     ),
                 urgent = form.preferences.urgent,
                 partTime = form.preferences.serviceNeed?.partTime ?: false,
@@ -183,13 +183,13 @@ data class DaycareFormV0(
                                 type == ApplicationType.PRESCHOOL
                             },
                         assistanceNeeded = form.child.assistanceNeeded,
-                        assistanceDescription = form.child.assistanceDescription
+                        assistanceDescription = form.child.assistanceDescription,
                     ),
                 guardian2 =
                     form.secondGuardian?.let { secondGuardian ->
                         Adult(
                             phoneNumber = secondGuardian.phoneNumber,
-                            email = secondGuardian.email
+                            email = secondGuardian.email,
                         )
                     },
                 hasOtherAdults = form.otherPartner != null,
@@ -199,7 +199,7 @@ data class DaycareFormV0(
                             OtherPerson(
                                 firstName = it.firstName,
                                 lastName = it.lastName,
-                                socialSecurityNumber = it.socialSecurityNumber ?: ""
+                                socialSecurityNumber = it.socialSecurityNumber ?: "",
                             )
                         )
                     } ?: listOf(),
@@ -209,16 +209,16 @@ data class DaycareFormV0(
                         OtherPerson(
                             firstName = it.firstName,
                             lastName = it.lastName,
-                            socialSecurityNumber = it.socialSecurityNumber ?: ""
+                            socialSecurityNumber = it.socialSecurityNumber ?: "",
                         )
                     },
                 additionalDetails =
                     DaycareAdditionalDetails(
                         allergyType = form.child.allergies,
                         dietType = form.child.diet,
-                        otherInfo = form.otherInfo
+                        otherInfo = form.otherInfo,
                     ),
-                maxFeeAccepted = form.maxFeeAccepted
+                maxFeeAccepted = form.maxFeeAccepted,
             )
     }
 }
@@ -234,7 +234,7 @@ data class Child(
     val hasCorrectingAddress: Boolean? = null,
     val correctingAddress: Address = Address(editable = true),
     val childMovingDate: LocalDate? = null,
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
 )
 
 @JsonIgnoreProperties("workStatus", "workAddress")
@@ -248,55 +248,55 @@ data class Adult(
     val hasCorrectingAddress: Boolean? = null,
     val correctingAddress: Address = Address(editable = true),
     val guardianMovingDate: LocalDate? = null,
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
 )
 
 data class Address(
     val street: String = "",
     val postalCode: String = "",
     val city: String = "",
-    val editable: Boolean = false
+    val editable: Boolean = false,
 )
 
 data class DaycareAdditionalDetails(
     val allergyType: String = "",
     val dietType: String = "",
-    val otherInfo: String = ""
+    val otherInfo: String = "",
 )
 
 data class Apply(
     val preferredUnits: List<DaycareId> = emptyList(),
     val siblingBasis: Boolean = false,
     val siblingName: String = "",
-    val siblingSsn: String = ""
+    val siblingSsn: String = "",
 )
 
 data class OtherPerson(
     val firstName: String = "",
     val lastName: String = "",
-    val socialSecurityNumber: String = ""
+    val socialSecurityNumber: String = "",
 )
 
 enum class CareType(val id: Long) {
     @JsonProperty("centre") CENTRE(1L),
     @JsonProperty("family") FAMILY(2L),
-    @JsonProperty("group_family") GROUP_FAMILY(3L)
+    @JsonProperty("group_family") GROUP_FAMILY(3L),
 }
 
 enum class WeeklyHours(val id: Long) {
     @JsonProperty("over_35") OVER_35(1L),
     @JsonProperty("between_25_and_35") BETWEEN_25_AND_35(2L),
-    @JsonProperty("under_25") UNDER_25(3L)
+    @JsonProperty("under_25") UNDER_25(3L),
 }
 
 @JsonIgnoreProperties(
     // no longer in the class since commit 90b5a4f4f949bcce4680b2ee133820d6affc0695, but still
     // present in data
     "assistanceAdditionalDetails",
-    "careFactor"
+    "careFactor",
 )
 data class CareDetails(
     val preparatory: Boolean? = null,
     val assistanceNeeded: Boolean = false,
-    val assistanceDescription: String = ""
+    val assistanceDescription: String = "",
 )

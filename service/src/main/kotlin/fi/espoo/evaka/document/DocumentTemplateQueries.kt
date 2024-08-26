@@ -35,7 +35,7 @@ RETURNING *
 
 fun Database.Transaction.duplicateTemplate(
     id: DocumentTemplateId,
-    template: DocumentTemplateBasicsRequest
+    template: DocumentTemplateBasicsRequest,
 ): DocumentTemplate {
     return createQuery {
             sql(
@@ -73,7 +73,7 @@ fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTempla
 
 fun Database.Transaction.updateDraftTemplateBasics(
     id: DocumentTemplateId,
-    basics: DocumentTemplateBasicsRequest
+    basics: DocumentTemplateBasicsRequest,
 ) {
     createUpdate {
             sql(
@@ -97,7 +97,7 @@ fun Database.Transaction.updateDraftTemplateBasics(
 
 fun Database.Transaction.updateDraftTemplateContent(
     id: DocumentTemplateId,
-    content: DocumentTemplateContent
+    content: DocumentTemplateContent,
 ) {
     createUpdate {
             sql(

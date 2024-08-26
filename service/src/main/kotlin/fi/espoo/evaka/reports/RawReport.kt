@@ -30,14 +30,14 @@ import org.springframework.web.bind.annotation.RestController
 class RawReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/raw", // deprecated
-        "/employee/reports/raw"
+        "/employee/reports/raw",
     )
     fun getRawReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): List<RawReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
@@ -48,7 +48,7 @@ class RawReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_RAW_REPORT
+                        Action.Global.READ_RAW_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getRawRows(from, to)
@@ -211,5 +211,5 @@ data class RawReportRow(
     val absenceFree: AbsenceType?,
     val staffDimensioning: Int,
     val isWeekday: Boolean,
-    val isHoliday: Boolean
+    val isHoliday: Boolean,
 )

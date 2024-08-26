@@ -17,21 +17,21 @@ interface DocumentService {
     fun response(
         bucketName: String,
         key: String,
-        contentDisposition: ContentDisposition
+        contentDisposition: ContentDisposition,
     ): ResponseEntity<Any>
 
     fun responseAttachment(bucketName: String, key: String, fileName: String?) =
         response(
             bucketName,
             key,
-            ContentDisposition.attachment().filename(fileName, Charsets.UTF_8).build()
+            ContentDisposition.attachment().filename(fileName, Charsets.UTF_8).build(),
         )
 
     fun responseInline(bucketName: String, key: String, fileName: String?) =
         response(
             bucketName,
             key,
-            ContentDisposition.inline().filename(fileName, Charsets.UTF_8).build()
+            ContentDisposition.inline().filename(fileName, Charsets.UTF_8).build(),
         )
 
     fun upload(bucketName: String, document: Document): DocumentLocation

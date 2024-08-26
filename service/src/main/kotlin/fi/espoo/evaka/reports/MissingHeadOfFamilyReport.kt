@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/missing-head-of-family", // deprecated
-        "/employee/reports/missing-head-of-family"
+        "/employee/reports/missing-head-of-family",
     )
     fun getMissingHeadOfFamilyReport(
         db: Database,
@@ -33,7 +33,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
-        @RequestParam showIntentionalDuplicates: Boolean = false
+        @RequestParam showIntentionalDuplicates: Boolean = false,
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -41,7 +41,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
                         it,
                         user,
                         clock,
-                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getMissingHeadOfFamilyRows(
@@ -130,5 +130,5 @@ data class MissingHeadOfFamilyReportRow(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
-    val rangesWithoutHead: List<FiniteDateRange>
+    val rangesWithoutHead: List<FiniteDateRange>,
 )

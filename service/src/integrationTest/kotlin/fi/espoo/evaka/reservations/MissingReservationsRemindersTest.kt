@@ -54,7 +54,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
             TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59")),
             null,
-            null
+            null,
         )
     private lateinit var guardian: PersonId
     private lateinit var child: ChildId
@@ -80,7 +80,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     DevDaycare(
                         areaId = areaId,
                         operationTimes = operationTimes,
-                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS)
+                        enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS),
                     )
                 )
             tx.insertServiceNeedOption(snDefaultDaycare)
@@ -92,7 +92,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                     unitId = daycareId,
                     startDate = checkedRange.start,
                     endDate = checkedRange.end,
-                    type = PlacementType.DAYCARE
+                    type = PlacementType.DAYCARE,
                 )
             )
         }
@@ -134,7 +134,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                         childId = child,
                         date = it,
                         absenceType = AbsenceType.SICKLEAVE,
-                        absenceCategory = AbsenceCategory.NONBILLABLE
+                        absenceCategory = AbsenceCategory.NONBILLABLE,
                     )
                 )
             }
@@ -162,7 +162,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     private fun Database.Transaction.createReservation(
         date: LocalDate,
         startTime: LocalTime? = LocalTime.of(8, 0),
-        endTime: LocalTime? = LocalTime.of(16, 0)
+        endTime: LocalTime? = LocalTime.of(16, 0),
     ) =
         insert(
             DevReservation(
@@ -170,7 +170,7 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
                 date = date,
                 startTime = startTime,
                 endTime = endTime,
-                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
             )
         )
 

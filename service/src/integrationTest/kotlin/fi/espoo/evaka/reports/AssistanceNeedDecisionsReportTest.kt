@@ -58,7 +58,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                 AssistanceNeedDecisionEmployeeForm(
                     employeeId = assistanceWorker.id,
                     title = "worker",
-                    phoneNumber = "01020405060"
+                    phoneNumber = "01020405060",
                 ),
             preparedBy2 = null,
             decisionMaker = null,
@@ -70,7 +70,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                     smallGroup = false,
                     groupAssistant = false,
                     childAssistant = false,
-                    additionalStaff = false
+                    additionalStaff = false,
                 ),
             structuralMotivationDescription = "Structural motivation description",
             careMotivation = "Care motivation",
@@ -80,7 +80,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                     partTimeSpecialEd = false,
                     fullTimeSpecialEd = false,
                     interpretationAndAssistanceServices = false,
-                    specialAides = true
+                    specialAides = true,
                 ),
             servicesMotivation = "Services Motivation",
             expertResponsibilities = "Expert responsibilities",
@@ -92,14 +92,14 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                         personId = testAdult_1.id,
                         name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                         isHeard = true,
-                        details = "Lots of details"
+                        details = "Lots of details",
                     )
                 ),
             viewOfGuardians = "The view of the guardians",
             otherRepresentativeHeard = false,
             otherRepresentativeDetails = null,
             assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
-            motivationForDecision = "Motivation for decision"
+            motivationForDecision = "Motivation for decision",
         )
 
     @BeforeEach
@@ -140,7 +140,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
 
         whenPostAssistanceNeedDecisionMarkAsOpenedThenExpectSuccess(
             decisions.get(decisionMaker1.id)!!.first(),
-            decisionMaker1
+            decisionMaker1,
         )
 
         val decisionMaker1UnreadCountAfterOpen =
@@ -216,7 +216,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
 
     private fun whenPostAssistanceNeedDecisionMarkAsOpenedThenExpectSuccess(
         id: AssistanceNeedDecisionId,
-        decisionMaker: AuthenticatedUser
+        decisionMaker: AuthenticatedUser,
     ) {
         val (_, res) =
             http
@@ -237,7 +237,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                                     decisionMaker =
                                         AssistanceNeedDecisionMakerForm(
                                             employeeId = entry.key,
-                                            title = "regional director"
+                                            title = "regional director",
                                         )
                                 )
                         )

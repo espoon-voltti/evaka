@@ -39,7 +39,7 @@ data class FeeDecision(
     val approvedAt: HelsinkiDateTime? = null,
     val decisionHandlerId: EmployeeId? = null,
     val sentAt: HelsinkiDateTime? = null,
-    override val created: HelsinkiDateTime = HelsinkiDateTime.now()
+    override val created: HelsinkiDateTime = HelsinkiDateTime.now(),
 ) : FinanceDecision<FeeDecision> {
     val totalFee
         get() = children.fold(0) { sum, child -> sum + child.finalFee }
@@ -84,7 +84,7 @@ data class FeeDecisionChild(
     val fee: Int,
     @Json val feeAlterations: List<FeeAlterationWithEffect>,
     val finalFee: Int,
-    @Json val childIncome: DecisionIncome?
+    @Json val childIncome: DecisionIncome?,
 )
 
 data class FeeDecisionPlacement(val unitId: DaycareId, val type: PlacementType)
@@ -95,14 +95,14 @@ data class FeeDecisionServiceNeed(
     val contractDaysPerMonth: Int?,
     val descriptionFi: String,
     val descriptionSv: String,
-    val missing: Boolean
+    val missing: Boolean,
 )
 
 data class FeeAlterationWithEffect(
     val type: FeeAlterationType,
     val amount: Int,
     @get:JsonProperty("isAbsolute") val isAbsolute: Boolean,
-    val effect: Int
+    val effect: Int,
 )
 
 enum class FeeDecisionStatus : DatabaseEnum {
@@ -145,11 +145,11 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
     INCOME({ d1, d2 ->
         setOf(
             d1.headOfFamilyIncome?.effectiveComparable(),
-            d1.partnerIncome?.effectiveComparable()
+            d1.partnerIncome?.effectiveComparable(),
         ) ==
             setOf(
                 d2.headOfFamilyIncome?.effectiveComparable(),
-                d2.partnerIncome?.effectiveComparable()
+                d2.partnerIncome?.effectiveComparable(),
             ) && decisionChildrenEquals(d1, d2) { it.childIncome?.effectiveComparable() }
     }),
     PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
@@ -176,7 +176,7 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
 private fun <T> decisionChildrenEquals(
     d1: FeeDecision,
     d2: FeeDecision,
-    fn: (child: FeeDecisionChild) -> T
+    fn: (child: FeeDecisionChild) -> T,
 ): Boolean {
     val map1 = d1.children.associateBy({ it.child.id }, fn)
     val map2 = d2.children.associateBy({ it.child.id }, fn)
@@ -206,7 +206,7 @@ data class FeeDecisionDetailed(
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
     val partnerIsCodebtor: Boolean? = false,
     // True if the document is a legacy document that may contain guardian name and address.
-    val documentContainsContactInfo: Boolean
+    val documentContainsContactInfo: Boolean,
 ) {
     val totalFee
         get() = children.fold(0) { sum, part -> sum + part.finalFee }
@@ -222,7 +222,7 @@ data class FeeDecisionDetailed(
                 headOfFamilyIncome?.effect,
                 headOfFamilyIncome?.total,
                 partnerIncome?.effect,
-                partnerIncome?.total
+                partnerIncome?.total,
             )
 
     val requiresManualSending
@@ -247,7 +247,7 @@ data class FeeDecisionDetailed(
         get() =
             isRetroactive(
                 this.validDuring.start,
-                sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki)
+                sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki),
             )
 }
 
@@ -270,7 +270,7 @@ data class FeeDecisionChildDetailed(
     val fee: Int,
     val feeAlterations: List<FeeAlterationWithEffect>,
     val finalFee: Int,
-    val childIncome: DecisionIncome?
+    val childIncome: DecisionIncome?,
 )
 
 data class FeeDecisionSummary(
@@ -284,7 +284,7 @@ data class FeeDecisionSummary(
     val sentAt: HelsinkiDateTime? = null,
     val finalPrice: Int,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val difference: Set<FeeDecisionDifference>
+    val difference: Set<FeeDecisionDifference>,
 ) {
     val annullingDecision
         get() = this.children.isEmpty()
@@ -298,7 +298,7 @@ fun useMaxFee(incomes: List<DecisionIncome?>): Boolean =
 fun calculateBaseFee(
     feeThresholds: FeeThresholds,
     familySize: Int,
-    incomes: List<DecisionIncome?>
+    incomes: List<DecisionIncome?>,
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
 
@@ -327,7 +327,7 @@ fun calculateBaseFee(
 fun getTotalIncomeEffect(
     hasPartner: Boolean,
     headIncomeEffect: IncomeEffect?,
-    partnerIncomeEffect: IncomeEffect?
+    partnerIncomeEffect: IncomeEffect?,
 ): IncomeEffect =
     when {
         headIncomeEffect == IncomeEffect.INCOME &&
@@ -344,7 +344,7 @@ fun getTotalIncome(
     headIncomeEffect: IncomeEffect?,
     headIncomeTotal: Int?,
     partnerIncomeEffect: IncomeEffect?,
-    partnerIncomeTotal: Int?
+    partnerIncomeTotal: Int?,
 ): Int? =
     when {
         headIncomeEffect == IncomeEffect.INCOME &&
@@ -357,7 +357,7 @@ fun calculateFeeBeforeFeeAlterations(
     baseFee: Int,
     serviceNeedCoefficient: BigDecimal,
     siblingDiscount: SiblingDiscount,
-    minFee: Int
+    minFee: Int,
 ): Int {
     val feeAfterSiblingDiscount =
         siblingDiscount.fee?.let { BigDecimal(it) }
@@ -380,7 +380,7 @@ fun calculateMaxFee(baseFee: Int, siblingDiscount: Int): Int {
 
 fun toFeeAlterationsWithEffects(
     fee: Int,
-    feeAlterations: List<FeeAlteration>
+    feeAlterations: List<FeeAlteration>,
 ): List<FeeAlterationWithEffect> {
     val (_, alterations) =
         feeAlterations.fold(fee to listOf<FeeAlterationWithEffect>()) { pair, feeAlteration ->
@@ -390,7 +390,7 @@ fun toFeeAlterationsWithEffects(
                     currentFee,
                     feeAlteration.type,
                     feeAlteration.amount,
-                    feeAlteration.isAbsolute
+                    feeAlteration.isAbsolute,
                 )
             Pair(
                 currentFee + effect,
@@ -399,8 +399,8 @@ fun toFeeAlterationsWithEffects(
                         feeAlteration.type,
                         feeAlteration.amount,
                         feeAlteration.isAbsolute,
-                        effect
-                    )
+                        effect,
+                    ),
             )
         }
     return alterations
@@ -441,5 +441,5 @@ fun getECHAIncrease(childId: ChildId, period: DateRange) =
         isAbsolute = true,
         notes = "ECHA",
         validFrom = period.start,
-        validTo = period.end
+        validTo = period.end,
     )

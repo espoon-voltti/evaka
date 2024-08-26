@@ -44,7 +44,7 @@ fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
 
 fun Database.Transaction.upsertVardaServiceNeed(
     vardaServiceNeed: VardaServiceNeed,
-    upsertErrors: List<String> = listOf()
+    upsertErrors: List<String> = listOf(),
 ) =
     createUpdate {
             sql(
@@ -129,7 +129,7 @@ fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: L
 
 fun Database.Transaction.markVardaServiceNeedUpdateFailed(
     serviceNeedId: ServiceNeedId,
-    errors: List<String>
+    errors: List<String>,
 ) =
     createUpdate {
             sql(
@@ -144,7 +144,7 @@ fun Database.Transaction.markVardaServiceNeedUpdateFailed(
 
 fun Database.Read.getEvakaServiceNeedChanges(
     clock: EvakaClock,
-    feeDecisionMinDate: LocalDate
+    feeDecisionMinDate: LocalDate,
 ): List<ChangedChildServiceNeed> =
     createQuery {
             sql(
@@ -283,7 +283,7 @@ WHERE evaka_service_need_id = ${bind(eVakaServiceNeedId)}
 fun Database.Read.getServiceNeedFeeData(
     serviceNeedId: ServiceNeedId,
     feeDecisionStatus: FeeDecisionStatus = FeeDecisionStatus.SENT,
-    voucherValueDecisionStatus: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT
+    voucherValueDecisionStatus: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT,
 ): List<FeeDataByServiceNeed> {
     return getServiceNeedFeeDataQuery(serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
 }
@@ -291,7 +291,7 @@ fun Database.Read.getServiceNeedFeeData(
 private fun Database.Read.getServiceNeedFeeDataQuery(
     serviceNeedId: ServiceNeedId,
     feeDecisionStatus: FeeDecisionStatus,
-    voucherValueDecisionStatus: VoucherValueDecisionStatus
+    voucherValueDecisionStatus: VoucherValueDecisionStatus,
 ): List<FeeDataByServiceNeed> =
     createQuery {
             sql(
@@ -400,7 +400,7 @@ WHERE sn.id = ${bind(id)}
 
 fun Database.Transaction.setVardaResetChildResetTimestamp(
     evakaChildId: ChildId,
-    resetTimestamp: Instant
+    resetTimestamp: Instant,
 ) =
     createUpdate {
             sql(
@@ -431,7 +431,7 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
 
 fun Database.Read.getServiceNeedsForVardaByChild(
     clock: EvakaClock,
-    childId: ChildId
+    childId: ChildId,
 ): List<ServiceNeedId> {
     return createQuery {
             sql(
@@ -493,7 +493,7 @@ fun Database.Read.getDistinctVardaPersonOidsByEvakaPersonId(id: PersonId) =
 
 fun Database.Transaction.getVardaChildrenToReset(
     limit: Int,
-    addNewChildren: Boolean
+    addNewChildren: Boolean,
 ): List<ChildId> {
     // We aim to include children by daycare units, capping each batch with <limit>
     val updateCount =

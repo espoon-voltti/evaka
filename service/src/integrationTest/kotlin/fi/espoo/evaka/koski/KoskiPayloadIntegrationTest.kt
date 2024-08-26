@@ -42,8 +42,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     KoskiEnv.fromEnvironment(env)
                         .copy(url = "http://localhost:$httpPort/public/mock-koski"),
                     OphEnv.fromEnvironment(env),
-                    asyncJobRunner = null
-                )
+                    asyncJobRunner = null,
+                ),
             )
     }
 
@@ -68,7 +68,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     unitId = testDaycare.id,
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
-                    type = PlacementType.PRESCHOOL
+                    type = PlacementType.PRESCHOOL,
                 )
             )
         }
@@ -167,7 +167,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2018, 8, 1),
                     endDate = LocalDate.of(2018, 12, 31),
-                    type = PlacementType.PRESCHOOL
+                    type = PlacementType.PRESCHOOL,
                 )
             )
             it.insert(
@@ -176,7 +176,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     unitId = testDaycare2.id,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2019, 5, 31),
-                    type = PlacementType.PRESCHOOL
+                    type = PlacementType.PRESCHOOL,
                 )
             )
         }
@@ -187,7 +187,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 .let { studyRights ->
                     Pair(
                         studyRights.single { it.unitId == testDaycare.id },
-                        studyRights.single { it.unitId == testDaycare2.id }
+                        studyRights.single { it.unitId == testDaycare2.id },
                     )
                 }
 
@@ -352,22 +352,22 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         unitId = testDaycare.id,
                         startDate = LocalDate.of(2018, 8, 1),
                         endDate = LocalDate.of(2019, 5, 31),
-                        type = PlacementType.PRESCHOOL
+                        type = PlacementType.PRESCHOOL,
                     ),
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = LocalDate.of(2018, 8, 2),
                         endDate = LocalDate.of(2018, 12, 31),
-                        type = PlacementType.PRESCHOOL
+                        type = PlacementType.PRESCHOOL,
                     ),
                     DevPlacement(
                         childId = testChild_1.id,
                         unitId = testDaycare2.id,
                         startDate = LocalDate.of(2019, 1, 1),
                         endDate = LocalDate.of(2019, 5, 31),
-                        type = PlacementType.PRESCHOOL
-                    )
+                        type = PlacementType.PRESCHOOL,
+                    ),
                 )
                 .forEach { tx.insert(it) }
         }
@@ -383,7 +383,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         },
                         studyRights.single {
                             it.childId == testChild_1.id && it.unitId == testDaycare2.id
-                        }
+                        },
                     )
                 }
 
@@ -626,7 +626,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     unitId = testDaycare.id,
                     startDate = preschoolTerm2019.start,
                     endDate = preschoolTerm2019.end,
-                    type = PlacementType.PREPARATORY
+                    type = PlacementType.PREPARATORY,
                 )
             )
         }
@@ -770,7 +770,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         unitId = testDaycare.id,
                         startDate = preschoolTerm2019.start,
                         endDate = preschoolTerm2019.end,
-                        type = PlacementType.PRESCHOOL
+                        type = PlacementType.PRESCHOOL,
                     )
                 )
             }

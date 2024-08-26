@@ -134,7 +134,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     type = ApplicationType.DAYCARE,
                     child = tx.getPersonById(testChild_1.id)!!,
                     guardian = tx.getPersonById(testAdult_1.id)!!,
-                    origin = ApplicationOrigin.PAPER
+                    origin = ApplicationOrigin.PAPER,
                 )
             }
 
@@ -157,7 +157,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     type = ApplicationType.PRESCHOOL,
                     child = tx.getPersonById(testChild_1.id)!!,
                     guardian = tx.getPersonById(testAdult_1.id)!!,
-                    origin = ApplicationOrigin.PAPER
+                    origin = ApplicationOrigin.PAPER,
                 )
 
             val result = tx.fetchApplicationDetails(applicationId)!!
@@ -174,13 +174,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     type = ApplicationType.PRESCHOOL,
                     child = tx.getPersonById(testChild_1.id)!!,
                     guardian = tx.getPersonById(testAdult_1.id)!!,
-                    origin = ApplicationOrigin.PAPER
+                    origin = ApplicationOrigin.PAPER,
                 )
 
             val result = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(
                 preschoolTerm2021.extendedTerm.start,
-                result.form.preferences.preferredStartDate
+                result.form.preferences.preferredStartDate,
             )
         }
     }
@@ -192,7 +192,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
+                preferredStartDate = LocalDate.of(2020, 8, 13),
             )
         }
 
@@ -222,7 +222,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 isUrgent = false,
                 isTransferApplication = false,
                 attachments = emptyList(),
-                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = true)
+                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = true),
             )
 
         assertEquals(preferredStartDate, dueDate)
@@ -242,7 +242,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 isUrgent = false,
                 isTransferApplication = false,
                 attachments = emptyList(),
-                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = false)
+                config = testFeatureConfig.copy(preferredStartRelativeApplicationDueDate = false),
             )
 
         assertEquals(defaultDueDate, dueDate)
@@ -256,7 +256,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.DAYCARE,
                 urgent = false,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
         }
         db.transaction { tx ->
@@ -290,7 +290,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.DAYCARE,
                 urgent = true,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
         }
         db.transaction { tx ->
@@ -304,7 +304,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertTrue(
             uploadAttachment(
                 applicationId,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             )
         )
         db.transaction { tx ->
@@ -317,13 +317,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertTrue(
             uploadAttachment(
                 applicationId,
-                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
             )
         )
         // then
         assertDueDate(
             applicationId,
-            now.plusWeeks(2).toLocalDate()
+            now.plusWeeks(2).toLocalDate(),
         ) // end date >= earliest attachment.receivedAt
     }
 
@@ -336,7 +336,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.DAYCARE,
                 urgent = true,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
         }
         // when
@@ -344,14 +344,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             uploadAttachment(
                 applicationId,
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                AttachmentType.EXTENDED_CARE
+                AttachmentType.EXTENDED_CARE,
             )
         )
         assertTrue(
             uploadAttachment(
                 applicationId,
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
-                AttachmentType.URGENCY
+                AttachmentType.URGENCY,
             )
         )
 
@@ -378,7 +378,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         // then
         assertDueDate(
             applicationId,
-            now.plusDays(14 + 3).toLocalDate()
+            now.plusDays(14 + 3).toLocalDate(),
         ) // attachments received after application sent
     }
 
@@ -391,14 +391,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     appliedType = PlacementType.DAYCARE,
                     urgent = false,
                     applicationId = applicationId,
-                    preferredStartDate = LocalDate.of(2020, 8, 1)
+                    preferredStartDate = LocalDate.of(2020, 8, 1),
                 )
             tx.insert(
                 DevPlacement(
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
                 )
             )
         }
@@ -423,7 +423,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     appliedType = PlacementType.DAYCARE,
                     urgent = false,
                     applicationId = applicationId,
-                    preferredStartDate = LocalDate.of(2020, 8, 1)
+                    preferredStartDate = LocalDate.of(2020, 8, 1),
                 )
             tx.insert(
                 DevPlacement(
@@ -431,7 +431,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
                     endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
-                    type = PlacementType.DAYCARE_FIVE_YEAR_OLDS
+                    type = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 )
             )
         }
@@ -454,7 +454,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx.insertApplication(
                     appliedType = PlacementType.PRESCHOOL_DAYCARE,
                     applicationId = applicationId,
-                    preferredStartDate = LocalDate.of(2020, 8, 13)
+                    preferredStartDate = LocalDate.of(2020, 8, 13),
                 )
             tx.insert(
                 DevPlacement(
@@ -462,7 +462,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
                 )
             )
         }
@@ -488,7 +488,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx.insertApplication(
                     appliedType = PlacementType.PREPARATORY_DAYCARE,
                     applicationId = applicationId,
-                    preferredStartDate = LocalDate.of(2020, 8, 13)
+                    preferredStartDate = LocalDate.of(2020, 8, 13),
                 )
             tx.insert(
                 DevPlacement(
@@ -496,7 +496,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     childId = draft.childId,
                     unitId = testDaycare2.id,
                     startDate = draft.form.preferences.preferredStartDate!!,
-                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1),
                 )
             )
         }
@@ -521,7 +521,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 hasAdditionalInfo = false,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -544,7 +544,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 hasAdditionalInfo = true,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -566,7 +566,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -591,7 +591,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
-                guardianEmail = ""
+                guardianEmail = "",
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -614,7 +614,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 hasAdditionalInfo = true,
-                applicationId = applicationId
+                applicationId = applicationId,
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -637,7 +637,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 hasAdditionalInfo = true,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -670,7 +670,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // given
             tx.insertApplication(
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
@@ -691,7 +691,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // given
             tx.insertApplication(
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -713,7 +713,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // given
             tx.insertApplication(
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -736,7 +736,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -748,7 +748,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod),
             )
         }
         db.read { tx ->
@@ -764,9 +764,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     type = PlacementType.DAYCARE,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = null
+                    preschoolDaycarePeriod = null,
                 ),
-                placementPlan
+                placementPlan,
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -778,9 +778,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     startDate = mainPeriod.start,
                     endDate = mainPeriod.end,
                     unitId = testDaycare.id,
-                    planned = true
+                    planned = true,
                 ),
-                decisionDrafts.first()
+                decisionDrafts.first(),
             )
         }
     }
@@ -792,7 +792,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.DAYCARE_PART_TIME,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -804,7 +804,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod),
             )
         }
         db.read { tx ->
@@ -820,9 +820,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     type = PlacementType.DAYCARE_PART_TIME,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = null
+                    preschoolDaycarePeriod = null,
                 ),
-                placementPlan
+                placementPlan,
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -834,9 +834,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     startDate = mainPeriod.start,
                     endDate = mainPeriod.end,
                     unitId = testDaycare.id,
-                    planned = true
+                    planned = true,
                 ),
-                decisionDrafts.first()
+                decisionDrafts.first(),
             )
         }
     }
@@ -848,7 +848,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
+                preferredStartDate = LocalDate.of(2020, 8, 13),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -860,7 +860,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod),
             )
         }
         db.read { tx ->
@@ -876,9 +876,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     type = PlacementType.PRESCHOOL,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = null
+                    preschoolDaycarePeriod = null,
                 ),
-                placementPlan
+                placementPlan,
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -894,9 +894,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = mainPeriod.start,
                             endDate = mainPeriod.end,
                             unitId = testDaycare.id,
-                            planned = true
+                            planned = true,
                         ),
-                        it
+                        it,
                     )
                 }
             decisionDrafts
@@ -909,9 +909,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = mainPeriod.start,
                             endDate = mainPeriod.end,
                             unitId = testDaycare.id,
-                            planned = false
+                            planned = false,
                         ),
-                        it
+                        it,
                     )
                 }
         }
@@ -924,7 +924,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -939,8 +939,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
         }
         db.read { tx ->
@@ -956,9 +956,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
+                    preschoolDaycarePeriod = connectedPeriod,
                 ),
-                placementPlan
+                placementPlan,
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -974,9 +974,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = mainPeriod.start,
                             endDate = mainPeriod.end,
                             unitId = testDaycare.id,
-                            planned = true
+                            planned = true,
                         ),
-                        it
+                        it,
                     )
                 }
             decisionDrafts
@@ -989,9 +989,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = connectedPeriod.start,
                             endDate = connectedPeriod.end,
                             unitId = testDaycare.id,
-                            planned = true
+                            planned = true,
                         ),
-                        it
+                        it,
                     )
                 }
         }
@@ -1007,13 +1007,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     nameFi = snPreschoolClub45.nameFi,
                     nameSv = snPreschoolClub45.nameSv,
                     nameEn = snPreschoolClub45.nameEn,
-                    validPlacementType = PlacementType.PRESCHOOL_CLUB
+                    validPlacementType = PlacementType.PRESCHOOL_CLUB,
                 )
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_CLUB,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
-                serviceNeedOption = serviceNeedOption
+                serviceNeedOption = serviceNeedOption,
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1028,8 +1028,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
         }
         db.read { tx ->
@@ -1045,9 +1045,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     applicationId = applicationId,
                     type = PlacementType.PRESCHOOL_CLUB,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
+                    preschoolDaycarePeriod = connectedPeriod,
                 ),
-                placementPlan
+                placementPlan,
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
@@ -1063,9 +1063,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = mainPeriod.start,
                             endDate = mainPeriod.end,
                             unitId = testDaycare.id,
-                            planned = true
+                            planned = true,
                         ),
-                        it
+                        it,
                     )
                 }
             decisionDrafts
@@ -1078,9 +1078,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             startDate = connectedPeriod.start,
                             endDate = connectedPeriod.end,
                             unitId = testDaycare.id,
-                            planned = true
+                            planned = true,
                         ),
-                        it
+                        it,
                     )
                 }
         }
@@ -1093,7 +1093,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1105,8 +1105,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
         }
         db.transaction { tx ->
@@ -1132,7 +1132,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_2,
             applier = testAdult_1,
             secondDecisionTo = null,
-            manualMailing = false
+            manualMailing = false,
         )
 
     @Test
@@ -1141,7 +1141,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_1,
             applier = testAdult_1,
             secondDecisionTo = null,
-            manualMailing = false
+            manualMailing = false,
         )
 
     @Test
@@ -1150,7 +1150,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_6,
             applier = testAdult_5,
             secondDecisionTo = testAdult_6,
-            manualMailing = false
+            manualMailing = false,
         )
 
     @Test
@@ -1159,7 +1159,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_7,
             applier = testAdult_5,
             secondDecisionTo = null,
-            manualMailing = true
+            manualMailing = true,
         )
 
     @Test
@@ -1168,7 +1168,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_7,
             applier = testAdult_4,
             secondDecisionTo = null,
-            manualMailing = true
+            manualMailing = true,
         )
 
     @Test
@@ -1177,14 +1177,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = testChild_2,
             applier = testAdult_4,
             secondDecisionTo = testChild_1,
-            manualMailing = true
+            manualMailing = true,
         )
 
     private fun sendDecisionsWithoutProposalTest(
         child: DevPerson,
         applier: DevPerson,
         secondDecisionTo: DevPerson?,
-        manualMailing: Boolean
+        manualMailing: Boolean,
     ) {
         // given
         db.transaction { tx ->
@@ -1193,7 +1193,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 guardian = applier,
                 child = child,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
+                preferredStartDate = LocalDate.of(2020, 8, 13),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1202,7 +1202,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod),
             )
         }
 
@@ -1252,7 +1252,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1264,8 +1264,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
             // when
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
@@ -1288,7 +1288,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1300,8 +1300,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
@@ -1329,7 +1329,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 child = testChild_2,
                 guardian = testAdult_1,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1341,8 +1341,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
@@ -1353,7 +1353,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                PlacementPlanConfirmationStatus.ACCEPTED
+                PlacementPlanConfirmationStatus.ACCEPTED,
             )
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
@@ -1385,7 +1385,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 child = testChild_2,
                 guardian = testAdult_1,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1397,8 +1397,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
             tx.fetchDecisionDrafts(applicationId)
                 .map { draft ->
@@ -1407,7 +1407,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         unitId = draft.unitId,
                         startDate = draft.startDate,
                         endDate = draft.endDate,
-                        planned = false
+                        planned = false,
                     )
                 }
                 .let { updates -> updateDecisionDrafts(tx, applicationId, updates) }
@@ -1420,7 +1420,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                PlacementPlanConfirmationStatus.ACCEPTED
+                PlacementPlanConfirmationStatus.ACCEPTED,
             )
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
@@ -1465,7 +1465,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     otherIndx = 2,
                     personId = testAdult_1.id,
                     startDate = startDate,
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
             tx.insert(
@@ -1475,7 +1475,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     otherIndx = 1,
                     personId = testAdult_2.id,
                     startDate = startDate,
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
 
@@ -1487,7 +1487,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     testChild_1.id,
                     testAdult_2.id,
                     startDate,
-                    startDate.plusMonths(12)
+                    startDate.plusMonths(12),
                 )
             )
 
@@ -1496,7 +1496,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 child = testChild_2,
                 guardian = testAdult_1,
                 applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
+                preferredStartDate = LocalDate.of(2020, 8, 1),
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -1522,7 +1522,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id,
             )
         }
         db.read { tx ->
@@ -1558,14 +1558,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
             service.rejectDecision(
                 tx,
                 serviceWorker,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
             )
         }
         db.read { tx ->
@@ -1607,14 +1607,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
             service.rejectDecision(
                 tx,
                 user,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
             )
 
             // then
@@ -1638,7 +1638,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
-                    mainPeriod.start
+                    mainPeriod.start,
                 )
             }
         }
@@ -1658,7 +1658,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     user,
                     clock,
                     applicationId,
-                    getDecision(tx, DecisionType.PRESCHOOL).id
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
             }
         }
@@ -1677,7 +1677,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
             service.acceptDecision(
                 tx,
@@ -1685,7 +1685,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
-                connectedPeriod.start
+                connectedPeriod.start,
             )
         }
         db.read { tx ->
@@ -1725,7 +1725,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 "unknown service need option",
                 "unknown service need option",
                 "unknown service need option",
-                null
+                null,
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
@@ -1737,7 +1737,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
         }
         db.read {
@@ -1745,7 +1745,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(
                 serviceNeedOption,
-                application.form.preferences.serviceNeed?.serviceNeedOption
+                application.form.preferences.serviceNeed?.serviceNeedOption,
             )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertThat(serviceNeeds).isEmpty()
@@ -1763,7 +1763,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 snPreschoolDaycare45.nameFi,
                 snPreschoolDaycare45.nameSv,
                 snPreschoolDaycare45.nameEn,
-                validPlacementType = null
+                validPlacementType = null,
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
@@ -1775,7 +1775,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
             service.acceptDecision(
                 tx,
@@ -1783,7 +1783,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
-                LocalDate.of(2020, 8, 1)
+                LocalDate.of(2020, 8, 1),
             )
         }
         db.read {
@@ -1791,7 +1791,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = it.fetchApplicationDetails(applicationId)!!
             assertEquals(
                 serviceNeedOption,
-                application.form.preferences.serviceNeed?.serviceNeedOption
+                application.form.preferences.serviceNeed?.serviceNeedOption,
             )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertEquals(listOf(serviceNeedOption.id), serviceNeeds.map { sn -> sn.option.id })
@@ -1812,7 +1812,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
-                    mainPeriod.start
+                    mainPeriod.start,
                 )
             }
         }
@@ -1829,7 +1829,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
         }
         db.transaction { tx ->
@@ -1841,7 +1841,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
-                    mainPeriod.start
+                    mainPeriod.start,
                 )
             }
         }
@@ -1857,7 +1857,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id,
             )
         }
         db.transaction { tx ->
@@ -1869,7 +1869,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
-                    mainPeriod.start
+                    mainPeriod.start,
                 )
             }
         }
@@ -1886,7 +1886,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                mainPeriod.start,
             )
         }
         db.transaction { tx ->
@@ -1897,7 +1897,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     serviceWorker,
                     clock,
                     applicationId,
-                    getDecision(tx, DecisionType.PRESCHOOL).id
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
             }
         }
@@ -1913,7 +1913,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL).id
+                getDecision(tx, DecisionType.PRESCHOOL).id,
             )
         }
         db.transaction { tx ->
@@ -1924,7 +1924,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     serviceWorker,
                     clock,
                     applicationId,
-                    getDecision(tx, DecisionType.PRESCHOOL).id
+                    getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
             }
         }
@@ -1947,7 +1947,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     origin = ApplicationOrigin.ELECTRONIC,
                     type = ApplicationType.DAYCARE,
                     guardian = tx.getPersonById(guardian.id)!!,
-                    child = tx.getPersonById(child.id)!!
+                    child = tx.getPersonById(child.id)!!,
                 )
             }
         val decisionId =
@@ -1967,13 +1967,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                             allergies = "",
                                             diet = "",
                                             assistanceNeeded = false,
-                                            assistanceDescription = ""
+                                            assistanceDescription = "",
                                         ),
                                     guardian =
                                         GuardianUpdate(
                                             futureAddress = null,
                                             phoneNumber = "",
-                                            email = null
+                                            email = null,
                                         ),
                                     secondGuardian = null,
                                     otherPartner = null,
@@ -1992,24 +1992,24 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                                     endTime = "17:00",
                                                     shiftCare = false,
                                                     partTime = false,
-                                                    serviceNeedOption = null
+                                                    serviceNeedOption = null,
                                                 ),
                                             siblingBasis = null,
                                             preparatory = false,
-                                            urgent = false
+                                            urgent = false,
                                         ),
                                     maxFeeAccepted = false,
                                     otherInfo = "",
-                                    clubDetails = null
+                                    clubDetails = null,
                                 ),
-                            allowOtherGuardianAccess = true
-                        )
+                            allowOtherGuardianAccess = true,
+                        ),
                 )
                 service.sendApplication(
                     tx,
                     guardian.user(CitizenAuthLevel.STRONG),
                     clock,
-                    testApplicationId
+                    testApplicationId,
                 )
                 service.moveToWaitingPlacement(tx, serviceWorker, clock, testApplicationId)
                 service.createPlacementPlan(
@@ -2022,10 +2022,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         period =
                             FiniteDateRange(
                                 clock.today().plusMonths(5),
-                                clock.today().plusYears(3)
+                                clock.today().plusYears(3),
                             ),
-                        preschoolDaycarePeriod = null
-                    )
+                        preschoolDaycarePeriod = null,
+                    ),
                 )
                 service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, testApplicationId)
                 service.confirmDecisionMailed(tx, serviceWorker, clock, testApplicationId)
@@ -2042,7 +2042,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock = clock,
                     applicationId = testApplicationId,
                     decisionId = decisionId,
-                    requestedStartDate = clock.today().plusMonths(5)
+                    requestedStartDate = clock.today().plusMonths(5),
                 )
                 decisionId
             }
@@ -2068,7 +2068,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals(guardian.evakaUserId(), metadata.primaryDocument.createdBy?.id)
         assertEquals(
             HelsinkiDateTime.of(clock.today().atStartOfDay()),
-            metadata.primaryDocument.createdAt
+            metadata.primaryDocument.createdAt,
         )
         assertNull(metadata.primaryDocument.downloadPath)
         assertEquals(1, metadata.secondaryDocuments.size)
@@ -2086,7 +2086,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     private fun workflowForPreschoolDaycareDecisions(
         preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
-        serviceNeedOption: ServiceNeedOption? = null
+        serviceNeedOption: ServiceNeedOption? = null,
     ) {
         db.transaction { tx ->
             tx.insertApplication(
@@ -2095,7 +2095,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 applicationId = applicationId,
                 preferredStartDate = preferredStartDate,
-                serviceNeedOption = serviceNeedOption
+                serviceNeedOption = serviceNeedOption,
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
@@ -2107,8 +2107,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 DaycarePlacementPlan(
                     unitId = testDaycare.id,
                     period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
             )
             service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId)
         }

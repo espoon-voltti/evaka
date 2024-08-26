@@ -70,7 +70,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.PRESCHOOL),
-                        openingDate = mockToday.today()
+                        openingDate = mockToday.today(),
                     )
                 )
             val daycareId =
@@ -78,7 +78,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     DevDaycare(
                         areaId = areaId,
                         type = setOf(CareType.CENTRE),
-                        openingDate = mockToday.today()
+                        openingDate = mockToday.today(),
                     )
                 )
 
@@ -120,7 +120,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
             dueDate = null,
             document =
                 DaycareFormV0.fromApplication2(validPreschoolApplication)
-                    .copy(child = Child(dateOfBirth = child.dateOfBirth))
+                    .copy(child = Child(dateOfBirth = child.dateOfBirth)),
         )
 
         tx.insertTestDecision(
@@ -132,7 +132,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 startDate = testRootTime.toLocalDate(),
                 endDate = testRootTime.toLocalDate().plusMonths(5),
                 status = DecisionStatus.ACCEPTED,
-                sentDate = sentDate
+                sentDate = sentDate,
             )
         )
         tx.insertTestDecision(
@@ -144,7 +144,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 startDate = testRootTime.toLocalDate(),
                 endDate = testRootTime.toLocalDate().plusMonths(5),
                 status = DecisionStatus.ACCEPTED,
-                sentDate = sentDate
+                sentDate = sentDate,
             )
         )
     }
@@ -158,7 +158,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 dbInstance(),
                 adminLoginUser,
                 mockToday,
-                ManualDuplicationReportViewMode.NONDUPLICATED
+                ManualDuplicationReportViewMode.NONDUPLICATED,
             )
 
         assertEquals(1, duplicationNeeds.size)
@@ -179,7 +179,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 dbInstance(),
                 adminLoginUser,
                 mockToday,
-                ManualDuplicationReportViewMode.DUPLICATED
+                ManualDuplicationReportViewMode.DUPLICATED,
             )
 
         assertEquals(1, duplicatedCases.size)
@@ -210,7 +210,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 dbInstance(),
                 adminLoginUser,
                 mockToday,
-                ManualDuplicationReportViewMode.NONDUPLICATED
+                ManualDuplicationReportViewMode.NONDUPLICATED,
             )
 
         assertEquals(0, duplicationNeeds.size)
@@ -241,7 +241,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 dbInstance(),
                 adminLoginUser,
                 mockToday,
-                ManualDuplicationReportViewMode.DUPLICATED
+                ManualDuplicationReportViewMode.DUPLICATED,
             )
 
         assertEquals(1, duplicatedCases.size)
@@ -262,7 +262,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                     id = transferDaycareId,
                     areaId = testData.areaId,
                     type = setOf(CareType.CENTRE),
-                    openingDate = mockToday.today()
+                    openingDate = mockToday.today(),
                 )
             )
             // add another overlapping application + decisions that do constitute a duplication need
@@ -282,7 +282,7 @@ internal class ManualDuplicationReportTest : FullApplicationTest(resetDbBeforeEa
                 dbInstance(),
                 adminLoginUser,
                 mockToday,
-                ManualDuplicationReportViewMode.NONDUPLICATED
+                ManualDuplicationReportViewMode.NONDUPLICATED,
             )
 
         assertEquals(1, duplicationNeeds.size)

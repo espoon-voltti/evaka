@@ -74,7 +74,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val decisionMaker =
         AuthenticatedUser.Employee(
             specialEducationTeacherOfTestDaycare.id,
-            setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
+            setOf(UserRole.SPECIAL_EDUCATION_TEACHER),
         )
 
     private val testAdmin =
@@ -82,7 +82,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             id = EmployeeId(UUID.randomUUID()),
             firstName = "Ad",
             lastName = "Min",
-            roles = setOf(UserRole.ADMIN)
+            roles = setOf(UserRole.ADMIN),
         )
     private val admin = AuthenticatedUser.Employee(testAdmin.id, setOf(UserRole.ADMIN))
 
@@ -100,13 +100,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionEmployeeForm(
                     employeeId = assistanceWorker.id,
                     title = "worker",
-                    phoneNumber = "01020405060"
+                    phoneNumber = "01020405060",
                 ),
             preparedBy2 = null,
             decisionMaker =
                 AssistanceNeedDecisionMakerForm(
                     employeeId = decisionMaker.id,
-                    title = "Decider of everything"
+                    title = "Decider of everything",
                 ),
             pedagogicalMotivation = "Pedagogical motivation",
             structuralMotivationOptions =
@@ -116,7 +116,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     smallGroup = false,
                     groupAssistant = false,
                     childAssistant = false,
-                    additionalStaff = false
+                    additionalStaff = false,
                 ),
             structuralMotivationDescription = "Structural motivation description",
             careMotivation = "Care motivation",
@@ -126,7 +126,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partTimeSpecialEd = false,
                     fullTimeSpecialEd = false,
                     interpretationAndAssistanceServices = false,
-                    specialAides = true
+                    specialAides = true,
                 ),
             servicesMotivation = "Services Motivation",
             expertResponsibilities = "Expert responsibilities",
@@ -138,14 +138,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         personId = testAdult_1.id,
                         name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                         isHeard = true,
-                        details = "Lots of details"
+                        details = "Lots of details",
                     )
                 ),
             viewOfGuardians = "The view of the guardians",
             otherRepresentativeHeard = false,
             otherRepresentativeDetails = null,
             assistanceLevels = setOf(AssistanceLevel.ENHANCED_ASSISTANCE),
-            motivationForDecision = "Motivation for decision"
+            motivationForDecision = "Motivation for decision",
         )
 
     @BeforeEach
@@ -157,12 +157,12 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             tx.insert(testDecisionMaker_1)
             tx.insert(
                 specialEducationTeacherOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER)
+                mapOf(testDaycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
             )
             tx.insert(testDecisionMaker_3)
             tx.insert(
                 unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR)
+                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
             )
             listOf(testAdult_1, testAdult_4).forEach { tx.insert(it, DevPersonType.ADULT) }
             tx.insert(testChild_1, DevPersonType.CHILD)
@@ -189,46 +189,46 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(assistanceNeedDecision.selectedUnit?.streetAddress, "Joku katu 9")
         assertEquals(
             testDecision.preparedBy1?.employeeId,
-            assistanceNeedDecision.preparedBy1?.employeeId
+            assistanceNeedDecision.preparedBy1?.employeeId,
         )
         assertEquals(testDecision.preparedBy1?.title, assistanceNeedDecision.preparedBy1?.title)
         assertEquals(
             testDecision.preparedBy1?.phoneNumber,
-            assistanceNeedDecision.preparedBy1?.phoneNumber
+            assistanceNeedDecision.preparedBy1?.phoneNumber,
         )
         assertEquals(
             assistanceNeedDecision.preparedBy1?.name,
-            "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}"
+            "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}",
         )
         assertEquals(assistanceNeedDecision.preparedBy2, null)
         assertEquals(
             testDecision.decisionMaker?.employeeId,
-            assistanceNeedDecision.decisionMaker?.employeeId
+            assistanceNeedDecision.decisionMaker?.employeeId,
         )
         assertEquals(testDecision.decisionMaker?.title, assistanceNeedDecision.decisionMaker?.title)
         assertEquals(
             assistanceNeedDecision.decisionMaker?.name,
-            "${specialEducationTeacherOfTestDaycare.firstName} ${specialEducationTeacherOfTestDaycare.lastName}"
+            "${specialEducationTeacherOfTestDaycare.firstName} ${specialEducationTeacherOfTestDaycare.lastName}",
         )
 
         assertEquals(
             testDecision.pedagogicalMotivation,
-            assistanceNeedDecision.pedagogicalMotivation
+            assistanceNeedDecision.pedagogicalMotivation,
         )
         assertEquals(
             testDecision.structuralMotivationOptions,
-            assistanceNeedDecision.structuralMotivationOptions
+            assistanceNeedDecision.structuralMotivationOptions,
         )
         assertEquals(
             testDecision.structuralMotivationDescription,
-            assistanceNeedDecision.structuralMotivationDescription
+            assistanceNeedDecision.structuralMotivationDescription,
         )
         assertEquals(testDecision.careMotivation, assistanceNeedDecision.careMotivation)
         assertEquals(testDecision.serviceOptions, assistanceNeedDecision.serviceOptions)
         assertEquals(testDecision.servicesMotivation, assistanceNeedDecision.servicesMotivation)
         assertEquals(
             testDecision.expertResponsibilities,
-            assistanceNeedDecision.expertResponsibilities
+            assistanceNeedDecision.expertResponsibilities,
         )
 
         assertEquals(testDecision.guardiansHeardOn, assistanceNeedDecision.guardiansHeardOn)
@@ -240,7 +240,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         personId = g.personId,
                         name = g.name,
                         isHeard = g.isHeard,
-                        details = g.details
+                        details = g.details,
                     )
                 }
                 .toSet()
@@ -249,17 +249,17 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(testDecision.viewOfGuardians, assistanceNeedDecision.viewOfGuardians)
         assertEquals(
             testDecision.otherRepresentativeHeard,
-            assistanceNeedDecision.otherRepresentativeHeard
+            assistanceNeedDecision.otherRepresentativeHeard,
         )
         assertEquals(
             testDecision.otherRepresentativeDetails,
-            assistanceNeedDecision.otherRepresentativeDetails
+            assistanceNeedDecision.otherRepresentativeDetails,
         )
 
         assertEquals(testDecision.assistanceLevels, assistanceNeedDecision.assistanceLevels)
         assertEquals(
             testDecision.motivationForDecision,
-            assistanceNeedDecision.motivationForDecision
+            assistanceNeedDecision.motivationForDecision,
         )
     }
 
@@ -274,7 +274,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = clock.today(),
-                    endDate = clock.today().plusDays(5)
+                    endDate = clock.today().plusDays(5),
                 )
             )
         }
@@ -283,9 +283,9 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             assistanceNeedDecision.id,
             getAssistanceNeedDecision(
                     assistanceNeedDecision.id,
-                    specialEducationTeacherOfTestDaycare.user
+                    specialEducationTeacherOfTestDaycare.user,
                 )
-                .id
+                .id,
         )
 
         // remove child placement so child is not in VEO's unit so no document should be visible
@@ -299,7 +299,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertThrows<Forbidden> {
             getAssistanceNeedDecision(
                 assistanceNeedDecision.id,
-                specialEducationTeacherOfTestDaycare.user
+                specialEducationTeacherOfTestDaycare.user,
             )
         }
     }
@@ -336,16 +336,16 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                                     personId = it.personId,
                                     name = it.name,
                                     isHeard = true,
-                                    details = "Updated details"
+                                    details = "Updated details",
                                 )
                             }
-                            .toSet()
+                            .toSet(),
                 )
                 .toForm()
 
         updateAssistanceNeedDecision(
             AssistanceNeedDecisionRequest(decision = updatedDecision),
-            assistanceNeedDecision.id
+            assistanceNeedDecision.id,
         )
 
         val finalDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -353,7 +353,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(updatedDecision.pedagogicalMotivation, finalDecision.pedagogicalMotivation)
         assertEquals(
             updatedDecision.structuralMotivationDescription,
-            finalDecision.structuralMotivationDescription
+            finalDecision.structuralMotivationDescription,
         )
         assertEquals(updatedDecision.careMotivation, finalDecision.careMotivation)
         assertEquals(updatedDecision.guardianInfo, finalDecision.guardianInfo)
@@ -385,7 +385,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     decision = assistanceNeedDecision.copy(pedagogicalMotivation = "Test").toForm()
                 ),
-                assistanceNeedDecision.id
+                assistanceNeedDecision.id,
             )
         }
     }
@@ -401,11 +401,11 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     assistanceNeedDecision
                         .copy(
                             sentForDecision = LocalDate.of(2019, 1, 4),
-                            status = AssistanceNeedDecisionStatus.ACCEPTED
+                            status = AssistanceNeedDecisionStatus.ACCEPTED,
                         )
                         .toForm()
             ),
-            assistanceNeedDecision.id
+            assistanceNeedDecision.id,
         )
 
         val updatedDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -422,7 +422,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     decision =
                         testDecision.copy(
                             sentForDecision = LocalDate.of(2019, 1, 4),
-                            status = AssistanceNeedDecisionStatus.ACCEPTED
+                            status = AssistanceNeedDecisionStatus.ACCEPTED,
                         )
                 )
             )
@@ -508,7 +508,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertContains(messages[0].messageContent, "päätös tuesta")
         assertEquals(
             "assistance-need-decisions/assistance_need_decision_${assistanceNeedDecision.id}.pdf",
-            messages[0].documentKey
+            messages[0].documentKey,
         )
     }
 
@@ -533,7 +533,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     dbInstance(),
                     testAdmin.user,
                     clock,
-                    assistanceNeedDecision.id
+                    assistanceNeedDecision.id,
                 )
                 .data
         assertNotNull(metadata)
@@ -550,14 +550,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(ArchivedProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(
             AuthenticatedUser.SystemInternalUser.evakaUserId,
-            metadata.process.history[3].enteredBy.id
+            metadata.process.history[3].enteredBy.id,
         )
         assertEquals("Päätös tuesta varhaiskasvatuksessa", metadata.primaryDocument.name)
         assertEquals(assistanceWorker.evakaUserId, metadata.primaryDocument.createdBy?.id)
         assertEquals(true, metadata.primaryDocument.confidential)
         assertEquals(
             "/employee/assistance-need-decision/${assistanceNeedDecision.id}/pdf",
-            metadata.primaryDocument.downloadPath
+            metadata.primaryDocument.downloadPath,
         )
     }
 
@@ -572,18 +572,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
 
         assertThrows<BadRequest> {
-            updateDecisionMakerForAssistanceNeedDecision(
-                assistanceNeedDecision.id,
-                request,
-                admin,
-            )
+            updateDecisionMakerForAssistanceNeedDecision(assistanceNeedDecision.id, request, admin)
         }
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
-        updateDecisionMakerForAssistanceNeedDecision(
-            assistanceNeedDecision.id,
-            request,
-            admin,
-        )
+        updateDecisionMakerForAssistanceNeedDecision(assistanceNeedDecision.id, request, admin)
 
         val updatedDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
 
@@ -602,46 +594,40 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 Tuple(
                     testDecisionMaker_1.id,
                     testDecisionMaker_1.lastName,
-                    testDecisionMaker_1.firstName
+                    testDecisionMaker_1.firstName,
                 ),
                 Tuple(
                     specialEducationTeacherOfTestDaycare.id,
                     specialEducationTeacherOfTestDaycare.lastName,
-                    specialEducationTeacherOfTestDaycare.firstName
+                    specialEducationTeacherOfTestDaycare.firstName,
                 ),
                 Tuple(
                     testDecisionMaker_3.id,
                     testDecisionMaker_3.lastName,
-                    testDecisionMaker_3.firstName
+                    testDecisionMaker_3.firstName,
                 ),
                 Tuple(
                     unitSupervisorOfTestDaycare.id,
                     unitSupervisorOfTestDaycare.lastName,
-                    unitSupervisorOfTestDaycare.firstName
+                    unitSupervisorOfTestDaycare.firstName,
                 ),
-                Tuple(testAdmin.id, testAdmin.lastName, testAdmin.firstName)
+                Tuple(testAdmin.id, testAdmin.lastName, testAdmin.firstName),
             ),
-            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
+            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) },
         )
     }
 
     @Test
     fun `decision maker options returns 404 when assistance decision doesn't exist`() {
         assertThrows<NotFound> {
-            getDecisionMakerOptions(
-                AssistanceNeedDecisionId(UUID.randomUUID()),
-                assistanceWorker,
-            )
+            getDecisionMakerOptions(AssistanceNeedDecisionId(UUID.randomUUID()), assistanceWorker)
         }
     }
 
     @Test
     fun `decision maker options returns 403 when user doesn't have access`() {
         assertThrows<Forbidden> {
-            getDecisionMakerOptions(
-                AssistanceNeedDecisionId(UUID.randomUUID()),
-                decisionMaker,
-            )
+            getDecisionMakerOptions(AssistanceNeedDecisionId(UUID.randomUUID()), decisionMaker)
         }
     }
 
@@ -654,7 +640,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         id = EmployeeId(UUID.randomUUID()),
                         firstName = "Fia",
                         lastName = "Finance",
-                        roles = setOf(UserRole.FINANCE_ADMIN)
+                        roles = setOf(UserRole.FINANCE_ADMIN),
                     )
                 )
                 tx.insert(
@@ -662,7 +648,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         id = EmployeeId(UUID.randomUUID()),
                         firstName = "Dirk",
                         lastName = "Director",
-                        roles = setOf(UserRole.DIRECTOR)
+                        roles = setOf(UserRole.DIRECTOR),
                     )
                 )
             }
@@ -674,7 +660,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 assistanceNeedDecisionService.getDecisionMakerOptions(
                     tx,
                     assistanceDecision.id,
-                    setOf(UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR)
+                    setOf(UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR),
                 )
             }
 
@@ -684,10 +670,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 Tuple(
                     unitSupervisorOfTestDaycare.id,
                     unitSupervisorOfTestDaycare.lastName,
-                    unitSupervisorOfTestDaycare.firstName
-                )
+                    unitSupervisorOfTestDaycare.firstName,
+                ),
             ),
-            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
+            decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) },
         )
     }
 
@@ -703,11 +689,11 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         .copy(
                             validityPeriod =
                                 testDecision.validityPeriod.copy(end = LocalDate.of(2024, 1, 2)),
-                            assistanceLevels = setOf(AssistanceLevel.SPECIAL_ASSISTANCE)
+                            assistanceLevels = setOf(AssistanceLevel.SPECIAL_ASSISTANCE),
                         )
                         .toForm()
             ),
-            assistanceNeedDecision.id
+            assistanceNeedDecision.id,
         )
 
         val updatedDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
@@ -722,11 +708,11 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     assistanceNeedDecision
                         .copy(
                             validityPeriod = testDecision.validityPeriod.copy(end = end),
-                            assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
+                            assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
                         )
                         .toForm()
             ),
-            assistanceNeedDecision.id
+            assistanceNeedDecision.id,
         )
 
         val updatedDecisionWithAssistanceServices =
@@ -739,11 +725,11 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     assistanceNeedDecision
                         .copy(
                             validityPeriod = testDecision.validityPeriod.copy(end = null),
-                            assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)
+                            assistanceLevels = setOf(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME),
                         )
                         .toForm()
             ),
-            assistanceNeedDecision.id
+            assistanceNeedDecision.id,
         )
 
         assertThrows<BadRequest> { sendAssistanceNeedDecision(assistanceNeedDecision.id) }
@@ -769,11 +755,11 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(setOf(testAdult_4.email), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Päätös eVakassa / Beslut i eVaka / Decision on eVaka",
-            getEmailFor(testAdult_4).content.subject
+            getEmailFor(testAdult_4).content.subject,
         )
         assertEquals(
             "Test email sender fi <testemail_fi@test.com>",
-            getEmailFor(testAdult_4).fromAddress
+            getEmailFor(testAdult_4).fromAddress,
         )
     }
 
@@ -794,21 +780,21 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             name = "Test",
                             streetAddress = "Mallilankatu 1",
                             postalCode = "00100",
-                            postOffice = "Mallila"
+                            postOffice = "Mallila",
                         ),
                     preparedBy1 =
                         AssistanceNeedDecisionEmployee(
                             employeeId = assistanceWorker.id,
                             title = "worker",
                             phoneNumber = "01020405060",
-                            name = "Jaakko Jokunen"
+                            name = "Jaakko Jokunen",
                         ),
                     preparedBy2 = null,
                     decisionMaker =
                         AssistanceNeedDecisionMaker(
                             employeeId = decisionMaker.id,
                             title = "Decider of everything",
-                            name = "Mikko Mallila"
+                            name = "Mikko Mallila",
                         ),
                     pedagogicalMotivation = "Pedagogical motivation",
                     structuralMotivationOptions =
@@ -818,7 +804,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             smallGroup = false,
                             groupAssistant = false,
                             childAssistant = false,
-                            additionalStaff = false
+                            additionalStaff = false,
                         ),
                     structuralMotivationDescription = "Structural motivation description",
                     careMotivation = "Care motivation",
@@ -828,7 +814,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             partTimeSpecialEd = false,
                             fullTimeSpecialEd = false,
                             interpretationAndAssistanceServices = false,
-                            specialAides = true
+                            specialAides = true,
                         ),
                     servicesMotivation = "Services Motivation",
                     expertResponsibilities = "Expert responsibilities",
@@ -840,7 +826,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                                 personId = testAdult_1.id,
                                 name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                                 isHeard = true,
-                                details = "Lots of details"
+                                details = "Lots of details",
                             )
                         ),
                     viewOfGuardians = "The view of the guardians",
@@ -854,10 +840,10 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         AssistanceNeedDecisionChild(
                             id = ChildId(UUID.randomUUID()),
                             name = "Test Example",
-                            dateOfBirth = LocalDate.of(2012, 1, 4)
+                            dateOfBirth = LocalDate.of(2012, 1, 4),
                         ),
-                    annulmentReason = ""
-                )
+                    annulmentReason = "",
+                ),
             )
 
         assertNotNull(pdf)
@@ -918,7 +904,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         AssistanceNeedDecisionRequest(
                             testDecision.copy(
                                 validityPeriod = DateRange(startDate, null),
-                                selectedUnit = UnitIdInfo(testDaycare.id)
+                                selectedUnit = UnitIdInfo(testDaycare.id),
                             )
                         )
                     )
@@ -928,22 +914,22 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                         status = AssistanceNeedDecisionStatus.ACCEPTED
                     ),
-                    decisionMaker
+                    decisionMaker,
                 )
                 decision.id
             }
 
         assertEquals(
             DateRange(startDate1, startDate2.minusDays(1)),
-            getAssistanceNeedDecision(decisionIds[0]).validityPeriod
+            getAssistanceNeedDecision(decisionIds[0]).validityPeriod,
         )
         assertEquals(
             DateRange(startDate3, null),
-            getAssistanceNeedDecision(decisionIds[1]).validityPeriod
+            getAssistanceNeedDecision(decisionIds[1]).validityPeriod,
         )
         assertEquals(
             DateRange(startDate2, startDate3.minusDays(1)),
-            getAssistanceNeedDecision(decisionIds[2]).validityPeriod
+            getAssistanceNeedDecision(decisionIds[2]).validityPeriod,
         )
     }
 
@@ -968,7 +954,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -978,7 +964,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         val updatedEndDate = LocalDate.of(2022, 6, 30)
@@ -998,7 +984,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         assertEquals(
             DateRange(startDate, updatedEndDate),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1032,7 +1018,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1042,14 +1028,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(startDate, endDate),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1074,7 +1060,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1084,14 +1070,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(startDate, null),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1116,7 +1102,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1126,14 +1112,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(startDate, endDate),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1167,7 +1153,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1177,14 +1163,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(startDate, endDate),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1218,7 +1204,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(startDate, null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1228,14 +1214,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(startDate, endDate),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1260,7 +1246,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 AssistanceNeedDecisionRequest(
                     testDecision.copy(
                         validityPeriod = DateRange(endDate.plusDays(1), null),
-                        selectedUnit = UnitIdInfo(testDaycare.id)
+                        selectedUnit = UnitIdInfo(testDaycare.id),
                     )
                 )
             )
@@ -1270,14 +1256,14 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
                 status = AssistanceNeedDecisionStatus.ACCEPTED
             ),
-            decisionMaker
+            decisionMaker,
         )
 
         db.transaction { tx -> tx.endActiveDaycareAssistanceDecisions(today) }
 
         assertEquals(
             DateRange(endDate.plusDays(1), null),
-            getAssistanceNeedDecision(decision.id).validityPeriod
+            getAssistanceNeedDecision(decision.id).validityPeriod,
         )
     }
 
@@ -1294,13 +1280,13 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             assistanceWorker,
             clock,
             testChild_1.id,
-            request
+            request,
         )
     }
 
     private fun getAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
-        user: AuthenticatedUser.Employee = assistanceWorker
+        user: AuthenticatedUser.Employee = assistanceWorker,
     ): AssistanceNeedDecision {
         return assistanceNeedDecisionController
             .getAssistanceNeedDecision(dbInstance(), user, clock, id)
@@ -1312,43 +1298,41 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             dbInstance(),
             assistanceWorker,
             clock,
-            id
+            id,
         )
     }
 
-    private fun sendAssistanceNeedDecision(
-        id: AssistanceNeedDecisionId,
-    ) {
+    private fun sendAssistanceNeedDecision(id: AssistanceNeedDecisionId) {
         assistanceNeedDecisionController.sendAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
             clock,
-            id
+            id,
         )
     }
 
     private fun updateAssistanceNeedDecision(
         request: AssistanceNeedDecisionRequest,
-        decisionId: AssistanceNeedDecisionId
+        decisionId: AssistanceNeedDecisionId,
     ) {
         assistanceNeedDecisionController.updateAssistanceNeedDecision(
             dbInstance(),
             assistanceWorker,
             clock,
             decisionId,
-            request
+            request,
         )
     }
 
     private fun markAssistanceNeedDecisionOpened(
         id: AssistanceNeedDecisionId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.markAssistanceNeedDecisionAsOpened(
             dbInstance(),
             user,
             clock,
-            id
+            id,
         )
     }
 
@@ -1362,7 +1346,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             user,
             clock,
             id,
-            request
+            request,
         )
     }
 
@@ -1377,7 +1361,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             user,
             clock,
             id,
-            request
+            request,
         )
     }
 
@@ -1389,21 +1373,21 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             dbInstance(),
             user,
             clock,
-            id
+            id,
         )
     }
 
     private fun annulAssistanceNeedDecision(
         id: AssistanceNeedDecisionId,
         reason: String,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ) {
         assistanceNeedDecisionController.annulAssistanceNeedDecision(
             dbInstance(),
             user,
             clock,
             id,
-            AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest(reason)
+            AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest(reason),
         )
     }
 }

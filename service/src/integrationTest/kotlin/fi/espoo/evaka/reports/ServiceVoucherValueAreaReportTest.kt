@@ -110,7 +110,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             0,
             testAdult_1.id,
             testChild_1,
-            janFreeze.plusSeconds(3600)
+            janFreeze.plusSeconds(3600),
         )
 
         val febReport = getAreaReport(area1.id, febFirst.year, febFirst.monthValue)
@@ -132,7 +132,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
             28800,
             testAdult_1.id,
             testChild_1,
-            janFreeze.plusSeconds(3600)
+            janFreeze.plusSeconds(3600),
         )
 
         val febReportOldArea = getAreaReport(area1.id, febFirst.year, febFirst.monthValue)
@@ -146,7 +146,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
 
     private fun List<ServiceVoucherValueUnitAggregate>.assertContainsSum(
         unitId: DaycareId,
-        sum: Int
+        sum: Int,
     ) {
         val row = this.find { it.unit.id == unitId }
         assertNotNull(row)
@@ -159,13 +159,13 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
     private fun getAreaReport(
         areaId: AreaId,
         year: Int,
-        month: Int
+        month: Int,
     ): List<ServiceVoucherValueUnitAggregate> {
         val (_, response, data) =
             http
                 .get(
                     "/reports/service-voucher-value/units",
-                    listOf("areaId" to areaId, "year" to year, "month" to month)
+                    listOf("areaId" to areaId, "year" to year, "month" to month),
                 )
                 .asUser(adminUser)
                 .responseObject<ServiceVoucherReport>(jsonMapper)
@@ -182,7 +182,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     87000,
                     28800,
                     testAdult_1.id,
-                    testChild_1
+                    testChild_1,
                 ),
                 createVoucherDecision(
                     janFirst,
@@ -190,7 +190,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     52200,
                     28800,
                     testAdult_2.id,
-                    testChild_2
+                    testChild_2,
                 ),
                 createVoucherDecision(
                     janFirst,
@@ -198,8 +198,8 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     134850,
                     0,
                     testAdult_3.id,
-                    testChild_3
-                )
+                    testChild_3,
+                ),
             )
             .sumOf { decision -> decision.voucherValue - decision.coPayment }
     }
@@ -207,7 +207,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
     private val financeUser =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN)
+            roles = setOf(UserRole.FINANCE_ADMIN),
         )
 
     private fun createVoucherDecision(
@@ -217,7 +217,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         coPayment: Int,
         adultId: PersonId,
         child: DevPerson,
-        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0))
+        approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
     ): VoucherValueDecision {
         val decision =
             db.transaction {
@@ -233,7 +233,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                         value = value,
                         coPayment = coPayment,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                     )
                 it.upsertValueDecisions(listOf(decision))
 
@@ -245,7 +245,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                     now = approvedAt,
                     ids = listOf(decision.id),
                     decisionHandlerId = null,
-                    false
+                    false,
                 )
 
                 decision

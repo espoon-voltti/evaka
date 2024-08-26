@@ -46,8 +46,8 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
         cfg: ChildAclConfig,
         idChildQuery:
             QuerySql.Builder.(
-                user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime
-            ) -> QuerySql
+                user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime,
+            ) -> QuerySql,
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(
             this,
@@ -65,9 +65,9 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
 """
                             )
                         }
-                    }
+                    },
                 )
-            }
+            },
         )
 
     private data class Query<T : Id<*>>(private val filter: FilterByMobile) :
@@ -80,7 +80,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
 
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
-            targets: Set<T>
+            targets: Set<T>,
         ): Map<T, DatabaseActionRule.Deferred<IsMobile>> =
             when (ctx.user) {
                 is AuthenticatedUser.MobileDevice -> {
@@ -108,7 +108,7 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
 
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
-            params: IsMobile
+            params: IsMobile,
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.MobileDevice ->
@@ -153,37 +153,45 @@ JOIN (${subquery(aclQuery)}) acl USING (child_id)
                 all = true,
                 cfg.aclQueries(user, now).map { aclQuery ->
                     QuerySql {
-                        sql("""
+                        sql(
+                            """
 SELECT acl.child_id AS id
 FROM (${subquery(aclQuery)}) acl
-""")
+"""
+                        )
                     }
-                }
+                },
             )
         }
 
     fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT cdn.id, cdn.child_id
 FROM child_daily_note cdn
-""")
+"""
+            )
         }
 
     fun inPlacementUnitOfChildOfChildStickyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildStickyNoteId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT csn.id, csn.child_id
 FROM child_sticky_note csn
-""")
+"""
+            )
         }
 
     fun inPlacementUnitOfChildOfChildImage(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildImageId>(cfg) { _, _ ->
-            sql("""
+            sql(
+                """
 SELECT img.id, img.child_id
 FROM child_images img
-""")
+"""
+            )
         }
 
     fun inUnitOfGroup() =

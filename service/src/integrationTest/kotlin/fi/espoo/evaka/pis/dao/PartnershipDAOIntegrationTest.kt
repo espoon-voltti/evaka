@@ -52,7 +52,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate,
                     false,
                     Creator.User(partnershipCreator),
-                    clock.now()
+                    clock.now(),
                 )
             }
         assertNotNull(partnership.id)
@@ -76,7 +76,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(200),
                     false,
                     Creator.User(partnershipCreator),
-                    clock.now()
+                    clock.now(),
                 )
             }
         val partnership2 =
@@ -88,7 +88,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.now().plusDays(400),
                     false,
                     Creator.User(partnershipCreator),
-                    clock.now()
+                    clock.now(),
                 )
             }
 
@@ -98,7 +98,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person2Partnerships = db.read { it.getPartnershipsForPerson(person2.id) }
         assertEquals(
             listOf(partnership1, partnership2).sortedBy { it.id },
-            person2Partnerships.sortedBy { it.id }
+            person2Partnerships.sortedBy { it.id },
         )
 
         val person3Partnerships = db.read { it.getPartnershipsForPerson(person3.id) }
@@ -119,7 +119,7 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     endDate = null,
                     false,
                     Creator.User(partnershipCreator),
-                    clock.now()
+                    clock.now(),
                 )
             }
         assertNotNull(partnership.id)
@@ -143,9 +143,9 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         firstName = firstName,
                         lastName = "Meikäläinen",
                         email = "${firstName.lowercase()}.meikalainen@example.com",
-                        language = "fi"
+                        language = "fi",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
                 .let { tx.getPersonById(it)!! }
         }

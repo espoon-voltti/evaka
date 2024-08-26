@@ -31,7 +31,7 @@ data class VardaDecision(
     val paivittainen_vaka_kytkin: Boolean,
     val vuorohoito_kytkin: Boolean,
     val jarjestamismuoto_koodi: String,
-    val lahdejarjestelma: String
+    val lahdejarjestelma: String,
 ) {
     val kokopaivainen_vaka_kytkin: Boolean = tuntimaara_viikossa >= 25
 }
@@ -43,7 +43,7 @@ data class VardaPlacement(
     val toimipaikka_oid: String,
     val alkamis_pvm: LocalDate,
     val paattymis_pvm: LocalDate?,
-    val lahdejarjestelma: String
+    val lahdejarjestelma: String,
 )
 
 data class VardaPlacementResponse(@JsonProperty("id") val vardaPlacementId: Long)
@@ -55,21 +55,21 @@ internal val vardaPlacementTypes =
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
         PlacementType.PRESCHOOL_DAYCARE,
-        PlacementType.PREPARATORY_DAYCARE
+        PlacementType.PREPARATORY_DAYCARE,
     )
 internal val vardaTemporaryPlacementTypes =
     arrayOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
 
 enum class FeeBasisCode(val code: String) {
     FIVE_YEAR_OLDS_DAYCARE("MP02"),
-    DAYCARE("MP03")
+    DAYCARE("MP03"),
 }
 
 data class VardaGuardian(
     @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String?,
     @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null,
     val etunimet: String,
-    val sukunimi: String
+    val sukunimi: String,
 )
 
 data class VardaFeeData(
@@ -81,7 +81,7 @@ data class VardaFeeData(
     val perheen_koko: Int,
     val alkamis_pvm: LocalDate,
     val paattymis_pvm: LocalDate?,
-    val lahdejarjestelma: String
+    val lahdejarjestelma: String,
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true) data class VardaFeeDataResponse(val id: Long)
@@ -92,14 +92,14 @@ data class VardaGuardianWithId(
     val henkilo_oid: String?,
     val etunimet: String,
     val sukunimi: String,
-    val asuinpaikantunnus: String?
+    val asuinpaikantunnus: String?,
 ) {
     fun toVardaGuardian(): VardaGuardian =
         VardaGuardian(
             henkilotunnus = henkilotunnus,
             henkilo_oid = henkilo_oid,
             etunimet = etunimet,
-            sukunimi = sukunimi
+            sukunimi = sukunimi,
         )
 }
 
@@ -107,7 +107,7 @@ data class VardaChildCalculatedServiceNeedChanges(
     val childId: ChildId,
     val additions: List<ServiceNeedId>,
     val updates: List<ServiceNeedId>,
-    val deletes: List<ServiceNeedId>
+    val deletes: List<ServiceNeedId>,
 )
 
 data class VardaServiceNeed(
@@ -119,19 +119,19 @@ data class VardaServiceNeed(
     var vardaPlacementId: Long? = null,
     var vardaFeeDataIds: List<Long> = listOf(),
     var updateFailed: Boolean = false,
-    val errors: MutableList<String> = mutableListOf()
+    val errors: MutableList<String> = mutableListOf(),
 )
 
 data class ChangedChildServiceNeed(
     val evakaChildId: ChildId,
-    val evakaServiceNeedId: ServiceNeedId
+    val evakaServiceNeedId: ServiceNeedId,
 )
 
 data class FeeDataByServiceNeed(
     val evakaChildId: ChildId,
     val serviceNeedId: ServiceNeedId,
     val feeDecisionIds: List<FeeDecisionId> = emptyList(),
-    val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList()
+    val voucherValueDecisionIds: List<VoucherValueDecisionId> = emptyList(),
 ) {
     fun hasFeeData() = feeDecisionIds.isNotEmpty() || voucherValueDecisionIds.isNotEmpty()
 }
@@ -150,7 +150,7 @@ data class EvakaServiceNeedInfoForVarda(
     val shiftCare: Boolean,
     val providerType: ProviderType,
     val ophOrganizerOid: String?,
-    val ophUnitOid: String?
+    val ophUnitOid: String?,
 ) {
     private val providerTypeCode = VardaUnitProviderType.valueOf(providerType.toString()).vardaCode
 
@@ -168,7 +168,7 @@ data class EvakaServiceNeedInfoForVarda(
             paivittainen_vaka_kytkin = this.daily,
             vuorohoito_kytkin = this.shiftCare,
             jarjestamismuoto_koodi = this.providerTypeCode,
-            lahdejarjestelma = sourceSystem
+            lahdejarjestelma = sourceSystem,
         )
 
     fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement =
@@ -181,13 +181,13 @@ data class EvakaServiceNeedInfoForVarda(
                     ),
             alkamis_pvm = this.startDate,
             paattymis_pvm = this.endDate,
-            lahdejarjestelma = sourceSystem
+            lahdejarjestelma = sourceSystem,
         )
 
     fun toVardaServiceNeed(): VardaServiceNeed =
         VardaServiceNeed(
             evakaChildId = this.childId,
             evakaServiceNeedId = this.id,
-            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated)
+            evakaServiceNeedUpdated = HelsinkiDateTime.from(this.serviceNeedUpdated),
         )
 }

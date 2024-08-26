@@ -76,7 +76,7 @@ enum class ApplicationPreschoolTypeToggle {
     PRESCHOOL_CLUB,
     PREPARATORY_ONLY,
     PREPARATORY_DAYCARE,
-    DAYCARE_ONLY
+    DAYCARE_ONLY,
 }
 
 enum class ApplicationDistinctions {
@@ -86,7 +86,7 @@ enum class ApplicationDistinctions {
 enum class ApplicationDateType {
     DUE,
     START,
-    ARRIVAL
+    ARRIVAL,
 }
 
 @ConstList(name = "applicationStatusOptions")
@@ -107,13 +107,13 @@ enum class ApplicationStatusOption : DatabaseEnum {
 enum class TransferApplicationFilter {
     TRANSFER_ONLY,
     NO_TRANSFER,
-    ALL
+    ALL,
 }
 
 enum class VoucherApplicationFilter {
     VOUCHER_FIRST_CHOICE,
     VOUCHER_ONLY,
-    NO_VOUCHER
+    NO_VOUCHER,
 }
 
 @RestController
@@ -132,7 +132,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PaperApplicationCreateRequest
+        @RequestBody body: PaperApplicationCreateRequest,
     ): ApplicationId {
         val (guardianId, applicationId) =
             db.connect { dbc ->
@@ -141,7 +141,7 @@ class ApplicationControllerV2(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_PAPER_APPLICATION
+                        Action.Global.CREATE_PAPER_APPLICATION,
                     )
 
                     val child =
@@ -155,7 +155,7 @@ class ApplicationControllerV2(
                                     .getOrCreatePerson(
                                         tx,
                                         user,
-                                        ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                                        ExternalIdentifier.SSN.getInstance(body.guardianSsn),
                                     )
                                     ?.id
                                     ?: throw BadRequest(
@@ -188,7 +188,7 @@ class ApplicationControllerV2(
                             origin = ApplicationOrigin.PAPER,
                             hideFromGuardian = body.hideFromGuardian,
                             sentDate = body.sentDate,
-                            allowOtherGuardianAccess = true
+                            allowOtherGuardianAccess = true,
                         )
                     Pair(guardianId, applicationId)
                 }
@@ -196,7 +196,7 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(
             targetId = AuditId(body.childId),
             objectId = AuditId(applicationId),
-            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type)
+            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
         )
         return applicationId
     }
@@ -206,7 +206,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchApplicationRequest
+        @RequestBody body: SearchApplicationRequest,
     ): PagedApplicationSummaries {
         if (
             body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd
@@ -226,7 +226,7 @@ class ApplicationControllerV2(
                             tx,
                             user,
                             clock,
-                            Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES
+                            Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES,
                         )
 
                     val readWithoutAssistanceNeed =
@@ -234,14 +234,14 @@ class ApplicationControllerV2(
                             tx,
                             user,
                             clock,
-                            Action.Application.READ
+                            Action.Application.READ,
                         )
                     val readWithAssistanceNeed =
                         accessControl.getAuthorizationFilter(
                             tx,
                             user,
                             clock,
-                            Action.Application.READ_IF_HAS_ASSISTANCE_NEED
+                            Action.Application.READ_IF_HAS_ASSISTANCE_NEED,
                         )
 
                     if (readWithoutAssistanceNeed == null && readWithAssistanceNeed == null) {
@@ -253,7 +253,7 @@ class ApplicationControllerV2(
                         params = body,
                         readWithoutAssistanceNeed = readWithoutAssistanceNeed,
                         readWithAssistanceNeed = readWithAssistanceNeed,
-                        canReadServiceWorkerNotes = canReadServiceWorkerNotes
+                        canReadServiceWorkerNotes = canReadServiceWorkerNotes,
                     )
                 }
             }
@@ -265,7 +265,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable guardianId: PersonId
+        @PathVariable guardianId: PersonId,
     ): List<PersonApplicationSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -274,7 +274,7 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Person.READ_APPLICATIONS,
-                        guardianId
+                        guardianId,
                     )
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
@@ -287,7 +287,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<PersonApplicationSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -296,14 +296,14 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Child.READ_APPLICATION,
-                        childId
+                        childId,
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
-                            Action.Application.READ
+                            Action.Application.READ,
                         )
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
@@ -316,7 +316,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): ApplicationResponse {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -337,7 +337,7 @@ class ApplicationControllerV2(
                             tx,
                             user,
                             clock,
-                            Action.Decision.READ
+                            Action.Decision.READ,
                         )
 
                     val decisions = tx.getDecisionsByApplication(applicationId, decisionFilter)
@@ -354,7 +354,7 @@ class ApplicationControllerV2(
                                     user,
                                     clock,
                                     Action.Attachment.READ_APPLICATION_ATTACHMENT,
-                                    allAttachments.map { it.id }
+                                    allAttachments.map { it.id },
                                 )
                             allAttachments.filter { attachment ->
                                 permissions[attachment.id]?.isPermitted() ?: false
@@ -366,7 +366,7 @@ class ApplicationControllerV2(
                             tx,
                             user,
                             clock,
-                            applicationId
+                            applicationId,
                         )
 
                     ApplicationResponse(
@@ -374,7 +374,7 @@ class ApplicationControllerV2(
                         decisions = decisions,
                         guardians = guardians,
                         attachments = attachments,
-                        permittedActions = permittedActions
+                        permittedActions = permittedActions,
                     )
                 }
             }
@@ -382,7 +382,7 @@ class ApplicationControllerV2(
                 Audit.ApplicationRead.log(targetId = AuditId(applicationId))
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.decisions.size)
+                    meta = mapOf("count" to it.decisions.size),
                 )
             }
     }
@@ -393,7 +393,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody application: ApplicationUpdate
+        @RequestBody application: ApplicationUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -402,7 +402,7 @@ class ApplicationControllerV2(
                     user,
                     clock,
                     Action.Application.UPDATE,
-                    applicationId
+                    applicationId,
                 )
                 applicationStateService.updateApplicationContentsServiceWorker(
                     it,
@@ -410,7 +410,7 @@ class ApplicationControllerV2(
                     clock.now(),
                     applicationId,
                     application,
-                    user.evakaUserId
+                    user.evakaUserId,
                 )
             }
         }
@@ -422,7 +422,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -436,7 +436,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): PlacementPlanDraft {
         return db.connect { dbc ->
                 dbc.read {
@@ -445,12 +445,12 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Application.READ_PLACEMENT_PLAN_DRAFT,
-                        applicationId
+                        applicationId,
                     )
                     placementPlanService.getPlacementPlanDraft(
                         it,
                         applicationId,
-                        minStartDate = clock.today()
+                        minStartDate = clock.today(),
                     )
                 }
             }
@@ -462,7 +462,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): DecisionDraftGroup {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -471,7 +471,7 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Application.READ_DECISION_DRAFT,
-                        applicationId
+                        applicationId,
                     )
 
                     val application =
@@ -515,13 +515,13 @@ class ApplicationControllerV2(
                                 ssn =
                                     (applicationGuardian.identity as? ExternalIdentifier.SSN)
                                         ?.toString(),
-                                isVtjGuardian = applicationGuardianIsVtjGuardian
+                                isVtjGuardian = applicationGuardianIsVtjGuardian,
                             ),
                         child =
                             ChildInfo(
                                 firstName = child.firstName,
                                 lastName = child.lastName,
-                                ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
+                                ssn = (child.identity as? ExternalIdentifier.SSN)?.toString(),
                             ),
                         otherGuardian =
                             otherGuardian?.let {
@@ -530,16 +530,16 @@ class ApplicationControllerV2(
                                     firstName = it.firstName,
                                     lastName = it.lastName,
                                     ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
-                                    isVtjGuardian = true
+                                    isVtjGuardian = true,
                                 )
-                            }
+                            },
                     )
                 }
             }
             .also {
                 Audit.DecisionDraftRead.log(
                     targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.decisions.size)
+                    meta = mapOf("count" to it.decisions.size),
                 )
             }
     }
@@ -550,7 +550,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: List<DecisionDraftUpdate>
+        @RequestBody body: List<DecisionDraftUpdate>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -559,14 +559,14 @@ class ApplicationControllerV2(
                     user,
                     clock,
                     Action.Application.UPDATE_DECISION_DRAFT,
-                    applicationId
+                    applicationId,
                 )
                 updateDecisionDrafts(it, applicationId, body)
             }
         }
         Audit.DecisionDraftUpdate.log(
             targetId = AuditId(applicationId),
-            objectId = AuditId(body.map { it.id })
+            objectId = AuditId(body.map { it.id }),
         )
     }
 
@@ -575,7 +575,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -590,7 +590,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable action: String,
-        @RequestBody body: SimpleBatchRequest
+        @RequestBody body: SimpleBatchRequest,
     ) {
         val simpleBatchActions =
             mapOf(
@@ -601,7 +601,7 @@ class ApplicationControllerV2(
                     applicationStateService::sendDecisionsWithoutProposal,
                 "send-placement-proposal" to applicationStateService::sendPlacementProposal,
                 "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
             )
 
         val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
@@ -620,7 +620,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: DaycarePlacementPlan
+        @RequestBody body: DaycarePlacementPlan,
     ) {
         val placementPlanId =
             db.connect { dbc ->
@@ -630,20 +630,20 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Application.CREATE_PLACEMENT_PLAN,
-                        applicationId
+                        applicationId,
                     )
                     applicationStateService.createPlacementPlan(
                         it,
                         user,
                         clock,
                         applicationId,
-                        body
+                        body,
                     )
                 }
             }
         Audit.PlacementPlanCreate.log(
             targetId = AuditId(listOf(applicationId, body.unitId)),
-            objectId = AuditId(placementPlanId)
+            objectId = AuditId(placementPlanId),
         )
     }
 
@@ -653,7 +653,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: PlacementProposalConfirmationUpdate
+        @RequestBody body: PlacementProposalConfirmationUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -664,7 +664,7 @@ class ApplicationControllerV2(
                     applicationId,
                     body.status,
                     body.reason,
-                    body.otherReason
+                    body.otherReason,
                 )
             }
         }
@@ -676,7 +676,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: AcceptDecisionRequest
+        @RequestBody body: AcceptDecisionRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -686,7 +686,7 @@ class ApplicationControllerV2(
                     clock,
                     applicationId,
                     body.decisionId,
-                    body.requestedStartDate
+                    body.requestedStartDate,
                 )
             }
         }
@@ -698,7 +698,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody body: RejectDecisionRequest
+        @RequestBody body: RejectDecisionRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -707,7 +707,7 @@ class ApplicationControllerV2(
                     user,
                     clock,
                     applicationId,
-                    body.decisionId
+                    body.decisionId,
                 )
             }
         }
@@ -719,7 +719,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @PathVariable action: String
+        @PathVariable action: String,
     ) {
         val simpleActions =
             mapOf(
@@ -733,7 +733,7 @@ class ApplicationControllerV2(
                     applicationStateService::sendDecisionsWithoutProposal,
                 "send-placement-proposal" to applicationStateService::sendPlacementProposal,
                 "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed,
             )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
@@ -745,7 +745,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ): UnitApplications {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -754,7 +754,7 @@ class ApplicationControllerV2(
                         user,
                         clock,
                         Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
-                        unitId
+                        unitId,
                     )
                     val placementProposals =
                         tx.getPlacementPlans(
@@ -762,7 +762,7 @@ class ApplicationControllerV2(
                             unitId,
                             null,
                             null,
-                            listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
+                            listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION),
                         )
                     val placementPlans =
                         tx.getPlacementPlans(
@@ -773,14 +773,14 @@ class ApplicationControllerV2(
                             listOf(
                                 ApplicationStatus.WAITING_CONFIRMATION,
                                 ApplicationStatus.WAITING_MAILING,
-                                ApplicationStatus.REJECTED
-                            )
+                                ApplicationStatus.REJECTED,
+                            ),
                         )
                     val applications = tx.getApplicationUnitSummaries(unitId)
                     UnitApplications(
                         placementProposals = placementProposals,
                         placementPlans = placementPlans,
-                        applications = applications
+                        applications = applications,
                     )
                 }
             }
@@ -796,7 +796,7 @@ data class PaperApplicationCreateRequest(
     val type: ApplicationType,
     val sentDate: LocalDate,
     val hideFromGuardian: Boolean,
-    val transferApplication: Boolean
+    val transferApplication: Boolean,
 )
 
 data class SearchApplicationRequest(
@@ -816,7 +816,7 @@ data class SearchApplicationRequest(
     val periodEnd: LocalDate?,
     val searchTerms: String?,
     val transferApplications: TransferApplicationFilter?,
-    val voucherApplications: VoucherApplicationFilter?
+    val voucherApplications: VoucherApplicationFilter?,
 )
 
 data class ApplicationResponse(
@@ -824,7 +824,7 @@ data class ApplicationResponse(
     val decisions: List<Decision>,
     val guardians: List<PersonJSON>,
     val attachments: List<ApplicationAttachment>,
-    val permittedActions: Set<Action.Application>
+    val permittedActions: Set<Action.Application>,
 )
 
 data class SimpleBatchRequest(val applicationIds: Set<ApplicationId>)
@@ -832,13 +832,13 @@ data class SimpleBatchRequest(val applicationIds: Set<ApplicationId>)
 data class PlacementProposalConfirmationUpdate(
     val status: PlacementPlanConfirmationStatus,
     val reason: PlacementPlanRejectReason?,
-    val otherReason: String?
+    val otherReason: String?,
 )
 
 data class DaycarePlacementPlan(
     val unitId: DaycareId,
     val period: FiniteDateRange,
-    val preschoolDaycarePeriod: FiniteDateRange? = null
+    val preschoolDaycarePeriod: FiniteDateRange? = null,
 )
 
 data class AcceptDecisionRequest(val decisionId: DecisionId, val requestedStartDate: LocalDate)
@@ -851,7 +851,7 @@ data class DecisionDraftGroup(
     val unit: DecisionUnit,
     val guardian: GuardianInfo,
     val otherGuardian: GuardianInfo?,
-    val child: ChildInfo
+    val child: ChildInfo,
 )
 
 data class ChildInfo(val ssn: String?, val firstName: String, val lastName: String)
@@ -861,11 +861,11 @@ data class GuardianInfo(
     val ssn: String?,
     val firstName: String,
     val lastName: String,
-    val isVtjGuardian: Boolean
+    val isVtjGuardian: Boolean,
 )
 
 data class UnitApplications(
     val placementProposals: List<PlacementPlanDetails>,
     val placementPlans: List<PlacementPlanDetails>,
-    val applications: List<ApplicationUnitSummary>
+    val applications: List<ApplicationUnitSummary>,
 )

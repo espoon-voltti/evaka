@@ -60,7 +60,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     groupId = groupId,
                     startDate = start2,
                     endDate = null,
-                    amount = 5.0
+                    amount = 5.0,
                 )
                 getCaretakers(tx, groupId)
             }
@@ -86,7 +86,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     id = id,
                     startDate = LocalDate.of(2000, 7, 1),
                     endDate = LocalDate.of(2000, 8, 1),
-                    amount = 2.0
+                    amount = 2.0,
                 )
 
                 getCaretakers(tx, groupId)
@@ -107,7 +107,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     groupId = groupId,
                     startDate = groupStart.minusDays(3),
                     endDate = groupStart.plusDays(3),
-                    amount = 5.0
+                    amount = 5.0,
                 )
             }
         }
@@ -122,7 +122,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     groupId = groupId,
                     startDate = groupStart,
                     endDate = null,
-                    amount = 5.0
+                    amount = 5.0,
                 )
             }
         }

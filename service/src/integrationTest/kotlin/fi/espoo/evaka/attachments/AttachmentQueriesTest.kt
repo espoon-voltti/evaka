@@ -49,7 +49,7 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             guardian =
                 AuthenticatedUser.Citizen(
                     tx.insert(DevPerson(), DevPersonType.ADULT),
-                    CitizenAuthLevel.STRONG
+                    CitizenAuthLevel.STRONG,
                 )
             admin =
                 AuthenticatedUser.Employee(tx.insert(DevEmployee()), roles = setOf(UserRole.ADMIN))
@@ -61,7 +61,7 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         type = ApplicationType.DAYCARE,
                         childId = child,
                         guardianId = guardian.id,
-                        document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                        document = DaycareFormV0.fromApplication2(validDaycareApplication),
                     )
                 )
             income =
@@ -135,7 +135,7 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun Database.Transaction.insertAttachment(
         user: AuthenticatedUser,
-        parent: AttachmentParent
+        parent: AttachmentParent,
     ) =
         insertAttachment(
             user,
@@ -143,7 +143,7 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             "dummy-name",
             "text/plain",
             parent,
-            type = if (parent is AttachmentParent.Application) AttachmentType.URGENCY else null
+            type = if (parent is AttachmentParent.Application) AttachmentType.URGENCY else null,
         )
 
     private fun parentOf(attachment: AttachmentId): AttachmentParent? =

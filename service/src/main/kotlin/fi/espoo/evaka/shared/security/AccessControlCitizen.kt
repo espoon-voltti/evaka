@@ -15,7 +15,7 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
     fun getPermittedFeatures(
         tx: Database.Read,
         clock: EvakaClock,
-        citizen: PersonId
+        citizen: PersonId,
     ): CitizenFeatures {
         val messaging = tx.citizenHasAccessToMessaging(clock, citizen)
         return CitizenFeatures(
@@ -25,15 +25,15 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
                 tx.citizenHasAccessToReservations(
                     clock,
                     citizen,
-                    citizenCalendarEnv.calendarOpenBeforePlacementDays
+                    citizenCalendarEnv.calendarOpenBeforePlacementDays,
                 ),
-            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, citizen)
+            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, citizen),
         )
     }
 
     private fun Database.Read.citizenHasAccessToMessaging(
         clock: EvakaClock,
-        userId: PersonId
+        userId: PersonId,
     ): Boolean {
         val today = clock.today()
         return createQuery {
@@ -70,7 +70,7 @@ SELECT EXISTS (
 
     private fun Database.Read.citizenHasChildWithActivePlacement(
         clock: EvakaClock,
-        userId: PersonId
+        userId: PersonId,
     ): Boolean {
         val today = clock.today()
         return createQuery {
@@ -96,7 +96,7 @@ SELECT EXISTS (
     private fun Database.Read.citizenHasAccessToReservations(
         clock: EvakaClock,
         userId: PersonId,
-        calendarOpenBeforePlacementDays: Int = 0
+        calendarOpenBeforePlacementDays: Int = 0,
     ): Boolean {
         val today = clock.today()
         return createQuery {
@@ -122,7 +122,7 @@ SELECT EXISTS (
 
     private fun Database.Read.citizenHasAccessToChildDocumentation(
         clock: EvakaClock,
-        userId: PersonId
+        userId: PersonId,
     ): Boolean {
         val today = clock.today()
         return createQuery {

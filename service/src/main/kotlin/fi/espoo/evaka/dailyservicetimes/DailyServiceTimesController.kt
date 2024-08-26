@@ -32,18 +32,18 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     data class DailyServiceTimesResponse(
         val dailyServiceTimes: DailyServiceTimes,
-        val permittedActions: Set<Action.DailyServiceTime>
+        val permittedActions: Set<Action.DailyServiceTime>,
     )
 
     @GetMapping(
         "" + "/children/{childId}/daily-service-times", // deprecated
-        "/employee/children/{childId}/daily-service-times"
+        "/employee/children/{childId}/daily-service-times",
     )
     fun getDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<DailyServiceTimesResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -52,13 +52,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Child.READ_DAILY_SERVICE_TIMES,
-                        childId
+                        childId,
                     )
                     tx.getChildDailyServiceTimes(childId).map {
                         DailyServiceTimesResponse(
                             it,
                             permittedActions =
-                                accessControl.getPermittedActions(tx, user, clock, it.id)
+                                accessControl.getPermittedActions(tx, user, clock, it.id),
                         )
                     }
                 }
@@ -66,21 +66,21 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             .also {
                 Audit.ChildDailyServiceTimesRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @PostMapping(
         "/children/{childId}/daily-service-times", // deprecated
-        "/employee/children/{childId}/daily-service-times"
+        "/employee/children/{childId}/daily-service-times",
     )
     fun postDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: DailyServiceTimesValue
+        @RequestBody body: DailyServiceTimesValue,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -99,7 +99,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Child.CREATE_DAILY_SERVICE_TIME,
-                        childId
+                        childId,
                     )
                     updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
                     val id = tx.createChildDailyServiceTimes(childId, body)
@@ -113,14 +113,14 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     @PutMapping(
         "/daily-service-times/{id}", // deprecated
-        "/employee/daily-service-times/{id}"
+        "/employee/daily-service-times/{id}",
     )
     fun putDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
-        @RequestBody body: DailyServiceTimesValue
+        @RequestBody body: DailyServiceTimesValue,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -132,7 +132,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.DailyServiceTime.UPDATE,
-                    id
+                    id,
                 )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
@@ -166,14 +166,14 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     @PutMapping(
         "/daily-service-times/{id}/end", // deprecated
-        "/employee/daily-service-times/{id}/end"
+        "/employee/daily-service-times/{id}/end",
     )
     fun putDailyServiceTimesEnd(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId,
-        @RequestBody body: DailyServiceTimesEndDate
+        @RequestBody body: DailyServiceTimesEndDate,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -189,7 +189,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.DailyServiceTime.UPDATE,
-                    id
+                    id,
                 )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if ((old.validityPeriod.end ?: LocalDate.MAX) < today) {
@@ -224,7 +224,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                         tx = tx,
                         today = today,
                         childId = old.childId,
-                        validityPeriod = changePeriod
+                        validityPeriod = changePeriod,
                     )
                 }
 
@@ -236,13 +236,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     @DeleteMapping(
         "/daily-service-times/{id}", // deprecated
-        "/employee/daily-service-times/{id}"
+        "/employee/daily-service-times/{id}",
     )
     fun deleteDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: DailyServiceTimesId
+        @PathVariable id: DailyServiceTimesId,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -254,7 +254,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.DailyServiceTime.DELETE,
-                    id
+                    id,
                 )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
@@ -273,7 +273,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
     private fun updateOverlappingDailyServiceTimes(
         tx: Database.Transaction,
         childId: ChildId,
-        new: DateRange
+        new: DateRange,
     ) {
         val overlapping = tx.getOverlappingChildDailyServiceTimes(childId, new)
         overlapping.forEach { (oldId, old) ->
@@ -299,7 +299,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         tx: Database.Transaction,
         today: LocalDate,
         childId: ChildId,
-        validityPeriod: DateRange
+        validityPeriod: DateRange,
     ) {
         if ((validityPeriod.end ?: LocalDate.MAX) <= today)
             throw Error("Unexpected validity period")

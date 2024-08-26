@@ -129,7 +129,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     childId = childId,
                     headOfChildId = adultId,
                     startDate = LocalDate.of(2015, 1, 1),
-                    endDate = LocalDate.of(2030, 1, 1)
+                    endDate = LocalDate.of(2030, 1, 1),
                 )
             )
             it.insert(
@@ -137,7 +137,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     adultIdDuplicate,
                     validFrom = validFrom,
                     validTo = validTo,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                 )
             )
         }
@@ -171,13 +171,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             adultId,
-                            DateRange(validFrom, validTo)
+                            DateRange(validFrom, validTo),
                         )
                     )
                 ),
                 any(),
                 any(),
-                any()
+                any(),
             )
     }
 
@@ -197,7 +197,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     childId = childIdDuplicate,
                     unitId = testDaycare.id,
                     startDate = from,
-                    endDate = to
+                    endDate = to,
                 )
             )
         }
@@ -252,7 +252,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderDuplicateAccount,
                 dummyMessage,
                 recipients = setOf(receiverAccount),
-                children = setOf(testChild_1.id)
+                children = setOf(testChild_1.id),
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
@@ -297,14 +297,14 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderAccount,
                 dummyMessage,
                 recipients = setOf(receiverDuplicateAccount),
-                children = setOf(testChild_1.id)
+                children = setOf(testChild_1.id),
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
         assertEquals(
             listOf(0, 1),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
         )
 
         db.transaction {
@@ -314,7 +314,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(1, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
         )
     }
 
@@ -360,7 +360,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderAccount,
                 dummyMessage,
                 recipients = setOf(receiverDuplicateAccount),
-                children = setOf(testChild_1.id)
+                children = setOf(testChild_1.id),
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -372,11 +372,11 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(0, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
         )
         assertEquals(
             listOf(0, 1),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
         )
 
         db.transaction {
@@ -386,7 +386,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(1, 0),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount)),
         )
     }
 
@@ -404,7 +404,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     childId = childId,
                     headOfChildId = adultId,
                     startDate = LocalDate.of(2015, 1, 1),
-                    endDate = LocalDate.of(2030, 1, 1)
+                    endDate = LocalDate.of(2030, 1, 1),
                 )
             )
         }
@@ -416,7 +416,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     childId = childIdDuplicate,
                     unitId = testDaycare.id,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         }
@@ -430,13 +430,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             adultId,
-                            DateRange(placementStart, placementEnd)
+                            DateRange(placementStart, placementEnd),
                         )
                     )
                 ),
                 any(),
                 any(),
-                any()
+                any(),
             )
     }
 
@@ -535,7 +535,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
             RealEvakaClock(),
             childId,
-            MockMultipartFile("file", imageName, "image/jpeg", imageData)
+            MockMultipartFile("file", imageName, "image/jpeg", imageData),
         )
 
     private fun childImageCount(childId: ChildId): Int =

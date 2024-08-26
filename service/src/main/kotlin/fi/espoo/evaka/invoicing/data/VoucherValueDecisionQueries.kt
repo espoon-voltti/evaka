@@ -200,7 +200,7 @@ fun Database.Read.findValueDecisionsForChild(
     childId: ChildId,
     period: DateRange? = null,
     statuses: List<VoucherValueDecisionStatus>? = null,
-    lockForUpdate: Boolean = false
+    lockForUpdate: Boolean = false,
 ): List<VoucherValueDecision> {
     return createQuery {
             sql(
@@ -284,7 +284,7 @@ fun Database.Read.searchValueDecisions(
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
     difference: Set<VoucherValueDecisionDifference>,
-    distinctiveParams: List<VoucherValueDecisionDistinctiveParams>
+    distinctiveParams: List<VoucherValueDecisionDistinctiveParams>,
 ): PagedVoucherValueDecisionSummaries {
     val sortColumn =
         when (sortBy) {
@@ -312,7 +312,7 @@ fun Database.Read.searchValueDecisions(
             Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
             Binding.of("difference", difference),
             Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
-            Binding.of("now", evakaClock.now())
+            Binding.of("now", evakaClock.now()),
         )
 
     val (freeTextQuery, freeTextParams) =
@@ -372,7 +372,7 @@ NOT EXISTS (
             if (noStartingPlacements) noStartingPlacementsQuery else null,
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
-            else null
+            else null,
         )
     val sql =
         """
@@ -488,7 +488,7 @@ WHERE decision.id = ${bind(id)}
                         it.headOfFamily.id,
                         it.partner?.id,
                         listOf(it.child.id),
-                        DateRange(it.validFrom, it.validTo)
+                        DateRange(it.validFrom, it.validTo),
                     )
             )
         }
@@ -538,7 +538,7 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
     approvedBy: EmployeeId,
     approvedAt: HelsinkiDateTime,
     decisionHandlerId: EmployeeId?,
-    alwaysUseDaycareFinanceDecisionHandler: Boolean
+    alwaysUseDaycareFinanceDecisionHandler: Boolean,
 ) {
     executeBatch(ids) {
         sql(
@@ -600,12 +600,12 @@ data class VoucherValueDecisionCitizenInfoRow(
     val sentAt: HelsinkiDateTime,
     val headOfFamilyId: PersonId,
     val partnerId: PersonId?,
-    val childId: PersonId
+    val childId: PersonId,
 )
 
 fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     id: VoucherValueDecisionId,
-    documentKey: String
+    documentKey: String,
 ) {
     createUpdate {
             sql(
@@ -617,7 +617,7 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
 
 fun Database.Transaction.updateVoucherValueDecisionStatus(
     ids: List<VoucherValueDecisionId>,
-    status: VoucherValueDecisionStatus
+    status: VoucherValueDecisionStatus,
 ) {
     createUpdate {
             sql(
@@ -629,7 +629,7 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
 
 fun Database.Transaction.setVoucherValueDecisionType(
     id: VoucherValueDecisionId,
-    type: VoucherValueDecisionType
+    type: VoucherValueDecisionType,
 ) {
     createUpdate {
             sql(
@@ -646,7 +646,7 @@ WHERE id = ${bind(id)}
 
 fun Database.Transaction.markVoucherValueDecisionsSent(
     ids: List<VoucherValueDecisionId>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -658,7 +658,7 @@ fun Database.Transaction.markVoucherValueDecisionsSent(
 
 fun Database.Transaction.updateVoucherValueDecisionEndDates(
     updatedDecisions: List<VoucherValueDecision>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     executeBatch(updatedDecisions) {
         sql(
@@ -675,7 +675,7 @@ WHERE id = ${bind { it.id }}
 
 fun Database.Transaction.annulVoucherValueDecisions(
     ids: List<VoucherValueDecisionId>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     if (ids.isEmpty()) return
 

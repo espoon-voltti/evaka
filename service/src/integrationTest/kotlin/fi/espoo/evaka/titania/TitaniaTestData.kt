@@ -16,7 +16,7 @@ internal val testEmployee =
         employeeNumber = null,
         roles = setOf(),
         temporaryInUnitId = null,
-        active = true
+        active = true,
     )
 
 // titania/titania-update-request-valid-example-data.json
@@ -26,7 +26,7 @@ internal val titaniaUpdateRequestValidExampleData =
         period =
             TitaniaPeriod(
                 beginDate = LocalDate.of(2011, 1, 3),
-                endDate = LocalDate.of(2011, 1, 23)
+                endDate = LocalDate.of(2011, 1, 23),
             ),
         schedulingUnit =
             listOf(
@@ -54,29 +54,29 @@ internal val titaniaUpdateRequestValidExampleData =
                                                             placement =
                                                                 TitaniaCodeName(
                                                                     "VV",
-                                                                    "Vuorovastaava"
+                                                                    "Vuorovastaava",
                                                                 ),
                                                             administrativeUnit =
                                                                 TitaniaCodeName(
                                                                     "110",
-                                                                    "Vastuuyksikkö"
+                                                                    "Vastuuyksikkö",
                                                                 ),
                                                             operativeUnit =
                                                                 TitaniaCodeName(
                                                                     "110A",
-                                                                    "Toimipiste"
+                                                                    "Toimipiste",
                                                                 ),
                                                             project =
                                                                 TitaniaCodeName(
                                                                     "P2000",
-                                                                    "Projekti 2000"
-                                                                )
+                                                                    "Projekti 2000",
+                                                                ),
                                                         ),
                                                         TitaniaWorkingTimeEvent(
                                                             date = LocalDate.of(2011, 1, 4),
                                                             code = "V",
-                                                            description = "Vapaapaiva"
-                                                        )
+                                                            description = "Vapaapaiva",
+                                                        ),
                                                     )
                                             ),
                                             payrollItems =
@@ -88,16 +88,16 @@ internal val titaniaUpdateRequestValidExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE
+                                                                unit = TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
-                        )
+                        ),
                 )
-            )
+            ),
     )
 
 internal val titaniaUpdateRequestInvalidExampleData =
@@ -106,7 +106,7 @@ internal val titaniaUpdateRequestInvalidExampleData =
         period =
             TitaniaPeriod(
                 beginDate = LocalDate.of(2011, 1, 3),
-                endDate = LocalDate.of(2011, 1, 23)
+                endDate = LocalDate.of(2011, 1, 23),
             ),
         schedulingUnit =
             listOf(
@@ -134,29 +134,29 @@ internal val titaniaUpdateRequestInvalidExampleData =
                                                             placement =
                                                                 TitaniaCodeName(
                                                                     "VV",
-                                                                    "Vuorovastaava"
+                                                                    "Vuorovastaava",
                                                                 ),
                                                             administrativeUnit =
                                                                 TitaniaCodeName(
                                                                     "110",
-                                                                    "Vastuuyksikkö"
+                                                                    "Vastuuyksikkö",
                                                                 ),
                                                             operativeUnit =
                                                                 TitaniaCodeName(
                                                                     "110A",
-                                                                    "Toimipiste"
+                                                                    "Toimipiste",
                                                                 ),
                                                             project =
                                                                 TitaniaCodeName(
                                                                     "P2000",
-                                                                    "Projekti 2000"
-                                                                )
+                                                                    "Projekti 2000",
+                                                                ),
                                                         ),
                                                         TitaniaWorkingTimeEvent(
                                                             date = LocalDate.of(2011, 1, 27),
                                                             code = "V",
-                                                            description = "Vapaapaiva"
-                                                        )
+                                                            description = "Vapaapaiva",
+                                                        ),
                                                     )
                                             ),
                                             payrollItems =
@@ -168,16 +168,16 @@ internal val titaniaUpdateRequestInvalidExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE
+                                                                unit = TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
-                        )
+                        ),
                 )
-            )
+            ),
     )
 
 internal val titaniaUpdateRequestValidMinimalData =
@@ -185,7 +185,7 @@ internal val titaniaUpdateRequestValidMinimalData =
         period =
             TitaniaPeriod(
                 beginDate = LocalDate.of(2011, 1, 3),
-                endDate = LocalDate.of(2011, 1, 23)
+                endDate = LocalDate.of(2011, 1, 23),
             ),
         schedulingUnit =
             listOf(
@@ -209,13 +209,13 @@ internal val titaniaUpdateRequestValidMinimalData =
                                                                 date = LocalDate.of(2010, 1, 1)
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
-                        )
+                        ),
                 )
-            )
+            ),
     )
 
 // titania/titania-get-request-valid-example-data.json
@@ -225,7 +225,7 @@ internal val titaniaGetRequestValidExampleData =
         period =
             TitaniaPeriod(
                 beginDate = LocalDate.of(2014, 3, 3),
-                endDate = LocalDate.of(2014, 3, 23)
+                endDate = LocalDate.of(2014, 3, 23),
             ),
         schedulingUnit =
             listOf(
@@ -236,15 +236,15 @@ internal val titaniaGetRequestValidExampleData =
                         listOf(
                             TitaniaStampedPersonRequest(
                                 employeeId = "177111",
-                                name = "ANKKA IINES"
+                                name = "ANKKA IINES",
                             ),
                             TitaniaStampedPersonRequest(
                                 employeeId = "00255145",
-                                name = "HOPO HESSU"
-                            )
-                        )
+                                name = "HOPO HESSU",
+                            ),
+                        ),
                 )
-            )
+            ),
     )
 
 // titania/titania-get-response-valid-example-data.json
@@ -267,17 +267,17 @@ internal val titaniaGetResponseValidExampleData =
                                                 TitaniaStampedWorkingTimeEvent(
                                                     date = LocalDate.of(2014, 3, 3),
                                                     beginTime = "0700",
-                                                    endTime = "1500"
+                                                    endTime = "1500",
                                                 ),
                                                 TitaniaStampedWorkingTimeEvent(
                                                     date = LocalDate.of(2014, 3, 4),
                                                     beginTime = "0630",
                                                     endTime = "1200",
                                                     beginReasonCode = "YT",
-                                                    endReasonCode = "YT"
-                                                )
+                                                    endReasonCode = "YT",
+                                                ),
                                             )
-                                    )
+                                    ),
                             ),
                             TitaniaStampedPersonResponse(
                                 employeeId = "00255145",
@@ -289,24 +289,24 @@ internal val titaniaGetResponseValidExampleData =
                                                 TitaniaStampedWorkingTimeEvent(
                                                     date = LocalDate.of(2014, 3, 3),
                                                     beginTime = "0700",
-                                                    endTime = "1100"
+                                                    endTime = "1100",
                                                 ),
                                                 TitaniaStampedWorkingTimeEvent(
                                                     date = LocalDate.of(2014, 3, 3),
                                                     beginTime = "1205",
-                                                    endTime = "1610"
+                                                    endTime = "1610",
                                                 ),
                                                 TitaniaStampedWorkingTimeEvent(
                                                     date = LocalDate.of(2014, 3, 4),
                                                     beginTime = "1015",
                                                     beginReasonCode = "TA",
                                                     endTime = "1715",
-                                                    endReasonCode = null
-                                                )
+                                                    endReasonCode = null,
+                                                ),
                                             )
-                                    )
-                            )
-                        )
+                                    ),
+                            ),
+                        ),
                 )
             )
     )

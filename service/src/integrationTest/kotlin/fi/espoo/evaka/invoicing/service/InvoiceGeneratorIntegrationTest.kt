@@ -146,7 +146,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testDaycare.id, invoiceRow.unitId)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -164,7 +164,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(
                 testChild_1.id,
                 placementPeriod,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             )
         )
 
@@ -181,7 +181,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -212,7 +212,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -230,14 +230,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(
                 testChild_1.id,
                 placementPeriod.copy(end = placementPeriod.end.minusDays(1)),
-                PlacementType.TEMPORARY_DAYCARE
+                PlacementType.TEMPORARY_DAYCARE,
             )
         )
         db.transaction(
             insertPlacement(
                 testChild_1.id,
                 placementPeriod.copy(start = placementPeriod.end),
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             )
         )
 
@@ -254,7 +254,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -264,7 +264,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -300,7 +300,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -310,7 +310,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -328,7 +328,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(
                 testChild_1.id,
                 placementPeriod,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             )
         )
 
@@ -337,7 +337,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertPlacement(
                 testChild_2.id,
                 placementPeriod,
-                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
             )
         )
 
@@ -354,7 +354,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
@@ -364,7 +364,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(800, invoiceRow.unitPrice)
@@ -385,14 +385,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             insertChildParentRelation(
                 testAdult_1.id,
                 testChild_1.id,
-                placementPeriod.copy(end = placementPeriod.start)
+                placementPeriod.copy(end = placementPeriod.start),
             )
         )
         db.transaction(
             insertChildParentRelation(
                 testAdult_2.id,
                 testChild_1.id,
-                placementPeriod.copy(start = placementPeriod.end)
+                placementPeriod.copy(start = placementPeriod.end),
             )
         )
 
@@ -409,7 +409,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -424,7 +424,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -472,7 +472,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
@@ -501,9 +501,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 28900
+                        fee = 28900,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -512,8 +512,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
-                )
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
+                ),
             )
         )
 
@@ -530,7 +530,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -564,11 +564,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
-                                    effect = -5780
+                                    effect = -5780,
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -577,8 +577,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
-                )
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
+                ),
             )
         )
 
@@ -595,7 +595,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -606,9 +606,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
@@ -636,9 +636,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 28900
+                        fee = 28900,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -659,9 +659,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 baseFee = 28900,
                                 siblingDiscount = 50,
-                                fee = 14500
-                            )
-                )
+                                fee = 14500,
+                            ),
+                ),
             )
         )
 
@@ -678,7 +678,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -688,7 +688,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
@@ -717,9 +717,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -734,10 +734,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -754,7 +754,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
@@ -764,7 +764,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(18, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
@@ -774,7 +774,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8, invoiceRow.unitPrice)
@@ -803,9 +803,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -820,10 +820,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -840,7 +840,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
@@ -850,7 +850,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(16, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
@@ -860,7 +860,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(4, invoiceRow.unitPrice)
@@ -889,9 +889,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -906,10 +906,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -926,7 +926,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
@@ -936,7 +936,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(15, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
@@ -964,7 +964,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 28900
+                        fee = 28900,
                     ),
                     createFeeDecisionChildFixture(
                         childId = testChild_2.id,
@@ -974,9 +974,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         siblingDiscount = 50,
-                        fee = 14500
-                    )
-                )
+                        fee = 14500,
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -989,9 +989,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     children =
                         listOf(
                             decision.children[0],
-                            decision.children[1].copy(fee = 10000, finalFee = 10000)
-                        )
-                )
+                            decision.children[1].copy(fee = 10000, finalFee = 10000),
+                        ),
+                ),
             )
         )
 
@@ -1008,7 +1008,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -1018,7 +1018,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
@@ -1028,7 +1028,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(455, invoiceRow.unitPrice)
@@ -1062,11 +1062,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
-                                    effect = -5780
+                                    effect = -5780,
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -1083,7 +1083,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -1094,9 +1094,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
@@ -1130,17 +1130,17 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     type = FeeAlterationType.DISCOUNT,
                                     amount = 20,
                                     isAbsolute = false,
-                                    effect = -5780
+                                    effect = -5780,
                                 ),
                                 createFeeDecisionAlterationFixture(
                                     type = FeeAlterationType.INCREASE,
                                     amount = 93,
                                     isAbsolute = false,
-                                    effect = 9300
-                                )
-                            )
+                                    effect = 9300,
+                                ),
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -1157,7 +1157,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -1168,9 +1168,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-5780, invoiceRow.unitPrice)
@@ -1182,9 +1182,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.INCREASE
+                        FeeAlterationType.INCREASE,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(9300, invoiceRow.unitPrice)
@@ -1218,11 +1218,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     type = FeeAlterationType.DISCOUNT,
                                     amount = 95,
                                     isAbsolute = false,
-                                    effect = -27455
+                                    effect = -27455,
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -1239,7 +1239,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -1250,9 +1250,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-27455, invoiceRow.unitPrice)
@@ -1280,9 +1280,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         db.transaction { tx ->
             tx.insert(
@@ -1290,7 +1290,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = period.start,
-                    endDate = period.end
+                    endDate = period.end,
                 )
             )
             tx.upsertFeeDecisions(
@@ -1298,8 +1298,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decision,
                     decision.copy(
                         id = FeeDecisionId(UUID.randomUUID()),
-                        headOfFamilyId = testAdult_2.id
-                    )
+                        headOfFamilyId = testAdult_2.id,
+                    ),
                 )
             )
         }
@@ -1318,7 +1318,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     assertEquals(testChild_1.id, invoiceRow.child)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        invoiceRow.product
+                        invoiceRow.product,
                     )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(28900, invoiceRow.unitPrice)
@@ -1334,7 +1334,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     assertEquals(testChild_1.id, invoiceRow.child)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        invoiceRow.product
+                        invoiceRow.product,
                     )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(28900, invoiceRow.unitPrice)
@@ -1363,9 +1363,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         db.transaction { tx ->
             tx.insert(
@@ -1373,7 +1373,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+                    endDate = placementPeriod.end,
                 )
             )
             tx.upsertFeeDecisions(
@@ -1384,8 +1384,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decision.copy(
                         id = FeeDecisionId(UUID.randomUUID()),
                         headOfFamilyId = testAdult_2.id,
-                        validDuring = period.copy(start = period.start.plusDays(15)).asDateRange()
-                    )
+                        validDuring = period.copy(start = period.start.plusDays(15)).asDateRange(),
+                    ),
                 )
             )
         }
@@ -1405,7 +1405,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(placementPeriod.end, invoiceRow.periodEnd)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
@@ -1455,7 +1455,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             DayOfWeek.TUESDAY,
                             DayOfWeek.WEDNESDAY,
                             DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
+                            DayOfWeek.FRIDAY,
                         )
                         .contains(it.dayOfWeek)
                 }
@@ -1540,7 +1540,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             DayOfWeek.TUESDAY,
                             DayOfWeek.WEDNESDAY,
                             DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
+                            DayOfWeek.FRIDAY,
                         )
                         .contains(it.dayOfWeek)
                 }
@@ -1767,7 +1767,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val periods =
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
-                FiniteDateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
+                FiniteDateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31)),
             )
 
         val absenceDays =
@@ -1777,7 +1777,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             DayOfWeek.TUESDAY,
                             DayOfWeek.WEDNESDAY,
                             DayOfWeek.THURSDAY,
-                            DayOfWeek.FRIDAY
+                            DayOfWeek.FRIDAY,
                         )
                         .contains(it.dayOfWeek)
                 }
@@ -1788,7 +1788,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
             )
         }
 
@@ -1821,9 +1821,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
@@ -1843,7 +1843,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val periods =
             listOf(
                 FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
-                FiniteDateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
+                FiniteDateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31)),
             )
 
         val absenceDays =
@@ -1851,14 +1851,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2019, 1, 7) to AbsenceType.PARENTLEAVE,
                 LocalDate.of(2019, 1, 14) to AbsenceType.PARENTLEAVE,
                 LocalDate.of(2019, 1, 21) to AbsenceType.FORCE_MAJEURE,
-                LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE
+                LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE,
             )
         initDataForAbsences(periods, absenceDays)
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+                FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
             )
         }
 
@@ -1891,9 +1891,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(14, invoiceRow.amount)
                 assertEquals(-455, invoiceRow.unitPrice)
@@ -1924,7 +1924,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -1970,7 +1970,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             plannedAbsenceDays + refundedDay,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2027,11 +2027,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 createFeeDecisionAlterationFixture(
                                     amount = -50,
                                     isAbsolute = false,
-                                    effect = -10850
+                                    effect = -10850,
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -2061,9 +2061,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-10850, invoiceRow.unitPrice)
@@ -2096,7 +2096,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             otherAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2138,7 +2138,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             otherAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         // Override to not count unplanned absences as contract surplus days
@@ -2148,9 +2148,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2177,7 +2177,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val decisions =
             listOf(
                     FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
-                    FiniteDateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
+                    FiniteDateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000,
                 )
                 .map { (range, fee) ->
                     createFeeDecisionFixture(
@@ -2194,9 +2194,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                                 baseFee = fee,
                                 fee = fee,
-                                feeAlterations = listOf()
+                                feeAlterations = listOf(),
                             )
-                        )
+                        ),
                     )
                 }
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -2206,7 +2206,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
                     datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                .map { it to AbsenceType.PLANNED_ABSENCE },
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2225,7 +2225,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(600, invoiceRow.unitPrice) // 9000 / 15
@@ -2255,7 +2255,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             otherAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2296,7 +2296,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             otherAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2331,7 +2331,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             forceMajeureAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2367,7 +2367,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val decisions =
             listOf(
                     FiniteDateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to 0,
-                    FiniteDateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to 28900
+                    FiniteDateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to 28900,
                 )
                 .map { (valid, fee) ->
                     createFeeDecisionFixture(
@@ -2384,9 +2384,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 baseFee = fee,
                                 fee = fee,
-                                feeAlterations = listOf()
+                                feeAlterations = listOf(),
                             )
-                        )
+                        ),
                     )
                 }
         db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
@@ -2399,8 +2399,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 29) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 30) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE
-            )
+                LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE,
+            ),
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2447,11 +2447,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     type = FeeAlterationType.RELIEF,
                                     amount = 100,
                                     isAbsolute = false,
-                                    effect = -28900
+                                    effect = -28900,
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
@@ -2510,7 +2510,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             forceMajeureAbsenceDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2619,9 +2619,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 15000,
                             fee = 15000,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -2638,10 +2638,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 9000,
                             fee = 9000,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -2650,7 +2650,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             datesBetween(LocalDate.of(2019, 1, 22), LocalDate.of(2019, 1, 31)).map {
                 it to AbsenceType.PLANNED_ABSENCE
-            }
+            },
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2695,9 +2695,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -2727,9 +2727,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -2768,13 +2768,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(decision),
-            shiftCare = ShiftCareType.FULL
+            shiftCare = ShiftCareType.FULL,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2812,9 +2812,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -2853,9 +2853,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -2894,13 +2894,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(decision),
-            shiftCare = ShiftCareType.FULL
+            shiftCare = ShiftCareType.FULL,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2940,9 +2940,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -2982,9 +2982,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -3000,10 +3000,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
@@ -3054,9 +3054,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -3072,10 +3072,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions, shiftCare = ShiftCareType.FULL)
 
@@ -3123,15 +3123,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         insertAbsences(
             testChild_1.id,
-            listOf(LocalDate.of(2021, 1, 5) to AbsenceType.FORCE_MAJEURE)
+            listOf(LocalDate.of(2021, 1, 5) to AbsenceType.FORCE_MAJEURE),
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3173,18 +3173,18 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(decision),
-            shiftCare = ShiftCareType.FULL
+            shiftCare = ShiftCareType.FULL,
         )
 
         insertAbsences(
             testChild_1.id,
-            listOf(LocalDate.of(2021, 1, 31) to AbsenceType.FORCE_MAJEURE)
+            listOf(LocalDate.of(2021, 1, 31) to AbsenceType.FORCE_MAJEURE),
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3226,15 +3226,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 28900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
         insertAbsences(
             testChild_1.id,
-            datesBetween(period.start, period.end).map { it to AbsenceType.FORCE_MAJEURE }
+            datesBetween(period.start, period.end).map { it to AbsenceType.FORCE_MAJEURE },
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3289,9 +3289,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 29)),
                 FiniteDateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             ),
-            PlacementType.DAYCARE_PART_TIME
+            PlacementType.DAYCARE_PART_TIME,
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3311,8 +3311,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2021, 2, 1), LocalDate.of(2021, 2, 28)),
                 FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31)),
                 FiniteDateRange(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 6, 30)),
-                FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31))
-            )
+                FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3334,8 +3334,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 4, 1), LocalDate.of(2020, 4, 30)),
                 FiniteDateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-            )
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3356,9 +3356,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 4, 1), LocalDate.of(2020, 4, 30)),
                 FiniteDateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             ),
-            freeJulyStartOnSeptember = true
+            freeJulyStartOnSeptember = true,
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3378,8 +3378,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 1)),
                 FiniteDateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 1)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 1)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1))
-            )
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1)),
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3398,9 +3398,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 1)),
                 FiniteDateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 1)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 1)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1))
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 1)),
             ),
-            freeJulyStartOnSeptember = true
+            freeJulyStartOnSeptember = true,
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3410,7 +3410,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `free july 2020 if child has been placed all the time`() {
         initFreeJulyTestData(
             FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
-            listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
+            listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3420,7 +3420,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `free july 2021 if child has been placed all the time`() {
         initFreeJulyTestData(
             FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
-            listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
+            listOf(FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3433,7 +3433,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 PlacementType.PREPARATORY_DAYCARE to
                     FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
-            )
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3446,7 +3446,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 PlacementType.PRESCHOOL_CLUB to
                     FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
-            )
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3465,8 +3465,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28)),
                 FiniteDateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-            )
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
 
         val result = db.read(getAllInvoices)
@@ -3481,8 +3481,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PlacementType.CLUB to
                     FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
                 PlacementType.DAYCARE to
-                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
-            )
+                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
 
         val result = db.read(getAllInvoices)
@@ -3497,8 +3497,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PlacementType.PRESCHOOL to
                     FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
                 PlacementType.PRESCHOOL_DAYCARE to
-                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
-            )
+                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
 
         val result = db.read(getAllInvoices)
@@ -3513,8 +3513,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PlacementType.PRESCHOOL_CLUB to
                     FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
                 PlacementType.DAYCARE to
-                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
-            )
+                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
 
         val result = db.read(getAllInvoices)
@@ -3535,8 +3535,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 FiniteDateRange(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28)),
                 FiniteDateRange(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
                 FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
-                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-            )
+                FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
+            ),
         )
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
@@ -3624,7 +3624,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             period,
             PlacementType.DAYCARE,
             children = listOf(testChild_1, testChild_2),
-            partner = testAdult_2.id
+            partner = testAdult_2.id,
         )
         db.transaction {
             it.insertGuardian(testAdult_1.id, testChild_1.id)
@@ -3652,15 +3652,15 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         val absenceDays =
             listOf(
                 LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
-                LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE
+                LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE,
             )
 
         initDataForAbsences(listOf(period), absenceDays)
@@ -3711,9 +3711,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -3723,8 +3723,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             listOf(
                 LocalDate.of(2021, 3, 18) to AbsenceType.PLANNED_ABSENCE,
-                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE
-            )
+                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE,
+            ),
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3765,9 +3765,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -3778,11 +3778,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
+                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE,
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
                     date to AbsenceType.PLANNED_ABSENCE
-                }
+                },
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3829,9 +3829,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -3842,11 +3842,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
                     date to AbsenceType.PLANNED_ABSENCE
-                }
+                },
         )
 
         // freeSickLeaveOnContractDays = false
@@ -3895,9 +3895,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -3908,11 +3908,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
                     date to AbsenceType.PLANNED_ABSENCE
-                }
+                },
         )
 
         // freeSickLeaveOnContractDays = true
@@ -3923,9 +3923,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -3972,9 +3972,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -3986,9 +3986,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4030,9 +4030,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4042,8 +4042,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             listOf(
                 LocalDate.of(2021, 3, 18) to AbsenceType.PLANNED_ABSENCE,
-                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE
-            )
+                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE,
+            ),
         )
 
         // Override useContractDaysAsDailyFeeDivisor
@@ -4053,9 +4053,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4095,9 +4095,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4108,11 +4108,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
+                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE,
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
                     date to AbsenceType.PLANNED_ABSENCE
-                }
+                },
         )
 
         // Override useContractDaysAsDailyFeeDivisor
@@ -4122,9 +4122,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4169,9 +4169,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 21700,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4182,11 +4182,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
                     date to AbsenceType.PLANNED_ABSENCE
-                }
+                },
         )
 
         // Override useContractDaysAsDailyFeeDivisor
@@ -4196,9 +4196,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
@@ -4230,7 +4230,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val decisions =
             listOf(
                     DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
-                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
+                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000,
                 )
                 .map { (range, fee) ->
                     createFeeDecisionFixture(
@@ -4250,9 +4250,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                     roundToEuros(
                                             BigDecimal(fee) * snDaycareContractDays15.feeCoefficient
                                         )
-                                        .toInt()
+                                        .toInt(),
                             )
-                        )
+                        ),
                     )
                 }
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4262,7 +4262,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
                     datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+                .map { it to AbsenceType.PLANNED_ABSENCE },
         )
 
         // Override useContractDaysAsDailyFeeDivisor
@@ -4272,9 +4272,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4287,7 +4287,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(10, invoiceRow.amount)
                 assertEquals(750, invoiceRow.unitPrice) // 16500 / 22
@@ -4296,7 +4296,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(12, invoiceRow.amount)
                 assertEquals(377, invoiceRow.unitPrice) // 8300 / 22
@@ -4323,9 +4323,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
@@ -4346,9 +4346,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4380,9 +4380,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
@@ -4403,9 +4403,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             fee = 28900,
-                            feeAlterations = listOf()
+                            feeAlterations = listOf(),
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4454,9 +4454,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4503,9 +4503,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4560,9 +4560,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4604,9 +4604,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         )
-                    )
+                    ),
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
@@ -4621,7 +4621,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     unitId = testDaycare.id,
                     product = productProvider.mapToProduct(PlacementType.DAYCARE),
                     description = "",
-                    note = ""
+                    note = "",
                 )
             )
         }
@@ -4636,7 +4636,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     assertEquals(testChild_1.id, invoiceRow.child)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        invoiceRow.product
+                        invoiceRow.product,
                     )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(28900, invoiceRow.unitPrice)
@@ -4646,7 +4646,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     assertEquals(testChild_1.id, invoiceRow.child)
                     assertEquals(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        invoiceRow.product
+                        invoiceRow.product,
                     )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(-28900, invoiceRow.unitPrice)
@@ -4677,7 +4677,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 25),
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30)
+                    LocalDate.of(2019, 1, 30),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational days
@@ -4685,7 +4685,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(
             listOf(period),
             sickleaveDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4727,7 +4727,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE
+                LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
             )
         // then 12 planned absences
         val plannedAbsenceDays =
@@ -4743,14 +4743,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
                     LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
+                    LocalDate.of(2019, 1, 31),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
             sickleaveDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays10
+            serviceNeed = snDaycareContractDays10,
         )
 
         // freeSickLeaveOnContractDays = true
@@ -4761,9 +4761,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4807,7 +4807,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2019, 1, 16) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2019, 1, 17) to AbsenceType.SICKLEAVE
+                LocalDate.of(2019, 1, 17) to AbsenceType.SICKLEAVE,
             )
         // then 10 planned absences
         val plannedAbsenceDays =
@@ -4821,14 +4821,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
                     LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
+                    LocalDate.of(2019, 1, 31),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
             sickleaveDays + plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays10
+            serviceNeed = snDaycareContractDays10,
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4905,7 +4905,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
                     LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
+                    LocalDate.of(2019, 1, 31),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
 
@@ -4913,22 +4913,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(period),
             absenceDays = plannedAbsenceDays,
             placementType = PlacementType.PRESCHOOL_DAYCARE,
-            serviceNeed = snPreschoolDaycareContractDays13
+            serviceNeed = snPreschoolDaycareContractDays13,
         )
 
         val featureConfig =
             featureConfig.copy(
                 maxContractDaySurplusThreshold = 13,
-                useContractDaysAsDailyFeeDivisor = false
+                useContractDaysAsDailyFeeDivisor = false,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4939,7 +4939,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             // The *preschool daycare maximum* (23120) is invoiced, not the *daycare maximum*.
             assertEquals(
                 (snDefaultPreschoolDaycare.feeCoefficient * BigDecimal(28900)).toInt(),
-                invoice.totalPrice
+                invoice.totalPrice,
             )
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
@@ -4974,7 +4974,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
                     LocalDate.of(2019, 1, 30),
-                    LocalDate.of(2019, 1, 31)
+                    LocalDate.of(2019, 1, 31),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
 
@@ -4995,7 +4995,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         siblingDiscount = 50,
                         fee = 8700, // 28900 * 0.6 * 0.5
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
         insertAbsences(testChild_1.id, plannedAbsenceDays)
@@ -5003,16 +5003,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val featureConfig =
             featureConfig.copy(
                 maxContractDaySurplusThreshold = 13,
-                useContractDaysAsDailyFeeDivisor = false
+                useContractDaysAsDailyFeeDivisor = false,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5058,9 +5058,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         baseFee = 28900,
                         siblingDiscount = 50,
                         fee = 10900,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5117,12 +5117,12 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                             21700,
                                             FeeAlterationType.DISCOUNT,
                                             50,
-                                            false
-                                        )
+                                            false,
+                                        ),
                                 )
-                            )
+                            ),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5143,9 +5143,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(
                     productProvider.mapToFeeAlterationProduct(
                         productProvider.mapToProduct(PlacementType.DAYCARE),
-                        FeeAlterationType.DISCOUNT
+                        FeeAlterationType.DISCOUNT,
                     ),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-10850, invoiceRow.unitPrice)
@@ -5174,14 +5174,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 25),
                     LocalDate.of(2019, 1, 28),
                     LocalDate.of(2019, 1, 29),
-                    LocalDate.of(2019, 1, 30)
+                    LocalDate.of(2019, 1, 30),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational day
         initDataForAbsences(
             listOf(period),
             plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         // Override maxContractDaySurplusThreshold feature config
@@ -5191,9 +5191,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5230,14 +5230,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     LocalDate.of(2019, 1, 24),
                     LocalDate.of(2019, 1, 25),
                     LocalDate.of(2019, 1, 28),
-                    LocalDate.of(2019, 1, 29)
+                    LocalDate.of(2019, 1, 29),
                 )
                 .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 2 more operational days
         initDataForAbsences(
             listOf(period),
             plannedAbsenceDays,
-            serviceNeed = snDaycareContractDays15
+            serviceNeed = snDaycareContractDays15,
         )
 
         // Override maxContractDaySurplusThreshold feature config
@@ -5247,9 +5247,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5294,9 +5294,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 21700,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5343,9 +5343,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 21700,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5354,16 +5354,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val featureConfig =
             featureConfig.copy(
                 useContractDaysAsDailyFeeDivisor = false,
-                maxContractDaySurplusThreshold = 16
+                maxContractDaySurplusThreshold = 16,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5408,9 +5408,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
                         fee = 21700,
-                        feeAlterations = listOf()
+                        feeAlterations = listOf(),
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5419,16 +5419,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val featureConfig =
             featureConfig.copy(
                 useContractDaysAsDailyFeeDivisor = false,
-                maxContractDaySurplusThreshold = 16
+                maxContractDaySurplusThreshold = 16,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5472,9 +5472,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 21700
+                        fee = 21700,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -5483,8 +5483,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = period.copy(start = LocalDate.of(2019, 1, 16)).asDateRange()
-                )
+                    validDuring = period.copy(start = LocalDate.of(2019, 1, 16)).asDateRange(),
+                ),
             )
         )
 
@@ -5493,16 +5493,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val featureConfig =
             featureConfig.copy(
                 useContractDaysAsDailyFeeDivisor = false,
-                maxContractDaySurplusThreshold = 16
+                maxContractDaySurplusThreshold = 16,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5547,9 +5547,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 21700
+                            fee = 21700,
                         )
-                    )
+                    ),
                 ),
                 createFeeDecisionFixture(
                     FeeDecisionStatus.SENT,
@@ -5565,10 +5565,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             siblingDiscount = 50,
-                            fee = 10900
+                            fee = 10900,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
 
@@ -5577,16 +5577,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val featureConfig =
             featureConfig.copy(
                 useContractDaysAsDailyFeeDivisor = false,
-                maxContractDaySurplusThreshold = 16
+                maxContractDaySurplusThreshold = 16,
             )
         val generator =
             InvoiceGenerator(
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5611,7 +5611,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(
                     5245,
-                    invoiceRow.unitPrice
+                    invoiceRow.unitPrice,
                 ) // (10 * 28900 + 12 * 14500) (= 21045) / 22 - 9860 - 5940
                 assertEquals(5245, invoiceRow.price)
             }
@@ -5668,9 +5668,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5708,9 +5708,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DraftInvoiceGenerator(
                     productProvider,
                     featureConfig,
-                    DefaultInvoiceGenerationLogic
+                    DefaultInvoiceGenerationLogic,
                 ),
-                featureConfig
+                featureConfig,
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5748,11 +5748,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             tx: Database.Read,
                             year: Int,
                             month: Month,
-                            childId: ChildId
+                            childId: ChildId,
                         ) = InvoiceGenerationLogic.Free
-                    }
+                    },
                 ),
-                featureConfig
+                featureConfig,
             )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -5782,7 +5782,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             placementType = PlacementType.DAYCARE,
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
-                            fee = 28900
+                            fee = 28900,
                         ),
                         createFeeDecisionChildFixture(
                             childId = testChild_2.id,
@@ -5792,9 +5792,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                             baseFee = 28900,
                             siblingDiscount = 50,
-                            fee = 14500
-                        )
-                    )
+                            fee = 14500,
+                        ),
+                    ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision))
 
@@ -5811,7 +5811,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
@@ -5821,7 +5821,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_2.id, invoiceRow.child)
                 assertEquals(
                     productProvider.mapToProduct(PlacementType.DAYCARE),
-                    invoiceRow.product
+                    invoiceRow.product,
                 )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(14500, invoiceRow.unitPrice)
@@ -5849,9 +5849,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         val decision2 =
             createFeeDecisionFixture(
@@ -5868,7 +5868,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
                         siblingDiscount = 40,
-                        fee = 6000
+                        fee = 6000,
                     ),
                     createFeeDecisionChildFixture(
                         childId = testChild_2.id,
@@ -5877,16 +5877,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 29500,
-                        fee = 29500
-                    )
-                )
+                        fee = 29500,
+                    ),
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -5921,7 +5921,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
                         siblingDiscount = 40,
-                        fee = 6000
+                        fee = 6000,
                     ),
                     createFeeDecisionChildFixture(
                         childId = testChild_2.id,
@@ -5930,9 +5930,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 29500,
-                        fee = 29500
-                    )
-                )
+                        fee = 29500,
+                    ),
+                ),
             )
         val decision2 =
             createFeeDecisionFixture(
@@ -5948,16 +5948,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -5990,9 +5990,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         val decision2 =
             createFeeDecisionFixture(
@@ -6008,16 +6008,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6047,9 +6047,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         val decision2 =
             createFeeDecisionFixture(
@@ -6065,16 +6065,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_DAYCARE,
                         serviceNeed = snPreschoolDaycare45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6107,9 +6107,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_DAYCARE,
                         serviceNeed = snPreschoolDaycare45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         val decision2 =
             createFeeDecisionFixture(
@@ -6125,16 +6125,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.PRESCHOOL_CLUB,
                         serviceNeed = snPreschoolClub45.toFeeDecisionServiceNeed(),
                         baseFee = 10000,
-                        fee = 10000
+                        fee = 10000,
                     )
-                )
+                ),
             )
         insertDecisionsAndPlacementsAndServiceNeeds(listOf(decision1, decision2))
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6153,13 +6153,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in august full month is half price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6175,13 +6175,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in august half month is half price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 17), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6197,7 +6197,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in august with 11 sick leaves is quarter price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
         db.transaction { tx ->
             val dates =
@@ -6210,7 +6210,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = testChild_1.id,
                         date = date,
                         absenceType = AbsenceType.SICKLEAVE,
-                        absenceCategory = AbsenceCategory.BILLABLE
+                        absenceCategory = AbsenceCategory.BILLABLE,
                     )
                 )
             }
@@ -6219,7 +6219,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6230,7 +6230,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 14450, 14450, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, -7225, -7225, ProductKey("PART_MONTH_SICK_LEAVE"))
+                Tuple(1, -7225, -7225, ProductKey("PART_MONTH_SICK_LEAVE")),
             )
     }
 
@@ -6238,7 +6238,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in august half month daily refund is with full month divisor`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 17), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
         db.transaction { tx ->
             tx.insert(
@@ -6246,7 +6246,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     date = LocalDate.of(2023, 8, 30),
                     absenceType = AbsenceType.FORCE_MAJEURE,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -6254,7 +6254,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6265,7 +6265,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 14450, 14450, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, -628, -628, ProductKey("DAILY_REFUND"))
+                Tuple(1, -628, -628, ProductKey("DAILY_REFUND")),
             )
     }
 
@@ -6274,13 +6274,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10
+            snDaycareContractDays10,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6291,7 +6291,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 7250, 7250, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, 7250, 7250, ProductKey("SURPLUS_DAY"))
+                Tuple(1, 7250, 7250, ProductKey("SURPLUS_DAY")),
             )
     }
 
@@ -6300,13 +6300,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10
+            snDaycareContractDays10,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6317,7 +6317,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 7250, 7250, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(5, 725, 3625, ProductKey("SURPLUS_DAY"))
+                Tuple(5, 725, 3625, ProductKey("SURPLUS_DAY")),
             )
     }
 
@@ -6327,13 +6327,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             FiniteDateRange(LocalDate.of(2023, 8, 1), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
             snDaycareContractDays10,
-            listOf(FeeAlterationWithEffect(FeeAlterationType.DISCOUNT, 50, true, -5000))
+            listOf(FeeAlterationWithEffect(FeeAlterationType.DISCOUNT, 50, true, -5000)),
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.AUGUST)
+                FiniteDateRange.ofMonth(2023, Month.AUGUST),
             )
         }
 
@@ -6345,7 +6345,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .containsExactlyInAnyOrder(
                 Tuple(1, 7250, 7250, ProductKey("PRESCHOOL_CLUB")),
                 Tuple(1, -5000, -5000, ProductKey("PRESCHOOL_CLUB_DISCOUNT")),
-                Tuple(13, 225, 2925, ProductKey("SURPLUS_DAY"))
+                Tuple(13, 225, 2925, ProductKey("SURPLUS_DAY")),
             )
     }
 
@@ -6353,13 +6353,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in september full month is full price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6375,13 +6375,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in september half month is full price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 9, 18), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6397,7 +6397,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in september full month with 11 sick leaves is half price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
         db.transaction { tx ->
             val dates =
@@ -6410,7 +6410,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         childId = testChild_1.id,
                         date = date,
                         absenceType = AbsenceType.SICKLEAVE,
-                        absenceCategory = AbsenceCategory.BILLABLE
+                        absenceCategory = AbsenceCategory.BILLABLE,
                     )
                 )
             }
@@ -6419,7 +6419,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6430,7 +6430,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 28900, 28900, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, -14450, -14450, ProductKey("PART_MONTH_SICK_LEAVE"))
+                Tuple(1, -14450, -14450, ProductKey("PART_MONTH_SICK_LEAVE")),
             )
     }
 
@@ -6438,7 +6438,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in september half month daily refund is with full month divisor`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 9, 18), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
         db.transaction { tx ->
             tx.insert(
@@ -6446,7 +6446,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     childId = testChild_1.id,
                     date = LocalDate.of(2023, 9, 20),
                     absenceType = AbsenceType.FORCE_MAJEURE,
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
         }
@@ -6454,7 +6454,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6465,7 +6465,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 28900, 28900, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, -1376, -1376, ProductKey("DAILY_REFUND"))
+                Tuple(1, -1376, -1376, ProductKey("DAILY_REFUND")),
             )
     }
 
@@ -6474,13 +6474,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10
+            snDaycareContractDays10,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6491,7 +6491,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 14500, 14500, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, 14400, 14400, ProductKey("SURPLUS_DAY"))
+                Tuple(1, 14400, 14400, ProductKey("SURPLUS_DAY")),
             )
     }
 
@@ -6500,13 +6500,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2023, 9, 14), LocalDate.of(2024, 6, 3)),
             PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10
+            snDaycareContractDays10,
         )
 
         db.transaction {
             generator.createAndStoreAllDraftInvoices(
                 it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER)
+                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
             )
         }
 
@@ -6517,7 +6517,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
             .containsExactlyInAnyOrder(
                 Tuple(1, 14500, 14500, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(2, 1450, 2900, ProductKey("SURPLUS_DAY"))
+                Tuple(2, 1450, 2900, ProductKey("SURPLUS_DAY")),
             )
     }
 
@@ -6525,7 +6525,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in may full month is full price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2024, 5, 1), LocalDate.of(2024, 5, 31)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
@@ -6543,7 +6543,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in may half month is full price`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2024, 5, 10), LocalDate.of(2024, 5, 22)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
@@ -6561,7 +6561,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in june full month is free`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 30)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
@@ -6576,7 +6576,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `preschool club placement in june half month is free`() {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2024, 6, 11), LocalDate.of(2024, 6, 26)),
-            PlacementType.PRESCHOOL_CLUB
+            PlacementType.PRESCHOOL_CLUB,
         )
 
         db.transaction {
@@ -6592,7 +6592,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initByPeriodAndPlacementType(
             FiniteDateRange(LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 30)),
             PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10
+            snDaycareContractDays10,
         )
 
         db.transaction {
@@ -6609,7 +6609,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         serviceNeedOption: ServiceNeedOption? = null,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
         children: List<DevPerson> = listOf(testChild_1),
-        partner: PersonId? = null
+        partner: PersonId? = null,
     ) {
         children.forEach { child ->
             db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
@@ -6630,10 +6630,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         serviceNeed = serviceNeed,
                         baseFee = 28900,
                         fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt(),
-                        feeAlterations = feeAlterations
+                        feeAlterations = feeAlterations,
                     )
                 },
-                partnerId = partner
+                partnerId = partner,
             )
         insertDecisionsAndPlacementsAndServiceNeeds(
             listOf(
@@ -6642,8 +6642,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
-                )
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
+                ),
             )
         )
     }
@@ -6652,18 +6652,18 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         invoicingPeriod: FiniteDateRange,
         placementPeriods: List<FiniteDateRange>,
         placementType: PlacementType = PlacementType.DAYCARE,
-        freeJulyStartOnSeptember: Boolean = false
+        freeJulyStartOnSeptember: Boolean = false,
     ) =
         initFreeJulyTestData(
             invoicingPeriod,
             placementPeriods.map { placementType to it },
-            freeJulyStartOnSeptember
+            freeJulyStartOnSeptember,
         )
 
     private fun initFreeJulyTestData(
         invoicingPeriod: FiniteDateRange,
         placementPeriods: List<Pair<PlacementType, FiniteDateRange>>,
-        freeJulyStartOnSeptember: Boolean = false
+        freeJulyStartOnSeptember: Boolean = false,
     ) {
         val decision =
             createFeeDecisionFixture(
@@ -6679,9 +6679,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 28900
+                        fee = 28900,
                     )
-                )
+                ),
             )
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
         db.transaction { tx ->
@@ -6702,7 +6702,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val generator =
             InvoiceGenerator(
                 draftInvoiceGenerator,
-                featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember)
+                featureConfig.copy(freeJulyStartOnSeptember = freeJulyStartOnSeptember),
             )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, invoicingPeriod) }
     }
@@ -6713,7 +6713,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         child: DevPerson = testChild_1,
         placementType: PlacementType = PlacementType.DAYCARE,
         serviceNeed: ServiceNeedOption = snDaycareFullDay35,
-        shiftCare: ShiftCareType = ShiftCareType.NONE
+        shiftCare: ShiftCareType = ShiftCareType.NONE,
     ) {
         periods.forEachIndexed { index, period ->
             val decision =
@@ -6739,14 +6739,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         createFeeDecisionAlterationFixture(
                                             amount = -100,
                                             isAbsolute = true,
-                                            effect = -10000
+                                            effect = -10000,
                                         )
                                     )
                                 } else {
                                     listOf()
-                                }
+                                },
                         )
-                    )
+                    ),
                 )
 
             db.transaction { tx ->
@@ -6760,7 +6760,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         endDate = period.end,
                         optionId = serviceNeed.id,
                         shiftCare = shiftCare,
-                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                     )
                 )
                 val groupId = tx.insert(DevDaycareGroup(daycareId = testDaycare.id))
@@ -6769,7 +6769,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         daycarePlacementId = placementId,
                         daycareGroupId = groupId,
                         startDate = period.start,
-                        endDate = period.end
+                        endDate = period.end,
                     )
                 )
             }
@@ -6789,16 +6789,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         absenceType = type,
                         childId = childId,
                         date = date,
-                        category = AbsenceCategory.BILLABLE
+                        category = AbsenceCategory.BILLABLE,
                     )
-                }
+                },
             )
         }
     }
 
     private fun insertDecisionsAndPlacementsAndServiceNeeds(
         feeDecisions: List<FeeDecision>,
-        shiftCare: ShiftCareType = ShiftCareType.NONE
+        shiftCare: ShiftCareType = ShiftCareType.NONE,
     ) =
         db.transaction { tx ->
             tx.upsertFeeDecisions(feeDecisions)
@@ -6810,7 +6810,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 childId = part.child.id,
                                 unitId = part.placement.unitId,
                                 startDate = decision.validFrom,
-                                endDate = decision.validTo!!
+                                endDate = decision.validTo!!,
                             )
                         )
                         .also { placementId ->
@@ -6822,7 +6822,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         endDate = decision.validTo!!,
                                         optionId = part.serviceNeed.optionId!!,
                                         shiftCare = shiftCare,
-                                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
                                     )
                                 )
                             }
@@ -6834,7 +6834,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun insertPlacement(
         childId: ChildId,
         period: FiniteDateRange,
-        type: PlacementType = PlacementType.DAYCARE
+        type: PlacementType = PlacementType.DAYCARE,
     ) = { tx: Database.Transaction ->
         tx.insert(
             DevPlacement(
@@ -6842,7 +6842,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 childId = childId,
                 unitId = testDaycare.id,
                 startDate = period.start,
-                endDate = period.end
+                endDate = period.end,
             )
         )
     }
@@ -6850,14 +6850,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private fun insertChildParentRelation(
         headOfFamilyId: PersonId,
         childId: ChildId,
-        period: FiniteDateRange
+        period: FiniteDateRange,
     ) = { tx: Database.Transaction ->
         tx.insert(
             DevParentship(
                 childId = childId,
                 headOfChildId = headOfFamilyId,
                 startDate = period.start,
-                endDate = period.end
+                endDate = period.end,
             )
         )
     }

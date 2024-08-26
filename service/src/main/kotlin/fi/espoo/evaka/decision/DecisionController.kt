@@ -29,18 +29,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/decisions2", // deprecated
-    "/employee/decisions"
+    "/employee/decisions",
 )
 class DecisionController(
     private val decisionService: DecisionService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam id: PersonId
+        @RequestParam id: PersonId,
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -50,14 +50,14 @@ class DecisionController(
                         user,
                         clock,
                         Action.Person.READ_DECISIONS,
-                        id
+                        id,
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
-                            Action.Decision.READ
+                            Action.Decision.READ,
                         )
                     it.getDecisionsByGuardian(id, filter)
                 }
@@ -71,7 +71,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam id: ChildId
+        @RequestParam id: ChildId,
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -81,14 +81,14 @@ class DecisionController(
                         user,
                         clock,
                         Action.Child.READ_DECISIONS,
-                        id
+                        id,
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
-                            Action.Decision.READ
+                            Action.Decision.READ,
                         )
                     it.getDecisionsByChild(id, filter)
                 }
@@ -102,7 +102,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam id: ApplicationId
+        @RequestParam id: ApplicationId,
     ): DecisionListResponse {
         val decisions =
             db.connect { dbc ->
@@ -112,14 +112,14 @@ class DecisionController(
                         user,
                         clock,
                         Action.Application.READ_DECISIONS,
-                        id
+                        id,
                     )
                     val filter =
                         accessControl.requireAuthorizationFilter(
                             it,
                             user,
                             clock,
-                            Action.Decision.READ
+                            Action.Decision.READ,
                         )
                     it.getDecisionsByApplication(id, filter)
                 }
@@ -133,7 +133,7 @@ class DecisionController(
     fun getDecisionUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<DecisionUnit> {
         return db.connect { dbc ->
                 dbc.read {
@@ -141,7 +141,7 @@ class DecisionController(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_DECISION_UNITS
+                        Action.Global.READ_DECISION_UNITS,
                     )
                     getDecisionUnits(it)
                 }
@@ -154,7 +154,7 @@ class DecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: DecisionId
+        @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 val decision =
@@ -164,7 +164,7 @@ class DecisionController(
                             user,
                             clock,
                             Action.Decision.DOWNLOAD_PDF,
-                            id
+                            id,
                         )
 
                         val decision =

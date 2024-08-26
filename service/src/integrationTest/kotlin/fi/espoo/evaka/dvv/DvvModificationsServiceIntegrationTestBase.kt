@@ -38,7 +38,7 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
                 jsonMapper,
                 listOf(requestCustomizerMock),
                 VtjXroadEnv.fromEnvironment(env).copy(keyStore = null, trustStore = null),
-                DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl)
+                DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl),
             )
         dvvModificationsService =
             DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner)
@@ -53,12 +53,12 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
 
                         override fun checkClientTrusted(
                             chain: Array<X509Certificate>,
-                            authType: String
+                            authType: String,
                         ) = Unit
 
                         override fun checkServerTrusted(
                             chain: Array<X509Certificate>,
-                            authType: String
+                            authType: String,
                         ) = Unit
                     }
                 )

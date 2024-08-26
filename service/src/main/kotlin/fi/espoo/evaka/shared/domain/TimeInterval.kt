@@ -19,12 +19,12 @@ import java.time.LocalTime
 data class TimeInterval(val start: TimeRangeEndpoint.Start, val end: TimeRangeEndpoint.End?) {
     constructor(
         start: TimeRangeEndpoint,
-        end: TimeRangeEndpoint?
+        end: TimeRangeEndpoint?,
     ) : this(start.asStart(), end?.asEnd())
 
     constructor(
         start: LocalTime,
-        end: LocalTime?
+        end: LocalTime?,
     ) : this(TimeRangeEndpoint.Start(start), end?.let { TimeRangeEndpoint.End(it) })
 
     init {
@@ -55,11 +55,11 @@ class TimeIntervalJsonSerializer : JsonSerializer<TimeInterval>() {
     override fun serialize(
         value: TimeInterval,
         gen: JsonGenerator,
-        serializers: SerializerProvider
+        serializers: SerializerProvider,
     ) {
         return serializers.defaultSerializeValue(
             SerializableTimeInterval(value.start.inner, value.end?.inner),
-            gen
+            gen,
         )
     }
 }

@@ -36,12 +36,12 @@ data class PedagogicalDocumentCitizen(
     val description: String,
     @Json val attachments: List<Attachment> = emptyList(),
     val created: HelsinkiDateTime,
-    val isRead: Boolean
+    val isRead: Boolean,
 )
 
 fun Database.Read.getChildPedagogicalDocuments(
     childId: ChildId,
-    userId: PersonId
+    userId: PersonId,
 ): List<PedagogicalDocumentCitizen> {
     return createQuery {
             sql(

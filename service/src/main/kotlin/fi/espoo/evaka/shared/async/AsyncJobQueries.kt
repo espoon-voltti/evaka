@@ -72,7 +72,7 @@ WHERE pool_id = ${bind(pool.toString())}
 
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
-    jobTypes: Collection<AsyncJobType<out T>>
+    jobTypes: Collection<AsyncJobType<out T>>,
 ): ClaimedJobRef<out T>? =
     createUpdate {
             sql(
@@ -108,13 +108,13 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
                         jobTypes.find { it.name == jobType }
                     }!!,
                 txId = column("txId"),
-                remainingAttempts = column("remainingAttempts")
+                remainingAttempts = column("remainingAttempts"),
             )
         }
 
 fun <T : AsyncJobPayload> Database.Transaction.startJob(
     job: ClaimedJobRef<T>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ): T? =
     createUpdate {
             sql(
@@ -137,7 +137,7 @@ RETURNING payload
         .exactlyOneOrNull {
             column(
                 "payload",
-                QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)
+                QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java),
             )
         }
 
@@ -155,10 +155,12 @@ WHERE id = ${bind(job.jobId)}
 
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
     createUpdate {
-            sql("""
+            sql(
+                """
 DELETE FROM async_job
 WHERE completed_at < ${bind(completedBefore)}
-""")
+"""
+            )
         }
         .execute()
 

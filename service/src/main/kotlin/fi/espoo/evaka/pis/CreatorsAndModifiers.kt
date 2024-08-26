@@ -69,7 +69,7 @@ data class CreationModificationMetadata(
     val modifiedByName: String?,
     val createdFromApplication: ApplicationId?,
     val createdFromApplicationType: ApplicationType?,
-    val createdFromApplicationCreated: HelsinkiDateTime?
+    val createdFromApplicationCreated: HelsinkiDateTime?,
 ) {
     companion object {
         fun empty() =
@@ -84,7 +84,7 @@ data class CreationModificationMetadata(
                 modifiedByName = null,
                 createdFromApplication = null,
                 createdFromApplicationType = null,
-                createdFromApplicationCreated = null
+                createdFromApplicationCreated = null,
             )
     }
 }

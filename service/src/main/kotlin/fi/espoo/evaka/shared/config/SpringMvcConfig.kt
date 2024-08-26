@@ -51,7 +51,7 @@ import org.springframework.web.servlet.function.ServerRequest
 class SpringMvcConfig(
     private val jdbi: Jdbi,
     private val tracer: Tracer,
-    private val env: EvakaEnv
+    private val env: EvakaEnv,
 ) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
@@ -90,7 +90,7 @@ class SpringMvcConfig(
 
     private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(
         parameter: MethodParameter,
-        webRequest: NativeWebRequest
+        webRequest: NativeWebRequest,
     ): T? {
         val user =
             webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser()

@@ -85,7 +85,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 testPerson.copy(
                     id = PersonId(UUID.randomUUID()),
                     ssn = null,
-                    duplicateOf = person.id
+                    duplicateOf = person.id,
                 )
             )
 
@@ -115,7 +115,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
-                "person.ssnAddingDisabled"
+                "person.ssnAddingDisabled",
             )
             .isEqualTo(original)
         val duplicateOf =
@@ -137,7 +137,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insert(
                 DevVardaOrganizerChild(
                     evakaPersonId = person.id,
-                    vardaPersonOid = "vardaPersonOid123"
+                    vardaPersonOid = "vardaPersonOid123",
                 )
             )
         }
@@ -157,7 +157,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.duplicateOf",
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
-                "person.ssnAddingDisabled"
+                "person.ssnAddingDisabled",
             )
             .isEqualTo(original)
     }
@@ -194,7 +194,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",
-                "person.ophPersonOid"
+                "person.ophPersonOid",
             )
             .isEqualTo(original)
     }
@@ -232,7 +232,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 "person.socialSecurityNumber",
                 "person.updatedFromVtj",
                 "person.ssnAddingDisabled",
-                "person.ophPersonOid"
+                "person.ophPersonOid",
             )
             .isEqualTo(original)
     }
@@ -248,7 +248,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     allergies = "Heinänuha",
                     diet = "Gluteeniton",
                     medication = "Astma",
-                    additionalInfo = "Lisätiedot"
+                    additionalInfo = "Lisätiedot",
                 )
             )
         }
@@ -303,7 +303,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevFosterParent(
                     parentId = fosterParentId,
                     childId = person.id,
-                    validDuring = fosterValidDuring
+                    validDuring = fosterValidDuring,
                 )
             )
         }
@@ -327,7 +327,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DevFosterParent(
                     parentId = person.id,
                     childId = childId,
-                    validDuring = fosterValidDuring
+                    validDuring = fosterValidDuring,
                 )
             )
         }
@@ -343,7 +343,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val person = createPerson()
 
@@ -355,8 +355,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 SearchPersonBody(
                     searchTerm = "${person.firstName} ${person.lastName}",
                     orderBy = "first_name",
-                    sortDirection = "DESC"
-                )
+                    sortDirection = "DESC",
+                ),
             )
 
         assertEquals(person.id, response.first().id)
@@ -367,7 +367,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val person = createPerson()
 
@@ -379,8 +379,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\t${person.lastName}",
                     orderBy = "first_name",
-                    sortDirection = "DESC"
-                )
+                    sortDirection = "DESC",
+                ),
             )
 
         assertEquals(person.id, response.first().id)
@@ -391,7 +391,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val person = createPerson()
 
@@ -403,8 +403,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\u00A0${person.lastName}",
                     orderBy = "first_name",
-                    sortDirection = "DESC"
-                )
+                    sortDirection = "DESC",
+                ),
             )
 
         assertEquals(person.id, response.first().id)
@@ -415,7 +415,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val person = createPerson()
 
@@ -429,8 +429,8 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 SearchPersonBody(
                     searchTerm = "${person.firstName}\u3000${person.lastName}",
                     orderBy = "first_name",
-                    sortDirection = "DESC"
-                )
+                    sortDirection = "DESC",
+                ),
             )
 
         assertEquals(person.id, response.first().id)
@@ -444,9 +444,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     DevPerson(
                         lastName = "Karhula",
                         firstName = "Johannes Olavi Antero Tapio",
-                        ssn = "070644-937X"
+                        ssn = "070644-937X",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
             }
 
@@ -472,9 +472,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     DevPerson(
                         lastName = "Karhula",
                         firstName = "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
-                        ssn = "070714A9126"
+                        ssn = "070714A9126",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
             }
 
@@ -505,6 +505,6 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             firstName = "Matti",
             lastName = "Meikäläinen",
             email = "",
-            language = "fi"
+            language = "fi",
         )
 }

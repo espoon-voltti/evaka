@@ -25,14 +25,14 @@ import org.springframework.web.bind.annotation.RestController
 class BackupPickupController(private val accessControl: AccessControl) {
     @PostMapping(
         "/children/{childId}/backup-pickups", // deprecated
-        "/employee/children/{childId}/backup-pickups"
+        "/employee/children/{childId}/backup-pickups",
     )
     fun createBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: ChildBackupPickupContent
+        @RequestBody body: ChildBackupPickupContent,
     ): ChildBackupPickupCreateResponse {
         return ChildBackupPickupCreateResponse(
             db.connect { dbc ->
@@ -42,7 +42,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.Child.CREATE_BACKUP_PICKUP,
-                            childId
+                            childId,
                         )
                         tx.createBackupPickup(childId, body)
                     }
@@ -50,7 +50,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                 .also { backupPickupId ->
                     Audit.ChildBackupPickupCreate.log(
                         targetId = AuditId(childId),
-                        objectId = AuditId(backupPickupId)
+                        objectId = AuditId(backupPickupId),
                     )
                 }
         )
@@ -58,13 +58,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/children/{childId}/backup-pickups", // deprecated
-        "/employee/children/{childId}/backup-pickups"
+        "/employee/children/{childId}/backup-pickups",
     )
     fun getBackupPickups(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<ChildBackupPickup> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -73,7 +73,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Child.READ_BACKUP_PICKUP,
-                        childId
+                        childId,
                     )
                     tx.getBackupPickupsForChild(childId)
                 }
@@ -81,21 +81,21 @@ class BackupPickupController(private val accessControl: AccessControl) {
             .also {
                 Audit.ChildBackupPickupRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @PutMapping(
         "/backup-pickups/{id}", // deprecated
-        "/employee/backup-pickups/{id}"
+        "/employee/backup-pickups/{id}",
     )
     fun updateBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupPickupId,
-        @RequestBody body: ChildBackupPickupContent
+        @RequestBody body: ChildBackupPickupContent,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -108,13 +108,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
 
     @DeleteMapping(
         "/backup-pickups/{id}", // deprecated
-        "/employee/backup-pickups/{id}"
+        "/employee/backup-pickups/{id}",
     )
     fun deleteBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: BackupPickupId
+        @PathVariable id: BackupPickupId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -128,7 +128,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
 
 fun Database.Transaction.createBackupPickup(
     childId: ChildId,
-    data: ChildBackupPickupContent
+    data: ChildBackupPickupContent,
 ): BackupPickupId =
     createQuery {
             sql(
@@ -170,7 +170,7 @@ data class ChildBackupPickup(
     val id: BackupPickupId,
     val childId: ChildId,
     val name: String,
-    val phone: String
+    val phone: String,
 )
 
 data class ChildBackupPickupCreateResponse(val id: BackupPickupId)

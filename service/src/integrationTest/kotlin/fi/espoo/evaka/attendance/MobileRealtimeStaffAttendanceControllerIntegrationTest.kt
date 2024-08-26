@@ -91,7 +91,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 employee.id,
                 groupId,
                 HelsinkiDateTime.of(today, LocalTime.of(8, 0, 0)),
-                BigDecimal(7.0)
+                BigDecimal(7.0),
             )
         }
 
@@ -121,7 +121,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             groupId,
             arrivalTime.toLocalTime(),
             null,
-            hasStaffOccupancyEffect = false
+            hasStaffOccupancyEffect = false,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -133,7 +133,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(StaffAttendanceType.PRESENT, it.attendances.first().type)
             assertEquals(
                 occupancyCoefficientZero,
-                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+                it.attendances.first().occupancyCoefficient.stripTrailingZeros(),
             )
         }
     }
@@ -157,13 +157,13 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             groupId,
             arrivalTime.toLocalTime(),
             null,
-            hasStaffOccupancyEffect = true
+            hasStaffOccupancyEffect = true,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(
                 occupancyCoefficientSeven.stripTrailingZeros(),
-                it.attendances.first().occupancyCoefficient.stripTrailingZeros()
+                it.attendances.first().occupancyCoefficient.stripTrailingZeros(),
             )
         }
     }
@@ -188,7 +188,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            null
+            null,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -216,7 +216,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -248,7 +248,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -281,7 +281,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -314,7 +314,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -328,7 +328,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            null
+            null,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -356,7 +356,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -407,7 +407,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -443,7 +443,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -469,7 +469,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -493,7 +493,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -505,7 +505,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             arrivalTime.toLocalTime(),
-            StaffAttendanceType.JUSTIFIED_CHANGE
+            StaffAttendanceType.JUSTIFIED_CHANGE,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -536,7 +536,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -575,7 +575,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -601,7 +601,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -615,7 +615,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            null
+            null,
         )
     }
 
@@ -648,7 +648,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            StaffAttendanceType.JUSTIFIED_CHANGE
+            StaffAttendanceType.JUSTIFIED_CHANGE,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -676,7 +676,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -713,7 +713,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -727,7 +727,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            type
+            type,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -762,7 +762,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -777,7 +777,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 pinCode,
                 groupId,
                 departureTime.toLocalTime(),
-                type
+                type,
             )
         }
     }
@@ -797,7 +797,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -811,7 +811,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            null
+            null,
         )
     }
 
@@ -833,7 +833,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -847,7 +847,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             departureTime.toLocalTime(),
-            type
+            type,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
@@ -878,7 +878,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -893,7 +893,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 pinCode,
                 groupId,
                 departureTime.toLocalTime(),
-                type
+                type,
             )
         }
     }
@@ -913,7 +913,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 DevStaffAttendancePlan(
                     employeeId = employee.id,
                     startTime = plannedStart,
-                    endTime = plannedEnd
+                    endTime = plannedEnd,
                 )
             )
         }
@@ -925,7 +925,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             firstArrivalTime.toLocalTime(),
-            StaffAttendanceType.OVERTIME
+            StaffAttendanceType.OVERTIME,
         )
         val firstDepartureTime = firstArrivalTime.plusHours(1)
         markDeparture(
@@ -934,7 +934,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             firstDepartureTime.toLocalTime(),
-            StaffAttendanceType.OTHER_WORK
+            StaffAttendanceType.OTHER_WORK,
         )
         val secondArrivalTime = firstDepartureTime.plusHours(1)
         markArrival(
@@ -943,7 +943,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             secondArrivalTime.toLocalTime(),
-            StaffAttendanceType.OTHER_WORK
+            StaffAttendanceType.OTHER_WORK,
         )
         val secondDepartureTime = secondArrivalTime.plusHours(1)
         markDeparture(
@@ -952,7 +952,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             secondDepartureTime.toLocalTime(),
-            StaffAttendanceType.TRAINING
+            StaffAttendanceType.TRAINING,
         )
         val thirdArrivalTime = secondDepartureTime.plusHours(1)
         markArrival(
@@ -961,7 +961,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             thirdArrivalTime.toLocalTime(),
-            StaffAttendanceType.TRAINING
+            StaffAttendanceType.TRAINING,
         )
         val thirdDepartureTime = thirdArrivalTime.plusMinutes(15)
         markDeparture(
@@ -970,7 +970,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             thirdDepartureTime.toLocalTime(),
-            null
+            null,
         )
         val fourthArrivalTime = thirdDepartureTime.plusMinutes(30)
         markArrival(
@@ -979,7 +979,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             fourthArrivalTime.toLocalTime(),
-            null
+            null,
         )
         val fourthDepartureTime = plannedEnd.minusMinutes(5)
         markDeparture(
@@ -988,7 +988,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             pinCode,
             groupId,
             fourthDepartureTime.toLocalTime(),
-            null
+            null,
         )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         assertEquals(1, attendances.staff.size)
@@ -1023,7 +1023,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             tx.insertDaycareAclRow(
                 daycareId = testDaycare.id,
                 employeeId = employeeId,
-                UserRole.STAFF
+                UserRole.STAFF,
             )
             tx.insert(DevDaycareGroupAcl(groupId = groupId, employeeId = employeeId))
             tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
@@ -1053,10 +1053,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = now,
                                 departed = null,
                                 type = StaffAttendanceType.PRESENT,
-                                hasStaffOccupancyEffect = true
+                                hasStaffOccupancyEffect = true,
                             )
-                        )
-                )
+                        ),
+                ),
             )
         assertThat(insertResponse.deleted).isEmpty()
         assertThat(insertResponse.inserted).hasSize(1)
@@ -1065,14 +1065,14 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 dbInstance(),
                 mobileUser,
                 MockEvakaClock(now),
-                testDaycare.id
+                testDaycare.id,
             )
         assertThat(attendances.staff).hasSize(1)
         assertThat(attendances.staff.first().attendances).hasSize(1)
         attendances.staff.first().attendances.first().also {
             assertEquals(
                 occupancyCoefficientSeven.stripTrailingZeros(),
-                it.occupancyCoefficient.stripTrailingZeros()
+                it.occupancyCoefficient.stripTrailingZeros(),
             )
             assertEquals(now, it.arrived)
             assertEquals(null, it.departed)
@@ -1100,10 +1100,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = now.minusHours(1),
                                 departed = now,
                                 type = StaffAttendanceType.JUSTIFIED_CHANGE,
-                                hasStaffOccupancyEffect = false
+                                hasStaffOccupancyEffect = false,
                             )
-                        )
-                )
+                        ),
+                ),
             )
         assertThat(updateResponse.deleted).containsExactly(staffAttendanceId)
         assertThat(updateResponse.inserted).hasSize(1)
@@ -1112,7 +1112,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 dbInstance(),
                 mobileUser,
                 MockEvakaClock(now),
-                testDaycare.id
+                testDaycare.id,
             )
         assertThat(attendances2.staff).hasSize(1)
         assertThat(attendances2.staff.first().attendances).hasSize(1)
@@ -1134,8 +1134,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     employeeId = employeeId,
                     pinCode = "1122",
                     date = now.toLocalDate(),
-                    rows = emptyList()
-                )
+                    rows = emptyList(),
+                ),
             )
         assertThat(deleteResponse.deleted).hasSize(1)
         assertThat(deleteResponse.inserted).isEmpty()
@@ -1155,7 +1155,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         departed = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
                         occupancyCoefficient = occupancyCoefficientSeven,
                         type = StaffAttendanceType.PRESENT,
-                        departedAutomatically = false
+                        departedAutomatically = false,
                     )
                 )
             }
@@ -1170,7 +1170,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
                         occupancyCoefficient = occupancyCoefficientSeven,
                         type = StaffAttendanceType.PRESENT,
-                        departedAutomatically = false
+                        departedAutomatically = false,
                     )
                 )
             }
@@ -1193,7 +1193,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
                                 type = StaffAttendanceType.PRESENT,
-                                hasStaffOccupancyEffect = false
+                                hasStaffOccupancyEffect = false,
                             ),
                             RealtimeStaffAttendanceController.StaffAttendanceUpsert(
                                 id = staffAttendance2Id,
@@ -1201,10 +1201,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = HelsinkiDateTime.of(today, LocalTime.of(16, 0)),
                                 departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
                                 type = StaffAttendanceType.PRESENT,
-                                hasStaffOccupancyEffect = true
-                            )
-                        )
-                )
+                                hasStaffOccupancyEffect = true,
+                            ),
+                        ),
+                ),
             )
         assertThat(response.deleted)
             .containsExactlyInAnyOrder(staffAttendance1Id, staffAttendance2Id)
@@ -1227,9 +1227,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now,
                             departed = null,
                             type = StaffAttendanceType.TRAINING,
-                            hasStaffOccupancyEffect = false
+                            hasStaffOccupancyEffect = false,
                         )
-                    )
+                    ),
             )
 
         val response =
@@ -1238,7 +1238,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 mobileUser,
                 MockEvakaClock(now),
                 testDaycare.id,
-                body
+                body,
             )
 
         assertThat(response.deleted).isEmpty()
@@ -1253,13 +1253,13 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 tx.insertDaycareAclRow(
                     daycareId = testDaycare.id,
                     employeeId = employeeId,
-                    UserRole.STAFF
+                    UserRole.STAFF,
                 )
                 tx.insert(DevDaycareGroupAcl(groupId = groupId, employeeId = employeeId))
                 tx.insertDaycareAclRow(
                     daycareId = testDaycare2.id,
                     employeeId = employeeId,
-                    UserRole.STAFF
+                    UserRole.STAFF,
                 )
                 tx.insert(DevDaycareGroupAcl(groupId = groupId2, employeeId = employeeId))
                 tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
@@ -1284,10 +1284,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = now.minusHours(2),
                                 departed = now,
                                 type = StaffAttendanceType.PRESENT,
-                                hasStaffOccupancyEffect = true
+                                hasStaffOccupancyEffect = true,
                             )
-                        )
-                )
+                        ),
+                ),
             )
         assertThat(response1.deleted).isEmpty()
         assertThat(response1.inserted).hasSize(1)
@@ -1310,10 +1310,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                                 arrived = now,
                                 departed = now.plusHours(2),
                                 type = StaffAttendanceType.PRESENT,
-                                hasStaffOccupancyEffect = false
+                                hasStaffOccupancyEffect = false,
                             )
-                        )
-                )
+                        ),
+                ),
             )
         assertThat(response2.deleted).isEmpty()
         assertThat(response2.inserted).hasSize(1)
@@ -1335,9 +1335,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now,
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
                         )
-                    )
+                    ),
             )
 
         val exception =
@@ -1347,7 +1347,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     mobileUser2,
                     MockEvakaClock(now),
                     testDaycare.id,
-                    body
+                    body,
                 )
             }
         assertEquals("Permission denied", exception.message)
@@ -1369,9 +1369,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now,
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
                         )
-                    )
+                    ),
             )
 
         (0..5).forEach { attempt ->
@@ -1382,7 +1382,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                         mobileUser,
                         MockEvakaClock(now),
                         testDaycare.id,
-                        body
+                        body,
                     )
                 }
             assertEquals("Invalid pin code", exception.message)
@@ -1412,9 +1412,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now.plusDays(1),
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
                         )
-                    )
+                    ),
             )
 
         val expection =
@@ -1424,7 +1424,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     mobileUser,
                     MockEvakaClock(now),
                     testDaycare.id,
-                    body
+                    body,
                 )
             }
         assertEquals("Attendances outside given date", expection.message)
@@ -1446,9 +1446,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                             arrived = now,
                             departed = null,
                             type = StaffAttendanceType.PRESENT,
-                            hasStaffOccupancyEffect = true
+                            hasStaffOccupancyEffect = true,
                         )
-                    )
+                    ),
             )
 
         val exception =
@@ -1458,7 +1458,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                     mobileUser,
                     MockEvakaClock(now),
                     testDaycare.id,
-                    body
+                    body,
                 )
             }
         assertEquals("Unknown id was given", exception.message)
@@ -1466,13 +1466,13 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
     private fun fetchRealtimeStaffAttendances(
         unitId: DaycareId,
-        user: AuthenticatedUser.MobileDevice
+        user: AuthenticatedUser.MobileDevice,
     ): CurrentDayStaffAttendanceResponse {
         return mobileRealtimeStaffAttendanceController.getAttendancesByUnit(
             dbInstance(),
             user,
             MockEvakaClock(now),
-            unitId
+            unitId,
         )
     }
 
@@ -1484,7 +1484,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         time: LocalTime,
         type: StaffAttendanceType?,
         user: AuthenticatedUser.MobileDevice = mobileUser,
-        hasStaffOccupancyEffect: Boolean = true
+        hasStaffOccupancyEffect: Boolean = true,
     ) {
         mobileRealtimeStaffAttendanceController.markArrival(
             dbInstance(),
@@ -1496,8 +1496,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 groupId = groupId,
                 time = time,
                 type = type,
-                hasStaffOccupancyEffect = hasStaffOccupancyEffect
-            )
+                hasStaffOccupancyEffect = hasStaffOccupancyEffect,
+            ),
         )
     }
 
@@ -1508,7 +1508,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         groupId: GroupId,
         time: LocalTime,
         type: StaffAttendanceType?,
-        user: AuthenticatedUser.MobileDevice = mobileUser
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ) {
         mobileRealtimeStaffAttendanceController.markDeparture(
             dbInstance(),
@@ -1519,8 +1519,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 pinCode = pinCode,
                 groupId = groupId,
                 time = time,
-                type = type
-            )
+                type = type,
+            ),
         )
     }
 }

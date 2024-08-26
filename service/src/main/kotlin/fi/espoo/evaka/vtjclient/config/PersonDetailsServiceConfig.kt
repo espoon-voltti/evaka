@@ -19,13 +19,13 @@ class PersonDetailsServiceConfig {
     @Bean
     fun pisPersonDetailsService(
         evakaEnv: EvakaEnv,
-        ctx: ApplicationContext
+        ctx: ApplicationContext,
     ): IPersonDetailsService =
         when (evakaEnv.vtjEnabled) {
             true ->
                 VTJPersonDetailsService(
                     vtjClientService = ctx.getBean(VtjClientService::class.java),
-                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java)
+                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
                 )
             false -> MockPersonDetailsService()
         }

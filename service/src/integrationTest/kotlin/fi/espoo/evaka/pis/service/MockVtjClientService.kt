@@ -15,7 +15,7 @@ class MockVtjClientService : IVtjClientService {
         private var queryRequestResponse:
             ConcurrentHashMap<
                 Pair<String, IVtjClientService.RequestType>,
-                VTJHenkiloVastaussanoma.Henkilo
+                VTJHenkiloVastaussanoma.Henkilo,
             > =
             ConcurrentHashMap()
 
@@ -52,7 +52,7 @@ class MockVtjClientService : IVtjClientService {
                                     VTJHenkiloVastaussanoma.Henkilo.Huollettava.NykyinenSukunimi()
                                         .also { it.sukunimi = child.lastName }
                             }
-                        }
+                        },
                     )
                 }
         }

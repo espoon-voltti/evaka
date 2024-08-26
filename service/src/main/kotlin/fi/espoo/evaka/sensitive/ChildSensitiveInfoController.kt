@@ -22,13 +22,13 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
 
     @GetMapping(
         "/children/{childId}/sensitive-info", // deprecated
-        "/employee-mobile/children/{childId}/sensitive-info"
+        "/employee-mobile/children/{childId}/sensitive-info",
     )
     fun getSensitiveInfo(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): ChildSensitiveInformation {
         return db.connect { dbc ->
                 dbc.read {
@@ -37,7 +37,7 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Child.READ_SENSITIVE_INFO,
-                        childId
+                        childId,
                     )
 
                     it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")

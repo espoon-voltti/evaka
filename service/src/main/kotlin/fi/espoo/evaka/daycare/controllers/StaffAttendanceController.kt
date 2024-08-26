@@ -30,14 +30,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/staff-attendances")
 class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping("/unit/{unitId}")
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ): UnitStaffAttendance {
         return db.connect { dbc ->
                 dbc.read {
@@ -46,7 +46,7 @@ class StaffAttendanceController(
                         user,
                         clock,
                         Action.Unit.READ_STAFF_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                 }
                 staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
@@ -61,7 +61,7 @@ class StaffAttendanceController(
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ): StaffAttendanceForDates {
         return db.connect { dbc ->
                 dbc.read {
@@ -70,7 +70,7 @@ class StaffAttendanceController(
                         user,
                         clock,
                         Action.Group.READ_STAFF_ATTENDANCES,
-                        groupId
+                        groupId,
                     )
                 }
                 staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
@@ -84,7 +84,7 @@ class StaffAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody staffAttendance: StaffAttendanceUpdate,
-        @PathVariable groupId: GroupId
+        @PathVariable groupId: GroupId,
     ) {
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
@@ -96,12 +96,12 @@ class StaffAttendanceController(
                     user,
                     clock,
                     Action.Group.UPDATE_STAFF_ATTENDANCES,
-                    groupId
+                    groupId,
                 )
             }
             staffAttendanceService.upsertStaffAttendance(
                 dbc,
-                staffAttendance.copy(groupId = groupId)
+                staffAttendance.copy(groupId = groupId),
             )
         }
         Audit.StaffAttendanceUpdate.log(targetId = AuditId(groupId))

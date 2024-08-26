@@ -48,7 +48,7 @@ data class AssistanceNeedDecision(
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
     val annulmentReason: String,
-    val hasDocument: Boolean
+    val hasDocument: Boolean,
 ) {
     fun toForm() =
         AssistanceNeedDecisionForm(
@@ -75,7 +75,7 @@ data class AssistanceNeedDecision(
             otherRepresentativeHeard,
             otherRepresentativeDetails,
             assistanceLevels,
-            motivationForDecision
+            motivationForDecision,
         )
 }
 
@@ -104,7 +104,7 @@ data class AssistanceNeedDecisionForm(
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
     val assistanceLevels: Set<AssistanceLevel>,
-    val motivationForDecision: String?
+    val motivationForDecision: String?,
 )
 
 data class AssistanceNeedDecisionBasics(
@@ -114,7 +114,7 @@ data class AssistanceNeedDecisionBasics(
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
     @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
-    val created: HelsinkiDateTime
+    val created: HelsinkiDateTime,
 )
 
 enum class AssistanceNeedDecisionStatus : DatabaseEnum {
@@ -132,7 +132,7 @@ enum class AssistanceNeedDecisionStatus : DatabaseEnum {
 @Deprecated(
     message = "use OfficialLanguage instead",
     replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
 )
 typealias AssistanceNeedDecisionLanguage = OfficialLanguage
 
@@ -140,7 +140,7 @@ data class AssistanceNeedDecisionEmployee(
     @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
     val name: String? = null,
-    val phoneNumber: String?
+    val phoneNumber: String?,
 ) {
     fun toForm() = AssistanceNeedDecisionEmployeeForm(employeeId, title, phoneNumber)
 }
@@ -148,20 +148,20 @@ data class AssistanceNeedDecisionEmployee(
 data class AssistanceNeedDecisionEmployeeForm(
     @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
-    val phoneNumber: String?
+    val phoneNumber: String?,
 )
 
 data class AssistanceNeedDecisionMaker(
     @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
-    val name: String? = null
+    val name: String? = null,
 ) {
     fun toForm() = AssistanceNeedDecisionMakerForm(employeeId, title)
 }
 
 data class AssistanceNeedDecisionMakerForm(
     @PropagateNull val employeeId: EmployeeId?,
-    val title: String?
+    val title: String?,
 )
 
 data class StructuralMotivationOptions(
@@ -170,7 +170,7 @@ data class StructuralMotivationOptions(
     val smallGroup: Boolean,
     val groupAssistant: Boolean,
     val childAssistant: Boolean,
-    val additionalStaff: Boolean
+    val additionalStaff: Boolean,
 )
 
 data class ServiceOptions(
@@ -178,7 +178,7 @@ data class ServiceOptions(
     val partTimeSpecialEd: Boolean,
     val fullTimeSpecialEd: Boolean,
     val interpretationAndAssistanceServices: Boolean,
-    val specialAides: Boolean
+    val specialAides: Boolean,
 )
 
 data class AssistanceNeedDecisionGuardian(
@@ -186,14 +186,14 @@ data class AssistanceNeedDecisionGuardian(
     val personId: PersonId?,
     val name: String,
     val isHeard: Boolean,
-    val details: String?
+    val details: String?,
 )
 
 enum class AssistanceLevel {
     ASSISTANCE_ENDS,
     ASSISTANCE_SERVICES_FOR_TIME,
     ENHANCED_ASSISTANCE,
-    SPECIAL_ASSISTANCE
+    SPECIAL_ASSISTANCE,
 }
 
 data class UnitInfo(
@@ -201,7 +201,7 @@ data class UnitInfo(
     val name: String? = null,
     val streetAddress: String? = null,
     val postalCode: String? = null,
-    val postOffice: String? = null
+    val postOffice: String? = null,
 ) {
     fun toForm() = UnitIdInfo(id)
 }
@@ -213,7 +213,7 @@ data class UnitInfoBasics(@PropagateNull val id: DaycareId?, val name: String? =
 data class AssistanceNeedDecisionChild(
     @PropagateNull val id: ChildId?,
     val name: String?,
-    val dateOfBirth: LocalDate?
+    val dateOfBirth: LocalDate?,
 )
 
 data class AssistanceNeedDecisionCitizenListItem(
@@ -225,7 +225,7 @@ data class AssistanceNeedDecisionCitizenListItem(
     @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
     val assistanceLevels: Set<AssistanceLevel>,
     val annulmentReason: String,
-    val isUnread: Boolean
+    val isUnread: Boolean,
 )
 
 data class UnreadAssistanceNeedDecisionItem(val childId: ChildId, val count: Int)

@@ -68,7 +68,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 null,
                 false,
                 Creator.User(partnershipCreator),
-                mockToday.now()
+                mockToday.now(),
             )
         }
 
@@ -78,12 +78,12 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             assertEquals(
                 1,
                 it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
-                    .size
+                    .size,
             )
             assertEquals(
                 1,
                 it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
-                    .size
+                    .size,
             )
         }
     }
@@ -102,7 +102,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 null,
                 false,
                 Creator.User(partnershipCreator),
-                mockToday.now()
+                mockToday.now(),
             )
         }
 
@@ -112,7 +112,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             assertEquals(
                 1,
                 it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
-                    .size
+                    .size,
             )
         }
 
@@ -129,12 +129,12 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             assertEquals(
                 1,
                 it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
-                    .size
+                    .size,
             )
             assertEquals(
                 1,
                 it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
-                    .size
+                    .size,
             )
         }
     }
@@ -148,12 +148,12 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db,
             AuthenticatedUser.SystemInternalUser,
             mockToday,
-            child1.id
+            child1.id,
         )
 
         assertEquals(
             setOf(adult1.id, adult2.id),
-            db.read { tx -> tx.getChildGuardians(child1.id) }.toSet()
+            db.read { tx -> tx.getChildGuardians(child1.id) }.toSet(),
         )
     }
 
@@ -167,7 +167,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val service =
             FridgeFamilyService(
                 PersonService(VTJPersonDetailsService(mockVtjClientService, VtjHenkiloMapper())),
-                parentshipService
+                parentshipService,
             )
 
         val parent = DevPerson(ssn = adult1.identity.toString())
@@ -179,7 +179,7 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             db,
             AuthenticatedUser.SystemInternalUser,
             mockToday,
-            adult1.id
+            adult1.id,
         )
 
         Assertions.assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(child))
@@ -196,9 +196,9 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
                         firstName = firstName,
                         lastName = "Meikäläinen",
                         email = "",
-                        language = "fi"
+                        language = "fi",
                     ),
-                    DevPersonType.RAW_ROW
+                    DevPersonType.RAW_ROW,
                 )
             it.getPersonById(id)!!
         }

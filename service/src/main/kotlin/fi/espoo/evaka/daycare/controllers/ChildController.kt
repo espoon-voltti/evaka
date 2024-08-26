@@ -33,14 +33,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ChildController(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping("/children/{childId}")
     fun getChild(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): ChildResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -54,7 +54,7 @@ class ChildController(
                                         user,
                                         clock,
                                         Action.Person.READ_INVOICE_ADDRESS,
-                                        childId
+                                        childId,
                                     ),
                                 includeOphOid =
                                     accessControl.hasPermissionFor(
@@ -62,8 +62,8 @@ class ChildController(
                                         user,
                                         clock,
                                         Action.Person.READ_OPH_OID,
-                                        childId
-                                    )
+                                        childId,
+                                    ),
                             ) ?: throw NotFound("Child $childId not found")
                     ChildResponse(
                         person = PersonJSON.from(child),
@@ -72,7 +72,7 @@ class ChildController(
                         permittedPersonActions =
                             accessControl.getPermittedActions(tx, user, clock, childId),
                         assistanceNeedVoucherCoefficientsEnabled =
-                            !featureConfig.valueDecisionCapacityFactorEnabled
+                            !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
                 }
             }
@@ -84,7 +84,7 @@ class ChildController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): AdditionalInformation {
         return db.connect { dbc ->
                 dbc.read {
@@ -93,7 +93,7 @@ class ChildController(
                         user,
                         clock,
                         Action.Child.READ_ADDITIONAL_INFO,
-                        childId
+                        childId,
                     )
                     it.getAdditionalInformation(childId)
                 }
@@ -107,7 +107,7 @@ class ChildController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody data: AdditionalInformation
+        @RequestBody data: AdditionalInformation,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -116,7 +116,7 @@ class ChildController(
                     user,
                     clock,
                     Action.Child.UPDATE_ADDITIONAL_INFO,
-                    childId
+                    childId,
                 )
                 it.upsertAdditionalInformation(childId, data)
             }
@@ -128,7 +128,7 @@ class ChildController(
         val person: PersonJSON,
         val permittedActions: Set<Action.Child>,
         val permittedPersonActions: Set<Action.Person>,
-        val assistanceNeedVoucherCoefficientsEnabled: Boolean
+        val assistanceNeedVoucherCoefficientsEnabled: Boolean,
     )
 }
 
@@ -139,7 +139,7 @@ fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformat
 
 fun Database.Transaction.upsertAdditionalInformation(
     childId: ChildId,
-    data: AdditionalInformation
+    data: AdditionalInformation,
 ) {
     updatePreferredName(childId, data.preferredName)
     val child = getChild(childId)
@@ -161,5 +161,5 @@ data class AdditionalInformation(
     val languageAtHome: String = "",
     val languageAtHomeDetails: String = "",
     @Nested("special_diet") val specialDiet: SpecialDiet? = null,
-    @Nested("meal_texture") val mealTexture: MealTexture? = null
+    @Nested("meal_texture") val mealTexture: MealTexture? = null,
 )

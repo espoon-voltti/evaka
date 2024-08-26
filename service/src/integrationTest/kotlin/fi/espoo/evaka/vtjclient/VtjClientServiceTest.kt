@@ -74,7 +74,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
         if (
             !env.lookup<Boolean>(
                 "evaka.integration.vtj.test.use_actual_vtj",
-                "fi.espoo.voltti.vtj.test.use_actual_vtj"
+                "fi.espoo.voltti.vtj.test.use_actual_vtj",
             )
         ) {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
@@ -92,7 +92,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             VTJQuery(
                 requestingUserId = requestingUser.id.raw,
                 type = PERUSSANOMA3,
-                ssn = "020501A999T"
+                ssn = "020501A999T",
             )
         val response = vtjClientService.query(query)
 
@@ -125,7 +125,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             VTJQuery(
                 requestingUserId = requestingUser.id.raw,
                 type = HUOLTAJA_HUOLLETTAVA,
-                ssn = "020190-9521"
+                ssn = "020190-9521",
             )
         val response = vtjClientService.query(query)
 
@@ -150,7 +150,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             VTJQuery(
                 requestingUserId = requestingUser.id.raw,
                 type = HUOLLETTAVA_HUOLTAJAT,
-                ssn = "311211A9527"
+                ssn = "311211A9527",
             )
         val response = vtjClientService.query(query)
 
@@ -179,7 +179,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             VTJQuery(
                 requestingUserId = requestingUser.id.raw,
                 type = ASUKASMAARA,
-                ssn = expectedSSN
+                ssn = expectedSSN,
             )
         val response = vtjClientService.query(query)
 
@@ -206,7 +206,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             created = HelsinkiDateTime.now(),
             updated = null,
             temporaryInUnitId = null,
-            active = true
+            active = true,
         )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =
@@ -223,7 +223,7 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
             postalCode = "65100",
             postOffice = "VAASA",
             streetAddressSe = "Kurtensgatan 13 H 45",
-            postOfficeSe = "VASA"
+            postOfficeSe = "VASA",
         )
 
     val kakTy =
@@ -231,7 +231,7 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
             firstNames = "Kak Ty",
             lastName = "Popov",
             socialSecurityNumber = "011014A9510",
-            restrictedDetails = null
+            restrictedDetails = null,
         )
 
     val minja = kakTy.copy(firstNames = "Minja Zavutina", socialSecurityNumber = "311211A9527")
@@ -250,7 +250,7 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
         residenceCode = "90000130991H045 ",
         restrictedDetails = RestrictedDetails(false),
         nationalities = emptyList(),
-        dependants = listOf(kakTy, minja, mir, petrus, pan)
+        dependants = listOf(kakTy, minja, mir, petrus, pan),
     )
 }
 
@@ -260,7 +260,7 @@ class ResidentCountExample(
     val ssn: SSN,
     val residentCount: Int,
     val underageResidentCount: Int,
-    val underageResidentSSns: List<SSN>
+    val underageResidentSSns: List<SSN>,
 ) {
     companion object Factory {
         fun residentCountFromHenkilo(henkilo: Henkilo) =
@@ -269,7 +269,7 @@ class ResidentCountExample(
                 residentCount = henkilo.asukasLkm.toInt(),
                 underageResidentCount = henkilo.asukkaatAlle18V.asukasLkm.toInt(),
                 underageResidentSSns =
-                    henkilo.asukasAlle18V.map { SSN.getInstance(it.henkilotunnus) }
+                    henkilo.asukasAlle18V.map { SSN.getInstance(it.henkilotunnus) },
             )
     }
 }

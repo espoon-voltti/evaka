@@ -17,6 +17,8 @@ enum class MdcKey(val key: String) {
     USER_ID_HASH("userIdHash");
 
     fun get(): String? = MDC.get(this.key)
+
     fun set(value: String) = MDC.put(this.key, value)
+
     fun unset() = MDC.remove(this.key)
 }

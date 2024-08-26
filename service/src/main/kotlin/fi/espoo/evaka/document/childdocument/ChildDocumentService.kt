@@ -41,7 +41,7 @@ class ChildDocumentService(
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
-    private val pdfGenerator: PdfGenerator
+    private val pdfGenerator: PdfGenerator,
 ) {
     private val bucket = bucketEnv.data
 
@@ -68,8 +68,8 @@ class ChildDocumentService(
                     Document(
                         name = "${childDocumentBucketPrefix}child_document_$documentId.pdf",
                         bytes = pdfBytes,
-                        contentType = "application/pdf"
-                    )
+                        contentType = "application/pdf",
+                    ),
             )
         db.transaction { tx -> tx.updateChildDocumentKey(documentId, key.key) }
     }
@@ -83,7 +83,7 @@ class ChildDocumentService(
 
     fun completeAndPublishChildDocumentsAtEndOfTerm(
         tx: Database.Transaction,
-        now: HelsinkiDateTime
+        now: HelsinkiDateTime,
     ) {
         val documentIds =
             tx.createQuery {
@@ -115,7 +115,7 @@ class ChildDocumentService(
                     documentId = documentId,
                     newStatus = DocumentStatus.COMPLETED,
                     now = now,
-                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             }
         }
@@ -124,7 +124,7 @@ class ChildDocumentService(
     fun scheduleEmailNotification(
         tx: Database.Transaction,
         ids: List<ChildDocumentId>,
-        now: HelsinkiDateTime
+        now: HelsinkiDateTime,
     ) {
         val payloads = ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
         logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
@@ -134,7 +134,7 @@ class ChildDocumentService(
     fun schedulePdfGeneration(
         tx: Database.Transaction,
         ids: List<ChildDocumentId>,
-        now: HelsinkiDateTime
+        now: HelsinkiDateTime,
     ) {
         logger.info { "Scheduling generation of ${ids.size} child document pdfs" }
 
@@ -146,7 +146,7 @@ class ChildDocumentService(
             tx,
             payloads = ids.map { AsyncJob.CreateChildDocumentPdf(it) },
             runAt = now,
-            retryCount = 10
+            retryCount = 10,
         )
     }
 
@@ -161,7 +161,7 @@ class ChildDocumentService(
     private fun getChildDocumentNotifications(
         tx: Database.Read,
         documentId: ChildDocumentId,
-        today: LocalDate
+        today: LocalDate,
     ): List<AsyncJob.SendChildDocumentNotificationEmail> {
         return tx.createQuery {
                 sql(
@@ -193,7 +193,7 @@ WHERE person.email IS NOT NULL AND person.email != ''
                     documentId = documentId,
                     childId = column("child_id"),
                     recipientId = column("recipient_id"),
-                    language = getLanguage(column("language"))
+                    language = getLanguage(column("language")),
                 )
             }
     }
@@ -201,7 +201,7 @@ WHERE person.email IS NOT NULL AND person.email != ''
     fun sendChildDocumentNotificationEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendChildDocumentNotificationEmail
+        msg: AsyncJob.SendChildDocumentNotificationEmail,
     ) {
         logger.info(
             "Sending child document notification email for document ${msg.documentId} to person ${msg.recipientId}"

@@ -25,7 +25,7 @@ class PartnershipService {
         startDate: LocalDate,
         endDate: LocalDate?,
         createdBy: EvakaUserId,
-        createdAt: HelsinkiDateTime
+        createdAt: HelsinkiDateTime,
     ): Partnership {
         return try {
             tx.createPartnership(
@@ -35,7 +35,7 @@ class PartnershipService {
                 endDate,
                 false,
                 Creator.User(createdBy),
-                createdAt
+                createdAt,
             )
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
@@ -48,7 +48,7 @@ class PartnershipService {
         startDate: LocalDate,
         endDate: LocalDate?,
         modifiedBy: EvakaUserId,
-        modifiedAt: HelsinkiDateTime
+        modifiedAt: HelsinkiDateTime,
     ) {
         try {
             val success =
@@ -58,7 +58,7 @@ class PartnershipService {
                     endDate,
                     ModifySource.USER,
                     modifiedAt,
-                    modifiedBy
+                    modifiedBy,
                 )
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
@@ -70,7 +70,7 @@ class PartnershipService {
         tx: Database.Transaction,
         partnershipId: PartnershipId,
         modifiedById: EvakaUserId,
-        modifiedAt: HelsinkiDateTime
+        modifiedAt: HelsinkiDateTime,
     ): Partnership? {
         return try {
             tx.getPartnership(partnershipId)
@@ -91,7 +91,7 @@ data class Partnership(
     val partners: Set<PersonJSON>,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val conflict: Boolean = false
+    val conflict: Boolean = false,
 )
 
 data class Partner(
@@ -101,5 +101,5 @@ data class Partner(
     val endDate: LocalDate?,
     val conflict: Boolean = false,
     val creationModificationMetadata: CreationModificationMetadata =
-        CreationModificationMetadata.empty()
+        CreationModificationMetadata.empty(),
 )

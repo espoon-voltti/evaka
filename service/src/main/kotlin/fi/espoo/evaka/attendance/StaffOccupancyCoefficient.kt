@@ -17,11 +17,11 @@ data class StaffOccupancyCoefficient(
     val employeeId: EmployeeId,
     val firstName: String,
     val lastName: String,
-    val coefficient: BigDecimal
+    val coefficient: BigDecimal,
 )
 
 data class OccupancyCoefficientUpsert(
     val unitId: DaycareId,
     val employeeId: EmployeeId,
-    val coefficient: BigDecimal
+    val coefficient: BigDecimal,
 )

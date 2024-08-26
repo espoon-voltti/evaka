@@ -37,7 +37,7 @@ private inline fun <reified T : Any> Database.Read.passThrough(input: T) =
 
 private inline fun <reified T : Any> Database.Read.checkMatch(
     @Language("sql") sql: String,
-    input: T
+    input: T,
 ) = @Suppress("DEPRECATION") createQuery(sql).bind("input", input).exactlyOne<Boolean>()
 
 class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
@@ -80,7 +80,7 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
             }
         assertEquals(
             listOf(Coordinate(lat = 11.0, lon = 22.0), Coordinate(lat = 33.0, lon = 44.0)),
-            result.values
+            result.values,
         )
     }
 
@@ -151,9 +151,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         assertEquals(
             listOf(
                 DateRange(LocalDate.of(2020, 6, 7), null),
-                DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2))
+                DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2)),
             ),
-            result.values
+            result.values,
         )
     }
 
@@ -198,9 +198,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
         assertEquals(
             listOf(
                 FiniteDateRange(LocalDate.of(2020, 6, 7), LocalDate.of(2021, 1, 1)),
-                FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2))
+                FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2)),
             ),
-            result.values
+            result.values,
         )
     }
 
@@ -222,7 +222,7 @@ SELECT :input = datemultirange(
     daterange('2020-02-01', '2020-02-29', '[]'),
     daterange('2020-04-01', '2020-04-30', '[]')
 )""",
-                    input
+                    input,
                 )
             }
         assertTrue(match)
@@ -279,9 +279,9 @@ SELECT :input = datemultirange(
         assertEquals(
             listOf(
                 ExternalId.of(namespace = "test", value = "123456"),
-                ExternalId.of(namespace = "more", value = "42")
+                ExternalId.of(namespace = "more", value = "42"),
             ),
-            result.values
+            result.values,
         )
     }
 
@@ -326,9 +326,9 @@ SELECT :input = datemultirange(
         assertEquals(
             listOf(
                 PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962")),
-                PersonId(UUID.fromString("2db6c1c7-402f-4d86-a308-a7f1b19bb313"))
+                PersonId(UUID.fromString("2db6c1c7-402f-4d86-a308-a7f1b19bb313")),
             ),
-            result.values
+            result.values,
         )
     }
 
@@ -391,9 +391,9 @@ SELECT :input = datemultirange(
         assertEquals(
             listOf(
                 ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc),
-                ZonedDateTime.of(LocalDate.of(2021, 1, 10), LocalTime.of(6, 42), utc)
+                ZonedDateTime.of(LocalDate.of(2021, 1, 10), LocalTime.of(6, 42), utc),
             ),
-            values
+            values,
         )
     }
 

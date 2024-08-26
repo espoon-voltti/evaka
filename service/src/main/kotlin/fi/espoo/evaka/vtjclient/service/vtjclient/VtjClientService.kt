@@ -32,7 +32,7 @@ class VtjClientService(
     private val wsTemplate: WebServiceTemplate,
     private val vtjEnv: VtjEnv,
     private val requestAdapter: SoapRequestAdapter,
-    private val responseMapper: VTJResponseMapper
+    private val responseMapper: VTJResponseMapper,
 ) : IVtjClientService {
 
     private val logger = KotlinLogging.logger {}
@@ -71,7 +71,7 @@ class VtjClientService(
 
     private inline fun <reified T> WebServiceTemplate.marshalSendAndReceiveAsType(
         request: Any,
-        callback: WebServiceMessageCallback
+        callback: WebServiceMessageCallback,
     ): JAXBElement<T> =
         marshalSendAndReceive(request, callback)
             .let {
@@ -107,12 +107,12 @@ fun toLogParamsMap(query: VTJQuery, status: QueryStatus) =
     mapOf(
         "meta" to mapOf("queryName" to query.type.queryName),
         "status" to status.value,
-        "targetId" to if (query.ssn.length >= 6) query.ssn.subSequence(0, 6) else query.ssn
+        "targetId" to if (query.ssn.length >= 6) query.ssn.subSequence(0, 6) else query.ssn,
     )
 
 enum class QueryStatus(val value: String) {
     CREATING_REQUEST("creating request"),
     RESPONSE_RECEIVED("response received"),
     RESPONSE_PARSING_FAILURE("response parsing failure"),
-    ERROR_DURING_REQUEST("error during request")
+    ERROR_DURING_REQUEST("error during request"),
 }

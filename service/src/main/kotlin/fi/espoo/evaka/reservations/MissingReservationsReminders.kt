@@ -29,7 +29,7 @@ class MissingReservationsReminders(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     init {
         asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendMissingReservationsReminder ->
@@ -61,7 +61,7 @@ WHERE p.email IS NOT NULL
         asyncJobRunner.plan(
             tx,
             payloads = guardians.map { AsyncJob.SendMissingReservationsReminder(it, range) },
-            runAt = clock.now()
+            runAt = clock.now(),
         )
         return guardians.size
     }

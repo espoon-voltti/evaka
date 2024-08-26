@@ -10,7 +10,7 @@ fun Database.Transaction.storeDvvModificationToken(
     token: String,
     nextToken: String,
     ssnsSent: Int,
-    modificationsReceived: Int
+    modificationsReceived: Int,
 ) {
     createUpdate {
             sql(
@@ -25,12 +25,14 @@ VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificati
 
 fun Database.Read.getNextDvvModificationToken(): String {
     return createQuery {
-            sql("""
+            sql(
+                """
 SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
-""")
+"""
+            )
         }
         .exactlyOne<String>()
 }
@@ -57,5 +59,5 @@ data class DvvModificationToken(
     val token: String,
     val nextToken: String,
     val ssnsSent: Int,
-    val modificationsReceived: Int
+    val modificationsReceived: Int,
 )

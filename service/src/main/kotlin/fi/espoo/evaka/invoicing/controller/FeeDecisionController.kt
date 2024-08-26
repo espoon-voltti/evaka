@@ -52,12 +52,12 @@ enum class FeeDecisionSortParam {
     CREATED,
     SENT,
     STATUS,
-    FINAL_PRICE
+    FINAL_PRICE,
 }
 
 enum class SortDirection {
     ASC,
-    DESC
+    DESC,
 }
 
 @ConstList("feeDecisionDistinctiveParams")
@@ -67,28 +67,28 @@ enum class DistinctiveParams {
     RETROACTIVE,
     NO_STARTING_PLACEMENTS,
     MAX_FEE_ACCEPTED,
-    PRESCHOOL_CLUB
+    PRESCHOOL_CLUB,
 }
 
 @RestController
 @RequestMapping(
     "/fee-decisions", // deprecated
     "/decisions", // deprecated
-    "/employee/fee-decisions"
+    "/employee/fee-decisions",
 )
 class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping("/search")
     fun searchFeeDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchFeeDecisionRequest
+        @RequestBody body: SearchFeeDecisionRequest,
     ): PagedFeeDecisionSummaries {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -101,7 +101,7 @@ class FeeDecisionController(
                         tx,
                         user,
                         clock,
-                        Action.Global.SEARCH_FEE_DECISIONS
+                        Action.Global.SEARCH_FEE_DECISIONS,
                     )
                     tx.searchFeeDecisions(
                         clock,
@@ -119,7 +119,7 @@ class FeeDecisionController(
                         body.endDate,
                         body.searchByStartDate,
                         body.financeDecisionHandlerId,
-                        body.difference ?: emptySet()
+                        body.difference ?: emptySet(),
                     )
                 }
             }
@@ -132,7 +132,7 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
-        @RequestParam decisionHandlerId: EmployeeId?
+        @RequestParam decisionHandlerId: EmployeeId?,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -141,7 +141,7 @@ class FeeDecisionController(
                     user,
                     clock,
                     Action.FeeDecision.UPDATE,
-                    feeDecisionIds
+                    feeDecisionIds,
                 )
                 val confirmedDecisions =
                     service.confirmDrafts(
@@ -150,12 +150,12 @@ class FeeDecisionController(
                         feeDecisionIds,
                         clock.now(),
                         decisionHandlerId,
-                        featureConfig.alwaysUseDaycareFinanceDecisionHandler
+                        featureConfig.alwaysUseDaycareFinanceDecisionHandler,
                     )
                 asyncJobRunner.plan(
                     tx,
                     confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -167,7 +167,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>
+        @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -176,7 +176,7 @@ class FeeDecisionController(
                     user,
                     clock,
                     Action.FeeDecision.IGNORE,
-                    feeDecisionIds
+                    feeDecisionIds,
                 )
                 service.ignoreDrafts(tx, feeDecisionIds, clock.today())
             }
@@ -189,7 +189,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>
+        @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -198,7 +198,7 @@ class FeeDecisionController(
                     user,
                     clock,
                     Action.FeeDecision.UNIGNORE,
-                    feeDecisionIds
+                    feeDecisionIds,
                 )
                 val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds)
                 asyncJobRunner.plan(
@@ -206,10 +206,10 @@ class FeeDecisionController(
                     headsOfFamilies.map { personId ->
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             personId,
-                            DateRange(clock.today().minusMonths(15), null)
+                            DateRange(clock.today().minusMonths(15), null),
                         )
                     },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -221,7 +221,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody feeDecisionIds: List<FeeDecisionId>
+        @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -230,7 +230,7 @@ class FeeDecisionController(
                     user,
                     clock,
                     Action.FeeDecision.UPDATE,
-                    feeDecisionIds
+                    feeDecisionIds,
                 )
                 service.setSent(it, clock, feeDecisionIds)
                 // emails should be sent only after decisions are actually visible to citizens in
@@ -238,7 +238,7 @@ class FeeDecisionController(
                 asyncJobRunner.plan(
                     it,
                     feeDecisionIds.map { id -> AsyncJob.SendNewFeeDecisionEmail(decisionId = id) },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -250,7 +250,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable decisionId: FeeDecisionId
+        @PathVariable decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -259,7 +259,7 @@ class FeeDecisionController(
                         user,
                         clock,
                         Action.FeeDecision.READ,
-                        decisionId
+                        decisionId,
                     )
 
                     val decision =
@@ -292,7 +292,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: FeeDecisionId
+        @PathVariable id: FeeDecisionId,
     ): FeeDecisionDetailed {
         return db.connect { dbc ->
             dbc.read {
@@ -310,7 +310,7 @@ class FeeDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PersonId
+        @PathVariable id: PersonId,
     ): List<FeeDecision> {
         return db.connect { dbc ->
                 dbc.read {
@@ -319,7 +319,7 @@ class FeeDecisionController(
                         user,
                         clock,
                         Action.Person.READ_FEE_DECISIONS,
-                        id
+                        id,
                     )
                     it.findFeeDecisionsForHeadOfFamily(id, null, null)
                 }
@@ -327,7 +327,7 @@ class FeeDecisionController(
             .also {
                 Audit.FeeDecisionHeadOfFamilyRead.log(
                     targetId = AuditId(id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -338,7 +338,7 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-        @RequestBody body: CreateRetroactiveFeeDecisionsBody
+        @RequestBody body: CreateRetroactiveFeeDecisionsBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -347,7 +347,7 @@ class FeeDecisionController(
                     user,
                     clock,
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
-                    id
+                    id,
                 )
                 generator.createRetroactiveFeeDecisions(it, id, body.from)
             }
@@ -361,7 +361,7 @@ class FeeDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId,
-        @RequestBody request: FeeDecisionTypeRequest
+        @RequestBody request: FeeDecisionTypeRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -389,7 +389,7 @@ data class SearchFeeDecisionRequest(
     val endDate: LocalDate? = null,
     val searchByStartDate: Boolean = false,
     val financeDecisionHandlerId: EmployeeId? = null,
-    val difference: Set<FeeDecisionDifference>? = null
+    val difference: Set<FeeDecisionDifference>? = null,
 )
 
 data class FeeDecisionTypeRequest(val type: FeeDecisionType)

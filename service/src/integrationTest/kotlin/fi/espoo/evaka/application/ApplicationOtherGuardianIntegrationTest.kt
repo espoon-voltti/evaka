@@ -104,7 +104,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         moveToWaitingPlacement(clock)
         createPlacementPlan(
             clock,
-            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
         )
         sendDecisionsWithoutProposal(clock)
         asyncJobRunner.runPendingJobsSync(clock, maxCount = 1) // create, but don't send yet
@@ -200,7 +200,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 db.transaction {
                     it.updateFosterParentRelationshipValidity(
                         fosterParentRelationship,
-                        DateRange(clock.today(), clock.today())
+                        DateRange(clock.today(), clock.today()),
                     )
                 }
                 clock.tick(Duration.ofDays(1))
@@ -226,7 +226,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                         child = child.toDaycareFormChild(),
                         apply = Apply(preferredUnits = listOf(daycare.id)),
                         preferredStartDate = preferredStartDate,
-                    )
+                    ),
             )
         }
 
@@ -236,7 +236,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 DevFosterParent(
                     childId = child.id,
                     parentId = fosterParent.id,
-                    validDuring = DateRange(clock.today(), null)
+                    validDuring = DateRange(clock.today(), null),
                 )
             )
         }
@@ -250,7 +250,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 tx,
                 guardian.user(CitizenAuthLevel.STRONG),
                 clock,
-                application
+                application,
             )
         }
 
@@ -260,7 +260,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker.user,
                 clock,
-                application
+                application,
             )
         }
 
@@ -271,7 +271,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 serviceWorker.user,
                 clock,
                 application,
-                DaycarePlacementPlan(daycare.id, period)
+                DaycarePlacementPlan(daycare.id, period),
             )
         }
 
@@ -281,7 +281,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker.user,
                 clock,
-                application
+                application,
             )
         }
     }
@@ -296,7 +296,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     clock,
                     application,
                     decision.id,
-                    requestedStartDate = decision.startDate
+                    requestedStartDate = decision.startDate,
                 )
             }
         }
@@ -319,7 +319,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
     // The given callback is called after every transition
     private fun executeTestApplicationProcess(
         clock: EvakaClock,
-        callback: (ApplicationStatus) -> Unit
+        callback: (ApplicationStatus) -> Unit,
     ) {
         val preferredStartDate = LocalDate.of(2024, 2, 1)
         insertTestApplication(preferredStartDate)
@@ -332,7 +332,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         checkpoint()
         createPlacementPlan(
             clock,
-            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
         )
         checkpoint()
         sendDecisionsWithoutProposal(clock)

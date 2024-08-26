@@ -54,7 +54,7 @@ class AssistanceNeedPreschoolDecisionService(
     private val messageProvider: IMessageProvider,
     bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     private val bucket = bucketEnv.data
 
@@ -67,7 +67,7 @@ class AssistanceNeedPreschoolDecisionService(
     fun runCreateAssistanceNeedPreschoolDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf
+        msg: AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf,
     ) {
         val decisionId = msg.decisionId
         db.transaction { tx ->
@@ -90,8 +90,8 @@ class AssistanceNeedPreschoolDecisionService(
                         Document(
                             "${assistanceNeedDecisionsBucketPrefix}assistance_need_preschool_decision_$decisionId.pdf",
                             pdf,
-                            "application/pdf"
-                        )
+                            "application/pdf",
+                        ),
                     )
                     .key
 
@@ -101,9 +101,9 @@ class AssistanceNeedPreschoolDecisionService(
                 tx,
                 listOf(
                     AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(decisionId),
-                    AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId)
+                    AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId),
                 ),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
 
             tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(msg.decisionId)?.also {
@@ -111,7 +111,7 @@ class AssistanceNeedPreschoolDecisionService(
                     processId = it.id,
                     state = ArchivedProcessState.COMPLETED,
                     now = clock.now(),
-                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             }
 
@@ -124,7 +124,7 @@ class AssistanceNeedPreschoolDecisionService(
     fun runSendAssistanceNeedPreschoolDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail
+        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail,
     ) {
         val decisionId = msg.decisionId
         val today = clock.today()
@@ -163,7 +163,7 @@ class AssistanceNeedPreschoolDecisionService(
     fun runSendSfiDecision(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage
+        msg: AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage,
     ) {
         val decisionId = msg.decisionId
         db.transaction { tx ->
@@ -215,11 +215,11 @@ class AssistanceNeedPreschoolDecisionService(
                                     postOffice = sendAddress.postOffice,
                                     ssn = guardian.identity.ssn,
                                     messageHeader = messageHeader,
-                                    messageContent = messageContent
+                                    messageContent = messageContent,
                                 )
                             )
                         ),
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                 }
 
@@ -231,7 +231,7 @@ class AssistanceNeedPreschoolDecisionService(
 
     fun getDecisionPdfResponse(
         dbc: Database.Connection,
-        decisionId: AssistanceNeedPreschoolDecisionId
+        decisionId: AssistanceNeedPreschoolDecisionId,
     ): ResponseEntity<Any> {
         val documentKey =
             dbc.read { it.getAssistanceNeedPreschoolDecisionDocumentKey(decisionId) }
@@ -242,7 +242,7 @@ class AssistanceNeedPreschoolDecisionService(
     fun generatePdf(
         sentDate: LocalDate,
         decision: AssistanceNeedPreschoolDecision,
-        validTo: LocalDate?
+        validTo: LocalDate?,
     ): ByteArray {
         return pdfGenerator.render(
             Page(
@@ -252,7 +252,7 @@ class AssistanceNeedPreschoolDecisionService(
                     setVariable("decision", decision)
                     setVariable("sentDate", sentDate)
                     setVariable("validTo", validTo)
-                }
+                },
             )
         )
     }

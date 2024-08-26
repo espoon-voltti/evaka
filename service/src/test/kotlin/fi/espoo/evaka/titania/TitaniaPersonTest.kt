@@ -19,7 +19,7 @@ class TitaniaPersonTest {
                 "ANKKA PROFESSORI TAAVI,PROFESSORI TAAVI,ANKKA",
                 "'ANKKA ','',ANKKA",
                 "' ANKKA',ANKKA,''",
-                "'','',''"
+                "'','',''",
             ]
     )
     fun firstNameAndLastName(name: String, expectedFirstName: String, expectedLastName: String) {
@@ -28,7 +28,7 @@ class TitaniaPersonTest {
                 employeeId = "123456",
                 name = name,
                 actualWorkingTimeEvents = TitaniaWorkingTimeEvents(event = emptyList()),
-                payrollItems = null
+                payrollItems = null,
             )
 
         assertThat(person)

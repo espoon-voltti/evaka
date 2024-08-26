@@ -24,7 +24,7 @@ data class ArchivedProcess(
     val number: Int,
     val organization: String,
     val archiveDurationMonths: Int,
-    @Json val history: List<ArchivedProcessHistoryRow>
+    @Json val history: List<ArchivedProcessHistoryRow>,
 ) {
     val processNumber: String
         get() = "$number/$processDefinitionNumber/$year"
@@ -34,7 +34,7 @@ data class ArchivedProcessHistoryRow(
     val rowIndex: Int,
     val state: ArchivedProcessState,
     val enteredAt: HelsinkiDateTime,
-    val enteredBy: EvakaUser
+    val enteredBy: EvakaUser,
 )
 
 enum class ArchivedProcessState : DatabaseEnum {
@@ -50,7 +50,7 @@ fun Database.Transaction.insertProcess(
     processDefinitionNumber: String,
     year: Int,
     organization: String,
-    archiveDurationMonths: Int
+    archiveDurationMonths: Int,
 ): ArchivedProcess =
     createQuery {
             sql(
@@ -153,7 +153,7 @@ fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumen
 
 fun deleteProcessByAssistanceNeedDecisionId(
     tx: Database.Transaction,
-    decisionId: AssistanceNeedDecisionId
+    decisionId: AssistanceNeedDecisionId,
 ) {
     tx.createQuery {
             sql("SELECT process_id FROM assistance_need_decision WHERE id = ${bind(decisionId)}")
@@ -164,7 +164,7 @@ fun deleteProcessByAssistanceNeedDecisionId(
 
 fun deleteProcessByAssistanceNeedPreschoolDecisionId(
     tx: Database.Transaction,
-    decisionId: AssistanceNeedPreschoolDecisionId
+    decisionId: AssistanceNeedPreschoolDecisionId,
 ) {
     tx.createQuery {
             sql(
@@ -179,7 +179,7 @@ fun Database.Transaction.insertProcessHistoryRow(
     processId: ArchivedProcessId,
     state: ArchivedProcessState,
     now: HelsinkiDateTime,
-    userId: EvakaUserId
+    userId: EvakaUserId,
 ) {
     execute {
         sql(
@@ -205,7 +205,7 @@ fun updateDocumentProcessHistory(
     documentId: ChildDocumentId,
     newStatus: DocumentStatus,
     now: HelsinkiDateTime,
-    userId: EvakaUserId
+    userId: EvakaUserId,
 ) {
     data class Document(val status: DocumentStatus, val processId: ArchivedProcessId?)
     val document =
@@ -227,7 +227,7 @@ fun updateDocumentProcessHistory(
                 processId = processId,
                 state = it,
                 now = now,
-                userId = userId
+                userId = userId,
             )
         }
     }

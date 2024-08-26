@@ -58,7 +58,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
             streetAddress = "Kamreerintie 2",
             postalCode = "02770",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private val fridgeHeadOfChildEmail = "fridge_hoc@example.com"
@@ -88,7 +88,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     childId = childId,
                     headOfChild = fridgeHeadOfChildId,
                     startDate = clock.today(),
-                    endDate = clock.today().plusYears(1)
+                    endDate = clock.today().plusYears(1),
                 )
             )
             val placementId =
@@ -97,7 +97,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                         childId = childId,
                         unitId = daycareId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insertServiceNeedOptions()
@@ -109,7 +109,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
@@ -123,7 +123,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
         assertEquals(
             IncomeNotificationType.NEW_CUSTOMER,
-            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType
+            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType,
         )
     }
 
@@ -146,7 +146,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     streetAddress = "Kamreerintie 2",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 )
 
             val otherChildId = tx.insert(otherChild, DevPersonType.CHILD)
@@ -157,7 +157,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     childId = otherChildId,
                     headOfChild = fridgeHeadOfChildId,
                     startDate = clock.today().minusYears(1),
-                    endDate = clock.today().plusYears(1)
+                    endDate = clock.today().plusYears(1),
                 )
             )
             val placementId =
@@ -166,7 +166,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                         childId = otherChildId,
                         unitId = daycareId,
                         startDate = otherPlacementStart,
-                        endDate = otherPlacementEnd
+                        endDate = otherPlacementEnd,
                     )
                 )
             tx.insertServiceNeed(
@@ -177,7 +177,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
         }
 
@@ -198,7 +198,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     personId = fridgeHeadOfChildId,
                     startDate = clock.today(),
                     endDate = clock.today(),
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
             tx.insert(
@@ -209,7 +209,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     personId = fridgePartnerId,
                     startDate = clock.today(),
                     endDate = clock.today(),
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
         }
@@ -219,7 +219,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         assertEquals(1, getIncomeNotifications(fridgePartnerId).size)
         assertEquals(
             IncomeNotificationType.NEW_CUSTOMER,
-            getIncomeNotifications(fridgePartnerId)[0].notificationType
+            getIncomeNotifications(fridgePartnerId)[0].notificationType,
         )
     }
 
@@ -236,7 +236,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     streetAddress = "Kamreerintie 2",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 )
             val partnersChildId = tx.insert(partnersChild, DevPersonType.CHILD)
             val fridgePartnerId =
@@ -253,7 +253,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     personId = fridgeHeadOfChildId,
                     startDate = clock.today(),
                     endDate = clock.today(),
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
             tx.insert(
@@ -264,7 +264,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     personId = fridgePartnerId,
                     startDate = clock.today(),
                     endDate = clock.today(),
-                    createdAt = clock.now()
+                    createdAt = clock.now(),
                 )
             )
 
@@ -273,7 +273,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     childId = partnersChildId,
                     headOfChild = fridgePartnerId,
                     startDate = clock.today().minusYears(1),
-                    endDate = clock.today().plusYears(1)
+                    endDate = clock.today().plusYears(1),
                 )
             )
             val placementId =
@@ -282,7 +282,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                         childId = partnersChildId,
                         unitId = daycareId,
                         startDate = partnerPlacementStart,
-                        endDate = partnerPlacementEnd
+                        endDate = partnerPlacementEnd,
                     )
                 )
             tx.insertServiceNeed(
@@ -293,7 +293,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
         }
 

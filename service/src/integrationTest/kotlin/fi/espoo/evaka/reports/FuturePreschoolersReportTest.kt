@@ -43,14 +43,14 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testDaycare.id,
-                    name = "Test group 1"
+                    name = "Test group 1",
                 )
             )
             tx.insert(
                 DevDaycareGroup(
                     id = GroupId(UUID.randomUUID()),
                     daycareId = testVoucherDaycare.id,
-                    name = "Test voucher group 1"
+                    name = "Test voucher group 1",
                 )
             )
         }
@@ -70,7 +70,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         streetAddress = "Testitie 1",
                         postalCode = "02770",
                         postOffice = "Espoo",
-                        restrictedDetailsEnabled = false
+                        restrictedDetailsEnabled = false,
                     ),
                     DevPerson(
                         id = ChildId(UUID.randomUUID()),
@@ -81,7 +81,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         streetAddress = "Testitie 2",
                         postalCode = "02770",
                         postOffice = "Espoo",
-                        restrictedDetailsEnabled = false
+                        restrictedDetailsEnabled = false,
                     ),
                     DevPerson(
                         id = ChildId(UUID.randomUUID()),
@@ -92,8 +92,8 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                         streetAddress = "Testitie 3",
                         postalCode = "02770",
                         postOffice = "Espoo",
-                        restrictedDetailsEnabled = false
-                    )
+                        restrictedDetailsEnabled = false,
+                    ),
                 )
             tx.insert(testAdult_1, DevPersonType.RAW_ROW)
             tx.insert(testAdult_2, DevPersonType.RAW_ROW)
@@ -103,7 +103,7 @@ class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevPlacement(
                         childId = it.id,
                         unitId = testDaycare.id,
-                        endDate = LocalDate.now()
+                        endDate = LocalDate.now(),
                     )
                 )
                 tx.insert(DevGuardian(guardianId = testAdult_1.id, childId = it.id))

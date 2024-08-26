@@ -30,12 +30,12 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         UserRole.ADMIN,
                         UserRole.SERVICE_WORKER,
                         UserRole.DIRECTOR,
-                        UserRole.REPORT_VIEWER
+                        UserRole.REPORT_VIEWER,
                     )
-                        as ScopedActionRule<in T>,
+                        as ScopedActionRule<in T>
                 ) +
                     sequenceOf(
-                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>,
+                        HasUnitRole(UserRole.UNIT_SUPERVISOR).inAnyUnit() as ScopedActionRule<in T>
                     )
             }
             Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT -> {
@@ -56,7 +56,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                                 UserRole.UNIT_SUPERVISOR,
                                 UserRole.SPECIAL_EDUCATION_TEACHER,
                                 UserRole.STAFF,
-                                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                                UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                             )
                             .inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )
@@ -71,7 +71,7 @@ class EspooActionRuleMapping : ActionRuleMapping {
                         HasUnitRole(
                                 UserRole.UNIT_SUPERVISOR,
                                 UserRole.SPECIAL_EDUCATION_TEACHER,
-                                UserRole.STAFF
+                                UserRole.STAFF,
                             )
                             .inPlacementUnitOfChild() as ScopedActionRule<in T>
                     )

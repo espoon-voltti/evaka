@@ -94,7 +94,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         childId = child3.id,
                         unitId = daycare1.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
                 tx.insertGuardian(adult3.id, child3.id)
@@ -117,7 +117,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             messageController.getReceiversForNewMessage(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor1.id, setOf()),
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(
             setOf(
@@ -138,13 +138,13 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                                     MessageReceiver.Child(
                                                         id = child1.id,
                                                         name =
-                                                            "${child1.lastName} ${child2.firstName}"
+                                                            "${child1.lastName} ${child2.firstName}",
                                                     )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
-                        )
+                        ),
                 ),
                 MessageReceiversResponse(
                     accountId = groupMessageAccount,
@@ -157,21 +157,21 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     listOf(
                                         MessageReceiver.Child(
                                             id = child1.id,
-                                            name = "${child1.lastName} ${child1.firstName}"
+                                            name = "${child1.lastName} ${child1.firstName}",
                                         )
-                                    )
+                                    ),
                             )
-                        )
-                )
+                        ),
+                ),
             ),
-            receivers1.toSet()
+            receivers1.toSet(),
         )
 
         val receivers2 =
             messageController.getReceiversForNewMessage(
                 dbInstance(),
                 AuthenticatedUser.Employee(supervisor2.id, setOf()),
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(
             setOf(
@@ -192,16 +192,16 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                                     MessageReceiver.Child(
                                                         id = child2.id,
                                                         name =
-                                                            "${child2.lastName} ${child2.firstName}"
+                                                            "${child2.lastName} ${child2.firstName}",
                                                     )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
-                        )
+                        ),
                 )
             ),
-            receivers2.toSet()
+            receivers2.toSet(),
         )
     }
 
@@ -215,13 +215,13 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             DevDaycare(
                 areaId = area1.id,
                 openingDate = today.minusYears(1),
-                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
             )
         val daycare2 =
             DevDaycare(
                 areaId = area1.id,
                 openingDate = today.minusYears(1),
-                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
             )
 
         val area2 = DevCareArea(name = "area2", shortName = "area2")
@@ -229,7 +229,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             DevDaycare(
                 areaId = area2.id,
                 openingDate = today.minusYears(1),
-                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
             )
         // Closed
         val daycare4 =
@@ -237,14 +237,14 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 areaId = area2.id,
                 openingDate = today.minusYears(1),
                 closingDate = today.minusDays(1),
-                enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
             )
         // Messaging disabled
         val daycare5 =
             DevDaycare(
                 areaId = area2.id,
                 openingDate = today.minusYears(1),
-                enabledPilotFeatures = setOf()
+                enabledPilotFeatures = setOf(),
             )
 
         val municipalAccountId =
@@ -267,7 +267,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 .getReceiversForNewMessage(
                     dbInstance(),
                     AuthenticatedUser.Employee(employee.id, setOf(UserRole.MESSAGING)),
-                    MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0)))
+                    MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))),
                 )
                 .single()
         assertEquals(municipalAccountId, response.accountId)
@@ -281,7 +281,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 units
                     .sortedBy { it.id }
                     .map { MessageReceiver.UnitInArea(id = it.id, name = it.name) },
-                areaReceiver.receivers.sortedBy { it.id }
+                areaReceiver.receivers.sortedBy { it.id },
             )
         }
     }
@@ -291,7 +291,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         childId: ChildId,
         guardianId: PersonId?,
         groupId: GroupId,
-        unitId: DaycareId
+        unitId: DaycareId,
     ) {
         if (guardianId != null) tx.insertGuardian(guardianId, childId)
         val daycarePlacementId =
@@ -300,7 +300,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = childId,
                     unitId = unitId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
         tx.insert(
@@ -308,7 +308,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 daycarePlacementId = daycarePlacementId,
                 daycareGroupId = groupId,
                 startDate = placementStart,
-                endDate = placementEnd
+                endDate = placementEnd,
             )
         )
     }

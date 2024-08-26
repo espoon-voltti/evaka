@@ -29,7 +29,7 @@ import org.junit.jupiter.api.assertThrows
 class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private data class TestJob(
         val data: UUID = UUID.randomUUID(),
-        override val user: AuthenticatedUser? = null
+        override val user: AuthenticatedUser? = null,
     ) : AsyncJobPayload
 
     private class LetsRollbackException : RuntimeException()
@@ -53,11 +53,11 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                     AsyncJobRunner.Pool(
                         AsyncJobPool.Id(TestJob::class, "default"),
                         AsyncJobPool.Config(),
-                        setOf(TestJob::class)
+                        setOf(TestJob::class),
                     )
                 ),
                 jdbi,
-                noopTracer
+                noopTracer,
             )
         asyncJobRunner.registerHandler { _, _, msg: TestJob -> currentCallback.get()(msg) }
     }
@@ -69,14 +69,14 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 asyncJobRunner.plan(
                     tx,
                     listOf(TestJob(UUID.randomUUID())),
-                    runAt = HelsinkiDateTime.now()
+                    runAt = HelsinkiDateTime.now(),
                 )
                 throw LetsRollbackException()
             }
         }
         assertEquals(
             0,
-            db.read { it.createQuery { sql("SELECT count(*) FROM async_job") }.exactlyOne<Int>() }
+            db.read { it.createQuery { sql("SELECT count(*) FROM async_job") }.exactlyOne<Int>() },
         )
     }
 
@@ -92,11 +92,11 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertNotNull(spanId)
                 assertEquals(
                     AuthenticatedUser.SystemInternalUser.rawId().toString(),
-                    MdcKey.USER_ID.get()
+                    MdcKey.USER_ID.get(),
                 )
                 assertEquals(
                     AuthenticatedUser.SystemInternalUser.rawIdHash.toString(),
-                    MdcKey.USER_ID_HASH.get()
+                    MdcKey.USER_ID_HASH.get(),
                 )
             }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }

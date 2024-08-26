@@ -67,7 +67,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/value-decisions", // deprecated
-    "/employee/value-decisions"
+    "/employee/value-decisions",
 )
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
@@ -75,14 +75,14 @@ class VoucherValueDecisionController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping("/search")
     fun searchVoucherValueDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchVoucherValueDecisionRequest
+        @RequestBody body: SearchVoucherValueDecisionRequest,
     ): PagedVoucherValueDecisionSummaries {
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -92,7 +92,7 @@ class VoucherValueDecisionController(
                         tx,
                         user,
                         clock,
-                        Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS
+                        Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS,
                     )
                     tx.searchValueDecisions(
                         clock,
@@ -110,7 +110,7 @@ class VoucherValueDecisionController(
                         body.searchByStartDate,
                         body.financeDecisionHandlerId,
                         body.difference ?: emptySet(),
-                        body.distinctions ?: emptyList()
+                        body.distinctions ?: emptyList(),
                     )
                 }
             }
@@ -122,7 +122,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: VoucherValueDecisionId
+        @PathVariable id: VoucherValueDecisionId,
     ): VoucherValueDecisionDetailed {
         return db.connect { dbc ->
             dbc.read {
@@ -131,7 +131,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.READ,
-                    id
+                    id,
                 )
                 it.getVoucherValueDecision(id)
             }
@@ -146,7 +146,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable headOfFamilyId: PersonId
+        @PathVariable headOfFamilyId: PersonId,
     ): List<VoucherValueDecisionSummary> {
         return db.connect { dbc ->
                 dbc.read {
@@ -155,7 +155,7 @@ class VoucherValueDecisionController(
                         user,
                         clock,
                         Action.Person.READ_VOUCHER_VALUE_DECISIONS,
-                        headOfFamilyId
+                        headOfFamilyId,
                     )
                     it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
                 }
@@ -171,7 +171,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>,
-        @RequestParam decisionHandlerId: EmployeeId?
+        @RequestParam decisionHandlerId: EmployeeId?,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -180,7 +180,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.UPDATE,
-                    decisionIds
+                    decisionIds,
                 )
                 sendVoucherValueDecisions(
                     tx = it,
@@ -190,7 +190,7 @@ class VoucherValueDecisionController(
                     now = clock.now(),
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
-                    featureConfig.alwaysUseDaycareFinanceDecisionHandler
+                    featureConfig.alwaysUseDaycareFinanceDecisionHandler,
                 )
             }
         }
@@ -202,7 +202,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody ids: List<VoucherValueDecisionId>
+        @RequestBody ids: List<VoucherValueDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -211,7 +211,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.UPDATE,
-                    ids
+                    ids,
                 )
                 val decisions = tx.getValueDecisionsByIds(ids)
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
@@ -221,7 +221,7 @@ class VoucherValueDecisionController(
                 asyncJobRunner.plan(
                     tx,
                     ids.map { AsyncJob.SendNewVoucherValueDecisionEmail(decisionId = it) },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -233,7 +233,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable decisionId: VoucherValueDecisionId
+        @PathVariable decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -242,7 +242,7 @@ class VoucherValueDecisionController(
                         user,
                         clock,
                         Action.VoucherValueDecision.READ,
-                        decisionId
+                        decisionId,
                     )
                     val decision =
                         tx.getVoucherValueDecision(decisionId)
@@ -252,7 +252,7 @@ class VoucherValueDecisionController(
                         listOfNotNull(
                             decision.headOfFamily.id,
                             decision.partner?.id,
-                            decision.child.id
+                            decision.child.id,
                         )
                     val restrictedDetails =
                         personIds.any { personId ->
@@ -277,7 +277,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>
+        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -286,7 +286,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.IGNORE,
-                    voucherValueDecisionIds
+                    voucherValueDecisionIds,
                 )
                 valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today())
             }
@@ -299,7 +299,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>
+        @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -308,7 +308,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.UNIGNORE,
-                    voucherValueDecisionIds
+                    voucherValueDecisionIds,
                 )
                 val headsOfFamilies =
                     valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds)
@@ -317,10 +317,10 @@ class VoucherValueDecisionController(
                     headsOfFamilies.map { personId ->
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             personId,
-                            DateRange(clock.today().minusMonths(15), null)
+                            DateRange(clock.today().minusMonths(15), null),
                         )
                     },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -333,7 +333,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId,
-        @RequestBody request: VoucherValueDecisionTypeRequest
+        @RequestBody request: VoucherValueDecisionTypeRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -342,7 +342,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.VoucherValueDecision.UPDATE,
-                    id
+                    id,
                 )
                 valueDecisionService.setType(it, id, request.type)
             }
@@ -356,7 +356,7 @@ class VoucherValueDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-        @RequestBody body: CreateRetroactiveFeeDecisionsBody
+        @RequestBody body: CreateRetroactiveFeeDecisionsBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -365,7 +365,7 @@ class VoucherValueDecisionController(
                     user,
                     clock,
                     Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
-                    id
+                    id,
                 )
                 generator.createRetroactiveValueDecisions(it, id, body.from)
             }
@@ -382,7 +382,7 @@ fun sendVoucherValueDecisions(
     now: HelsinkiDateTime,
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
-    alwaysUseDaycareFinanceDecisionHandler: Boolean
+    alwaysUseDaycareFinanceDecisionHandler: Boolean,
 ) {
     tx.lockValueDecisions(ids)
     val decisions = tx.getValueDecisionsByIds(ids)
@@ -398,7 +398,7 @@ fun sendVoucherValueDecisions(
     if (decisions.any { it.validFrom > lastPossibleDecisionValidFromDate }) {
         throw BadRequest(
             "Some of the voucher value decisions are not valid yet",
-            "voucherValueDecisions.confirmation.tooFarInFuture"
+            "voucherValueDecisions.confirmation.tooFarInFuture",
         )
     }
 
@@ -411,7 +411,7 @@ fun sendVoucherValueDecisions(
                 tx.findValueDecisionsForChild(
                     it.child.id,
                     DateRange(it.validFrom, it.validTo),
-                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT),
                 )
             }
             .distinctBy { it.id }
@@ -420,7 +420,7 @@ fun sendVoucherValueDecisions(
     if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) {
         throw Conflict(
             "Some children have overlapping value decisions waiting for manual sending",
-            "WAITING_FOR_MANUAL_SENDING"
+            "WAITING_FOR_MANUAL_SENDING",
         )
     }
 
@@ -442,12 +442,12 @@ fun sendVoucherValueDecisions(
         user.id,
         now,
         decisionHandlerId,
-        alwaysUseDaycareFinanceDecisionHandler
+        alwaysUseDaycareFinanceDecisionHandler,
     )
     asyncJobRunner.plan(
         tx,
         validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) },
-        runAt = now
+        runAt = now,
     )
 }
 
@@ -460,7 +460,7 @@ enum class VoucherValueDecisionSortParam {
     NUMBER,
     CREATED,
     SENT,
-    STATUS
+    STATUS,
 }
 
 @ConstList("voucherValueDecisionDistinctiveParams")
@@ -469,7 +469,7 @@ enum class VoucherValueDecisionDistinctiveParams {
     EXTERNAL_CHILD,
     RETROACTIVE,
     NO_STARTING_PLACEMENTS,
-    MAX_FEE_ACCEPTED
+    MAX_FEE_ACCEPTED,
 }
 
 data class SearchVoucherValueDecisionRequest(
@@ -486,7 +486,7 @@ data class SearchVoucherValueDecisionRequest(
     val difference: Set<VoucherValueDecisionDifference>?,
     val startDate: LocalDate?,
     val endDate: LocalDate?,
-    val searchByStartDate: Boolean = false
+    val searchByStartDate: Boolean = false,
 )
 
 data class VoucherValueDecisionTypeRequest(val type: VoucherValueDecisionType)

@@ -13,6 +13,6 @@ class CustomRuleSetProvider : RuleSetProviderV3(RuleSetId("evaka")) {
         setOf(
             RuleProvider { NoJUnit4Imports() },
             RuleProvider { NoPrint() },
-            RuleProvider { NoTripleEquals() }
+            RuleProvider { NoTripleEquals() },
         )
 }

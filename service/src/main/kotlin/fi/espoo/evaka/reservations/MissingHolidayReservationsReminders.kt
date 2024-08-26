@@ -29,7 +29,7 @@ class MissingHolidayReservationsReminders(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -64,7 +64,7 @@ class MissingHolidayReservationsReminders(
                 val personsToBeNotified =
                     tx.getChildGuardiansToNotify(
                             clock.today(),
-                            childrenWithMaybeMissingHolidayReservations.toList()
+                            childrenWithMaybeMissingHolidayReservations.toList(),
                         )
                         .toSet()
 
@@ -78,10 +78,10 @@ class MissingHolidayReservationsReminders(
                         personsToBeNotified.map {
                             AsyncJob.SendMissingHolidayReservationsReminder(
                                 it,
-                                holidayPeriod.period
+                                holidayPeriod.period,
                             )
                         },
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
                 personsToBeNotified.size
             } ?: 0
@@ -89,7 +89,7 @@ class MissingHolidayReservationsReminders(
 
     fun Database.Read.getChildrenWithWithMissingReservations(
         theDate: LocalDate,
-        personId: PersonId? = null
+        personId: PersonId? = null,
     ): List<PersonId> =
         createQuery {
                 sql(
@@ -128,7 +128,7 @@ WHERE
 
     fun Database.Read.getChildGuardiansToNotify(
         today: LocalDate,
-        childIds: List<PersonId>
+        childIds: List<PersonId>,
     ): List<PersonId> =
         createQuery {
                 sql(
@@ -149,7 +149,7 @@ WHERE p.id = ANY(${bind(childIds)})
     fun sendMissingHolidayReminders(
         db: Database.Connection,
         msg: AsyncJob.SendMissingHolidayReservationsReminder,
-        clock: EvakaClock
+        clock: EvakaClock,
     ) {
         val receiver = db.read { tx -> tx.getPersonById(msg.guardian) }
 

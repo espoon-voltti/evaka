@@ -149,7 +149,7 @@ data class FeatureConfig(
      * Whether July is free of charge if daycare started latest on last year's September (normally
      * August)
      */
-    val freeJulyStartOnSeptember: Boolean = false
+    val freeJulyStartOnSeptember: Boolean = false,
 )
 
 enum class ArchiveProcessType {
@@ -171,5 +171,5 @@ enum class ArchiveProcessType {
 
 data class ArchiveProcessConfig(
     val processDefinitionNumber: String,
-    val archiveDurationMonths: Int
+    val archiveDurationMonths: Int,
 )

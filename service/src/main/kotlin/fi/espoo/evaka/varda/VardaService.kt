@@ -42,7 +42,7 @@ class VardaService(
     private val mapper: JsonMapper,
     private val vardaEnv: VardaEnv,
     private val evakaEnv: EvakaEnv,
-    private val ophEnv: OphEnv
+    private val ophEnv: OphEnv,
 ) {
     private val feeDecisionMinDate = evakaEnv.feeDecisionMinDate
     private val ophMunicipalityCode = ophEnv.municipalityCode
@@ -66,7 +66,7 @@ class VardaService(
             client,
             lahdejarjestelma = client.sourceSystem,
             kuntakoodi = ophMunicipalityCode,
-            vakajarjestajaUrl = ophMunicipalOrganizerIdUrl
+            vakajarjestajaUrl = ophMunicipalOrganizerIdUrl,
         )
 
         planVardaUpdate(db, clock)
@@ -91,7 +91,7 @@ class VardaService(
                 allChildrenToUpdate.map { AsyncJob.ResetVardaChild(it) },
                 runAt = clock.now(),
                 retryCount = 2,
-                retryInterval = Duration.ofMinutes(10)
+                retryInterval = Duration.ofMinutes(10),
             )
         }
     }
@@ -99,7 +99,7 @@ class VardaService(
     fun resetVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.ResetVardaChild
+        msg: AsyncJob.ResetVardaChild,
     ) {
         logger.info("VardaService: starting to reset child ${msg.childId}")
         resetVardaChild(db, clock, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
@@ -108,7 +108,7 @@ class VardaService(
     fun deleteVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.DeleteVardaChild
+        msg: AsyncJob.DeleteVardaChild,
     ) {
         logger.info("VardaService: starting to delete child ${msg.vardaChildId}")
         deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
@@ -118,7 +118,7 @@ class VardaService(
 fun getChildrenToUpdate(
     db: Database.Connection,
     clock: EvakaClock,
-    feeDecisionMinDate: LocalDate
+    feeDecisionMinDate: LocalDate,
 ): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
     val includedChildIds = db.read { it.getSuccessfullyVardaResetEvakaChildIds() }
     val serviceNeedDiffsByChild =
@@ -134,7 +134,7 @@ fun resetVardaChild(
     client: VardaClient,
     childId: ChildId,
     feeDecisionMinDate: LocalDate,
-    municipalOrganizerOid: String
+    municipalOrganizerOid: String,
 ) {
     if (deleteChildDataFromVardaAndDb(db, client, childId)) {
         try {
@@ -154,7 +154,7 @@ fun resetVardaChild(
                     evakaServiceNeed,
                     newVardaServiceNeed,
                     feeDecisionMinDate,
-                    municipalOrganizerOid
+                    municipalOrganizerOid,
                 )
             }
             db.transaction { it.setVardaResetChildResetTimestamp(childId, Instant.now()) }
@@ -170,7 +170,7 @@ fun resetVardaChild(
 fun deleteChildDataFromVardaAndDb(
     db: Database.Connection,
     vardaClient: VardaClient,
-    evakaChildId: ChildId
+    evakaChildId: ChildId,
 ): Boolean {
     val vardaChildIds = getVardaChildIdsByEvakaChildId(db, evakaChildId)
 
@@ -186,7 +186,7 @@ fun deleteChildDataFromVardaAndDb(
             } catch (e: Exception) {
                 logger.warn(
                     "VardaService: failed to delete varda data for child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}",
-                    e
+                    e,
                 )
                 false
             }
@@ -198,7 +198,7 @@ fun deleteChildDataFromVardaAndDb(
 fun deleteChildDataFromVardaAndDbByVardaId(
     db: Database.Connection,
     vardaClient: VardaClient,
-    vardaChildId: Long
+    vardaChildId: Long,
 ) {
     logger.info("VardaService: deleting all child data from varda (child id: $vardaChildId)")
     try {
@@ -218,7 +218,7 @@ fun deleteChildDataFromVardaAndDbByVardaId(
 
 private fun getVardaChildIdsByEvakaChildId(
     db: Database.Connection,
-    evakaChildId: ChildId
+    evakaChildId: ChildId,
 ): List<Long> {
     return db.read {
         it.createQuery {
@@ -241,7 +241,7 @@ private fun addServiceNeedDataToVarda(
     evakaServiceNeed: EvakaServiceNeedInfoForVarda,
     vardaServiceNeed: VardaServiceNeed,
     feeDecisionMinDate: LocalDate,
-    municipalOrganizerOid: String
+    municipalOrganizerOid: String,
 ) {
     try {
         logger.info("VardaUpdate: adding service need ${evakaServiceNeed.id}")
@@ -250,7 +250,7 @@ private fun addServiceNeedDataToVarda(
                 it.getServiceNeedFeeData(
                     evakaServiceNeed.id,
                     FeeDecisionStatus.SENT,
-                    VoucherValueDecisionStatus.SENT
+                    VoucherValueDecisionStatus.SENT,
                 )
             }
 
@@ -292,7 +292,7 @@ private fun addServiceNeedDataToVarda(
                     evakaServiceNeed.childId,
                     evakaServiceNeed.ophOrganizerOid,
                     vardaClient.sourceSystem,
-                    municipalOrganizerOid
+                    municipalOrganizerOid,
                 )
             vardaServiceNeed.vardaChildId = vardaChildId
 
@@ -310,7 +310,7 @@ private fun addServiceNeedDataToVarda(
                         db,
                         vardaServiceNeed,
                         evakaServiceNeed,
-                        serviceNeedFeeData.first()
+                        serviceNeedFeeData.first(),
                     )
             db.transaction { it.upsertVardaServiceNeed(vardaServiceNeed) }
             logger.info(
@@ -339,13 +339,13 @@ private fun addServiceNeedDataToVarda(
 private fun sendDecisionToVarda(
     client: VardaClient,
     vardaChildId: Long,
-    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda
+    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
 ): Long {
     val res =
         client.createDecision(
             evakaServiceNeedInfoForVarda.toVardaDecisionForChild(
                 client.getChildUrl(vardaChildId),
-                client.sourceSystem
+                client.sourceSystem,
             )
         )
     return res.vardaDecisionId
@@ -354,13 +354,13 @@ private fun sendDecisionToVarda(
 private fun sendPlacementToVarda(
     client: VardaClient,
     vardaDecisionId: Long,
-    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda
+    evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
 ): Long {
     val res =
         client.createPlacement(
             evakaServiceNeedInfoForVarda.toVardaPlacement(
                 client.getDecisionUrl(vardaDecisionId),
-                client.sourceSystem
+                client.sourceSystem,
             )
         )
     return res.vardaPlacementId
@@ -374,7 +374,7 @@ private fun guardiansLiveInSameAddress(guardians: List<VardaGuardianWithId>): Bo
 
 private fun guardiansResponsibleForFeeData(
     decisionHeadOfFamilyId: PersonId,
-    allGuardians: List<VardaGuardianWithId>
+    allGuardians: List<VardaGuardianWithId>,
 ): List<VardaGuardianWithId> {
     return if (guardiansLiveInSameAddress(allGuardians)) allGuardians
     else allGuardians.filter { guardian -> guardian.id == decisionHeadOfFamilyId }
@@ -385,7 +385,7 @@ private fun sendFeeDataToVarda(
     db: Database.Connection,
     newVardaServiceNeed: VardaServiceNeed,
     evakaServiceNeed: EvakaServiceNeedInfoForVarda,
-    feeDataByServiceNeed: FeeDataByServiceNeed
+    feeDataByServiceNeed: FeeDataByServiceNeed,
 ): List<Long> {
     val guardians = getChildVardaGuardians(db, evakaServiceNeed.childId)
 
@@ -416,7 +416,7 @@ private fun sendFeeDataToVarda(
                         vardaChildId = newVardaServiceNeed.vardaChildId!!,
                         evakaServiceNeedInfoForVarda = evakaServiceNeed,
                         guardians =
-                            guardiansResponsibleForFeeData(decision.headOfFamilyId, guardians)
+                            guardiansResponsibleForFeeData(decision.headOfFamilyId, guardians),
                     )
                 }
             } catch (e: Exception) {
@@ -444,7 +444,7 @@ private fun sendFeeDataToVarda(
                         vardaChildId = newVardaServiceNeed.vardaChildId!!,
                         evakaServiceNeedInfoForVarda = evakaServiceNeed,
                         guardians =
-                            guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
+                            guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians),
                     )
                 }
             } catch (e: Exception) {
@@ -459,7 +459,7 @@ private fun sendFeeDataToVarda(
 
 private fun getChildVardaGuardians(
     db: Database.Connection,
-    childId: ChildId
+    childId: ChildId,
 ): List<VardaGuardianWithId> {
     return db.read {
         it.createQuery {
@@ -486,7 +486,7 @@ private fun sendFeeDecisionToVarda(
     decision: FeeDecision,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    guardians: List<VardaGuardianWithId>
+    guardians: List<VardaGuardianWithId>,
 ): Long {
     val childPart =
         decision.children.find { part -> part.child.id == evakaServiceNeedInfoForVarda.childId }
@@ -506,10 +506,10 @@ private fun sendFeeDecisionToVarda(
             alkamis_pvm =
                 calculateVardaFeeDataStartDate(
                     decision.validFrom,
-                    evakaServiceNeedInfoForVarda.asPeriod
+                    evakaServiceNeedInfoForVarda.asPeriod,
                 ),
             paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
-            lahdejarjestelma = client.sourceSystem
+            lahdejarjestelma = client.sourceSystem,
         )
 
     return client.createFeeData(requestPayload).id
@@ -520,7 +520,7 @@ private fun sendVoucherDecisionToVarda(
     decision: VoucherValueDecisionDetailed,
     vardaChildId: Long,
     evakaServiceNeedInfoForVarda: EvakaServiceNeedInfoForVarda,
-    guardians: List<VardaGuardianWithId>
+    guardians: List<VardaGuardianWithId>,
 ): Long {
     val requestPayload =
         VardaFeeData(
@@ -533,10 +533,10 @@ private fun sendVoucherDecisionToVarda(
             alkamis_pvm =
                 calculateVardaFeeDataStartDate(
                     decision.validFrom,
-                    evakaServiceNeedInfoForVarda.asPeriod
+                    evakaServiceNeedInfoForVarda.asPeriod,
                 ),
             paattymis_pvm = minEndDate(evakaServiceNeedInfoForVarda.endDate, decision.validTo),
-            lahdejarjestelma = client.sourceSystem
+            lahdejarjestelma = client.sourceSystem,
         )
 
     return client.createFeeData(requestPayload).id
@@ -555,7 +555,7 @@ private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
 
 private fun calculateVardaFeeDataStartDate(
     fdStartDate: LocalDate,
-    serviceNeedDates: DateRange
+    serviceNeedDates: DateRange,
 ): LocalDate {
     return if (serviceNeedDates.includes(fdStartDate)) fdStartDate else serviceNeedDates.start
 }
@@ -563,7 +563,7 @@ private fun calculateVardaFeeDataStartDate(
 fun calculateEvakaVsVardaServiceNeedChangesByChild(
     db: Database.Connection,
     clock: EvakaClock,
-    feeDecisionMinDate: LocalDate
+    feeDecisionMinDate: LocalDate,
 ): Map<ChildId, VardaChildCalculatedServiceNeedChanges> {
     val evakaServiceNeedDeletionsByChild = db.read { it.calculateDeletedChildServiceNeeds(clock) }
 
@@ -582,18 +582,18 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(
                     additions =
                         calculateNewChildServiceNeeds(
                             evakaServiceNeedChangesForChild.value,
-                            vardaServiceNeedsForChild
+                            vardaServiceNeedsForChild,
                         ),
                     updates =
                         calculateUpdatedChildServiceNeeds(
                             evakaServiceNeedChangesForChild.value,
-                            vardaServiceNeedsForChild
+                            vardaServiceNeedsForChild,
                         ),
                     deletes =
                         evakaServiceNeedDeletionsByChild.getOrDefault(
                             evakaServiceNeedChangesForChild.key,
-                            emptyList()
-                        )
+                            emptyList(),
+                        ),
                 )
         }
 
@@ -608,7 +608,7 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(
                         childId = childServiceNeedDeletions.key,
                         additions = emptyList(),
                         updates = emptyList(),
-                        deletes = childServiceNeedDeletions.value
+                        deletes = childServiceNeedDeletions.value,
                     )
             }
 
@@ -619,7 +619,7 @@ fun calculateEvakaVsVardaServiceNeedChangesByChild(
 // child's full varda history
 private fun calculateNewChildServiceNeeds(
     evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>,
-    vardaChildServiceNeeds: List<VardaServiceNeed>
+    vardaChildServiceNeeds: List<VardaServiceNeed>,
 ): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild
         .filter { newServiceNeedChange ->
@@ -635,7 +635,7 @@ private fun calculateNewChildServiceNeeds(
 // timestamp in history
 private fun calculateUpdatedChildServiceNeeds(
     evakaServiceNeedChangesForChild: List<ChangedChildServiceNeed>,
-    vardaServiceNeedsForChild: List<VardaServiceNeed>
+    vardaServiceNeedsForChild: List<VardaServiceNeed>,
 ): List<ServiceNeedId> {
     return evakaServiceNeedChangesForChild.mapNotNull { newServiceNeedChange ->
         vardaServiceNeedsForChild

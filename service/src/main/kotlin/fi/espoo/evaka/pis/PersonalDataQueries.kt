@@ -32,7 +32,7 @@ fun Database.Read.getEnabledEmailTypes(personId: PersonId): List<EmailMessageTyp
 
 fun Database.Transaction.updateEnabledEmailTypes(
     personId: PersonId,
-    emailTypes: List<EmailMessageType>
+    emailTypes: List<EmailMessageType>,
 ) {
     createUpdate {
             sql(

@@ -51,8 +51,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
                             snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -62,7 +62,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         assertTrue(report.isEmpty(), "Expected no meals for absent child")
@@ -89,8 +89,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -100,7 +100,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH, MealType.SNACK)
@@ -109,7 +109,7 @@ class MealReportTests {
         assertEquals(
             expectedMeals,
             actualMeals,
-            "Expected default meals (breakfast, lunch, snack) when there are no reservations"
+            "Expected default meals (breakfast, lunch, snack) when there are no reservations",
         )
     }
 
@@ -134,8 +134,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 )
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
@@ -145,7 +145,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         val expectedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH_PRESCHOOL, MealType.SNACK)
@@ -154,7 +154,7 @@ class MealReportTests {
         assertEquals(
             expectedMeals,
             actualMeals,
-            "Expected default meals (breakfast, lunch, snack) when there are no reservations"
+            "Expected default meals (breakfast, lunch, snack) when there are no reservations",
         )
     }
 
@@ -179,8 +179,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
                             snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 )
             )
         val preschoolTerms =
@@ -204,7 +204,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         val expectedMealTypes = setOf(MealType.LUNCH_PRESCHOOL, MealType.SNACK)
@@ -213,7 +213,7 @@ class MealReportTests {
         assertEquals(
             expectedMealTypes,
             actualMealTypes,
-            "Expected lunch + snack meals for preschool type placements"
+            "Expected lunch + snack meals for preschool type placements",
         )
     }
 
@@ -240,8 +240,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 ),
                 MealReportChildInfo( // child with glutenFreeDiet
                     placementType = PlacementType.DAYCARE,
@@ -259,8 +259,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 ),
                 MealReportChildInfo( // child with lactoseFreeDiet
                     placementType = PlacementType.DAYCARE,
@@ -278,9 +278,9 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
-                )
+                            eveningSnack = null,
+                        ),
+                ),
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
 
@@ -289,7 +289,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         val expectedRowsForElla =
@@ -300,7 +300,7 @@ class MealReportTests {
                     1,
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
-                    "Brown Ella"
+                    "Brown Ella",
                 ),
                 MealReportRow(
                     MealType.LUNCH,
@@ -308,7 +308,7 @@ class MealReportTests {
                     1,
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
-                    "Brown Ella"
+                    "Brown Ella",
                 ),
                 MealReportRow(
                     MealType.SNACK,
@@ -316,15 +316,15 @@ class MealReportTests {
                     1,
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
-                    "Brown Ella"
-                )
+                    "Brown Ella",
+                ),
             )
         val rowsForElla = report.filter { it.additionalInfo.equals("Brown Ella") }.toSet()
 
         assertEquals(
             expectedRowsForElla,
             rowsForElla,
-            "Expected individual meal rows for each meal type with special diet details"
+            "Expected individual meal rows for each meal type with special diet details",
         )
 
         val expectedRowsForMike =
@@ -335,15 +335,15 @@ class MealReportTests {
                     1,
                     glutenFreeDiet.id,
                     glutenFreeDiet.abbreviation,
-                    "Brown Mike"
-                ),
+                    "Brown Mike",
+                )
             )
         val rowsForMike = report.filter { it.additionalInfo.equals("Brown Mike") }.toSet()
 
         assertEquals(
             expectedRowsForMike,
             rowsForMike,
-            "Expected individual meal rows for each meal type with special diet details"
+            "Expected individual meal rows for each meal type with special diet details",
         )
 
         val expectedRowsForMikko =
@@ -354,15 +354,15 @@ class MealReportTests {
                     1,
                     lactoseFreeDiet.id,
                     lactoseFreeDiet.abbreviation,
-                    "Mallikas Mikko"
-                ),
+                    "Mallikas Mikko",
+                )
             )
         val rowsForMikko = report.filter { it.additionalInfo.equals("Mallikas Mikko") }.toSet()
 
         assertEquals(
             expectedRowsForMikko,
             rowsForMikko,
-            "Expected individual meal rows for each meal type with special diet details"
+            "Expected individual meal rows for each meal type with special diet details",
         )
     }
 
@@ -387,8 +387,8 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
+                            eveningSnack = null,
+                        ),
                 ),
                 MealReportChildInfo(
                     placementType = PlacementType.DAYCARE,
@@ -406,9 +406,9 @@ class MealReportTests {
                             lunch = TimeRange(LocalTime.of(12, 0), LocalTime.of(12, 20)),
                             snack = TimeRange(LocalTime.of(15, 30), LocalTime.of(15, 50)),
                             supper = null,
-                            eveningSnack = null
-                        )
-                )
+                            eveningSnack = null,
+                        ),
+                ),
             )
         val preschoolTerms = emptyList<PreschoolTerm>()
 
@@ -417,7 +417,7 @@ class MealReportTests {
                 children = childInfo,
                 date = testDate,
                 preschoolTerms = preschoolTerms,
-                DefaultMealTypeMapper
+                DefaultMealTypeMapper,
             )
 
         val expectedMealCounts =
@@ -428,7 +428,7 @@ class MealReportTests {
         assertEquals(
             expectedMealCounts,
             actualMealCounts,
-            "Expected summed meal counts for multiple children with no special diet"
+            "Expected summed meal counts for multiple children with no special diet",
         )
     }
 
@@ -453,12 +453,12 @@ class MealReportTests {
                                 id = childId1,
                                 serviceNeeds = emptyList(),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
                         attendances = mapOf(),
-                        operationalDays = emptySet()
+                        operationalDays = emptySet(),
                     ),
                 childId2 to
                     ChildData(
@@ -469,13 +469,13 @@ class MealReportTests {
                                 id = childId1,
                                 serviceNeeds = emptyList(),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
                         attendances = mapOf(),
-                        operationalDays = emptySet()
-                    )
+                        operationalDays = emptySet(),
+                    ),
             )
 
         val daycare =
@@ -490,7 +490,7 @@ class MealReportTests {
                         lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
                         snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
                         supper = null,
-                        eveningSnack = null
+                        eveningSnack = null,
                     )
                 override val dailyPreschoolTime = null
                 override val dailyPreparatoryTime = null
@@ -505,7 +505,7 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList()
+                preschoolTerms = emptyList(),
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
@@ -535,12 +535,12 @@ class MealReportTests {
                                 serviceNeeds =
                                     listOf(createServiceNeedInfo(childId1, ShiftCareType.NONE)),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
                         attendances = mapOf(),
-                        operationalDays = emptySet()
+                        operationalDays = emptySet(),
                     ),
                 childId2 to
                     ChildData(
@@ -551,13 +551,13 @@ class MealReportTests {
                                 id = childId1,
                                 serviceNeeds = emptyList(),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = mapOf(),
                         attendances = mapOf(),
-                        operationalDays = emptySet()
-                    )
+                        operationalDays = emptySet(),
+                    ),
             )
 
         val daycare =
@@ -572,7 +572,7 @@ class MealReportTests {
                         lunch = TimeRange(LocalTime.of(11, 0), LocalTime.of(11, 20)),
                         snack = TimeRange(LocalTime.of(14, 0), LocalTime.of(14, 20)),
                         supper = null,
-                        eveningSnack = null
+                        eveningSnack = null,
                     )
                 override val dailyPreschoolTime = null
                 override val dailyPreparatoryTime = null
@@ -587,14 +587,14 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList()
+                preschoolTerms = emptyList(),
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertTrue(
             report?.meals.isNullOrEmpty(),
-            "Expected no meals on a Sunday for children without shift care"
+            "Expected no meals on a Sunday for children without shift care",
         )
     }
 
@@ -624,7 +624,7 @@ class MealReportTests {
                                 serviceNeeds =
                                     listOf(createServiceNeedInfo(childId1, ShiftCareType.FULL)),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations =
                             mapOf(
@@ -632,13 +632,13 @@ class MealReportTests {
                                     listOf(
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 20)),
-                                            false
+                                            false,
                                         )
                                     )
                             ),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = setOf(testDate)
+                        operationalDays = setOf(testDate),
                     ),
                 childId2 to
                     ChildData(
@@ -652,7 +652,7 @@ class MealReportTests {
                                         createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
                                     ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations =
                             mapOf(
@@ -660,14 +660,14 @@ class MealReportTests {
                                     listOf(
                                         ReservationResponse.Times(
                                             TimeRange(LocalTime.of(10, 0), LocalTime.of(14, 20)),
-                                            false
+                                            false,
                                         )
                                     )
                             ),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = setOf(testDate)
-                    )
+                        operationalDays = setOf(testDate),
+                    ),
             )
 
         val daycare =
@@ -682,7 +682,7 @@ class MealReportTests {
                         lunch = lunchTime,
                         snack = snackTime,
                         supper = null,
-                        eveningSnack = null
+                        eveningSnack = null,
                     )
                 override val dailyPreschoolTime = null
                 override val dailyPreparatoryTime = null
@@ -697,18 +697,18 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList()
+                preschoolTerms = emptyList(),
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
         assertFalse(
             report?.meals.isNullOrEmpty(),
-            "Expected meals based on reservations for shift care children in a round-the-clock unit on weekends"
+            "Expected meals based on reservations for shift care children in a round-the-clock unit on weekends",
         )
         assertEquals(
             3,
             report?.meals?.size,
-            "Expected three meals orders based on the children's reservations"
+            "Expected three meals orders based on the children's reservations",
         )
     }
 
@@ -737,12 +737,12 @@ class MealReportTests {
                                 id = childId1,
                                 serviceNeeds = emptyList(),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = emptySet()
+                        operationalDays = emptySet(),
                     ),
                 childId2 to
                     ChildData(
@@ -753,13 +753,13 @@ class MealReportTests {
                                 id = childId2,
                                 serviceNeeds = emptyList(),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = emptySet()
-                    )
+                        operationalDays = emptySet(),
+                    ),
             )
 
         val daycare =
@@ -774,7 +774,7 @@ class MealReportTests {
                         lunch = lunchTime,
                         snack = snackTime,
                         supper = null,
-                        eveningSnack = null
+                        eveningSnack = null,
                     )
                 override val dailyPreschoolTime = null
                 override val dailyPreparatoryTime = null
@@ -789,14 +789,14 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList()
+                preschoolTerms = emptyList(),
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertTrue(
             report?.meals.isNullOrEmpty(),
-            "Expected no meals on a holiday for a normal unit"
+            "Expected no meals on a holiday for a normal unit",
         )
     }
 
@@ -826,12 +826,12 @@ class MealReportTests {
                                 serviceNeeds =
                                     listOf(createServiceNeedInfo(childId1, ShiftCareType.FULL)),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = setOf(testDate)
+                        operationalDays = setOf(testDate),
                     ),
                 childId2 to
                     ChildData(
@@ -845,13 +845,13 @@ class MealReportTests {
                                         createServiceNeedInfo(childId2, ShiftCareType.INTERMITTENT)
                                     ),
                                 dateOfBirth = LocalDate.of(2020, 1, 1),
-                                preferredName = ""
+                                preferredName = "",
                             ),
                         reservations = mapOf(),
                         absences = emptyMap(),
                         attendances = emptyMap(),
-                        operationalDays = setOf(testDate)
-                    )
+                        operationalDays = setOf(testDate),
+                    ),
             )
 
         val daycare =
@@ -866,7 +866,7 @@ class MealReportTests {
                         lunch = lunchTime,
                         snack = snackTime,
                         supper = null,
-                        eveningSnack = null
+                        eveningSnack = null,
                     )
                 override val dailyPreschoolTime = null
                 override val dailyPreparatoryTime = null
@@ -881,14 +881,14 @@ class MealReportTests {
                 childData = childData,
                 specialDiets = emptyMap(),
                 mealTextures = emptyMap(),
-                preschoolTerms = emptyList()
+                preschoolTerms = emptyList(),
             )
 
         val report = getMealReportForUnit(unitData, testDate, DefaultMealTypeMapper)
 
         assertFalse(
             report?.meals.isNullOrEmpty(),
-            "Expected default meals for shift care children in a round-the-clock unit on weekends"
+            "Expected default meals for shift care children in a round-the-clock unit on weekends",
         )
     }
 }
@@ -901,5 +901,5 @@ private fun createServiceNeedInfo(childId: ChildId, shiftCare: ShiftCareType) =
         optionName = "",
         validDuring = FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2050, 1, 1)),
         shiftCare = shiftCare,
-        partWeek = false
+        partWeek = false,
     )

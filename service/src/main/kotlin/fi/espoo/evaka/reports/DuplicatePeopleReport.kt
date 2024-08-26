@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/duplicate-people", // deprecated
-        "/employee/reports/duplicate-people"
+        "/employee/reports/duplicate-people",
     )
     fun getDuplicatePeopleReport(
         db: Database,
@@ -36,7 +36,7 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
                         it,
                         user,
                         clock,
-                        Action.Global.READ_DUPLICATE_PEOPLE_REPORT
+                        Action.Global.READ_DUPLICATE_PEOPLE_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getDuplicatePeople(showIntentionalDuplicates ?: false)
@@ -141,5 +141,5 @@ data class DuplicatePeopleReportRow(
     val socialSecurityNumber: String?,
     val dateOfBirth: LocalDate,
     val streetAddress: String?,
-    @Json val referenceCounts: List<ReferenceCount>
+    @Json val referenceCounts: List<ReferenceCount>,
 )

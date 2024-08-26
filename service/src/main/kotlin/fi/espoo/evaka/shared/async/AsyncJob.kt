@@ -70,7 +70,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val guardianId: PersonId,
         val language: Language,
         val type: ApplicationType = ApplicationType.DAYCARE,
-        val sentWithinPreschoolApplicationPeriod: Boolean? = null
+        val sentWithinPreschoolApplicationPeriod: Boolean? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -78,7 +78,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendPendingDecisionEmail(
         val guardianId: PersonId,
         val language: String?,
-        val decisionIds: List<DecisionId>
+        val decisionIds: List<DecisionId>,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -91,14 +91,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         val messageRecipientId: MessageRecipientId,
         val personId: PersonId,
         val language: Language,
-        val urgent: Boolean = false
+        val urgent: Boolean = false,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
     data class SendMessagePushNotification(
         val recipient: MessageRecipientId,
-        val device: MobileDeviceId
+        val device: MobileDeviceId,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -110,7 +110,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class NotifyDecisionCreated(
         val decisionId: DecisionId,
         override val user: AuthenticatedUser,
-        val sendAsMessage: Boolean
+        val sendAsMessage: Boolean,
     ) : AsyncJob
 
     data class SendDecision(val decisionId: DecisionId) : AsyncJob {
@@ -137,7 +137,7 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class InitializeFamilyFromApplication(
         val applicationId: ApplicationId,
-        override val user: AuthenticatedUser
+        override val user: AuthenticatedUser,
     ) : AsyncJob
 
     @JsonIgnoreProperties("requestingUser") // only present in old jobs
@@ -157,7 +157,7 @@ sealed interface AsyncJob : AsyncJobPayload {
             fun forAdult(
                 personId: PersonId,
                 dateRange: DateRange,
-                skipPropagation: Boolean? = false
+                skipPropagation: Boolean? = false,
             ) = GenerateFinanceDecisions(Person.Adult(personId, skipPropagation), dateRange)
 
             fun forChild(personId: ChildId, dateRange: DateRange) =
@@ -176,7 +176,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendPedagogicalDocumentNotificationEmail(
         val pedagogicalDocumentId: PedagogicalDocumentId,
         val recipientId: PersonId,
-        val language: Language
+        val language: Language,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -185,7 +185,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val vasuDocumentId: VasuDocumentId,
         val childId: ChildId,
         val recipientId: PersonId,
-        val language: Language
+        val language: Language,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -194,7 +194,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val documentId: ChildDocumentId,
         val childId: ChildId,
         val recipientId: PersonId,
-        val language: Language
+        val language: Language,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -255,7 +255,7 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class SendMissingHolidayReservationsReminder(
         val guardian: PersonId,
-        val holidayRange: FiniteDateRange
+        val holidayRange: FiniteDateRange,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -263,14 +263,14 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class UpdateMessageThreadRecipients(
         val threadId: MessageThreadId,
         val recipientIds: Set<MessageAccountId>,
-        val sentAt: HelsinkiDateTime
+        val sentAt: HelsinkiDateTime,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
     data class MarkMessagesAsSent(
         val messageContentId: MessageContentId,
-        val sentAt: HelsinkiDateTime
+        val sentAt: HelsinkiDateTime,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -307,7 +307,7 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class SendOutdatedIncomeNotificationEmail(
         val guardianId: PersonId,
-        val type: IncomeNotificationType
+        val type: IncomeNotificationType,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -322,7 +322,7 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class MigrateVasuDocument(
         val documentId: VasuDocumentId,
-        val processDefinitionNumber: String?
+        val processDefinitionNumber: String?,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -332,9 +332,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendNewFeeDecisionEmail(
-        val decisionId: FeeDecisionId,
-    ) : AsyncJob {
+    data class SendNewFeeDecisionEmail(val decisionId: FeeDecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -348,7 +346,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
-        val unitName: String
+        val unitName: String,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -359,7 +357,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
-        val unitName: String
+        val unitName: String,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -398,7 +396,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UpdateFromVtj::class,
                     UploadToKoski::class,
                     VTJRefresh::class,
-                )
+                ),
             )
         val email =
             AsyncJobRunner.Pool(
@@ -420,8 +418,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendNewFeeDecisionEmail::class,
                     SendNewVoucherValueDecisionEmail::class,
                     SendDiscussionSurveyReservationEmail::class,
-                    SendDiscussionSurveyReservationCancellationEmail::class
-                )
+                    SendDiscussionSurveyReservationCancellationEmail::class,
+                ),
             )
         val urgent =
             AsyncJobRunner.Pool(
@@ -431,13 +429,13 @@ sealed interface AsyncJob : AsyncJobPayload {
                     MarkMessagesAsSent::class,
                     SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
-                )
+                ),
             )
         val suomiFi =
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "suomiFi"),
                 AsyncJobPool.Config(concurrency = 1),
-                setOf(SendMessage::class)
+                setOf(SendMessage::class),
             )
         val varda =
             AsyncJobRunner.Pool(
@@ -450,13 +448,13 @@ sealed interface AsyncJob : AsyncJobPayload {
                     DeleteVardaChild::class,
                     ResetVardaChildOld::class,
                     DeleteVardaChildOld::class,
-                )
+                ),
             )
         val vasuMigration =
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "vasuMigration"),
                 AsyncJobPool.Config(concurrency = 1),
-                setOf(MigrateVasuDocument::class)
+                setOf(MigrateVasuDocument::class),
             )
     }
 }
@@ -465,14 +463,14 @@ data class JobParams<T : AsyncJobPayload>(
     val payload: T,
     val retryCount: Int,
     val retryInterval: Duration,
-    val runAt: HelsinkiDateTime
+    val runAt: HelsinkiDateTime,
 )
 
 data class ClaimedJobRef<T : AsyncJobPayload>(
     val jobId: UUID,
     val jobType: AsyncJobType<T>,
     val txId: Long,
-    val remainingAttempts: Int
+    val remainingAttempts: Int,
 )
 
 data class WorkPermit(val availableAt: HelsinkiDateTime)

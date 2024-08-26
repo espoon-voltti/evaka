@@ -31,7 +31,7 @@ data class BiArea(
     val id: UUID,
     val created: HelsinkiDateTime,
     val updated: HelsinkiDateTime,
-    val name: String
+    val name: String,
 )
 
 data class BiUnit(
@@ -118,7 +118,7 @@ data class BiGroupCaretakerAllocation(
     val group: UUID,
     val amount: BigDecimal,
     val startDate: LocalDate,
-    val endDate: LocalDate?
+    val endDate: LocalDate?,
 )
 
 data class BiApplication(
@@ -301,10 +301,7 @@ data class BiAssistanceAction(
     val endDate: LocalDate,
 )
 
-data class BiAssistanceActionOptionRef(
-    val action: UUID,
-    val option: String,
-)
+data class BiAssistanceActionOptionRef(val action: UUID, val option: String)
 
 data class BiAssistanceNeedDaycareDecision(
     val id: UUID,

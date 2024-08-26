@@ -22,13 +22,11 @@ WHERE ${predicate(where.forTable("h"))}
         }
         .mapTo<HolidayPeriod>()
 
-fun Database.Read.getHolidayPeriodsInRange(
-    range: FiniteDateRange,
-): List<HolidayPeriod> =
+fun Database.Read.getHolidayPeriodsInRange(range: FiniteDateRange): List<HolidayPeriod> =
     getHolidayPeriods(Predicate { where("$it.period && ${bind(range)}") }).toList()
 
 fun Database.Read.getHolidayPeriodsWithReservationDeadline(
-    reservationDeadline: LocalDate,
+    reservationDeadline: LocalDate
 ): List<HolidayPeriod> =
     getHolidayPeriods(
             Predicate { where("$it.reservation_deadline = ${bind(reservationDeadline)}") }
@@ -44,7 +42,7 @@ fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
 fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
     reservationsOpenOn: LocalDate,
-    reservationDeadline: LocalDate
+    reservationDeadline: LocalDate,
 ): HolidayPeriod =
     createQuery {
             sql(
@@ -61,7 +59,7 @@ fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,
     period: FiniteDateRange,
     reservationsOpenOn: LocalDate,
-    reservationDeadline: LocalDate
+    reservationDeadline: LocalDate,
 ) =
     createUpdate {
             sql(

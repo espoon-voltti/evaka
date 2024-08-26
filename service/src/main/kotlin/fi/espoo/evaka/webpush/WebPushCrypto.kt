@@ -42,10 +42,7 @@ data class WebPushKeyPair(val publicKey: ECPublicKey, val privateKey: ECPrivateK
 
     companion object {
         fun fromPrivateKey(privateKey: ECPrivateKey): WebPushKeyPair =
-            WebPushKeyPair(
-                WebPushCrypto.derivePublicKey(privateKey),
-                privateKey,
-            )
+            WebPushKeyPair(WebPushCrypto.derivePublicKey(privateKey), privateKey)
     }
 }
 
@@ -55,7 +52,7 @@ data class VapidJwt(
     val origin: String,
     val publicKey: ByteArray,
     val jwt: String,
-    val expiresAt: HelsinkiDateTime
+    val expiresAt: HelsinkiDateTime,
 ) {
 
     // 3. VAPID Authentication Scheme
@@ -90,7 +87,7 @@ data class VapidJwt(
                         .withExpiresAt(expiresAt.toInstant())
                         .withSubject("https://github.com/espoon-voltti/evaka")
                         .sign(Algorithm.ECDSA256(keyPair.privateKey)),
-                expiresAt = expiresAt
+                expiresAt = expiresAt,
             )
     }
 }
@@ -102,7 +99,7 @@ fun httpEncryptedContentEncoding(
     ikm: ByteArray,
     keyId: ByteArray,
     salt: ByteArray,
-    data: ByteArray
+    data: ByteArray,
 ): ByteArray {
     check(recordSize >= 18u)
     check(salt.size == 16)
@@ -114,25 +111,20 @@ fun httpEncryptedContentEncoding(
             (value shr 24).toByte(),
             (value shr 16).toByte(),
             (value shr 8).toByte(),
-            value.toByte()
+            value.toByte(),
         )
 
     // 2.1. Encryption Content-Encoding Header
     // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.1
     val header =
-        byteArrayOf(
-            *salt,
-            *toNetworkByteOrder(recordSize),
-            keyId.size.toUByte().toByte(),
-            *keyId,
-        )
+        byteArrayOf(*salt, *toNetworkByteOrder(recordSize), keyId.size.toUByte().toByte(), *keyId)
     // 2.2. Content-Encryption Key Derivation
     // Reference: https://datatracker.ietf.org/doc/html/rfc8188#section-2.2
     val prk = WebPushCrypto.hmacSha256(salt, ikm)
     val cek =
         WebPushCrypto.hmacSha256(
                 prk,
-                byteArrayOf(*"Content-Encoding: aes128gcm".toByteArray(), 0x00, 0x01)
+                byteArrayOf(*"Content-Encoding: aes128gcm".toByteArray(), 0x00, 0x01),
             )
             .sliceArray(0..15)
     // 2.3. Nonce Derivation
@@ -140,7 +132,7 @@ fun httpEncryptedContentEncoding(
     val nonce =
         WebPushCrypto.hmacSha256(
                 prk,
-                byteArrayOf(*"Content-Encoding: nonce".toByteArray(), 0x00, 0x01)
+                byteArrayOf(*"Content-Encoding: nonce".toByteArray(), 0x00, 0x01),
             )
             .sliceArray(0..11)
 
@@ -178,7 +170,7 @@ object WebPushCrypto {
         val keyPair = keyPairGenerator(secureRandom).generateKeyPair()
         return WebPushKeyPair(
             publicKey = keyPair.public as ECPublicKey,
-            privateKey = keyPair.private as ECPrivateKey
+            privateKey = keyPair.private as ECPrivateKey,
         )
     }
 
@@ -251,8 +243,8 @@ object WebPushCrypto {
                 0x00,
                 *encode(userAgentPublicKey),
                 *encode(applicationServerKeyPair.publicKey),
-                0x01
-            )
+                0x01,
+            ),
         )
     }
 
@@ -261,7 +253,7 @@ object WebPushCrypto {
             .generatePublic(
                 ECPublicKeySpec(
                     EC5Util.convertPoint(domainParams.validatePublicPoint(this)),
-                    parameterSpec
+                    parameterSpec,
                 )
             ) as ECPublicKey
 

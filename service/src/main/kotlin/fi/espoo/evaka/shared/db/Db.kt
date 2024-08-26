@@ -46,7 +46,7 @@ private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) =
  */
 private inline fun <reified T> Jdbi.register(
     columnMapper: ColumnMapper<T>,
-    crossinline isSupported: (Type) -> Boolean
+    crossinline isSupported: (Type) -> Boolean,
 ) {
     registerColumnMapper(
         ColumnMapperFactory { type, _ ->

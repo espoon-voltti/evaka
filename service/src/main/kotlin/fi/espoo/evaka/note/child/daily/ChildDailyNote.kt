@@ -19,7 +19,7 @@ data class ChildDailyNote(
     val sleepingMinutes: Int?,
     val reminders: List<ChildDailyNoteReminder> = emptyList(),
     val reminderNote: String,
-    val modifiedAt: HelsinkiDateTime
+    val modifiedAt: HelsinkiDateTime,
 )
 
 data class ChildDailyNoteBody(
@@ -28,7 +28,7 @@ data class ChildDailyNoteBody(
     val sleepingNote: ChildDailyNoteLevel?,
     val sleepingMinutes: Int?,
     val reminders: List<ChildDailyNoteReminder>,
-    val reminderNote: String
+    val reminderNote: String,
 )
 
 @ConstList("childDailyNoteLevelValues")

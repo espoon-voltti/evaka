@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 class UpdateFromVtjAsyncJobProcessor(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val personService: PersonService,
-    private val fridgeFamilyService: FridgeFamilyService
+    private val fridgeFamilyService: FridgeFamilyService,
 ) {
     init {
         asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.UpdateFromVtj ->
@@ -32,13 +32,13 @@ class UpdateFromVtjAsyncJobProcessor(
     fun updateFromVtj(
         db: Database.Connection,
         evakaClock: EvakaClock,
-        msg: AsyncJob.UpdateFromVtj
+        msg: AsyncJob.UpdateFromVtj,
     ) {
         db.transaction { tx ->
                 personService.getOrCreatePerson(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
-                    ExternalIdentifier.SSN.getInstance(msg.ssn)
+                    ExternalIdentifier.SSN.getInstance(msg.ssn),
                 )
             }
             ?.let {

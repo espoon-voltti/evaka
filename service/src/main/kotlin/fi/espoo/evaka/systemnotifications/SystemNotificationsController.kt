@@ -27,7 +27,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SystemNotification
+        @RequestBody body: SystemNotification,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -35,7 +35,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                     tx,
                     user,
                     clock,
-                    Action.Global.UPDATE_SYSTEM_NOTIFICATION
+                    Action.Global.UPDATE_SYSTEM_NOTIFICATION,
                 )
                 tx.execute {
                     sql(
@@ -57,7 +57,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable targetGroup: SystemNotificationTargetGroup
+        @PathVariable targetGroup: SystemNotificationTargetGroup,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -65,7 +65,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                     tx,
                     user,
                     clock,
-                    Action.Global.UPDATE_SYSTEM_NOTIFICATION
+                    Action.Global.UPDATE_SYSTEM_NOTIFICATION,
                 )
                 tx.execute {
                     sql(
@@ -84,7 +84,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     fun getAllSystemNotifications(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<SystemNotification> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -92,7 +92,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_SYSTEM_NOTIFICATIONS
+                        Action.Global.READ_SYSTEM_NOTIFICATIONS,
                     )
                     tx.createQuery { sql("SELECT * FROM system_notification") }
                         .toList<SystemNotification>()
@@ -106,7 +106,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     @GetMapping("/citizen/public/system-notifications/current")
     fun getCurrentSystemNotificationCitizen(
         db: Database,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): CurrentNotificationResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -129,7 +129,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
     fun getCurrentSystemNotificationEmployeeMobile(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): CurrentNotificationResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -152,7 +152,7 @@ class SystemNotificationsController(private val accessControl: AccessControl) {
 data class SystemNotification(
     val targetGroup: SystemNotificationTargetGroup,
     val text: String,
-    val validTo: HelsinkiDateTime
+    val validTo: HelsinkiDateTime,
 )
 
 enum class SystemNotificationTargetGroup : DatabaseEnum {

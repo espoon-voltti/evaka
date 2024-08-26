@@ -80,23 +80,23 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     it.copy(
                         sentAt = null,
                         createdAt = null,
-                        headOfFamily = it.headOfFamily.copy(email = null)
+                        headOfFamily = it.headOfFamily.copy(email = null),
                     )
                 }
                 .toSet(),
-            actual.map { it.copy(sentAt = null, createdAt = null) }.toSet()
+            actual.map { it.copy(sentAt = null, createdAt = null) }.toSet(),
         )
     }
 
     private fun assertDetailedEqualEnough(
         expected: List<InvoiceDetailed>,
-        actual: List<InvoiceDetailed>
+        actual: List<InvoiceDetailed>,
     ) {
         assertEquals(
             expected
                 .map { it.copy(sentAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }
                 .toSet(),
-            actual.map { it.copy(sentAt = null) }.toSet()
+            actual.map { it.copy(sentAt = null) }.toSet(),
         )
     }
 
@@ -109,7 +109,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    )
+                    ),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.SENT,
@@ -120,7 +120,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
-                    )
+                    ),
             ),
             createInvoiceFixture(
                 status = InvoiceStatus.DRAFT,
@@ -130,8 +130,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 rows =
                     listOf(
                         createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
-                    )
-            )
+                    ),
+            ),
         )
 
     private val decision1 =
@@ -147,9 +147,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         dateOfBirth = testChild_2.dateOfBirth,
                         placementUnitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     )
-                )
+                ),
         )
     private val decision2 =
         createFeeDecisionFixture(
@@ -164,9 +164,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         dateOfBirth = testChild_1.dateOfBirth,
                         placementUnitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     )
-                )
+                ),
         )
     private val decisionNoSsn =
         createFeeDecisionFixture(
@@ -181,9 +181,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         dateOfBirth = testChild_3.dateOfBirth,
                         placementUnitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                     )
-                )
+                ),
         )
 
     private val testUser =
@@ -218,7 +218,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    status = listOf(InvoiceStatus.DRAFT)
+                    status = listOf(InvoiceStatus.DRAFT),
                 )
             )
         assertEqualEnough(drafts.map(::toSummary), result)
@@ -246,7 +246,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    status = listOf(InvoiceStatus.CANCELED)
+                    status = listOf(InvoiceStatus.CANCELED),
                 )
             )
         assertEqualEnough(canceled.map(::toSummary), result)
@@ -265,7 +265,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    status = listOf(InvoiceStatus.SENT, InvoiceStatus.CANCELED)
+                    status = listOf(InvoiceStatus.SENT, InvoiceStatus.CANCELED),
                 )
             )
         assertEqualEnough(sentAndCanceled.map(::toSummary), result)
@@ -282,7 +282,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    status = listOf(InvoiceStatus.DRAFT, InvoiceStatus.SENT, InvoiceStatus.CANCELED)
+                    status = listOf(InvoiceStatus.DRAFT, InvoiceStatus.SENT, InvoiceStatus.CANCELED),
                 )
             )
         assertEqualEnough(invoices.map(::toSummary), result)
@@ -311,14 +311,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     pageSize = 200,
                     area = listOf("test_area"),
-                    status = listOf(InvoiceStatus.DRAFT)
+                    status = listOf(InvoiceStatus.DRAFT),
                 )
             )
         assertEqualEnough(
             invoices
                 .filter { it.status == InvoiceStatus.DRAFT && it.areaId == testArea.id }
                 .map(::toSummary),
-            result
+            result,
         )
     }
 
@@ -343,7 +343,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     pageSize = 200,
                     searchTerms =
-                        "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"
+                        "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}",
                 )
             )
         assertEqualEnough(testInvoices.map(::toSummary), result)
@@ -358,7 +358,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"
+                    searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}",
                 )
             )
         assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
@@ -373,7 +373,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"
+                    searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch",
                 )
             )
         assertEqualEnough(listOf(), result)
@@ -410,7 +410,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 SearchInvoicesRequest(
                     page = 1,
                     pageSize = 200,
-                    searchTerms = testAdult_1.ssn!!.substring(0, 6)
+                    searchTerms = testAdult_1.ssn!!.substring(0, 6),
                 )
             )
         assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
@@ -427,7 +427,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     pageSize = 1,
                     sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC
+                    sortDirection = SortDirection.ASC,
                 )
             )
         assertEqualEnough(sent.map(::toSummary), result)
@@ -444,7 +444,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 2,
                     pageSize = 1,
                     sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC
+                    sortDirection = SortDirection.ASC,
                 )
             )
         assertEqualEnough(sent.map(::toSummary), result)
@@ -461,7 +461,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     page = 1,
                     pageSize = 2,
                     sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC
+                    sortDirection = SortDirection.ASC,
                 )
             )
         assertEqualEnough(sent.map(::toSummary), result)
@@ -486,7 +486,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     pageSize = 2,
                     status = listOf(InvoiceStatus.DRAFT),
                     sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.DESC
+                    sortDirection = SortDirection.DESC,
                 ),
             )
 
@@ -513,7 +513,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         validDuring = FiniteDateRange(invoice.periodStart, invoice.periodEnd),
                         headOfFamilyId = invoice.headOfFamily,
                         status = FeeDecisionStatus.SENT,
-                        decisionNumber = 123
+                        decisionNumber = 123,
                     )
                 )
             }
@@ -531,7 +531,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 listOf(RelatedFeeDecision(id = feeDecisionId, decisionNumber = 123))
                         )
                 ),
-            actual = listOf(result)
+            actual = listOf(result),
         )
     }
 
@@ -572,7 +572,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             draft.copy(
                 status = InvoiceStatus.SENT,
                 number = 5000000002L,
-                sentBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                sentBy = EvakaUserId(testDecisionMaker_1.id.raw),
             )
 
         assertDetailedEqualEnough(listOf(toDetailed(updated)), listOf(result))
@@ -593,9 +593,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         listOf(
                             createInvoiceRowFixture(
                                 childId = testChild_1.id,
-                                unitId = testDaycare.id
+                                unitId = testDaycare.id,
                             )
-                        )
+                        ),
                 )
             }
 
@@ -620,7 +620,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     it.copy(
                         id = InvoiceId(UUID.randomUUID()),
                         number = null,
-                        rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) }
+                        rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) },
                     )
                 }
             }
@@ -646,7 +646,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .exactlyOne {
                     Pair(
                         column<String>("saved_cost_center"),
-                        column<String>("saved_sub_cost_center")
+                        column<String>("saved_sub_cost_center"),
                     )
                 }
 
@@ -675,7 +675,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val updated =
             invoice.copy(
                 status = InvoiceStatus.SENT,
-                sentBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                sentBy = EvakaUserId(testDecisionMaker_1.id.raw),
             )
 
         assertDetailedEqualEnough(listOf(toDetailed(updated)), listOf(result))
@@ -732,7 +732,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             .copy(
                                 product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
                                 amount = 100,
-                                unitPrice = 100000
+                                unitPrice = 100000,
                             )
             )
 
@@ -752,7 +752,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 periodStart = LocalDate.MIN,
                 periodEnd = LocalDate.MAX,
                 invoiceDate = LocalDate.MIN,
-                dueDate = LocalDate.MAX
+                dueDate = LocalDate.MAX,
             )
 
         updateInvoice(updated)
@@ -779,7 +779,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     listOf(InvoiceStatus.DRAFT),
                     listOf(),
                     null,
-                    listOf()
+                    listOf(),
                 )
             }
 
@@ -803,7 +803,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     listOf(InvoiceStatus.DRAFT),
                     listOf(),
                     null,
-                    listOf()
+                    listOf(),
                 )
             }
 
@@ -829,7 +829,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     listOf(InvoiceStatus.DRAFT),
                     listOf(),
                     null,
-                    listOf()
+                    listOf(),
                 )
             }
 
@@ -913,7 +913,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = part.child.id,
                             unitId = part.placement.unitId,
                             startDate = decision.validFrom,
-                            endDate = decision.validTo!!
+                            endDate = decision.validTo!!,
                         )
                     )
                     tx.insert(
@@ -921,7 +921,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = part.child.id,
                             headOfChildId = decision.headOfFamilyId,
                             startDate = decision.validFrom,
-                            endDate = decision.validTo!!
+                            endDate = decision.validTo!!,
                         )
                     )
                 }
@@ -939,31 +939,19 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             RealEvakaClock(),
             invoiceDate = null,
             dueDate = null,
-            invoiceIds = invoiceIds
+            invoiceIds = invoiceIds,
         )
     }
 
     private fun searchInvoices(request: SearchInvoicesRequest): List<InvoiceSummary> {
         return invoiceController
-            .searchInvoices(
-                dbInstance(),
-                testUser,
-                RealEvakaClock(),
-                request,
-            )
+            .searchInvoices(dbInstance(), testUser, RealEvakaClock(), request)
             .data
             .map { it.data }
     }
 
     private fun getInvoice(id: InvoiceId): InvoiceDetailed {
-        return invoiceController
-            .getInvoice(
-                dbInstance(),
-                testUser,
-                RealEvakaClock(),
-                id,
-            )
-            .data
+        return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id).data
     }
 
     private fun updateInvoice(invoice: Invoice) {
@@ -1015,13 +1003,13 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             else null,
                         description = row.description,
                         correctionId = row.correctionId,
-                        note = null
+                        note = null,
                     )
                 },
             number = invoice.number,
             sentBy = invoice.sentBy,
             sentAt = invoice.sentAt,
-            relatedFeeDecisions = emptyList()
+            relatedFeeDecisions = emptyList(),
         )
 
     private fun toSummary(invoice: Invoice): InvoiceSummary =
@@ -1038,10 +1026,10 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         id = row.id!!,
                         child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
                         amount = row.amount,
-                        unitPrice = row.unitPrice
+                        unitPrice = row.unitPrice,
                     )
                 },
             sentBy = invoice.sentBy,
-            sentAt = invoice.sentAt
+            sentAt = invoice.sentAt,
         )
 }

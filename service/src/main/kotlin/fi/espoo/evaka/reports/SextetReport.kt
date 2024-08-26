@@ -21,14 +21,14 @@ import org.springframework.web.bind.annotation.RestController
 class SextetReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/sextet", // deprecated
-        "/employee/reports/sextet"
+        "/employee/reports/sextet",
     )
     fun getSextetReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam year: Int,
-        @RequestParam placementType: PlacementType
+        @RequestParam placementType: PlacementType,
     ): List<SextetReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -36,14 +36,14 @@ class SextetReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_SEXTET_REPORT
+                        Action.Global.READ_SEXTET_REPORT,
                     )
 
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.sextetReport(
                         LocalDate.of(year, 1, 1),
                         LocalDate.of(year, 12, 31),
-                        placementType
+                        placementType,
                     )
                 }
             }
@@ -59,7 +59,7 @@ class SextetReportController(private val accessControl: AccessControl) {
 fun Database.Read.sextetReport(
     from: LocalDate,
     to: LocalDate,
-    placementType: PlacementType
+    placementType: PlacementType,
 ): List<SextetReportRow> {
     return createQuery {
             sql(
@@ -127,5 +127,5 @@ data class SextetReportRow(
     val unitId: DaycareId,
     val unitName: String,
     val placementType: PlacementType,
-    val attendanceDays: Int
+    val attendanceDays: Int,
 )

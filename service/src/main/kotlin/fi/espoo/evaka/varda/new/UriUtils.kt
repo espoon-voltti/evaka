@@ -14,7 +14,7 @@ fun URI.copy(host: String? = null, port: Int? = null, path: String? = null): URI
         port ?: this.port,
         path ?: this.path,
         this.query,
-        this.fragment
+        this.fragment,
     )
 
 fun URI.ensureTrailingSlash(): URI =

@@ -32,20 +32,20 @@ import org.springframework.web.bind.annotation.RestController
 data class ActiveQuestionnaire(
     val questionnaire: FixedPeriodQuestionnaire,
     val eligibleChildren: List<ChildId>,
-    val previousAnswers: List<HolidayQuestionnaireAnswer>
+    val previousAnswers: List<HolidayQuestionnaireAnswer>,
 )
 
 @RestController
 @RequestMapping("/citizen/holiday-period")
 class HolidayPeriodControllerCitizen(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<HolidayPeriod> {
         return db.connect { dbc ->
                 dbc.read {
@@ -53,7 +53,7 @@ class HolidayPeriodControllerCitizen(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_HOLIDAY_PERIODS
+                        Action.Global.READ_HOLIDAY_PERIODS,
                     )
                     it.getHolidayPeriods()
                 }
@@ -65,7 +65,7 @@ class HolidayPeriodControllerCitizen(
     fun getActiveQuestionnaires(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<ActiveQuestionnaire> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -73,7 +73,7 @@ class HolidayPeriodControllerCitizen(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES
+                        Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES,
                     )
                     val activeQuestionnaire =
                         tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
@@ -85,7 +85,7 @@ class HolidayPeriodControllerCitizen(
                             tx.getChildrenWithContinuousPlacement(
                                 clock.today(),
                                 user.id,
-                                continuousPlacementPeriod
+                                continuousPlacementPeriod,
                             )
                         } else {
                             tx.getUserChildIds(clock.today(), user.id)
@@ -100,8 +100,8 @@ class HolidayPeriodControllerCitizen(
                                 previousAnswers =
                                     tx.getQuestionnaireAnswers(
                                         activeQuestionnaire.id,
-                                        eligibleChildren
-                                    )
+                                        eligibleChildren,
+                                    ),
                             )
                         )
                     }
@@ -116,7 +116,7 @@ class HolidayPeriodControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
-        @RequestBody body: FixedPeriodsBody
+        @RequestBody body: FixedPeriodsBody,
     ) {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -129,7 +129,7 @@ class HolidayPeriodControllerCitizen(
                     user,
                     clock,
                     Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
-                    childIds
+                    childIds,
                 )
                 val questionnaire =
                     tx.getFixedPeriodQuestionnaire(id)?.also {
@@ -141,7 +141,7 @@ class HolidayPeriodControllerCitizen(
                         tx.getChildrenWithContinuousPlacement(
                             today,
                             user.id,
-                            questionnaire.conditions.continuousPlacement
+                            questionnaire.conditions.continuousPlacement,
                         )
                     if (
                         childIds.any {
@@ -166,7 +166,7 @@ class HolidayPeriodControllerCitizen(
                                 childId = childId,
                                 date = it,
                                 absenceType = questionnaire.absenceType,
-                                questionnaireId = questionnaire.id
+                                questionnaireId = questionnaire.id,
                             )
                         } ?: emptySequence()
                     }
@@ -186,7 +186,7 @@ class HolidayPeriodControllerCitizen(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->
                         HolidayQuestionnaireAnswer(questionnaire.id, childId, period)
-                    }
+                    },
                 )
             }
         }

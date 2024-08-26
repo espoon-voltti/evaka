@@ -97,8 +97,8 @@ private val voucherDecision =
                 "+35850 1234564",
                 "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
                 "Kartanonkujanpää 565, 02210 Espoo",
-                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
-            )
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            ),
     )
 
 private val settings = mapOf<SettingType, String>()
@@ -120,7 +120,7 @@ private val child =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
-        ""
+        "",
     )
 private val guardian =
     PersonDTO(
@@ -140,7 +140,7 @@ private val guardian =
         "Kuusikallionrinne 26 A 4",
         "02270",
         "Espoo",
-        ""
+        "",
     )
 private val manager =
     DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
@@ -154,7 +154,7 @@ class PdfGeneratorTestConfiguration {
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class]
+    classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class],
 )
 class PdfGeneratorTest {
     @Autowired lateinit var pdfGenerator: PdfGenerator
@@ -190,7 +190,7 @@ class PdfGeneratorTest {
                 pdfGenerator,
                 LocalDate.of(2024, 1, 1),
                 Rectangle.iPostWindowPosition,
-                guardian
+                guardian,
             )
 
         val file = File.createTempFile("address_page_", ".pdf")
@@ -214,26 +214,26 @@ class PdfGeneratorTest {
                                     "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
                                     "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
                                     "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
-                                    "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
+                                    "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam.",
                         ),
                         AnsweredQuestion.CheckboxAnswer(questionId = "s2q1", answer = true),
                         AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false),
                         AnsweredQuestion.StaticTextDisplayAnswer(
                             questionId = "s2q3",
-                            answer = null
+                            answer = null,
                         ),
                         AnsweredQuestion.CheckboxGroupAnswer(
                             questionId = "s2q4",
                             answer =
                                 listOf(
                                     CheckboxGroupAnswerContent(optionId = "2"),
-                                    CheckboxGroupAnswerContent(optionId = "3", "Lohikäärme")
-                                )
+                                    CheckboxGroupAnswerContent(optionId = "3", "Lohikäärme"),
+                                ),
                         ),
                         AnsweredQuestion.RadioButtonGroupAnswer(questionId = "s2q6", answer = "2"),
                         AnsweredQuestion.DateAnswer(
                             questionId = "s3q1",
-                            answer = LocalDate.of(2023, 5, 20)
+                            answer = LocalDate.of(2023, 5, 20),
                         ),
                         AnsweredQuestion.GroupedTextFieldsAnswer(
                             questionId = "s3q2",
@@ -244,18 +244,18 @@ class PdfGeneratorTest {
                                         "Ankka",
                                         "Triljonääri",
                                         "roope.ankka@ankkalinna.fi",
-                                        "+358 99 765 4321"
+                                        "+358 99 765 4321",
                                     )
-                                )
+                                ),
                         ),
                         AnsweredQuestion.GroupedTextFieldsAnswer(
                             questionId = "s3q3",
                             answer =
                                 listOf(
                                     listOf("Aku Kalevi Uolevi", "Ankka", "Isä"),
-                                    listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli")
-                                )
-                        )
+                                    listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli"),
+                                ),
+                        ),
                     )
             )
         val document =
@@ -268,7 +268,7 @@ class PdfGeneratorTest {
                         id = PersonId(UUID.randomUUID()),
                         firstName = "Tessa Tiina-Tellervo",
                         lastName = "Testaaja-Meikäläinen",
-                        dateOfBirth = LocalDate.now().minusYears(4)
+                        dateOfBirth = LocalDate.now().minusYears(4),
                     ),
                 template =
                     DocumentTemplate(
@@ -295,14 +295,14 @@ class PdfGeneratorTest {
                                                 listOf(
                                                     Question.TextQuestion(
                                                         id = "s1q1",
-                                                        label = "Mitä kuuluu?"
+                                                        label = "Mitä kuuluu?",
                                                     ),
                                                     Question.TextQuestion(
                                                         id = "s1q2",
                                                         label = "Kerro lisää",
-                                                        multiline = true
-                                                    )
-                                                )
+                                                        multiline = true,
+                                                    ),
+                                                ),
                                         ),
                                         Section(
                                             id = "s2",
@@ -311,15 +311,15 @@ class PdfGeneratorTest {
                                                 listOf(
                                                     Question.CheckboxQuestion(
                                                         id = "s2q1",
-                                                        label = "Hyväksyn käyttöehdot"
+                                                        label = "Hyväksyn käyttöehdot",
                                                     ),
                                                     Question.CheckboxQuestion(
                                                         id = "s2q2",
-                                                        label = "Minulle saa lähettää mainoksia"
+                                                        label = "Minulle saa lähettää mainoksia",
                                                     ),
                                                     Question.StaticTextDisplayQuestion(
                                                         id = "s2q3",
-                                                        label = "Ylimääräinen väliotsikko"
+                                                        label = "Ylimääräinen väliotsikko",
                                                     ),
                                                     Question.CheckboxGroupQuestion(
                                                         id = "s2q4",
@@ -328,22 +328,22 @@ class PdfGeneratorTest {
                                                             listOf(
                                                                 CheckboxGroupQuestionOption(
                                                                     id = "1",
-                                                                    label = "Kissa"
+                                                                    label = "Kissa",
                                                                 ),
                                                                 CheckboxGroupQuestionOption(
                                                                     id = "2",
-                                                                    label = "Koira"
+                                                                    label = "Koira",
                                                                 ),
                                                                 CheckboxGroupQuestionOption(
                                                                     id = "3",
                                                                     label = "Muu, mikä?",
-                                                                    withText = true
-                                                                )
-                                                            )
+                                                                    withText = true,
+                                                                ),
+                                                            ),
                                                     ),
                                                     Question.StaticTextDisplayQuestion(
                                                         id = "s2q5",
-                                                        text = "Staattinen tekstikappale."
+                                                        text = "Staattinen tekstikappale.",
                                                     ),
                                                     Question.RadioButtonGroupQuestion(
                                                         id = "s2q6",
@@ -352,13 +352,13 @@ class PdfGeneratorTest {
                                                             listOf(
                                                                 RadioButtonGroupQuestionOption(
                                                                     id = "1",
-                                                                    label = "Hillo"
+                                                                    label = "Hillo",
                                                                 ),
                                                                 RadioButtonGroupQuestionOption(
                                                                     id = "2",
-                                                                    label = "Mantelimassa"
-                                                                )
-                                                            )
+                                                                    label = "Mantelimassa",
+                                                                ),
+                                                            ),
                                                     ),
                                                     Question.StaticTextDisplayQuestion(
                                                         id = "s2q7",
@@ -369,9 +369,9 @@ class PdfGeneratorTest {
                                                                 "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
                                                                 "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
                                                                 "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
-                                                                "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam."
-                                                    )
-                                                )
+                                                                "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam.",
+                                                    ),
+                                                ),
                                         ),
                                         Section(
                                             id = "s3",
@@ -380,7 +380,7 @@ class PdfGeneratorTest {
                                                 listOf(
                                                     Question.DateQuestion(
                                                         id = "s3q1",
-                                                        label = "Keskustelun päivämäärä"
+                                                        label = "Keskustelun päivämäärä",
                                                     ),
                                                     Question.GroupedTextFieldsQuestion(
                                                         id = "s3q2",
@@ -391,24 +391,24 @@ class PdfGeneratorTest {
                                                                 "Sukunimi",
                                                                 "Titteli",
                                                                 "Sähköpoti",
-                                                                "Puhelinnumero"
+                                                                "Puhelinnumero",
                                                             ),
-                                                        allowMultipleRows = false
+                                                        allowMultipleRows = false,
                                                     ),
                                                     Question.GroupedTextFieldsQuestion(
                                                         id = "s3q3",
                                                         label = "Osallistujat",
                                                         fieldLabels =
                                                             listOf("Etunimi", "Sukunimi", "Rooli"),
-                                                        allowMultipleRows = true
-                                                    )
-                                                )
-                                        )
+                                                        allowMultipleRows = true,
+                                                    ),
+                                                ),
+                                        ),
                                     )
-                            )
+                            ),
                     ),
                 content = content,
-                publishedContent = content
+                publishedContent = content,
             )
 
         val html = generateChildDocumentHtml(document)
@@ -423,7 +423,7 @@ class PdfGeneratorTest {
         decision: Decision,
         isTransferApplication: Boolean,
         lang: OfficialLanguage,
-        serviceNeed: ServiceNeed? = null
+        serviceNeed: ServiceNeed? = null,
     ) {
         val decisionPdfByteArray =
             createDecisionPdf(
@@ -435,7 +435,7 @@ class PdfGeneratorTest {
                 isTransferApplication,
                 serviceNeed,
                 lang,
-                manager
+                manager,
             )
 
         val file = File.createTempFile("decision_", ".pdf")
@@ -468,7 +468,7 @@ fun createValidDecision(
             "+35850 1234564",
             "Varhaiskasvatuksen palveluohjaus",
             "Kamreerintie 2, 02200 Espoo",
-            providerType = ProviderType.MUNICIPAL
+            providerType = ProviderType.MUNICIPAL,
         ),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: ChildId = ChildId(UUID.randomUUID()),
@@ -476,7 +476,7 @@ fun createValidDecision(
     decisionNumber: Long = 123,
     sentDate: LocalDate = LocalDate.now(),
     status: DecisionStatus = DecisionStatus.ACCEPTED,
-    resolved: LocalDate? = null
+    resolved: LocalDate? = null,
 ): Decision {
     return Decision(
         id = id,
@@ -495,6 +495,6 @@ fun createValidDecision(
         requestedStartDate = startDate,
         resolved = resolved,
         resolvedByName = null,
-        documentContainsContactInfo = false
+        documentContainsContactInfo = false,
     )
 }

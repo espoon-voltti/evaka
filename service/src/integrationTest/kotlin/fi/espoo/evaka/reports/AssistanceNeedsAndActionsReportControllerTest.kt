@@ -81,7 +81,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 val childId =
                     tx.insert(
                         DevPerson(firstName = "Test 1", dateOfBirth = date.minusYears(3)),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
                 val placementId =
                     tx.insert(
@@ -89,7 +89,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             childId = childId,
                             unitId = unitId,
                             startDate = date,
-                            endDate = date
+                            endDate = date,
                         )
                     )
                 tx.insert(
@@ -97,14 +97,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         daycarePlacementId = placementId,
                         daycareGroupId = group1Id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
                 tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT
+                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
                     )
                 )
                 tx.insert(
@@ -112,14 +112,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         childId = childId,
                         startDate = date,
                         endDate = date,
-                        actions = setOf("ASSISTANCE_SERVICE_CHILD")
+                        actions = setOf("ASSISTANCE_SERVICE_CHILD"),
                     )
                 )
                 tx.insert(
                     DevAssistanceNeedVoucherCoefficient(
                         childId = childId,
                         validityPeriod = FiniteDateRange(date, date),
-                        coefficient = BigDecimal(1.50)
+                        coefficient = BigDecimal(1.50),
                     )
                 )
                 childId
@@ -129,7 +129,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 val childId =
                     tx.insert(
                         DevPerson(firstName = "Test 2", dateOfBirth = date.minusYears(3)),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
                 val placementId =
                     tx.insert(
@@ -137,7 +137,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             childId = childId,
                             unitId = unitId,
                             startDate = date,
-                            endDate = date
+                            endDate = date,
                         )
                     )
                 tx.insert(
@@ -145,14 +145,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         daycarePlacementId = placementId,
                         daycareGroupId = group1Id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
                 tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT
+                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
                     )
                 )
                 tx.insert(
@@ -160,7 +160,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         childId = childId,
                         startDate = date,
                         endDate = date,
-                        otherAction = "other action test"
+                        otherAction = "other action test",
                     )
                 )
                 childId
@@ -170,7 +170,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                 val childId =
                     tx.insert(
                         DevPerson(firstName = "Test 3", dateOfBirth = date.minusYears(3)),
-                        DevPersonType.CHILD
+                        DevPersonType.CHILD,
                     )
                 val placementId =
                     tx.insert(
@@ -178,7 +178,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                             childId = childId,
                             unitId = unitId,
                             startDate = date,
-                            endDate = date
+                            endDate = date,
                         )
                     )
                 tx.insert(
@@ -186,14 +186,14 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         daycarePlacementId = placementId,
                         daycareGroupId = group2Id,
                         startDate = date,
-                        endDate = date
+                        endDate = date,
                     )
                 )
                 tx.insert(
                     DevDaycareAssistance(
                         childId = childId,
                         validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT
+                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
                     )
                 )
                 tx.insert(
@@ -201,7 +201,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                         childId = childId,
                         startDate = date,
                         endDate = date,
-                        actions = setOf("ASSISTANCE_SERVICE_CHILD")
+                        actions = setOf("ASSISTANCE_SERVICE_CHILD"),
                     )
                 )
                 childId
@@ -223,7 +223,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 2),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficientCount = 1
+                    assistanceNeedVoucherCoefficientCount = 1,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -237,7 +237,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficientCount = 0
+                    assistanceNeedVoucherCoefficientCount = 0,
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow(
                     careAreaName = "Test Care Area",
@@ -251,10 +251,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = emptyMap(),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficientCount = 0
-                )
+                    assistanceNeedVoucherCoefficientCount = 0,
+                ),
             ),
-            groupReport.rows
+            groupReport.rows,
         )
 
         val childReport =
@@ -263,7 +263,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     tx,
                     date,
                     AccessControlFilter.PermitAll,
-                    true
+                    true,
                 )
             }
         assertEquals(
@@ -283,7 +283,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficient = BigDecimal("1.50")
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.50"),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -300,7 +300,7 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficient = BigDecimal("1.0")
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
                 ),
                 AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild(
                     careAreaName = "Test Care Area",
@@ -317,10 +317,10 @@ class AssistanceNeedsAndActionsReportControllerTest :
                     daycareAssistanceCounts = mapOf(DaycareAssistanceLevel.GENERAL_SUPPORT to 1),
                     preschoolAssistanceCounts = emptyMap(),
                     otherAssistanceMeasureCounts = emptyMap(),
-                    assistanceNeedVoucherCoefficient = BigDecimal("1.0")
-                )
+                    assistanceNeedVoucherCoefficient = BigDecimal("1.0"),
+                ),
             ),
-            childReport.rows
+            childReport.rows,
         )
     }
 }

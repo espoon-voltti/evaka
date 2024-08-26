@@ -189,7 +189,7 @@ private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1
 
 data class HelsinkiDateTimeRange(
     override val start: HelsinkiDateTime,
-    override val end: HelsinkiDateTime
+    override val end: HelsinkiDateTime,
 ) : BoundedRange<HelsinkiDateTime, HelsinkiDateTimeRange> {
     init {
         check(start <= end) {
@@ -258,34 +258,34 @@ data class HelsinkiDateTimeRange(
                             this.start < other.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(this.start, other.start),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             other.start < this.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(other.start, this.start),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
                         },
                     overlap =
                         HelsinkiDateTimeRange(
                             maxOf(this.start, other.start),
-                            minOf(this.end, other.end)
+                            minOf(this.end, other.end),
                         ),
                     right =
                         when {
                             other.end < this.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(other.end, this.end),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             this.end < other.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = HelsinkiDateTimeRange(this.end, other.end),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
-                        }
+                        },
                 )
         }
 
@@ -298,7 +298,7 @@ data class HelsinkiDateTimeRange(
         fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
             HelsinkiDateTimeRange(
                 HelsinkiDateTime.of(date, startTime),
-                HelsinkiDateTime.of(date, endTime)
+                HelsinkiDateTime.of(date, endTime),
             )
     }
 }

@@ -18,6 +18,6 @@ interface IVtjClientService {
         HUOLLETTAVA_HUOLTAJAT("Huollettava-Huoltajat"),
         PERUSSANOMA3("Perussanoma 3"),
         VANHEMPI_LAPSET_JA_HUOLLETTAVAT("Vanhempi -lapset ja huollettavat"),
-        ASUKASMAARA("ASUKASLKM2")
+        ASUKASMAARA("ASUKASLKM2"),
     }
 }

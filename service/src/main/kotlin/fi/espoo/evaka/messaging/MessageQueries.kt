@@ -34,7 +34,7 @@ import org.jdbi.v3.json.Json
 private val logger = KotlinLogging.logger {}
 
 fun Database.Read.getUnreadMessagesCounts(
-    idFilter: AccessControlFilter<MessageAccountId>,
+    idFilter: AccessControlFilter<MessageAccountId>
 ): Set<UnreadCountByAccount> =
     createQuery {
             sql(
@@ -83,7 +83,7 @@ GROUP BY acc.id, acc.daycare_group_id
 fun Database.Transaction.markThreadRead(
     clock: EvakaClock,
     accountId: MessageAccountId,
-    threadId: MessageThreadId
+    threadId: MessageThreadId,
 ): Int {
     val now = clock.now()
     return createUpdate {
@@ -104,7 +104,7 @@ WHERE rec.message_id = msg.id
 
 fun Database.Transaction.archiveThread(
     accountId: MessageAccountId,
-    threadId: MessageThreadId
+    threadId: MessageThreadId,
 ): Int {
     var archiveFolderId = getArchiveFolderId(accountId)
     if (archiveFolderId == null) {
@@ -136,7 +136,7 @@ fun Database.Transaction.insertMessage(
     serviceWorkerAccountName: String,
     sentAt: HelsinkiDateTime? =
         null, // Only needed because some tests bypass the message service and controllers
-    repliesToMessageId: MessageId? = null
+    repliesToMessageId: MessageId? = null,
 ): MessageId {
     return createQuery {
             sql(
@@ -166,7 +166,7 @@ RETURNING id
 
 fun Database.Transaction.insertMessageContent(
     content: String,
-    sender: MessageAccountId
+    sender: MessageAccountId,
 ): MessageContentId {
     return createQuery {
             sql(
@@ -213,7 +213,7 @@ VALUES (${bind { (threadId, _) -> threadId }}, ${bind { (_, childId) -> childId 
 fun Database.Transaction.upsertSenderThreadParticipants(
     senderId: MessageAccountId,
     threadIds: List<MessageThreadId>,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     executeBatch(threadIds) {
         sql(
@@ -228,7 +228,7 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = $
 
 fun Database.Transaction.upsertReceiverThreadParticipants(
     contentId: MessageContentId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -270,7 +270,7 @@ WHERE
 
 fun Database.Transaction.markMessagesAsSent(
     contentId: MessageContentId,
-    sentAt: HelsinkiDateTime
+    sentAt: HelsinkiDateTime,
 ): List<MessageId> =
     createUpdate {
             sql(
@@ -297,7 +297,7 @@ fun Database.Transaction.insertThreadsWithMessages(
     recipientNames: List<String>,
     applicationId: ApplicationId?,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): List<Pair<MessageThreadId, MessageId>> =
     prepareBatch(1..count) { // range is *inclusive*
             sql(
@@ -332,7 +332,7 @@ fun Database.Transaction.insertThread(
     title: String,
     urgent: Boolean,
     sensitive: Boolean,
-    isCopy: Boolean
+    isCopy: Boolean,
 ): MessageThreadId {
     return createQuery {
             sql(
@@ -344,7 +344,7 @@ fun Database.Transaction.insertThread(
 
 fun Database.Transaction.reAssociateMessageAttachments(
     attachmentIds: Set<AttachmentId>,
-    messageContentId: MessageContentId
+    messageContentId: MessageContentId,
 ): Int {
     return createUpdate {
             sql(
@@ -368,14 +368,10 @@ private data class ReceivedThread(
     val urgent: Boolean,
     val sensitive: Boolean,
     val isCopy: Boolean,
-    @Json val children: List<MessageChild>
+    @Json val children: List<MessageChild>,
 )
 
-data class PagedMessageThreads(
-    val data: List<MessageThread>,
-    val total: Int,
-    val pages: Int,
-) {
+data class PagedMessageThreads(val data: List<MessageThread>, val total: Int, val pages: Int) {
     fun <T, R> mapTo(f: PagedFactory<T, R>, mapper: (MessageThread) -> T): R =
         f(data.map(mapper), total, pages)
 }
@@ -398,7 +394,7 @@ fun Database.Read.getThreads(
     pageSize: Int,
     page: Int,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): PagedMessageThreads {
     val threads =
         createQuery {
@@ -439,7 +435,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             accountId,
             threads.data.map { it.id },
             municipalAccountName,
-            serviceWorkerAccountName
+            serviceWorkerAccountName,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -451,7 +447,7 @@ fun Database.Read.getReceivedThreads(
     page: Int,
     municipalAccountName: String,
     serviceWorkerAccountName: String,
-    folderId: MessageThreadFolderId? = null
+    folderId: MessageThreadFolderId? = null,
 ): PagedMessageThreads {
     val threads =
         createQuery {
@@ -502,7 +498,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             accountId,
             threads.data.map { it.id },
             municipalAccountName,
-            serviceWorkerAccountName
+            serviceWorkerAccountName,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -511,7 +507,7 @@ private fun Database.Read.getThreadMessages(
     accountId: MessageAccountId,
     threadIds: List<MessageThreadId>,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     return createQuery {
@@ -579,7 +575,7 @@ ORDER BY m.sent_at
 private fun combineThreadsAndMessages(
     accountId: MessageAccountId,
     threads: PagedReceivedThreads,
-    messagesByThread: Map<MessageThreadId, List<Message>>
+    messagesByThread: Map<MessageThreadId, List<Message>>,
 ): PagedMessageThreads {
     val messageThreads =
         threads.data.flatMap { thread ->
@@ -597,7 +593,7 @@ private fun combineThreadsAndMessages(
                         sensitive = thread.sensitive,
                         isCopy = thread.isCopy,
                         children = thread.children,
-                        messages = messages
+                        messages = messages,
                     )
                 )
             }
@@ -622,19 +618,15 @@ data class MessageCopy(
     val recipientName: String,
     val recipientAccountType: AccountType,
     val recipientNames: List<String>,
-    @Json val attachments: List<MessageAttachment>
+    @Json val attachments: List<MessageAttachment>,
 )
 
-data class PagedMessageCopies(
-    val data: List<MessageCopy>,
-    val total: Int,
-    val pages: Int,
-)
+data class PagedMessageCopies(val data: List<MessageCopy>, val total: Int, val pages: Int)
 
 fun Database.Read.getMessageCopiesByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
-    page: Int
+    page: Int,
 ): PagedMessageCopies {
 
     return createQuery {
@@ -686,7 +678,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 fun Database.Read.getSentMessage(
     senderId: MessageAccountId,
     messageId: MessageId,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): Message {
     return createQuery {
             sql(
@@ -723,13 +715,13 @@ WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
 
 fun Database.Read.getCitizenReceivers(
     today: LocalDate,
-    accountId: MessageAccountId
+    accountId: MessageAccountId,
 ): Map<ChildId, List<MessageAccount>> {
     data class MessageAccountWithChildId(
         val id: MessageAccountId,
         val name: String,
         val type: AccountType,
-        val childId: ChildId
+        val childId: ChildId,
     )
 
     return createQuery {
@@ -833,16 +825,12 @@ ORDER BY type, name  -- groups first
         .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }
 
-data class PagedSentMessages(
-    val data: List<SentMessage>,
-    val total: Int,
-    val pages: Int,
-)
+data class PagedSentMessages(val data: List<SentMessage>, val total: Int, val pages: Int)
 
 fun Database.Read.getMessagesSentByAccount(
     accountId: MessageAccountId,
     pageSize: Int,
-    page: Int
+    page: Int,
 ): PagedSentMessages {
     return createQuery {
             sql(
@@ -897,7 +885,7 @@ data class ThreadWithParticipants(
     val isCopy: Boolean,
     val senders: Set<MessageAccountId>,
     val recipients: Set<MessageAccountId>,
-    val applicationId: ApplicationId?
+    val applicationId: ApplicationId?,
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
@@ -927,7 +915,7 @@ fun Database.Read.getMessageThread(
     accountId: MessageAccountId,
     threadId: MessageThreadId,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): MessageThread {
     val thread =
         createQuery {
@@ -965,12 +953,12 @@ WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
             accountId,
             listOf(thread.id),
             municipalAccountName,
-            serviceWorkerAccountName
+            serviceWorkerAccountName,
         )
     return combineThreadsAndMessages(
             accountId,
             PagedReceivedThreads(listOf(thread), 1, 1),
-            messagesByThread
+            messagesByThread,
         )
         .data
         .firstOrNull() ?: throw NotFound("Thread $threadId not found")
@@ -980,7 +968,7 @@ fun Database.Read.getMessageThreadByApplicationId(
     accountId: MessageAccountId,
     applicationId: ApplicationId,
     municipalAccountName: String,
-    serviceWorkerAccountName: String
+    serviceWorkerAccountName: String,
 ): MessageThread? {
     val thread =
         createQuery {
@@ -1020,12 +1008,12 @@ LIMIT 1
                 accountId,
                 listOf(thread.id),
                 municipalAccountName,
-                serviceWorkerAccountName
+                serviceWorkerAccountName,
             )
         return combineThreadsAndMessages(
                 accountId,
                 PagedReceivedThreads(listOf(thread), 1, 1),
-                messagesByThread
+                messagesByThread,
             )
             .data
             .firstOrNull()
@@ -1041,7 +1029,7 @@ data class UnitMessageReceiversResult(
     val groupName: String,
     val childId: ChildId,
     val firstName: String,
-    val lastName: String
+    val lastName: String,
 )
 
 data class MunicipalMessageReceiversResult(
@@ -1049,12 +1037,12 @@ data class MunicipalMessageReceiversResult(
     val areaId: AreaId,
     val areaName: String,
     val unitId: DaycareId,
-    val unitName: String
+    val unitName: String,
 )
 
 fun Database.Read.getReceiversForNewMessage(
     idFilter: AccessControlFilter<MessageAccountId>,
-    today: LocalDate
+    today: LocalDate,
 ): List<MessageReceiversResponse> {
     val unitReceivers =
         createQuery {
@@ -1122,7 +1110,7 @@ fun Database.Read.getReceiversForNewMessage(
                                 MessageReceiver.Unit(
                                     id = unitId,
                                     name = unitName,
-                                    receivers = getReceiverGroups(groups)
+                                    receivers = getReceiverGroups(groups),
                                 )
                             )
                     }
@@ -1161,9 +1149,9 @@ fun Database.Read.getReceiversForNewMessage(
                                 units.map { unit ->
                                     MessageReceiver.UnitInArea(
                                         id = unit.unitId,
-                                        name = unit.unitName
+                                        name = unit.unitName,
                                     )
-                                }
+                                },
                         )
                     }
                 MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
@@ -1186,9 +1174,9 @@ private fun getReceiverGroups(
                     children.map {
                         MessageReceiver.Child(
                             id = it.childId,
-                            name = formatName(it.firstName, it.lastName, true)
+                            name = formatName(it.firstName, it.lastName, true),
                         )
-                    }
+                    },
             )
         }
 
@@ -1196,7 +1184,7 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     filters: MessageController.PostMessageFilters?,
-    date: LocalDate
+    date: LocalDate,
 ): List<Pair<MessageAccountId, ChildId?>> {
     val groupedRecipients = recipients.groupBy { it.type }
     val areaRecipients = groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
@@ -1224,7 +1212,7 @@ fun Database.Read.getMessageAccountsForRecipients(
             } else null,
             if (filters?.familyDaycare == true) {
                 PredicateSql { where("d.type && '{FAMILY,GROUP_FAMILY}'::care_types[]") }
-            } else null
+            } else null,
         )
 
     return createQuery {
@@ -1294,7 +1282,7 @@ WHERE p.id = ANY(${bind(citizenRecipients)})
 
 fun Database.Transaction.markEmailNotificationAsSent(
     id: MessageRecipientId,
-    timestamp: HelsinkiDateTime
+    timestamp: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(
@@ -1310,7 +1298,7 @@ WHERE id = ${bind(id)}
 
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,
-    recipients: Collection<MessageRecipient>
+    recipients: Collection<MessageRecipient>,
 ): Set<MessageAccountId> {
     val areaIds = recipients.mapNotNull { it.toAreaId() }
     val unitIds = recipients.mapNotNull { it.toUnitId() }
@@ -1344,7 +1332,7 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
 
 fun Database.Read.unreadMessageForRecipientExists(
     messageId: MessageId,
-    recipientId: MessageAccountId
+    recipientId: MessageAccountId,
 ): Boolean {
     return createQuery {
             sql(

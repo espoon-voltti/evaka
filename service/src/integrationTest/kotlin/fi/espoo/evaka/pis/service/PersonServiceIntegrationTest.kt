@@ -37,7 +37,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             streetAddress = "Katuosoite",
             postalCode = "02230",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private val testPersonWithVtjChildren =
@@ -51,7 +51,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             streetAddress = "Kamreerintie 4",
             postalCode = "02100",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private val testPersonDependantChild =
@@ -65,7 +65,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             streetAddress = "Kamreerintie 4",
             postalCode = "02100",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     @BeforeEach
@@ -88,7 +88,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             1,
-            MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren)
+            MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithoutVtjChildren),
         )
     }
 
@@ -96,7 +96,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `getPersonWithDependants fetches person and children from vtj only once`() {
         MockVtjClientService.addHUOLTAJAHUOLLETTAVARequestExpectation(
             testPersonWithVtjChildren,
-            listOf(testPersonDependantChild)
+            listOf(testPersonDependantChild),
         )
         MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
         MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
@@ -107,7 +107,7 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonDependantChild))
         assertEquals(
             1,
-            MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren)
+            MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(testPersonWithVtjChildren),
         )
     }
 }

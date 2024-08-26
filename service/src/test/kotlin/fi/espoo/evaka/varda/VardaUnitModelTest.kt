@@ -66,14 +66,14 @@ val testUnit =
         language = VardaLanguage.FI,
         languageEmphasisId = null,
         openingDate = LocalDate.of(2000, 1, 1),
-        closingDate = null
+        closingDate = null,
     )
 
 fun toRequest(unit: VardaUnit) =
     unit.toVardaUnitRequest(
         lahdejarjestelma = "ss",
         kuntakoodi = "049",
-        vakajarjestaja = "http://path.to.organizer"
+        vakajarjestaja = "http://path.to.organizer",
     )
 
 val testUnitJson =

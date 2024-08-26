@@ -80,7 +80,7 @@ object DatabaseActionRule {
     data class QueryContext(
         val tx: Database.Read,
         val user: AuthenticatedUser,
-        val now: HelsinkiDateTime
+        val now: HelsinkiDateTime,
     )
 
     interface Deferred<in P> {
@@ -150,7 +150,7 @@ internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: Role
 internal data class RoleAndFeatures(
     val role: UserRole,
     val unitFeatures: Set<PilotFeature>,
-    val unitProviderType: ProviderType
+    val unitProviderType: ProviderType,
 )
 
 sealed interface AccessControlFilter<out T> {

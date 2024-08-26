@@ -55,7 +55,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
         service =
             VTJBatchRefreshService(
                 fridgeFamilyService = fridgeFamilyService,
-                asyncJobRunner = asyncJobRunner
+                asyncJobRunner = asyncJobRunner,
             )
     }
 
@@ -75,7 +75,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     streetAddress = person.streetAddress,
                     postalCode = person.postalCode,
                     city = person.postOffice,
-                    residenceCode = "1"
+                    residenceCode = "1",
                 ),
             residenceCode = person.residenceCode,
             phone = "",
@@ -84,7 +84,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
             children = emptyList(),
             nationalities = emptySet(),
             nativeLanguage = null,
-            restrictedDetails = RestrictedDetails(enabled = false)
+            restrictedDetails = RestrictedDetails(enabled = false),
         )
 
     @Test
@@ -102,7 +102,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                 eq(testAdult_1.id),
                 eq(LocalDate.now()),
                 eq(lastDayBefore18YearsOld),
-                eq(Creator.DVV)
+                eq(Creator.DVV),
             )
     }
 
@@ -118,8 +118,8 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                             streetAddress = "different",
                             postalCode = "02770",
                             city = "Espoo",
-                            residenceCode = "2"
-                        )
+                            residenceCode = "2",
+                        ),
                 )
         whenever(personService.getPersonWithChildren(any(), eq(user), eq(testAdult_1.id), any()))
             .thenReturn(dto)
@@ -140,7 +140,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     otherIndx = 2,
                     personId = testAdult_1.id,
                     startDate = startDate,
-                    createdAt = createdAt
+                    createdAt = createdAt,
                 )
             )
             tx.insert(
@@ -150,7 +150,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     otherIndx = 1,
                     personId = testAdult_2.id,
                     startDate = startDate,
-                    createdAt = createdAt
+                    createdAt = createdAt,
                 )
             )
         }
@@ -171,7 +171,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                 eq(testAdult_1.id),
                 eq(LocalDate.now()),
                 eq(lastDayBefore18YearsOld),
-                eq(Creator.DVV)
+                eq(Creator.DVV),
             )
     }
 
@@ -190,7 +190,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     personId = testAdult_1.id,
                     startDate = startDate,
                     endDate = endDate,
-                    createdAt = createdAt
+                    createdAt = createdAt,
                 )
             )
             tx.insert(
@@ -201,7 +201,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                     personId = testAdult_2.id,
                     startDate = startDate,
                     endDate = endDate,
-                    createdAt = createdAt
+                    createdAt = createdAt,
                 )
             )
         }

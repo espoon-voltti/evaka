@@ -19,7 +19,7 @@ class AssistanceActionService {
         db: Database.Connection,
         user: AuthenticatedUser,
         childId: ChildId,
-        data: AssistanceActionRequest
+        data: AssistanceActionRequest,
     ): AssistanceAction {
         try {
             return db.transaction { tx ->
@@ -36,7 +36,7 @@ class AssistanceActionService {
         db: Database.Connection,
         user: AuthenticatedUser,
         id: AssistanceActionId,
-        data: AssistanceActionRequest
+        data: AssistanceActionRequest,
     ): AssistanceAction {
         try {
             return db.transaction { tx ->

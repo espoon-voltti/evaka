@@ -38,18 +38,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/fee-alterations", // deprecated
-    "/employee/fee-alterations"
+    "/employee/fee-alterations",
 )
 class FeeAlterationController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping
     fun getFeeAlterations(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam personId: PersonId
+        @RequestParam personId: PersonId,
     ): List<FeeAlterationWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -58,7 +58,7 @@ class FeeAlterationController(
                         user,
                         clock,
                         Action.Child.READ_FEE_ALTERATIONS,
-                        personId
+                        personId,
                     )
                     val feeAlterations = tx.getFeeAlterationsForPerson(personId)
                     val permittedActions =
@@ -66,7 +66,7 @@ class FeeAlterationController(
                             tx,
                             user,
                             clock,
-                            feeAlterations.mapNotNull { it.id }
+                            feeAlterations.mapNotNull { it.id },
                         )
                     feeAlterations.map {
                         FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
@@ -76,14 +76,14 @@ class FeeAlterationController(
             .also {
                 Audit.ChildFeeAlterationsRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     data class FeeAlterationWithPermittedActions(
         val data: FeeAlteration,
-        val permittedActions: Set<Action.FeeAlteration>
+        val permittedActions: Set<Action.FeeAlteration>,
     )
 
     @PostMapping
@@ -91,7 +91,7 @@ class FeeAlterationController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody feeAlteration: FeeAlteration
+        @RequestBody feeAlteration: FeeAlteration,
     ) {
         val id = FeeAlterationId(UUID.randomUUID())
         db.connect { dbc ->
@@ -101,32 +101,32 @@ class FeeAlterationController(
                     user,
                     clock,
                     Action.Child.CREATE_FEE_ALTERATION,
-                    feeAlteration.personId
+                    feeAlteration.personId,
                 )
                 tx.upsertFeeAlteration(
                     clock,
-                    feeAlteration.copy(id = id, updatedBy = user.evakaUserId)
+                    feeAlteration.copy(id = id, updatedBy = user.evakaUserId),
                 )
                 tx.associateOrphanAttachments(
                     user.evakaUserId,
                     AttachmentParent.FeeAlteration(id),
-                    feeAlteration.attachments.map { it.id }
+                    feeAlteration.attachments.map { it.id },
                 )
                 asyncJobRunner.plan(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             feeAlteration.personId,
-                            DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                            DateRange(feeAlteration.validFrom, feeAlteration.validTo),
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
         Audit.ChildFeeAlterationsCreate.log(
             targetId = AuditId(feeAlteration.personId),
-            objectId = AuditId(id)
+            objectId = AuditId(id),
         )
     }
 
@@ -136,7 +136,7 @@ class FeeAlterationController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId,
-        @RequestBody feeAlteration: FeeAlteration
+        @RequestBody feeAlteration: FeeAlteration,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -145,19 +145,19 @@ class FeeAlterationController(
                     user,
                     clock,
                     Action.FeeAlteration.UPDATE,
-                    feeAlterationId
+                    feeAlterationId,
                 )
                 val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.upsertFeeAlteration(
                     clock,
-                    feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId)
+                    feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId),
                 )
 
                 val expandedPeriod =
                     existing?.let {
                         DateRange(
                             minOf(it.validFrom, feeAlteration.validFrom),
-                            maxEndDate(it.validTo, feeAlteration.validTo)
+                            maxEndDate(it.validTo, feeAlteration.validTo),
                         )
                     } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
@@ -166,10 +166,10 @@ class FeeAlterationController(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             feeAlteration.personId,
-                            expandedPeriod
+                            expandedPeriod,
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -181,7 +181,7 @@ class FeeAlterationController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable feeAlterationId: FeeAlterationId
+        @PathVariable feeAlterationId: FeeAlterationId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -190,7 +190,7 @@ class FeeAlterationController(
                     user,
                     clock,
                     Action.FeeAlteration.DELETE,
-                    feeAlterationId
+                    feeAlterationId,
                 )
                 val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.deleteFeeAlteration(feeAlterationId)
@@ -201,10 +201,10 @@ class FeeAlterationController(
                         listOf(
                             AsyncJob.GenerateFinanceDecisions.forChild(
                                 existing.personId,
-                                DateRange(existing.validFrom, existing.validTo)
+                                DateRange(existing.validFrom, existing.validTo),
                             )
                         ),
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                 }
             }

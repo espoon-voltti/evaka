@@ -32,7 +32,7 @@ class EspooInvoiceIntegrationClientTest {
             EspooInvoiceIntegrationClient.createBatchExports(
                 listOf(testInvoice),
                 agreementType,
-                true
+                true,
             )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
@@ -54,7 +54,7 @@ class EspooInvoiceIntegrationClientTest {
             EspooInvoiceIntegrationClient.createBatchExports(
                 listOf(testInvoice),
                 agreementType,
-                true
+                true,
             )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
@@ -76,7 +76,7 @@ class EspooInvoiceIntegrationClientTest {
             EspooInvoiceIntegrationClient.createBatchExports(
                 listOf(testInvoice),
                 agreementType,
-                true
+                true,
             )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
@@ -85,11 +85,11 @@ class EspooInvoiceIntegrationClientTest {
             assertEquals(null, invoice.client.post)
             assertEquals(
                 EspooInvoiceIntegrationClient.fallbackStreetAddress,
-                invoice.recipient.street
+                invoice.recipient.street,
             )
             assertEquals(
                 EspooInvoiceIntegrationClient.fallbackPostalCode,
-                invoice.recipient.postalCode
+                invoice.recipient.postalCode,
             )
             assertEquals(EspooInvoiceIntegrationClient.fallbackPostOffice, invoice.recipient.post)
         }
@@ -106,14 +106,14 @@ class EspooInvoiceIntegrationClientTest {
                     testPerson(
                         invoicingStreetAddress = invoicingStreetAddress,
                         invoicingPostalCode = invoicingPostalCode,
-                        invoicingPostOffice = invoicingPostOffice
+                        invoicingPostOffice = invoicingPostOffice,
                     )
             )
         val batch =
             EspooInvoiceIntegrationClient.createBatchExports(
                 listOf(testInvoice),
                 agreementType,
-                true
+                true,
             )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
@@ -132,7 +132,7 @@ class EspooInvoiceIntegrationClientTest {
             testPerson(
                 firstName = "First",
                 lastName = "Child",
-                dateOfBirth = LocalDate.now().minusDays(1)
+                dateOfBirth = LocalDate.now().minusDays(1),
             )
         val secondChild =
             testPerson(firstName = "Second", lastName = "Child", dateOfBirth = LocalDate.now())
@@ -142,27 +142,27 @@ class EspooInvoiceIntegrationClientTest {
                     listOf(
                         testInvoiceRow(child = firstChild),
                         testInvoiceRow(child = secondChild),
-                        testInvoiceRow(child = firstChild)
+                        testInvoiceRow(child = firstChild),
                     )
             )
         val batch =
             EspooInvoiceIntegrationClient.createBatchExports(
                 listOf(testInvoice),
                 agreementType,
-                true
+                true,
             )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(7, invoice.rows.size)
             assertEquals(
                 "${secondChild.lastName} ${secondChild.firstName}",
-                invoice.rows[0].description
+                invoice.rows[0].description,
             )
             assertEquals("Varhaiskasvatus", invoice.rows[1].description)
             assertEquals("", invoice.rows[2].description)
             assertEquals(
                 "${firstChild.lastName} ${firstChild.firstName}",
-                invoice.rows[3].description
+                invoice.rows[3].description,
             )
             assertEquals("Varhaiskasvatus", invoice.rows[4].description)
             assertEquals("Varhaiskasvatus", invoice.rows[5].description)
@@ -173,7 +173,7 @@ class EspooInvoiceIntegrationClientTest {
     private fun testInvoice(
         headOfFamily: PersonDetailed = testPerson(),
         codebtor: PersonDetailed? = null,
-        rows: List<InvoiceRowDetailed> = listOf(testInvoiceRow())
+        rows: List<InvoiceRowDetailed> = listOf(testInvoiceRow()),
     ) =
         InvoiceDetailed(
             id = InvoiceId(UUID.randomUUID()),
@@ -190,7 +190,7 @@ class EspooInvoiceIntegrationClientTest {
             sentBy = null,
             sentAt = null,
             rows = rows,
-            relatedFeeDecisions = emptyList()
+            relatedFeeDecisions = emptyList(),
         )
 
     private fun testInvoiceRow(child: PersonDetailed = testPerson()) =
@@ -211,7 +211,7 @@ class EspooInvoiceIntegrationClientTest {
             savedCostCenter = "12345",
             description = "",
             correctionId = null,
-            note = null
+            note = null,
         )
 
     private fun testPerson(
@@ -223,7 +223,7 @@ class EspooInvoiceIntegrationClientTest {
         postOffice: String = "Espoo",
         invoicingStreetAddress: String = "",
         invoicingPostalCode: String = "",
-        invoicingPostOffice: String = ""
+        invoicingPostOffice: String = "",
     ) =
         PersonDetailed(
             id = PersonId(UUID.randomUUID()),
@@ -244,6 +244,6 @@ class EspooInvoiceIntegrationClientTest {
             invoicingPostalCode = invoicingPostalCode,
             invoicingPostOffice = invoicingPostOffice,
             restrictedDetailsEnabled = false,
-            forceManualFeeDecisions = false
+            forceManualFeeDecisions = false,
         )
 }

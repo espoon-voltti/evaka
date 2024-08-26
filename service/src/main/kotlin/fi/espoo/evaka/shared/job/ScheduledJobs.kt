@@ -42,156 +42,156 @@ import org.springframework.stereotype.Component
 
 enum class ScheduledJob(
     val fn: (ScheduledJobs, Database.Connection, EvakaClock) -> Unit,
-    val defaultSettings: ScheduledJobSettings
+    val defaultSettings: ScheduledJobSettings,
 ) {
     CancelOutdatedTransferApplications(
         ScheduledJobs::cancelOutdatedTransferApplications,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 35)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 35))),
     ),
     CloseVasusWithExpiredTemplate(
         ScheduledJobs::closeVasusWithExpiredTemplate,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 40)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 40))),
     ),
     CompleteChildDocumentsWithExpiredTemplate(
         ScheduledJobs::completeChildDocumentsWithExpiredTemplate,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 45)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 45))),
     ),
     DvvUpdate(
         ScheduledJobs::dvvUpdate,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(4, 0))),
     ),
     EndAssistanceFactorsWhichBelongToPastPlacements(
         ScheduledJobs::endAssistanceFactorsWhichBelongToPastPlacements,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
     ),
     EndActiveDaycareAssistanceDecisions(
         ScheduledJobs::endActiveDaycareAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
     ),
     EndActivePreschoolAssistanceDecisions(
         ScheduledJobs::endActivePreschoolAssistanceDecisions,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
     ),
     EndOfDayAttendanceUpkeep(
         ScheduledJobs::endOfDayAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     EndOfDayStaffAttendanceUpkeep(
         ScheduledJobs::endOfDayStaffAttendanceUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     EndOfDayReservationUpkeep(
         ScheduledJobs::endOfDayReservationUpkeep,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     FreezeVoucherValueReports(
         ScheduledJobs::freezeVoucherValueReports,
         ScheduledJobSettings(
             enabled = true,
-            schedule = JobSchedule.cron("0 0 0 25 * ?") // Monthly on 25th
-        )
+            schedule = JobSchedule.cron("0 0 0 25 * ?"), // Monthly on 25th
+        ),
     ),
     GenerateFinanceDecisions(
         ScheduledJobs::generateFinanceDecisions,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(2, 0))),
     ),
     KoskiUpdate(
         ScheduledJobs::koskiUpdate,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.daily(LocalTime.of(0, 0)),
-            retryCount = 1
-        )
+            retryCount = 1,
+        ),
     ),
     RemoveOldAsyncJobs(
         ScheduledJobs::removeOldAsyncJobs,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 0))),
     ),
     RemoveOldDaycareDailyNotes(
         ScheduledJobs::removeExpiredNotes,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(6, 30)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(6, 30))),
     ),
     RemoveOldDraftApplications(
         ScheduledJobs::removeOldDraftApplications,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 30))),
     ),
     SendJamixOrders(
         ScheduledJobs::sendJamixOrders,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 25 2 * * 2") // tue @ 2:25
-        )
+            schedule = JobSchedule.cron("0 25 2 * * 2"), // tue @ 2:25
+        ),
     ),
     SyncJamixDiets(
         ScheduledJobs::syncJamixDiets,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 * * * *"))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 */10 * * * *")),
     ),
     SendPendingDecisionReminderEmails(
         ScheduledJobs::sendPendingDecisionReminderEmails,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(7, 0))),
     ),
     VardaUpdate(
         ScheduledJobs::vardaUpdate,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.cron("0 0 23 * * 2,3,6,7"), // tue, wed, sat, sun @ 23 pm
-            retryCount = 1
-        )
+            retryCount = 1,
+        ),
     ),
     VardaReset(
         ScheduledJobs::vardaReset,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.cron("0 0 23 * * 1,4"), // mon, thu @ 23 pm
-            retryCount = 1
-        )
+            retryCount = 1,
+        ),
     ),
     InactivePeopleCleanup(
         ScheduledJobs::inactivePeopleCleanup,
         ScheduledJobSettings(
             enabled = false,
             schedule = JobSchedule.daily(LocalTime.of(3, 30)),
-            retryCount = 1
-        )
+            retryCount = 1,
+        ),
     ),
     InactiveEmployeesRoleReset(
         ScheduledJobs::inactiveEmployeesRoleReset,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 15)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 15))),
     ),
     SendMissingReservationReminders(
         ScheduledJobs::sendMissingReservationReminders,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 0 18 * * 0") // Sunday 18:00
-        )
+            schedule = JobSchedule.cron("0 0 18 * * 0"), // Sunday 18:00
+        ),
     ),
     SendMissingHolidayReservationReminders(
         ScheduledJobs::sendMissingHolidayReservationReminders,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(2, 45)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(2, 45))),
     ),
     SendOutdatedIncomeNotifications(
         ScheduledJobs::sendOutdatedIncomeNotifications,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45)))
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45))),
     ),
     SendNewCustomerIncomeNotification(
         ScheduledJobs::sendNewCustomerIncomeNotifications,
         ScheduledJobSettings(
             enabled = false,
-            schedule = JobSchedule.cron("0 45 6 1 * *") // first day of month, 6:45
-        )
+            schedule = JobSchedule.cron("0 45 6 1 * *"), // first day of month, 6:45
+        ),
     ),
     SendCalendarEventDigests(
         ScheduledJobs::sendCalendarEventDigests,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0))),
     ),
     ScheduleOrphanAttachmentDeletion(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     DatabaseSanityChecks(
         ScheduledJobs::databaseSanityChecks,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45)))
-    )
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45))),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -215,7 +215,7 @@ class ScheduledJobs(
     private val childDocumentService: ChildDocumentService,
     private val attachmentService: AttachmentService,
     private val jamixService: JamixService,
-    env: ScheduledJobsEnv<ScheduledJob>
+    env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -224,7 +224,7 @@ class ScheduledJobs(
 
     fun endAssistanceFactorsWhichBelongToPastPlacements(
         db: Database.Connection,
-        clock: EvakaClock
+        clock: EvakaClock,
     ) {
         db.transaction { tx -> tx.endAssistanceFactorsWhichBelongToPastPlacements(clock.today()) }
     }
@@ -304,7 +304,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             vardaUpdateServiceNew.planChildrenUpdate(
                 db,
                 clock,
-                vardaEnv.newIntegrationMigrationSpeed
+                vardaEnv.newIntegrationMigrationSpeed,
             )
         } else {
             vardaUpdateService.updateUnits(db, clock)
@@ -319,7 +319,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         vardaResetService.planVardaReset(
             db,
             clock,
-            addNewChildren = !vardaEnv.newIntegrationEnabled
+            addNewChildren = !vardaEnv.newIntegrationEnabled,
         )
     }
 

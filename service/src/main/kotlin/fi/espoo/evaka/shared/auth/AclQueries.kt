@@ -13,7 +13,7 @@ import org.jdbi.v3.core.mapper.Nested
 data class DaycareAclRow(
     @Nested val employee: DaycareAclRowEmployee,
     val role: UserRole,
-    val groupIds: List<GroupId>
+    val groupIds: List<GroupId>,
 )
 
 data class DaycareAclRowEmployee(
@@ -23,13 +23,13 @@ data class DaycareAclRowEmployee(
     val email: String?,
     val temporary: Boolean,
     val hasStaffOccupancyEffect: Boolean?,
-    val active: Boolean
+    val active: Boolean,
 )
 
 fun Database.Read.getDaycareAclRows(
     daycareId: DaycareId,
     includeStaffOccupancy: Boolean,
-    role: UserRole? = null
+    role: UserRole? = null,
 ): List<DaycareAclRow> =
     createQuery {
             sql(
@@ -75,7 +75,7 @@ fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    role: UserRole
+    role: UserRole,
 ) =
     createUpdate {
             sql(
@@ -91,7 +91,7 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role
 fun Database.Transaction.deleteDaycareAclRow(
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    role: UserRole
+    role: UserRole,
 ) =
     createUpdate {
             sql(
@@ -120,7 +120,7 @@ AND daycare_group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ${bind(
 fun Database.Transaction.insertDaycareGroupAcl(
     daycareId: DaycareId,
     employeeId: EmployeeId,
-    groupIds: Collection<GroupId>
+    groupIds: Collection<GroupId>,
 ) =
     executeBatch(groupIds) {
         sql(

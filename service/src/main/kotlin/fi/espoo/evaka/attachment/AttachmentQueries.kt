@@ -55,7 +55,7 @@ data class AttachmentForeignKeys(
             incomeStatementId,
             messageContentId,
             messageDraftId,
-            pedagogicalDocumentId
+            pedagogicalDocumentId,
         )
 
     fun parent(): AttachmentParent =
@@ -89,7 +89,7 @@ fun Database.Transaction.insertAttachment(
     name: String,
     contentType: String,
     attachTo: AttachmentParent,
-    type: AttachmentType?
+    type: AttachmentType?,
 ): AttachmentId {
     check(AttachmentForeignKeys.idFieldCount == 7) {
         "Unexpected AttachmentForeignKeys field count"
@@ -136,14 +136,14 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? =
                 id = column("id"),
                 name = column("name"),
                 contentType = column("content_type"),
-                attachedTo = row<AttachmentForeignKeys>().parent()
+                attachedTo = row<AttachmentForeignKeys>().parent(),
             )
         }
 
 fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: AttachmentType,
-    userId: EvakaUserId
+    userId: EvakaUserId,
 ): List<AttachmentId> =
     createQuery {
             sql(
@@ -162,7 +162,7 @@ RETURNING id
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(
     newParent: AttachmentParent,
-    predicate: Predicate
+    predicate: Predicate,
 ): Int =
     createUpdate {
             val fks = AttachmentForeignKeys(newParent)
@@ -195,7 +195,7 @@ WHERE ${predicate(predicate.forTable("attachment"))}
 fun Database.Transaction.associateOrphanAttachments(
     uploadedBy: EvakaUserId,
     newParent: AttachmentParent,
-    attachments: Collection<AttachmentId>
+    attachments: Collection<AttachmentId>,
 ) {
     val isOrphan = AttachmentParent.None.toPredicate()
     val numRows =
@@ -206,7 +206,7 @@ fun Database.Transaction.associateOrphanAttachments(
                         "$it.uploaded_by = ${bind(uploadedBy)} AND $it.id = ANY(${bind(attachments)})"
                     )
                 }
-                .and(isOrphan)
+                .and(isOrphan),
         )
     if (numRows != attachments.size) {
         throw BadRequest("Cannot associate all requested attachments")
@@ -216,11 +216,11 @@ fun Database.Transaction.associateOrphanAttachments(
 /** Dissociates all attachments from the given parent, so that they become orphans. */
 fun Database.Transaction.dissociateAttachmentsOfParent(
     uploadedBy: EvakaUserId,
-    parent: AttachmentParent
+    parent: AttachmentParent,
 ): Int =
     changeParent(
         newParent = AttachmentParent.None,
-        Predicate { where("$it.uploaded_by = ${bind(uploadedBy)}") }.and(parent.toPredicate())
+        Predicate { where("$it.uploaded_by = ${bind(uploadedBy)}") }.and(parent.toPredicate()),
     )
 
 private fun AttachmentParent.toPredicate() = Predicate {

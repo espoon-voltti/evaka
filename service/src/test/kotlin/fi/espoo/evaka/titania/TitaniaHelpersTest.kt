@@ -48,9 +48,9 @@ class TitaniaHelpersTest {
                 attendance.copy(departed = attendance.arrived.atEndOfDay()),
                 attendance.copy(
                     arrived = attendance.arrived.plusDays(1).atStartOfDay(),
-                    departed = attendance.arrived.plusDays(1).atEndOfDay()
+                    departed = attendance.arrived.plusDays(1).atEndOfDay(),
                 ),
-                attendance.copy(arrived = attendance.arrived.plusDays(2).atStartOfDay())
+                attendance.copy(arrived = attendance.arrived.plusDays(2).atStartOfDay()),
             )
     }
 }
@@ -67,5 +67,5 @@ private val testAttendance =
         employeeId = EmployeeId(UUID.randomUUID()),
         firstName = "First",
         lastName = "Last",
-        departedAutomatically = false
+        departedAutomatically = false,
     )

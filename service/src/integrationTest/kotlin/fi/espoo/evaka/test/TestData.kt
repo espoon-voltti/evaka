@@ -31,7 +31,7 @@ val defaultPreferredUnit = PreferredUnit(id = testDaycare.id, name = testDaycare
 
 fun getValidDaycareApplication(
     preferredUnit: DevDaycare = testDaycare,
-    shiftCare: Boolean = false
+    shiftCare: Boolean = false,
 ) = applicationDetails(PreferredUnit(preferredUnit.id, preferredUnit.name), shiftCare = shiftCare)
 
 val validDaycareApplication = getValidDaycareApplication()
@@ -68,14 +68,14 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                             PersonBasics(
                                 firstName = testChild_1.firstName,
                                 lastName = testChild_1.lastName,
-                                socialSecurityNumber = testChild_1.ssn
+                                socialSecurityNumber = testChild_1.ssn,
                             ),
                         dateOfBirth = testChild_1.dateOfBirth,
                         address =
                             Address(
                                 street = testChild_1.streetAddress,
                                 postalCode = testChild_1.postalCode,
-                                postOffice = testChild_1.postOffice
+                                postOffice = testChild_1.postOffice,
                             ),
                         futureAddress = null,
                         nationality = "fi",
@@ -83,7 +83,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                         allergies = "allergies",
                         diet = "diet",
                         assistanceNeeded = true,
-                        assistanceDescription = "This is a description for assistance."
+                        assistanceDescription = "This is a description for assistance.",
                     ),
                 guardian =
                     Guardian(
@@ -91,17 +91,17 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                             PersonBasics(
                                 firstName = testAdult_1.firstName,
                                 lastName = testAdult_1.lastName,
-                                socialSecurityNumber = testAdult_1.ssn
+                                socialSecurityNumber = testAdult_1.ssn,
                             ),
                         address =
                             Address(
                                 street = testAdult_1.streetAddress,
                                 postalCode = testAdult_1.postalCode,
-                                postOffice = testAdult_1.postOffice
+                                postOffice = testAdult_1.postOffice,
                             ),
                         futureAddress = null,
                         phoneNumber = "0504139432",
-                        email = "joku@maili.fi"
+                        email = "joku@maili.fi",
                     ),
                 secondGuardian = null,
                 otherPartner = null,
@@ -117,16 +117,16 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                                 endTime = "17:00",
                                 shiftCare = shiftCare,
                                 partTime = false,
-                                serviceNeedOption = null
+                                serviceNeedOption = null,
                             ),
                         siblingBasis = null,
                         preparatory = false,
-                        urgent = false
+                        urgent = false,
                     ),
                 maxFeeAccepted = false,
                 otherInfo = "other info",
                 clubDetails = null,
-            )
+            ),
     )
 
 val validPreschoolApplication =
@@ -161,14 +161,14 @@ val validPreschoolApplication =
                             PersonBasics(
                                 firstName = testChild_1.firstName,
                                 lastName = testChild_1.lastName,
-                                socialSecurityNumber = testChild_1.ssn
+                                socialSecurityNumber = testChild_1.ssn,
                             ),
                         dateOfBirth = testChild_1.dateOfBirth,
                         address =
                             Address(
                                 street = testChild_1.streetAddress,
                                 postalCode = testChild_1.postalCode,
-                                postOffice = testChild_1.postOffice
+                                postOffice = testChild_1.postOffice,
                             ),
                         futureAddress = null,
                         nationality = "fi",
@@ -176,7 +176,7 @@ val validPreschoolApplication =
                         allergies = "allergies",
                         diet = "diet",
                         assistanceNeeded = true,
-                        assistanceDescription = "Description for assistance"
+                        assistanceDescription = "Description for assistance",
                     ),
                 guardian =
                     Guardian(
@@ -184,17 +184,17 @@ val validPreschoolApplication =
                             PersonBasics(
                                 firstName = testAdult_1.firstName,
                                 lastName = testAdult_1.lastName,
-                                socialSecurityNumber = testAdult_1.ssn
+                                socialSecurityNumber = testAdult_1.ssn,
                             ),
                         address =
                             Address(
                                 street = testAdult_1.streetAddress,
                                 postalCode = testAdult_1.postalCode,
-                                postOffice = testAdult_1.postOffice
+                                postOffice = testAdult_1.postOffice,
                             ),
                         futureAddress = null,
                         phoneNumber = "0504139432",
-                        email = "joku@maili.fi"
+                        email = "joku@maili.fi",
                     ),
                 secondGuardian = null,
                 otherPartner = null,
@@ -211,16 +211,16 @@ val validPreschoolApplication =
                                 endTime = "17:00",
                                 shiftCare = false,
                                 partTime = false,
-                                serviceNeedOption = null
+                                serviceNeedOption = null,
                             ),
                         siblingBasis = null,
                         preparatory = false,
-                        urgent = false
+                        urgent = false,
                     ),
                 maxFeeAccepted = false,
                 otherInfo = "other info",
-                clubDetails = null
-            )
+                clubDetails = null,
+            ),
     )
 
 fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDate) =
@@ -255,14 +255,14 @@ fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDat
                             PersonBasics(
                                 firstName = testChild_1.firstName,
                                 lastName = testChild_1.lastName,
-                                socialSecurityNumber = testChild_1.ssn
+                                socialSecurityNumber = testChild_1.ssn,
                             ),
                         dateOfBirth = testChild_1.dateOfBirth,
                         address =
                             Address(
                                 street = testChild_1.streetAddress,
                                 postalCode = testChild_1.postalCode,
-                                postOffice = testChild_1.postOffice
+                                postOffice = testChild_1.postOffice,
                             ),
                         futureAddress = null,
                         nationality = "fi",
@@ -270,7 +270,7 @@ fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDat
                         allergies = "",
                         diet = "",
                         assistanceNeeded = true,
-                        assistanceDescription = "hjelppiväh!"
+                        assistanceDescription = "hjelppiväh!",
                     ),
                 guardian =
                     Guardian(
@@ -278,17 +278,17 @@ fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDat
                             PersonBasics(
                                 firstName = testAdult_1.firstName,
                                 lastName = testAdult_1.lastName,
-                                socialSecurityNumber = testAdult_1.ssn
+                                socialSecurityNumber = testAdult_1.ssn,
                             ),
                         address =
                             Address(
                                 street = testAdult_1.streetAddress,
                                 postalCode = testAdult_1.postalCode,
-                                postOffice = testAdult_1.postOffice
+                                postOffice = testAdult_1.postOffice,
                             ),
                         futureAddress = null,
                         phoneNumber = "0504139432",
-                        email = "joku@maili.fi"
+                        email = "joku@maili.fi",
                     ),
                 secondGuardian = null,
                 otherPartner = null,
@@ -302,10 +302,10 @@ fun validClubApplication(preferredUnit: DevDaycare, preferredStartDate: LocalDat
                         serviceNeed = null,
                         siblingBasis = null,
                         preparatory = false,
-                        urgent = false
+                        urgent = false,
                     ),
                 maxFeeAccepted = false,
                 otherInfo = "other info",
-                clubDetails = ClubDetails(wasOnClubCare = true, wasOnDaycare = true)
-            )
+                clubDetails = ClubDetails(wasOnClubCare = true, wasOnDaycare = true),
+            ),
     )

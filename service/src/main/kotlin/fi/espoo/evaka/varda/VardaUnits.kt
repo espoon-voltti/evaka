@@ -40,7 +40,7 @@ fun updateUnits(
     client: VardaUnitClient,
     lahdejarjestelma: String,
     kuntakoodi: String,
-    vakajarjestajaUrl: String
+    vakajarjestajaUrl: String,
 ) {
     val startTime = clock.now()
 
@@ -58,7 +58,7 @@ fun updateUnits(
                 unit.toVardaUnitRequest(
                     lahdejarjestelma = lahdejarjestelma,
                     vakajarjestaja = vakajarjestajaUrl,
-                    kuntakoodi = kuntakoodi
+                    kuntakoodi = kuntakoodi,
                 )
             if (prevState != currState) {
                 Triple(unit.evakaDaycareId, unit.ophUnitOid, currState)
@@ -83,7 +83,7 @@ fun updateUnits(
                     now = startTime,
                     unitId = evakaDaycareId,
                     ophUnitOid = response.organisaatio_oid,
-                    state = request
+                    state = request,
                 )
             }
         } catch (e: Exception) {
@@ -93,7 +93,7 @@ fun updateUnits(
                     tx = it,
                     now = startTime,
                     unitId = evakaDaycareId,
-                    error = e.localizedMessage
+                    error = e.localizedMessage,
                 )
             }
         }
@@ -152,7 +152,7 @@ fun setUnitUploaded(
     now: HelsinkiDateTime,
     unitId: DaycareId,
     ophUnitOid: String?,
-    state: Any
+    state: Any,
 ) {
     tx.createUpdate {
             sql(
@@ -178,7 +178,7 @@ fun setUnitUploadFailed(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
     unitId: DaycareId,
-    error: String
+    error: String,
 ) {
     tx.createUpdate {
             sql(
@@ -224,14 +224,14 @@ enum class VardaUnitType(val vardaCode: String) {
     PREPARATORY_EDUCATION(""),
     FAMILY("tm02"),
     GROUP_FAMILY("tm03"),
-    CLUB("")
+    CLUB(""),
 }
 
 //  https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
 enum class VardaLanguage(val vardaCode: String) {
     FI("FI"),
     SV("SV"),
-    EN("EN")
+    EN("EN"),
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardakasvatusopillinenjarjestelma/koodi
@@ -242,7 +242,7 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
     REGGIO_EMILIA("kj04"),
     FREIRE("kj05"),
     NONE("kj98"),
-    OTHER("kj99")
+    OTHER("kj99"),
 }
 
 data class VardaUnit(
@@ -263,13 +263,9 @@ data class VardaUnit(
     val providerType: VardaUnitProviderType,
     val type: List<VardaUnitType>,
     val language: VardaLanguage,
-    val languageEmphasisId: UUID?
+    val languageEmphasisId: UUID?,
 ) {
-    fun toVardaUnitRequest(
-        lahdejarjestelma: String,
-        vakajarjestaja: String,
-        kuntakoodi: String,
-    ) =
+    fun toVardaUnitRequest(lahdejarjestelma: String, vakajarjestaja: String, kuntakoodi: String) =
         VardaUnitRequest(
             vakajarjestaja = vakajarjestaja,
             nimi = name,
@@ -299,7 +295,7 @@ data class VardaUnit(
                     else -> null
                 },
             toimintakieli_koodi = listOfNotNull(language.vardaCode),
-            kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
+            kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false,
         )
 }
 
@@ -325,5 +321,5 @@ data class VardaUnitRequest(
     val jarjestamismuoto_koodi: List<String>,
     val toimintamuoto_koodi: String?,
     val toimintakieli_koodi: List<String>,
-    val kielipainotus_kytkin: Boolean
+    val kielipainotus_kytkin: Boolean,
 )

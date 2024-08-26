@@ -48,22 +48,29 @@ class DateMap<T> private constructor(entries: List<Pair<FiniteDateRange, T>>) :
 
     companion object {
         private val EMPTY: DateMap<*> = DateMap<Any>(emptyList())
+
         /** Returns an empty date map */
         fun <T> empty(): DateMap<T> {
-            @Suppress("UNCHECKED_CAST") return EMPTY as DateMap<T>
+            @Suppress("UNCHECKED_CAST")
+            return EMPTY as DateMap<T>
         }
+
         /** Returns a new date map containing all the given entries */
         fun <T> of(vararg entries: Pair<FiniteDateRange, T>): DateMap<T> =
             empty<T>().setAll(entries.asSequence())
+
         /** Returns a new date map containing all the given ranges mapped to the given value. */
         fun <T> of(ranges: Iterable<FiniteDateRange>, value: T): DateMap<T> =
             empty<T>().setAll(ranges.asSequence().map { it to value })
+
         /** Returns a new date map containing all the given ranges mapped to the given value. */
         fun <T> of(ranges: Sequence<FiniteDateRange>, value: T): DateMap<T> =
             empty<T>().setAll(ranges.map { it to value })
+
         /** Returns a new date map containing all the given entries */
         fun <T> of(entries: Iterable<Pair<FiniteDateRange, T>>): DateMap<T> =
             empty<T>().setAll(entries.asSequence())
+
         /** Returns a new date map containing all the given entries */
         fun <T> of(entries: Sequence<Pair<FiniteDateRange, T>>): DateMap<T> =
             empty<T>().setAll(entries)

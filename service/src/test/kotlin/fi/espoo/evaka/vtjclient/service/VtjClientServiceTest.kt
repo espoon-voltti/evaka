@@ -118,7 +118,7 @@ class VtjClientServiceTest {
 
             responseLogEvent.assertLogArgumentsContain(
                 query = query,
-                status = STATUS_RESPONSE_RECEIVED
+                status = STATUS_RESPONSE_RECEIVED,
             )
         }
     }
@@ -148,7 +148,7 @@ class VtjClientServiceTest {
             assertThat(responseLogEvent.message).isEqualTo("Did not receive VTJ results")
             responseLogEvent.assertLogArgumentsContain(
                 query = query,
-                status = STATUS_NO_RESPONSE_OR_PARSING_ERROR
+                status = STATUS_NO_RESPONSE_OR_PARSING_ERROR,
             )
         }
     }
@@ -183,7 +183,7 @@ class VtjClientServiceTest {
                     .isEqualTo("There was an error requesting VTJ data. Results were not received.")
                 responseLogEvent.assertLogArgumentsContain(
                     query = query,
-                    status = STATUS_ERROR_DURING_REQUEST
+                    status = STATUS_ERROR_DURING_REQUEST,
                 )
             }
         }
@@ -224,7 +224,7 @@ class VtjClientServiceTest {
             assertThat(responseLogEvent.message).isEqualTo("VTJ results received")
             responseLogEvent.assertLogArgumentsContain(
                 query = query,
-                status = STATUS_RESPONSE_RECEIVED
+                status = STATUS_RESPONSE_RECEIVED,
             )
         }
     }
@@ -236,7 +236,7 @@ class VtjClientServiceTest {
             VTJQuery(
                 requestingUserId = requestedBy.id.raw,
                 type = HUOLTAJA_HUOLLETTAVA,
-                ssn = requestedBy.identity.toString()
+                ssn = requestedBy.identity.toString(),
             )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
@@ -256,7 +256,7 @@ class VtjClientServiceTest {
             VTJQuery(
                 requestingUserId = requestedBy.id.raw,
                 type = HUOLTAJA_HUOLLETTAVA,
-                ssn = requestedBy.identity.toString()
+                ssn = requestedBy.identity.toString(),
             )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
@@ -296,7 +296,7 @@ class VtjClientServiceTest {
         streetAddress: String = "Jokukatu 8",
         postalOffice: String = "Jokukaupunki",
         postalCode: String = "00100",
-        dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27)
+        dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27),
     ) =
         PersonDTO(
             id = id,
@@ -324,7 +324,7 @@ class VtjClientServiceTest {
 
     private fun createDefaultQuery(
         ssn: String = DEFAULT_PERSON_SSN,
-        type: RequestType = HUOLTAJA_HUOLLETTAVA
+        type: RequestType = HUOLTAJA_HUOLLETTAVA,
     ): VTJQuery {
         val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
         return VTJQuery(requestingUserId = requestedBy.id.raw, type = type, ssn = ssn)
@@ -353,7 +353,7 @@ class VtjClientServiceTest {
                 .contains(
                     mapOf("queryName" to query.type.queryName),
                     status,
-                    query.ssn.subSequence(0, 6)
+                    query.ssn.subSequence(0, 6),
                 )
         }
     }

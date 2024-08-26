@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/mobile/realtime-staff-attendances", // deprecated
-    "/employee-mobile/realtime-staff-attendances"
+    "/employee-mobile/realtime-staff-attendances",
 )
 class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @GetMapping
@@ -45,7 +45,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        @RequestParam unitId: DaycareId,
     ): CurrentDayStaffAttendanceResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -54,11 +54,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                     CurrentDayStaffAttendanceResponse(
                         staff = tx.getStaffAttendances(unitId, clock.now()),
-                        extraAttendances = tx.getExternalStaffAttendances(unitId)
+                        extraAttendances = tx.getExternalStaffAttendances(unitId),
                     )
                 }
             }
@@ -68,8 +68,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     meta =
                         mapOf(
                             "staffCount" to it.staff.size,
-                            "externalStaffCount" to it.extraAttendances.size
-                        )
+                            "externalStaffCount" to it.extraAttendances.size,
+                        ),
                 )
             }
     }
@@ -80,7 +80,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val groupId: GroupId,
         val time: LocalTime,
         val type: StaffAttendanceType?,
-        val hasStaffOccupancyEffect: Boolean?
+        val hasStaffOccupancyEffect: Boolean?,
     )
 
     @PostMapping("/arrival")
@@ -88,7 +88,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestBody body: StaffArrivalRequest
+        @RequestBody body: StaffArrivalRequest,
     ) {
         val staffAttendanceIds =
             try {
@@ -99,7 +99,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             user,
                             clock,
                             Action.Group.MARK_ARRIVAL,
-                            body.groupId
+                            body.groupId,
                         )
                     }
                     ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
@@ -117,7 +117,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 plannedAttendances,
                                 ongoingAttendance,
                                 latestDepartureToday,
-                                body
+                                body,
                             )
                         val occupancyCoefficient =
                             body.hasStaffOccupancyEffect?.let {
@@ -125,7 +125,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             }
                                 ?: tx.getOccupancyCoefficientForEmployee(
                                     body.employeeId,
-                                    body.groupId
+                                    body.groupId,
                                 )
                                 ?: BigDecimal.ZERO
                         attendances.map { attendance ->
@@ -137,7 +137,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                 attendance.departed,
                                 occupancyCoefficient,
                                 attendance.type,
-                                false
+                                false,
                             )
                         }
                     }
@@ -147,7 +147,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         Audit.StaffAttendanceArrivalCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds)
+            objectId = AuditId(staffAttendanceIds),
         )
     }
 
@@ -156,7 +156,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val groupId: GroupId,
         val pinCode: String,
         val time: LocalTime,
-        val type: StaffAttendanceType?
+        val type: StaffAttendanceType?,
     )
 
     @PostMapping("/departure")
@@ -164,7 +164,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestBody body: StaffDepartureRequest
+        @RequestBody body: StaffDepartureRequest,
     ) {
         val staffAttendanceIds =
             db.connect { dbc ->
@@ -174,7 +174,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Group.MARK_DEPARTURE,
-                        body.groupId
+                        body.groupId,
                     )
                 }
                 ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
@@ -190,7 +190,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             clock.now(),
                             plannedAttendances,
                             ongoingAttendance,
-                            body
+                            body,
                         )
                     val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
                     attendances.map { attendance ->
@@ -202,14 +202,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             attendance.departed,
                             occupancyCoefficient,
                             attendance.type,
-                            false
+                            false,
                         )
                     }
                 }
             }
         Audit.StaffAttendanceDepartureCreate.log(
             targetId = AuditId(listOf(body.groupId, body.employeeId)),
-            objectId = AuditId(staffAttendanceIds)
+            objectId = AuditId(staffAttendanceIds),
         )
     }
 
@@ -217,12 +217,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val employeeId: EmployeeId,
         val pinCode: String,
         val date: LocalDate,
-        val rows: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>
+        val rows: List<RealtimeStaffAttendanceController.StaffAttendanceUpsert>,
     )
 
     data class StaffAttendanceUpdateResponse(
         val deleted: List<StaffAttendanceRealtimeId>,
-        val inserted: List<StaffAttendanceRealtimeId>
+        val inserted: List<StaffAttendanceRealtimeId>,
     )
 
     @PutMapping
@@ -231,7 +231,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestBody body: StaffAttendanceUpdateRequest
+        @RequestBody body: StaffAttendanceUpdateRequest,
     ): StaffAttendanceUpdateResponse {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -240,7 +240,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                 }
                 ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
@@ -284,7 +284,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                         occupancyCoefficientSeven
                                     else occupancyCoefficientZero,
                                 type = attendance.type,
-                                departedAutomatically = false
+                                departedAutomatically = false,
                             )
                         }
 
@@ -299,8 +299,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         mapOf(
                             "date" to body.date,
                             "inserted" to it.inserted,
-                            "deleted" to it.deleted
-                        )
+                            "deleted" to it.deleted,
+                        ),
                 )
             }
     }
@@ -309,7 +309,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val name: String,
         val groupId: GroupId,
         val arrived: LocalTime,
-        val hasStaffOccupancyEffect: Boolean
+        val hasStaffOccupancyEffect: Boolean,
     )
 
     @PostMapping("/arrival-external")
@@ -317,7 +317,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestBody body: ExternalStaffArrivalRequest
+        @RequestBody body: ExternalStaffArrivalRequest,
     ): StaffAttendanceExternalId {
         val arrivedTimeHDT = clock.now().withTime(body.arrived)
         val nowHDT = clock.now()
@@ -330,7 +330,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Group.MARK_EXTERNAL_ARRIVAL,
-                        body.groupId
+                        body.groupId,
                     )
 
                     it.markExternalStaffArrival(
@@ -340,7 +340,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             arrived = arrivedTimeOrDefault,
                             occupancyCoefficient =
                                 if (body.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                                else occupancyCoefficientZero
+                                else occupancyCoefficientZero,
                         )
                     )
                 }
@@ -348,14 +348,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             .also { staffAttendanceExternalId ->
                 Audit.StaffAttendanceArrivalExternalCreate.log(
                     targetId = AuditId(body.groupId),
-                    objectId = AuditId(staffAttendanceExternalId)
+                    objectId = AuditId(staffAttendanceExternalId),
                 )
             }
     }
 
     data class ExternalStaffDepartureRequest(
         val attendanceId: StaffAttendanceExternalId,
-        val time: LocalTime
+        val time: LocalTime,
     )
 
     @PostMapping("/departure-external")
@@ -363,7 +363,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
-        @RequestBody body: ExternalStaffDepartureRequest
+        @RequestBody body: ExternalStaffDepartureRequest,
     ) {
         db.connect { dbc ->
             // todo: convert to action auth
@@ -376,7 +376,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     user,
                     clock,
                     Action.Group.MARK_EXTERNAL_DEPARTURE,
-                    attendance.groupId
+                    attendance.groupId,
                 )
             }
 
@@ -403,7 +403,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         plans: List<PlannedStaffAttendance>,
         ongoingAttendance: StaffAttendance?,
         latestDepartureToday: StaffAttendance?,
-        arrival: StaffArrivalRequest
+        arrival: StaffArrivalRequest,
     ): List<StaffAttendance> {
         val arrivalTime =
             now.withTime(arrival.time).takeIf {
@@ -417,7 +417,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         fun createNewAttendance(
             arrived: HelsinkiDateTime,
             departed: HelsinkiDateTime?,
-            type: StaffAttendanceType
+            type: StaffAttendanceType,
         ) =
             StaffAttendance(
                 id = null,
@@ -426,7 +426,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 arrived = arrived,
                 departed = departed,
                 occupancyCoefficient = BigDecimal.ZERO,
-                type = type
+                type = type,
             )
 
         if (plans.isEmpty()) {
@@ -470,7 +470,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         ongoingAttendance?.copy(departed = arrivalTime)
                             ?: if (arrival.type == null || latestDepartureToday != null) null
                             else createNewAttendance(planStart, arrivalTime, arrival.type),
-                        createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
+                        createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT),
                     )
                 }
                 else ->
@@ -493,7 +493,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         now: HelsinkiDateTime,
         plans: List<PlannedStaffAttendance>,
         ongoingAttendance: StaffAttendance,
-        departure: StaffDepartureRequest
+        departure: StaffDepartureRequest,
     ): List<StaffAttendance> {
         val departureTime =
             now.withTime(departure.time).takeIf { it <= now }
@@ -506,7 +506,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         fun createNewAttendance(
             arrived: HelsinkiDateTime,
             departed: HelsinkiDateTime?,
-            type: StaffAttendanceType
+            type: StaffAttendanceType,
         ) =
             StaffAttendance(
                 id = null,
@@ -515,7 +515,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 arrived = arrived,
                 departed = departed,
                 occupancyCoefficient = BigDecimal.ZERO,
-                type = type
+                type = type,
             )
 
         if (plans.isEmpty()) {
@@ -542,7 +542,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             StaffAttendanceType.JUSTIFIED_CHANGE
                         } else {
                             ongoingAttendance.type
-                        }
+                        },
                 )
             )
         }
@@ -554,7 +554,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.OTHER_WORK ->
                     listOf(
                         ongoingAttendance.copy(departed = departureTime),
-                        createNewAttendance(departureTime, null, departure.type)
+                        createNewAttendance(departureTime, null, departure.type),
                     )
                 else ->
                     throw BadRequest(

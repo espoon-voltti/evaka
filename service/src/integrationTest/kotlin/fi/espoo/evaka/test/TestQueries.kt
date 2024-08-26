@@ -40,7 +40,7 @@ data class DecisionTableRow(
     val documentKey: String?,
     val requestedStartDate: LocalDate?,
     val resolved: Instant?,
-    val resolvedBy: EvakaUserId?
+    val resolvedBy: EvakaUserId?,
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 }
@@ -63,7 +63,7 @@ data class PlacementTableRow(
     val childId: ChildId,
     val unitId: DaycareId,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 }
@@ -85,7 +85,7 @@ data class PlacementPlanTableRow(
     val preschoolDaycareEndDate: LocalDate?,
     val preparatoryStartDate: LocalDate?,
     val preparatoryEndDate: LocalDate?,
-    val deleted: Boolean
+    val deleted: Boolean,
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 
@@ -109,7 +109,7 @@ data class BackupCareTableRow(
     val unitId: DaycareId,
     val groupId: GroupId?,
     val startDate: LocalDate,
-    val endDate: LocalDate
+    val endDate: LocalDate,
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
 }

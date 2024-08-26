@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.RestController
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/ended-placements", // deprecated
-        "/employee/reports/ended-placements"
+        "/employee/reports/ended-placements",
     )
     fun getEndedPlacementsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): List<EndedPlacementsReportRow> {
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -38,7 +38,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
                         it,
                         user,
                         clock,
-                        Action.Global.READ_ENDED_PLACEMENTS_REPORT
+                        Action.Global.READ_ENDED_PLACEMENTS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getEndedPlacementsRows(from, to)
@@ -54,7 +54,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
 
 private fun Database.Read.getEndedPlacementsRows(
     from: LocalDate,
-    to: LocalDate
+    to: LocalDate,
 ): List<EndedPlacementsReportRow> {
     return createQuery {
             sql(
@@ -97,5 +97,5 @@ data class EndedPlacementsReportRow(
     val placementEnd: LocalDate,
     val unitName: String,
     val areaName: String,
-    val nextPlacementStart: LocalDate?
+    val nextPlacementStart: LocalDate?,
 )

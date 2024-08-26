@@ -41,14 +41,14 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     class MockDocumentService(
         private val uploadFn: () -> DocumentLocation,
-        private val deleteFn: () -> Unit
+        private val deleteFn: () -> Unit,
     ) : DocumentService {
         override fun get(bucketName: String, key: String): Document = error("Not implemented")
 
         override fun response(
             bucketName: String,
             key: String,
-            contentDisposition: ContentDisposition
+            contentDisposition: ContentDisposition,
         ): ResponseEntity<Any> = error("Not implemented")
 
         override fun upload(bucketName: String, document: Document): DocumentLocation = uploadFn()
@@ -68,8 +68,8 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 attachments = "",
                 decisions = "",
                 feeDecisions = "",
-                voucherValueDecisions = ""
-            )
+                voucherValueDecisions = "",
+            ),
         )
 
     @BeforeEach
@@ -91,7 +91,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             createAttachmentService(
                 MockDocumentService(
                     uploadFn = { error(errorMessage) },
-                    deleteFn = { error("Unexpected delete") }
+                    deleteFn = { error("Unexpected delete") },
                 )
             )
         assertThrows<Exception>(errorMessage) {
@@ -101,7 +101,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
                 clock,
                 "test.pdf",
                 byteArrayOf(0x11),
-                "text/plain"
+                "text/plain",
             )
         }
         assertEquals(1, db.read { it.userAttachmentCount(user.evakaUserId, AttachmentParent.None) })
@@ -115,7 +115,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             createAttachmentService(
                 MockDocumentService(
                     uploadFn = { error("Unexpected upload") },
-                    deleteFn = { error(errorMessage) }
+                    deleteFn = { error(errorMessage) },
                 )
             )
         val (attachment, parent) =
@@ -138,7 +138,7 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.transaction {
                 Pair(
                     it.insertTestAttachment(clock, it.insertTestIncome()),
-                    it.insertTestAttachment(clock, AttachmentParent.None)
+                    it.insertTestAttachment(clock, AttachmentParent.None),
                 )
             }
         clock.tick(Duration.ofDays(1) + Duration.ofSeconds(1))
@@ -155,14 +155,14 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             insert(
                 DevIncome(
                     personId = insert(DevPerson(), DevPersonType.ADULT),
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         )
 
     private fun Database.Transaction.insertTestAttachment(
         clock: EvakaClock,
-        parent: AttachmentParent
+        parent: AttachmentParent,
     ) =
         insertAttachment(
             AuthenticatedUser.SystemInternalUser,
@@ -170,6 +170,6 @@ class AttachmentServiceTest : PureJdbiTest(resetDbBeforeEach = true) {
             "test.pdf",
             "text/plain",
             parent,
-            type = null
+            type = null,
         )
 }

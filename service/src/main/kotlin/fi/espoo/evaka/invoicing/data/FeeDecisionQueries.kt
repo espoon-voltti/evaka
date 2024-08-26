@@ -35,7 +35,7 @@ import java.util.UUID
 
 fun feeDecisionQuery(
     predicate: Predicate = Predicate.alwaysTrue(),
-    lockForUpdate: Boolean = false
+    lockForUpdate: Boolean = false,
 ) = QuerySql {
     sql(
         """
@@ -364,7 +364,7 @@ fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
 data class PagedFeeDecisionSummaries(
     val data: List<FeeDecisionSummary>,
     val total: Int,
-    val pages: Int
+    val pages: Int,
 )
 
 fun Database.Read.searchFeeDecisions(
@@ -383,7 +383,7 @@ fun Database.Read.searchFeeDecisions(
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
-    difference: Set<FeeDecisionDifference>
+    difference: Set<FeeDecisionDifference>,
 ): PagedFeeDecisionSummaries {
     val sortColumn =
         when (sortBy) {
@@ -409,7 +409,7 @@ fun Database.Read.searchFeeDecisions(
             Binding.of("finance_decision_handler", financeDecisionHandlerId),
             Binding.of("difference", difference),
             Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
-            Binding.of("now", clock.now())
+            Binding.of("now", clock.now()),
         )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -467,7 +467,7 @@ fun Database.Read.searchFeeDecisions(
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
             else null,
-            if (preschoolClub) "decisions_with_preschool_club_placement IS NOT NULL" else null
+            if (preschoolClub) "decisions_with_preschool_club_placement IS NOT NULL" else null,
         )
 
     val youngestChildQuery =
@@ -518,7 +518,7 @@ fun Database.Read.searchFeeDecisions(
                 if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery
                 else "",
                 if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else "",
-                if (preschoolClub) preschoolClubPlacementQuery else ""
+                if (preschoolClub) preschoolClubPlacementQuery else "",
             )
             .filter { it.isNotEmpty() }
             .joinToString(",")
@@ -616,7 +616,7 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
                         it.headOfFamily.id,
                         it.partner?.id,
                         it.children.map { c -> c.child.id },
-                        it.validDuring
+                        it.validDuring,
                     )
             )
         }
@@ -626,7 +626,7 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
     headOfFamilyId: PersonId,
     period: DateRange? = null,
     status: List<FeeDecisionStatus>? = null,
-    lockForUpdate: Boolean = false
+    lockForUpdate: Boolean = false,
 ): List<FeeDecision> {
     val headPredicate = Predicate { where("$it.head_of_family_id = ${bind(headOfFamilyId)}") }
     val validPredicate =
@@ -650,7 +650,7 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
     approvedAt: HelsinkiDateTime,
     decisionHandlerId: EmployeeId?,
     isRetroactive: Boolean = false,
-    alwaysUseDaycareFinanceDecisionHandler: Boolean
+    alwaysUseDaycareFinanceDecisionHandler: Boolean,
 ) {
     executeBatch(ids) {
         sql(
@@ -801,7 +801,7 @@ fun Database.Read.partnerIsCodebtor(
     @Suppress("UNUSED_PARAMETER") headOfFamilyId: PersonId,
     partnerId: PersonId?,
     childIds: List<ChildId>,
-    dateRange: DateRange
+    dateRange: DateRange,
 ): Boolean =
     partnerId != null &&
         createQuery {
@@ -848,5 +848,5 @@ data class FeeDecisionCitizenInfoRow(
     val validDuring: DateRange,
     val sentAt: HelsinkiDateTime,
     val headOfFamilyId: PersonId,
-    val partnerId: PersonId?
+    val partnerId: PersonId?,
 )

@@ -32,7 +32,7 @@ data class CitizenMessageBody(
     val recipients: Set<MessageAccountId>,
     val children: Set<ChildId>,
     val content: String,
-    val title: String
+    val title: String,
 )
 
 @RestController
@@ -40,7 +40,7 @@ data class CitizenMessageBody(
 class MessageControllerCitizen(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
-    private val messageService: MessageService
+    private val messageService: MessageService,
 ) {
 
     @GetMapping("/my-account")
@@ -58,7 +58,7 @@ class MessageControllerCitizen(
                                 tx,
                                 user,
                                 clock,
-                                Action.MessageAccount.ACCESS
+                                Action.MessageAccount.ACCESS,
                             )
                         )
                         .firstOrNull()
@@ -73,7 +73,7 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable threadId: MessageThreadId
+        @PathVariable threadId: MessageThreadId,
     ) {
         db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -91,7 +91,7 @@ class MessageControllerCitizen(
     fun archiveThread(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        @PathVariable threadId: MessageThreadId
+        @PathVariable threadId: MessageThreadId,
     ) {
         db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -111,7 +111,7 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam pageSize: Int,
-        @RequestParam page: Int
+        @RequestParam page: Int,
     ): PagedCitizenMessageThreads {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -122,7 +122,7 @@ class MessageControllerCitizen(
                                 pageSize,
                                 page,
                                 featureConfig.municipalMessageAccountName,
-                                featureConfig.serviceWorkerMessageAccountName
+                                featureConfig.serviceWorkerMessageAccountName,
                             )
                         }
                         .mapTo(::PagedCitizenMessageThreads) {
@@ -137,7 +137,7 @@ class MessageControllerCitizen(
             .let { (accountId, response) ->
                 Audit.MessagingReceivedMessagesRead.log(
                     targetId = AuditId(accountId),
-                    meta = mapOf("total" to response.total)
+                    meta = mapOf("total" to response.total),
                 )
                 response
             }
@@ -145,14 +145,14 @@ class MessageControllerCitizen(
 
     data class GetReceiversResponse(
         val messageAccounts: Set<MessageAccount>,
-        val childrenToMessageAccounts: Map<ChildId, List<MessageAccountId>>
+        val childrenToMessageAccounts: Map<ChildId, List<MessageAccountId>>,
     )
 
     @GetMapping("/receivers")
     fun getReceivers(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock
+        evakaClock: EvakaClock,
     ): GetReceiversResponse {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -162,14 +162,14 @@ class MessageControllerCitizen(
                     GetReceiversResponse(
                         messageAccounts = accountsPerChild.values.flatten().toSet(),
                         childrenToMessageAccounts =
-                            accountsPerChild.mapValues { entry -> entry.value.map { it.id } }
+                            accountsPerChild.mapValues { entry -> entry.value.map { it.id } },
                     )
                 accountId to response
             }
             .let { (accountId, response) ->
                 Audit.MessagingCitizenFetchReceiversForAccount.log(
                     targetId = AuditId(accountId),
-                    meta = mapOf("count" to response.messageAccounts.size)
+                    meta = mapOf("count" to response.messageAccounts.size),
                 )
                 response
             }
@@ -181,7 +181,7 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody
+        @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -195,7 +195,7 @@ class MessageControllerCitizen(
                         content = body.content,
                         user = user,
                         municipalAccountName = featureConfig.municipalMessageAccountName,
-                        serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
+                        serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                     )
                 accountId to response
             }
@@ -212,7 +212,7 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CitizenMessageBody
+        @RequestBody body: CitizenMessageBody,
     ): MessageThreadId {
         val now = clock.now()
         val today = now.toLocalDate()
@@ -244,10 +244,10 @@ class MessageControllerCitizen(
                                     title = body.title,
                                     content = body.content,
                                     urgent = false,
-                                    sensitive = false
+                                    sensitive = false,
                                 ),
                                 body.recipients,
-                                body.children
+                                body.children,
                             )
                         senderId to messageThreadId
                     }

@@ -13,14 +13,14 @@ import java.time.LocalDate
 data class DvvModificationsResponse(
     val viimeisinKirjausavain: String,
     val muutokset: List<DvvModification>,
-    val ajanTasalla: Boolean
+    val ajanTasalla: Boolean,
 )
 
 data class DvvModification(
     val muutospv: String,
     val henkilotunnus: String,
     val tietoryhmat: List<DvvInfoGroup>,
-    val ajanTasalla: Boolean
+    val ajanTasalla: Boolean,
 )
 
 @JsonTypeInfo(
@@ -28,7 +28,7 @@ data class DvvModification(
     include = JsonTypeInfo.As.PROPERTY,
     property = "tietoryhma",
     defaultImpl = DefaultDvvInfoGroup::class,
-    visible = true
+    visible = true,
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = DeathDvvInfoGroup::class, name = "KUOLINPAIVA"),
@@ -42,14 +42,14 @@ data class DvvModification(
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
     JsonSubTypes.Type(
         value = DefaultDvvInfoGroup::class,
-        name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"
+        name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
     ),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIKUNTA"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "AIDINKIELI"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "TILAPAINEN_ULKOMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIMAINEN_POSTIOSOITE"),
-    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_ULKOMAINEN_OSOITE")
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_ULKOMAINEN_OSOITE"),
 )
 interface DvvInfoGroup {
     val tietoryhma: String
@@ -62,7 +62,7 @@ data class RestrictedInfoDvvInfoGroup(
     override val tietoryhma: String,
     val muutosattribuutti: String?,
     val turvakieltoAktiivinen: Boolean,
-    val turvaLoppuPv: DvvDate?
+    val turvaLoppuPv: DvvDate?,
 ) : DvvInfoGroup
 
 data class CaretakerLimitedDvvInfoGroup(
@@ -72,7 +72,7 @@ data class CaretakerLimitedDvvInfoGroup(
     val huoltajanRooli: String,
     val huoltajanLaji: String,
     val huoltosuhteenAlkupv: DvvDate?,
-    val huoltosuhteenLoppupv: DvvDate?
+    val huoltosuhteenLoppupv: DvvDate?,
 ) : DvvInfoGroup
 
 data class DvvSsn(val henkilotunnus: String?)
@@ -81,7 +81,7 @@ data class DeathDvvInfoGroup(
     override val tietoryhma: String,
     val muutosattribuutti: String?,
     val kuollut: Boolean?,
-    val kuolinpv: DvvDate?
+    val kuolinpv: DvvDate?,
 ) : DvvInfoGroup
 
 data class SsnDvvInfoGroup(
@@ -90,7 +90,7 @@ data class SsnDvvInfoGroup(
     val voimassaolo: String,
     val muutettuHenkilotunnus: String,
     val aktiivinenHenkilotunnus: String?,
-    val edellisetHenkilotunnukset: List<String>
+    val edellisetHenkilotunnukset: List<String>,
 ) : DvvInfoGroup
 
 data class DvvDate(val arvo: String, val tarkkuus: String) {

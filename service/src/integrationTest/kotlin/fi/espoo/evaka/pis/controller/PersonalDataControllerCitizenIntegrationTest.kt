@@ -28,7 +28,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             personalDataController.getNotificationSettings(
                 dbInstance(),
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(
             EmailNotificationSettings(
@@ -40,9 +40,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 document = true,
                 informalDocument = true,
                 missingAttendanceReservation = true,
-                discussionTimeReservationConfirmation = true
+                discussionTimeReservationConfirmation = true,
             ),
-            settings
+            settings,
         )
     }
 
@@ -63,15 +63,15 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 document = false,
                 informalDocument = true,
                 missingAttendanceReservation = false,
-                discussionTimeReservationConfirmation = true
-            )
+                discussionTimeReservationConfirmation = true,
+            ),
         )
 
         val settings =
             personalDataController.getNotificationSettings(
                 dbInstance(),
                 AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.WEAK),
-                RealEvakaClock()
+                RealEvakaClock(),
             )
         assertEquals(
             EmailNotificationSettings(
@@ -83,9 +83,9 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 document = false,
                 informalDocument = true,
                 missingAttendanceReservation = false,
-                discussionTimeReservationConfirmation = true
+                discussionTimeReservationConfirmation = true,
             ),
-            settings
+            settings,
         )
     }
 }

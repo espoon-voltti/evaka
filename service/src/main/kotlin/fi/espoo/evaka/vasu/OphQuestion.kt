@@ -10,12 +10,12 @@ import fi.espoo.evaka.vasu.CurriculumType.PRESCHOOL
 
 enum class OphQuestionKey {
     PEDAGOGIC_ACTIVITY_GOALS,
-    PEDAGOGIC_GOALS_DESCRIPTION
+    PEDAGOGIC_GOALS_DESCRIPTION,
 }
 
 data class OphQuestion(
     val name: Map<OfficialLanguage, String>,
-    val options: List<OphQuestionOption>
+    val options: List<OphQuestionOption>,
 )
 
 data class OphQuestionOption(val key: String, val name: Map<OfficialLanguage, String>)
@@ -55,9 +55,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Ytterligare kontaktinformation kan gälla till exempel uppgifter om gemensam vårdnad eller säkerhetsförbud, t.ex. gällande spärrmarkering."
                                     },
                                 value = "",
-                                multiline = true
-                            )
-                        )
+                                multiline = true,
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -81,17 +81,17 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 Field("Etunimi"),
                                                 Field("Sukunimi"),
                                                 Field("Nimike"),
-                                                Field("Puhelinnumero")
+                                                Field("Puhelinnumero"),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
                                                 Field("Förnamn"),
                                                 Field("Efternamn"),
                                                 Field("Benämning"),
-                                                Field("Telefonnummer")
+                                                Field("Telefonnummer"),
                                             )
                                     },
-                                value = listOf("", "", "", "")
+                                value = listOf("", "", "", ""),
                             ),
                             VasuQuestion.MultiFieldList(
                                 name =
@@ -108,17 +108,17 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 Field("Etunimi"),
                                                 Field("Sukunimi"),
                                                 Field("Nimike"),
-                                                Field("Puhelinnumero")
+                                                Field("Puhelinnumero"),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
                                                 Field("Förnamn"),
                                                 Field("Efternamn"),
                                                 Field("Benämning"),
-                                                Field("Telefonnummer")
+                                                Field("Telefonnummer"),
                                             )
                                     },
-                                value = listOf()
+                                value = listOf(),
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -136,7 +136,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här beskrivs de typer av samtal och aktiviteter genom vilka barnet deltar i planeringen och utvärderingen av sin småbarnspedagogik. Barnets styrkor, intressen, kunskaper och individuella behov diskuteras när barnets plan för småbarnspedagogik görs upp. Barnets önskemål, åsikter och förväntningar utreds på olika sätt med hänsyn till barnets ålder och utvecklingsnivå. Använd gärna Svenska bildningstjänsters stödmaterial."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -157,9 +157,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 "Här kan antecknas önskemål och överenskommelser gällande familjens språkliga, kulturella eller åskådningsmässiga bakgrund, såsom hemspråk, användning av tolkningstjänster eller hur frågor kring livsåskådning ska diskuteras. Vid behov, till exempel i anslutning till tolkningstjänster, utreds barnets flyktingstatus på adressen pakolaiskorvaukset@espoo.fi. Se anvisningen om beställning av tolktjänster."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -184,7 +184,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här kan antecknas genomförandet av sektorsövergripande samarbete med till exempel barnrådgivningen eller barnskyddet. Här antecknas även organisationerna, namnen och kontaktuppgifterna till aktörerna inom det sektorsövergripande arbetet."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -202,9 +202,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här antecknas gemensamma överenskommelser. Gällande det samarbete och de tjänster som det eventuella stödet kräver, beaktas\n\n• samarbetet med barnet och vårdnadshavaren\n• ansvarsfördelningen gällande genomförandet av barnets stöd\n• användningen av specialisttjänster\n• vägledningen av och konsultationer med sakkunniga inom social- och hälsovården samt övriga sakkunniga\n• ansvar för anordnandet av eventuella transporter."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -232,7 +232,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Vilka av de mål och åtgärder som fastställts för verksamheten har uppnåtts och genomförts? Hur har de uppnåtts och genomförts? Vad har bidragit till/förhindrat att målen och åtgärderna uppnåtts och genomförts? Utvärderingen fokuserar på att utvärdera verksamheten, åtgärderna, lärmiljöerna och pedagogiken, inte på en bedömning av barnet. Vid utvärderingen reflekterar personalen, vårdnadshavaren och barnet över hur väl de mål som satts upp för barnets fostran, undervisning och vård har uppnåtts och om åtgärderna har varit ändamålsenliga."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -249,7 +249,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Utvärderingen av stödet omfattar en beskrivning av stödåtgärderna och en utvärdering av hur väl de fungerat. Har barnets stöd och stödåtgärderna som getts varit effektiva och tillräckliga? Hur har de överenskomna pedagogiska, strukturella och/eller vårdinriktade stödformerna genomförts och vilka effekter har de haft? Vilka stödåtgärder gynnar barnet i enlighet med dess individuella stödbehov, och varför?Stödbehovet samt stödets tillräcklighet, ändamålsenlighet och effekt ska utvärderas och följas upp, och barnets plan för småbarnspedagogik ska uppdateras alltid när stödbehovet ändras.  Om barnet får intensifierat eller särskilt stöd eller stödtjänster som en del av det allmänna stödet uppdateras barnets plan för småbarnspedagogik enligt innehållet i förvaltningsbeslutet. Detta fält fylls i om barnet har fått stöd."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -267,9 +267,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Barnets plan för småbarnspedagogik ska utvärderas och granskas minst en gång om året eller oftare om barnets behov kräver det. Utvärderingen av barnets plan för småbarnspedagogik fokuserar på genomförandet av pedagogiken, lärmiljöerna och åtgärderna för verksamheten samt det eventuella stödets effekt och genomförandet av stödåtgärderna. Barnets plan för småbarnspedagogik granskas utgående från den utvärdering av barnets plan som görs tillsammans med barnet och vårdnadshavare. Detta görs för att skapa kontinuitet i barnets småbarnspedagogik. Vid denna punkt granskas barnets tidigare plan för småbarnspedagogik och det görs en utvärdering av hur väl målen i planen uppnåtts. Om barnets plan för småbarnspedagogik utarbetas för första gången görs inte denna utvärdering. Målen i barnets plan, samt hur väl de uppnåtts, ska följas upp och utvärderas regelbundet."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -298,7 +298,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 "Ex. Nelle är fysiskt aktiv och har ett stort rörelsebehov. Hen deltar aktivt i rörelsestunder och utevistelse och är skicklig på att klättra och springa. Vi tar Nelles rörelseglädje i beaktande då vi planerar verksamheten. Samlingarna förverkligar vi t.ex. på ett sådant sätt att rörelse är en naturlig del av dem och då gruppen förflyttar sig gör vi det på ett lekfullt sätt genom att t.ex. hoppa som grodor eller smyga som ninjor. "
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -316,7 +316,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här antecknas hur man bidrar till en mångsidig utveckling av språkkunskaperna, den språkliga och kulturella identiteten och självförtroendet hos fler– och tvåspråkiga barn, eller barn med ett främmande språk som modersmål. I den svenskspråkiga småbarnspedagogiken i Esbo är det vanligt med barn som hemma talar både finska och svenska. I detta fält antecknas hur man i verksamheten målmedvetet stöder och följer upp barnets språkutveckling i verksamhetsspråket, samtidigt som man bekräftar barnets båda språkliga identiteter. Använd barnets språkbarometer som stöd för en helhetsbild av barnets språkliga miljö."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.MultiField(
                                 name =
@@ -344,7 +344,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                             "• oppimisympäristöihin liittyvät ratkaisut \n" +
                                                             "• tarvittavat erityispedagogiset menetelmät \n" +
                                                             "• vuorovaikutus- ja kommunikointitavat, esimerkiksi viittomien ja kuvien käyttö \n" +
-                                                            "• käytännöt, miten lapsi pääsee osalliseksi vertaisryhmän toimintaa, esimerkiksi esteettömyyden huomiointi."
+                                                            "• käytännöt, miten lapsi pääsee osalliseksi vertaisryhmän toimintaa, esimerkiksi esteettömyyden huomiointi.",
                                                 ),
                                                 Field(
                                                     name = "Rakenteelliset tuen muodot",
@@ -354,14 +354,14 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                             "• lapsiryhmän kokoon ja ryhmärakenteeseen liittyvät ratkaisut \n" +
                                                             "• tulkitsemis- ja avustamispalvelut sekä apuvälineiden käyttö \n" +
                                                             "• pien- tai erityisryhmä tai muu tarvittava ryhmämuoto \n" +
-                                                            "• varhaiskasvatuksen erityisopettajan osa- tai kokoaikainen opetus tai konsultaatio."
+                                                            "• varhaiskasvatuksen erityisopettajan osa- tai kokoaikainen opetus tai konsultaatio.",
                                                 ),
                                                 Field(
                                                     name = "Hoidolliset tuen muodot",
                                                     info =
                                                         "• perushoitoon, hoivaan ja avustamiseen liittyvät menetelmät \n" +
-                                                            "• terveydenhoidolliset tarpeet, esimerkiksi lapsen pitkäaikaissairauksien hoitoon, lääkitykseen, ruokavalioon ja liikkumiseen liittyvä avustaminen ja apuvälineet.\n"
-                                                )
+                                                            "• terveydenhoidolliset tarpeet, esimerkiksi lapsen pitkäaikaissairauksien hoitoon, lääkitykseen, ruokavalioon ja liikkumiseen liittyvä avustaminen ja apuvälineet.\n",
+                                                ),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
@@ -372,7 +372,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                             "• lösningar gällande lärmiljöer\n" +
                                                             "• specialpedagogiska metoder\n" +
                                                             "• metoder för växelverkan och kommunikation, till exempel användning av tecken och bilder\n" +
-                                                            "• verksamhetssätt för hur barnet kan vara delaktigt i barngruppens verksamhet, till exempel beaktande av tillgänglighet (t.ex. delaktighet i leken/sociala gemenskapen, fysisk tillgänglighet, möjlighet att uttrycka sig på ett för barnet tillgängligt sätt etc.)"
+                                                            "• verksamhetssätt för hur barnet kan vara delaktigt i barngruppens verksamhet, till exempel beaktande av tillgänglighet (t.ex. delaktighet i leken/sociala gemenskapen, fysisk tillgänglighet, möjlighet att uttrycka sig på ett för barnet tillgängligt sätt etc.)",
                                                 ),
                                                 Field(
                                                     name = "Strukturella stödformer",
@@ -382,18 +382,18 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                             "• lösningar som rör barngruppens storlek och gruppens sammansättning\n" +
                                                             "• tolknings- och assistenttjänster samt användning av hjälpmedel\n" +
                                                             "• smågrupp, specialgrupp eller annan gruppform enligt behoven\n" +
-                                                            "• konsultation eller undervisning som ges på hel- eller deltid av en speciallärare inom småbarnspedagogik"
+                                                            "• konsultation eller undervisning som ges på hel- eller deltid av en speciallärare inom småbarnspedagogik",
                                                 ),
                                                 Field(
                                                     name = "Vårdinriktade stödformer",
                                                     info =
                                                         "• metoder som berör grundläggande vård, omsorg och assistans\n" +
-                                                            "• verksamhet som tillgodoser behov av hälso- och sjukvård, till exempel hjälpmedel och assistans som hänför sig till barnets långtidssjukdomar, medicinering, kost och rörlighet\n"
-                                                )
+                                                            "• verksamhet som tillgodoser behov av hälso- och sjukvård, till exempel hjälpmedel och assistans som hänför sig till barnets långtidssjukdomar, medicinering, kost och rörlighet\n",
+                                                ),
                                             )
                                     },
                                 value = listOf("", "", ""),
-                                separateRows = true
+                                separateRows = true,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -413,7 +413,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 "Nelle har ett stort ordförråd och mycket att berätta - så mycket att hen inte alltid hinner lyssna. Vi strävar till att stärka Nelles förmåga till växelverkan och turtagning men ger även Nelle möjligheter att få utnyttja sin verbala förmåga på olika sätt."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -434,7 +434,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 "2. För att ge Nelle möjlighet att använda och utveckla sin verbala förmåga arbetar hen med en digital bok på pekplattan. Hen kan själv fotografera, rita och spela in ljud samt berätta sagor eller om något hen gjort. Vi hjälper Nelle att leta reda på bokstäver på tangentbordet för att skriva rubriker eller korta meningar."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.MultiSelectQuestion(
                                 name =
@@ -450,7 +450,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Yleinen tuki"
                                                     OfficialLanguage.SV -> "Allmänt stöd"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "",
@@ -468,7 +468,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                         "Tämä kohta kirjataan, jos lapsen tuesta on annettu hallintopäätös. Lapsen vasuun kirjataan myös päivämäärä, jos hallintopäätös kumotaan. Muihin huomioihin voidaan kirjata hallintopäätökseen liittyviä tarkentavia näkökulmia."
                                                     OfficialLanguage.SV ->
                                                         "Här antecknas om det fattats ett förvaltningsbeslut om barnets stöd. Om förvaltningsbeslutet hävs, ska datumet för detta även antecknas i barnets plan för småbarnspedagogik. I fältet Övrigt att beakta kan man anteckna preciserande synpunkter gällande förvaltningsbeslutet."
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "during_range",
@@ -477,7 +477,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                     OfficialLanguage.FI -> "Tukipalvelut ajalla"
                                                     OfficialLanguage.SV -> "Stödtjänster för tiden"
                                                 },
-                                            dateRange = true
+                                            dateRange = true,
                                         ),
                                         QuestionOption(
                                             key = "intensified",
@@ -485,7 +485,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Tehostettu tuki"
                                                     OfficialLanguage.SV -> "Intensifierat stöd"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "special",
@@ -493,8 +493,8 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Erityinen tuki"
                                                     OfficialLanguage.SV -> "Särskilt stöd"
-                                                }
-                                        )
+                                                },
+                                        ),
                                     ),
                                 minSelections = 0,
                                 maxSelections = null,
@@ -507,7 +507,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV -> "Övrigt att beakta"
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             when (lang) {
                                 OfficialLanguage.FI ->
@@ -518,11 +518,11 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                         info =
                                             "Tämän kohdan tarkoituksena on varmistaa lapsen vasuun kirjattujen tavoitteiden ja toimenpiteiden toteutumisen jatkuva arviointi. Jatkuvalla arvioinnilla tarkoitetaan havainnoinnin ja pedagogisen dokumentoinnin avulla tarkennettavia tavoitteita ja toimenpiteitä. Näistä keskustellaan huoltajien kanssa päivittäisissä kohtaamisissa. Jatkuvan arvioinnin avulla lapsen vasu pysyy ajan tasalla.",
                                         value = emptyList(),
-                                        continuesNumbering = true
+                                        continuesNumbering = true,
                                     )
                                 OfficialLanguage.SV -> null
-                            }
-                        )
+                            },
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -548,9 +548,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här antecknas övriga saker som ska beaktas, till exempel gällande vila, måltider eller påklädning."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             )
-                        )
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -576,9 +576,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Vid uppgörandet av barnets plan för småbarnspedagogik kan eventuella andra planer och dokument, såsom planen för läkemedelsbehandling, Hyve4-blanketter, språkbarometern m.m. som utgör bilagor till barnets plan för småbarnspedagogik, utnyttjas."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             )
-                        )
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -613,7 +613,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                         "Tulevaan esiopetusryhmään"
                                                     OfficialLanguage.SV ->
                                                         "den blivande förskolegruppen"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "Neuvolaan",
@@ -621,7 +621,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Neuvolaan"
                                                     OfficialLanguage.SV -> "barnrådgivningen"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "Lasten terapiapalveluihin",
@@ -631,7 +631,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                         "Lasten terapiapalveluihin"
                                                     OfficialLanguage.SV ->
                                                         "terapitjänsterna för barn"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "Erikoissairaanhoitoon",
@@ -639,13 +639,13 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Erikoissairaanhoitoon"
                                                     OfficialLanguage.SV -> "specialsjukvården"
-                                                }
-                                        )
+                                                },
+                                        ),
                                     ),
                                 minSelections = 0,
                                 maxSelections = null,
                                 value = emptyList(),
-                                textValue = emptyMap()
+                                textValue = emptyMap(),
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -654,9 +654,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV -> "Övriga mottagare, vilka?"
                                     },
                                 multiline = false,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -674,7 +674,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV ->
                                             "Barnets plan för småbarnspedagogik har gjorts upp i samarbete med vårdnadshavare."
                                     },
-                                paragraph = ""
+                                paragraph = "",
                             ),
                             VasuQuestion.DateQuestion(
                                 name =
@@ -690,7 +690,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Varhaiskasvatussuunnitelmakeskustelu"
                                         OfficialLanguage.SV -> "Samtalet om barnets plan"
                                     },
-                                value = null
+                                value = null,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -701,7 +701,7 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Vårdnadshavare som deltog i samtalet"
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -718,9 +718,9 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV -> ""
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -745,11 +745,11 @@ fun getDefaultVasuContent(lang: OfficialLanguage) =
                                             "Här antecknas hur man tillsammans med vårdnadshavarna går vidare med planen, samt datum för när planen ska utvärderas nästa gång."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             )
-                        )
-                )
-            )
+                        ),
+                ),
+            ),
     )
 
 fun getDefaultLeopsContent(lang: OfficialLanguage) =
@@ -781,9 +781,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Ytterligare kontaktinformation kan gälla till exempel uppgifter om gemensam vårdnad eller säkerhetsförbud, t.ex. gällande spärrmarkering."
                                     },
                                 value = "",
-                                multiline = true
-                            )
-                        )
+                                multiline = true,
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -809,17 +809,17 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 Field("Etunimi"),
                                                 Field("Sukunimi"),
                                                 Field("Nimike"),
-                                                Field("Puhelinnumero")
+                                                Field("Puhelinnumero"),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
                                                 Field("Förnamn"),
                                                 Field("Efternamn"),
                                                 Field("Benämning"),
-                                                Field("Telefonnummer")
+                                                Field("Telefonnummer"),
                                             )
                                     },
-                                value = listOf("", "", "", "")
+                                value = listOf("", "", "", ""),
                             ),
                             VasuQuestion.MultiFieldList(
                                 name =
@@ -836,17 +836,17 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 Field("Etunimi"),
                                                 Field("Sukunimi"),
                                                 Field("Nimike"),
-                                                Field("Puhelinnumero")
+                                                Field("Puhelinnumero"),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
                                                 Field("Förnamn"),
                                                 Field("Efternamn"),
                                                 Field("Benämning"),
-                                                Field("Telefonnummer")
+                                                Field("Telefonnummer"),
                                             )
                                     },
-                                value = listOf(listOf("", "", "", ""))
+                                value = listOf(listOf("", "", "", "")),
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -864,7 +864,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här beskrivs de typer av samtal och aktiviteter genom vilka barnet deltar i planeringen och utvärderingen av sin förskoleundervisning. Barnets styrkor, intressen, kunskaper och individuella behov diskuteras när plan för barnets lärande i förskolan görs upp. Barnets önskemål, åsikter och förväntningar utreds på olika sätt med hänsyn till barnets ålder och utvecklingsnivå."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -885,9 +885,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 "Här kan även antecknas önskemål och överenskommelser gällande familjens språkliga, kulturella eller åskådningsmässiga bakgrund, såsom hemspråk, användning av tolkningstjänster eller hur frågor kring livsåskådning ska diskuteras."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -912,7 +912,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här beskrivs genomförandet av sektorsövergripande samarbete med till exempel barnrådgivningen, barnskyddet eller elevvården. Här antecknas även organisationerna, namnen och kontaktuppgifterna till aktörerna inom det sektorsövergripande arbetet."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -930,9 +930,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här antecknas gemensamma överenskommelser. Gällande det samarbete och de tjänster som det eventuella stödet kräver, beaktas\n\n• samarbetet med barnet och vårdnadshavaren\n• ansvarsfördelningen gällande genomförandet av barnets stöd\n• användningen av specialisttjänster\n• vägledningen av och konsultationer med sakkunniga inom social- och hälsovården samt övriga sakkunniga\n• ansvar för anordnandet av eventuella transporter\n• samarbetet med anordnaren av kompletterande småbarnspedagogik om barnet deltar i denna."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -960,7 +960,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Vilka av de mål som angetts för verksamheten har uppnåtts? Hur har de genomförts? Vad har bidragit till/förhindrat att målen och åtgärderna uppnåtts och genomförts? Utvärderingen fokuserar på att utvärdera verksamheten, metoderna, åtgärderna, lärmiljöerna och pedagogiken, inte på en bedömning av barnet. Med hjälp av utvärderingen är det möjligt att följa upp barnets lärande, utveckling och välbefinnande samt hur väl målen som ställts upp för verksamheten stöder dessa."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -980,7 +980,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 "Barnets behov av stöd samt stödets tillräcklighet, ändamålsenlighet och effekt ska utvärderas och följas upp och plan för barnets lärande ska uppdateras alltid när stödbehovet ändrar. Utvärderingen av stödets effekt ska omfatta en beskrivning av stödåtgärderna och deras effekt samt argument för vilka stödåtgärder som bäst gynnar barnet. Om barnet får intensifierat eller särskilt stöd eller stödtjänster som en del av det allmänna stödet uppdateras plan för barnets lärande i förskolan i enlighet med förvaltningsbeslutet."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1000,9 +1000,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 "Plan för barnets lärande i förskolan granskas utgående från den utvärdering som görs tillsammans med barnet och vårdnadshavare. Detta görs för att skapa kontinuitet mellan barnets plan för småbarnspedagogik och plan för barnets lärande i förskolan. I detta fält kan barnets tidigare plan för småbarnspedagogik granskas tillsammans med vårdnadshavare och därifrån kan innehåll eventuellt överföras till plan för barnets lärande i förskolan. Målen i plan för barnets lärande i förskolan, samt hur väl de uppnåtts, ska följas upp och utvärderas regelbundet."
                                     },
                                 multiline = true,
-                                value = ""
-                            )
-                        )
+                                value = "",
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1022,7 +1022,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Tavoitteet ja toimenpiteet koskevat esiopetuksen ja liittyvän varhaiskasvatuksen kokonaisuutta sisältäen lapsen tuen."
                                         OfficialLanguage.SV ->
                                             "Målen och åtgärderna omfattar den helhet som utgörs av förskoleundervisningen och den kompletterande småbarnspedagogiken, inklusive barnets eventuella stöd."
-                                    }
+                                    },
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1040,7 +1040,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här beskrivs barnets styrkor, intressen och behov som grund för målsättningen och planeringen av verksamheten."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1060,7 +1060,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här antecknas hur man bidrar till en mångsidig utveckling av språkkunskaperna, den språkliga och kulturella identiteten och självförtroendet hos fler– och tvåspråkiga barn, eller barn med ett främmande språk som modersmål. I den svenskspråkiga förskoleundervisningen i Esbo är det vanligt med barn som hemma talar både finska och svenska. I detta fält antecknas hur man i verksamheten målmedvetet stöder och följer upp barnets språkutveckling i verksamhetsspråket, samtidigt som man bekräftar barnets båda språkliga identiteter. Använd det språkliga observationsschemat som stöd för en helhetsbild av barnets språkliga miljö."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             when (lang) {
                                 OfficialLanguage.FI ->
@@ -1070,7 +1070,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                         value = false,
                                         info =
                                             "Tähän kohtaan merkitään rasti, jos tätä oppimissuunnitelmaa käytetään perusopetukseen valmistavan opetuksen toteuttamiseksi.",
-                                        notNumbered = true
+                                        notNumbered = true,
                                     )
                                 OfficialLanguage.SV -> null
                             },
@@ -1088,7 +1088,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Tuen järjestämisen lähtökohtana on lapsen kokonaisen päivän huomioiminen."
                                         OfficialLanguage.SV ->
                                             "Hela barnets dag beaktas när stödet ordnas."
-                                    }
+                                    },
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1106,7 +1106,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "I detta fält beskrivs barnets eventuella behov av stöd som påverkar de mål som anges för verksamheten samt metoderna och åtgärderna för att uppnå målen."
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.MultiSelectQuestion(
                                 name =
@@ -1139,7 +1139,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "Jos lapsella ilmenee vaikeuksia oppimisessaan, on hänellä oikeus saada osa-aikaista erityisopetusta muun esiopetuksen ohessa kaikilla tuen tasoilla. Osa-aikaisen erityisopetuksen tavoitteena on vahvistaa lapsen oppimisen edellytyksiä, ehkäistä kehityksen ja oppimisen vaikeuksia. Osa-aikaisen erityisopetuksen tarve arvioidaan ja suunnitellaan yhteistyössä esiopettajan ja varhaiskasvatuksen erityisopettajan kanssa. Osa-aikaista erityisopetusta annetaan joustavin järjestelyin samanaikaisopetuksena, pienryhmissä tai yksilöllisesti. Tavoitteet sisällytetään lapsen saamaan muuhun opetukseen. Vaikutuksia arvioidaan opettajien yhteistyönä sekä lapsen että huoltajien kanssa. Huoltajille tiedotetaan yksikön toimintatavoista."
                                                     OfficialLanguage.SV ->
                                                         "Ett barn som har svårigheter i sitt lärande eller sin skolgång har rätt att få specialundervisning på deltid vid sidan om den övriga förskoleundervisningen.Målet med specialundervisningen på deltid är att stärka barnets inlärningsförutsättningar och förebygga svårigheter i utvecklingen och lärandet. Specialundervisning på deltid ges på alla nivåer av stöd. Behovet av specialundervisning på deltid bedöms och planeras i samarbete med förskolelärare och speciallärare inom småbarnspedagogik. Specialundervisningen på deltid ska ordnas flexibelt som kompanjonundervisning, i en liten grupp eller som individuell undervisning.Målen för och innehållet i specialundervisningen på deltid ska integreras i barnets övriga undervisning.Effekten av undervisningen bedöms av lärarna i samråd med både barnet och vårdnadshavarna. Alla vårdnadshavare ska informeras om hur specialundervisning på deltid genomförs i förskolan."
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "pedagogicalEvaluationMade",
@@ -1157,7 +1157,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "• Laaditaan tehostettua tukea varten, kun ilmenee, ettei yleinen tuki esiopetuksessa ole lapselle riittävää.\n• Tehdään tehostettua tukea varten lapsen perusopetukseen siirtymistä valmisteltaessa.\n• Laatimisesta vastaa esiopettaja."
                                                     OfficialLanguage.SV ->
                                                         "• Görs innan intensifierat stöd inleds om det framkommer att det allmänna stödet inte är tillräckligt för barnet\n• Görs för att utreda behovet av intensifierat stöd innan övergången till den grundläggande utbildningen\n• Den pedagogiska bedömningen görs av barnets lärare"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "learningPlanUsedForAssistance",
@@ -1167,7 +1167,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "Tätä oppimissuunnitelmaa käytetään tehostetun tuen toteuttamiseksi."
                                                     OfficialLanguage.SV ->
                                                         "Denna plan för barnets lärande i förskolan används vid genomförandet av det intensifierade stödet"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "pedagogicalStatementMade",
@@ -1184,12 +1184,12 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "• Laaditaan erityistä tukea varten lapselle, jolle tehostettu tuki ei riitä.\n• Laaditaan tarvittaessa esiopetusvuoden aikana lapsen perusopetukseen siirtymistä valmisteltaessa.\n• Laatimisesta vastaa esiopettaja.\nKs. erilliset ohjeet pedagogisen arvion ja selvityksen lomakkeista."
                                                     OfficialLanguage.SV ->
                                                         "• Görs innan särskilt stöd inleds om det framkommer att intensifierat stöd inte är tillräckligt för barnet\n• Görs vid behov under verksamhetsåret innan övergången till den grundläggande utbildningen\n• Den pedagogiska utredningen görs av barnets lärare i samarbete med en speciallärare inom småbarnspedagogik och vid behov övriga sakkunniga"
-                                                }
-                                        )
+                                                },
+                                        ),
                                     ),
                                 minSelections = 0,
                                 maxSelections = null,
-                                textValue = emptyMap()
+                                textValue = emptyMap(),
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1207,7 +1207,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här beskrivs\n\n• Pedagogiska lösningar: lösningar gällande lärmiljöer samt lösningar i anslutning till barnets stöd (såsom flexibel gruppindelning, kompanjonundervisning, undervisningsmetoder, arbetssätt och sätt att kommunicera)\n• Specialundervisning på deltid som ges till barnet\n• Tolknings- och assistenttjänster som är nödvändiga för att barnet ska kunna delta i förskoleundervisningen, övriga stödtjänster som det beslutats om"
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             VasuQuestion.MultiField(
                                 name =
@@ -1235,7 +1235,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                             "• oppimisympäristöihin liittyvät ratkaisut \n" +
                                                             "• tarvittavat erityispedagogiset menetelmät \n" +
                                                             "• vuorovaikutus- ja kommunikointitavat, esimerkiksi viittomien ja kuvien käyttö \n" +
-                                                            "• käytännöt, miten lapsi pääsee osalliseksi vertaisryhmän toimintaa, esimerkiksi esteettömyyden huomiointi."
+                                                            "• käytännöt, miten lapsi pääsee osalliseksi vertaisryhmän toimintaa, esimerkiksi esteettömyyden huomiointi.",
                                                 ),
                                                 Field(
                                                     name = "Rakenteelliset tuen muodot",
@@ -1245,14 +1245,14 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                             "• lapsiryhmän kokoon ja ryhmärakenteeseen liittyvät ratkaisut \n" +
                                                             "• tulkitsemis- ja avustamispalvelut sekä apuvälineiden käyttö \n" +
                                                             "• pien- tai erityisryhmä tai muu tarvittava ryhmämuoto \n" +
-                                                            "• varhaiskasvatuksen erityisopettajan osa- tai kokoaikainen opetus tai konsultaatio."
+                                                            "• varhaiskasvatuksen erityisopettajan osa- tai kokoaikainen opetus tai konsultaatio.",
                                                 ),
                                                 Field(
                                                     name = "Hoidolliset tuen muodot",
                                                     info =
                                                         "• perushoitoon, hoivaan ja avustamiseen liittyvät menetelmät \n" +
-                                                            "• terveydenhoidolliset tarpeet, esimerkiksi lapsen pitkäaikaissairauksien hoitoon, lääkitykseen, ruokavalioon ja liikkumiseen liittyvä avustaminen ja apuvälineet."
-                                                )
+                                                            "• terveydenhoidolliset tarpeet, esimerkiksi lapsen pitkäaikaissairauksien hoitoon, lääkitykseen, ruokavalioon ja liikkumiseen liittyvä avustaminen ja apuvälineet.",
+                                                ),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
@@ -1263,7 +1263,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                             "• lösningar gällande lärmiljöer\n" +
                                                             "• specialpedagogiska metoder\n" +
                                                             "• metoder för växelverkan och kommunikation, till exempel användning av tecken och bilder\n" +
-                                                            "• verksamhetssätt för hur barnet kan vara delaktigt i barngruppens verksamhet, till exempel beaktande av tillgänglighet (t.ex. delaktighet i leken/sociala gemenskapen, fysisk tillgänglighet, möjlighet att uttrycka sig på ett för barnet tillgängligt sätt etc.)"
+                                                            "• verksamhetssätt för hur barnet kan vara delaktigt i barngruppens verksamhet, till exempel beaktande av tillgänglighet (t.ex. delaktighet i leken/sociala gemenskapen, fysisk tillgänglighet, möjlighet att uttrycka sig på ett för barnet tillgängligt sätt etc.)",
                                                 ),
                                                 Field(
                                                     name = "Strukturella stödformer",
@@ -1273,18 +1273,18 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                             "• lösningar som rör barngruppens storlek och gruppens sammansättning\n" +
                                                             "• tolknings- och assistenttjänster samt användning av hjälpmedel\n" +
                                                             "• smågrupp, specialgrupp eller annan gruppform enligt behoven\n" +
-                                                            "• konsultation eller undervisning som ges på hel- eller deltid av en speciallärare inom småbarnspedagogik"
+                                                            "• konsultation eller undervisning som ges på hel- eller deltid av en speciallärare inom småbarnspedagogik",
                                                 ),
                                                 Field(
                                                     name = "Vårdinriktade stödformer",
                                                     info =
                                                         "• metoder som berör grundläggande vård, omsorg och assistans\n" +
-                                                            "• verksamhet som tillgodoser behov av hälso- och sjukvård, till exempel hjälpmedel och assistans som hänför sig till barnets långtidssjukdomar, medicinering, kost och rörlighet"
-                                                )
+                                                            "• verksamhet som tillgodoser behov av hälso- och sjukvård, till exempel hjälpmedel och assistans som hänför sig till barnets långtidssjukdomar, medicinering, kost och rörlighet",
+                                                ),
                                             )
                                     },
                                 value = listOf("", "", ""),
-                                separateRows = true
+                                separateRows = true,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1302,7 +1302,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här anges centrala mål för personalens pedagogiska verksamhet. Målen ska beskriva hur man med den pedagogiska verksamheten och lärmiljöerna stöder barnets utveckling, lärande och välbefinnande. Barnets styrkor, intressen, färdigheter och behov ska beaktas då målen anges. Målen för personalens pedagogiska verksamhet kan gälla t.ex. barnets lärande eller förmåga till kommunikation och växelverkan. Här beaktas även delområden inom mångsidig kompetens och lärområden. Det är viktigt att de mål som ställs upp utgår från barngruppen och dess situation, samt att de är konkreta och möjliga att utvärdera."
                                     },
                                 value = "",
-                                multiline = true
+                                multiline = true,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1320,7 +1320,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Här beskrivs de konkreta pedagogiska åtgärder och metoder som syftar till att uppnå de mål som angetts för den pedagogiska verksamheten. Metoderna ska beskrivas på så konkret nivå att förverkligandet av dem kan utvärderas."
                                     },
                                 value = "",
-                                multiline = true
+                                multiline = true,
                             ),
                             VasuQuestion.MultiSelectQuestion(
                                 name =
@@ -1346,7 +1346,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "Tukipalvelut (yleinen tuki)"
                                                     OfficialLanguage.SV ->
                                                         "Stödtjänster (allmänt stöd)"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "intensified",
@@ -1354,7 +1354,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Tehostettu tuki"
                                                     OfficialLanguage.SV -> "Intensifierat stöd"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "special",
@@ -1362,12 +1362,12 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Erityinen tuki"
                                                     OfficialLanguage.SV -> "Särskilt stöd"
-                                                }
-                                        )
+                                                },
+                                        ),
                                     ),
                                 value = emptyList(),
                                 minSelections = 0,
-                                maxSelections = 2
+                                maxSelections = 2,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1376,7 +1376,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV -> "Övrigt att beakta"
                                     },
                                 value = "",
-                                multiline = true
+                                multiline = true,
                             ),
                             when (lang) {
                                 OfficialLanguage.FI ->
@@ -1399,11 +1399,11 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 OfficialLanguage.SV -> ""
                                             },
                                         value = emptyList(),
-                                        continuesNumbering = true
+                                        continuesNumbering = true,
                                     )
                                 OfficialLanguage.SV -> null
-                            }
-                        )
+                            },
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1430,9 +1430,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 "Keskustellaan tarvittaessa huoltajien ajatuksista tyttöjen ympärileikkauksesta, ks. erillinen ohje Tyttöjen sukuelinten silpomisen estäminen. Tähän kirjataan huoltajien ajatukset asiasta. Jos huoli herää, toimi em. ohjeistuksen mukaan."
                                         OfficialLanguage.SV ->
                                             "Här antecknas övriga saker som ska beaktas, till exempel gällande vila, måltider eller påklädning."
-                                    }
+                                    },
                             )
-                        )
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1458,9 +1458,9 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Lapsen esiopetuksen oppimissuunnitelman laatimisessa voidaan hyödyntää muita mahdollisia suunnitelmia kuten esimerkiksi lääkehoitosuunnitelmaa."
                                         OfficialLanguage.SV ->
                                             "Vid uppgörandet av plan för barnets lärande i förskolan kan eventuella andra planer och dokument utnyttjas, t.ex., planen för läkemedelsbehandling."
-                                    }
+                                    },
                             )
-                        )
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1479,7 +1479,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                         OfficialLanguage.SV ->
                                             "Plan för barnets lärande i förskolan har gjorts upp i samarbete med vårdnadshavare"
                                     },
-                                paragraph = ""
+                                paragraph = "",
                             ),
                             VasuQuestion.DateQuestion(
                                 name =
@@ -1494,7 +1494,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                         OfficialLanguage.FI -> "Oppimissuunnitelmakeskustelu"
                                         OfficialLanguage.SV -> "Samtalet om barnets plan"
                                     },
-                                value = null
+                                value = null,
                             ),
                             VasuQuestion.TextQuestion(
                                 name =
@@ -1505,7 +1505,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Vårdnadshavare som deltog i samtalet"
                                     },
                                 multiline = true,
-                                value = ""
+                                value = "",
                             ),
                             when (lang) {
                                 OfficialLanguage.FI ->
@@ -1515,11 +1515,11 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                         info =
                                             "Tähän kohtaan kirjataan huoltajien kuuleminen, mikäli tuesta tehdään hallintopäätös.",
                                         multiline = true,
-                                        value = ""
+                                        value = "",
                                     )
                                 OfficialLanguage.SV -> null
-                            }
-                        )
+                            },
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1553,7 +1553,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                     OfficialLanguage.FI -> "Tulevaan kouluun"
                                                     OfficialLanguage.SV ->
                                                         "Den blivande grundskolan"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "tiedonsaajataho_neuvola",
@@ -1561,7 +1561,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Neuvolaan"
                                                     OfficialLanguage.SV -> "Rådgivningsbyrån"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "tiedonsaajataho_terapiapalveluihin",
@@ -1571,7 +1571,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                         "Lasten terapiapalveluihin"
                                                     OfficialLanguage.SV ->
                                                         "Terapitjänsterna för barn"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "tiedonsaajataho_erikoissairaanhoitoon",
@@ -1579,7 +1579,7 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                 when (lang) {
                                                     OfficialLanguage.FI -> "Erikoissairaanhoitoon"
                                                     OfficialLanguage.SV -> "Specialsjukvården"
-                                                }
+                                                },
                                         ),
                                         QuestionOption(
                                             key = "tiedonsaajataho_muualle",
@@ -1588,13 +1588,13 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                                     OfficialLanguage.FI -> "Muualle, minne?"
                                                     OfficialLanguage.SV -> "Annanstans, vart?"
                                                 },
-                                            textAnswer = true
-                                        )
+                                            textAnswer = true,
+                                        ),
                                     ),
                                 minSelections = 0,
                                 maxSelections = null,
                                 value = emptyList(),
-                                textValue = emptyMap()
+                                textValue = emptyMap(),
                             ),
                             VasuQuestion.MultiFieldList(
                                 name =
@@ -1615,18 +1615,18 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             listOf(
                                                 Field("Päiväys"),
                                                 Field("Huoltajan allekirjoitus"),
-                                                Field("Nimenselvennys")
+                                                Field("Nimenselvennys"),
                                             )
                                         OfficialLanguage.SV ->
                                             listOf(
                                                 Field("Datum"),
                                                 Field("Vårdnadshavarens underskrift"),
-                                                Field("Namnförtydligande")
+                                                Field("Namnförtydligande"),
                                             )
                                     },
-                                value = listOf(listOf("", "", ""))
-                            )
-                        )
+                                value = listOf(listOf("", "", "")),
+                            ),
+                        ),
                 ),
                 VasuSection(
                     name =
@@ -1651,11 +1651,11 @@ fun getDefaultLeopsContent(lang: OfficialLanguage) =
                                             "Tähän kohtaan kirjataan huoltajan kanssa yhdessä sovittu jatkosuunnitelma ja milloin suunnitelmaa seuraavan kerran arvioidaan."
                                         OfficialLanguage.SV ->
                                             "Här antecknas hur man tillsammans med vårdnadshavarna går vidare med planen, samt datum för när planen ska utvärderas nästa gång."
-                                    }
+                                    },
                             )
-                        )
-                )
-            )
+                        ),
+                ),
+            ),
     )
 
 private val ophQuestionMap =
@@ -1665,7 +1665,7 @@ private val ophQuestionMap =
                 name =
                     mapOf(
                         OfficialLanguage.FI to "Tavoitteet henkilöstön pedagogiselle toiminnalle",
-                        OfficialLanguage.SV to "Mål för personalens pedagogiska aktiviteter"
+                        OfficialLanguage.SV to "Mål för personalens pedagogiska aktiviteter",
                     ),
                 options =
                     listOf(
@@ -1674,36 +1674,36 @@ private val ophQuestionMap =
                             name =
                                 mapOf(
                                     OfficialLanguage.FI to "Joku tavoite",
-                                    OfficialLanguage.SV to "mål 1"
-                                )
+                                    OfficialLanguage.SV to "mål 1",
+                                ),
                         ),
                         OphQuestionOption(
                             key = "goal2",
                             name =
                                 mapOf(
                                     OfficialLanguage.FI to "Toinen tavoite",
-                                    OfficialLanguage.SV to "mål 2"
-                                )
+                                    OfficialLanguage.SV to "mål 2",
+                                ),
                         ),
                         OphQuestionOption(
                             key = "goal3",
                             name =
                                 mapOf(
                                     OfficialLanguage.FI to "Kolmas vaihtoehto",
-                                    OfficialLanguage.SV to "mål 3"
-                                )
-                        )
-                    )
+                                    OfficialLanguage.SV to "mål 3",
+                                ),
+                        ),
+                    ),
             ),
         OphQuestionKey.PEDAGOGIC_GOALS_DESCRIPTION to
             OphQuestion(
                 name =
                     mapOf(
                         OfficialLanguage.FI to "Kuvaile tavoitteita tarkemmin",
-                        OfficialLanguage.SV to "Beskriv målen mer i detalj"
+                        OfficialLanguage.SV to "Beskriv målen mer i detalj",
                     ),
-                options = emptyList()
-            )
+                options = emptyList(),
+            ),
     )
 
 // TODO: this won't currently work

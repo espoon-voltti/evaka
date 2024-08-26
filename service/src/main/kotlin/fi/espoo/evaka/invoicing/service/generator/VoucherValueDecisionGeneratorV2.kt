@@ -53,7 +53,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     financeMinDate: LocalDate,
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
-    retroactiveOverride: LocalDate? = null // allows extending beyond normal min date
+    retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ) {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
@@ -75,7 +75,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
             ignoredDrafts = ignoredDrafts,
             minDate =
                 if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
-                else financeMinDate
+                else financeMinDate,
         )
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })
@@ -92,7 +92,7 @@ fun generateVoucherValueDecisionsDrafts(
     activeDecisions: List<VoucherValueDecision>,
     existingDrafts: List<VoucherValueDecision>,
     ignoredDrafts: List<VoucherValueDecision>,
-    minDate: LocalDate
+    minDate: LocalDate,
 ): List<VoucherValueDecision> {
     val voucherBases =
         getVoucherBases(
@@ -103,7 +103,7 @@ fun generateVoucherValueDecisionsDrafts(
             valueDecisionCapacityFactorEnabled = valueDecisionCapacityFactorEnabled,
             targetChildId = targetChildId,
             activeDecisions = activeDecisions,
-            minDate = minDate
+            minDate = minDate,
         )
 
     val newDrafts = voucherBases.map { it.toVoucherValueDecision() }
@@ -112,7 +112,7 @@ fun generateVoucherValueDecisionsDrafts(
             newDrafts = newDrafts,
             activeDecisions = activeDecisions,
             ignoredDrafts = ignoredDrafts,
-            minDate = minDate
+            minDate = minDate,
         )
         .map { it.withMetadataFromExisting(existingDrafts) }
         .map {
@@ -121,7 +121,7 @@ fun generateVoucherValueDecisionsDrafts(
                     it.getDifferencesToPrevious(
                         newDrafts = newDrafts,
                         existingActiveDecisions = activeDecisions,
-                        getDifferences = VoucherValueDecisionDifference::getDifference
+                        getDifferences = VoucherValueDecisionDifference::getDifference,
                     )
             )
         }
@@ -135,7 +135,7 @@ private fun getVoucherBases(
     valueDecisionCapacityFactorEnabled: Boolean,
     targetChildId: ChildId,
     activeDecisions: List<VoucherValueDecision>,
-    minDate: LocalDate
+    minDate: LocalDate,
 ): List<VoucherBasis> {
     val child = tx.getChild(targetChildId)
     val familyRelations =
@@ -153,16 +153,16 @@ private fun getVoucherBases(
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 personIds = (allHeadOfChildIds + allPartnerIds + targetChildId).toList(),
-                from = minDate
+                from = minDate,
             )
             .groupBy(
                 keySelector = { it.personId },
                 valueTransform = {
                     IncomeRange(
                         range = DateRange(it.validFrom, it.validTo),
-                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider)
+                        income = mapIncomeToDecisionIncome(it, coefficientMultiplierProvider),
                     )
-                }
+                },
             )
 
     val placementDetailsByChild = getPlacementDetailsByChild(tx, allChildIds)
@@ -198,7 +198,7 @@ private fun getVoucherBases(
             *feeAlterationRanges.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray(),
-            *assistanceNeedCoefficients.toTypedArray()
+            *assistanceNeedCoefficients.toTypedArray(),
         ) +
             startOf3YoCoefficient +
             activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo?.plusDays(1)) }
@@ -263,7 +263,7 @@ private fun getVoucherBases(
             feeAlterations = feeAlterations,
             siblingIndex = siblingIndex,
             familySize = familySize,
-            feeThresholds = feeThresholds
+            feeThresholds = feeThresholds,
         )
     }
 }
@@ -282,7 +282,7 @@ data class VoucherBasis(
     val feeAlterations: List<FeeAlteration>,
     val siblingIndex: Int,
     val familySize: Int,
-    val feeThresholds: FeeThresholds
+    val feeThresholds: FeeThresholds,
 ) : WithRange {
     fun toVoucherValueDecision(): VoucherValueDecision {
         if (
@@ -299,7 +299,7 @@ data class VoucherBasis(
                 childIncome = childIncome,
                 familySize = familySize,
                 feeThresholds = feeThresholds.getFeeDecisionThresholds(familySize),
-                child = child
+                child = child,
             )
         }
 
@@ -309,13 +309,13 @@ data class VoucherBasis(
                     VoucherValue(
                         baseValue = it.baseValueUnder3y,
                         coefficient = it.coefficientUnder3y,
-                        value = it.valueUnder3y
+                        value = it.valueUnder3y,
                     )
                 } else {
                     VoucherValue(
                         baseValue = it.baseValue,
                         coefficient = it.coefficient,
-                        value = it.value
+                        value = it.value,
                     )
                 }
             }
@@ -337,7 +337,7 @@ data class VoucherBasis(
                 baseFee,
                 placement.serviceNeedOption.feeCoefficient,
                 siblingDiscount,
-                feeThresholds.minFee
+                feeThresholds.minFee,
             )
 
         val feeAlterationsWithEffects =
@@ -362,7 +362,7 @@ data class VoucherBasis(
             placement =
                 VoucherValueDecisionPlacement(
                     unitId = placement.unitId,
-                    type = placement.placementType
+                    type = placement.placementType,
                 ),
             serviceNeed =
                 VoucherValueDecisionServiceNeed(
@@ -374,7 +374,7 @@ data class VoucherBasis(
                         placement.serviceNeedOption.voucherValueDescriptionFi,
                     voucherValueDescriptionSv =
                         placement.serviceNeedOption.voucherValueDescriptionSv,
-                    missing = !placement.hasServiceNeed
+                    missing = !placement.hasServiceNeed,
                 ),
             baseCoPayment = baseFee,
             siblingDiscount = siblingDiscount.percent,
@@ -385,7 +385,7 @@ data class VoucherBasis(
             assistanceNeedCoefficient = assistanceNeedCoefficient,
             voucherValue =
                 roundToEuros(BigDecimal(voucherValues.value) * assistanceNeedCoefficient).toInt(),
-            difference = emptySet()
+            difference = emptySet(),
         )
     }
 }
@@ -394,12 +394,12 @@ private data class ChildFamilyRelations(
     override val finiteRange: FiniteDateRange,
     val headOfChild: PersonId?,
     val partner: PersonId?,
-    val childrenInFamily: List<Child>
+    val childrenInFamily: List<Child>,
 ) : WithFiniteRange
 
 private fun getChildFamilyRelations(
     tx: Database.Read,
-    targetChildId: ChildId
+    targetChildId: ChildId,
 ): List<ChildFamilyRelations> {
     val headOfChildRelations = tx.getHeadOfChildRelations(targetChildId)
     val headOfChildIds = headOfChildRelations.map { it.headOfChild }.toSet()
@@ -413,7 +413,7 @@ private fun getChildFamilyRelations(
         buildFiniteDateRanges(
             *headOfChildRelations.toTypedArray(),
             *partnerRelations.flatMap { it.value }.toTypedArray(),
-            *childRelationsByParent.flatMap { it.value }.toTypedArray()
+            *childRelationsByParent.flatMap { it.value }.toTypedArray(),
         )
 
     return ranges.map { range ->
@@ -423,7 +423,7 @@ private fun getChildFamilyRelations(
                     finiteRange = range,
                     headOfChild = null,
                     partner = null,
-                    childrenInFamily = emptyList()
+                    childrenInFamily = emptyList(),
                 )
 
         val partner =
@@ -450,14 +450,14 @@ private fun getChildFamilyRelations(
             finiteRange = range,
             headOfChild = realHeadOfFamily,
             partner = realPartner,
-            childrenInFamily = children
+            childrenInFamily = children,
         )
     }
 }
 
 private data class HeadOfChildRelation(
     override val finiteRange: FiniteDateRange,
-    val headOfChild: PersonId
+    val headOfChild: PersonId,
 ) : WithFiniteRange
 
 private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOfChildRelation> {

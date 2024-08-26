@@ -69,7 +69,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testVoucherDaycare.id,
                         startDate = today,
-                        endDate = today.plusDays(30)
+                        endDate = today.plusDays(30),
                     )
                 )
             val period = FiniteDateRange(today, today.plusDays(30))
@@ -80,7 +80,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     endDate = period.end,
                     optionId = snDefaultDaycare.id,
                     confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    confirmedAt = HelsinkiDateTime.now()
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
             )
             tx.insert(
@@ -88,7 +88,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                     childId = testChild_1.id,
                     headOfChildId = testAdult_1.id,
                     startDate = testChild_1.dateOfBirth,
-                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1)
+                    endDate = testChild_1.dateOfBirth.plusYears(18).minusDays(1),
                 )
             )
         }
@@ -100,7 +100,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
             createAssistanceNeedVoucherCoefficient(
                 AssistanceNeedVoucherCoefficientRequest(
                     coefficient = 2.0,
-                    validityPeriod = FiniteDateRange(today, today.plusDays(30))
+                    validityPeriod = FiniteDateRange(today, today.plusDays(30)),
                 )
             )
         asyncJobRunner.runPendingJobsSync(clock)
@@ -115,8 +115,8 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
                 created.id,
                 AssistanceNeedVoucherCoefficientRequest(
                     coefficient = 3.0,
-                    validityPeriod = FiniteDateRange(today.plusDays(10), today.plusDays(20))
-                )
+                    validityPeriod = FiniteDateRange(today.plusDays(10), today.plusDays(20)),
+                ),
             )
         asyncJobRunner.runPendingJobsSync(clock)
 
@@ -124,11 +124,11 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
         assertEquals(BigDecimal("3.00"), updated.coefficient)
         assertEquals(
             FiniteDateRange(today.plusDays(10), today.plusDays(20)),
-            updated.validityPeriod
+            updated.validityPeriod,
         )
         assertEquals(
             listOf(BigDecimal("1.00"), BigDecimal("3.00"), BigDecimal("1.00")),
-            readVoucherValueDecisionAssistanceCoefficients()
+            readVoucherValueDecisionAssistanceCoefficients(),
         )
 
         deleteAssistanceNeedVoucherCoefficient(created.id)
@@ -150,7 +150,7 @@ class AssistanceNeedVoucherCoefficientIntegrationTest :
 
     private fun updateAssistanceNeedVoucherCoefficient(
         id: AssistanceNeedVoucherCoefficientId,
-        body: AssistanceNeedVoucherCoefficientRequest
+        body: AssistanceNeedVoucherCoefficientRequest,
     ): AssistanceNeedVoucherCoefficient {
         return assistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient(
             dbInstance(),

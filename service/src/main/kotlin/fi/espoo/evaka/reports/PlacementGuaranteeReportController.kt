@@ -24,14 +24,14 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
 
     @GetMapping(
         "/reports/placement-guarantee", // deprecated
-        "/employee/reports/placement-guarantee"
+        "/employee/reports/placement-guarantee",
     )
     fun getPlacementGuaranteeReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam date: LocalDate,
-        @RequestParam unitId: DaycareId? = null
+        @RequestParam unitId: DaycareId? = null,
     ): List<PlacementGuaranteeReportRow> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -40,7 +40,7 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT
+                        Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT,
                     )
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.getPlacementGuaranteeRows(filter, date, unitId)
@@ -52,7 +52,7 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
 private fun Database.Read.getPlacementGuaranteeRows(
     filter: AccessControlFilter<DaycareId>,
     date: LocalDate,
-    unitId: DaycareId?
+    unitId: DaycareId?,
 ): List<PlacementGuaranteeReportRow> =
     createQuery {
             sql(
@@ -91,5 +91,5 @@ data class PlacementGuaranteeReportRow(
     val areaId: AreaId,
     val areaName: String,
     val placementStartDate: LocalDate,
-    val placementEndDate: LocalDate
+    val placementEndDate: LocalDate,
 )

@@ -91,7 +91,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
                     unit!!.toVardaUnitRequest(
                         vakajarjestaja = ophMunicipalOrganizerIdUrl,
                         kuntakoodi = ophEnv.municipalityCode,
-                        lahdejarjestelma = vardaClient.sourceSystem
+                        lahdejarjestelma = vardaClient.sourceSystem,
                     )
                 )
                 .contains(""""paattymis_pvm":null""")
@@ -113,7 +113,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
                 DevDaycare(
                     areaId = area.id,
                     name = "Ostettu päiväkoti",
-                    providerType = ProviderType.PURCHASED
+                    providerType = ProviderType.PURCHASED,
                 )
             )
         }
@@ -213,7 +213,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
             client,
             vardaClient.sourceSystem,
             ophEnv.municipalityCode,
-            ophMunicipalOrganizerIdUrl
+            ophMunicipalOrganizerIdUrl,
         )
     }
 }
@@ -246,7 +246,7 @@ class TestClient : VardaUnitClient {
 
     override fun updateToimipaikka(
         url: URI,
-        unit: VardaUnitRequest
+        unit: VardaUnitRequest,
     ): VardaUnitClient.ToimipaikkaResponse {
         numCalls++
         val id = uriToId(url)
@@ -267,5 +267,5 @@ data class VardaUnitRow(
     val lastSuccessAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime,
     val erroredAt: HelsinkiDateTime?,
-    val error: String?
+    val error: String?,
 )

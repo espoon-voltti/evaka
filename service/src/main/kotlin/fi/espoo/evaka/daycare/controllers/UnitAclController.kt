@@ -62,7 +62,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable daycareId: DaycareId
+        @PathVariable daycareId: DaycareId,
     ): List<DaycareAclRow> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -73,7 +73,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
-                        daycareId
+                        daycareId,
                     )
 
                 val aclRows =
@@ -90,12 +90,12 @@ class UnitAclController(private val accessControl: AccessControl) {
 
                 Audit.UnitAclRead.log(
                     targetId = AuditId(daycareId),
-                    meta = mapOf("count" to aclRows.size)
+                    meta = mapOf("count" to aclRows.size),
                 )
                 if (hasOccupancyPermission) {
                     Audit.StaffOccupancyCoefficientRead.log(
                         targetId = AuditId(daycareId),
-                        meta = mapOf("count" to aclRows.size)
+                        meta = mapOf("count" to aclRows.size),
                     )
                 }
                 aclRows
@@ -109,7 +109,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -118,7 +118,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.DELETE_ACL_UNIT_SUPERVISOR,
-                    daycareId
+                    daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(it, daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
@@ -133,7 +133,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -142,14 +142,14 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER,
-                    daycareId
+                    daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
                     daycareId,
                     employeeId,
-                    UserRole.SPECIAL_EDUCATION_TEACHER
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
                 )
             }
         }
@@ -162,7 +162,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -171,14 +171,14 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    daycareId
+                    daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(
                     it,
                     daycareId,
                     employeeId,
-                    UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                    UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 )
             }
         }
@@ -191,7 +191,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -200,7 +200,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.DELETE_ACL_STAFF,
-                    daycareId
+                    daycareId,
                 )
                 validateIsPermanentEmployee(it, employeeId)
                 removeDaycareAclForRole(it, daycareId, employeeId, UserRole.STAFF)
@@ -216,7 +216,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @RequestBody update: AclUpdate
+        @RequestBody update: AclUpdate,
     ) {
         if (update.groupIds == null && update.hasStaffOccupancyEffect == null) {
             throw BadRequest("Request is missing all update content")
@@ -230,7 +230,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.Unit.UPDATE_STAFF_GROUP_ACL,
-                            daycareId
+                            daycareId,
                         )
                         validateIsPermanentEmployee(tx, employeeId)
                         tx.clearDaycareGroupAcl(daycareId, employeeId)
@@ -244,13 +244,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 user,
                                 clock,
                                 Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
-                                daycareId
+                                daycareId,
                             )
                             tx.upsertOccupancyCoefficient(
                                 OccupancyCoefficientUpsert(
                                     unitId = daycareId,
                                     employeeId = employeeId,
-                                    coefficient = parseCoefficientValue(it)
+                                    coefficient = parseCoefficientValue(it),
                                 )
                             )
                         }
@@ -260,14 +260,14 @@ class UnitAclController(private val accessControl: AccessControl) {
         if (update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(
                 targetId = AuditId(daycareId),
-                objectId = AuditId(employeeId)
+                objectId = AuditId(employeeId),
             )
         }
 
         if (update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
                 targetId = AuditId(listOf(daycareId, employeeId)),
-                objectId = occupancyCoefficientId?.let(AuditId::invoke)
+                objectId = occupancyCoefficientId?.let(AuditId::invoke),
             )
         }
     }
@@ -279,7 +279,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @RequestBody aclInfo: FullAclInfo
+        @RequestBody aclInfo: FullAclInfo,
     ) {
         val occupancyCoefficientId =
             db.connect { dbc ->
@@ -296,7 +296,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.Unit.UPDATE_STAFF_GROUP_ACL,
-                            daycareId
+                            daycareId,
                         )
                         tx.insertDaycareGroupAcl(daycareId, employeeId, it)
                     }
@@ -307,13 +307,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 user,
                                 clock,
                                 Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
-                                daycareId
+                                daycareId,
                             )
                             tx.upsertOccupancyCoefficient(
                                 OccupancyCoefficientUpsert(
                                     unitId = daycareId,
                                     employeeId = employeeId,
-                                    coefficient = parseCoefficientValue(it)
+                                    coefficient = parseCoefficientValue(it),
                                 )
                             )
                         }
@@ -324,13 +324,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         if (aclInfo.update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(
                 targetId = AuditId(daycareId),
-                objectId = AuditId(employeeId)
+                objectId = AuditId(employeeId),
             )
         }
         if (aclInfo.update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
                 targetId = AuditId(listOf(daycareId, employeeId)),
-                objectId = occupancyCoefficientId?.let(AuditId::invoke)
+                objectId = occupancyCoefficientId?.let(AuditId::invoke),
             )
         }
     }
@@ -354,7 +354,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId
+        @PathVariable unitId: DaycareId,
     ): List<Employee> {
         val employees =
             db.connect { dbc ->
@@ -364,7 +364,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                        unitId
+                        unitId,
                     )
                     tx.getTemporaryEmployees(unitId).filter { it.active }
                 }
@@ -379,7 +379,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestBody input: TemporaryEmployee
+        @RequestBody input: TemporaryEmployee,
     ): EmployeeId {
         val employeeId =
             db.connect { dbc ->
@@ -389,7 +389,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.CREATE_TEMPORARY_EMPLOYEE,
-                        unitId
+                        unitId,
                     )
                     val employee =
                         tx.createEmployee(
@@ -400,7 +400,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                                 externalId = null,
                                 employeeNumber = null,
                                 temporaryInUnitId = unitId,
-                                active = true
+                                active = true,
                             )
                         )
                     setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
@@ -409,7 +409,7 @@ class UnitAclController(private val accessControl: AccessControl) {
             }
         Audit.TemporaryEmployeeCreate.log(
             targetId = AuditId(employeeId),
-            meta = mapOf("unitId" to unitId)
+            meta = mapOf("unitId" to unitId),
         )
         return employeeId
     }
@@ -420,7 +420,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ): TemporaryEmployee {
         val employee =
             db.connect { dbc ->
@@ -431,7 +431,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                        unitId
+                        unitId,
                     )
                     val groupIds =
                         tx.getDaycareAclRows(daycareId = unitId, false)
@@ -441,7 +441,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     val occupancyCoefficient =
                         tx.getOccupancyCoefficientForEmployeeInUnit(
                             employeeId = employeeId,
-                            unitId = unitId
+                            unitId = unitId,
                         ) ?: BigDecimal.ZERO
                     val pinCode = tx.getPinCode(employee.id)
                     TemporaryEmployee(
@@ -449,13 +449,13 @@ class UnitAclController(private val accessControl: AccessControl) {
                         lastName = employee.lastName,
                         groupIds = groupIds,
                         hasStaffOccupancyEffect = occupancyCoefficient > BigDecimal.ZERO,
-                        pinCode = pinCode
+                        pinCode = pinCode,
                     )
                 }
             }
         Audit.TemporaryEmployeeRead.log(
             targetId = AuditId(employeeId),
-            meta = mapOf("unitId" to unitId)
+            meta = mapOf("unitId" to unitId),
         )
         return employee
     }
@@ -467,7 +467,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @RequestBody input: TemporaryEmployee
+        @RequestBody input: TemporaryEmployee,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -477,19 +477,19 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.UPDATE_TEMPORARY_EMPLOYEE,
-                    unitId
+                    unitId,
                 )
                 tx.updateEmployee(
                     id = employee.id,
                     firstName = input.firstName,
-                    lastName = input.lastName
+                    lastName = input.lastName,
                 )
                 setTemporaryEmployeeDetails(tx, unitId, employee.id, input)
             }
         }
         Audit.TemporaryEmployeeUpdate.log(
             targetId = AuditId(employeeId),
-            meta = mapOf("unitId" to unitId)
+            meta = mapOf("unitId" to unitId),
         )
     }
 
@@ -499,7 +499,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -509,14 +509,14 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.UPDATE_TEMPORARY_EMPLOYEE,
-                    unitId
+                    unitId,
                 )
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
             }
         }
         Audit.TemporaryEmployeeDeleteAcl.log(
             targetId = AuditId(employeeId),
-            meta = mapOf("unitId" to unitId)
+            meta = mapOf("unitId" to unitId),
         )
     }
 
@@ -526,7 +526,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable employeeId: EmployeeId
+        @PathVariable employeeId: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -536,7 +536,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Unit.DELETE_TEMPORARY_EMPLOYEE,
-                    unitId
+                    unitId,
                 )
                 tx.updateEmployeeActive(employeeId, active = false)
                 deleteTemporaryEmployeeAcl(tx, unitId, employee)
@@ -544,7 +544,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
         Audit.TemporaryEmployeeDelete.log(
             targetId = AuditId(employeeId),
-            meta = mapOf("unitId" to unitId)
+            meta = mapOf("unitId" to unitId),
         )
     }
 
@@ -552,7 +552,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         tx: Database.Transaction,
         unitId: DaycareId,
         employeeId: EmployeeId,
-        input: TemporaryEmployee
+        input: TemporaryEmployee,
     ) {
         if (
             input.groupIds.isNotEmpty() &&
@@ -570,7 +570,7 @@ class UnitAclController(private val accessControl: AccessControl) {
             OccupancyCoefficientUpsert(
                 unitId,
                 employeeId,
-                parseCoefficientValue(input.hasStaffOccupancyEffect)
+                parseCoefficientValue(input.hasStaffOccupancyEffect),
             )
         )
         if (input.pinCode != null) {
@@ -588,7 +588,7 @@ class UnitAclController(private val accessControl: AccessControl) {
     private fun getTemporaryEmployee(
         tx: Database.Read,
         unitId: DaycareId,
-        employeeId: EmployeeId
+        employeeId: EmployeeId,
     ): Employee =
         tx.getEmployee(employeeId).takeIf { it?.temporaryInUnitId == unitId && it.active }
             ?: throw NotFound()
@@ -596,7 +596,7 @@ class UnitAclController(private val accessControl: AccessControl) {
     private fun deleteTemporaryEmployeeAcl(
         tx: Database.Transaction,
         unitId: DaycareId,
-        employee: Employee
+        employee: Employee,
     ) {
         tx.clearDaycareGroupAcl(unitId, employee.id)
         tx.deleteDaycareAclRow(unitId, employee.id, UserRole.STAFF)

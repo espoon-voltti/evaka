@@ -26,14 +26,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/varda", // deprecated
-    "/employee/varda"
+    "/employee/varda",
 )
 class VardaController(
     private val vardaService: VardaUpdateService,
     private val vardaResetService: VardaResetService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl,
-    private val vardaEnv: VardaEnv
+    private val vardaEnv: VardaEnv,
 ) {
     @PostMapping("/start-update")
     fun runFullVardaUpdate(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
@@ -43,7 +43,7 @@ class VardaController(
                         it,
                         user,
                         clock,
-                        Action.Global.VARDA_OPERATIONS
+                        Action.Global.VARDA_OPERATIONS,
                     )
                 }
                 vardaService.updateUnits(dbc, clock)
@@ -60,13 +60,13 @@ class VardaController(
                         it,
                         user,
                         clock,
-                        Action.Global.VARDA_OPERATIONS
+                        Action.Global.VARDA_OPERATIONS,
                     )
                 }
                 vardaResetService.planVardaReset(
                     dbc,
                     clock,
-                    addNewChildren = !vardaEnv.newIntegrationEnabled
+                    addNewChildren = !vardaEnv.newIntegrationEnabled,
                 )
             }
             .also { Audit.VardaReportOperations.log() }
@@ -77,7 +77,7 @@ class VardaController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ) {
         db.connect { dbc ->
                 dbc.transaction {
@@ -85,7 +85,7 @@ class VardaController(
                         it,
                         user,
                         clock,
-                        Action.Global.VARDA_OPERATIONS
+                        Action.Global.VARDA_OPERATIONS,
                     )
                     if (it.getVardaUpdateChildIds().contains(childId)) {
                         // New integration
@@ -93,7 +93,7 @@ class VardaController(
                             it,
                             listOf(AsyncJob.VardaUpdateChild(childId, dryRun = false)),
                             retryCount = 1,
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     } else {
                         // Old integration
@@ -102,7 +102,7 @@ class VardaController(
                             it,
                             listOf(AsyncJob.ResetVardaChildOld(childId)),
                             retryCount = 1,
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }

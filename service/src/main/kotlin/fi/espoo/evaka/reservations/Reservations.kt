@@ -55,26 +55,20 @@ sealed interface DailyReservationRequest {
         override val childId: ChildId,
         override val date: LocalDate,
         val reservation: TimeRange,
-        val secondReservation: TimeRange? = null
+        val secondReservation: TimeRange? = null,
     ) : DailyReservationRequest
 
     @JsonTypeName("PRESENT")
-    data class Present(
-        override val childId: ChildId,
-        override val date: LocalDate,
-    ) : DailyReservationRequest
+    data class Present(override val childId: ChildId, override val date: LocalDate) :
+        DailyReservationRequest
 
     @JsonTypeName("ABSENT")
-    data class Absent(
-        override val childId: ChildId,
-        override val date: LocalDate,
-    ) : DailyReservationRequest
+    data class Absent(override val childId: ChildId, override val date: LocalDate) :
+        DailyReservationRequest
 
     @JsonTypeName("NOTHING")
-    data class Nothing(
-        override val childId: ChildId,
-        override val date: LocalDate,
-    ) : DailyReservationRequest
+    data class Nothing(override val childId: ChildId, override val date: LocalDate) :
+        DailyReservationRequest
 }
 
 fun reservationRequestRange(body: List<DailyReservationRequest>): FiniteDateRange {
@@ -157,14 +151,14 @@ data class ReservationRow(
     val date: LocalDate,
     val childId: ChildId,
     val reservation: Reservation,
-    val staffCreated: Boolean
+    val staffCreated: Boolean,
 )
 
 data class CreateReservationsResult(
     val deletedAbsences: List<AbsenceId>,
     val deletedReservations: List<AttendanceReservationId>,
     val upsertedAbsences: List<AbsenceId>,
-    val upsertedReservations: List<AttendanceReservationId>
+    val upsertedReservations: List<AttendanceReservationId>,
 )
 
 fun createReservationsAndAbsences(
@@ -174,7 +168,7 @@ fun createReservationsAndAbsences(
     requests: List<DailyReservationRequest>,
     citizenReservationThresholdHours: Long,
     plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
-    automaticFixedScheduleAbsencesEnabled: Boolean = false
+    automaticFixedScheduleAbsencesEnabled: Boolean = false,
 ): CreateReservationsResult? {
     if (requests.isEmpty()) return null
 
@@ -202,7 +196,7 @@ fun createReservationsAndAbsences(
         tx.getPlannedAbsenceEnabledRanges(
             childIds,
             reservationsRange,
-            plannedAbsenceEnabledForHourBasedServiceNeeds
+            plannedAbsenceEnabledForHourBasedServiceNeeds,
         )
     val childReservationDates =
         tx.getReservationDatesForChildrenInRange(childIds, reservationsRange)
@@ -307,7 +301,7 @@ fun createReservationsAndAbsences(
         if (isCitizen) {
             tx.clearOldCitizenEditableAbsences(
                 validated.map { it.childId to it.date },
-                reservableRange
+                reservableRange,
             )
         } else {
             tx.clearOldAbsences(validated.map { it.childId to it.date })
@@ -333,7 +327,7 @@ fun createReservationsAndAbsences(
             } +
                 validated.filterIsInstance<DailyReservationRequest.Present>().map {
                     ReservationInsert(it.childId, it.date, null)
-                }
+                },
         )
 
     val fullDayAbsences =
@@ -345,7 +339,7 @@ fun createReservationsAndAbsences(
                 it.date,
                 if (plannedAbsenceEnabled && reservableRange.includes(it.date))
                     AbsenceType.PLANNED_ABSENCE
-                else AbsenceType.OTHER_ABSENCE
+                else AbsenceType.OTHER_ABSENCE,
             )
         }
     val upsertedFullDayAbsences =
@@ -370,7 +364,7 @@ fun createReservationsAndAbsences(
                         placement.unitLanguage,
                         placement.dailyPreschoolTime,
                         placement.dailyPreparatoryTime,
-                        preschoolTerms
+                        preschoolTerms,
                     )
                     ?.map {
                         AbsenceUpsert(
@@ -381,7 +375,7 @@ fun createReservationsAndAbsences(
                                 AbsenceType.PLANNED_ABSENCE
                             } else {
                                 AbsenceType.OTHER_ABSENCE
-                            }
+                            },
                         )
                     } ?: emptyList()
             }
@@ -399,7 +393,7 @@ fun createReservationsAndAbsences(
         deletedAbsences,
         deletedReservations,
         upsertedFullDayAbsences + upsertedFixedScheduleAbsences,
-        upsertedReservations
+        upsertedReservations,
     )
 }
 
@@ -410,7 +404,7 @@ data class ChildDatePresence(
     val reservations: List<Reservation>,
     val attendances: List<TimeInterval>,
     val absenceBillable: AbsenceType?,
-    val absenceNonbillable: AbsenceType?
+    val absenceNonbillable: AbsenceType?,
 )
 
 data class UpsertChildDatePresenceResult(
@@ -426,7 +420,7 @@ fun upsertChildDatePresence(
     tx: Database.Transaction,
     userId: EvakaUserId,
     now: HelsinkiDateTime,
-    input: ChildDatePresence
+    input: ChildDatePresence,
 ): UpsertChildDatePresenceResult {
     val placementType =
         tx.getChildPlacementTypes(setOf(input.childId), input.date)[input.childId]
@@ -459,7 +453,7 @@ fun upsertChildDatePresence(
         tx.deleteReservations(
             date = input.date,
             childId = input.childId,
-            skip = reservations.mapNotNull { it.second }
+            skip = reservations.mapNotNull { it.second },
         )
 
     val insertedReservations =
@@ -474,7 +468,7 @@ fun upsertChildDatePresence(
                 input.childId,
                 input.unitId,
                 input.date,
-                TimeInterval(attendance.start, attendance.end)
+                TimeInterval(attendance.start, attendance.end),
             )
         }
 
@@ -487,8 +481,8 @@ fun upsertChildDatePresence(
             input.date,
             mapOfNotNullValues(
                 AbsenceCategory.NONBILLABLE to input.absenceNonbillable,
-                AbsenceCategory.BILLABLE to input.absenceBillable
-            )
+                AbsenceCategory.BILLABLE to input.absenceBillable,
+            ),
         )
 
     return UpsertChildDatePresenceResult(
@@ -497,7 +491,7 @@ fun upsertChildDatePresence(
         insertedAttendances = insertedAttendances,
         deletedAttendances = deletedAttendances,
         insertedAbsences = insertedAbsences,
-        deletedAbsences = deletedAbsences
+        deletedAbsences = deletedAbsences,
     )
 }
 
@@ -522,7 +516,7 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
         ) {
             throw BadRequest(
                 "Cannot mark attendances into future",
-                errorCode = "attendanceInFuture"
+                errorCode = "attendanceInFuture",
             )
         }
     }
@@ -540,7 +534,7 @@ private fun ChildDatePresence.validate(now: HelsinkiDateTime, placementType: Pla
 private fun Database.Transaction.deleteReservations(
     date: LocalDate,
     childId: ChildId,
-    skip: List<AttendanceReservationId>
+    skip: List<AttendanceReservationId>,
 ): List<AttendanceReservationId> {
     return createQuery {
             sql(
@@ -558,7 +552,7 @@ private fun Database.Transaction.insertReservation(
     userId: EvakaUserId,
     date: LocalDate,
     childId: ChildId,
-    reservation: Reservation
+    reservation: Reservation,
 ): AttendanceReservationId {
     return createQuery {
             sql(
@@ -575,7 +569,7 @@ private fun Database.Transaction.insertReservation(
 data class UsedServiceResult(
     val reservedMinutes: Long,
     val usedServiceMinutes: Long,
-    val usedServiceRanges: List<TimeRange>
+    val usedServiceRanges: List<TimeRange>,
 )
 
 fun computeUsedService(
@@ -589,7 +583,7 @@ fun computeUsedService(
     shiftCareType: ShiftCareType,
     absences: List<Pair<AbsenceType, AbsenceCategory>>,
     reservations: List<TimeRange>,
-    attendances: List<TimeInterval>
+    attendances: List<TimeInterval>,
 ): UsedServiceResult {
     // Today's date is taken to be "in the future" if child has no attendances today or there's an
     // ongoing attendance
@@ -603,7 +597,7 @@ fun computeUsedService(
         return UsedServiceResult(
             reservedMinutes = 0,
             usedServiceMinutes = 0,
-            usedServiceRanges = emptyList()
+            usedServiceRanges = emptyList(),
         )
     }
 
@@ -611,7 +605,7 @@ fun computeUsedService(
         listOfNotNull(
             placementType.fixedScheduleRange(
                 dailyPreschoolTime = preschoolTime,
-                dailyPreparatoryTime = preparatoryTime
+                dailyPreparatoryTime = preparatoryTime,
             )
         )
     val effectiveReservations = TimeSet.of(reservations).removeAll(fixedScheduleTimes)
@@ -630,7 +624,7 @@ fun computeUsedService(
         return UsedServiceResult(
             reservedMinutes = minutesOf(effectiveReservations),
             usedServiceMinutes = 0,
-            usedServiceRanges = emptyList()
+            usedServiceRanges = emptyList(),
         )
     }
 
@@ -648,7 +642,7 @@ fun computeUsedService(
         return UsedServiceResult(
             reservedMinutes = 0,
             usedServiceMinutes = 0,
-            usedServiceRanges = emptyList()
+            usedServiceRanges = emptyList(),
         )
     }
 
@@ -664,7 +658,7 @@ fun computeUsedService(
         return UsedServiceResult(
             reservedMinutes = 0,
             usedServiceMinutes = maxOf(0, dailyAverage.roundToLong() - freeMinutes),
-            usedServiceRanges = emptyList()
+            usedServiceRanges = emptyList(),
         )
     }
 
@@ -674,6 +668,6 @@ fun computeUsedService(
     return UsedServiceResult(
         reservedMinutes = minutesOf(effectiveReservations),
         usedServiceMinutes = minutesOf(usedService),
-        usedServiceRanges = usedService.ranges().toList()
+        usedServiceRanges = usedService.ranges().toList(),
     )
 }

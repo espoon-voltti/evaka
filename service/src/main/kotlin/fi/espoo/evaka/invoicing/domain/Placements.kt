@@ -15,14 +15,14 @@ data class UnitData(
     val name: String,
     val areaId: AreaId,
     val areaName: String,
-    val language: String
+    val language: String,
 )
 
 data class PlacementWithServiceNeed(
     val unitId: DaycareId,
     val type: PlacementType,
     val serviceNeed: ServiceNeedValue,
-    val missingServiceNeed: Boolean
+    val missingServiceNeed: Boolean,
 )
 
 data class ServiceNeedValue(
@@ -32,5 +32,5 @@ data class ServiceNeedValue(
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
-    val voucherValueDescriptionSv: String
+    val voucherValueDescriptionSv: String,
 )

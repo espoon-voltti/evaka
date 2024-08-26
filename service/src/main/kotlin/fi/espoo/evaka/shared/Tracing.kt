@@ -53,24 +53,24 @@ inline fun <T> Tracer.withSpan(span: Span, crossinline f: () -> T): T =
 inline fun <T> Tracer.withSpan(
     operationName: String,
     vararg tags: TagValue<*>,
-    crossinline f: () -> T
+    crossinline f: () -> T,
 ): T =
     withSpan(
         buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
-        f
+        f,
     )
 
 inline fun <T> Tracer.withDetachedSpan(
     operationName: String,
     vararg tags: TagValue<*>,
-    crossinline f: () -> T
+    crossinline f: () -> T,
 ): T =
     withSpan(
         buildSpan(operationName)
             .ignoreActiveSpan()
             .let { tags.fold(it) { span, tag -> span.withTag(tag) } }
             .start(),
-        f
+        f,
     )
 
 // Generates a random 64-bit tracing ID in hex format

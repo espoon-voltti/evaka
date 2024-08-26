@@ -19,7 +19,7 @@ private constructor(
     val toAddress: String,
     val fromAddress: String,
     val content: EmailContent,
-    val traceId: String
+    val traceId: String,
 ) {
 
     companion object {
@@ -60,7 +60,7 @@ private constructor(
             employee: DaycareAclRowEmployee,
             content: EmailContent,
             traceId: String,
-            fromAddress: String
+            fromAddress: String,
         ): Email? {
             if (employee.email == null) {
                 logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
@@ -85,7 +85,7 @@ interface EmailClient {
 
 private data class EmailAndEnabledEmailTypes(
     val email: String?,
-    val enabledEmailTypes: List<EmailMessageType>?
+    val enabledEmailTypes: List<EmailMessageType>?,
 )
 
 private fun Database.Read.getEmailAddressAndEnabledTypes(

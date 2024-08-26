@@ -35,18 +35,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/document-templates", // deprecated
-    "/employee/document-templates"
+    "/employee/document-templates",
 )
 class DocumentTemplateController(
     private val accessControl: AccessControl,
-    private val evakaEnv: EvakaEnv
+    private val evakaEnv: EvakaEnv,
 ) {
     @PostMapping
     fun createTemplate(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: DocumentTemplateBasicsRequest
+        @RequestBody body: DocumentTemplateBasicsRequest,
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -54,7 +54,7 @@ class DocumentTemplateController(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_DOCUMENT_TEMPLATE
+                        Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
                     tx.insertTemplate(body)
                 }
@@ -67,7 +67,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: ExportedDocumentTemplate
+        @RequestBody body: ExportedDocumentTemplate,
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -75,7 +75,7 @@ class DocumentTemplateController(
                         tx,
                         user,
                         clock,
-                        Action.Global.CREATE_DOCUMENT_TEMPLATE
+                        Action.Global.CREATE_DOCUMENT_TEMPLATE,
                     )
                     tx.importTemplate(body)
                 }
@@ -87,7 +87,7 @@ class DocumentTemplateController(
     fun getTemplates(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<DocumentTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -95,7 +95,7 @@ class DocumentTemplateController(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_DOCUMENT_TEMPLATE
+                        Action.Global.READ_DOCUMENT_TEMPLATE,
                     )
                     tx.getTemplateSummaries()
                 }
@@ -108,7 +108,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam childId: ChildId
+        @RequestParam childId: ChildId,
     ): List<DocumentTemplateSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -116,7 +116,7 @@ class DocumentTemplateController(
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_DOCUMENT_TEMPLATE
+                        Action.Global.READ_DOCUMENT_TEMPLATE,
                     )
                     val placementLanguage = tx.getChildPlacementUnitLanguage(childId, clock.today())
                     tx.getTemplateSummaries().filter {
@@ -135,7 +135,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable templateId: DocumentTemplateId
+        @PathVariable templateId: DocumentTemplateId,
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -144,7 +144,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.READ,
-                        templateId
+                        templateId,
                     )
                     tx.getTemplate(templateId)
                 }
@@ -167,7 +167,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.READ,
-                        templateId
+                        templateId,
                     )
                     tx.exportTemplate(templateId)
                 }
@@ -182,7 +182,7 @@ class DocumentTemplateController(
                                 ContentDisposition.attachment()
                                     .filename(
                                         "$sanitizedName.$timestamp.template.json",
-                                        Charsets.UTF_8
+                                        Charsets.UTF_8,
                                     )
                                     .build()
                         }
@@ -198,7 +198,7 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @RequestBody body: DocumentTemplateBasicsRequest
+        @RequestBody body: DocumentTemplateBasicsRequest,
     ): DocumentTemplate {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -207,7 +207,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.COPY,
-                        templateId
+                        templateId,
                     )
 
                     tx.duplicateTemplate(templateId, body)
@@ -222,7 +222,7 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @RequestBody body: DocumentTemplateBasicsRequest
+        @RequestBody body: DocumentTemplateBasicsRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -231,7 +231,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.UPDATE,
-                        templateId
+                        templateId,
                     )
                     tx.getTemplate(templateId)?.also {
                         if (it.published) throw BadRequest("Cannot update published template")
@@ -249,7 +249,7 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @RequestBody body: DocumentTemplateContent
+        @RequestBody body: DocumentTemplateContent,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -258,7 +258,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.UPDATE,
-                        templateId
+                        templateId,
                     )
                     tx.getTemplate(templateId)?.also {
                         if (it.published)
@@ -278,7 +278,7 @@ class DocumentTemplateController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable templateId: DocumentTemplateId,
-        @RequestBody body: DateRange
+        @RequestBody body: DateRange,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -287,7 +287,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.UPDATE,
-                        templateId
+                        templateId,
                     )
                     tx.updateTemplateValidity(templateId, body)
                 }
@@ -300,7 +300,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable templateId: DocumentTemplateId
+        @PathVariable templateId: DocumentTemplateId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -309,7 +309,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.UPDATE,
-                        templateId
+                        templateId,
                     )
                     tx.publishTemplate(templateId)
                 }
@@ -326,7 +326,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable templateId: DocumentTemplateId
+        @PathVariable templateId: DocumentTemplateId,
     ) {
         if (!evakaEnv.forceUnpublishDocumentTemplateEnabled) {
             throw Forbidden("endpoint not enabled in this environment")
@@ -338,7 +338,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.FORCE_UNPUBLISH,
-                        templateId
+                        templateId,
                     )
                     tx.forceUnpublishTemplate(templateId)
                 }
@@ -351,7 +351,7 @@ class DocumentTemplateController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable templateId: DocumentTemplateId
+        @PathVariable templateId: DocumentTemplateId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -360,7 +360,7 @@ class DocumentTemplateController(
                         user,
                         clock,
                         Action.DocumentTemplate.DELETE,
-                        templateId
+                        templateId,
                     )
                     tx.getTemplate(templateId)?.also {
                         if (it.published) throw BadRequest("Cannot delete published template")

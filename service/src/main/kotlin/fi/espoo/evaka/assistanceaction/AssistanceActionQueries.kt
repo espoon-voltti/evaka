@@ -14,7 +14,7 @@ import java.time.LocalDate
 fun Database.Transaction.insertAssistanceAction(
     user: AuthenticatedUser,
     childId: ChildId,
-    data: AssistanceActionRequest
+    data: AssistanceActionRequest,
 ): AssistanceAction {
     val id =
         createQuery {
@@ -47,7 +47,7 @@ RETURNING id
 
 fun Database.Transaction.insertAssistanceActionOptionRefs(
     actionId: AssistanceActionId,
-    options: Set<String>
+    options: Set<String>,
 ): IntArray =
     executeBatch(options) {
         sql(
@@ -93,7 +93,7 @@ ORDER BY start_date DESC
 fun Database.Transaction.updateAssistanceAction(
     user: AuthenticatedUser,
     id: AssistanceActionId,
-    data: AssistanceActionRequest
+    data: AssistanceActionRequest,
 ): AssistanceAction {
     createQuery {
             sql(
@@ -119,7 +119,7 @@ RETURNING id
 fun Database.Transaction.shortenOverlappingAssistanceAction(
     user: AuthenticatedUser,
     childId: ChildId,
-    startDate: LocalDate
+    startDate: LocalDate,
 ) {
     execute {
         sql(
@@ -140,7 +140,7 @@ fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
 
 fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(
     actionId: AssistanceActionId,
-    excluded: Set<String>
+    excluded: Set<String>,
 ): Int = execute {
     sql(
         """

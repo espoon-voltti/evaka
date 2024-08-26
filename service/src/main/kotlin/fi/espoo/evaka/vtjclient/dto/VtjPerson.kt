@@ -19,7 +19,7 @@ data class VtjPerson(
     var nativeLanguage: NativeLanguage? = null,
     var restrictedDetails: RestrictedDetails?,
     var dateOfDeath: LocalDate? = null,
-    var residenceCode: String? = null
+    var residenceCode: String? = null,
 ) {
 
     fun mapToDto(): VtjPersonDTO =
@@ -41,7 +41,7 @@ data class VtjPerson(
             restrictedDetailsEndDate = restrictedDetails?.endDate,
             restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
             dateOfBirth = getDobFromSsn(socialSecurityNumber),
-            dateOfDeath = dateOfDeath
+            dateOfDeath = dateOfDeath,
         )
 
     companion object {

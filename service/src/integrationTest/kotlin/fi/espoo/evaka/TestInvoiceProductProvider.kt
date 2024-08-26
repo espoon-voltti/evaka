@@ -37,6 +37,6 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
 
     override fun mapToFeeAlterationProduct(
         productKey: ProductKey,
-        feeAlterationType: FeeAlterationType
+        feeAlterationType: FeeAlterationType,
     ) = ProductKey("${productKey.value}_${feeAlterationType.name}")
 }

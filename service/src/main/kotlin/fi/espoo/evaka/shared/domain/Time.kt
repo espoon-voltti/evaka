@@ -45,7 +45,7 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
         HelsinkiDateTimeRange(
             HelsinkiDateTime.atStartOfDay(start),
             // date time range is exclusive, so we need first date time *not* in range
-            HelsinkiDateTime.atStartOfDay(end.plusDays(1))
+            HelsinkiDateTime.atStartOfDay(end.plusDays(1)),
         )
 
     /** Returns true if this date range fully contains the given date range. */
@@ -80,7 +80,7 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
     override fun gap(other: FiniteDateRange): FiniteDateRange? =
         tryCreate(
             minOf(this.end, other.end).plusDays(1),
-            maxOf(this.start, other.start).minusDays(1)
+            maxOf(this.start, other.start).minusDays(1),
         )
 
     override fun subtract(other: FiniteDateRange): BoundedRange.SubtractResult<FiniteDateRange> =
@@ -107,7 +107,7 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
     fun complement(others: Collection<FiniteDateRange>): List<FiniteDateRange> {
         return others.fold(
             initial = listOf(this),
-            operation = { acc, other -> acc.flatMap { it.complement(other) } }
+            operation = { acc, other -> acc.flatMap { it.complement(other) } },
         )
     }
 
@@ -131,12 +131,12 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
                             this.start < other.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(this.start, other.start.minusDays(1)),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             other.start < this.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(other.start, this.start.minusDays(1)),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
                         },
@@ -147,15 +147,15 @@ data class FiniteDateRange(override val start: LocalDate, override val end: Loca
                             other.end < this.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(other.end.plusDays(1), this.end),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             this.end < other.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = FiniteDateRange(this.end.plusDays(1), other.end),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
-                        }
+                        },
                 )
         }
 
@@ -246,7 +246,7 @@ fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
 private fun minimalCover(first: DateRange, second: DateRange): DateRange =
     DateRange(
         minOf(first.start, second.start),
-        if (first.end == null || second.end == null) null else maxOf(first.end, second.end)
+        if (first.end == null || second.end == null) null else maxOf(first.end, second.end),
     )
 
 private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
@@ -254,7 +254,7 @@ private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
 fun <T> mergePeriods(
     values: List<Pair<DateRange, T>>,
     equals: (T, T) -> Boolean = ::simpleEquals,
-    useOlderValue: (T) -> Boolean = { _ -> false }
+    useOlderValue: (T) -> Boolean = { _ -> false },
 ): List<Pair<DateRange, T>> {
     return values
         .sortedBy { (period, _) -> period.start }

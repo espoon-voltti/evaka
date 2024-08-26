@@ -10,10 +10,14 @@ import kotlin.reflect.KClass
 
 object EspooBi {
     val getAreas =
-        csvQuery<BiArea> { sql("""
+        csvQuery<BiArea> {
+            sql(
+                """
 SELECT id, created, updated, name
 FROM care_area
-""") }
+"""
+            )
+        }
 
     val getUnits =
         csvQuery<BiUnit> {
@@ -357,11 +361,11 @@ interface CsvQuery {
 
 class StreamingCsvQuery<T : Any>(
     private val clazz: KClass<T>,
-    private val query: (Database.Read) -> Database.Result<T>
+    private val query: (Database.Read) -> Database.Result<T>,
 ) : CsvQuery {
     override operator fun <R> invoke(
         tx: Database.Read,
-        useResults: (records: Sequence<String>) -> R
+        useResults: (records: Sequence<String>) -> R,
     ): R =
         query(tx).useSequence { rows ->
             useResults(toCsvRecords(::printEspooBiCsvField, clazz, rows))

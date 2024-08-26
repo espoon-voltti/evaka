@@ -12,12 +12,12 @@ import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
+import kotlin.test.assertEquals
 import mu.KLogger
 import mu.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
 private const val message = "test message"
@@ -26,7 +26,8 @@ private val initialLogLevel = (logger.underlyingLogger as Logger).level
 class AppMiscLoggersTest {
     @BeforeEach
     fun before() {
-        // To avoid noise in other tests, just raise the log level for these tests that require TRACE
+        // To avoid noise in other tests, just raise the log level for these tests that require
+        // TRACE
         (logger.underlyingLogger as Logger).level = Level.TRACE
     }
 
@@ -124,6 +125,9 @@ class AppMiscLoggersTest {
     }
 
     private fun compareArgs(expectedArgs: Map<String, Any>, event: ILoggingEvent) {
-        assertEquals(mapOf("meta" to expectedArgs.toString()).toString(), event.argumentArray.first().toString())
+        assertEquals(
+            mapOf("meta" to expectedArgs.toString()).toString(),
+            event.argumentArray.first().toString(),
+        )
     }
 }

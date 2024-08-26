@@ -50,21 +50,21 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/incomes", // deprecated
-    "/employee/incomes"
+    "/employee/incomes",
 )
 class IncomeController(
     private val incomeTypesProvider: IncomeTypesProvider,
     private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     private val mapper: JsonMapper,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping
     fun getPersonIncomes(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam personId: PersonId
+        @RequestParam personId: PersonId,
     ): List<IncomeWithPermittedActions> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -73,7 +73,7 @@ class IncomeController(
                         user,
                         clock,
                         Action.Person.READ_INCOME,
-                        personId
+                        personId,
                     )
 
                     val incomes =
@@ -81,14 +81,14 @@ class IncomeController(
                             mapper,
                             incomeTypesProvider,
                             coefficientMultiplierProvider,
-                            personId
+                            personId,
                         )
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
                             tx,
                             user,
                             clock,
-                            incomes.map { it.id }
+                            incomes.map { it.id },
                         )
                     incomes.map {
                         IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
@@ -98,14 +98,14 @@ class IncomeController(
             .also { incomes ->
                 Audit.PersonIncomeRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to incomes.size)
+                    meta = mapOf("count" to incomes.size),
                 )
             }
     }
 
     data class IncomeWithPermittedActions(
         val data: Income,
-        val permittedActions: Set<Action.Income>
+        val permittedActions: Set<Action.Income>,
     )
 
     @PostMapping
@@ -113,7 +113,7 @@ class IncomeController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody income: IncomeRequest
+        @RequestBody income: IncomeRequest,
     ): IncomeId {
         val period =
             try {
@@ -129,7 +129,7 @@ class IncomeController(
                         user,
                         clock,
                         Action.Person.CREATE_INCOME,
-                        income.personId
+                        income.personId,
                     )
 
                     val incomeTypes = incomeTypesProvider.get()
@@ -139,21 +139,21 @@ class IncomeController(
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),
-                        income.attachments.map { it.id }
+                        income.attachments.map { it.id },
                     )
                     asyncJobRunner.plan(
                         tx,
                         listOf(
                             AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)
                         ),
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                     asyncJobRunner.plan(
                         tx,
                         listOf(
                             AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)
                         ),
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                     id
                 }
@@ -161,7 +161,7 @@ class IncomeController(
             .also { incomeId ->
                 Audit.PersonIncomeCreate.log(
                     targetId = AuditId(income.personId),
-                    objectId = AuditId(incomeId)
+                    objectId = AuditId(incomeId),
                 )
             }
     }
@@ -172,7 +172,7 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId,
-        @RequestBody income: IncomeRequest
+        @RequestBody income: IncomeRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -183,7 +183,7 @@ class IncomeController(
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
-                        incomeId
+                        incomeId,
                     )
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income, incomeTypes)
@@ -193,7 +193,7 @@ class IncomeController(
                     existing?.let {
                         DateRange(
                             minOf(it.validFrom, income.validFrom),
-                            maxEndDate(it.validTo, income.validTo)
+                            maxEndDate(it.validTo, income.validTo),
                         )
                     } ?: DateRange(income.validFrom, income.validTo)
 
@@ -202,20 +202,20 @@ class IncomeController(
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
                             validIncome.personId,
-                            expandedPeriod
+                            expandedPeriod,
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
                 asyncJobRunner.plan(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forChild(
                             validIncome.personId,
-                            expandedPeriod
+                            expandedPeriod,
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -227,7 +227,7 @@ class IncomeController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable incomeId: IncomeId
+        @PathVariable incomeId: IncomeId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -238,7 +238,7 @@ class IncomeController(
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
-                        incomeId
+                        incomeId,
                     ) ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
                 tx.deleteIncome(incomeId)
@@ -246,12 +246,12 @@ class IncomeController(
                 asyncJobRunner.plan(
                     tx,
                     listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
                 asyncJobRunner.plan(
                     tx,
                     listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)),
-                    runAt = clock.now()
+                    runAt = clock.now(),
                 )
             }
         }
@@ -263,7 +263,7 @@ class IncomeController(
         val nameFi: String,
         val multiplier: Int,
         val withCoefficient: Boolean,
-        val isSubType: Boolean
+        val isSubType: Boolean,
     )
 
     data class IncomeTypeOptions(
@@ -275,7 +275,7 @@ class IncomeController(
     fun getIncomeTypeOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): IncomeTypeOptions {
         db.connect { dbc ->
             dbc.read {
@@ -290,7 +290,7 @@ class IncomeController(
                     nameFi = type.nameFi,
                     multiplier = type.multiplier,
                     withCoefficient = type.withCoefficient,
-                    isSubType = type.isSubType
+                    isSubType = type.isSubType,
                 )
             }
             .partition { it.multiplier > 0 }
@@ -301,7 +301,7 @@ class IncomeController(
     fun getIncomeMultipliers(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<IncomeCoefficient, BigDecimal> {
         db.connect { dbc ->
             dbc.read {
@@ -309,7 +309,7 @@ class IncomeController(
                     it,
                     user,
                     clock,
-                    Action.Global.READ_INCOME_COEFFICIENT_MULTIPLIERS
+                    Action.Global.READ_INCOME_COEFFICIENT_MULTIPLIERS,
                 )
             }
         }
@@ -323,7 +323,7 @@ class IncomeController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam personId: PersonId
+        @RequestParam personId: PersonId,
     ): List<IncomeNotification> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -332,7 +332,7 @@ class IncomeController(
                         user,
                         clock,
                         Action.Person.READ_INCOME_NOTIFICATIONS,
-                        personId
+                        personId,
                     )
                     tx.getIncomeNotifications(personId)
                 }
@@ -340,7 +340,7 @@ class IncomeController(
             .also { incomeNotifications ->
                 Audit.PersonIncomeNotificationRead.log(
                     targetId = AuditId(personId),
-                    meta = mapOf("count" to incomeNotifications.size)
+                    meta = mapOf("count" to incomeNotifications.size),
                 )
             }
     }
@@ -358,7 +358,7 @@ fun validateIncome(income: IncomeRequest, incomeTypes: Map<String, IncomeType>):
                     } else {
                         value.copy(
                             multiplier = incomeType.multiplier,
-                            coefficient = IncomeCoefficient.default()
+                            coefficient = IncomeCoefficient.default(),
                         )
                     }
                 }

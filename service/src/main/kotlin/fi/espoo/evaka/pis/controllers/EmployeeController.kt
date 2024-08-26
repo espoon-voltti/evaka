@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/employee", // deprecated
-    "/employee/employees"
+    "/employee/employees",
 )
 class EmployeeController(private val accessControl: AccessControl) {
 
@@ -58,7 +58,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun getEmployees(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<Employee> {
         return db.connect { dbc ->
                 dbc.read {
@@ -66,7 +66,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_EMPLOYEES
+                        Action.Global.READ_EMPLOYEES,
                     )
                     it.getEmployees()
                 }
@@ -80,7 +80,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun getFinanceDecisionHandlers(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<Employee> {
         return db.connect { dbc ->
                 dbc.read {
@@ -88,7 +88,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_FINANCE_DECISION_HANDLERS
+                        Action.Global.READ_FINANCE_DECISION_HANDLERS,
                     )
                     it.getFinanceDecisionHandlers()
                 }
@@ -103,7 +103,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ): Employee {
         return db.connect { dbc ->
                 dbc.read {
@@ -120,7 +120,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
-        @RequestBody body: List<UserRole>
+        @RequestBody body: List<UserRole>,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -129,7 +129,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Employee.UPDATE_GLOBAL_ROLES,
-                    id
+                    id,
                 )
 
                 it.updateEmployeeGlobalRoles(id = id, globalRoles = body)
@@ -137,13 +137,13 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
         Audit.EmployeeUpdateGlobalRoles.log(
             targetId = AuditId(id),
-            meta = mapOf("globalRoles" to body)
+            meta = mapOf("globalRoles" to body),
         )
     }
 
     data class UpsertEmployeeDaycareRolesRequest(
         val daycareIds: List<DaycareId>,
-        val role: UserRole
+        val role: UserRole,
     ) {
         init {
             if (!role.isUnitScopedRole()) {
@@ -158,7 +158,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
-        @RequestBody body: UpsertEmployeeDaycareRolesRequest
+        @RequestBody body: UpsertEmployeeDaycareRolesRequest,
     ) {
         if (body.daycareIds.isEmpty()) {
             throw BadRequest("No daycare IDs provided")
@@ -171,7 +171,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Employee.UPDATE_DAYCARE_ROLES,
-                    id
+                    id,
                 )
 
                 it.upsertEmployeeDaycareRoles(id, body.daycareIds, body.role)
@@ -180,7 +180,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
         Audit.EmployeeUpdateDaycareRoles.log(
             targetId = AuditId(id),
-            meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role)
+            meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role),
         )
     }
 
@@ -190,7 +190,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
-        @RequestParam daycareId: DaycareId?
+        @RequestParam daycareId: DaycareId?,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -199,7 +199,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Employee.DELETE_DAYCARE_ROLES,
-                    id
+                    id,
                 )
 
                 tx.deleteEmployeeDaycareRoles(id, daycareId)
@@ -208,7 +208,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
         Audit.EmployeeDeleteDaycareRoles.log(
             targetId = AuditId(id),
-            meta = mapOf("daycareId" to daycareId)
+            meta = mapOf("daycareId" to daycareId),
         )
     }
 
@@ -217,7 +217,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -234,7 +234,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -251,7 +251,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ): EmployeeWithDaycareRoles {
         return db.connect { dbc ->
                 dbc.read {
@@ -260,7 +260,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Employee.READ_DETAILS,
-                        id
+                        id,
                     )
                     it.getEmployeeWithRoles(id)
                 } ?: throw NotFound("employee $id not found")
@@ -273,7 +273,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody employee: NewEmployee
+        @RequestBody employee: NewEmployee,
     ): Employee {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -281,7 +281,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.CREATE_EMPLOYEE
+                        Action.Global.CREATE_EMPLOYEE,
                     )
                     it.createEmployee(employee)
                 }
@@ -294,7 +294,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: EmployeeId
+        @PathVariable id: EmployeeId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -322,7 +322,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SearchEmployeeRequest
+        @RequestBody body: SearchEmployeeRequest,
     ): PagedEmployeesWithDaycareRoles {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -330,13 +330,13 @@ class EmployeeController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.SEARCH_EMPLOYEES
+                        Action.Global.SEARCH_EMPLOYEES,
                     )
                     getEmployeesPaged(
                         tx,
                         body.page ?: 1,
                         (body.pageSize ?: 50).coerceAtMost(100),
-                        body.searchTerm ?: ""
+                        body.searchTerm ?: "",
                     )
                 }
             }
@@ -345,20 +345,20 @@ class EmployeeController(private val accessControl: AccessControl) {
 
     data class EmployeePreferredFirstName(
         val preferredFirstName: String?,
-        val preferredFirstNameOptions: List<String>
+        val preferredFirstNameOptions: List<String>,
     )
 
     @GetMapping("/preferred-first-name")
     fun getEmployeePreferredFirstName(
         db: Database,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
     ): EmployeePreferredFirstName {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val employee = tx.getEmployee(user.id) ?: throw NotFound()
                     EmployeePreferredFirstName(
                         preferredFirstName = employee.preferredFirstName,
-                        preferredFirstNameOptions = possiblePreferredFirstNames(employee)
+                        preferredFirstNameOptions = possiblePreferredFirstNames(employee),
                     )
                 }
             }
@@ -371,7 +371,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun setEmployeePreferredFirstName(
         db: Database,
         user: AuthenticatedUser.Employee,
-        @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest
+        @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

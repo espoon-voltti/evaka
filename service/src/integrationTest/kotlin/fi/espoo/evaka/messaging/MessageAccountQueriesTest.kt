@@ -48,7 +48,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insert(
                 DevPerson(id = personId, firstName = "Firstname", lastName = "Person"),
-                DevPersonType.ADULT
+                DevPersonType.ADULT,
             )
 
             it.insert(
@@ -71,7 +71,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 it.insert(
                     DevDaycare(
                         areaId = areaId,
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                     )
                 )
 
@@ -95,7 +95,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     DevDaycare(
                         areaId = areaId,
                         name = "Väärä päiväkoti",
-                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
                     )
                 )
             val group3Id = it.insert(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
@@ -121,7 +121,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(supervisorId, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
             }
@@ -134,10 +134,10 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(supervisorId, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     ),
                     "Espoo",
-                    "Espoo palveluohjaus"
+                    "Espoo palveluohjaus",
                 )
             }
         assertEquals(3, accounts2.size)
@@ -174,7 +174,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(employee1Id, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
             }
@@ -187,10 +187,10 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(employee1Id, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     ),
                     "Espoo",
-                    "Espoo palveluohjaus"
+                    "Espoo palveluohjaus",
                 )
             }
         assertEquals(1, accounts2.size)
@@ -213,7 +213,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(employee2Id, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
             }
@@ -226,10 +226,10 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(employee2Id, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     ),
                     "Espoo",
-                    "Espoo palveluohjaus"
+                    "Espoo palveluohjaus",
                 )
             }
         assertEquals(0, accounts2.size)
@@ -245,11 +245,11 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             it,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
-                            Action.MessageAccount.ACCESS
+                            Action.MessageAccount.ACCESS,
                         )
                     )
                 }
-                .size
+                .size,
         )
         db.transaction { it.deactivateEmployeeMessageAccount(supervisorId) }
 
@@ -260,7 +260,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(supervisorId, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
             }
@@ -277,7 +277,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         it,
                         AuthenticatedUser.Employee(supervisorId, emptySet()),
                         clock,
-                        Action.MessageAccount.ACCESS
+                        Action.MessageAccount.ACCESS,
                     )
                 )
             }
@@ -298,7 +298,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     "title",
                     urgent = false,
                     sensitive = false,
-                    isCopy = false
+                    isCopy = false,
                 )
             val messageId =
                 tx.insertMessage(
@@ -309,7 +309,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     sentAt = now.minusSeconds(30),
                     recipientNames = allAccounts.map { it.name },
                     municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoo palveluohjaus"
+                    serviceWorkerAccountName = "Espoo palveluohjaus",
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
         }
@@ -322,11 +322,11 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             tx,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
-                            Action.MessageAccount.ACCESS
+                            Action.MessageAccount.ACCESS,
                         )
                     )
                     .sumOf { it.unreadCount }
-            }
+            },
         )
         assertEquals(
             1,
@@ -336,12 +336,12 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             it,
                             AuthenticatedUser.Employee(supervisorId, emptySet()),
                             clock,
-                            Action.MessageAccount.ACCESS
+                            Action.MessageAccount.ACCESS,
                         )
                     )
                 }
                 .first()
-                .unreadCount
+                .unreadCount,
         )
     }
 }

@@ -124,7 +124,7 @@ ORDER BY valid_from DESC, valid_to DESC
 
 fun Database.Read.getFeeAlterationsFrom(
     personIds: List<ChildId>,
-    from: LocalDate
+    from: LocalDate,
 ): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 

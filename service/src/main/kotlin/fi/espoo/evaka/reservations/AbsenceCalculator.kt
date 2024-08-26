@@ -24,7 +24,7 @@ fun getExpectedAbsenceCategories(
     tx: Database.Read,
     date: LocalDate,
     childId: ChildId,
-    attendanceTimes: List<TimeRange>
+    attendanceTimes: List<TimeRange>,
 ): Set<AbsenceCategory>? {
     val placement =
         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
@@ -38,7 +38,7 @@ fun getExpectedAbsenceCategories(
         unitLanguage = daycare.language,
         dailyPreschoolTime = daycare.dailyPreschoolTime,
         dailyPreparatoryTime = daycare.dailyPreparatoryTime,
-        preschoolTerms = tx.getPreschoolTerms()
+        preschoolTerms = tx.getPreschoolTerms(),
     )
 }
 
@@ -50,7 +50,7 @@ fun getExpectedAbsenceCategories(
     unitLanguage: Language,
     dailyPreschoolTime: TimeRange?,
     dailyPreparatoryTime: TimeRange?,
-    preschoolTerms: List<PreschoolTerm>
+    preschoolTerms: List<PreschoolTerm>,
 ): Set<AbsenceCategory>? {
     val presences = attendanceTimes.map { it.asHelsinkiDateTimeRange(date) }
 
@@ -68,13 +68,13 @@ fun getExpectedAbsenceCategories(
         HelsinkiDateTimeRange.of(
             date = date,
             startTime = LocalTime.of(0, 0),
-            endTime = preschoolTime.start.toLocalTime()
+            endTime = preschoolTime.start.toLocalTime(),
         )
     val afterPreschoolTime =
         HelsinkiDateTimeRange.of(
             date = date,
             startTime = preschoolTime.end.toLocalTime(),
-            endTime = LocalTime.of(23, 59)
+            endTime = LocalTime.of(23, 59),
         )
 
     val preparatoryTime =
@@ -84,13 +84,13 @@ fun getExpectedAbsenceCategories(
         HelsinkiDateTimeRange.of(
             date = date,
             startTime = LocalTime.of(0, 0),
-            endTime = preparatoryTime.start.toLocalTime()
+            endTime = preparatoryTime.start.toLocalTime(),
         )
     val afterPreparatoryTime =
         HelsinkiDateTimeRange.of(
             date = date,
             startTime = preparatoryTime.end.toLocalTime(),
-            endTime = LocalTime.of(23, 59)
+            endTime = LocalTime.of(23, 59),
         )
 
     return when (placementType) {
@@ -111,7 +111,7 @@ fun getExpectedAbsenceCategories(
                     AbsenceCategory.BILLABLE.takeIf {
                         overlapTime(presences, beforePreschoolTime) < Duration.ofMinutes(15) &&
                             overlapTime(presences, afterPreschoolTime) < Duration.ofMinutes(15)
-                    }
+                    },
                 )
             } else {
                 setOfNotNull(
@@ -136,7 +136,7 @@ fun getExpectedAbsenceCategories(
                     AbsenceCategory.BILLABLE.takeIf {
                         overlapTime(presences, beforePreparatoryTime) < Duration.ofMinutes(15) &&
                             overlapTime(presences, afterPreparatoryTime) < Duration.ofMinutes(15)
-                    }
+                    },
                 )
             } else {
                 setOfNotNull(
@@ -162,7 +162,7 @@ fun getExpectedAbsenceCategories(
                 },
                 AbsenceCategory.BILLABLE.takeIf {
                     totalTime(presences) < Duration.ofMinutes(4 * 60 + 15)
-                }
+                },
             )
         PlacementType.SCHOOL_SHIFT_CARE ->
             setOfNotNull(
@@ -177,5 +177,5 @@ private fun totalTime(times: List<HelsinkiDateTimeRange>): Duration =
 
 private fun overlapTime(
     times: List<HelsinkiDateTimeRange>,
-    schedule: HelsinkiDateTimeRange
+    schedule: HelsinkiDateTimeRange,
 ): Duration = totalTime(times.mapNotNull { it.intersection(schedule) })

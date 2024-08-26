@@ -32,12 +32,12 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     payloadType: KClass<T>,
     pools: Iterable<Pool<T>>,
     jdbi: Jdbi,
-    tracer: Tracer
+    tracer: Tracer,
 ) : AutoCloseable {
     data class Pool<T : AsyncJobPayload>(
         val id: AsyncJobPool.Id<T>,
         val config: AsyncJobPool.Config,
-        val jobs: Set<KClass<out T>>
+        val jobs: Set<KClass<out T>>,
     ) {
         fun withThrottleInterval(throttleInterval: Duration?) =
             copy(config = config.copy(throttleInterval = throttleInterval))
@@ -82,7 +82,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun <P : T> registerHandler(
         jobType: AsyncJobType<out P>,
-        handler: (db: Database, clock: EvakaClock, msg: P) -> Unit
+        handler: (db: Database, clock: EvakaClock, msg: P) -> Unit,
     ): Unit =
         stateLock.write {
             require(jobsPerPool.values.any { it.contains(jobType) }) {
@@ -104,7 +104,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         payloads: Iterable<T>,
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
-        runAt: HelsinkiDateTime
+        runAt: HelsinkiDateTime,
     ) = plan(tx, payloads.asSequence(), retryCount, retryInterval, runAt)
 
     fun plan(
@@ -112,7 +112,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         payloads: Sequence<T>,
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
-        runAt: HelsinkiDateTime
+        runAt: HelsinkiDateTime,
     ) =
         plan(
             tx,
@@ -121,9 +121,9 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                     payload = payload,
                     retryCount = retryCount,
                     retryInterval = retryInterval,
-                    runAt = runAt
+                    runAt = runAt,
                 )
-            }
+            },
         )
 
     fun plan(tx: Database.Transaction, jobs: Iterable<JobParams<out T>>) =
@@ -143,7 +143,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun startBackgroundPolling(
         clock: EvakaClock = RealEvakaClock(),
-        pollingInterval: Duration = Duration.ofMinutes(1)
+        pollingInterval: Duration = Duration.ofMinutes(1),
     ) {
         val newTimer =
             fixedRateTimer("$name.timer", period = pollingInterval.toMillis()) {

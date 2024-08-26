@@ -43,7 +43,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
     ): StaffAttendanceResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -52,7 +52,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         user,
                         clock,
                         Action.Unit.READ_STAFF_ATTENDANCES,
-                        unitId
+                        unitId,
                     )
                     val range = FiniteDateRange(start, end)
                     val attendancesByEmployee =
@@ -65,18 +65,18 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     val noAttendanceEmployeeToGroups =
                         tx.getGroupsForEmployees(
                             unitId,
-                            staffForAttendanceCalendar.map { emp -> emp.id }.toSet()
+                            staffForAttendanceCalendar.map { emp -> emp.id }.toSet(),
                         )
                     val plannedAttendances =
                         tx.getPlannedStaffAttendanceForDays(
                             attendancesByEmployee.keys + staffForAttendanceCalendar.map { it.id },
-                            range
+                            range,
                         )
                     val attendancesNotInGroups =
                         tx.getStaffAttendancesWithoutGroup(
                                 range,
                                 attendancesByEmployee.keys +
-                                    staffForAttendanceCalendar.map { it.id }
+                                    staffForAttendanceCalendar.map { it.id },
                             )
                             .groupBy { it.employeeId }
 
@@ -86,7 +86,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             user,
                             clock,
                             Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                            attendancesByEmployee.entries.map { (employeeId) -> employeeId }
+                            attendancesByEmployee.entries.map { (employeeId) -> employeeId },
                         )
 
                     val staffWithAttendance =
@@ -108,11 +108,11 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departed,
                                                 att.occupancyCoefficient,
                                                 att.type,
-                                                att.departedAutomatically
+                                                att.departedAutomatically,
                                             )
                                         },
                                 plannedAttendances = plannedAttendances[employeeId] ?: emptyList(),
-                                allowedToEdit = allowedToEdit[employeeId]?.isPermitted() ?: false
+                                allowedToEdit = allowedToEdit[employeeId]?.isPermitted() ?: false,
                             )
                         }
                     val staffWithoutAttendance =
@@ -135,16 +135,16 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                                 att.departed,
                                                 att.occupancyCoefficient,
                                                 att.type,
-                                                att.departedAutomatically
+                                                att.departedAutomatically,
                                             )
                                         },
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList(),
-                                    allowedToEdit = true
+                                    allowedToEdit = true,
                                 )
                             }
                     StaffAttendanceResponse(
                         staff = staffWithAttendance + staffWithoutAttendance,
-                        extraAttendances = tx.getExternalStaffAttendancesByDateRange(unitId, range)
+                        extraAttendances = tx.getExternalStaffAttendancesByDateRange(unitId, range),
                     )
                 }
             }
@@ -154,8 +154,8 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     meta =
                         mapOf(
                             "staffCount" to it.staff.size,
-                            "externalStaffCount" to it.extraAttendances.size
-                        )
+                            "externalStaffCount" to it.extraAttendances.size,
+                        ),
                 )
             }
     }
@@ -166,14 +166,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType,
-        val hasStaffOccupancyEffect: Boolean
+        val hasStaffOccupancyEffect: Boolean,
     )
 
     data class StaffAttendanceBody(
         val unitId: DaycareId,
         val employeeId: EmployeeId,
         val date: LocalDate,
-        val entries: List<StaffAttendanceUpsert>
+        val entries: List<StaffAttendanceUpsert>,
     ) {
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
             entries.any {
@@ -186,7 +186,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: StaffAttendanceBody
+        @RequestBody body: StaffAttendanceBody,
     ) {
         if (body.anyAttendanceAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
@@ -203,18 +203,18 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         user,
                         clock,
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        body.unitId
+                        body.unitId,
                     )
                     val wholeDay =
                         HelsinkiDateTimeRange(
                             HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0))
+                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0)),
                         )
                     tx.deleteStaffAttendancesInRangeExcept(
                         body.unitId,
                         body.employeeId,
                         wholeDay,
-                        body.entries.mapNotNull { it.id }
+                        body.entries.mapNotNull { it.id },
                     )
 
                     accessControl.requirePermissionFor(
@@ -222,7 +222,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         user,
                         clock,
                         Action.Employee.UPDATE_STAFF_ATTENDANCES,
-                        body.employeeId
+                        body.employeeId,
                     )
 
                     body.entries.map { entry ->
@@ -237,7 +237,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             entry.departed,
                             occupancyCoefficient,
                             entry.type,
-                            false
+                            false,
                         )
                     }
                 }
@@ -245,7 +245,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         Audit.StaffAttendanceUpdate.log(
             targetId = AuditId(body.unitId),
             objectId = AuditId(staffAttendanceIds),
-            meta = mapOf("date" to body.date)
+            meta = mapOf("date" to body.date),
         )
     }
 
@@ -254,14 +254,14 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val groupId: GroupId,
         val hasStaffOccupancyEffect: Boolean,
         val arrived: HelsinkiDateTime,
-        val departed: HelsinkiDateTime?
+        val departed: HelsinkiDateTime?,
     )
 
     data class ExternalAttendanceBody(
         val unitId: DaycareId,
         val name: String,
         val date: LocalDate,
-        val entries: List<ExternalAttendanceUpsert>
+        val entries: List<ExternalAttendanceUpsert>,
     ) {
         fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
             entries.any {
@@ -274,7 +274,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: ExternalAttendanceBody
+        @RequestBody body: ExternalAttendanceBody,
     ) {
         if (body.anyAttendanceAfter(clock.now())) {
             throw BadRequest("Attendances cannot be in the future")
@@ -291,17 +291,17 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         user,
                         clock,
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        body.unitId
+                        body.unitId,
                     )
                     val wholeDay =
                         HelsinkiDateTimeRange(
                             HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0))
+                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0)),
                         )
                     tx.deleteExternalAttendancesInRangeExcept(
                         body.name,
                         wholeDay,
-                        body.entries.mapNotNull { it.id }
+                        body.entries.mapNotNull { it.id },
                     )
                     body.entries.map {
                         tx.upsertExternalStaffAttendance(
@@ -312,7 +312,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             it.departed,
                             if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
                             else occupancyCoefficientZero,
-                            false
+                            false,
                         )
                     }
                 }
@@ -320,7 +320,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         Audit.StaffAttendanceExternalUpdate.log(
             targetId = AuditId(body.unitId),
             objectId = AuditId(externalAttendanceIds),
-            meta = mapOf("date" to body.date)
+            meta = mapOf("date" to body.date),
         )
     }
 
@@ -330,7 +330,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable attendanceId: StaffAttendanceRealtimeId
+        @PathVariable attendanceId: StaffAttendanceRealtimeId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -339,7 +339,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     user,
                     clock,
                     Action.Unit.DELETE_STAFF_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 tx.deleteStaffAttendance(attendanceId)
             }
@@ -353,7 +353,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @PathVariable attendanceId: StaffAttendanceExternalId
+        @PathVariable attendanceId: StaffAttendanceExternalId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -362,7 +362,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     user,
                     clock,
                     Action.Unit.DELETE_STAFF_ATTENDANCES,
-                    unitId
+                    unitId,
                 )
                 tx.deleteExternalStaffAttendance(attendanceId)
             }

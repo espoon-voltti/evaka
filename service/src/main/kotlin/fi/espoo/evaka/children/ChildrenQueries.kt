@@ -68,7 +68,7 @@ SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_d
 
 fun Database.Read.getActivePlacementUnitsForChildren(
     today: LocalDate,
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
 ): Map<DaycareId, List<ChildId>> =
     createQuery {
             sql(

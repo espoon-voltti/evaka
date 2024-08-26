@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController
 class UnitsReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/units", // deprecated
-        "/employee/reports/units"
+        "/employee/reports/units",
     )
     fun getUnitsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<UnitsReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -32,7 +32,7 @@ class UnitsReportController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_UNITS_REPORT
+                        Action.Global.READ_UNITS_REPORT,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getUnitRows()
@@ -101,5 +101,5 @@ data class UnitsReportRow(
     val costCenter: String,
     val address: String,
     val unitManagerName: String,
-    val unitManagerPhone: String
+    val unitManagerPhone: String,
 )

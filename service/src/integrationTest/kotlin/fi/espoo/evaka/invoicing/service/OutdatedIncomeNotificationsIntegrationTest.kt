@@ -75,7 +75,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
             streetAddress = "Kamreerintie 2",
             postalCode = "02770",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private val fridgeHeadOfChildEmail = "fridge_hoc@example.com"
@@ -101,7 +101,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     childId = childId,
                     headOfChild = fridgeHeadOfChildId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
 
@@ -111,7 +111,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         childId = childId,
                         unitId = daycareId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insertServiceNeedOptions()
@@ -123,7 +123,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
@@ -141,7 +141,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today()
+                    validTo = clock.today(),
                 )
             )
 
@@ -150,7 +150,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().plusDays(1),
-                    validTo = clock.today().plusMonths(6)
+                    validTo = clock.today().plusMonths(6),
                 )
             )
         }
@@ -166,7 +166,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusWeeks(4)
+                    validTo = clock.today().plusWeeks(4),
                 )
             )
         }
@@ -175,7 +175,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
         assertEquals(
             IncomeNotificationType.INITIAL_EMAIL,
-            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType
+            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType,
         )
     }
 
@@ -192,7 +192,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgePartnerId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusWeeks(4)
+                    validTo = clock.today().plusWeeks(4),
                 )
             )
 
@@ -205,7 +205,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     fridgeHeadOfChildId,
                     clock.today(),
                     clock.today(),
-                    clock.now()
+                    clock.now(),
                 )
             )
             it.insert(
@@ -216,7 +216,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     fridgePartnerId,
                     clock.today(),
                     clock.today(),
-                    clock.now()
+                    clock.now(),
                 )
             )
         }
@@ -226,7 +226,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(1, getIncomeNotifications(fridgePartnerId).size)
         assertEquals(
             IncomeNotificationType.INITIAL_EMAIL,
-            getIncomeNotifications(fridgePartnerId)[0].notificationType
+            getIncomeNotifications(fridgePartnerId)[0].notificationType,
         )
     }
 
@@ -241,7 +241,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgePartnerId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusWeeks(4)
+                    validTo = clock.today().plusWeeks(4),
                 )
             )
 
@@ -254,7 +254,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     fridgeHeadOfChildId,
                     clock.today(),
                     clock.today(),
-                    clock.now()
+                    clock.now(),
                 )
             )
             it.insert(
@@ -265,7 +265,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     fridgePartnerId,
                     clock.today(),
                     null,
-                    clock.now()
+                    clock.now(),
                 )
             )
         }
@@ -275,7 +275,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(1, getIncomeNotifications(fridgePartnerId).size)
         assertEquals(
             IncomeNotificationType.INITIAL_EMAIL,
-            getIncomeNotifications(fridgePartnerId)[0].notificationType
+            getIncomeNotifications(fridgePartnerId)[0].notificationType,
         )
     }
 
@@ -287,7 +287,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().minusDays(1)
+                    validTo = clock.today().minusDays(1),
                 )
             )
         }
@@ -305,7 +305,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
-                    validTo = incomeExpirationDate
+                    validTo = incomeExpirationDate,
                 )
             )
 
@@ -316,7 +316,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     startDate = incomeExpirationDate.plusDays(1),
                     type = IncomeStatementType.INCOME,
                     grossEstimatedMonthlyIncome = 42,
-                    handlerId = null
+                    handlerId = null,
                 )
             )
         }
@@ -334,7 +334,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
-                    validTo = incomeExpirationDate
+                    validTo = incomeExpirationDate,
                 )
             )
 
@@ -345,7 +345,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     startDate = incomeExpirationDate.plusDays(1),
                     type = IncomeStatementType.INCOME,
                     grossEstimatedMonthlyIncome = 42,
-                    handlerId = employeeId
+                    handlerId = employeeId,
                 )
             )
         }
@@ -363,7 +363,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = incomeExpirationDate.minusMonths(1),
-                    validTo = incomeExpirationDate
+                    validTo = incomeExpirationDate,
                 )
             )
 
@@ -373,7 +373,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     startDate = incomeExpirationDate.plusDays(1),
                     type = IncomeStatementType.INCOME,
-                    grossEstimatedMonthlyIncome = 42
+                    grossEstimatedMonthlyIncome = 42,
                 )
             )
         }
@@ -390,7 +390,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = expirationDate
+                    validTo = expirationDate,
                 )
             )
 
@@ -427,7 +427,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusDays(13)
+                    validTo = clock.today().plusDays(13),
                 )
             )
 
@@ -449,7 +449,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusWeeks(4)
+                    validTo = clock.today().plusWeeks(4),
                 )
             )
         }
@@ -474,10 +474,10 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
-                        fridgeHeadOfChildId
+                        fridgeHeadOfChildId,
                     )
                 }
-                .size
+                .size,
         )
 
         assertEquals(0, getEmails().size)
@@ -491,7 +491,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusDays(6)
+                    validTo = clock.today().plusDays(6),
                 )
             )
         }
@@ -527,10 +527,10 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         mapper,
                         incomeTypesProvider,
                         coefficientMultiplierProvider,
-                        fridgeHeadOfChildId
+                        fridgeHeadOfChildId,
                     )
                 }
-                .size
+                .size,
         )
     }
 
@@ -543,17 +543,17 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
                     validTo = clock.today(),
-                    effect = IncomeEffect.INCOME
+                    effect = IncomeEffect.INCOME,
                 )
             )
 
             it.createIncomeNotification(
                 receiverId = fridgeHeadOfChildId,
-                IncomeNotificationType.INITIAL_EMAIL
+                IncomeNotificationType.INITIAL_EMAIL,
             )
             it.createIncomeNotification(
                 receiverId = fridgeHeadOfChildId,
-                IncomeNotificationType.REMINDER_EMAIL
+                IncomeNotificationType.REMINDER_EMAIL,
             )
 
             it.insert(
@@ -582,7 +582,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     temporaryFee = 2900,
                     temporaryFeePartDay = 1500,
                     temporaryFeeSibling = 1500,
-                    temporaryFeeSiblingPartDay = 800
+                    temporaryFeeSiblingPartDay = 800,
                 )
             )
         }
@@ -605,7 +605,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    fridgeHeadOfChildId
+                    fridgeHeadOfChildId,
                 )
             }
         assertEquals(2, incomes.size)
@@ -623,7 +623,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         it.validFrom == firstDayAfterExpiration &&
                         it.headOfFamilyIncome!!.effect == IncomeEffect.INCOMPLETE
                 }
-                .size
+                .size,
         )
     }
 
@@ -640,7 +640,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     streetAddress = "Kamreerintie 2",
                     postalCode = "02770",
                     postOffice = "Espoo",
-                    restrictedDetailsEnabled = false
+                    restrictedDetailsEnabled = false,
                 )
 
             tx.insert(testChild2, DevPersonType.CHILD)
@@ -653,7 +653,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                         childId = testChild2.id,
                         unitId = daycareId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insertServiceNeed(
@@ -664,7 +664,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
 
             tx.insert(
@@ -672,7 +672,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
                     personId = fridgeHeadOfChildId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(1),
-                    validTo = clock.today().plusWeeks(4)
+                    validTo = clock.today().plusWeeks(4),
                 )
             )
         }
@@ -681,7 +681,7 @@ class OutdatedIncomeNotificationsIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(1, getIncomeNotifications(fridgeHeadOfChildId).size)
         assertEquals(
             IncomeNotificationType.INITIAL_EMAIL,
-            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType
+            getIncomeNotifications(fridgeHeadOfChildId)[0].notificationType,
         )
     }
 

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class PairingsController(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     /**
      * Unit supervisor calls this endpoint as an authorized desktop user to start a new pairing
@@ -49,13 +49,13 @@ class PairingsController(
 
     @PostMapping(
         "/pairings", // deprecated
-        "/employee/pairings"
+        "/employee/pairings",
     )
     fun postPairing(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: PostPairingReq
+        @RequestBody body: PostPairingReq,
     ): Pairing {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -66,7 +66,7 @@ class PairingsController(
                                 user,
                                 clock,
                                 Action.Unit.CREATE_MOBILE_DEVICE_PAIRING,
-                                body.unitId
+                                body.unitId,
                             )
                             tx.initPairing(clock, unitId = body.unitId)
                         }
@@ -75,7 +75,7 @@ class PairingsController(
                                 tx,
                                 user,
                                 clock,
-                                Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING
+                                Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING,
                             )
                             if (user.id != body.employeeId) throw Forbidden()
                             tx.initPairing(clock, employeeId = body.employeeId)
@@ -84,7 +84,7 @@ class PairingsController(
                         asyncJobRunner.plan(
                             tx = tx,
                             payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = it.id)),
-                            runAt = it.expires.plusDays(1)
+                            runAt = it.expires.plusDays(1),
                         )
                     }
                 }
@@ -107,13 +107,13 @@ class PairingsController(
         path =
             [
                 "/public/pairings/challenge", // deprecated
-                "/employee-mobile/public/pairings/challenge"
+                "/employee-mobile/public/pairings/challenge",
             ]
     )
     fun postPairingChallenge(
         db: Database,
         clock: EvakaClock,
-        @RequestBody body: PostPairingChallengeReq
+        @RequestBody body: PostPairingChallengeReq,
     ): Pairing {
         return db.connect { dbc ->
                 dbc.transaction { it.challengePairing(clock, body.challengeKey) }
@@ -121,7 +121,7 @@ class PairingsController(
             .also {
                 Audit.PairingChallenge.log(
                     targetId = AuditId(it.id),
-                    meta = mapOf("challengeKey" to body.challengeKey)
+                    meta = mapOf("challengeKey" to body.challengeKey),
                 )
             }
     }
@@ -138,14 +138,14 @@ class PairingsController(
 
     @PostMapping(
         "/pairings/{id}/response", // deprecated
-        "/employee/pairings/{id}/response"
+        "/employee/pairings/{id}/response",
     )
     fun postPairingResponse(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PairingId,
-        @RequestBody body: PostPairingResponseReq
+        @RequestBody body: PostPairingResponseReq,
     ): Pairing {
         return db.connect { dbc ->
                 dbc.read {
@@ -158,7 +158,7 @@ class PairingsController(
                                     user,
                                     clock,
                                     Action.Pairing.POST_RESPONSE,
-                                    id
+                                    id,
                                 )
                             employeeId != null -> if (user.id != employeeId) throw Forbidden()
                             else -> error("Pairing unitId and employeeId were null")
@@ -174,7 +174,7 @@ class PairingsController(
                         clock,
                         id,
                         body.challengeKey,
-                        body.responseKey
+                        body.responseKey,
                     )
                 }
             }
@@ -184,8 +184,8 @@ class PairingsController(
                     meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
-                            "responseKey" to body.responseKey
-                        )
+                            "responseKey" to body.responseKey,
+                        ),
                 )
             }
     }
@@ -205,7 +205,7 @@ class PairingsController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: PairingId,
-        @RequestBody body: PostPairingValidationReq
+        @RequestBody body: PostPairingValidationReq,
     ): MobileDeviceIdentity {
         return db.connect { dbc ->
                 dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
@@ -221,8 +221,8 @@ class PairingsController(
                     meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
-                            "responseKey" to body.responseKey
-                        )
+                            "responseKey" to body.responseKey,
+                        ),
                 )
             }
     }
@@ -241,20 +241,20 @@ class PairingsController(
             [
                 "/public/pairings/{id}/status", // deprecated
                 "/employee/public/pairings/{id}/status",
-                "/employee-mobile/public/pairings/{id}/status"
+                "/employee-mobile/public/pairings/{id}/status",
             ]
     )
     fun getPairingStatus(
         db: Database,
         clock: EvakaClock,
-        @PathVariable id: PairingId
+        @PathVariable id: PairingId,
     ): PairingStatusRes {
         return PairingStatusRes(
             db.connect { dbc -> dbc.read { it.fetchPairingStatus(clock, id) } }
                 .also {
                     Audit.PairingStatusRead.log(
                         targetId = AuditId(id),
-                        meta = mapOf("status" to it)
+                        meta = mapOf("status" to it),
                     )
                 }
         )

@@ -61,7 +61,7 @@ class AwsConfig {
     @Profile("local")
     fun amazonS3PresignerLocal(
         env: BucketEnv,
-        credentialsProvider: AwsCredentialsProvider
+        credentialsProvider: AwsCredentialsProvider,
     ): S3Presigner =
         S3Presigner.builder()
             .region(Region.US_EAST_1)
@@ -83,7 +83,7 @@ class AwsConfig {
     @Profile("production")
     fun amazonS3PresignerProd(
         env: EvakaEnv,
-        credentialsProvider: AwsCredentialsProvider
+        credentialsProvider: AwsCredentialsProvider,
     ): S3Presigner = S3Presigner.builder().credentialsProvider(credentialsProvider).build()
 
     @Lazy

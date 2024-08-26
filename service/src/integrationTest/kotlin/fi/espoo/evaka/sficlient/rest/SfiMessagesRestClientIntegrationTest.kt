@@ -37,14 +37,14 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     email = "test@example.com",
                     // dummy fields only used by the SOAP implementation
                     phone = "",
-                    name = ""
+                    name = "",
                 ),
             contactOrganization =
                 SfiContactOrganizationEnv(
                     name = "eVaka Espoo",
                     streetAddress = "Karaportti 1 PL 302",
                     postalCode = "02070",
-                    postOffice = "Espoo"
+                    postOffice = "Espoo",
                 ),
             restEnabled = true,
             restAddress = URI.create("http://localhost:$httpPort/public/mock-sfi-messages"),
@@ -76,7 +76,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
             messageHeader = "message-header",
             messageContent = "message-content",
             emailHeader = "message-header",
-            emailContent = "message-content"
+            emailContent = "message-content",
         )
     private val fileContent = byteArrayOf(1, 2, 3, 4)
     private lateinit var sfiEnv: SfiEnv
@@ -94,7 +94,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     assertEquals(message.documentBucket, bucketName)
                     assertEquals(message.documentKey, key)
                     Document(key, fileContent, contentType = "content-type")
-                }
+                },
             )
     }
 
@@ -120,7 +120,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                         NewElectronicMessage(
                             title = message.messageHeader,
                             body = message.messageContent,
-                            files = listOf(FileReference(fileId))
+                            files = listOf(FileReference(fileId)),
                         ),
                     paperMail =
                         NewNormalPaperMail(
@@ -132,7 +132,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         contactDetails =
                                             ContactDetails(sfiEnv.contactPerson.email!!),
                                         username = sfiEnv.printing.billingId,
-                                        password = sfiEnv.printing.billingPassword!!.value
+                                        password = sfiEnv.printing.billingPassword!!.value,
                                     )
                                 ),
                             recipient =
@@ -141,7 +141,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         name = "${message.lastName} ${message.firstName}",
                                         streetAddress = message.streetAddress,
                                         zipCode = message.postalCode,
-                                        city = message.postOffice
+                                        city = message.postOffice,
                                     )
                                 ),
                             sender =
@@ -150,14 +150,14 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         name = sfiEnv.contactOrganization.name!!,
                                         streetAddress = sfiEnv.contactOrganization.streetAddress!!,
                                         zipCode = sfiEnv.contactOrganization.postalCode!!,
-                                        city = sfiEnv.contactOrganization.postOffice!!
+                                        city = sfiEnv.contactOrganization.postOffice!!,
                                     )
-                                )
+                                ),
                         ),
                     recipient = Recipient(id = message.ssn),
-                    sender = Sender(serviceId = sfiEnv.serviceIdentifier)
+                    sender = Sender(serviceId = sfiEnv.serviceIdentifier),
                 ),
-                captured
+                captured,
             )
         }
     }

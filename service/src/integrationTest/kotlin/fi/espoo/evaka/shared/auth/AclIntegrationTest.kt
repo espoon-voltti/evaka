@@ -78,7 +78,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     childId = childId,
                     headOfChild = fridgeParentId,
                     startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2030, 1, 1)
+                    endDate = LocalDate.of(2030, 1, 1),
                 )
             )
             it.insertGuardian(guardianId, childId)
@@ -87,7 +87,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                     childId = childId,
                     guardianId = guardianId,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             decisionId =
                 it.insertTestDecision(
@@ -97,7 +97,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                         applicationId = applicationId,
                         type = DecisionType.DAYCARE,
                         startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
             placementId =
@@ -106,7 +106,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
                         childId = childId,
                         unitId = daycareId,
                         startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2100, 1, 1)
+                        endDate = LocalDate.of(2100, 1, 1),
                     )
                 )
             mobileId = it.insert(DevMobileDevice(unitId = daycareId))

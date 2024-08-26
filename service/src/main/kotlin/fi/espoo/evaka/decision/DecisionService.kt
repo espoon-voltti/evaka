@@ -53,7 +53,7 @@ class DecisionService(
     private val pdfGenerator: PdfGenerator,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    env: BucketEnv
+    env: BucketEnv,
 ) {
     private val decisionBucket = env.decisions
 
@@ -62,13 +62,13 @@ class DecisionService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         applicationId: ApplicationId,
-        sendAsMessage: Boolean
+        sendAsMessage: Boolean,
     ): List<DecisionId> {
         val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
         asyncJobRunner.plan(
             tx,
             decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) },
-            runAt = clock.now()
+            runAt = clock.now(),
         )
         return decisionIds
     }
@@ -94,7 +94,7 @@ class DecisionService(
                 application,
                 child,
                 decisionLanguage,
-                unitManager
+                unitManager,
             )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
@@ -106,7 +106,7 @@ class DecisionService(
         application: ApplicationDetails,
         child: PersonDTO,
         decisionLanguage: OfficialLanguage,
-        unitManager: DaycareManager
+        unitManager: DaycareManager,
     ): DocumentLocation {
         val decisionBytes =
             createDecisionPdf(
@@ -118,13 +118,13 @@ class DecisionService(
                 application.transferApplication,
                 application.form.preferences.serviceNeed,
                 decisionLanguage,
-                unitManager
+                unitManager,
             )
 
         return uploadPdfToS3(
             decisionBucket,
             constructObjectKey(decision, decisionLanguage),
-            decisionBytes
+            decisionBytes,
         )
     }
 
@@ -138,7 +138,7 @@ class DecisionService(
 
     private fun determineDecisionLanguage(
         decision: Decision,
-        tx: Database.Transaction
+        tx: Database.Transaction,
     ): OfficialLanguage {
         return if (decision.type == DecisionType.CLUB) {
             OfficialLanguage.FI
@@ -167,7 +167,7 @@ class DecisionService(
     fun deliverDecisionToGuardians(
         tx: Database.Transaction,
         clock: EvakaClock,
-        decisionId: DecisionId
+        decisionId: DecisionId,
     ) {
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
@@ -196,7 +196,7 @@ class DecisionService(
                 clock,
                 decision,
                 applicationGuardian,
-                decision.documentKey
+                decision.documentKey,
             )
         } else {
             logger.warn(
@@ -220,7 +220,7 @@ class DecisionService(
                             clock,
                             decision,
                             otherGuardian,
-                            decision.documentKey
+                            decision.documentKey,
                         )
                     } else {
                         logger.warn(
@@ -238,7 +238,7 @@ class DecisionService(
         clock: EvakaClock,
         decision: Decision,
         guardian: PersonDTO,
-        documentKey: String
+        documentKey: String,
     ) {
         if (guardian.identity !is ExternalIdentifier.SSN) {
             logger.info {
@@ -266,7 +266,7 @@ class DecisionService(
                 postOffice = sendAddress.postOffice,
                 ssn = guardian.identity.ssn,
                 messageHeader = messageProvider.getDecisionHeader(lang),
-                messageContent = messageProvider.getDecisionContent(lang)
+                messageContent = messageProvider.getDecisionContent(lang),
             )
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
@@ -301,7 +301,7 @@ fun createDecisionPdf(
     isTransferApplication: Boolean,
     serviceNeed: ServiceNeed?,
     lang: OfficialLanguage,
-    unitManager: DaycareManager
+    unitManager: DaycareManager,
 ): ByteArray {
     val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type == DecisionType.DAYCARE_PART_TIME
@@ -315,7 +315,7 @@ fun createDecisionPdf(
             child,
             unitManager,
             isPartTimeDecision,
-            serviceNeed
+            serviceNeed,
         )
 
     return pdfService.render(pages)
@@ -329,7 +329,7 @@ private fun generateDecisionPages(
     child: PersonDTO,
     manager: DaycareManager,
     isPartTimeDecision: Boolean,
-    serviceNeed: ServiceNeed?
+    serviceNeed: ServiceNeed?,
 ): Page {
     return Page(
         Template(template),
@@ -345,7 +345,7 @@ private fun generateDecisionPages(
                 decision.type == DecisionType.PRESCHOOL_DAYCARE ||
                     decision.type == DecisionType.PRESCHOOL_CLUB ||
                     decision.type == DecisionType.CLUB ||
-                    decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
+                    decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER,
             )
             setVariable(
                 "decisionUnitName",
@@ -359,19 +359,19 @@ private fun generateDecisionPages(
                     DecisionType.PREPARATORY_EDUCATION ->
                         decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
                     else -> null
-                } ?: decision.unit.name
+                } ?: decision.unit.name,
             )
             setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
             setVariable("decisionMakerTitle", settings[SettingType.DECISION_MAKER_TITLE])
             setVariable("sentDate", decision.sentDate)
-        }
+        },
     )
 }
 
 private fun createTemplate(
     templateProvider: ITemplateProvider,
     decision: Decision,
-    isTransferApplication: Boolean
+    isTransferApplication: Boolean,
 ): String {
     return when (decision.type) {
         DecisionType.CLUB -> templateProvider.getClubDecisionPath()

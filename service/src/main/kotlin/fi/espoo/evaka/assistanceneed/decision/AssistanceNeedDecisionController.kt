@@ -43,7 +43,7 @@ class AssistanceNeedDecisionController(
     private val assistanceNeedDecisionService: AssistanceNeedDecisionService,
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @PostMapping("/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
@@ -51,7 +51,7 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: AssistanceNeedDecisionRequest
+        @RequestBody body: AssistanceNeedDecisionRequest,
     ): AssistanceNeedDecision {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -60,13 +60,13 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_NEED_DECISION,
-                        childId
+                        childId,
                     )
                     var decision: AssistanceNeedDecisionForm =
                         body.decision.copy(
                             status = AssistanceNeedDecisionStatus.DRAFT,
                             sentForDecision = null,
-                            validityPeriod = body.decision.validityPeriod.copy(end = null)
+                            validityPeriod = body.decision.validityPeriod.copy(end = null),
                         )
                     if (decision.guardianInfo.isEmpty()) {
                         val guardianIds = tx.getChildGuardians(childId)
@@ -79,7 +79,7 @@ class AssistanceNeedDecisionController(
                                                 personId = gid,
                                                 name = "", // not stored
                                                 isHeard = false,
-                                                details = null
+                                                details = null,
                                             )
                                         }
                                         .toSet()
@@ -95,7 +95,7 @@ class AssistanceNeedDecisionController(
                                         processDefinitionNumber = config.processDefinitionNumber,
                                         year = now.year,
                                         organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths
+                                        archiveDurationMonths = config.archiveDurationMonths,
                                     )
                                     .id
                                     .also { processId ->
@@ -103,7 +103,7 @@ class AssistanceNeedDecisionController(
                                             processId = processId,
                                             state = ArchivedProcessState.INITIAL,
                                             now = now,
-                                            userId = user.evakaUserId
+                                            userId = user.evakaUserId,
                                         )
                                     }
                             }
@@ -112,14 +112,14 @@ class AssistanceNeedDecisionController(
                         childId = childId,
                         data = decision,
                         processId = processId,
-                        user = user
+                        user = user,
                     )
                 }
             }
             .also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedDecisionCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(assistanceNeedDecision.id)
+                    objectId = AuditId(assistanceNeedDecision.id),
                 )
             }
     }
@@ -132,7 +132,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ): AssistanceNeedDecisionResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -141,14 +141,14 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.READ,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     AssistanceNeedDecisionResponse(
                         decision,
                         permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
-                        hasMissingFields = hasMissingFields(decision)
+                        hasMissingFields = hasMissingFields(decision),
                     )
                 }
             }
@@ -160,7 +160,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read {
@@ -169,7 +169,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
@@ -186,7 +186,7 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
-        @RequestBody body: AssistanceNeedDecisionRequest
+        @RequestBody body: AssistanceNeedDecisionRequest,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -195,7 +195,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.UPDATE,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
@@ -206,7 +206,7 @@ class AssistanceNeedDecisionController(
                     ) {
                         throw Forbidden(
                             "Only non-sent draft or workable decisions can be edited",
-                            "UNEDITABLE_DECISION"
+                            "UNEDITABLE_DECISION",
                         )
                     }
 
@@ -224,8 +224,8 @@ class AssistanceNeedDecisionController(
                                     body.decision.validityPeriod
                                 } else {
                                     body.decision.validityPeriod.copy(end = null)
-                                }
-                        )
+                                },
+                        ),
                     )
                 }
             }
@@ -240,7 +240,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -249,7 +249,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.SEND,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
@@ -260,7 +260,7 @@ class AssistanceNeedDecisionController(
                     ) {
                         throw Forbidden(
                             "Only non-sent draft or workable decisions can be sent",
-                            "UNSENDABLE_DECISION"
+                            "UNSENDABLE_DECISION",
                         )
                     }
 
@@ -278,7 +278,7 @@ class AssistanceNeedDecisionController(
                                 processId = process.id,
                                 state = ArchivedProcessState.PREPARATION,
                                 now = clock.now(),
-                                userId = user.evakaUserId
+                                userId = user.evakaUserId,
                             )
                         }
                     }
@@ -288,10 +288,10 @@ class AssistanceNeedDecisionController(
                         decision
                             .copy(
                                 sentForDecision = clock.today(),
-                                status = AssistanceNeedDecisionStatus.DRAFT
+                                status = AssistanceNeedDecisionStatus.DRAFT,
                             )
                             .toForm(),
-                        false
+                        false,
                     )
                 }
             }
@@ -306,7 +306,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -315,7 +315,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.REVERT_TO_UNSENT,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
@@ -325,14 +325,14 @@ class AssistanceNeedDecisionController(
                     ) {
                         throw Forbidden(
                             "Only sent draft decisions can be reverted",
-                            "UNREVERTABLE_DECISION"
+                            "UNREVERTABLE_DECISION",
                         )
                     }
 
                     tx.updateAssistanceNeedDecision(
                         id,
                         decision.copy(sentForDecision = null).toForm(),
-                        false
+                        false,
                     )
                 }
             }
@@ -344,7 +344,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<AssistanceNeedDecisionBasicsResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -353,23 +353,23 @@ class AssistanceNeedDecisionController(
                             tx,
                             user,
                             clock,
-                            Action.AssistanceNeedDecision.READ
+                            Action.AssistanceNeedDecision.READ,
                         )
                     val decisions = tx.getAssistanceNeedDecisionsByChildId(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             AssistanceNeedDecisionId,
-                            Action.AssistanceNeedDecision
+                            Action.AssistanceNeedDecision,
                         >(
                             tx,
                             user,
                             clock,
-                            decisions.map { it.id }
+                            decisions.map { it.id },
                         )
                     decisions.map {
                         AssistanceNeedDecisionBasicsResponse(
                             decision = it,
-                            permittedActions = permittedActions[it.id]!!
+                            permittedActions = permittedActions[it.id]!!,
                         )
                     }
                 }
@@ -377,7 +377,7 @@ class AssistanceNeedDecisionController(
             .also {
                 Audit.ChildAssistanceNeedDecisionsList.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -390,7 +390,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -399,13 +399,13 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.DELETE,
-                        id
+                        id,
                     )
                     deleteProcessByAssistanceNeedDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedDecision(id)) {
                         throw NotFound(
                             "Assistance need decision $id cannot found or cannot be deleted",
-                            "DECISION_NOT_FOUND"
+                            "DECISION_NOT_FOUND",
                         )
                     }
                 }
@@ -422,7 +422,7 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
-        @RequestBody body: DecideAssistanceNeedDecisionRequest
+        @RequestBody body: DecideAssistanceNeedDecisionRequest,
     ) {
         if (
             body.status == AssistanceNeedDecisionStatus.DRAFT ||
@@ -440,7 +440,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.DECIDE,
-                        id
+                        id,
                     )
 
                     val decision = tx.getAssistanceNeedDecisionById(id)
@@ -464,11 +464,11 @@ class AssistanceNeedDecisionController(
                             tx.endActiveAssistanceNeedDecisions(
                                 decision.id,
                                 decision.validityPeriod.start.minusDays(1),
-                                decision.child.id
+                                decision.child.id,
                             )
                             tx.getNextAssistanceNeedDecisionValidFrom(
                                     decision.child.id,
-                                    decision.validityPeriod.start
+                                    decision.validityPeriod.start,
                                 )
                                 ?.minusDays(1)
                         } else null
@@ -485,7 +485,7 @@ class AssistanceNeedDecisionController(
                             } else {
                                 tx.getChildGuardians(decision.child.id)
                             },
-                        validTo = validTo
+                        validTo = validTo,
                     )
 
                     if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {
@@ -494,16 +494,14 @@ class AssistanceNeedDecisionController(
                                 processId = it.id,
                                 state = ArchivedProcessState.DECIDING,
                                 now = clock.now(),
-                                userId = user.evakaUserId
+                                userId = user.evakaUserId,
                             )
                         }
 
                         asyncJobRunner.plan(
                             tx,
-                            listOf(
-                                AsyncJob.CreateAssistanceNeedDecisionPdf(id),
-                            ),
-                            runAt = clock.now()
+                            listOf(AsyncJob.CreateAssistanceNeedDecisionPdf(id)),
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -511,7 +509,7 @@ class AssistanceNeedDecisionController(
             .also {
                 Audit.ChildAssistanceNeedDecisionDecide.log(
                     targetId = AuditId(id),
-                    meta = mapOf("status" to body.status)
+                    meta = mapOf("status" to body.status),
                 )
             }
     }
@@ -524,7 +522,7 @@ class AssistanceNeedDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedDecisionId
+        @PathVariable id: AssistanceNeedDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -533,7 +531,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.MARK_AS_OPENED,
-                        id
+                        id,
                     )
                     tx.markAssistanceNeedDecisionAsOpened(id)
                 }
@@ -543,14 +541,14 @@ class AssistanceNeedDecisionController(
 
     @PostMapping(
         "/assistance-need-decision/{id}/update-decision-maker", // deprecated
-        "/employee/assistance-need-decision/{id}/update-decision-maker"
+        "/employee/assistance-need-decision/{id}/update-decision-maker",
     )
     fun updateAssistanceNeedDecisionDecisionMaker(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
-        @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
+        @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -559,7 +557,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
@@ -581,11 +579,11 @@ class AssistanceNeedDecisionController(
                                 decisionMaker =
                                     AssistanceNeedDecisionMaker(
                                         employeeId = EmployeeId(user.rawId()),
-                                        title = body.title
+                                        title = body.title,
                                     )
                             )
                             .toForm(),
-                        true
+                        true,
                     )
                 }
             }
@@ -596,7 +594,7 @@ class AssistanceNeedDecisionController(
 
     @GetMapping(
         "/assistance-need-decision/{id}/decision-maker-option", // deprecated
-        "/employee/assistance-need-decision/{id}/decision-maker-option"
+        "/employee/assistance-need-decision/{id}/decision-maker-option",
     )
     fun getAssistanceDecisionMakerOptions(
         db: Database,
@@ -611,33 +609,33 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS,
-                        id
+                        id,
                     )
                     assistanceNeedDecisionService.getDecisionMakerOptions(
                         tx,
                         id,
-                        featureConfig.assistanceDecisionMakerRoles
+                        featureConfig.assistanceDecisionMakerRoles,
                     )
                 }
             }
             .also {
                 Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(
                     targetId = AuditId(id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @PostMapping(
         "/assistance-need-decision/{id}/annul", // deprecated
-        "/employee/assistance-need-decision/{id}/annul"
+        "/employee/assistance-need-decision/{id}/annul",
     )
     fun annulAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId,
-        @RequestBody body: AnnulAssistanceNeedDecisionRequest
+        @RequestBody body: AnnulAssistanceNeedDecisionRequest,
     ) {
         if (body.reason.isEmpty()) {
             throw BadRequest("Reason must not be empty")
@@ -649,7 +647,7 @@ class AssistanceNeedDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedDecision.ANNUL,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedDecisionById(id)
                     if (decision.status != AssistanceNeedDecisionStatus.ACCEPTED) {
@@ -680,13 +678,13 @@ class AssistanceNeedDecisionController(
 
     data class AssistanceNeedDecisionBasicsResponse(
         val decision: AssistanceNeedDecisionBasics,
-        val permittedActions: Set<Action.AssistanceNeedDecision>
+        val permittedActions: Set<Action.AssistanceNeedDecision>,
     )
 
     data class AssistanceNeedDecisionResponse(
         val decision: AssistanceNeedDecision,
         val permittedActions: Set<Action.AssistanceNeedDecision>,
-        val hasMissingFields: Boolean
+        val hasMissingFields: Boolean,
     )
 
     data class DecideAssistanceNeedDecisionRequest(val status: AssistanceNeedDecisionStatus)

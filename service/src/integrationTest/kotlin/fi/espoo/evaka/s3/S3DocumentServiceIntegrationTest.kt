@@ -38,7 +38,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = false))
         documentClientNoProxy.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x11, 0x22, 0x33), "text/plain")
+            Document("test", byteArrayOf(0x11, 0x22, 0x33), "text/plain"),
         )
 
         val response = documentClientNoProxy.responseAttachment(bucketEnv.data, "test", null)
@@ -51,7 +51,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `uses X-Accel-Redirect when proxying through nginx`() {
         documentClient.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x33, 0x22, 0x11), "text/plain")
+            Document("test", byteArrayOf(0x33, 0x22, 0x11), "text/plain"),
         )
 
         val response = documentClient.responseAttachment(bucketEnv.data, "test", null)
@@ -64,7 +64,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `upload-download round trip with get`() {
         documentClient.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x11, 0x33, 0x22), "text/plain")
+            Document("test", byteArrayOf(0x11, 0x33, 0x22), "text/plain"),
         )
 
         val document = documentClient.get(bucketEnv.data, "test")
@@ -76,7 +76,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `responseAttachment works without filename`() {
         documentClient.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x22, 0x11, 0x33), "text/csv")
+            Document("test", byteArrayOf(0x22, 0x11, 0x33), "text/csv"),
         )
 
         val response = documentClient.responseAttachment(bucketEnv.data, "test", null)
@@ -92,7 +92,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `responseAttachment works with filename`() {
         documentClient.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x33, 0x11, 0x22), "application/pdf")
+            Document("test", byteArrayOf(0x33, 0x11, 0x22), "application/pdf"),
         )
 
         val response =
@@ -106,7 +106,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             listOf(
                 "attachment; filename=\"=?UTF-8?Q?overridden-filename.pdf?=\"; filename*=UTF-8''overridden-filename.pdf"
             ),
-            response.headers["Content-Disposition"]
+            response.headers["Content-Disposition"],
         )
     }
 
@@ -114,7 +114,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     fun `responseInline works`() {
         documentClient.upload(
             bucketEnv.data,
-            Document("test", byteArrayOf(0x12, 0x34, 0x56), "text/plain")
+            Document("test", byteArrayOf(0x12, 0x34, 0x56), "text/plain"),
         )
 
         val response =
@@ -128,7 +128,7 @@ class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             listOf(
                 "inline; filename=\"=?UTF-8?Q?overridden-filename.txt?=\"; filename*=UTF-8''overridden-filename.txt"
             ),
-            response.headers["Content-Disposition"]
+            response.headers["Content-Disposition"],
         )
     }
 }

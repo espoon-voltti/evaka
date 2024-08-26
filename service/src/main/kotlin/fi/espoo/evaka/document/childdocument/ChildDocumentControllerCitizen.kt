@@ -27,14 +27,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/citizen/child-documents")
 class ChildDocumentControllerCitizen(
     private val accessControl: AccessControl,
-    private val childDocumentService: ChildDocumentService
+    private val childDocumentService: ChildDocumentService,
 ) {
     @GetMapping
     fun getDocuments(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestParam childId: ChildId
+        @RequestParam childId: ChildId,
     ): List<ChildDocumentCitizenSummary> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -43,7 +43,7 @@ class ChildDocumentControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Child.READ_CHILD_DOCUMENTS,
-                        childId
+                        childId,
                     )
                     tx.getChildDocumentCitizenSummaries(user, childId)
                 }
@@ -56,7 +56,7 @@ class ChildDocumentControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ): ChildDocumentCitizenDetails {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -65,7 +65,7 @@ class ChildDocumentControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.ChildDocument.READ,
-                        documentId
+                        documentId,
                     )
 
                     tx.getCitizenChildDocument(documentId)
@@ -80,7 +80,7 @@ class ChildDocumentControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -89,7 +89,7 @@ class ChildDocumentControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.ChildDocument.DOWNLOAD,
-                        documentId
+                        documentId,
                     )
                     childDocumentService.getPdfResponse(tx, documentId)
                 }
@@ -102,7 +102,7 @@ class ChildDocumentControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable documentId: ChildDocumentId
+        @PathVariable documentId: ChildDocumentId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -111,7 +111,7 @@ class ChildDocumentControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.ChildDocument.READ,
-                        documentId
+                        documentId,
                     )
 
                     tx.markChildDocumentAsRead(user, documentId, clock.now())
@@ -124,7 +124,7 @@ class ChildDocumentControllerCitizen(
     fun getUnreadDocumentsCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): Map<ChildId, Int> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -133,7 +133,7 @@ class ChildDocumentControllerCitizen(
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILD_DOCUMENTS_UNREAD_COUNT,
-                        user.id
+                        user.id,
                     )
                     val children = tx.getCitizenChildIds(clock.today(), user.id)
 

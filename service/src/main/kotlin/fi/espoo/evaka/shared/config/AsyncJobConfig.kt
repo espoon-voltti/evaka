@@ -38,17 +38,17 @@ class AsyncJobConfig {
                 AsyncJob.suomiFi.withThrottleInterval(
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
                 ),
-                AsyncJob.vasuMigration
+                AsyncJob.vasuMigration,
             ),
             jdbi,
-            tracer
+            tracer,
         )
 
     @Bean
     fun asyncJobRunnerStarter(
         asyncJobRunners: List<AsyncJobRunner<*>>,
         evakaEnv: EvakaEnv,
-        meterRegistry: MeterRegistry
+        meterRegistry: MeterRegistry,
     ) =
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger {}

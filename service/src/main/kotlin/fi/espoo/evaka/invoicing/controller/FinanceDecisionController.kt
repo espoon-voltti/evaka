@@ -25,7 +25,7 @@ class FinanceDecisionController(private val accessControl: AccessControl) {
     fun getSelectableFinanceDecisionHandlers(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<Employee> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -33,7 +33,7 @@ class FinanceDecisionController(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_SELECTABLE_FINANCE_DECISION_HANDLERS
+                        Action.Global.READ_SELECTABLE_FINANCE_DECISION_HANDLERS,
                     )
                     tx.getEmployeesByRoles(roles = FINANCE_DECISION_HANDLER_ROLES, unitId = null)
                 }

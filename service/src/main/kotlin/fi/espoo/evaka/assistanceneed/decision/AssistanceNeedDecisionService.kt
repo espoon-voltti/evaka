@@ -58,7 +58,7 @@ class AssistanceNeedDecisionService(
     private val messageProvider: IMessageProvider,
     bucketEnv: BucketEnv,
     private val emailEnv: EmailEnv,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     private val bucket = bucketEnv.data
 
@@ -71,7 +71,7 @@ class AssistanceNeedDecisionService(
     fun runCreateAssistanceNeedDecisionPdf(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.CreateAssistanceNeedDecisionPdf
+        msg: AsyncJob.CreateAssistanceNeedDecisionPdf,
     ) {
         val decisionId = msg.decisionId
         db.transaction { tx ->
@@ -89,8 +89,8 @@ class AssistanceNeedDecisionService(
                         Document(
                             "${assistanceNeedDecisionsBucketPrefix}assistance_need_decision_$decisionId.pdf",
                             pdf,
-                            "application/pdf"
-                        )
+                            "application/pdf",
+                        ),
                     )
                     .key
             tx.updateAssistanceNeedDocumentKey(decision.id, key)
@@ -99,9 +99,9 @@ class AssistanceNeedDecisionService(
                 tx,
                 listOf(
                     AsyncJob.SendAssistanceNeedDecisionEmail(msg.decisionId),
-                    AsyncJob.SendAssistanceNeedDecisionSfiMessage(msg.decisionId)
+                    AsyncJob.SendAssistanceNeedDecisionSfiMessage(msg.decisionId),
                 ),
-                runAt = clock.now()
+                runAt = clock.now(),
             )
 
             tx.getArchiveProcessByAssistanceNeedDecisionId(msg.decisionId)?.also {
@@ -109,7 +109,7 @@ class AssistanceNeedDecisionService(
                     processId = it.id,
                     state = ArchivedProcessState.COMPLETED,
                     now = clock.now(),
-                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId
+                    userId = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             }
 
@@ -122,7 +122,7 @@ class AssistanceNeedDecisionService(
     fun runSendAssistanceNeedDecisionEmail(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendAssistanceNeedDecisionEmail
+        msg: AsyncJob.SendAssistanceNeedDecisionEmail,
     ) {
         val decisionId = msg.decisionId
         val today = clock.today()
@@ -166,7 +166,7 @@ class AssistanceNeedDecisionService(
     fun runSendSfiDecision(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendAssistanceNeedDecisionSfiMessage
+        msg: AsyncJob.SendAssistanceNeedDecisionSfiMessage,
     ) {
         val decisionId = msg.decisionId
         db.transaction { tx ->
@@ -222,11 +222,11 @@ class AssistanceNeedDecisionService(
                                     postOffice = sendAddress.postOffice,
                                     ssn = guardian.identity.ssn,
                                     messageHeader = messageHeader,
-                                    messageContent = messageContent
+                                    messageContent = messageContent,
                                 )
                             )
                         ),
-                        runAt = clock.now()
+                        runAt = clock.now(),
                     )
                 }
 
@@ -238,7 +238,7 @@ class AssistanceNeedDecisionService(
 
     fun getDecisionPdfResponse(
         dbc: Database.Connection,
-        decisionId: AssistanceNeedDecisionId
+        decisionId: AssistanceNeedDecisionId,
     ): ResponseEntity<Any> {
         val documentKey =
             dbc.read { it.getAssistanceNeedDecisionDocumentKey(decisionId) }
@@ -258,9 +258,9 @@ class AssistanceNeedDecisionService(
                         "hasAssistanceServices",
                         decision.assistanceLevels.contains(
                             AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME
-                        )
+                        ),
                     )
-                }
+                },
             )
         )
     }
@@ -268,7 +268,7 @@ class AssistanceNeedDecisionService(
     fun getDecisionMakerOptions(
         tx: Database.Read,
         id: AssistanceNeedDecisionId,
-        roles: Set<UserRole>?
+        roles: Set<UserRole>?,
     ): List<Employee> {
         val assistanceDecision = tx.getAssistanceNeedDecisionById(id)
         return if (roles == null) {

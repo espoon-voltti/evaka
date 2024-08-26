@@ -76,22 +76,22 @@ class SoapStackIntegrationTest {
             messageHeader = "header",
             messageContent = "content",
             emailHeader = "email-header",
-            emailContent = "email-content"
+            emailContent = "email-content",
         )
     private val clientKeystore =
         KeystoreEnv(
             location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri,
-            password = Sensitive("client")
+            password = Sensitive("client"),
         )
     private val serverKeystore =
         KeystoreEnv(
             location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri,
-            password = Sensitive("localhost")
+            password = Sensitive("localhost"),
         )
     private val untrustWorthyKeystore =
         KeystoreEnv(
             location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri,
-            password = Sensitive("untrustworthy")
+            password = Sensitive("untrustworthy"),
         )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
 
@@ -116,20 +116,20 @@ class SoapStackIntegrationTest {
                     forcePrintForElectronicUser = false,
                     printingProvider = "provider",
                     billingId = "billing-id",
-                    billingPassword = Sensitive("billing-password")
+                    billingPassword = Sensitive("billing-password"),
                 ),
             contactPerson =
                 SfiContactPersonEnv(
                     name = "contact-name",
                     phone = "contact-phone",
-                    email = "contact-email"
+                    email = "contact-email",
                 ),
             contactOrganization =
                 SfiContactOrganizationEnv(
                     name = "contact-organization-name",
                     streetAddress = "contact-organization-street-address",
                     postalCode = "contact-organization-postal-code",
-                    postOffice = "contact-organization-post-office"
+                    postOffice = "contact-organization-post-office",
                 ),
             restEnabled = false,
             restAddress = null,
@@ -158,7 +158,7 @@ class SoapStackIntegrationTest {
                 clazz = Viranomaispalvelut::class,
                 service = MockViranomaisPalvelut(),
                 serverKeys = serverKeys,
-                clientKeys = clientKeys
+                clientKeys = clientKeys,
             )
     }
 
@@ -173,14 +173,14 @@ class SoapStackIntegrationTest {
             SfiMessagesSoapClient(
                 defaultEnv()
                     .copy(keyStore = untrustWorthyKeystore, signingKeyAlias = "untrustworthy"),
-                ::dummyGetDocument
+                ::dummyGetDocument,
             )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message) }
         val cause = exception.cause as WebServiceFaultException
         assertEquals(
             QName("http://ws.apache.org/wss4j", "SecurityError"),
-            cause.webServiceMessage.faultCode
+            cause.webServiceMessage.faultCode,
         )
     }
 
@@ -192,9 +192,9 @@ class SoapStackIntegrationTest {
                     .copy(
                         keyStore = clientKeystore,
                         signingKeyAlias = "client",
-                        trustStore = untrustWorthyKeystore
+                        trustStore = untrustWorthyKeystore,
                     ),
-                ::dummyGetDocument
+                ::dummyGetDocument,
             )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message) }
@@ -294,7 +294,7 @@ class MockServer<T>(val service: T, val port: Int, private val server: Server) :
             clazz: KClass<Service>,
             service: Impl,
             serverKeys: CryptoKeys,
-            clientKeys: CryptoKeys
+            clientKeys: CryptoKeys,
         ): MockServer<Impl> {
             val port = findFreePort()
             val keyPassword = ""
@@ -328,7 +328,7 @@ class MockServer<T>(val service: T, val port: Int, private val server: Server) :
                             "${ConfigurationConstants.SIGNATURE} ${ConfigurationConstants.TIMESTAMP}",
                         ConfigurationConstants.SIG_VER_PROP_REF_ID to MOCK_SERVER_CRYPTO,
                         MOCK_SERVER_CRYPTO to
-                            Merlin().apply { trustStore = clientKeys.toKeyStore("client") }
+                            Merlin().apply { trustStore = clientKeys.toKeyStore("client") },
                     )
                 )
 

@@ -63,7 +63,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 titaniaService.updateWorkingTimeEventsInternal(
                     tx,
-                    titaniaUpdateRequestValidExampleData
+                    titaniaUpdateRequestValidExampleData,
                 )
             }
         assertThat(response1.deleted).isEmpty()
@@ -74,7 +74,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2011, 1, 3), LocalTime.of(7, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2011, 1, 3), LocalTime.of(23, 59)),
-                    description = null
+                    description = null,
                 )
             )
 
@@ -82,7 +82,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
             db.transaction { tx ->
                 titaniaService.updateWorkingTimeEventsInternal(
                     tx,
-                    titaniaUpdateRequestValidExampleData
+                    titaniaUpdateRequestValidExampleData,
                 )
             }
         assertThat(response2.deleted).isEqualTo(response1.inserted)
@@ -105,7 +105,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 period =
                     TitaniaPeriod(
                         beginDate = LocalDate.of(2022, 10, 31),
-                        endDate = LocalDate.of(2022, 11, 2)
+                        endDate = LocalDate.of(2022, 11, 2),
                     ),
                 schedulingUnit =
                     listOf(
@@ -130,43 +130,43 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 11,
-                                                                                1
+                                                                                1,
                                                                             ),
                                                                         beginTime = "0000",
-                                                                        endTime = "0800"
+                                                                        endTime = "0800",
                                                                     ),
                                                                     TitaniaWorkingTimeEvent(
                                                                         date =
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 11,
-                                                                                1
+                                                                                1,
                                                                             ),
                                                                         beginTime = "2000",
-                                                                        endTime = "2359"
+                                                                        endTime = "2359",
                                                                     ),
                                                                     TitaniaWorkingTimeEvent(
                                                                         date =
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 10,
-                                                                                31
+                                                                                31,
                                                                             ),
                                                                         beginTime = "2000",
-                                                                        endTime = "2400"
+                                                                        endTime = "2400",
                                                                     ),
                                                                     TitaniaWorkingTimeEvent(
                                                                         date =
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 11,
-                                                                                2
+                                                                                2,
                                                                             ),
                                                                         beginTime = "0000",
-                                                                        endTime = "0800"
-                                                                    )
+                                                                        endTime = "0800",
+                                                                    ),
                                                                 )
-                                                        )
+                                                        ),
                                                 ),
                                                 TitaniaPerson(
                                                     employeeId = "00949382",
@@ -180,39 +180,39 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 11,
-                                                                                2
+                                                                                2,
                                                                             ),
                                                                         beginTime = "0000",
-                                                                        endTime = "0600"
+                                                                        endTime = "0600",
                                                                     ),
                                                                     TitaniaWorkingTimeEvent(
                                                                         date =
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 11,
-                                                                                1
+                                                                                1,
                                                                             ),
                                                                         beginTime = "0000",
-                                                                        endTime = "2359"
+                                                                        endTime = "2359",
                                                                     ),
                                                                     TitaniaWorkingTimeEvent(
                                                                         date =
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 10,
-                                                                                31
+                                                                                31,
                                                                             ),
                                                                         beginTime = "2300",
-                                                                        endTime = "2358"
-                                                                    )
+                                                                        endTime = "2358",
+                                                                    ),
                                                                 )
-                                                        )
-                                                )
-                                            )
+                                                        ),
+                                                ),
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         val response =
@@ -226,29 +226,29 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 31), LocalTime.of(20, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 11, 1), LocalTime.of(8, 0)),
-                    description = null
+                    description = null,
                 ),
                 StaffAttendancePlan(
                     employeeId = employee1Id,
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 11, 1), LocalTime.of(20, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 11, 2), LocalTime.of(8, 0)),
-                    description = null
+                    description = null,
                 ),
                 StaffAttendancePlan(
                     employeeId = employee2Id,
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 31), LocalTime.of(23, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 31), LocalTime.of(23, 58)),
-                    description = null
+                    description = null,
                 ),
                 StaffAttendancePlan(
                     employeeId = employee2Id,
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 11, 1), LocalTime.of(0, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 11, 2), LocalTime.of(6, 0)),
-                    description = null
-                )
+                    description = null,
+                ),
             )
     }
 
@@ -261,12 +261,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 "K, TRAINING",
                 // muut koodit (aina PRESENT)
                 "X, PRESENT",
-                "a, PRESENT"
+                "a, PRESENT",
             ]
     )
     fun `event code is mapped to attendance type correctly`(
         givenEventCode: String,
-        expectedType: StaffAttendanceType
+        expectedType: StaffAttendanceType,
     ) {
         val employeeId =
             db.transaction { tx ->
@@ -281,7 +281,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 12),
-                                endDate = LocalDate.of(2022, 10, 12)
+                                endDate = LocalDate.of(2022, 10, 12),
                             ),
                         schedulingUnit =
                             listOf(
@@ -306,22 +306,22 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                     LocalDate.of(
                                                                                         2022,
                                                                                         10,
-                                                                                        12
+                                                                                        12,
                                                                                     ),
                                                                                 code =
                                                                                     givenEventCode,
                                                                                 beginTime = "0942",
-                                                                                endTime = "0944"
+                                                                                endTime = "0944",
                                                                             )
                                                                         )
-                                                                )
+                                                                ),
                                                         )
-                                                    )
+                                                    ),
                                             )
-                                        )
+                                        ),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -333,7 +333,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     type = expectedType,
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 42)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 44)),
-                    description = null
+                    description = null,
                 )
             )
     }
@@ -355,7 +355,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             period =
                                 TitaniaPeriod(
                                     beginDate = LocalDate.of(2022, 10, 12),
-                                    endDate = LocalDate.of(2022, 10, 12)
+                                    endDate = LocalDate.of(2022, 10, 12),
                                 ),
                             schedulingUnit =
                                 listOf(
@@ -381,11 +381,11 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                             .of(
                                                                                                 2022,
                                                                                                 10,
-                                                                                                12
+                                                                                                12,
                                                                                             ),
                                                                                     beginTime =
                                                                                         "0800",
-                                                                                    endTime = "0900"
+                                                                                    endTime = "0900",
                                                                                 ),
                                                                                 TitaniaWorkingTimeEvent(
                                                                                     date =
@@ -393,21 +393,21 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                             .of(
                                                                                                 2022,
                                                                                                 10,
-                                                                                                12
+                                                                                                12,
                                                                                             ),
                                                                                     beginTime =
                                                                                         "0800",
-                                                                                    endTime = "0900"
-                                                                                )
+                                                                                    endTime = "0900",
+                                                                                ),
                                                                             )
-                                                                    )
+                                                                    ),
                                                             )
-                                                        )
+                                                        ),
                                                 )
-                                            )
+                                            ),
                                     )
-                                )
-                        )
+                                ),
+                        ),
                     )
                 }
         }
@@ -421,7 +421,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     type = StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(8, 0)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 0)),
-                    description = null
+                    description = null,
                 )
             )
     }
@@ -454,19 +454,19 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 6,
-                                                                                14
+                                                                                14,
                                                                             ),
                                                                         beginTime = "0906",
-                                                                        endTime = "1522"
+                                                                        endTime = "1522",
                                                                     )
                                                                 )
-                                                        )
+                                                        ),
                                                 )
-                                            )
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         val response = catchThrowable {
@@ -506,19 +506,19 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                             LocalDate.of(
                                                                                 2022,
                                                                                 6,
-                                                                                15
+                                                                                15,
                                                                             ),
                                                                         beginTime = "0906",
-                                                                        endTime = "1522"
+                                                                        endTime = "1522",
                                                                     )
                                                                 )
-                                                        )
+                                                        ),
                                                 )
-                                            )
+                                            ),
                                     )
-                                )
+                                ),
                         )
-                    )
+                    ),
             )
 
         val response =
@@ -532,7 +532,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     StaffAttendanceType.PRESENT,
                     HelsinkiDateTime.of(LocalDate.of(2022, 6, 15), LocalTime.of(9, 6)),
                     HelsinkiDateTime.of(LocalDate.of(2022, 6, 15), LocalTime.of(15, 22)),
-                    null
+                    null,
                 )
             )
 
@@ -559,7 +559,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -572,7 +572,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(15, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -583,14 +583,14 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(12, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OVERTIME
+                        type = StaffAttendanceType.OVERTIME,
                     )
                 }
             tx.createEmployee(
                     testEmployee.copy(
                         firstName = "HESSU",
                         lastName = "HOPO",
-                        employeeNumber = "255145"
+                        employeeNumber = "255145",
                     )
                 )
                 .let { (employeeId) ->
@@ -603,7 +603,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(11, 0)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -614,7 +614,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 3), LocalTime.of(16, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -625,7 +625,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2014, 3, 4), LocalTime.of(17, 15)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OTHER_WORK
+                        type = StaffAttendanceType.OTHER_WORK,
                     )
                 }
         }
@@ -645,7 +645,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -658,7 +658,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2023, 2, 6), LocalTime.of(15, 39)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OTHER_WORK
+                        type = StaffAttendanceType.OTHER_WORK,
                     )
                 }
         }
@@ -671,17 +671,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2023, 2, 6),
-                                endDate = LocalDate.of(2023, 2, 6)
+                                endDate = LocalDate.of(2023, 2, 6),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -706,12 +706,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0800",
                                                                 beginReasonCode = "TA",
                                                                 endTime = "1539",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -728,7 +728,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -741,9 +741,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 19),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -755,7 +755,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -766,7 +766,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 11)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OVERTIME
+                        type = StaffAttendanceType.OVERTIME,
                     )
                 }
         }
@@ -779,17 +779,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19)
+                                endDate = LocalDate.of(2022, 10, 19),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -814,19 +814,19 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0800",
                                                                 beginReasonCode = null,
                                                                 endTime = "1310",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "1310",
                                                                 beginReasonCode = null,
                                                                 endTime = "1611",
-                                                                endReasonCode = "YT"
-                                                            )
+                                                                endReasonCode = "YT",
+                                                            ),
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -843,7 +843,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -856,9 +856,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 19),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -870,7 +870,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -880,7 +880,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(13, 10)),
                         departureTime = null,
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OVERTIME
+                        type = StaffAttendanceType.OVERTIME,
                     )
                 }
         }
@@ -893,17 +893,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19)
+                                endDate = LocalDate.of(2022, 10, 19),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -928,19 +928,19 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0800",
                                                                 beginReasonCode = null,
                                                                 endTime = "1310",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "1310",
                                                                 beginReasonCode = null,
                                                                 endTime = null,
-                                                                endReasonCode = null
-                                                            )
+                                                                endReasonCode = null,
+                                                            ),
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -957,7 +957,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -970,9 +970,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 19),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -984,7 +984,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -995,7 +995,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OTHER_WORK
+                        type = StaffAttendanceType.OTHER_WORK,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1006,7 +1006,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(15, 21)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                 }
         }
@@ -1019,17 +1019,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19)
+                                endDate = LocalDate.of(2022, 10, 19),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1054,26 +1054,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0821",
                                                                 beginReasonCode = "PM",
                                                                 endTime = "0952",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "0952",
                                                                 beginReasonCode = "TA",
                                                                 endTime = "1048",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "1048",
                                                                 beginReasonCode = null,
                                                                 endTime = "1521",
-                                                                endReasonCode = "PM"
-                                                            )
+                                                                endReasonCode = "PM",
+                                                            ),
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -1090,7 +1090,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -1103,9 +1103,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 19),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -1117,7 +1117,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(9, 52)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1128,7 +1128,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(10, 48)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OTHER_WORK
+                        type = StaffAttendanceType.OTHER_WORK,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1139,7 +1139,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(16, 39)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                 }
         }
@@ -1152,17 +1152,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19)
+                                endDate = LocalDate.of(2022, 10, 19),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1187,26 +1187,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0739",
                                                                 beginReasonCode = "PM",
                                                                 endTime = "0952",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "0952",
                                                                 beginReasonCode = "TA",
                                                                 endTime = "1048",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             ),
                                                             TitaniaStampedWorkingTimeEvent(
                                                                 date = LocalDate.of(2022, 10, 19),
                                                                 beginTime = "1048",
                                                                 beginReasonCode = null,
                                                                 endTime = "1639",
-                                                                endReasonCode = "PM"
-                                                            )
+                                                                endReasonCode = "PM",
+                                                            ),
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -1223,7 +1223,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -1236,9 +1236,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 19),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -1249,7 +1249,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.of(8, 21)),
                         departureTime = null,
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                 }
         }
@@ -1262,17 +1262,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19)
+                                endDate = LocalDate.of(2022, 10, 19),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1297,12 +1297,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0821",
                                                                 beginReasonCode = "PM",
                                                                 endTime = null,
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -1319,7 +1319,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -1330,11 +1330,11 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 20),
-                                    LocalTime.of(20, 0)
+                                    LocalTime.of(20, 0),
                                 ),
                             endTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(8, 0)),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -1346,7 +1346,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 56)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                 }
         }
@@ -1359,17 +1359,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 20)
+                                endDate = LocalDate.of(2022, 10, 20),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1394,12 +1394,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "2000",
                                                                 beginReasonCode = null,
                                                                 endTime = "2400",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )
@@ -1416,7 +1416,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -1427,11 +1427,11 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             startTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 20),
-                                    LocalTime.of(20, 0)
+                                    LocalTime.of(20, 0),
                                 ),
                             endTime =
                                 HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(8, 0)),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -1443,7 +1443,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(21, 15)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1454,7 +1454,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(23, 10)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.OTHER_WORK
+                        type = StaffAttendanceType.OTHER_WORK,
                     )
                     tx.upsertStaffAttendance(
                         attendanceId = null,
@@ -1465,7 +1465,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 21), LocalTime.of(7, 30)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.JUSTIFIED_CHANGE
+                        type = StaffAttendanceType.JUSTIFIED_CHANGE,
                     )
                 }
         }
@@ -1478,17 +1478,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 21)
+                                endDate = LocalDate.of(2022, 10, 21),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1503,29 +1503,29 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     beginTime = "2030",
                     beginReasonCode = "PM",
                     endTime = "2115",
-                    endReasonCode = null
+                    endReasonCode = null,
                 ),
                 TitaniaStampedWorkingTimeEvent(
                     date = LocalDate.of(2022, 10, 20),
                     beginTime = "2115",
                     beginReasonCode = "TA",
                     endTime = "2310",
-                    endReasonCode = null
+                    endReasonCode = null,
                 ),
                 TitaniaStampedWorkingTimeEvent(
                     date = LocalDate.of(2022, 10, 20),
                     beginTime = "2310",
                     beginReasonCode = null,
                     endTime = "2400",
-                    endReasonCode = null
+                    endReasonCode = null,
                 ),
                 TitaniaStampedWorkingTimeEvent(
                     date = LocalDate.of(2022, 10, 21),
                     beginTime = "0000",
                     beginReasonCode = null,
                     endTime = "0730",
-                    endReasonCode = "PM"
-                )
+                    endReasonCode = "PM",
+                ),
             )
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected)
     }
@@ -1540,7 +1540,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     testEmployee.copy(
                         firstName = "IINES",
                         lastName = "ANKKA",
-                        employeeNumber = "177111"
+                        employeeNumber = "177111",
                     )
                 )
                 .let { (employeeId) ->
@@ -1553,9 +1553,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                             endTime =
                                 HelsinkiDateTime.of(
                                     LocalDate.of(2022, 10, 20),
-                                    LocalTime.of(16, 0)
+                                    LocalTime.of(16, 0),
                                 ),
-                            description = null
+                            description = null,
                         )
                     )
                     tx.upsertStaffAttendance(
@@ -1567,7 +1567,7 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         departureTime =
                             HelsinkiDateTime.of(LocalDate.of(2022, 10, 20), LocalTime.of(16, 6)),
                         occupancyCoefficient = BigDecimal("7.0"),
-                        type = StaffAttendanceType.PRESENT
+                        type = StaffAttendanceType.PRESENT,
                     )
                 }
         }
@@ -1580,17 +1580,17 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                         period =
                             TitaniaPeriod(
                                 beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 20)
+                                endDate = LocalDate.of(2022, 10, 20),
                             ),
                         schedulingUnit =
                             listOf(
                                 TitaniaStampedUnitRequest(
                                     code = "from titania",
                                     person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111"))
+                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
                                 )
-                            )
-                    )
+                            ),
+                    ),
                 )
             }
 
@@ -1615,12 +1615,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                 beginTime = "0754",
                                                                 beginReasonCode = null,
                                                                 endTime = "1606",
-                                                                endReasonCode = null
+                                                                endReasonCode = null,
                                                             )
                                                         )
-                                                )
+                                                ),
                                         )
-                                    )
+                                    ),
                             )
                         )
                 )

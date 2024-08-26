@@ -36,7 +36,7 @@ class EspooBiHttpClient(private val env: EspooBiEnv) : EspooBiClient {
                     "Failed to send BI CSV file $fileName (${stream.totalBytes} bytes sent before failure)"
                 }
                 throw error
-            }
+            },
         )
     }
 }

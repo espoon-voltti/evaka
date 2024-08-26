@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DvvModificationsBatchRefreshService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val dvvModificationsService: DvvModificationsService
+    private val dvvModificationsService: DvvModificationsService,
 ) {
     init {
         asyncJobRunner.registerHandler(::doDvvModificationsRefresh)
@@ -28,7 +28,7 @@ class DvvModificationsBatchRefreshService(
     fun doDvvModificationsRefresh(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.DvvModificationsRefresh
+        msg: AsyncJob.DvvModificationsRefresh,
     ) {
         logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
         val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, clock, msg.ssns)
@@ -51,11 +51,11 @@ class DvvModificationsBatchRefreshService(
                             AsyncJob.DvvModificationsRefresh(
                                 ssns = ssns,
                                 requestingUserId =
-                                    UUID.fromString("00000000-0000-0000-0000-000000000000")
+                                    UUID.fromString("00000000-0000-0000-0000-000000000000"),
                             )
                         ),
                     runAt = clock.now(),
-                    retryCount = 10
+                    retryCount = 10,
                 )
 
                 ssns.size

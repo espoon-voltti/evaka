@@ -42,7 +42,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping(
         "/reports/attendance-reservation/{unitId}", // deprecated
-        "/employee/reports/attendance-reservation/{unitId}"
+        "/employee/reports/attendance-reservation/{unitId}",
     )
     fun getAttendanceReservationReportByUnit(
         db: Database,
@@ -51,7 +51,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
-        @RequestParam groupIds: List<GroupId>?
+        @RequestParam groupIds: List<GroupId>?,
     ): List<AttendanceReservationReportRow> {
         if (start.isAfter(end)) throw BadRequest("Inverted time range")
         if (end.isAfter(start.plusMonths(2))) throw BadRequest("Too long time range")
@@ -63,7 +63,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         user,
                         clock,
                         Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
-                        unitId
+                        unitId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     getAttendanceReservationReport(
@@ -71,7 +71,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         start,
                         end,
                         unitId,
-                        groupIds?.ifEmpty { null }
+                        groupIds?.ifEmpty { null },
                     )
                 }
             }
@@ -83,15 +83,15 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                             "groupIds" to groupIds,
                             "start" to start,
                             "end" to end,
-                            "count" to it.size
-                        )
+                            "count" to it.size,
+                        ),
                 )
             }
     }
 
     @GetMapping(
         "/reports/attendance-reservation/{unitId}/by-child", // deprecated
-        "/employee/reports/attendance-reservation/{unitId}/by-child"
+        "/employee/reports/attendance-reservation/{unitId}/by-child",
     )
     fun getAttendanceReservationReportByUnitAndChild(
         db: Database,
@@ -109,14 +109,14 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                         user,
                         clock,
                         Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
-                        unitId
+                        unitId,
                     )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.getAttendanceReservationReportByChild(
                         start,
                         end,
                         unitId,
-                        groupIds?.ifEmpty { null }
+                        groupIds?.ifEmpty { null },
                     )
                 }
             }
@@ -128,8 +128,8 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                             "groupIds" to groupIds,
                             "start" to start,
                             "end" to end,
-                            "count" to it.size
-                        )
+                            "count" to it.size,
+                        ),
                 )
             }
     }
@@ -141,14 +141,14 @@ private data class PlacementInfoRow(
     val groupId: GroupId?,
     val groupName: String?,
     val occupancyCoefficientUnder: Double,
-    val occupancyCoefficientOver: Double
+    val occupancyCoefficientOver: Double,
 )
 
 private fun Database.Read.getPlacementInfo(
     start: LocalDate,
     end: LocalDate,
     unitId: DaycareId,
-    groupIds: List<GroupId>?
+    groupIds: List<GroupId>?,
 ): List<PlacementInfoRow> {
     val dates = generateSequence(start) { if (it < end) it.plusDays(1) else null }.toList()
     return createQuery {
@@ -197,9 +197,7 @@ WHERE bc.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.
 
 private data class ChildRow(val childId: ChildId, val dateOfBirth: LocalDate)
 
-private fun Database.Read.getChildInfo(
-    children: List<ChildId>,
-): List<ChildRow> {
+private fun Database.Read.getChildInfo(children: List<ChildId>): List<ChildRow> {
     return createQuery {
             sql(
                 """
@@ -216,7 +214,7 @@ private data class ServiceNeedRow(
     val range: FiniteDateRange,
     val childId: ChildId,
     val occupancyCoefficientUnder: Double,
-    val occupancyCoefficientOver: Double
+    val occupancyCoefficientOver: Double,
 )
 
 private fun Database.Read.getServiceNeeds(
@@ -245,7 +243,7 @@ WHERE pl.child_id = ANY(${bind(children)}) AND daterange(sn.start_date, sn.end_d
 private data class AssistanceNeedRow(
     val range: FiniteDateRange,
     val childId: ChildId,
-    val capacityFactor: Double
+    val capacityFactor: Double,
 )
 
 private fun Database.Read.getCapacityFactors(
@@ -270,7 +268,7 @@ private data class ReservationRow(
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
-    val childId: ChildId
+    val childId: ChildId,
 )
 
 private fun Database.Read.getReservations(
@@ -295,9 +293,9 @@ AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
             valueTransform = {
                 HelsinkiDateTimeRange(
                     start = HelsinkiDateTime.of(it.date, it.startTime),
-                    end = HelsinkiDateTime.of(it.date, it.endTime)
+                    end = HelsinkiDateTime.of(it.date, it.endTime),
                 )
-            }
+            },
         )
 }
 
@@ -330,7 +328,7 @@ data class DailyChildData(
     val capacityFactor: Double,
     val serviceTimes: HelsinkiDateTimeRange?,
     val reservations: List<HelsinkiDateTimeRange>,
-    val absent: Boolean
+    val absent: Boolean,
 ) {
     fun isPresentPessimistic(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): Boolean {
         if (absent) return false
@@ -357,7 +355,7 @@ data class AttendanceReservationReportRow(
     val childCountOver3: Int,
     val childCount: Int,
     val capacityFactor: Double,
-    val staffCountRequired: Double
+    val staffCountRequired: Double,
 )
 
 private fun getAttendanceReservationReport(
@@ -365,7 +363,7 @@ private fun getAttendanceReservationReport(
     start: LocalDate,
     end: LocalDate,
     unitId: DaycareId,
-    groupIds: List<GroupId>?
+    groupIds: List<GroupId>?,
 ): List<AttendanceReservationReportRow> {
     val range = FiniteDateRange(start, end)
     val daycare = db.getDaycare(unitId)!!
@@ -418,7 +416,7 @@ private fun getAttendanceReservationReport(
                 capacityFactor = capacityFactor,
                 serviceTimes = serviceTimes?.asHelsinkiDateTimeRange(date),
                 reservations = reservations,
-                absent = absent
+                absent = absent,
             )
         }
 
@@ -455,7 +453,7 @@ private fun getAttendanceReservationReport(
                         staffCountRequired =
                             BigDecimal(childrenPresent.sumOf { it.capacityFactor } / 7)
                                 .setScale(1, RoundingMode.HALF_UP)
-                                .toDouble()
+                                .toDouble(),
                     )
                 }
                 .toList()
@@ -466,7 +464,7 @@ private fun Database.Read.getAttendanceReservationReportByChild(
     start: LocalDate,
     end: LocalDate,
     unitId: DaycareId,
-    groupIds: List<GroupId>?
+    groupIds: List<GroupId>?,
 ): List<AttendanceReservationReportByChildRow> {
     return createQuery {
             sql(
@@ -523,5 +521,5 @@ data class AttendanceReservationReportByChildRow(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     val reservationStartTime: LocalTime?,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    val reservationEndTime: LocalTime?
+    val reservationEndTime: LocalTime?,
 )

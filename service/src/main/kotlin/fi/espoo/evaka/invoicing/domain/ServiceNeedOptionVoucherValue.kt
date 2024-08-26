@@ -18,5 +18,5 @@ data class ServiceNeedOptionVoucherValue(
     val value: Int,
     val baseValueUnder3y: Int,
     val coefficientUnder3y: BigDecimal,
-    val valueUnder3y: Int
+    val valueUnder3y: Int,
 )

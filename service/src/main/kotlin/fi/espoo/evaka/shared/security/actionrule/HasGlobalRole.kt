@@ -54,7 +54,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
 
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
-            targets: Set<T>
+            targets: Set<T>,
         ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> =
             when (ctx.user) {
                 is AuthenticatedUser.Employee -> {
@@ -82,7 +82,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
 
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
-            params: HasGlobalRole
+            params: HasGlobalRole,
         ): QuerySql? =
             when (ctx.user) {
                 is AuthenticatedUser.Employee ->
@@ -170,7 +170,7 @@ WHERE pd.provider_type = 'PRIVATE_SERVICE_VOUCHER'
 
     fun andUnitProviderAndCareTypeEquals(
         providerTypes: Set<ProviderType>,
-        careTypes: Set<CareType>
+        careTypes: Set<CareType>,
     ) =
         rule<DaycareId> { _, _ ->
             sql(

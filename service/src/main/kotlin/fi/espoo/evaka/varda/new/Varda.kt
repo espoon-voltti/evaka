@@ -45,7 +45,7 @@ data class Lapsi(
                 Lapsi(
                     vakatoimija_oid = omaOrganisaatioOid,
                     oma_organisaatio_oid = null,
-                    paos_organisaatio_oid = null
+                    paos_organisaatio_oid = null,
                 )
             }
 
@@ -63,7 +63,7 @@ data class Lapsi(
             henkilo = henkilo,
             vakatoimija_oid = vakatoimija_oid,
             oma_organisaatio_oid = oma_organisaatio_oid,
-            paos_organisaatio_oid = paos_organisaatio_oid
+            paos_organisaatio_oid = paos_organisaatio_oid,
         )
 
     fun effectiveOrganizerOid(): String =
@@ -168,7 +168,7 @@ data class Varhaiskasvatussuhde(
 
 enum class MaksunPerusteKoodi(val code: String) {
     FIVE_YEAR_OLDS_DAYCARE("MP02"),
-    DAYCARE("MP03")
+    DAYCARE("MP03"),
 }
 
 data class Maksutieto(
@@ -178,7 +178,7 @@ data class Maksutieto(
     val perheen_koko: Int?,
     val maksun_peruste_koodi: String,
     val asiakasmaksu: Double,
-    val palveluseteli_arvo: Double
+    val palveluseteli_arvo: Double,
 ) {
     companion object {
         fun fromEvaka(guardians: List<VardaGuardian>, data: VardaFeeData): Maksutieto? {
@@ -216,7 +216,7 @@ data class Maksutieto(
                         .code,
                 perheen_koko = data.familySize,
                 asiakasmaksu = data.childFee.toDouble() / 100,
-                palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100
+                palveluseteli_arvo = (data.voucherValue ?: 0).toDouble() / 100,
             )
         }
 

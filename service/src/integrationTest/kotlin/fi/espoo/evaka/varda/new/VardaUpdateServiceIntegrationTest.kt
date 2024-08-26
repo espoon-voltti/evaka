@@ -53,7 +53,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child1.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
             tx.insert(
@@ -61,7 +61,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child2.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
         }
@@ -91,7 +91,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         childId = child.id,
                         unitId = unit.id,
                         startDate = LocalDate.of(2021, 1, 1),
-                        endDate = LocalDate.of(2021, 2, 28)
+                        endDate = LocalDate.of(2021, 2, 28),
                     )
                 )
                 .let { placementId ->
@@ -104,7 +104,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             endDate = period.end,
                             optionId = snDaycareFullDay35.id,
                             confirmedBy = employee.evakaUserId,
-                            confirmedAt = HelsinkiDateTime.now()
+                            confirmedAt = HelsinkiDateTime.now(),
                         )
                     )
                 }
@@ -114,7 +114,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 VardaUpdater(
                         DateRange(LocalDate.of(2019, 1, 1), null),
                         ophEnv.organizerOid,
-                        "sourceSystem"
+                        "sourceSystem",
                     )
                     .getEvakaState(tx, LocalDate.of(2024, 1, 1), child.id)
             tx.execute {
@@ -147,7 +147,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child1.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
             tx.insert(
@@ -155,7 +155,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child2.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
 
@@ -190,7 +190,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child1.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
             tx.insert(
@@ -198,7 +198,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     childId = child2.id,
                     unitId = unit.id,
                     startDate = LocalDate.of(2021, 1, 1),
-                    endDate = LocalDate.of(2021, 2, 28)
+                    endDate = LocalDate.of(2021, 2, 28),
                 )
             )
 

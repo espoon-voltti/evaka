@@ -40,8 +40,8 @@ class IncomesTest {
                         1,
                         calculateMonthlyAmount(
                             50000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
                     ),
                 "SECONDARY_INCOME" to
                     IncomeValue(
@@ -50,8 +50,8 @@ class IncomesTest {
                         1,
                         calculateMonthlyAmount(
                             100000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
                     ),
                 "PARENTAL_ALLOWANCE" to
                     IncomeValue(
@@ -60,9 +60,9 @@ class IncomesTest {
                         1,
                         calculateMonthlyAmount(
                             20000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
-                    )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
+                    ),
             )
 
         val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
@@ -80,8 +80,8 @@ class IncomesTest {
                         -1,
                         calculateMonthlyAmount(
                             10000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
                     )
             )
 
@@ -100,8 +100,8 @@ class IncomesTest {
                         1,
                         calculateMonthlyAmount(
                             500000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
                     ),
                 "ALL_EXPENSES" to
                     IncomeValue(
@@ -110,9 +110,9 @@ class IncomesTest {
                         -1,
                         calculateMonthlyAmount(
                             50000,
-                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS)
-                        )
-                    )
+                            coefficientMultiplierProvider.multiplier(MONTHLY_NO_HOLIDAY_BONUS),
+                        ),
+                    ),
             )
 
         val total = calculateIncomeTotal(incomeData, coefficientMultiplierProvider)
@@ -130,8 +130,8 @@ class IncomesTest {
                         1,
                         calculateMonthlyAmount(
                             100000,
-                            coefficientMultiplierProvider.multiplier(YEARLY)
-                        )
+                            coefficientMultiplierProvider.multiplier(YEARLY),
+                        ),
                     )
             )
 

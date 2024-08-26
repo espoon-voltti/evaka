@@ -46,7 +46,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             user =
                 AuthenticatedUser.Employee(
                     tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
-                    roles = setOf(UserRole.ADMIN)
+                    roles = setOf(UserRole.ADMIN),
                 )
             child = tx.insert(DevPerson(), DevPersonType.CHILD)
         }
@@ -72,7 +72,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = child,
                             headOfChild = it,
                             startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
+                            endDate = currentlyValid.end,
                         )
                     )
                 }
@@ -82,7 +82,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         DevFosterParent(
                             childId = child,
                             parentId = it,
-                            validDuring = currentlyValid.asDateRange()
+                            validDuring = currentlyValid.asDateRange(),
                         )
                     )
                 }
@@ -94,7 +94,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = it,
                         headOfChild = guardianAndHouseholdHead,
                         startDate = currentlyValid.start,
-                        endDate = currentlyValid.end
+                        endDate = currentlyValid.end,
                     )
                 )
             }
@@ -106,7 +106,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             second = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
-                            createdAt = clock.now()
+                            createdAt = clock.now(),
                         )
                     )
                 }
@@ -116,9 +116,9 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                 (guardianAndHouseholdHead to FamilyContactRole.LOCAL_GUARDIAN),
                 (guardian to FamilyContactRole.REMOTE_GUARDIAN),
                 (fosterParent to FamilyContactRole.REMOTE_FOSTER_PARENT),
-                (householdAdult to FamilyContactRole.LOCAL_ADULT)
+                (householdAdult to FamilyContactRole.LOCAL_ADULT),
             ),
-            getFamilyContactSummary().map { (it.id to it.role) }
+            getFamilyContactSummary().map { (it.id to it.role) },
         )
     }
 
@@ -133,7 +133,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         DevFosterParent(
                             childId = child,
                             parentId = it,
-                            validDuring = currentlyValid.asDateRange()
+                            validDuring = currentlyValid.asDateRange(),
                         )
                     )
                     tx.insert(
@@ -141,16 +141,14 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = child,
                             headOfChild = it,
                             startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
+                            endDate = currentlyValid.end,
                         )
                     )
                 }
         }
         assertEquals(
-            listOf(
-                (fosterParentAndHouseholdHead to FamilyContactRole.LOCAL_FOSTER_PARENT),
-            ),
-            getFamilyContactSummary().map { (it.id to it.role) }
+            listOf((fosterParentAndHouseholdHead to FamilyContactRole.LOCAL_FOSTER_PARENT)),
+            getFamilyContactSummary().map { (it.id to it.role) },
         )
     }
 
@@ -166,7 +164,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = child,
                             headOfChild = it,
                             startDate = currentlyValid.start,
-                            endDate = currentlyValid.end
+                            endDate = currentlyValid.end,
                         )
                     )
                 }
@@ -177,7 +175,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = it,
                         headOfChild = headOfChild,
                         startDate = currentlyValid.start,
-                        endDate = currentlyValid.end
+                        endDate = currentlyValid.end,
                     )
                 )
             }
@@ -190,7 +188,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                             headOfChild = it,
                             startDate = currentlyValid.start,
                             endDate = currentlyValid.end,
-                            conflict = true
+                            conflict = true,
                         )
                     )
                 }
@@ -202,7 +200,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         second = it,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                        conflict = true
+                        conflict = true,
                     )
                 )
             }
@@ -225,7 +223,7 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         headOfChild = headOfChild,
                         startDate = currentlyValid.start,
                         endDate = currentlyValid.end,
-                        conflict = true
+                        conflict = true,
                     )
                 )
             }
@@ -236,14 +234,14 @@ class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = it,
                         headOfChild = conflictHeadOfChild,
                         startDate = currentlyValid.start,
-                        endDate = currentlyValid.end
+                        endDate = currentlyValid.end,
                     )
                 )
             }
         }
         assertEquals(
             listOf((headOfChild to FamilyContactRole.LOCAL_ADULT)),
-            getFamilyContactSummary().map { (it.id to it.role) }
+            getFamilyContactSummary().map { (it.id to it.role) },
         )
     }
 

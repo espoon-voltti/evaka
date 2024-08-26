@@ -16,7 +16,7 @@ data class IsoLanguage(
     /** ISO 639-1 alpha-2 code */
     val alpha2: String,
     /** Name in Finnish */
-    val nameFi: String
+    val nameFi: String,
 ) {
     fun toLocale(): Locale =
         Locale.of(

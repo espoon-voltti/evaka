@@ -19,7 +19,9 @@ import java.security.spec.RSAPublicKeySpec
 
 class JwtKeys(private val publicKeys: Map<String, RSAPublicKey>) : RSAKeyProvider {
     override fun getPrivateKeyId(): String? = null
+
     override fun getPrivateKey(): RSAPrivateKey? = null
+
     override fun getPublicKeyById(keyId: String): RSAPublicKey? = publicKeys[keyId]
 }
 
@@ -32,15 +34,15 @@ fun loadPublicKeys(inputStream: InputStream): Map<String, RSAPublicKey> {
     return jacksonMapperBuilder()
         .defaultBase64Variant(Base64Variants.MODIFIED_FOR_URL)
         .build()
-        .readValue<JwkSet>(inputStream).keys.associate {
-            it.kid to kf.generatePublic(
-                RSAPublicKeySpec(
-                    BigInteger(1, it.n),
-                    BigInteger(1, it.e)
-                )
-            ) as RSAPublicKey
+        .readValue<JwkSet>(inputStream)
+        .keys
+        .associate {
+            it.kid to
+                kf.generatePublic(RSAPublicKeySpec(BigInteger(1, it.n), BigInteger(1, it.e)))
+                    as RSAPublicKey
         }
 }
 
 @Deprecated("use the InputStream version of this function if possible")
-fun loadPublicKeys(jwks: URI): Map<String, RSAPublicKey> = jwks.toURL().openStream().use { loadPublicKeys(it) }
+fun loadPublicKeys(jwks: URI): Map<String, RSAPublicKey> =
+    jwks.toURL().openStream().use { loadPublicKeys(it) }

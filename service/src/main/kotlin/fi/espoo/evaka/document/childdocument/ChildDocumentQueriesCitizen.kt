@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getChildDocumentCitizenSummaries(
     user: AuthenticatedUser.Citizen,
-    childId: PersonId
+    childId: PersonId,
 ): List<ChildDocumentCitizenSummary> {
     return createQuery {
             sql(
@@ -69,7 +69,7 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
 fun Database.Transaction.markChildDocumentAsRead(
     user: AuthenticatedUser.Citizen,
     id: ChildDocumentId,
-    now: HelsinkiDateTime
+    now: HelsinkiDateTime,
 ) {
     createUpdate {
             sql(

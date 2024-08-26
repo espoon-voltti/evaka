@@ -50,7 +50,7 @@ private const val MESSAGE_API_VERSION = "1.1"
 
 class SfiMessagesSoapClient(
     private val sfiEnv: SfiEnv,
-    private val getDocument: (bucketName: String, key: String) -> Document
+    private val getDocument: (bucketName: String, key: String) -> Document,
 ) : SfiMessagesClient {
     private val wsTemplate =
         WebServiceTemplate().apply {
@@ -228,7 +228,7 @@ class SfiMessagesSoapClient(
             } catch (e: Exception) {
                 throw Exception(
                     "Error while sending SFI request about ${msg.documentId} with messageId: ${msg.messageId}",
-                    e
+                    e,
                 )
             }
 
@@ -240,7 +240,7 @@ class SfiMessagesSoapClient(
                         mapOf(
                             "caseId" to msg.documentId,
                             "messageId" to msg.messageId,
-                            "response" to response.text
+                            "response" to response.text,
                         )
                 )
             ) {
@@ -276,7 +276,7 @@ class SfiMessagesSoapClient(
 
 private enum class SignatureKeyIdentifier(val value: String) {
     ISSUER_SERIAL("IssuerSerial"),
-    DIRECT_REFERENCE("DirectReference")
+    DIRECT_REFERENCE("DirectReference"),
 }
 
 private enum class SignatureParts(namespace: String, element: String) {
@@ -354,7 +354,7 @@ private data class SfiResponse(val code: SfiResponseCode, val text: String) {
             soapResponse.lahetaViestiResult.tilaKoodi.let {
                 SfiResponse(
                     code = SfiResponseCode.fromCode(it.tilaKoodi),
-                    text = it.tilaKoodiKuvaus
+                    text = it.tilaKoodiKuvaus,
                 )
             }
     }

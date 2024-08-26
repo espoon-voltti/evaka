@@ -34,7 +34,7 @@ data class Income(
     @Json val attachments: List<IncomeAttachment>,
     val totalIncome: Int,
     val totalExpenses: Int,
-    val total: Int
+    val total: Int,
 )
 
 data class IncomeRequest(
@@ -46,7 +46,7 @@ data class IncomeRequest(
     val validFrom: LocalDate,
     val validTo: LocalDate?,
     val notes: String,
-    val attachments: List<IncomeAttachment> = listOf()
+    val attachments: List<IncomeAttachment> = listOf(),
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -56,7 +56,7 @@ data class DecisionIncome(
     val totalIncome: Int,
     val totalExpenses: Int,
     val total: Int,
-    val worksAtECHA: Boolean
+    val worksAtECHA: Boolean,
 ) {
     fun effectiveComparable(): DecisionIncome? {
         return when (this.effect) {
@@ -72,7 +72,7 @@ data class IncomeValue(
     val amount: Int,
     val coefficient: IncomeCoefficient,
     val multiplier: Int,
-    val monthlyAmount: Int
+    val monthlyAmount: Int,
 )
 
 enum class IncomeEffect : DatabaseEnum {
@@ -88,7 +88,7 @@ data class IncomeType(
     val nameFi: String,
     val multiplier: Int,
     val withCoefficient: Boolean,
-    val isSubType: Boolean
+    val isSubType: Boolean,
 )
 
 @ConstList("incomeCoefficients")

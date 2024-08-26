@@ -32,7 +32,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam areaId: AreaId?,
         @RequestParam unitId: DaycareId?,
-        @RequestParam decisionType: FinanceDecisionType
+        @RequestParam decisionType: FinanceDecisionType,
     ): List<CustomerFeesReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -40,7 +40,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                         tx,
                         user,
                         clock,
-                        Action.Global.READ_CUSTOMER_FEES_REPORT
+                        Action.Global.READ_CUSTOMER_FEES_REPORT,
                     )
                     when (decisionType) {
                         FinanceDecisionType.FEE_DECISION ->
@@ -56,7 +56,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
     private fun Database.Read.getFeeDecisionRows(
         date: LocalDate,
         areaId: AreaId?,
-        unitId: DaycareId?
+        unitId: DaycareId?,
     ): List<CustomerFeesReportRow> {
         val predicates =
             PredicateSql { where("fd.valid_during @> ${bind(date)}") }
@@ -87,7 +87,7 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
     private fun Database.Read.getVoucherValueDecisionRows(
         date: LocalDate,
         areaId: AreaId?,
-        unitId: DaycareId?
+        unitId: DaycareId?,
     ): List<CustomerFeesReportRow> {
         val predicates =
             PredicateSql { where("daterange(vvd.valid_from, vvd.valid_to, '[]') @> ${bind(date)}") }

@@ -44,7 +44,7 @@ class PdfGenerator(
     private val messageProvider: IMessageProvider,
     private val templateProvider: ITemplateProvider,
     private val templateEngine: ITemplateEngine,
-    private val tracer: Tracer = NoopTracerFactory.create()
+    private val tracer: Tracer = NoopTracerFactory.create(),
 ) {
     fun render(page: Page): ByteArray =
         tracer.withSpan("render pdf ${page.template.name}") {
@@ -94,7 +94,7 @@ class PdfGenerator(
         val type: FeeAlterationType,
         val amount: Int,
         val isAbsolute: Boolean,
-        val effectFormatted: String
+        val effectFormatted: String,
     )
 
     private fun getVoucherValueDecisionPdfVariables(
@@ -106,7 +106,7 @@ class PdfGenerator(
             listOfNotNull(
                     decision.headOfFamilyIncome?.total,
                     decision.partnerIncome?.total,
-                    decision.childIncome?.total
+                    decision.childIncome?.total,
                 )
                 .sum()
         val hideTotalIncome =
@@ -151,7 +151,7 @@ class PdfGenerator(
                         fa.type,
                         fa.amount,
                         fa.isAbsolute,
-                        formatCents(abs(fa.effect))!!
+                        formatCents(abs(fa.effect))!!,
                     )
                 },
             "coPayment" to formatCents(decision.finalCoPayment),
@@ -173,7 +173,7 @@ class PdfGenerator(
             "childIncomeTotal" to formatCents(decision.childIncome?.total),
             "childFullName" to with(decision.child) { "$firstName $lastName" },
             "childIncomeEffect" to
-                (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name)
+                (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
         )
     }
 
@@ -195,7 +195,7 @@ class PdfGenerator(
             val siblingDiscount: Int,
             val incomeTotal: String?, // head of family + partner + child income
             val childIncomeTotal: String?,
-            val hasChildIncome: Boolean
+            val hasChildIncome: Boolean,
         )
 
         val (decision, settings, lang) = data
@@ -245,7 +245,7 @@ class PdfGenerator(
                                     fa.type,
                                     fa.amount,
                                     fa.isAbsolute,
-                                    formatCents(fa.effect)!!
+                                    formatCents(fa.effect)!!,
                                 )
                             },
                             formatCents(it.finalFee)!!,
@@ -253,7 +253,7 @@ class PdfGenerator(
                             it.siblingDiscount,
                             formatCents(totalIncome + (it.childIncome?.total ?: 0)),
                             formatCents(it.childIncome?.total),
-                            it.childIncome != null && it.childIncome.total > 0
+                            it.childIncome != null && it.childIncome.total > 0,
                         )
                     },
                 "totalFee" to formatCents(decision.totalFee),
@@ -281,7 +281,7 @@ class PdfGenerator(
                     (decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName),
                 "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
                 "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE],
-                "hasChildIncome" to hasChildIncome
+                "hasChildIncome" to hasChildIncome,
             )
             .mapValues { it.value ?: "" }
     }

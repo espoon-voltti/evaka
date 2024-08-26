@@ -15,28 +15,34 @@ class NoTripleEqualsTest {
 
     @Test
     fun `using the triple equals operator triggers a lint violation`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing(input: Int): Boolean =
     input === 1
-""")
+"""
+            )
             .hasLintViolation(line = 3, col = 11, detail = NoTripleEquals.ERROR_MESSAGE)
     }
 
     @Test
     fun `using the triple not equals operator triggers a lint violation`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing(input: Int): Boolean =
     input !== 1
-""")
+"""
+            )
             .hasLintViolation(line = 3, col = 11, detail = NoTripleEquals.ERROR_MESSAGE)
     }
 
     @Test
     fun `normal equals and not equals operators don't trigger lint violations`() {
-        assertThatCode("""
+        assertThatCode(
+                """
 fun testing(input: Int): Boolean =
     input == 1 || input != 9
-""")
+"""
+            )
             .hasNoLintViolations()
     }
 }

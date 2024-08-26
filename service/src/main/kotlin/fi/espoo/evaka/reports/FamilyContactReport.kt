@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RestController
 class FamilyContactReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/family-contacts", // deprecated
-        "/employee/reports/family-contacts"
+        "/employee/reports/family-contacts",
     )
     fun getFamilyContactsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestParam date: LocalDate
+        @RequestParam date: LocalDate,
     ): List<FamilyContactReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -40,7 +40,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_FAMILY_CONTACT_REPORT,
-                        unitId
+                        unitId,
                     )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyContacts(date, unitId)
@@ -52,7 +52,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
 
 private fun Database.Read.getFamilyContacts(
     date: LocalDate,
-    unitId: DaycareId
+    unitId: DaycareId,
 ): List<FamilyContactReportRow> {
     return createQuery {
             sql(
@@ -123,7 +123,7 @@ data class FamilyContactReportRow(
     val postOffice: String,
     @Nested("hoc_") val headOfChild: Contact?,
     @Nested("gu1_") val guardian1: Contact?,
-    @Nested("gu2_") val guardian2: Contact?
+    @Nested("gu2_") val guardian2: Contact?,
 )
 
 data class Contact(
@@ -131,5 +131,5 @@ data class Contact(
     val firstName: String,
     val lastName: String,
     val phone: String,
-    val email: String?
+    val email: String?,
 )

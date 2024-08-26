@@ -371,11 +371,11 @@ class HelsinkiDateTimeRangeTest {
         val b = testRange(3, 5)
         assertEquals(
             BoundedRange.Relation.LeftTo<HelsinkiDateTimeRange>(gap = null),
-            a.relationTo(b)
+            a.relationTo(b),
         )
         assertEquals(
             BoundedRange.Relation.RightTo<HelsinkiDateTimeRange>(gap = null),
-            b.relationTo(a)
+            b.relationTo(a),
         )
     }
 
@@ -386,12 +386,8 @@ class HelsinkiDateTimeRangeTest {
         // A ----_
         val a = testRange(1, 5)
         assertEquals(
-            BoundedRange.Relation.Overlap(
-                left = null,
-                overlap = a,
-                right = null,
-            ),
-            a.relationTo(a)
+            BoundedRange.Relation.Overlap(left = null, overlap = a, right = null),
+            a.relationTo(a),
         )
     }
 
@@ -406,17 +402,17 @@ class HelsinkiDateTimeRangeTest {
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = true),
                 overlap = testRange(3, 6),
-                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = false)
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = false),
             ),
-            a.relationTo(b)
+            a.relationTo(b),
         )
         assertEquals(
             BoundedRange.Relation.Overlap(
                 left = BoundedRange.Relation.Remainder(testRange(1, 3), isFirst = false),
                 overlap = testRange(3, 6),
-                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = true)
+                right = BoundedRange.Relation.Remainder(testRange(6, 8), isFirst = true),
             ),
-            b.relationTo(a)
+            b.relationTo(a),
         )
     }
 

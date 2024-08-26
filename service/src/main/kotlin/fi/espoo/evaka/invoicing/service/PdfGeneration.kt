@@ -12,18 +12,18 @@ import fi.espoo.evaka.shared.domain.OfficialLanguage
 data class FeeDecisionPdfData(
     val decision: FeeDecisionDetailed,
     val settings: Map<SettingType, String>,
-    val lang: OfficialLanguage
+    val lang: OfficialLanguage,
 )
 
 data class VoucherValueDecisionPdfData(
     val decision: VoucherValueDecisionDetailed,
     val settings: Map<SettingType, String>,
-    val lang: OfficialLanguage
+    val lang: OfficialLanguage,
 )
 
 @Deprecated(
     message = "use OfficialLanguage instead",
     replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"])
+        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
 )
 typealias DocumentLang = OfficialLanguage

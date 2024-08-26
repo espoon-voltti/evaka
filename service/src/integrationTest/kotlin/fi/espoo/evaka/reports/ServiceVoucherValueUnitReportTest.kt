@@ -100,7 +100,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -117,9 +117,9 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                         type = FeeAlterationType.DISCOUNT,
                         amount = 50,
                         isAbsolute = false,
-                        effect = -14400
+                        effect = -14400,
                     )
-                )
+                ),
         )
 
         val janReport = getUnitReport(testDaycare.id, janFirst.year, janFirst.monthValue)
@@ -130,7 +130,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             14400,
-            72600
+            72600,
         )
     }
 
@@ -157,7 +157,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -185,7 +185,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 10000,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -197,7 +197,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
         febReport.assertContainsRow(
             ORIGINAL,
@@ -205,7 +205,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
     }
 
@@ -224,7 +224,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janSecond.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -243,7 +243,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janSixth.toEndOfMonth(),
             87000,
             28800,
-            52657
+            52657,
         )
     }
 
@@ -259,7 +259,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 10000,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -272,7 +272,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.minusDays(1),
             87000,
             0,
-            33143
+            33143,
         )
         // 13 operational days -> (12/21) * 77000 = ~47667
         febReport.assertContainsRow(
@@ -281,7 +281,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.toEndOfMonth(),
             87000,
             10000,
-            47667
+            47667,
         )
         febReport.assertContainsRow(
             ORIGINAL,
@@ -289,7 +289,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
     }
 
@@ -304,7 +304,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare2.id,
             value = 87000,
             coPayment = 10000,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
 
         val febReportInOldUnit = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -315,7 +315,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             0,
-            -87000
+            -87000,
         )
 
         val febReportInNewUnit = getUnitReport(testDaycare2.id, febFirst.year, febFirst.monthValue)
@@ -326,7 +326,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
         febReportInNewUnit.assertContainsRow(
             ORIGINAL,
@@ -334,7 +334,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
     }
 
@@ -349,7 +349,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 10000,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
         db.transaction {
             freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
@@ -359,7 +359,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 5000,
-            approvedAt = febFreeze.plusSeconds(3600)
+            approvedAt = febFreeze.plusSeconds(3600),
         )
 
         val marchReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
@@ -370,7 +370,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             10000,
-            -77000
+            -77000,
         )
         marchReport.assertContainsRow(
             CORRECTION,
@@ -378,7 +378,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
         marchReport.assertContainsRow(
             REFUND,
@@ -386,7 +386,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            -77000
+            -77000,
         )
         marchReport.assertContainsRow(
             CORRECTION,
@@ -394,7 +394,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
         marchReport.assertContainsRow(
             ORIGINAL,
@@ -402,7 +402,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             marFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
     }
 
@@ -420,7 +420,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 5000,
-            approvedAt = febFreeze.plusSeconds(3600)
+            approvedAt = febFreeze.plusSeconds(3600),
         )
 
         val marchReport = getUnitReport(testDaycare.id, marFirst.year, marFirst.monthValue)
@@ -432,7 +432,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
         marchReport.assertContainsRow(REFUND, febFirst, febFirst.toEndOfMonth(), 87000, 0, -87000)
         marchReport.assertContainsRow(
@@ -441,7 +441,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
         marchReport.assertContainsRow(
             ORIGINAL,
@@ -449,7 +449,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             marFirst.toEndOfMonth(),
             87000,
             5000,
-            82000
+            82000,
         )
     }
 
@@ -471,7 +471,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth,
             unitId = testDaycare.id,
             value = 87000,
-            coPayment = 28800
+            coPayment = 28800,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -481,7 +481,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 10000,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -495,7 +495,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.toEndOfMonth(),
             87000,
             28800,
-            -36029
+            -36029,
         )
         febReport.assertContainsRow(
             CORRECTION,
@@ -503,7 +503,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
         febReport.assertContainsRow(
             ORIGINAL,
@@ -511,7 +511,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
     }
 
@@ -526,7 +526,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 0,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
         val middleOfMonth = janFirst.plusDays(14)
         createVoucherDecision(
@@ -534,7 +534,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 28800,
-            approvedAt = janFreeze.plusSeconds(3600)
+            approvedAt = janFreeze.plusSeconds(3600),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -547,7 +547,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.minusDays(1),
             87000,
             0,
-            33143
+            33143,
         )
         // 13 operational days -> (12/21) * 58200 = ~36029
         febReport.assertContainsRow(
@@ -556,7 +556,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.toEndOfMonth(),
             87000,
             28800,
-            36029
+            36029,
         )
         febReport.assertContainsRow(
             ORIGINAL,
@@ -564,7 +564,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -617,7 +617,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             marFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -670,14 +670,14 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 1000,
-            janFreeze.plusSeconds(3600)
+            janFreeze.plusSeconds(3600),
         )
         createVoucherDecision(
             janFirst,
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 2000,
-            janFreeze.plusSeconds(7200)
+            janFreeze.plusSeconds(7200),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -689,7 +689,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             2000,
-            85000
+            85000,
         )
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 2000, 85000)
     }
@@ -705,7 +705,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 1000,
-            janFreeze.plusSeconds(3600)
+            janFreeze.plusSeconds(3600),
         )
         val middleOfMonth = janFirst.plusDays(14)
         createVoucherDecision(
@@ -713,7 +713,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 87000,
             coPayment = 2000,
-            janFreeze.plusSeconds(3600)
+            janFreeze.plusSeconds(3600),
         )
 
         val febReport = getUnitReport(testDaycare.id, febFirst.year, febFirst.monthValue)
@@ -726,7 +726,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.minusDays(1),
             87000,
             1000,
-            32762
+            32762,
         )
         // 13 operational days -> (13/21) * 85000 = ~52619
         febReport.assertContainsRow(
@@ -735,7 +735,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             2000,
-            52619
+            52619,
         )
         febReport.assertContainsRow(ORIGINAL, febFirst, febFirst.toEndOfMonth(), 87000, 2000, 85000)
     }
@@ -751,7 +751,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.updateVoucherValueDecisionEndDates(
                 listOf(endedDecision),
-                janFreeze.plusSeconds(3600)
+                janFreeze.plusSeconds(3600),
             )
         }
 
@@ -775,7 +775,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.updateVoucherValueDecisionEndDates(
                 listOf(decision.copy(validTo = janFirst.plusDays(13))),
-                janFreeze.plusSeconds(3600)
+                janFreeze.plusSeconds(3600),
             )
         }
         db.transaction {
@@ -790,7 +790,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.updateVoucherValueDecisionEndDates(
                 listOf(decision.copy(validTo = marFirst.toEndOfMonth())),
-                janFreeze.plusSeconds(3600)
+                janFreeze.plusSeconds(3600),
             )
         }
 
@@ -817,7 +817,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth,
             unitId = testDaycare.id,
             value = 87000,
-            coPayment = 10000
+            coPayment = 10000,
         )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -834,7 +834,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             middleOfMonth.toEndOfMonth(),
             87000,
             10000,
-            47667
+            47667,
         )
 
         db.transaction {
@@ -849,7 +849,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             10000,
-            77000
+            77000,
         )
     }
 
@@ -891,7 +891,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             febFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
         marReport.assertContainsRow(
             ORIGINAL,
@@ -899,7 +899,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             marFirst.toEndOfMonth(),
             87000,
             28800,
-            58200
+            58200,
         )
     }
 
@@ -933,7 +933,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 85000,
             coPayment = 0,
-            validTo = janFirst.toEndOfMonth()
+            validTo = janFirst.toEndOfMonth(),
         )
 
         db.transaction {
@@ -968,7 +968,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.updateVoucherValueDecisionEndDates(
                 listOf(firstValidityReduction),
-                marFreeze.plusWeeks(2)
+                marFreeze.plusWeeks(2),
             )
         }
         createVoucherDecision(
@@ -976,7 +976,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             approvedAt = marFreeze.plusWeeks(2),
             unitId = testDaycare.id,
             value = 86000,
-            coPayment = 0
+            coPayment = 0,
         )
 
         db.transaction {
@@ -987,7 +987,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.updateVoucherValueDecisionEndDates(
                 listOf(secondValidityReduction),
-                aprFreeze.plusWeeks(2)
+                aprFreeze.plusWeeks(2),
             )
         }
         createVoucherDecision(
@@ -996,7 +996,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 85000,
             coPayment = 0,
-            validTo = febFirst.toEndOfMonth()
+            validTo = febFirst.toEndOfMonth(),
         )
 
         db.transaction {
@@ -1019,7 +1019,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 unitId = testDaycare.id,
                 value = 87000,
                 coPayment = 0,
-                validTo = janFirst.toEndOfMonth().minusDays(1)
+                validTo = janFirst.toEndOfMonth().minusDays(1),
             )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -1031,7 +1031,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 unitId = testDaycare.id,
                 value = 87000,
                 coPayment = 0,
-                validTo = janFirst.toEndOfMonth()
+                validTo = janFirst.toEndOfMonth(),
             )
         db.transaction {
             freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
@@ -1040,7 +1040,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction {
             it.annulVoucherValueDecisions(
                 listOf(firstDecision.id, secondDecision.id),
-                febFreeze.plusDays(7)
+                febFreeze.plusDays(7),
             )
         }
         createVoucherDecision(
@@ -1048,7 +1048,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             unitId = testDaycare.id,
             value = 86000,
             coPayment = 0,
-            validTo = janFirst.toEndOfMonth()
+            validTo = janFirst.toEndOfMonth(),
         )
 
         db.transaction {
@@ -1064,7 +1064,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth().minusDays(1),
             87000,
             0,
-            -82857
+            -82857,
         )
         marReport.assertContainsRow(
             REFUND,
@@ -1072,7 +1072,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             janFirst.toEndOfMonth(),
             87000,
             0,
-            -4143
+            -4143,
         )
         marReport.assertContainsRow(CORRECTION, janFirst, janFirst.toEndOfMonth(), 86000, 0, 86000)
     }
@@ -1120,7 +1120,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         periodEnd: LocalDate,
         value: Int,
         finalCoPayment: Int,
-        realizedValue: Int
+        realizedValue: Int,
     ) {
         val row =
             this.find {
@@ -1142,13 +1142,13 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     private fun getUnitReport(
         unitId: DaycareId,
         year: Int,
-        month: Int
+        month: Int,
     ): List<ServiceVoucherValueRow> {
         val (_, response, data) =
             http
                 .get(
                     "/reports/service-voucher-value/units/$unitId",
-                    listOf("year" to year, "month" to month)
+                    listOf("year" to year, "month" to month),
                 )
                 .asUser(adminUser)
                 .responseObject<ServiceVoucherValueReportController.ServiceVoucherUnitReport>(
@@ -1162,7 +1162,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     private val financeUser =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.FINANCE_ADMIN)
+            roles = setOf(UserRole.FINANCE_ADMIN),
         )
 
     private fun createVoucherDecision(
@@ -1173,7 +1173,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
         alwaysUseDaycareFinanceDecisionHandler: Boolean = false,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
-        validTo: LocalDate? = null
+        validTo: LocalDate? = null,
     ): VoucherValueDecision {
         val id =
             db.transaction {
@@ -1190,7 +1190,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                         coPayment = coPayment,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                        feeAlterations = feeAlterations
+                        feeAlterations = feeAlterations,
                     )
                 it.upsertValueDecisions(listOf(decision))
 
@@ -1202,7 +1202,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                     now = approvedAt,
                     ids = listOf(decision.id),
                     decisionHandlerId = null,
-                    alwaysUseDaycareFinanceDecisionHandler
+                    alwaysUseDaycareFinanceDecisionHandler,
                 )
                 decision.id
             }
@@ -1228,7 +1228,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 validTo = LocalDate.of(2024, 4, 1),
                 value = 148300,
                 coPayment = 0,
-                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2023, 11, 1, 12, 0))
+                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2023, 11, 1, 12, 0)),
             )
 
         // 25.1. lock report
@@ -1238,7 +1238,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 tx = it,
                 year = 2024,
                 month = 1,
-                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 25, 22, 0))
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 25, 22, 0)),
             )
         }
         val janReport = getUnitReport(testDaycare.id, 2024, 1)
@@ -1248,7 +1248,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 31),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 148300
+            realizedValue = 148300,
         )
         assertEquals(1, janReport.count { it.realizedPeriod.overlaps(range) })
 
@@ -1257,7 +1257,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.updateVoucherValueDecisionEndDates(
                 listOf(decision1.copy(validTo = LocalDate.of(2024, 1, 5))),
-                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0))
+                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0)),
             )
         }
         val decision2 =
@@ -1267,7 +1267,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 validTo = LocalDate.of(2024, 4, 1),
                 value = 148300,
                 coPayment = 0,
-                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0))
+                approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 1, 29, 12, 0)),
             )
 
         // 25.2. lock report
@@ -1279,7 +1279,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 tx = it,
                 year = 2024,
                 month = 2,
-                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 2, 25, 22, 0))
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 2, 25, 22, 0)),
             )
         }
         val febReport = getUnitReport(testDaycare.id, 2024, 2)
@@ -1289,7 +1289,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 31),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = -148300
+            realizedValue = -148300,
         )
         febReport.assertContainsRow(
             type = CORRECTION,
@@ -1297,7 +1297,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 5),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 26964
+            realizedValue = 26964,
         )
         febReport.assertContainsRow(
             type = CORRECTION,
@@ -1305,7 +1305,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 31),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 121336
+            realizedValue = 121336,
         )
         assertEquals(3, febReport.count { it.realizedPeriod.overlaps(range) })
 
@@ -1314,7 +1314,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.updateVoucherValueDecisionEndDates(
                 listOf(decision2.copy(validTo = LocalDate.of(2024, 1, 20))),
-                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
+                now = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0)),
             )
         }
         createVoucherDecision(
@@ -1323,7 +1323,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             validTo = LocalDate.of(2024, 4, 1),
             value = 148300,
             coPayment = 0,
-            approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0))
+            approvedAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 6, 12, 0)),
         )
 
         // 25.3. lock report
@@ -1335,7 +1335,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 tx = it,
                 year = 2024,
                 month = 3,
-                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 25, 22, 0))
+                takenAt = HelsinkiDateTime.of(LocalDateTime.of(2024, 3, 25, 22, 0)),
             )
         }
         val marReport = getUnitReport(testDaycare.id, 2024, 3)
@@ -1346,7 +1346,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 31),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = -121336
+            realizedValue = -121336,
         )
         marReport.assertContainsRow(
             type = CORRECTION,
@@ -1354,7 +1354,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 20),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 67409
+            realizedValue = 67409,
         )
         marReport.assertContainsRow(
             type = CORRECTION,
@@ -1362,7 +1362,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = LocalDate.of(2024, 1, 31),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 53927
+            realizedValue = 53927,
         )
     }
 
@@ -1374,7 +1374,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 validFrom = janFirst,
                 validTo = marFirst.plusDays(20),
                 value = 148300,
-                coPayment = 0
+                coPayment = 0,
             )
         db.transaction {
             freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
@@ -1390,7 +1390,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.updateVoucherValueDecisionEndDates(
                 listOf(decision.copy(validTo = marFirst.plusDays(10))),
-                now = marFreeze.plusDays(1)
+                now = marFreeze.plusDays(1),
             )
         }
 
@@ -1402,7 +1402,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = marFirst.plusDays(20),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = -101114
+            realizedValue = -101114,
         )
         aprReport.assertContainsRow(
             type = CORRECTION,
@@ -1410,7 +1410,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
             periodEnd = marFirst.plusDays(10),
             value = 148300,
             finalCoPayment = 0,
-            realizedValue = 53927
+            realizedValue = 53927,
         )
     }
 }

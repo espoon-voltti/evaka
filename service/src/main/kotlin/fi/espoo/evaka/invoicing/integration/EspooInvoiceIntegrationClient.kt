@@ -23,7 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 class EspooInvoiceIntegrationClient(
     private val env: EspooInvoiceIntegrationEnv,
-    private val jsonMapper: JsonMapper
+    private val jsonMapper: JsonMapper,
 ) : InvoiceIntegrationClient {
     private val fuel = FuelManager()
 
@@ -80,7 +80,7 @@ class EspooInvoiceIntegrationClient(
                 val meta = mapOf("errorMessage" to error.errorData.decodeToString())
                 logger.error(error, meta) { "Failed sending invoice batch" }
                 false
-            }
+            },
         )
     }
 
@@ -88,7 +88,7 @@ class EspooInvoiceIntegrationClient(
         fun createBatchExports(
             batchInvoices: List<InvoiceDetailed>,
             agType: Int,
-            sendCodebtor: Boolean
+            sendCodebtor: Boolean,
         ): EspooInvoiceBatch {
             require(agType <= 999) { "Agreement type can be at most 3 digits long, was '$agType'" }
             return batchInvoices
@@ -140,13 +140,13 @@ class EspooInvoiceIntegrationClient(
                                                                 row.price,
                                                                 row.description.trim(),
                                                                 row.costCenter.trim(),
-                                                                row.subCostCenter?.trim()
+                                                                row.subCostCenter?.trim(),
                                                             )
                                                         }
                                                     listOf(nameRow) +
                                                         rowsWithContent +
                                                         listOf(emptyRow())
-                                                }
+                                                },
                                     )
 
                                 if (sendCodebtor) {
@@ -154,7 +154,7 @@ class EspooInvoiceIntegrationClient(
                                 } else {
                                     integrtionInvoice
                                 }
-                            }
+                            },
                     )
                 }
         }
@@ -162,7 +162,7 @@ class EspooInvoiceIntegrationClient(
         private fun addressIsValid(
             streetAddress: String,
             postalCode: String,
-            postOffice: String
+            postOffice: String,
         ): Boolean {
             // some part of address information is empty
             if (streetAddress.isBlank() || postalCode.isBlank() || postOffice.isBlank()) {
@@ -193,7 +193,7 @@ class EspooInvoiceIntegrationClient(
                 Triple(
                     headOfFamily.streetAddress.trim(),
                     headOfFamily.postalCode.trim(),
-                    headOfFamily.postOffice.trim()
+                    headOfFamily.postOffice.trim(),
                 )
             val addressIsUseable = addressIsValid(streetAddress, postalCode, postOffice)
             return EspooClient(
@@ -203,7 +203,7 @@ class EspooInvoiceIntegrationClient(
                 language = lang.value,
                 street = streetAddress.takeIf { addressIsUseable },
                 postalCode = postalCode.takeIf { addressIsUseable },
-                post = postOffice.takeIf { addressIsUseable }
+                post = postOffice.takeIf { addressIsUseable },
             )
         }
 
@@ -219,13 +219,13 @@ class EspooInvoiceIntegrationClient(
                 Triple(
                     headOfFamily.streetAddress.trim(),
                     headOfFamily.postalCode.trim(),
-                    headOfFamily.postOffice.trim()
+                    headOfFamily.postOffice.trim(),
                 )
             val invoiceAddress =
                 Triple(
                     headOfFamily.invoicingStreetAddress.trim(),
                     headOfFamily.invoicingPostalCode.trim(),
-                    headOfFamily.invoicingPostOffice.trim()
+                    headOfFamily.invoicingPostOffice.trim(),
                 )
 
             val (street, postalCode, post) =
@@ -233,7 +233,7 @@ class EspooInvoiceIntegrationClient(
                     addressIsValid(
                         invoiceAddress.first,
                         invoiceAddress.second,
-                        invoiceAddress.third
+                        invoiceAddress.third,
                     ) -> invoiceAddress
                     addressIsValid(address.first, address.second, address.third) -> address
                     else -> Triple(fallbackStreetAddress, fallbackPostalCode, fallbackPostOffice)
@@ -244,7 +244,7 @@ class EspooInvoiceIntegrationClient(
                 firstnames.take(invoicingFirstNameMaxLength),
                 street,
                 post,
-                postalCode
+                postalCode,
             )
         }
 
@@ -259,7 +259,7 @@ class EspooInvoiceIntegrationClient(
                 lastname = codebtor.lastName,
                 street = codebtor.streetAddress,
                 postalCode = codebtor.postalCode,
-                post = codebtor.postOffice
+                post = codebtor.postOffice,
             )
         }
 
@@ -278,7 +278,7 @@ class EspooInvoiceIntegrationClient(
             price: Int,
             desc: String,
             costC: String,
-            subCostC: String?
+            subCostC: String?,
         ): EspooInvoiceRow {
             val espooProduct = EspooInvoiceProducts.findProduct(product)
 
@@ -313,7 +313,7 @@ class EspooInvoiceIntegrationClient(
                         null
                     } else {
                         subCostC.padStart(invoicingSubCostCenterLength, '0')
-                    }
+                    },
             )
         }
 
@@ -328,14 +328,14 @@ class EspooInvoiceIntegrationClient(
                 description = desc.take(invoicingDescriptionMaxLength),
                 account = 0,
                 costCenter = "",
-                subCostCenter1 = null
+                subCostCenter1 = null,
             )
 
         data class EspooInvoiceBatch(
             val agreementType: Int,
             val batchDate: LocalDate,
             val batchNumber: Int,
-            val invoices: List<IntegrationInvoice>
+            val invoices: List<IntegrationInvoice>,
         ) {
             val currency = "EUR"
             val systemId = "EPH"
@@ -359,7 +359,7 @@ class EspooInvoiceIntegrationClient(
             override val dueDate: LocalDate,
             override val client: EspooClient,
             override val recipient: EspooRecipient,
-            override val rows: List<EspooInvoiceRow>
+            override val rows: List<EspooInvoiceRow>,
         ) : IntegrationInvoice {
             override val useInvoiceNumber = false
             override val printDate = null
@@ -372,7 +372,7 @@ class EspooInvoiceIntegrationClient(
                     client = this.client,
                     recipient = this.recipient,
                     rows = this.rows,
-                    codebtor = codebtor
+                    codebtor = codebtor,
                 )
         }
 
@@ -383,7 +383,7 @@ class EspooInvoiceIntegrationClient(
             override val client: EspooClient,
             override val recipient: EspooRecipient,
             override val rows: List<EspooInvoiceRow>,
-            val codebtor: EspooCodebtor?
+            val codebtor: EspooCodebtor?,
         ) : IntegrationInvoice {
             override val useInvoiceNumber = false
             override val printDate = null
@@ -396,7 +396,7 @@ class EspooInvoiceIntegrationClient(
             val language: String,
             val street: String?,
             val postalCode: String?,
-            val post: String?
+            val post: String?,
         ) {
             val ytunnus = null
             val registerNumber = null
@@ -412,7 +412,7 @@ class EspooInvoiceIntegrationClient(
             val firstnames: String,
             val street: String?,
             val post: String?,
-            val postalCode: String?
+            val postalCode: String?,
         )
 
         data class EspooCodebtor(
@@ -421,7 +421,7 @@ class EspooInvoiceIntegrationClient(
             val firstnames: String,
             val street: String,
             val post: String,
-            val postalCode: String
+            val postalCode: String,
         )
 
         data class EspooInvoiceRow(
@@ -434,7 +434,7 @@ class EspooInvoiceIntegrationClient(
             val description: String,
             val account: Int,
             val costCenter: String,
-            val subCostCenter1: String?
+            val subCostCenter1: String?,
         ) {
             val productComponent = this.productGroup
             val vatAmount = 0
@@ -445,7 +445,7 @@ class EspooInvoiceIntegrationClient(
 
         enum class EspooLang(val value: String) {
             FI("fi"),
-            SV("sv")
+            SV("sv"),
         }
     }
 }

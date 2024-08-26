@@ -30,14 +30,14 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/holiday-period", // deprecated
-    "/employee/holiday-period"
+    "/employee/holiday-period",
 )
 class HolidayPeriodController(private val accessControl: AccessControl) {
     @GetMapping
     fun getHolidayPeriods(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<HolidayPeriod> {
         return db.connect { dbc ->
                 dbc.read {
@@ -45,7 +45,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_HOLIDAY_PERIODS
+                        Action.Global.READ_HOLIDAY_PERIODS,
                     )
                     it.getHolidayPeriods()
                 }
@@ -58,7 +58,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: HolidayPeriodId
+        @PathVariable id: HolidayPeriodId,
     ): HolidayPeriod {
         return db.connect { dbc ->
                 dbc.read {
@@ -66,7 +66,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.READ_HOLIDAY_PERIOD
+                        Action.Global.READ_HOLIDAY_PERIOD,
                     )
                     it.getHolidayPeriod(id)
                 } ?: throw NotFound()
@@ -79,7 +79,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: HolidayPeriodBody
+        @RequestBody body: HolidayPeriodBody,
     ): HolidayPeriod {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -87,7 +87,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         it,
                         user,
                         clock,
-                        Action.Global.CREATE_HOLIDAY_PERIOD
+                        Action.Global.CREATE_HOLIDAY_PERIOD,
                     )
                     try {
                         if (body.period.start.isBefore(clock.today().plusWeeks(4))) {
@@ -115,7 +115,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                         it.insertHolidayPeriod(
                             body.period,
                             body.reservationsOpenOn,
-                            body.reservationDeadline
+                            body.reservationDeadline,
                         )
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
@@ -133,7 +133,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId,
-        @RequestBody body: HolidayPeriodBody
+        @RequestBody body: HolidayPeriodBody,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -141,14 +141,14 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     it,
                     user,
                     clock,
-                    Action.Global.UPDATE_HOLIDAY_PERIOD
+                    Action.Global.UPDATE_HOLIDAY_PERIOD,
                 )
                 try {
                     it.updateHolidayPeriod(
                         id,
                         body.period,
                         body.reservationsOpenOn,
-                        body.reservationDeadline
+                        body.reservationDeadline,
                     )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
@@ -163,7 +163,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: HolidayPeriodId
+        @PathVariable id: HolidayPeriodId,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -171,7 +171,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     it,
                     user,
                     clock,
-                    Action.Global.DELETE_HOLIDAY_PERIOD
+                    Action.Global.DELETE_HOLIDAY_PERIOD,
                 )
                 it.deleteHolidayPeriod(id)
             }

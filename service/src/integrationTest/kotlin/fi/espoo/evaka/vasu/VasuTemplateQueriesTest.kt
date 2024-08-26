@@ -23,7 +23,7 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     dateRangeNow,
                     CurriculumType.DAYCARE,
                     OfficialLanguage.FI,
-                    VasuContent(sections = listOf())
+                    VasuContent(sections = listOf()),
                 )
             assertEquals(
                 VasuTemplate(
@@ -33,9 +33,9 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     dateRangeNow,
                     OfficialLanguage.FI,
                     VasuContent(sections = listOf()),
-                    0
+                    0,
                 ),
-                tx.getVasuTemplate(templateId)
+                tx.getVasuTemplate(templateId),
             )
 
             // when a template is updated
@@ -49,9 +49,9 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     modifiedDateRange,
                     OfficialLanguage.FI,
                     VasuContent(sections = listOf()),
-                    0
+                    0,
                 ),
-                tx.getVasuTemplate(templateId)
+                tx.getVasuTemplate(templateId),
             )
         }
     }

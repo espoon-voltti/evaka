@@ -55,8 +55,8 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         500000,
                         coefficientMultiplierProvider.multiplier(
                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                        )
-                    )
+                        ),
+                    ),
                 )
         )
     private val testIncome =
@@ -68,7 +68,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             worksAtECHA = true,
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
-            notes = ""
+            notes = "",
         )
     private val clock = MockEvakaClock(2023, 1, 7, 14, 0)
 
@@ -100,7 +100,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val income =
                 testIncome.copy(
                     validFrom = LocalDate.of(2000, 1, 1),
-                    validTo = LocalDate.of(1900, 1, 1)
+                    validTo = LocalDate.of(1900, 1, 1),
                 )
 
             assertThrows<BadRequest> { tx.insertIncome(clock, mapper, income, user.evakaUserId) }
@@ -140,7 +140,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    IncomeId(UUID.randomUUID())
+                    IncomeId(UUID.randomUUID()),
                 )
 
             assertNull(result)
@@ -169,7 +169,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    personId
+                    personId,
                 )
 
             assertEquals(1, result.size)
@@ -185,7 +185,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     clock,
                     mapper,
                     this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1)),
-                    user.evakaUserId
+                    user.evakaUserId,
                 )
             }
             with(testIncome) {
@@ -193,7 +193,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     clock,
                     mapper,
                     this.copy(validFrom = validFrom.plusYears(2), validTo = validTo!!.plusYears(2)),
-                    user.evakaUserId
+                    user.evakaUserId,
                 )
             }
 
@@ -202,7 +202,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    personId
+                    personId,
                 )
 
             assertEquals(3, result.size)
@@ -227,8 +227,8 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                         1000,
                                         coefficientMultiplierProvider.multiplier(
                                             IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                        )
-                                    )
+                                        ),
+                                    ),
                                 )
                         )
                 )
@@ -239,7 +239,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    personId
+                    personId,
                 )
 
             assertEquals(1, result.size)
@@ -269,7 +269,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 with(testIncome) {
                     this.copy(
                         validFrom = validTo!!.plusDays(1),
-                        validTo = validTo!!.plusDays(1).plusMonths(1)
+                        validTo = validTo!!.plusDays(1).plusMonths(1),
                     )
                 }
             val incomeId = tx.insertIncome(clock, mapper, anotherIncome, user.evakaUserId)
@@ -309,14 +309,11 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                                 10000,
                                 coefficientMultiplierProvider.multiplier(
                                     IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS
-                                )
-                            )
+                                ),
+                            ),
                         )
                 )
-            val updated =
-                testIncome.copy(
-                    data = newData,
-                )
+            val updated = testIncome.copy(data = newData)
             tx.updateIncome(clock, mapper, incomeId, updated, user.evakaUserId)
 
             val result =
@@ -324,20 +321,20 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     mapper,
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
-                    personId
+                    personId,
                 )
 
             assertEquals(
                 calculateIncomeTotal(thirdIncome.data, coefficientMultiplierProvider),
-                result[0].total
+                result[0].total,
             )
             assertEquals(
                 calculateIncomeTotal(secondIncome.data, coefficientMultiplierProvider),
-                result[1].total
+                result[1].total,
             )
             assertEquals(
                 calculateIncomeTotal(newData, coefficientMultiplierProvider),
-                result[2].total
+                result[2].total,
             )
         }
     }
@@ -351,9 +348,9 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 mapper,
                 testIncome.copy(
                     validFrom = testIncome.validTo!!.plusDays(1),
-                    validTo = testIncome.validTo!!.plusYears(1)
+                    validTo = testIncome.validTo!!.plusYears(1),
                 ),
-                user.evakaUserId
+                user.evakaUserId,
             )
 
             val result =
@@ -362,7 +359,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
                     listOf(testIncome.personId),
-                    testIncome.validFrom
+                    testIncome.validFrom,
                 )
 
             assertEquals(2, result.size)
@@ -378,9 +375,9 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 mapper,
                 testIncome.copy(
                     validFrom = testIncome.validTo!!.plusDays(1),
-                    validTo = testIncome.validTo!!.plusYears(1)
+                    validTo = testIncome.validTo!!.plusYears(1),
                 ),
-                user.evakaUserId
+                user.evakaUserId,
             )
 
             val result =
@@ -389,7 +386,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
                     listOf(testIncome.personId),
-                    testIncome.validTo!!.plusDays(1)
+                    testIncome.validTo!!.plusDays(1),
                 )
 
             assertEquals(1, result.size)
@@ -405,9 +402,9 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 mapper,
                 testIncome.copy(
                     validFrom = testIncome.validTo!!.plusDays(1),
-                    validTo = testIncome.validTo!!.plusYears(1)
+                    validTo = testIncome.validTo!!.plusYears(1),
                 ),
-                user.evakaUserId
+                user.evakaUserId,
             )
 
             val result =
@@ -416,7 +413,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     incomeTypesProvider,
                     coefficientMultiplierProvider,
                     listOf(testIncome.personId),
-                    testIncome.validTo!!.plusYears(1).plusDays(1)
+                    testIncome.validTo!!.plusYears(1).plusDays(1),
                 )
 
             assertEquals(0, result.size)

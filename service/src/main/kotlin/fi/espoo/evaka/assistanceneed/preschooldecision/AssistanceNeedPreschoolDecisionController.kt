@@ -43,14 +43,14 @@ class AssistanceNeedPreschoolDecisionController(
     private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService
+    private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
     @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): AssistanceNeedPreschoolDecision {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -59,7 +59,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_NEED_PRESCHOOL_DECISION,
-                        childId
+                        childId,
                     )
 
                     val now = clock.now()
@@ -71,7 +71,7 @@ class AssistanceNeedPreschoolDecisionController(
                                         processDefinitionNumber = config.processDefinitionNumber,
                                         year = now.year,
                                         organization = featureConfig.archiveMetadataOrganization,
-                                        archiveDurationMonths = config.archiveDurationMonths
+                                        archiveDurationMonths = config.archiveDurationMonths,
                                     )
                                     .id
                                     .also { processId ->
@@ -79,7 +79,7 @@ class AssistanceNeedPreschoolDecisionController(
                                             processId = processId,
                                             state = ArchivedProcessState.INITIAL,
                                             now = now,
-                                            userId = user.evakaUserId
+                                            userId = user.evakaUserId,
                                         )
                                     }
                             }
@@ -90,20 +90,20 @@ class AssistanceNeedPreschoolDecisionController(
             .also { assistanceNeedDecision ->
                 Audit.ChildAssistanceNeedPreschoolDecisionCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(assistanceNeedDecision.id)
+                    objectId = AuditId(assistanceNeedDecision.id),
                 )
             }
     }
 
     @GetMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}"
+        "/employee/assistance-need-preschool-decisions/{id}",
     )
     fun getAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): AssistanceNeedPreschoolDecisionResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -112,13 +112,13 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.READ,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
                     AssistanceNeedPreschoolDecisionResponse(
                         decision,
-                        permittedActions = accessControl.getPermittedActions(tx, user, clock, id)
+                        permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
                     )
                 }
             }
@@ -130,7 +130,7 @@ class AssistanceNeedPreschoolDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
                 dbc.read {
@@ -139,7 +139,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.DOWNLOAD,
-                        id
+                        id,
                     )
                 }
                 assistanceNeedPreschoolDecisionService.getDecisionPdfResponse(dbc, id)
@@ -153,14 +153,14 @@ class AssistanceNeedPreschoolDecisionController(
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}"
+        "/employee/assistance-need-preschool-decisions/{id}",
     )
     fun updateAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
-        @RequestBody body: AssistanceNeedPreschoolDecisionForm
+        @RequestBody body: AssistanceNeedPreschoolDecisionForm,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -169,7 +169,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.UPDATE,
-                        id
+                        id,
                     )
 
                     tx.updateAssistanceNeedPreschoolDecision(id, body)
@@ -180,13 +180,13 @@ class AssistanceNeedPreschoolDecisionController(
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/send", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/send"
+        "/employee/assistance-need-preschool-decisions/{id}/send",
     )
     fun sendAssistanceNeedPreschoolDecisionForDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -195,7 +195,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.SEND,
-                        id
+                        id,
                     )
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
@@ -207,7 +207,7 @@ class AssistanceNeedPreschoolDecisionController(
                                 processId = process.id,
                                 state = ArchivedProcessState.PREPARATION,
                                 now = clock.now(),
-                                userId = user.evakaUserId
+                                userId = user.evakaUserId,
                             )
                         }
                     }
@@ -220,13 +220,13 @@ class AssistanceNeedPreschoolDecisionController(
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/unsend", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/unsend"
+        "/employee/assistance-need-preschool-decisions/{id}/unsend",
     )
     fun revertAssistanceNeedPreschoolDecisionToUnsent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -235,7 +235,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.REVERT_TO_UNSENT,
-                        id
+                        id,
                     )
 
                     tx.updateAssistanceNeedPreschoolDecisionToNotSent(id)
@@ -248,13 +248,13 @@ class AssistanceNeedPreschoolDecisionController(
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/mark-as-opened", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/mark-as-opened"
+        "/employee/assistance-need-preschool-decisions/{id}/mark-as-opened",
     )
     fun markAssistanceNeedPreschoolDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -263,7 +263,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.MARK_AS_OPENED,
-                        id
+                        id,
                     )
 
                     tx.markAssistanceNeedPreschoolDecisionAsOpened(id)
@@ -274,14 +274,14 @@ class AssistanceNeedPreschoolDecisionController(
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/decide", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decide"
+        "/employee/assistance-need-preschool-decisions/{id}/decide",
     )
     fun decideAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
-        @RequestBody body: DecideAssistanceNeedPreschoolDecisionRequest
+        @RequestBody body: DecideAssistanceNeedPreschoolDecisionRequest,
     ) {
         val decided =
             when (body.status) {
@@ -301,7 +301,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.DECIDE,
-                        id
+                        id,
                     )
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
@@ -318,11 +318,11 @@ class AssistanceNeedPreschoolDecisionController(
                             tx.endActiveAssistanceNeedPreschoolDecisions(
                                 decision.id,
                                 decision.form.validFrom.minusDays(1),
-                                decision.child.id
+                                decision.child.id,
                             )
                             tx.getNextAssistanceNeedPreschoolDecisionValidFrom(
                                     decision.child.id,
-                                    decision.form.validFrom
+                                    decision.form.validFrom,
                                 )
                                 ?.minusDays(1)
                         } else null
@@ -337,7 +337,7 @@ class AssistanceNeedPreschoolDecisionController(
                             } else {
                                 null
                             },
-                        validTo = validTo
+                        validTo = validTo,
                     )
 
                     if (decided) {
@@ -346,14 +346,14 @@ class AssistanceNeedPreschoolDecisionController(
                                 processId = it.id,
                                 state = ArchivedProcessState.DECIDING,
                                 now = clock.now(),
-                                userId = user.evakaUserId
+                                userId = user.evakaUserId,
                             )
                         }
 
                         asyncJobRunner.plan(
                             tx,
                             listOf(AsyncJob.CreateAssistanceNeedPreschoolDecisionPdf(id)),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -361,21 +361,21 @@ class AssistanceNeedPreschoolDecisionController(
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionDecide.log(
                     targetId = AuditId(id),
-                    meta = mapOf("status" to body.status)
+                    meta = mapOf("status" to body.status),
                 )
             }
     }
 
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/annul", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/annul"
+        "/employee/assistance-need-preschool-decisions/{id}/annul",
     )
     fun annulAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
-        @RequestBody body: AnnulAssistanceNeedPreschoolDecisionRequest
+        @RequestBody body: AnnulAssistanceNeedPreschoolDecisionRequest,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -384,7 +384,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.ANNUL,
-                        id
+                        id,
                     )
 
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
@@ -408,7 +408,7 @@ class AssistanceNeedPreschoolDecisionController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): List<AssistanceNeedPreschoolDecisionBasicsResponse> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -417,24 +417,24 @@ class AssistanceNeedPreschoolDecisionController(
                             tx,
                             user,
                             clock,
-                            Action.AssistanceNeedPreschoolDecision.READ
+                            Action.AssistanceNeedPreschoolDecision.READ,
                         )
                     val decisions =
                         tx.getAssistanceNeedPreschoolDecisionsByChildIdUsingFilter(childId, filter)
                     val permittedActions =
                         accessControl.getPermittedActions<
                             AssistanceNeedPreschoolDecisionId,
-                            Action.AssistanceNeedPreschoolDecision
+                            Action.AssistanceNeedPreschoolDecision,
                         >(
                             tx,
                             user,
                             clock,
-                            decisions.map { it.id }
+                            decisions.map { it.id },
                         )
                     decisions.map {
                         AssistanceNeedPreschoolDecisionBasicsResponse(
                             decision = it,
-                            permittedActions = permittedActions[it.id]!!
+                            permittedActions = permittedActions[it.id]!!,
                         )
                     }
                 }
@@ -442,20 +442,20 @@ class AssistanceNeedPreschoolDecisionController(
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionsList.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     @DeleteMapping(
         "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}"
+        "/employee/assistance-need-preschool-decisions/{id}",
     )
     fun deleteAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceNeedPreschoolDecisionId
+        @PathVariable id: AssistanceNeedPreschoolDecisionId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -464,13 +464,13 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.DELETE,
-                        id
+                        id,
                     )
                     deleteProcessByAssistanceNeedPreschoolDecisionId(tx, id)
                     if (!tx.deleteAssistanceNeedPreschoolDecision(id)) {
                         throw NotFound(
                             "Assistance need preschool decision $id cannot found or cannot be deleted",
-                            "DECISION_NOT_FOUND"
+                            "DECISION_NOT_FOUND",
                         )
                     }
                 }
@@ -481,14 +481,14 @@ class AssistanceNeedPreschoolDecisionController(
     // TODO: Unused endpoint?
     @PutMapping(
         "/assistance-need-preschool-decisions/{id}/decision-maker", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decision-maker"
+        "/employee/assistance-need-preschool-decisions/{id}/decision-maker",
     )
     fun updateAssistanceNeedPreschoolDecisionDecisionMaker(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedPreschoolDecisionId,
-        @RequestBody body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest
+        @RequestBody body: UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest,
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -497,7 +497,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.UPDATE_DECISION_MAKER,
-                        id
+                        id,
                     )
                     val decision = tx.getAssistanceNeedPreschoolDecisionById(id)
 
@@ -511,9 +511,9 @@ class AssistanceNeedPreschoolDecisionController(
                         id,
                         decision.form.copy(
                             decisionMakerEmployeeId = EmployeeId(user.rawId()),
-                            decisionMakerTitle = body.title
+                            decisionMakerTitle = body.title,
                         ),
-                        decisionMakerHasOpened = true
+                        decisionMakerHasOpened = true,
                     )
                 }
             }
@@ -524,7 +524,7 @@ class AssistanceNeedPreschoolDecisionController(
 
     @GetMapping(
         "/assistance-need-preschool-decisions/{id}/decision-maker-options", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decision-maker-options"
+        "/employee/assistance-need-preschool-decisions/{id}/decision-maker-options",
     )
     fun getAssistancePreschoolDecisionMakerOptions(
         db: Database,
@@ -539,7 +539,7 @@ class AssistanceNeedPreschoolDecisionController(
                         user,
                         clock,
                         Action.AssistanceNeedPreschoolDecision.READ_DECISION_MAKER_OPTIONS,
-                        id
+                        id,
                     )
                     val assistanceDecision = tx.getAssistanceNeedPreschoolDecisionById(id)
                     featureConfig.preschoolAssistanceDecisionMakerRoles?.let { roles ->
@@ -550,19 +550,19 @@ class AssistanceNeedPreschoolDecisionController(
             .also {
                 Audit.ChildAssistanceNeedPreschoolDecisionReadDecisionMakerOptions.log(
                     targetId = AuditId(id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
 
     data class AssistanceNeedPreschoolDecisionBasicsResponse(
         val decision: AssistanceNeedPreschoolDecisionBasics,
-        val permittedActions: Set<Action.AssistanceNeedPreschoolDecision>
+        val permittedActions: Set<Action.AssistanceNeedPreschoolDecision>,
     )
 
     data class AssistanceNeedPreschoolDecisionResponse(
         val decision: AssistanceNeedPreschoolDecision,
-        val permittedActions: Set<Action.AssistanceNeedPreschoolDecision>
+        val permittedActions: Set<Action.AssistanceNeedPreschoolDecision>,
     )
 
     data class DecideAssistanceNeedPreschoolDecisionRequest(

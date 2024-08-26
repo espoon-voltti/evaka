@@ -54,9 +54,9 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = testDaycare.name,
                     daysWithoutServiceNeed = 1,
                     firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName
+                    lastName = testChild_1.lastName,
                 )
-            )
+            ),
         )
     }
 
@@ -74,9 +74,9 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = testVoucherDaycare.name,
                     daysWithoutServiceNeed = 1,
                     firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName
+                    lastName = testChild_1.lastName,
                 )
-            )
+            ),
         )
     }
 
@@ -84,7 +84,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
         childId: ChildId,
         startDate: LocalDate,
         endDate: LocalDate = startDate.plusYears(1),
-        daycare: DevDaycare
+        daycare: DevDaycare,
     ) =
         db.transaction { tx ->
             tx.insert(
@@ -92,7 +92,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     childId = childId,
                     unitId = daycare.id,
                     startDate = startDate,
-                    endDate = endDate
+                    endDate = endDate,
                 )
             )
         }
@@ -103,7 +103,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     private fun getAndAssert(
         from: LocalDate,
         to: LocalDate,
-        expected: List<MissingServiceNeedReportRow>
+        expected: List<MissingServiceNeedReportRow>,
     ) {
         val (_, response, result) =
             http

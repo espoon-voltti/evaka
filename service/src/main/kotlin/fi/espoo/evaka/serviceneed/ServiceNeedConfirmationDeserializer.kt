@@ -16,12 +16,12 @@ class ServiceNeedConfirmationDeserializer :
     private data class ServiceNeedConfirmationNullableFields(
         val userId: EvakaUserId?,
         val name: String?,
-        val at: HelsinkiDateTime?
+        val at: HelsinkiDateTime?,
     )
 
     override fun deserialize(
         jp: JsonParser,
-        ctxt: DeserializationContext
+        ctxt: DeserializationContext,
     ): ServiceNeedConfirmation? {
         val confirmed = jp.readValueAs(ServiceNeedConfirmationNullableFields::class.java)
         if (confirmed.userId == null) {

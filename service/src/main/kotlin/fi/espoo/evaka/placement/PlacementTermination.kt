@@ -19,7 +19,7 @@ enum class TerminatablePlacementType {
     CLUB,
     PREPARATORY,
     DAYCARE,
-    PRESCHOOL
+    PRESCHOOL,
 }
 
 data class TerminatablePlacementGroup(
@@ -34,7 +34,7 @@ data class TerminatablePlacementGroup(
      * Relevant for PRESCHOOL/PREPARATORY only. Contains all daycare placements which start after
      * the first PRESCHOOL/PREPARATORY placement.
      */
-    val additionalPlacements: List<ChildPlacement>
+    val additionalPlacements: List<ChildPlacement>,
 )
 
 private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacementType =
@@ -58,7 +58,7 @@ private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacem
 
 fun mapToTerminatablePlacements(
     placements: List<ChildPlacement>,
-    today: LocalDate
+    today: LocalDate,
 ): List<TerminatablePlacementGroup> =
     placements
         .groupBy { it.unitName }
@@ -74,7 +74,7 @@ fun mapToTerminatablePlacements(
                             PRESCHOOL,
                             PRESCHOOL_CLUB,
                             PREPARATORY,
-                            PREPARATORY_DAYCARE
+                            PREPARATORY_DAYCARE,
                         )
                         .contains(it.type)
                 }
@@ -124,7 +124,7 @@ fun mapToTerminatablePlacements(
                         unitName = placementsOfSameType[0].unitName,
                         terminatable =
                             placementsOfSameType[0].terminatable &&
-                                startDate.isBefore(today.plusDays(1))
+                                startDate.isBefore(today.plusDays(1)),
                     )
                 }
         }
@@ -137,7 +137,7 @@ fun cancelOrTerminatePlacement(
     terminationRequestedDate: LocalDate,
     placement: ChildPlacement,
     terminationDate: LocalDate,
-    terminatedBy: AuthenticatedUser.Citizen?
+    terminatedBy: AuthenticatedUser.Citizen?,
 ) {
     if (placement.startsAfter(terminationDate)) {
         tx.cancelPlacement(placement.id)
@@ -146,7 +146,7 @@ fun cancelOrTerminatePlacement(
             terminationRequestedDate,
             placement.id,
             terminationDate,
-            terminatedBy?.evakaUserId
+            terminatedBy?.evakaUserId,
         )
     }
 }
@@ -158,7 +158,7 @@ fun terminateBilledDaycare(
     terminatablePlacementGroup: TerminatablePlacementGroup,
     terminationDate: LocalDate,
     childId: ChildId,
-    unitId: DaycareId
+    unitId: DaycareId,
 ) {
     // additional placements after termination date are always cancelled
     terminatablePlacementGroup.additionalPlacements
@@ -231,9 +231,9 @@ fun terminateBilledDaycare(
                     endDate = placement.endDate,
                     terminationRequestedDate = placement.terminationRequestedDate,
                     terminationRequestedBy = placement.terminatedBy?.id,
-                    placeGuarantee = false
+                    placeGuarantee = false,
                 ),
-                terminationDate
+                terminationDate,
             )
             tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
             if (adjacentPlacement != null) {
@@ -247,7 +247,7 @@ fun terminateBilledDaycare(
                     unitId = unitId,
                     startDate = terminationDate.plusDays(1),
                     endDate = placement.endDate,
-                    placeGuarantee = false
+                    placeGuarantee = false,
                 )
             }
         }

@@ -63,7 +63,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = today.minusYears(1),
-                    endDate = today.plusYears(1)
+                    endDate = today.plusYears(1),
                 )
             )
 
@@ -76,7 +76,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         childId = testChild_2.id,
                         unitId = testDaycare.id,
                         startDate = today.minusYears(1),
-                        endDate = today.plusYears(1)
+                        endDate = today.plusYears(1),
                     )
                 )
                 .also { placementId ->
@@ -85,7 +85,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                             daycarePlacementId = placementId,
                             daycareGroupId = testDaycareGroup.id,
                             startDate = today.minusYears(1),
-                            endDate = today.plusYears(1)
+                            endDate = today.plusYears(1),
                         )
                     )
                 }
@@ -99,7 +99,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
                         startDate = today.minusYears(1),
-                        endDate = today.plusYears(1)
+                        endDate = today.plusYears(1),
                     )
                 )
                 .also { placementId ->
@@ -108,7 +108,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                             daycarePlacementId = placementId,
                             daycareGroupId = testDaycareGroup2.id,
                             startDate = today.minusYears(1),
-                            endDate = today.plusYears(1)
+                            endDate = today.plusYears(1),
                         )
                     )
                 }
@@ -118,7 +118,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 DevFosterParent(
                     parentId = testAdult_3.id,
                     childId = testChild_3.id,
-                    validDuring = DateRange(today, today.plusYears(1))
+                    validDuring = DateRange(today, today.plusYears(1)),
                 )
             )
         }
@@ -128,7 +128,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `No events`() {
         assertEquals(
             listOf(),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
         )
     }
 
@@ -151,22 +151,22 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_1.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent)
+                        events = listOf(expectedEvent),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent)
+                        events = listOf(expectedEvent),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                        events = listOf(expectedEvent),
+                    ),
                 )
                 .sortedBy { it.parentId },
             db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
-                .sortedBy { it.parentId }
+                .sortedBy { it.parentId },
         )
     }
 
@@ -190,7 +190,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 ParentWithEvents(
                     parentId = testAdult_2.id,
                     language = Language.fi,
-                    events = listOf(expectedEvent)
+                    events = listOf(expectedEvent),
                 )
             ),
             db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
@@ -206,7 +206,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(today, today.plusDays(1))
+                    period = FiniteDateRange(today, today.plusDays(1)),
                 )
             )
 
@@ -216,7 +216,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_2.id,
                     unitId = testDaycare.id,
                     groupId = testDaycareGroup2.id,
-                    period = FiniteDateRange(today, today.plusDays(1))
+                    period = FiniteDateRange(today, today.plusDays(1)),
                 )
             )
 
@@ -226,7 +226,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_3.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(today, today)
+                    period = FiniteDateRange(today, today),
                 )
             )
         }
@@ -247,13 +247,13 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent)
+                        events = listOf(expectedEvent),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                        events = listOf(expectedEvent),
+                    ),
                 )
                 .sortedBy { it.parentId },
             db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
@@ -271,7 +271,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     childId = testChild_3.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(today, today)
+                    period = FiniteDateRange(today, today),
                 )
             )
         }
@@ -282,7 +282,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
             groupChildIds =
                 listOf(
                     testDaycareGroup.id to testChild_2.id,
-                    testDaycareGroup2.id to testChild_3.id
+                    testDaycareGroup2.id to testChild_3.id,
                 ),
         )
 
@@ -297,13 +297,13 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent)
+                        events = listOf(expectedEvent),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent)
-                    )
+                        events = listOf(expectedEvent),
+                    ),
                 )
                 .sortedBy { it.parentId },
             db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
@@ -322,7 +322,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
         assertEquals(
             listOf(),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
         )
     }
 
@@ -343,7 +343,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                         description = description,
                         period = period,
                         modifiedAt = created,
-                        eventType = CalendarEventType.DAYCARE_EVENT
+                        eventType = CalendarEventType.DAYCARE_EVENT,
                     )
                 )
 
@@ -379,12 +379,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
             if (groupIds.isEmpty() && groupChildIds.isEmpty()) {
                 // Unit-wide event
-                tx.insert(
-                    DevCalendarEventAttendee(
-                        calendarEventId = eventId,
-                        unitId = unitId,
-                    )
-                )
+                tx.insert(DevCalendarEventAttendee(calendarEventId = eventId, unitId = unitId))
             }
 
             eventId

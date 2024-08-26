@@ -27,7 +27,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
     fun updateWorkingTimeEvents(
         tx: Database.Transaction,
-        request: UpdateWorkingTimeEventsRequest
+        request: UpdateWorkingTimeEventsRequest,
     ): UpdateWorkingTimeEventsServiceResponse {
         logger.debug { "Titania request: $request" }
         val internal = updateWorkingTimeEventsInternal(tx, request)
@@ -39,7 +39,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
     fun updateWorkingTimeEventsInternal(
         tx: Database.Transaction,
-        request: UpdateWorkingTimeEventsRequest
+        request: UpdateWorkingTimeEventsRequest,
     ): TitaniaUpdateResponse {
         val period = request.period.toDateRange()
         val persons =
@@ -71,7 +71,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                         externalId = null,
                         employeeNumber = person.employeeId,
                         temporaryInUnitId = null,
-                        active = true
+                        active = true,
                     )
                 }
         val createdEmployees = tx.createEmployees(unknownEmployees)
@@ -91,7 +91,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                     TitaniaErrorDetail(
                                         errorcode = TitaniaError.EVENT_DATE_OUT_OF_PERIOD,
                                         message =
-                                            "Event date ${event.date} is out of period (${period.start} - ${period.end})"
+                                            "Event date ${event.date} is out of period (${period.start} - ${period.end})",
                                     )
                                 )
                             }
@@ -105,8 +105,8 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                         event.date,
                                         LocalTime.parse(
                                             event.beginTime!!,
-                                            DateTimeFormatter.ofPattern(TITANIA_TIME_FORMAT)
-                                        )
+                                            DateTimeFormatter.ofPattern(TITANIA_TIME_FORMAT),
+                                        ),
                                     ),
                                     HelsinkiDateTime.of(
                                         event.date,
@@ -118,12 +118,12 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                         it,
                                                         DateTimeFormatter.ofPattern(
                                                             TITANIA_TIME_FORMAT
-                                                        )
+                                                        ),
                                                     )
                                             }
-                                        }
+                                        },
                                     ),
-                                    event.description
+                                    event.description,
                                 )
                             if (previous?.canMerge(next) == true) {
                                 plans.remove(previous)
@@ -141,7 +141,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
         val deleted =
             tx.deleteStaffAttendancePlansBy(
                 employeeIds = employeeNumberToId.values,
-                period = period
+                period = period,
             )
         logger.info { "Adding ${newPlans.size} new staff attendance plans" }
         tx.insertStaffAttendancePlans(newPlans)
@@ -151,7 +151,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
     fun getStampedWorkingTimeEvents(
         tx: Database.Read,
-        request: GetStampedWorkingTimeEventsRequest
+        request: GetStampedWorkingTimeEventsRequest,
     ): GetStampedWorkingTimeEventsResponse {
         logger.debug { "Titania request: $request" }
         val period = request.period.toDateRange()
@@ -196,7 +196,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                             val (arrived, arrivedPlan) =
                                                 calculateFromPlans(
                                                     employeePlans,
-                                                    attendance.arrived
+                                                    attendance.arrived,
                                                 )
                                             if (!period.includes(arrived.toLocalDate())) {
                                                 return@mapNotNull null
@@ -204,7 +204,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                             val (departed, departedPlan) =
                                                 calculateFromPlan(
                                                     employeePlans,
-                                                    attendance.departed
+                                                    attendance.departed,
                                                 ) ?: Pair(null, null)
                                             TitaniaStampedWorkingTimeEvent(
                                                 date = attendance.arrived.toLocalDate(),
@@ -228,7 +228,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                                 isNotFirstInPlan(
                                                                     arrived,
                                                                     arrivedPlan,
-                                                                    attendances
+                                                                    attendances,
                                                                 )
                                                             )
                                                                 null
@@ -267,15 +267,15 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                                                     isNotLastInPlan(
                                                                         departed,
                                                                         departedPlan,
-                                                                        attendances
+                                                                        attendances,
                                                                     )
                                                             )
                                                                 null
                                                             else "PM"
-                                                    }
+                                                    },
                                             )
                                         }
-                            )
+                            ),
                     )
                 }
                 .toList()
@@ -292,7 +292,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                                     unit.person.find { person ->
                                         person.employeeId == it.employeeId
                                     } != null
-                                }
+                                },
                         )
                     }
             )
@@ -302,12 +302,12 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 
     private fun calculateFromPlan(
         plans: List<StaffAttendancePlan>?,
-        event: HelsinkiDateTime?
+        event: HelsinkiDateTime?,
     ): Pair<HelsinkiDateTime?, StaffAttendancePlan?>? = event?.let { calculateFromPlans(plans, it) }
 
     private fun calculateFromPlans(
         plans: List<StaffAttendancePlan>?,
-        event: HelsinkiDateTime
+        event: HelsinkiDateTime,
     ): Pair<HelsinkiDateTime, StaffAttendancePlan?> {
         return plans?.firstNotNullOfOrNull { plan ->
             when {
@@ -321,20 +321,20 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
                 plans?.find { plan ->
                     HelsinkiDateTimeRange(plan.startTime, plan.endTime)
                         .contains(HelsinkiDateTimeRange(event, event))
-                }
+                },
             )
     }
 
     private fun isNotFirstInPlan(
         event: HelsinkiDateTime,
         plan: StaffAttendancePlan?,
-        attendances: List<RawAttendance>
+        attendances: List<RawAttendance>,
     ) = plan != null && attendances.any { isInPlan(it, plan) && it.arrived < event }
 
     private fun isNotLastInPlan(
         event: HelsinkiDateTime,
         plan: StaffAttendancePlan?,
-        attendances: List<RawAttendance>
+        attendances: List<RawAttendance>,
     ) =
         plan != null &&
             attendances.any { isInPlan(it, plan) && it.departed != null && it.departed > event }
@@ -348,7 +348,7 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
 data class TitaniaUpdateResponse(
     val deleted: List<StaffAttendancePlan>,
     val inserted: List<StaffAttendancePlan>,
-    val createdEmployees: List<EmployeeId>
+    val createdEmployees: List<EmployeeId>,
 )
 
 interface TitaniaEmployeeIdConverter {

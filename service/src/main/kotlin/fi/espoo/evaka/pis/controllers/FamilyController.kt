@@ -36,19 +36,19 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/family", // deprecated
-    "/employee/family"
+    "/employee/family",
 )
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
     private val personService: PersonService,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
 ) {
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: PersonId
+        @PathVariable id: PersonId,
     ): FamilyOverview {
         return db.connect { dbc ->
                 dbc.read {
@@ -57,7 +57,7 @@ class FamilyController(
                         user,
                         clock,
                         Action.Person.READ_FAMILY_OVERVIEW,
-                        id
+                        id,
                     )
                     val includeIncome =
                         accessControl.hasPermissionFor(
@@ -65,7 +65,7 @@ class FamilyController(
                             user,
                             clock,
                             Action.Person.READ_INCOME,
-                            id
+                            id,
                         )
 
                     val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
@@ -75,7 +75,7 @@ class FamilyController(
                         overview?.copy(
                             headOfFamily = overview.headOfFamily.copy(income = null),
                             partner = overview.partner?.copy(income = null),
-                            totalIncome = null
+                            totalIncome = null,
                         )
                     }
                 } ?: throw NotFound("No family overview found for person $id")
@@ -88,7 +88,7 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam childId: ChildId
+        @RequestParam childId: ChildId,
     ): List<FamilyContact> {
         return db.connect { dbc ->
                 dbc.read {
@@ -97,7 +97,7 @@ class FamilyController(
                         user,
                         clock,
                         Action.Child.READ_FAMILY_CONTACTS,
-                        childId
+                        childId,
                     )
                     it.fetchFamilyContacts(clock.today(), childId)
                 }
@@ -105,7 +105,7 @@ class FamilyController(
             .also {
                 Audit.FamilyContactsRead.log(
                     targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -115,7 +115,7 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: FamilyContactUpdate
+        @RequestBody body: FamilyContactUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -124,7 +124,7 @@ class FamilyController(
                     user,
                     clock,
                     Action.Child.UPDATE_FAMILY_CONTACT_DETAILS,
-                    body.childId
+                    body.childId,
                 )
                 if (
                     !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
@@ -137,14 +137,14 @@ class FamilyController(
                     PersonPatch(
                         email = body.email,
                         phone = body.phone,
-                        backupPhone = body.backupPhone
-                    )
+                        backupPhone = body.backupPhone,
+                    ),
                 )
             }
         }
         Audit.FamilyContactsUpdate.log(
             targetId = AuditId(body.childId),
-            objectId = AuditId(body.contactPersonId)
+            objectId = AuditId(body.contactPersonId),
         )
     }
 
@@ -153,7 +153,7 @@ class FamilyController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: FamilyContactPriorityUpdate
+        @RequestBody body: FamilyContactPriorityUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -162,7 +162,7 @@ class FamilyController(
                     user,
                     clock,
                     Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY,
-                    body.childId
+                    body.childId,
                 )
                 if (
                     !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
@@ -174,7 +174,7 @@ class FamilyController(
         }
         Audit.FamilyContactsUpdate.log(
             targetId = AuditId(body.childId),
-            objectId = AuditId(body.contactPersonId)
+            objectId = AuditId(body.contactPersonId),
         )
     }
 }
@@ -184,19 +184,19 @@ data class FamilyContactUpdate(
     val contactPersonId: PersonId,
     val email: String?,
     val phone: String?,
-    val backupPhone: String?
+    val backupPhone: String?,
 )
 
 data class FamilyContactPriorityUpdate(
     val childId: ChildId,
     val contactPersonId: PersonId,
-    val priority: Int?
+    val priority: Int?,
 )
 
 private fun Database.Transaction.updateFamilyContactPriority(
     childId: ChildId,
     contactPersonId: PersonId,
-    priority: Int?
+    priority: Int?,
 ) {
     this.execute {
         sql("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
@@ -232,7 +232,7 @@ INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (${bin
 fun Database.Read.isFamilyContactForChild(
     today: LocalDate,
     childId: ChildId,
-    personId: PersonId
+    personId: PersonId,
 ): Boolean {
     return createQuery {
             sql(

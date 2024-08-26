@@ -29,6 +29,6 @@ class MockDigitransit {
         val name: String,
         val postalcode: String?,
         val locality: String?,
-        val localadmin: String?
+        val localadmin: String?,
     )
 }

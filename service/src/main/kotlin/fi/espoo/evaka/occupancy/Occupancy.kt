@@ -43,7 +43,7 @@ const val defaultOccupancyCoefficient = 7
 enum class OccupancyType {
     PLANNED,
     CONFIRMED,
-    REALIZED
+    REALIZED,
 }
 
 interface OccupancyGroupingKey {
@@ -55,7 +55,7 @@ data class UnitKey(
     val areaId: AreaId,
     val areaName: String,
     override val unitId: DaycareId,
-    val unitName: String
+    val unitName: String,
 ) : OccupancyGroupingKey {
     override val groupingId = unitId
 }
@@ -66,22 +66,17 @@ data class UnitGroupKey(
     override val unitId: DaycareId,
     val unitName: String,
     val groupId: GroupId,
-    val groupName: String
+    val groupName: String,
 ) : OccupancyGroupingKey {
     override val groupingId = groupId
 
     fun toUnitKey(): UnitKey =
-        UnitKey(
-            areaId = areaId,
-            areaName = areaName,
-            unitId = unitId,
-            unitName = unitName,
-        )
+        UnitKey(areaId = areaId, areaName = areaName, unitId = unitId, unitName = unitName)
 }
 
 data class DailyOccupancyValues<K : OccupancyGroupingKey>(
     val key: K,
-    val occupancies: Map<LocalDate, OccupancyValues>
+    val occupancies: Map<LocalDate, OccupancyValues>,
 )
 
 data class OccupancyValues(
@@ -89,7 +84,7 @@ data class OccupancyValues(
     val sumOver3y: Double,
     val headcount: Int,
     val caretakers: Double? = null,
-    val percentage: Double? = null
+    val percentage: Double? = null,
 ) {
     val sum = sumUnder3y + sumOver3y
 
@@ -102,7 +97,7 @@ data class OccupancyPeriod(
     val sum: Double,
     val headcount: Int,
     val caretakers: Double? = null,
-    val percentage: Double? = null
+    val percentage: Double? = null,
 )
 
 data class OccupancyPeriodGroupLevel(
@@ -111,7 +106,7 @@ data class OccupancyPeriodGroupLevel(
     val sum: Double,
     val headcount: Int,
     val caretakers: Double? = null,
-    val percentage: Double? = null
+    val percentage: Double? = null,
 )
 
 fun Database.Read.calculateDailyUnitOccupancyValues(
@@ -123,7 +118,7 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null,
-    speculatedPlacements: List<Placement> = listOf()
+    speculatedPlacements: List<Placement> = listOf(),
 ): List<DailyOccupancyValues<UnitKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
@@ -157,7 +152,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
-    unitId: DaycareId? = null
+    unitId: DaycareId? = null,
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
@@ -180,7 +175,7 @@ fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
     return dailyOccupancies.associateByTo(
         destination = mutableMapOf(),
         keySelector = { it.key },
-        valueTransform = { reduceDailyOccupancyValues(it.occupancies) }
+        valueTransform = { reduceDailyOccupancyValues(it.occupancies) },
     )
 }
 
@@ -210,7 +205,7 @@ private fun getAndValidatePeriod(
     today: LocalDate,
     type: OccupancyType,
     queryPeriod: FiniteDateRange,
-    singleUnit: Boolean
+    singleUnit: Boolean,
 ): FiniteDateRange {
     val maxLength = if (singleUnit) 400 else 50
 
@@ -247,12 +242,12 @@ private fun calculateCaretakers(duration: Duration, coefficient: BigDecimal): Bi
  */
 private fun Database.Read.getPlannedCaretakersForGroups(
     groups: Collection<GroupId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<GroupId, DateMap<BigDecimal>> {
     data class RawCaretakers(
         val groupId: GroupId,
         val range: FiniteDateRange,
-        val amount: BigDecimal
+        val amount: BigDecimal,
     )
     return createQuery {
             sql(
@@ -282,13 +277,13 @@ AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
  */
 private fun Database.Read.getRealtimeStaffAttendancesForGroups(
     groups: Collection<GroupId>,
-    range: HelsinkiDateTimeRange
+    range: HelsinkiDateTimeRange,
 ): Map<GroupId, DateTimeMap<BigDecimal>> {
     data class StaffAttendance(
         val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime,
-        val occupancyCoefficient: BigDecimal
+        val occupancyCoefficient: BigDecimal,
     )
     return createQuery {
             sql(
@@ -329,7 +324,7 @@ AND tstzrange(arrived, departed) && ${bind(range)}
 /** Return *date-based* `staff_attendance` counts for the given groups and the given date range. */
 private fun Database.Read.getStaffCountsForGroups(
     groups: Collection<GroupId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<GroupId, DateMap<BigDecimal>> {
     data class StaffCount(val groupId: GroupId, val date: LocalDate, val count: BigDecimal)
     return createQuery {
@@ -354,7 +349,7 @@ AND between_start_and_end(${bind(range)}, date)
 
 private fun Database.Read.getRealizedCaretakersForGroups(
     groups: Collection<GroupId>,
-    range: FiniteDateRange
+    range: FiniteDateRange,
 ): Map<GroupId, DateMap<BigDecimal>> {
     val occupancyCoefficientSumsPerGroup =
         getRealtimeStaffAttendancesForGroups(groups, range.asHelsinkiDateTimeRange())
@@ -371,7 +366,7 @@ private fun Database.Read.getRealizedCaretakersForGroups(
                         val wholeDate =
                             HelsinkiDateTimeRange(
                                 HelsinkiDateTime.atStartOfDay(date),
-                                HelsinkiDateTime.atStartOfDay(date.plusDays(1))
+                                HelsinkiDateTime.atStartOfDay(date.plusDays(1)),
                             )
                         val occupancyBasedSum =
                             occupancyCoefficientSums
@@ -382,7 +377,7 @@ private fun Database.Read.getRealizedCaretakersForGroups(
                                     range.intersection(wholeDate)?.let { occupancyDuringDate ->
                                         calculateCaretakers(
                                             occupancyDuringDate.getDuration(),
-                                            coefficient
+                                            coefficient,
                                         )
                                     }
                                 }
@@ -419,7 +414,7 @@ private fun Database.Read.getDailyGroupCaretakers(
                 Predicate { where("$it.provider_type = ${bind(providerType)}") }
             else null,
             if (unitTypes?.isEmpty() == false) Predicate { where("$it.type && ${bind(unitTypes)}") }
-            else null
+            else null,
         )
 
     val holidays = getHolidays(period)
@@ -482,7 +477,7 @@ WHERE ${predicate(unitPredicate.forTable("u"))}
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacements(
     keys: Set<K>,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): Iterable<Placement> {
     val (groupingId, daterange, additionalJoin) =
         when (K::class) {
@@ -491,7 +486,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
                 Triple(
                     "gp.daycare_group_id",
                     "daterange(greatest(p.start_date, gp.start_date), least(p.end_date, gp.end_date), '[]')",
-                    "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id"
+                    "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id",
                 )
             else -> error("Unsupported placement query class parameter (${K::class})")
         }
@@ -519,7 +514,7 @@ WHERE $daterange && ${bind(period)} AND $groupingId = ANY(${bind(keys.map { it.g
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedPlacements(
     keys: Set<K>,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): Iterable<Placement> {
     val placements = getPlacements(keys, period)
 
@@ -539,7 +534,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedP
 
 private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
     period: FiniteDateRange,
-    childIds: Set<ChildId>
+    childIds: Set<ChildId>,
 ): Map<ChildId, List<FiniteDateRange>> {
     data class QueryResult(val childId: ChildId, val startDate: LocalDate, val endDate: LocalDate)
 
@@ -559,7 +554,7 @@ WHERE daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)} AND bc.chil
 
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getBackupCarePlacements(
     keys: Set<K>,
-    period: FiniteDateRange
+    period: FiniteDateRange,
 ): Iterable<Placement> {
     val groupingId =
         when (K::class) {
@@ -593,7 +588,7 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     caretakerCounts: Map<K, DateMap<BigDecimal>>,
     placements: Iterable<Placement>,
     range: FiniteDateRange,
-    type: OccupancyType
+    type: OccupancyType,
 ): List<DailyOccupancyValues<K>> {
     val placementPlans =
         if (type == OccupancyType.PLANNED) {
@@ -704,7 +699,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                             it.occupancyCoefficient,
                             it.occupancyCoefficientUnder3y,
                             it.realizedOccupancyCoefficient,
-                            it.realizedOccupancyCoefficientUnder3y
+                            it.realizedOccupancyCoefficientUnder3y,
                         )
                     }
                     ?: defaultServiceNeedCoefficients[placement.type]
@@ -744,7 +739,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                                 childWasAbsentWholeDay(
                                     date,
                                     it.type,
-                                    absences[it.childId] ?: listOf()
+                                    absences[it.childId] ?: listOf(),
                                 )
                             }
 
@@ -769,7 +764,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                                 .divide(
                                     caretakerCount * occupancyCoefficientSeven,
                                     4,
-                                    RoundingMode.HALF_EVEN
+                                    RoundingMode.HALF_EVEN,
                                 )
                                 .times(BigDecimal(100))
                                 .setScale(1, RoundingMode.HALF_EVEN)
@@ -781,7 +776,7 @@ WHERE sn.placement_id = ANY(${bind(placements.map { it.placementId })})
                             sumOver3y = coefficientSum.over3y.toDouble(),
                             headcount = placementsOnDate.size,
                             percentage = percentage?.toDouble(),
-                            caretakers = caretakerCount.toDouble().takeUnless { it == 0.0 }
+                            caretakers = caretakerCount.toDouble().takeUnless { it == 0.0 },
                         )
                 }
 
@@ -793,7 +788,7 @@ private data class ServiceNeedCoefficients(
     val occupancyCoefficient: BigDecimal,
     val occupancyCoefficientUnder3y: BigDecimal,
     val realizedOccupancyCoefficient: BigDecimal,
-    val realizedOccupancyCoefficientUnder3y: BigDecimal
+    val realizedOccupancyCoefficientUnder3y: BigDecimal,
 )
 
 private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecimal) {
@@ -806,7 +801,7 @@ private data class CoefficientSum(val under3y: BigDecimal, val over3y: BigDecima
 
 private fun Database.Read.getPlacementPlans(
     period: FiniteDateRange,
-    unitIds: Collection<DaycareId>
+    unitIds: Collection<DaycareId>,
 ): List<Placement> {
     return this.createQuery {
             sql(
@@ -849,7 +844,7 @@ WHERE NOT p.deleted AND (
                 val preschoolDaycarePeriod =
                     FiniteDateRange(
                         placementPlan.preschoolDaycareStartDate,
-                        placementPlan.preschoolDaycareEndDate
+                        placementPlan.preschoolDaycareEndDate,
                     )
                 val onlyPreschoolPeriods =
                     placementPlan.placement.period.complement(preschoolDaycarePeriod)
@@ -863,7 +858,7 @@ WHERE NOT p.deleted AND (
                                 PlacementType.PRESCHOOL_CLUB -> PlacementType.PRESCHOOL
                                 else -> placementPlan.placement.type
                             },
-                        period = it
+                        period = it,
                     )
                 } + placementPlan.placement.copy(period = preschoolDaycarePeriod)
             }
@@ -873,7 +868,7 @@ WHERE NOT p.deleted AND (
 private fun childWasAbsentWholeDay(
     date: LocalDate,
     childPlacementType: PlacementType,
-    childAbsences: List<Absence>
+    childAbsences: List<Absence>,
 ): Boolean {
     val absencesOnDate = childAbsences.filter { it.date == date }.map { it.category }.toSet()
     return absencesOnDate.isNotEmpty() && absencesOnDate == childPlacementType.absenceCategories()
@@ -886,13 +881,13 @@ data class Placement(
     val unitId: DaycareId,
     val type: PlacementType,
     val familyUnitPlacement: Boolean,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
 )
 
 private data class PlacementPlan(
     @Nested val placement: Placement,
     val preschoolDaycareStartDate: LocalDate?,
-    val preschoolDaycareEndDate: LocalDate?
+    val preschoolDaycareEndDate: LocalDate?,
 )
 
 data class ServiceNeed(
@@ -901,13 +896,13 @@ data class ServiceNeed(
     val occupancyCoefficientUnder3y: BigDecimal,
     val realizedOccupancyCoefficient: BigDecimal,
     val realizedOccupancyCoefficientUnder3y: BigDecimal,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
 )
 
 data class AssistanceFactor(
     val childId: ChildId,
     val capacityFactor: BigDecimal,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
 )
 
 data class Absence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)

@@ -45,7 +45,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             periodOptions =
                 listOf(
                     FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),
-                    FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14))
+                    FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14)),
                 ),
             periodOptionLabel = emptyTranslatable,
             description = emptyTranslatable,
@@ -53,7 +53,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             conditions = QuestionnaireConditions(),
             title = emptyTranslatable,
             absenceType = AbsenceType.FREE_ABSENCE,
-            requiresStrongAuth = false
+            requiresStrongAuth = false,
         )
     private val mockToday: LocalDate = freePeriodQuestionnaire.active.end.minusWeeks(1)
 
@@ -79,7 +79,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 testDaycare.id,
                 mockToday.minusYears(2),
                 mockToday.plusYears(1),
-                false
+                false,
             )
         }
     }
@@ -117,7 +117,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 testDaycare.id,
                 condition.start,
                 condition.end.minusDays(1),
-                false
+                false,
             )
             // child4 has two placements that cover the period together
             tx.insertPlacement(
@@ -126,7 +126,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 testDaycare.id,
                 condition.start,
                 condition.start.plusDays(5),
-                false
+                false,
             )
             tx.insertPlacement(
                 PlacementType.DAYCARE,
@@ -134,7 +134,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                 testDaycare.id,
                 condition.start.plusDays(6),
                 condition.end,
-                false
+                false,
             )
         }
         createFixedPeriodQuestionnaire(
@@ -168,11 +168,11 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             HolidayQuestionnaireAnswer(
                 id,
                 child1.id,
-                FiniteDateRange(firstOption.start, firstOption.end)
+                FiniteDateRange(firstOption.start, firstOption.end),
             )
         assertEquals(
             listOf(expectedAnswer),
-            db.read { it.getQuestionnaireAnswers(id, listOf(child1.id, testChild_2.id)) }
+            db.read { it.getQuestionnaireAnswers(id, listOf(child1.id, testChild_2.id)) },
         )
 
         assertEquals(listOf(expectedAnswer), getActiveQuestionnaires(mockToday)[0].previousAnswers)
@@ -192,7 +192,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
             id,
             freeAbsence(firstOption.start, firstOption.end),
             400,
-            freePeriodQuestionnaire.active.end.plusDays(1)
+            freePeriodQuestionnaire.active.end.plusDays(1),
         )
     }
 
@@ -204,14 +204,14 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
         assertEquals(
             firstOption.dates().map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
-            db.read { it.getAllAbsences() }
+            db.read { it.getAllAbsences() },
         )
 
         val secondOption = freePeriodQuestionnaire.periodOptions[1]
         reportFreePeriods(id, freeAbsence(secondOption.start, secondOption.end))
         assertEquals(
             secondOption.dates().map { Absence(child1.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
-            db.read { it.getAllAbsences() }
+            db.read { it.getAllAbsences() },
         )
     }
 
@@ -237,7 +237,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         reportFreePeriods(
             id,
             FixedPeriodsBody(mapOf(child1.id to firstOption, child2.id to firstOption)),
-            expectedStatus = 400
+            expectedStatus = 400,
         )
     }
 
@@ -255,7 +255,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         id: HolidayQuestionnaireId,
         body: FixedPeriodsBody,
         expectedStatus: Int = 200,
-        mockedDay: LocalDate = mockToday
+        mockedDay: LocalDate = mockToday,
     ) {
         http
             .post("/citizen/holiday-period/questionnaire/fixed-period/$id")

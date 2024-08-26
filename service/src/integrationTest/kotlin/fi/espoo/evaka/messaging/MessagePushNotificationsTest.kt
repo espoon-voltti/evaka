@@ -74,7 +74,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     DevDaycare(
                         areaId = area.id,
                         enabledPilotFeatures =
-                            setOf(PilotFeature.MESSAGING, PilotFeature.PUSH_NOTIFICATIONS)
+                            setOf(PilotFeature.MESSAGING, PilotFeature.PUSH_NOTIFICATIONS),
                     )
                 )
             group = tx.insert(DevDaycareGroup(daycareId = unit))
@@ -84,7 +84,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     DevMobileDevice(
                         unitId = unit,
                         pushNotificationCategories =
-                            setOf(PushNotificationCategory.RECEIVED_MESSAGE)
+                            setOf(PushNotificationCategory.RECEIVED_MESSAGE),
                     )
                 )
             tx.upsertPushGroup(clock.now(), device, group)
@@ -97,7 +97,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     childId = child,
                     unitId = unit,
                     startDate = clock.today(),
-                    endDate = clock.today().plusYears(1)
+                    endDate = clock.today().plusYears(1),
                 )
             tx.insert(placement)
             tx.insert(
@@ -105,7 +105,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     daycarePlacementId = placement.id,
                     daycareGroupId = group,
                     startDate = placement.startDate,
-                    endDate = placement.endDate
+                    endDate = placement.endDate,
                 )
             )
             municipalAccount = tx.createMunicipalMessageAccount()
@@ -124,7 +124,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 sender = citizenAccount,
                 recipients = setOf(groupAccount),
                 children = emptySet(),
-                msg = testMessage
+                msg = testMessage,
             )
         }
         clock.tick(Duration.ofMinutes(30))
@@ -156,7 +156,7 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     recipientNames = listOf("Ryhmä"),
                     attachments = emptySet(),
                     relatedApplication = null,
-                    filters = null
+                    filters = null,
                 )
             }
         assertNotNull(contentId)
@@ -183,8 +183,8 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     endpoint = endpoint,
                     expires = null,
                     ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
-                    authSecret = listOf(0x00, 0x11, 0x22, 0x33)
-                )
+                    authSecret = listOf(0x00, 0x11, 0x22, 0x33),
+                ),
             )
         }
 }

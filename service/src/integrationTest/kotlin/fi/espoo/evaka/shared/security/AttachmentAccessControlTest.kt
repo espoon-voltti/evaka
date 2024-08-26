@@ -47,7 +47,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     permittedEmployee,
                     clock,
                     action,
-                    employeeAttachmentId
+                    employeeAttachmentId,
                 )
             )
             assertFalse(
@@ -56,7 +56,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     deniedEmployee,
                     clock,
                     action,
-                    employeeAttachmentId
+                    employeeAttachmentId,
                 )
             )
         }
@@ -70,7 +70,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     permittedEmployee,
                     clock,
                     action,
-                    citizenAttachmentId
+                    citizenAttachmentId,
                 )
             )
         }
@@ -97,7 +97,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     uploaderCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
                     clock,
                     action,
-                    attachmentId
+                    attachmentId,
                 )
             )
         }
@@ -112,7 +112,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                     guardianId = guardianId,
                     childId = childId,
                     type = ApplicationType.DAYCARE,
-                    document = DaycareFormV0.fromApplication2(validDaycareApplication)
+                    document = DaycareFormV0.fromApplication2(validDaycareApplication),
                 )
             tx.insertAttachment(
                 user,
@@ -120,7 +120,7 @@ class AttachmentAccessControlTest : AccessControlTest() {
                 "test.pdf",
                 "application/pdf",
                 AttachmentParent.Application(applicationId),
-                type = null
+                type = null,
             )
         }
 }

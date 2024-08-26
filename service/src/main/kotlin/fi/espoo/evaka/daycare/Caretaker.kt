@@ -33,7 +33,7 @@ fun insertCaretakers(
     groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate?,
-    amount: Double
+    amount: Double,
 ): DaycareCaretakerId {
     if (endDate != null && endDate.isBefore(startDate))
         throw BadRequest("End date cannot be before start")
@@ -86,7 +86,7 @@ fun updateCaretakers(
     id: DaycareCaretakerId,
     startDate: LocalDate,
     endDate: LocalDate?,
-    amount: Double
+    amount: Double,
 ) {
     if (endDate != null && endDate.isBefore(startDate))
         throw BadRequest("End date cannot be before start")
@@ -121,5 +121,5 @@ data class CaretakerAmount(
     val groupId: GroupId,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val amount: Double
+    val amount: Double,
 )

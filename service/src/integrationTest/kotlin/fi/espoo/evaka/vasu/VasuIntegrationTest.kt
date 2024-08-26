@@ -95,7 +95,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = "vasu",
                         valid = FiniteDateRange(mockToday.minusMonths(2), mockToday.plusYears(1)),
                         type = CurriculumType.DAYCARE,
-                        language = OfficialLanguage.FI
+                        language = OfficialLanguage.FI,
                     )
                 )
             putVasuTemplateContent(templateId, getDefaultVasuContent(OfficialLanguage.FI))
@@ -109,7 +109,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         name = "vasu",
                         valid = FiniteDateRange(mockToday, mockToday.plusYears(1)),
                         type = CurriculumType.PRESCHOOL,
-                        language = OfficialLanguage.FI
+                        language = OfficialLanguage.FI,
                     )
                 )
             putVasuTemplateContent(templateId, getDefaultLeopsContent(OfficialLanguage.FI))
@@ -142,7 +142,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 child.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         val withoutPermission = getVasuDocument(documentId)
@@ -151,7 +151,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         givePermissionToShare(
             documentId,
-            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG),
         )
         val withPermission = getVasuDocument(documentId)
         assertEquals(1, withPermission.basics.guardians.size)
@@ -164,7 +164,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         getVasuSummaries(testChild_1.id)
@@ -183,9 +183,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     id = testChild_1.id,
                     firstName = testChild_1.firstName,
                     lastName = testChild_1.lastName,
-                    dateOfBirth = testChild_1.dateOfBirth
+                    dateOfBirth = testChild_1.dateOfBirth,
                 ),
-                doc.basics.child
+                doc.basics.child,
             )
             assertEquals(0, doc.events.size)
             assertEquals(template.content, doc.content)
@@ -216,7 +216,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         val content = getVasuDocument(documentId).content
@@ -243,8 +243,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = updatedContent,
-                childLanguage = childLanguage
-            )
+                childLanguage = childLanguage,
+            ),
         )
 
         assertEquals(updatedContent, getVasuDocument(documentId).content)
@@ -266,7 +266,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         deleteVasuDocument(documentId)
@@ -280,7 +280,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
         postVasuDocumentState(documentId, VasuController.ChangeDocumentStateRequest(MOVED_TO_READY))
 
@@ -293,7 +293,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         val (groupId1, groupId2) =
@@ -312,7 +312,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             childId = testChild_1.id,
                             unitId = testDaycare.id,
                             startDate = placementStart,
-                            endDate = placementEnd
+                            endDate = placementEnd,
                         )
                     )
                 val groupId1 = tx.insert(testDaycareGroup)
@@ -320,7 +320,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     daycarePlacementId = placementId,
                     groupId = groupId1,
                     startDate = placementStart,
-                    endDate = placementStart.plusMonths(1)
+                    endDate = placementStart.plusMonths(1),
                 )
 
                 val groupId2 = tx.insert(testDaycareGroup2)
@@ -354,7 +354,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
 
         db.transaction { tx ->
@@ -369,7 +369,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             val groupId1 = tx.insert(testDaycareGroup)
@@ -377,7 +377,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycarePlacementId = placementId1,
                 groupId = groupId1,
                 startDate = placementStart,
-                endDate = placementEnd
+                endDate = placementEnd,
             )
 
             placementStart = mockToday
@@ -389,7 +389,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = testChild_1.id,
                         unitId = testDaycare2.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             val groupId2 = tx.insert(testDaycareGroup2)
@@ -397,7 +397,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycarePlacementId = placementId2,
                 groupId = groupId2,
                 startDate = placementStart,
-                endDate = placementMiddle
+                endDate = placementMiddle,
             )
 
             // This group placement is not included because it starts in the future
@@ -405,7 +405,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 daycarePlacementId = placementId2,
                 groupId = groupId2,
                 startDate = placementMiddle.plusDays(1),
-                endDate = placementEnd
+                endDate = placementEnd,
             )
         }
 
@@ -420,25 +420,25 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val draftDocumentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id),
             )
         val readyDocumentId =
             postVasuDocument(
                 testChild_2.id,
-                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id),
             )
         postVasuDocumentState(
             readyDocumentId,
-            VasuController.ChangeDocumentStateRequest(MOVED_TO_READY)
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_READY),
         )
         val closedDocumentId =
             postVasuDocument(
                 testChild_3.id,
-                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id),
             )
         postVasuDocumentState(
             closedDocumentId,
-            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED),
         )
 
         // The new template is valid on this date
@@ -453,7 +453,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     name = "vasu",
                     valid = FiniteDateRange(mockToday.plusYears(1), mockToday.plusYears(2)),
                     type = CurriculumType.DAYCARE,
-                    language = OfficialLanguage.FI
+                    language = OfficialLanguage.FI,
                 )
             )
         putVasuTemplateContent(nonExpiredTemplateId, getDefaultVasuContent(OfficialLanguage.FI))
@@ -478,20 +478,20 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // MOVED_TO_CLOSED is added by the system internal user in the async job
             assertEquals(
                 listOf(MOVED_TO_CLOSED to AuthenticatedUser.SystemInternalUser.evakaUserId),
-                doc.events.map { it.eventType to it.createdBy }
+                doc.events.map { it.eventType to it.createdBy },
             )
         }
         getVasuDocument(readyDocumentId).let { doc ->
             // PUBLISHED is added implicitly when MOVED_TO_READY is added
             assertEquals(
                 listOf(PUBLISHED, MOVED_TO_READY, MOVED_TO_CLOSED),
-                doc.events.map { it.eventType }
+                doc.events.map { it.eventType },
             )
         }
         getVasuDocument(closedDocumentId).let { doc ->
             assertEquals(
                 listOf(MOVED_TO_CLOSED to adminUser.evakaUserId),
-                doc.events.map { it.eventType to it.createdBy }
+                doc.events.map { it.eventType to it.createdBy },
             )
         }
         getVasuDocument(nonExpiredDocumentId).let { doc ->
@@ -509,21 +509,21 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
-                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                         )
                     )
                 val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
                 tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = testChild_1.id,
                         startDate = clock.today(),
-                        endDate = clock.today().plusDays(5)
+                        endDate = clock.today().plusDays(5),
                     )
                 )
                 AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
@@ -538,7 +538,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 adminUser,
                 clock,
                 duplicateId,
-                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id),
             )
         assertThrows<Forbidden> {
             vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId)
@@ -553,14 +553,14 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
-                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                         )
                     )
                 val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
                 val childId =
                     tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
@@ -569,7 +569,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = unitId,
                         childId = childId,
                         startDate = clock.today(),
-                        endDate = clock.today().plusDays(5)
+                        endDate = clock.today().plusDays(5),
                     )
                 )
                 val unitSupervisor =
@@ -582,14 +582,14 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 adminUser,
                 clock,
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id),
             )
         vasuController.updateDocumentState(
             dbInstance(),
             adminUser,
             clock,
             document1Id,
-            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED),
         )
         clock.tick()
         val document2Id =
@@ -598,7 +598,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 adminUser,
                 clock,
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = daycareTemplate.id),
             )
         assertNotNull(vasuController.getDocument(dbInstance(), unitSupervisor, clock, document2Id))
         assertThrows<Forbidden> {
@@ -614,21 +614,21 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
-                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                         )
                     )
                 val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
                 tx.insert(
                     DevPlacement(
                         unitId = unitId,
                         childId = testChild_1.id,
                         startDate = clock.today(),
-                        endDate = clock.today().plusDays(5)
+                        endDate = clock.today().plusDays(5),
                     )
                 )
                 AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
@@ -643,7 +643,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 adminUser,
                 clock,
                 duplicateId,
-                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id),
             )
         assertNotNull(vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId))
     }
@@ -656,14 +656,14 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     tx.insert(
                         DevDaycare(
                             areaId = testArea.id,
-                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC)
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                         )
                     )
                 val employeeId = tx.insert(DevEmployee())
                 tx.insertDaycareAclRow(
                     daycareId = unitId,
                     employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
                 val childId =
                     tx.insert(DevPerson().copy(duplicateOf = testChild_1.id), DevPersonType.CHILD)
@@ -672,7 +672,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         unitId = unitId,
                         childId = childId,
                         startDate = clock.today(),
-                        endDate = clock.today().plusDays(5)
+                        endDate = clock.today().plusDays(5),
                     )
                 )
                 AuthenticatedUser.Employee(employeeId, setOf(UserRole.UNIT_SUPERVISOR))
@@ -683,7 +683,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 adminUser,
                 clock,
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id)
+                VasuController.CreateDocumentRequest(templateId = preschoolTemplate.id),
             )
         assertThrows<Forbidden> {
             vasuController.getDocument(dbInstance(), unitSupervisor, clock, documentId)
@@ -701,7 +701,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val documentId =
             postVasuDocument(
                 testChild_1.id,
-                VasuController.CreateDocumentRequest(templateId = template.id)
+                VasuController.CreateDocumentRequest(templateId = template.id),
             )
         val content = getVasuDocument(documentId).content
 
@@ -728,8 +728,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = updatedContent,
-                childLanguage = childLanguage
-            )
+                childLanguage = childLanguage,
+            ),
         )
         assertNull(db.read { it.getLatestPublishedVasuDocument(mockToday, documentId) })
 
@@ -768,8 +768,8 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = contentWithUpdatedDiscussion,
-                childLanguage = childLanguage
-            )
+                childLanguage = childLanguage,
+            ),
         )
 
         clock.tick()
@@ -779,7 +779,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             assertEquals(contentWithUpdatedDiscussion, doc.content)
             assertEquals(
                 listOf(PUBLISHED, PUBLISHED, MOVED_TO_READY),
-                doc.events.map { it.eventType }
+                doc.events.map { it.eventType },
             )
         }
 
@@ -813,21 +813,21 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = contentWithUpdatedEvaluation,
-                childLanguage = childLanguage
-            )
+                childLanguage = childLanguage,
+            ),
         )
 
         clock.tick()
         postVasuDocumentState(
             documentId,
-            VasuController.ChangeDocumentStateRequest(MOVED_TO_REVIEWED)
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_REVIEWED),
         )
         getVasuDocument(documentId).let { doc ->
             assertNotEquals(contentWithUpdatedDiscussion, doc.content)
             assertEquals(contentWithUpdatedEvaluation, doc.content)
             assertEquals(
                 listOf(PUBLISHED, PUBLISHED, MOVED_TO_READY, PUBLISHED, MOVED_TO_REVIEWED),
-                doc.events.map { it.eventType }
+                doc.events.map { it.eventType },
             )
         }
 
@@ -835,17 +835,17 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         clock.tick()
         postVasuDocumentState(
             documentId,
-            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED)
+            VasuController.ChangeDocumentStateRequest(MOVED_TO_CLOSED),
         )
         postVasuDocumentState(
             documentId,
-            VasuController.ChangeDocumentStateRequest(RETURNED_TO_REVIEWED)
+            VasuController.ChangeDocumentStateRequest(RETURNED_TO_REVIEWED),
         )
 
         clock.tick()
         postVasuDocumentState(
             documentId,
-            VasuController.ChangeDocumentStateRequest(RETURNED_TO_READY)
+            VasuController.ChangeDocumentStateRequest(RETURNED_TO_READY),
         )
         assertEquals(
             listOf(
@@ -856,17 +856,17 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 MOVED_TO_REVIEWED,
                 MOVED_TO_CLOSED,
                 RETURNED_TO_REVIEWED,
-                RETURNED_TO_READY
+                RETURNED_TO_READY,
             ),
-            getVasuDocument(documentId).events.map { it.eventType }
+            getVasuDocument(documentId).events.map { it.eventType },
         )
 
         putVasuDocument(
             documentId,
             VasuController.UpdateDocumentRequest(
                 content = contentWithUpdatedEvaluation,
-                childLanguage = childLanguage
-            )
+                childLanguage = childLanguage,
+            ),
         )
         db.read {
             it.getLatestPublishedVasuDocument(mockToday, documentId).let { doc ->
@@ -927,10 +927,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         vasuTemplateController.deleteTemplate(dbInstance(), adminUser, clock, id)
     }
 
-    private fun givePermissionToShare(
-        id: VasuDocumentId,
-        user: AuthenticatedUser.Citizen,
-    ) {
+    private fun givePermissionToShare(id: VasuDocumentId, user: AuthenticatedUser.Citizen) {
         vasuControllerCitizen.givePermissionToShare(dbInstance(), user, clock, id)
     }
 }

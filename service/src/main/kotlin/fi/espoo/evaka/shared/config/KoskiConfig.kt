@@ -19,7 +19,7 @@ class KoskiConfig {
     fun koskiClient(
         koskiEnv: ObjectProvider<KoskiEnv>,
         ophEnv: ObjectProvider<OphEnv>,
-        asyncJobRunner: AsyncJobRunner<AsyncJob>
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
     ): KoskiClient? =
         koskiEnv.ifAvailable?.let { kEnv ->
             ophEnv.ifAvailable?.let { oEnv -> KoskiClient(kEnv, oEnv, asyncJobRunner) }

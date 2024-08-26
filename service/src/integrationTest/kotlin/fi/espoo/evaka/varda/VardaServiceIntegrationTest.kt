@@ -73,7 +73,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             areaId = testArea.id,
             providerType = ProviderType.PURCHASED,
             ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
+            invoicedByMunicipality = false,
         )
 
     private val externalPurchasedDaycare =
@@ -82,7 +82,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             areaId = testArea.id,
             providerType = ProviderType.EXTERNAL_PURCHASED,
             ophOrganizerOid = defaultPurchasedOrganizerOid,
-            invoicedByMunicipality = false
+            invoicedByMunicipality = false,
         )
 
     private val ghostUnitDaycare =
@@ -94,7 +94,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             uploadChildrenToVarda = false,
             uploadToKoski = false,
             ghostUnit = true,
-            invoicedByMunicipality = false
+            invoicedByMunicipality = false,
         )
 
     @BeforeEach
@@ -189,7 +189,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 option,
                 child = testChild_1,
                 fromDays = snStartDate,
-                toDays = snEndDate
+                toDays = snEndDate,
             )
         createVoucherDecision(
             db,
@@ -201,7 +201,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         val childId = db.read { it.getChildIdByServiceNeedId(snId) }
@@ -210,7 +210,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 1, 0, 0)
@@ -228,7 +228,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             option,
             child = testChild_1,
             fromDays = snStartDate,
-            toDays = snEndDate
+            toDays = snEndDate,
         )
         createVoucherDecision(
             db,
@@ -240,13 +240,13 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
         val diffs =
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(0, diffs.keys.size)
     }
@@ -261,7 +261,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(0, diffs.keys.size)
     }
@@ -282,7 +282,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     evakaServiceNeedUpdated =
                         since.minusHours(
                             100
-                        ) // Evaka and varda timestamps differ, thus sn has changed
+                        ), // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -291,7 +291,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 0)
@@ -311,7 +311,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_1.id,
             DateRange(snStartDate, snEndDate),
-            since.toInstant()
+            since.toInstant(),
         )
 
         val childId =
@@ -325,7 +325,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     evakaServiceNeedUpdated =
                         since.minusHours(
                             100
-                        ) // Evaka and varda timestamps differ, thus sn has changed
+                        ), // Evaka and varda timestamps differ, thus sn has changed
                 )
             )
         }
@@ -338,7 +338,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     evakaChildId = childId,
                     evakaServiceNeedId =
                         deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100),
                 )
             )
         }
@@ -347,7 +347,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs.get(childId), 0, 1, 1)
@@ -365,9 +365,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 DevPerson(
                     id = childId,
                     dateOfBirth = since.plusYears(-5).toLocalDate(),
-                    ssn = "260718A384E"
+                    ssn = "260718A384E",
                 ),
-                DevPersonType.RAW_ROW
+                DevPersonType.RAW_ROW,
             )
 
             it.insertVardaServiceNeed(
@@ -375,7 +375,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     evakaChildId = childId,
                     evakaServiceNeedId =
                         deletedSnId, // Does not exist in evaka, thus should be deleted
-                    evakaServiceNeedUpdated = since.minusHours(100)
+                    evakaServiceNeedUpdated = since.minusHours(100),
                 )
             )
         }
@@ -384,7 +384,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             calculateEvakaVsVardaServiceNeedChangesByChild(
                 db,
                 RealEvakaClock(),
-                evakaEnv.feeDecisionMinDate
+                evakaEnv.feeDecisionMinDate,
             )
         assertEquals(1, diffs.keys.size)
         assertServiceNeedDiffSizes(diffs[childId], 0, 0, 1)
@@ -404,7 +404,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 testChild_1,
                 testAdult_1.id,
                 DateRange(startDate, endDate),
-                since.toInstant()
+                since.toInstant(),
             )
 
         val snId2 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate2)
@@ -414,14 +414,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 testChild_1,
                 testAdult_1.id,
                 DateRange(startDate2, null),
-                since.toInstant()
+                since.toInstant(),
             )
         createFeeDecision(
             db,
             testChild_1,
             testAdult_1.id,
             DateRange(startDate.minusDays(10), startDate.minusDays(1)),
-            since.toInstant()
+            since.toInstant(),
         )
 
         val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
@@ -444,7 +444,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_1.id,
             DateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate),
-            since.toInstant()
+            since.toInstant(),
         )
 
         val snFeeDiff = db.read { it.getServiceNeedFeeData(snId) }
@@ -462,14 +462,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 testChild_1,
                 lastFeedecisionCutoffDate,
-                lastFeedecisionCutoffDate
+                lastFeedecisionCutoffDate,
             )
         createFeeDecision(
             db,
             testChild_1,
             testAdult_1.id,
             DateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate.plusDays(1)),
-            since.toInstant()
+            since.toInstant(),
         )
 
         val snFeeDiff = db.read { it.getServiceNeedFeeData(snId) }
@@ -494,7 +494,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 testAdult_1.id,
                 testChild_1,
                 since.toInstant(),
-                VoucherValueDecisionStatus.SENT
+                VoucherValueDecisionStatus.SENT,
             )
 
         val snId2 = createServiceNeed(db, snDefaultDaycare, testChild_1, startDate2)
@@ -509,7 +509,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 testAdult_1.id,
                 testChild_1,
                 since.toInstant(),
-                VoucherValueDecisionStatus.SENT
+                VoucherValueDecisionStatus.SENT,
             )
         createVoucherDecision(
             db,
@@ -521,21 +521,21 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
         assertEquals(1, sn1FeeDiff.size)
         assertEquals(
             vd1.id,
-            sn1FeeDiff.find { it.serviceNeedId == snId1 }?.voucherValueDecisionIds?.get(0)
+            sn1FeeDiff.find { it.serviceNeedId == snId1 }?.voucherValueDecisionIds?.get(0),
         )
 
         val sn2FeeDiff = db.read { it.getServiceNeedFeeData(snId2) }
         assertEquals(1, sn2FeeDiff.size)
         assertEquals(
             vd2.id,
-            sn2FeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0)
+            sn2FeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0),
         )
     }
 
@@ -550,7 +550,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 testChild_1,
                 lastVoucherCutoffDate,
-                lastVoucherCutoffDate
+                lastVoucherCutoffDate,
             )
         createVoucherDecision(
             db,
@@ -562,7 +562,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
@@ -580,7 +580,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 testChild_1,
                 lastVoucherCutoffDate,
-                lastVoucherCutoffDate
+                lastVoucherCutoffDate,
             )
         createVoucherDecision(
             db,
@@ -592,7 +592,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
@@ -601,7 +601,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
 
     internal fun Database.Transaction.insertVardaChild(
         id: ChildId,
-        organizerOid: String = defaultMunicipalOrganizerOid
+        organizerOid: String = defaultMunicipalOrganizerOid,
     ) = insertVardaOrganizerChild(this, id, 123L, 234, "1.2.3.4.5", organizerOid)
 
     @Test
@@ -619,7 +619,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             since,
             serviceNeedPeriod,
             feeDecisionPeriod,
-            voucherDecisionPeriod
+            voucherDecisionPeriod,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -632,7 +632,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -644,9 +644,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = feeDecisionPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(0)
+            mockEndpoint.feeData.values.elementAt(0),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -658,9 +658,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = serviceNeedPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(1)
+            mockEndpoint.feeData.values.elementAt(1),
         )
     }
 
@@ -675,7 +675,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
-            PlacementType.PRESCHOOL
+            PlacementType.PRESCHOOL,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -694,7 +694,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             PlacementType.PRESCHOOL,
-            ghostUnitDaycare.id
+            ghostUnitDaycare.id,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -713,7 +713,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
             PlacementType.DAYCARE,
-            testDaycareNotInvoiced.id
+            testDaycareNotInvoiced.id,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -732,7 +732,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 since.minusDays(100).toLocalDate(),
                 since.minusDays(81).toLocalDate(),
                 PlacementType.DAYCARE,
-                testDaycareNotInvoiced.id
+                testDaycareNotInvoiced.id,
             )
         createServiceNeed(
             db,
@@ -741,7 +741,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             since.minusDays(80).toLocalDate(),
             since.minusDays(61).toLocalDate(),
             PlacementType.PRESCHOOL,
-            testDaycareNotInvoiced.id
+            testDaycareNotInvoiced.id,
         )
         createServiceNeed(
             db,
@@ -750,7 +750,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             since.minusDays(60).toLocalDate(),
             since.minusDays(40).toLocalDate(),
             PlacementType.CLUB,
-            testDaycareNotInvoiced.id
+            testDaycareNotInvoiced.id,
         )
         val serviceNeeds =
             db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
@@ -770,7 +770,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 since.minusDays(100).toLocalDate(),
                 since.plusDays(200).toLocalDate(),
                 PlacementType.DAYCARE,
-                testDaycare.id
+                testDaycare.id,
             )
         val serviceNeeds =
             db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
@@ -789,7 +789,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             since.plusDays(100).toLocalDate(),
             since.plusDays(200).toLocalDate(),
             PlacementType.DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
         val serviceNeeds =
             db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
@@ -807,7 +807,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             since.minusDays(100).toLocalDate(),
             since.plusDays(200).toLocalDate(),
             PlacementType.DAYCARE,
-            testDaycare.id
+            testDaycare.id,
         )
         val serviceNeeds =
             db.transaction { it.getServiceNeedsForVardaByChild(RealEvakaClock(), testChild_1.id) }
@@ -829,7 +829,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 since,
                 serviceNeedPeriod,
                 feeDecisionPeriod,
-                voucherDecisionPeriod
+                voucherDecisionPeriod,
             )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -852,7 +852,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -867,7 +867,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 testAdult_1.id,
                 DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
                 since.toInstant(),
-                FeeDecisionStatus.WAITING_FOR_SENDING
+                FeeDecisionStatus.WAITING_FOR_SENDING,
             )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -890,7 +890,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -902,9 +902,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = feeDecisionPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(0)
+            mockEndpoint.feeData.values.elementAt(0),
         )
     }
 
@@ -918,7 +918,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -935,7 +935,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_1.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -949,7 +949,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -961,9 +961,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = serviceNeedPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(0)
+            mockEndpoint.feeData.values.elementAt(0),
         )
     }
 
@@ -993,7 +993,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         val feeDecisionPeriod =
@@ -1004,7 +1004,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_1.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1019,7 +1019,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
     }
 
@@ -1033,7 +1033,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         val feeDecisionPeriod =
@@ -1043,7 +1043,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_1.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
         db.transaction {
             @Suppress("DEPRECATION")
@@ -1087,7 +1087,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         val feeDecisionPeriod =
@@ -1098,7 +1098,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_1.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1113,7 +1113,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
     }
 
@@ -1127,7 +1127,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         val feeDecisionPeriod =
@@ -1140,7 +1140,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_2.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
         createVoucherDecision(
             db,
@@ -1152,7 +1152,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testAdult_2.id,
             testChild_1,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1166,7 +1166,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
     }
 
@@ -1183,7 +1183,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         val feeDecisionPeriod =
@@ -1194,7 +1194,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             testChild_1,
             testAdult_2.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1208,7 +1208,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
     }
 
@@ -1220,14 +1220,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         val serviceNeedPeriod =
             DateRange(
                 tenDaysAgoFeeDecisionMinDate.minusDays(10).toLocalDate(),
-                tenDaysAgoFeeDecisionMinDate.minusDays(1).toLocalDate()
+                tenDaysAgoFeeDecisionMinDate.minusDays(1).toLocalDate(),
             )
         createServiceNeed(
             db,
             snDefaultDaycare,
             testChild_1,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
 
         updateChildData(db, vardaClient, tenDaysAgoFeeDecisionMinDate.toLocalDate())
@@ -1241,7 +1241,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             1,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
     }
 
@@ -1260,14 +1260,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
         createFeeDecision(
             db,
             child,
             adult.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaCallCounts(1)
@@ -1282,7 +1282,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             child,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaElementCounts(1, 1, 2)
@@ -1308,7 +1308,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
         createVoucherDecision(
             db,
@@ -1320,7 +1320,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             child,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertVardaCallCounts(1)
@@ -1355,7 +1355,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             snDefaultDaycare,
             child,
             serviceNeedPeriod.start,
-            serviceNeedPeriod.end!!
+            serviceNeedPeriod.end!!,
         )
         createFeeDecision(db, child, adult.id, feeDecisionPeriod, since.toInstant())
         createFeeDecision(db, child, adult.id, feeDecisionPeriod2, since.toInstant())
@@ -1380,7 +1380,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             child,
             serviceNeedPeriod.start,
             serviceNeedPeriod.end!!,
-            unitId = ghostUnitDaycare.id
+            unitId = ghostUnitDaycare.id,
         )
         createFeeDecision(
             db,
@@ -1388,7 +1388,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             feeDecisionPeriod,
             since.toInstant(),
-            daycareId = ghostUnitDaycare.id
+            daycareId = ghostUnitDaycare.id,
         )
 
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
@@ -1410,12 +1410,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 since,
                 serviceNeedPeriod,
                 feeDecisionPeriod,
-                voucherDecisionPeriod
+                voucherDecisionPeriod,
             )
         mockEndpoint.failNextVardaCall(
             400,
             MockVardaIntegrationEndpoint.VardaCallType.FEE_DATA,
-            mockEndpoint.getMockErrorResponseForFeeData()
+            mockEndpoint.getMockErrorResponseForFeeData(),
         )
         updateChildData(db, vardaClient, evakaEnv.feeDecisionMinDate)
         assertFailedVardaUpdates(1)
@@ -1436,7 +1436,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             serviceNeedPeriod.end!!,
             serviceNeedPeriod.start.minusDays(15),
             2,
-            snDefaultDaycare.daycareHoursPerWeek.toDouble()
+            snDefaultDaycare.daycareHoursPerWeek.toDouble(),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -1448,9 +1448,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = feeDecisionPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(0)
+            mockEndpoint.feeData.values.elementAt(0),
         )
         assertVardaFeeData(
             VardaFeeData(
@@ -1462,9 +1462,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 paattymis_pvm = serviceNeedPeriod.end,
                 perheen_koko = 2,
                 lahdejarjestelma = "SourceSystemVarda",
-                lapsi = "not asserted"
+                lapsi = "not asserted",
             ),
-            mockEndpoint.feeData.values.elementAt(1)
+            mockEndpoint.feeData.values.elementAt(1),
         )
     }
 
@@ -1551,7 +1551,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 serviceNeedPeriod.start,
                 serviceNeedPeriod.end!!,
                 PlacementType.DAYCARE,
-                externalPurchasedDaycare.id
+                externalPurchasedDaycare.id,
             )
 
         val result = db.read { it.getEvakaServiceNeedInfoForVarda(snId) }
@@ -1571,7 +1571,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             assertEquals("VS009", codes.first())
             assertEquals(
                 "Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.",
-                descriptions.first()
+                descriptions.first(),
             )
         }
         vardaClient.parseVardaErrorBody(errors["MA003"]!!).let { (codes, descriptions) ->
@@ -1589,7 +1589,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     private fun updateChildData(
         db: Database.Connection,
         vardaClient: VardaClient,
-        feeDecisionMinDate: LocalDate
+        feeDecisionMinDate: LocalDate,
     ) {
         getChildrenToUpdate(db, RealEvakaClock(), feeDecisionMinDate).entries.forEach {
             resetVardaChild(
@@ -1598,7 +1598,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 vardaClient,
                 it.key,
                 feeDecisionMinDate,
-                ophEnv.organizerOid
+                ophEnv.organizerOid,
             )
         }
     }
@@ -1619,7 +1619,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 child,
                 serviceNeedPeriod.start,
                 serviceNeedPeriod.end!!,
-                unitId = testDaycare.id
+                unitId = testDaycare.id,
             )
         createFeeDecision(
             db,
@@ -1627,7 +1627,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             feeDecisionPeriod,
             since.toInstant(),
-            daycareId = testDaycare.id
+            daycareId = testDaycare.id,
         )
         return snId
     }
@@ -1658,7 +1658,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     private fun assertVardaServiceNeedIds(
         evakaServiceNeedId: ServiceNeedId,
         expectedVardaDecisionId: Long,
-        expectedVardaPlacementId: Long
+        expectedVardaPlacementId: Long,
     ) {
         val vardaServiceNeed =
             db.read { it.getVardaServiceNeedByEvakaServiceNeedId(evakaServiceNeedId) }
@@ -1673,7 +1673,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         since: HelsinkiDateTime,
         serviceNeedPeriod: DateRange,
         feeDecisionPeriod: DateRange,
-        voucherDecisionPeriod: DateRange
+        voucherDecisionPeriod: DateRange,
     ): ServiceNeedId {
         val id =
             createServiceNeed(
@@ -1681,14 +1681,14 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 snDefaultDaycare,
                 child,
                 serviceNeedPeriod.start,
-                serviceNeedPeriod.end!!
+                serviceNeedPeriod.end!!,
             )
         createFeeDecision(
             db,
             child,
             adult.id,
             DateRange(feeDecisionPeriod.start, feeDecisionPeriod.end),
-            since.toInstant()
+            since.toInstant(),
         )
         createVoucherDecision(
             db,
@@ -1700,7 +1700,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
             adult.id,
             child,
             since.toInstant(),
-            VoucherValueDecisionStatus.SENT
+            VoucherValueDecisionStatus.SENT,
         )
         return id
     }
@@ -1714,12 +1714,12 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         expectedEndDate: LocalDate,
         expectedApplicationDate: LocalDate,
         expectedChildId: Long,
-        expectedHoursPerWeek: Double
+        expectedHoursPerWeek: Double,
     ) {
         assertEquals(
             true,
             vardaDecision.lapsi.endsWith("$expectedChildId/"),
-            "Expected ${vardaDecision.lapsi} to end with $expectedChildId"
+            "Expected ${vardaDecision.lapsi} to end with $expectedChildId",
         )
         assertEquals(expectedStartDate, vardaDecision.alkamis_pvm)
         assertEquals(expectedEndDate, vardaDecision.paattymis_pvm)
@@ -1733,7 +1733,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 true,
                 vardaFeeData.huoltajat.any { g ->
                     g.henkilotunnus == expectedHuoltaja.henkilotunnus
-                }
+                },
             )
         }
         assertEquals(expectedVardaFeeData.maksun_peruste_koodi, vardaFeeData.maksun_peruste_koodi)
@@ -1748,22 +1748,22 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
     private fun assertVardaElementCounts(
         expectedDecisionCount: Int,
         expectedPlacementCount: Int,
-        expectedFeeDataCount: Int
+        expectedFeeDataCount: Int,
     ) {
         assertEquals(
             expectedDecisionCount,
             mockEndpoint.decisions.values.size,
-            "Expected varda decision count $expectedDecisionCount does not match ${mockEndpoint.decisions.values.size}"
+            "Expected varda decision count $expectedDecisionCount does not match ${mockEndpoint.decisions.values.size}",
         )
         assertEquals(
             expectedPlacementCount,
             mockEndpoint.placements.values.size,
-            "Expected varda placement count $expectedPlacementCount does not match ${mockEndpoint.placements.values.size}"
+            "Expected varda placement count $expectedPlacementCount does not match ${mockEndpoint.placements.values.size}",
         )
         assertEquals(
             expectedFeeDataCount,
             mockEndpoint.feeData.values.size,
-            "Expected varda fee data count $expectedFeeDataCount does not match ${mockEndpoint.feeData.values.size}"
+            "Expected varda fee data count $expectedFeeDataCount does not match ${mockEndpoint.feeData.values.size}",
         )
     }
 
@@ -1771,7 +1771,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         assertEquals(
             expectedFeeDataCallCount,
             mockEndpoint.feeDataCalls,
-            "Expected varda fee data call count $expectedFeeDataCallCount does not match ${mockEndpoint.feeDataCalls}"
+            "Expected varda fee data call count $expectedFeeDataCallCount does not match ${mockEndpoint.feeDataCalls}",
         )
     }
 
@@ -1779,7 +1779,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         diff: VardaChildCalculatedServiceNeedChanges?,
         expectedAdditions: Int,
         expectedUpdates: Int,
-        expectedDeletes: Int
+        expectedDeletes: Int,
     ) {
         assertNotNull(diff)
         assertEquals(expectedAdditions, diff.additions.size)
@@ -1794,7 +1794,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         fromDays: LocalDate = HelsinkiDateTime.now().minusDays(100).toLocalDate(),
         toDays: LocalDate = HelsinkiDateTime.now().toLocalDate(),
         placementType: PlacementType = PlacementType.DAYCARE,
-        unitId: DaycareId = testDaycare.id
+        unitId: DaycareId = testDaycare.id,
     ): ServiceNeedId {
         val placement =
             DevPlacement(
@@ -1802,7 +1802,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 unitId = unitId,
                 type = placementType,
                 startDate = fromDays,
-                endDate = toDays
+                endDate = toDays,
             )
         val serviceNeed =
             DevServiceNeed(
@@ -1810,7 +1810,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                 optionId = option.id,
                 startDate = fromDays,
                 endDate = toDays,
-                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+                confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
             )
 
         return db.transaction { tx ->
@@ -1827,7 +1827,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         period: DateRange,
         sentAt: Instant,
         status: FeeDecisionStatus = FeeDecisionStatus.SENT,
-        daycareId: DaycareId = testDaycare.id
+        daycareId: DaycareId = testDaycare.id,
     ): FeeDecisionId {
         val fd =
             createFeeDecisionFixture(
@@ -1841,9 +1841,9 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                         child.dateOfBirth,
                         daycareId,
                         PlacementType.DAYCARE,
-                        snDefaultDaycare.toFeeDecisionServiceNeed()
+                        snDefaultDaycare.toFeeDecisionServiceNeed(),
                     )
-                )
+                ),
             )
         db.transaction { tx ->
             tx.upsertFeeDecisions(listOf(fd))
@@ -1863,7 +1863,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
         adultId: PersonId,
         child: DevPerson,
         sentAt: Instant,
-        status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT
+        status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.DRAFT,
     ): VoucherValueDecision {
         return db.transaction {
             val decision =
@@ -1878,7 +1878,7 @@ class VardaServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = tru
                     value = value,
                     coPayment = coPayment,
                     placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
             it.upsertValueDecisions(listOf(decision))
             it.setVoucherValueDecisionSentAt(decision.id, sentAt)
@@ -1905,22 +1905,24 @@ private fun ServiceNeedOption.toFeeDecisionServiceNeed() =
         contractDaysPerMonth = this.contractDaysPerMonth,
         descriptionFi = this.feeDescriptionFi,
         descriptionSv = this.feeDescriptionSv,
-        missing = false
+        missing = false,
     )
 
 private fun Database.Transaction.setFeeDecisionSentAt(id: FeeDecisionId, sentAt: Instant) =
     @Suppress("DEPRECATION")
-    createUpdate("""
+    createUpdate(
+            """
 UPDATE fee_decision SET sent_at = :sentAt
 WHERE id = :id 
-        """)
+        """
+        )
         .bind("id", id)
         .bind("sentAt", sentAt)
         .execute()
 
 private fun Database.Transaction.setVoucherValueDecisionSentAt(
     id: VoucherValueDecisionId,
-    sentAt: Instant
+    sentAt: Instant,
 ) =
     @Suppress("DEPRECATION")
     createUpdate(

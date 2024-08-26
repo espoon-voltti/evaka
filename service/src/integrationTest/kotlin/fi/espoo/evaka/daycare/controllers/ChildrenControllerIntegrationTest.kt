@@ -52,8 +52,8 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         AdditionalInformation(
                             allergies = "dghsfhed",
                             diet = "bcvxnvgmn",
-                            additionalInfo = "fjmhj"
-                        )
+                            additionalInfo = "fjmhj",
+                        ),
                 )
             )
             child = tx.getChild(childId)!!
@@ -65,7 +65,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         getAdditionalInfo(
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         )
     }
@@ -92,7 +92,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val result = childController.getChild(dbInstance(), user, RealEvakaClock(), childId)
 
@@ -107,12 +107,12 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val espooChildController =
             ChildController(
                 AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create()),
-                featureConfig
+                featureConfig,
             )
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),
-                setOf(UserRole.SERVICE_WORKER)
+                setOf(UserRole.SERVICE_WORKER),
             )
         val result = espooChildController.getChild(dbInstance(), user, RealEvakaClock(), childId)
 

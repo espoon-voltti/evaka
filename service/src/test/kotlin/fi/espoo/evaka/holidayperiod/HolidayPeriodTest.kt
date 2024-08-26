@@ -21,7 +21,7 @@ class HolidayPeriodTest {
             id = HolidayPeriodId(UUID.randomUUID()),
             period,
             reservationsOpenOn,
-            reservationDeadline
+            reservationDeadline,
         )
 
     private val jan1 = LocalDate.of(2024, 1, 1)
@@ -33,7 +33,7 @@ class HolidayPeriodTest {
     fun `not yet reservable`() {
         assertEquals(
             HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn),
-            holidayPeriod.effect(reservationsOpenOn.minusDays(1), listOf(wholeYear))
+            holidayPeriod.effect(reservationsOpenOn.minusDays(1), listOf(wholeYear)),
         )
     }
 
@@ -41,7 +41,7 @@ class HolidayPeriodTest {
     fun `reservations open`() {
         assertEquals(
             HolidayPeriodEffect.ReservationsOpen,
-            holidayPeriod.effect(reservationsOpenOn, listOf(wholeYear))
+            holidayPeriod.effect(reservationsOpenOn, listOf(wholeYear)),
         )
     }
 
@@ -49,7 +49,7 @@ class HolidayPeriodTest {
     fun `reservations closed`() {
         assertEquals(
             HolidayPeriodEffect.ReservationsClosed,
-            holidayPeriod.effect(reservationDeadline.plusDays(1), listOf(wholeYear))
+            holidayPeriod.effect(reservationDeadline.plusDays(1), listOf(wholeYear)),
         )
     }
 
@@ -72,9 +72,9 @@ class HolidayPeriodTest {
                     ReservationEnabledPlacementRange(
                         created = reservationDeadline.plusDays(1),
                         range = FiniteDateRange(reservationDeadline.plusDays(1), dec31),
-                    )
-                )
-            )
+                    ),
+                ),
+            ),
         )
     }
 
@@ -87,14 +87,14 @@ class HolidayPeriodTest {
                 listOf(
                     ReservationEnabledPlacementRange(
                         created = jan1,
-                        range = FiniteDateRange(jan1, period.start.plusDays(2))
+                        range = FiniteDateRange(jan1, period.start.plusDays(2)),
                     ),
                     ReservationEnabledPlacementRange(
                         created = period.start,
-                        range = FiniteDateRange(period.start.plusDays(3), period.end)
+                        range = FiniteDateRange(period.start.plusDays(3), period.end),
                     ),
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -107,15 +107,15 @@ class HolidayPeriodTest {
                 listOf(
                     ReservationEnabledPlacementRange(
                         created = jan1,
-                        range = FiniteDateRange(jan1, period.start.plusDays(2))
+                        range = FiniteDateRange(jan1, period.start.plusDays(2)),
                     ),
                     // Gap of 1 day here
                     ReservationEnabledPlacementRange(
                         created = period.start,
-                        range = FiniteDateRange(period.start.plusDays(4), period.end)
+                        range = FiniteDateRange(period.start.plusDays(4), period.end),
                     ),
-                )
-            )
+                ),
+            ),
         )
     }
 }

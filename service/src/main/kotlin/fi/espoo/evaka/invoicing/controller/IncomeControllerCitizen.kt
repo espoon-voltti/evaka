@@ -25,7 +25,7 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
     fun getExpiringIncome(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<LocalDate> {
         return db.connect { dbc ->
                 dbc.read {
@@ -34,13 +34,13 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Citizen.Person.READ_EXPIRED_INCOME_DATES,
-                        user.id
+                        user.id,
                     )
                     it.expiringIncomes(
                             clock.today(),
                             FiniteDateRange(clock.today(), clock.today().plusWeeks(4)),
                             null,
-                            user.id
+                            user.id,
                         )
                         .map { it.expirationDate }
                 }
@@ -48,7 +48,7 @@ class IncomeControllerCitizen(private val accessControl: AccessControl) {
             .also {
                 Audit.IncomeExpirationDatesRead.log(
                     targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }

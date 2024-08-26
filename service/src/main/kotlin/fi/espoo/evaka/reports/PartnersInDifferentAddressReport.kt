@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RestController
 class PartnersInDifferentAddressReportController(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/partners-in-different-address", // deprecated
-        "/employee/reports/partners-in-different-address"
+        "/employee/reports/partners-in-different-address",
     )
     fun getPartnersInDifferentAddressReport(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<PartnersInDifferentAddressReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -35,7 +35,7 @@ class PartnersInDifferentAddressReportController(private val accessControl: Acce
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+                            Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPartnersInDifferentAddressRows(clock, filter)
@@ -49,7 +49,7 @@ class PartnersInDifferentAddressReportController(private val accessControl: Acce
 
 private fun Database.Read.getPartnersInDifferentAddressRows(
     clock: EvakaClock,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): List<PartnersInDifferentAddressReportRow> =
     createQuery {
             sql(
@@ -107,5 +107,5 @@ data class PartnersInDifferentAddressReportRow(
     val personId2: PersonId,
     val firstName2: String?,
     val lastName2: String?,
-    val address2: String
+    val address2: String,
 )

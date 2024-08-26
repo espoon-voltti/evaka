@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController
 class AssistanceController(
     private val accessControl: AccessControl,
     private val assistanceActionService: AssistanceActionService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     data class AssistanceFactorResponse(
         val data: AssistanceFactor,
@@ -69,13 +69,13 @@ class AssistanceController(
 
     @GetMapping(
         "/children/{child}/assistance", // deprecated
-        "/employee/children/{child}/assistance"
+        "/employee/children/{child}/assistance",
     )
     fun getChildAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable child: ChildId
+        @PathVariable child: ChildId,
     ): AssistanceResponse =
         db.connect { dbc ->
             dbc.read { tx ->
@@ -84,14 +84,14 @@ class AssistanceController(
                     user,
                     clock,
                     Action.Child.READ_ASSISTANCE,
-                    child
+                    child,
                 )
                 val assistanceActionFilter =
                     accessControl.requireAuthorizationFilter(
                         tx,
                         user,
                         clock,
-                        Action.AssistanceAction.READ
+                        Action.AssistanceAction.READ,
                     )
                 val assistanceActions =
                     tx.getAssistanceActionsByChildId(child, assistanceActionFilter).let { rows ->
@@ -105,7 +105,7 @@ class AssistanceController(
                         tx,
                         user,
                         clock,
-                        Action.AssistanceFactor.READ
+                        Action.AssistanceFactor.READ,
                     )
                 val assistanceFactors =
                     tx.getAssistanceFactorsByChildId(child, assistanceFactorFilter).let { rows ->
@@ -119,7 +119,7 @@ class AssistanceController(
                         tx,
                         user,
                         clock,
-                        Action.DaycareAssistance.READ
+                        Action.DaycareAssistance.READ,
                     )
 
                 val daycareAssistances =
@@ -134,7 +134,7 @@ class AssistanceController(
                         tx,
                         user,
                         clock,
-                        Action.PreschoolAssistance.READ
+                        Action.PreschoolAssistance.READ,
                     )
 
                 val preschoolAssistances =
@@ -150,7 +150,7 @@ class AssistanceController(
                         tx,
                         user,
                         clock,
-                        Action.OtherAssistanceMeasure.READ
+                        Action.OtherAssistanceMeasure.READ,
                     )
 
                 val otherAssistanceMeasures =
@@ -162,7 +162,7 @@ class AssistanceController(
                                     tx,
                                     user,
                                     clock,
-                                    rows.map { it.id }
+                                    rows.map { it.id },
                                 )
                             rows.map {
                                 OtherAssistanceMeasureResponse(it, actions[it.id] ?: emptySet())
@@ -180,14 +180,14 @@ class AssistanceController(
 
     @PostMapping(
         "/children/{childId}/assistance-actions", // deprecated
-        "/employee/children/{childId}/assistance-actions"
+        "/employee/children/{childId}/assistance-actions",
     )
     fun createAssistanceAction(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: AssistanceActionRequest
+        @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
         return db.connect { dbc ->
                 dbc.read {
@@ -196,20 +196,20 @@ class AssistanceController(
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_ACTION,
-                        childId
+                        childId,
                     )
                 }
                 assistanceActionService.createAssistanceAction(
                     dbc,
                     user = user,
                     childId = childId,
-                    data = body
+                    data = body,
                 )
             }
             .also { assistanceAction ->
                 Audit.ChildAssistanceActionCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(assistanceAction.id)
+                    objectId = AuditId(assistanceAction.id),
                 )
             }
     }
@@ -223,7 +223,7 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceActionId,
-        @RequestBody body: AssistanceActionRequest
+        @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
         return db.connect { dbc ->
                 dbc.read {
@@ -232,14 +232,14 @@ class AssistanceController(
                         user,
                         clock,
                         Action.AssistanceAction.UPDATE,
-                        id
+                        id,
                     )
                 }
                 assistanceActionService.updateAssistanceAction(
                     dbc,
                     user = user,
                     id = id,
-                    data = body
+                    data = body,
                 )
             }
             .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
@@ -253,7 +253,7 @@ class AssistanceController(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: AssistanceActionId
+        @PathVariable id: AssistanceActionId,
     ) {
         db.connect { dbc ->
             dbc.read {
@@ -262,7 +262,7 @@ class AssistanceController(
                     user,
                     clock,
                     Action.AssistanceAction.DELETE,
-                    id
+                    id,
                 )
             }
             assistanceActionService.deleteAssistanceAction(dbc, id)
@@ -272,12 +272,12 @@ class AssistanceController(
 
     @GetMapping(
         "/assistance-action-options", // deprecated
-        "/employee/assistance-action-options"
+        "/employee/assistance-action-options",
     )
     fun getAssistanceActionOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
     ): List<AssistanceActionOption> {
         return db.connect { dbc ->
                 dbc.read {
@@ -285,7 +285,7 @@ class AssistanceController(
                         it,
                         user,
                         clock,
-                        Action.Global.READ_ASSISTANCE_ACTION_OPTIONS
+                        Action.Global.READ_ASSISTANCE_ACTION_OPTIONS,
                     )
                 }
                 assistanceActionService.getAssistanceActionOptions(dbc)
@@ -295,14 +295,14 @@ class AssistanceController(
 
     @PostMapping(
         "/children/{child}/assistance-factors", // deprecated
-        "/employee/children/{child}/assistance-factors"
+        "/employee/children/{child}/assistance-factors",
     )
     fun createAssistanceFactor(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable child: ChildId,
-        @RequestBody body: AssistanceFactorUpdate
+        @RequestBody body: AssistanceFactorUpdate,
     ): AssistanceFactorId =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -311,7 +311,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.Child.CREATE_ASSISTANCE_FACTOR,
-                        child
+                        child,
                     )
                     tx.insertAssistanceFactor(user, clock.now(), child, body).also {
                         asyncJobRunner.plan(
@@ -319,10 +319,10 @@ class AssistanceController(
                             listOf(
                                 AsyncJob.GenerateFinanceDecisions.forChild(
                                     child,
-                                    body.validDuring.asDateRange()
+                                    body.validDuring.asDateRange(),
                                 )
                             ),
-                            runAt = clock.now()
+                            runAt = clock.now(),
                         )
                     }
                 }
@@ -340,7 +340,7 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
-        @RequestBody body: AssistanceFactorUpdate
+        @RequestBody body: AssistanceFactorUpdate,
     ) =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -349,7 +349,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.AssistanceFactor.UPDATE,
-                        id
+                        id,
                     )
                     val original = tx.getAssistanceFactor(id)
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
@@ -364,7 +364,7 @@ class AssistanceController(
                                         it.asDateRange(),
                                     )
                                 ),
-                                runAt = clock.now()
+                                runAt = clock.now(),
                             )
                         }
                     }
@@ -386,13 +386,7 @@ class AssistanceController(
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.AssistanceFactor.DELETE,
-                            id,
-                        )
+                        .checkPermissionFor(tx, user, clock, Action.AssistanceFactor.DELETE, id)
                         .let {
                             if (it.isPermitted()) {
                                 tx.deleteAssistanceFactor(id)?.also { deleted ->
@@ -401,10 +395,10 @@ class AssistanceController(
                                         listOf(
                                             AsyncJob.GenerateFinanceDecisions.forChild(
                                                 deleted.childId,
-                                                deleted.validDuring.asDateRange()
+                                                deleted.validDuring.asDateRange(),
                                             )
                                         ),
-                                        runAt = clock.now()
+                                        runAt = clock.now(),
                                     )
                                 }
                                 id
@@ -419,14 +413,14 @@ class AssistanceController(
 
     @PostMapping(
         "/children/{child}/daycare-assistances", // deprecated
-        "/employee/children/{child}/daycare-assistances"
+        "/employee/children/{child}/daycare-assistances",
     )
     fun createDaycareAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable child: ChildId,
-        @RequestBody body: DaycareAssistanceUpdate
+        @RequestBody body: DaycareAssistanceUpdate,
     ): DaycareAssistanceId =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -435,7 +429,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.Child.CREATE_DAYCARE_ASSISTANCE,
-                        child
+                        child,
                     )
                     tx.insertDaycareAssistance(user, clock.now(), child, body)
                 }
@@ -446,14 +440,14 @@ class AssistanceController(
 
     @PostMapping(
         "/daycare-assistances/{id}", // deprecated
-        "/employee/daycare-assistances/{id}"
+        "/employee/daycare-assistances/{id}",
     )
     fun updateDaycareAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DaycareAssistanceId,
-        @RequestBody body: DaycareAssistanceUpdate
+        @RequestBody body: DaycareAssistanceUpdate,
     ) =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -462,7 +456,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.DaycareAssistance.UPDATE,
-                        id
+                        id,
                     )
                     tx.updateDaycareAssistance(user, clock.now(), id, body)
                 }
@@ -471,7 +465,7 @@ class AssistanceController(
 
     @DeleteMapping(
         "/daycare-assistances/{id}", // deprecated
-        "/employee/daycare-assistances/{id}"
+        "/employee/daycare-assistances/{id}",
     )
     fun deleteDaycareAssistance(
         db: Database,
@@ -483,13 +477,7 @@ class AssistanceController(
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.DaycareAssistance.DELETE,
-                            id,
-                        )
+                        .checkPermissionFor(tx, user, clock, Action.DaycareAssistance.DELETE, id)
                         .let {
                             if (it.isPermitted()) {
                                 tx.deleteDaycareAssistance(id)
@@ -505,14 +493,14 @@ class AssistanceController(
 
     @PostMapping(
         "/children/{child}/preschool-assistances", // deprecated
-        "/employee/children/{child}/preschool-assistances"
+        "/employee/children/{child}/preschool-assistances",
     )
     fun createPreschoolAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable child: ChildId,
-        @RequestBody body: PreschoolAssistanceUpdate
+        @RequestBody body: PreschoolAssistanceUpdate,
     ): PreschoolAssistanceId =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -521,7 +509,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.Child.CREATE_PRESCHOOL_ASSISTANCE,
-                        child
+                        child,
                     )
                     tx.insertPreschoolAssistance(user, clock.now(), child, body)
                 }
@@ -529,20 +517,20 @@ class AssistanceController(
             .also { id ->
                 Audit.PreschoolAssistanceCreate.log(
                     targetId = AuditId(child),
-                    objectId = AuditId(id)
+                    objectId = AuditId(id),
                 )
             }
 
     @PostMapping(
         "/preschool-assistances/{id}", // deprecated
-        "/employee/preschool-assistances/{id}"
+        "/employee/preschool-assistances/{id}",
     )
     fun updatePreschoolAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: PreschoolAssistanceId,
-        @RequestBody body: PreschoolAssistanceUpdate
+        @RequestBody body: PreschoolAssistanceUpdate,
     ) =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -551,7 +539,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.PreschoolAssistance.UPDATE,
-                        id
+                        id,
                     )
                     tx.updatePreschoolAssistance(user, clock.now(), id, body)
                 }
@@ -560,7 +548,7 @@ class AssistanceController(
 
     @DeleteMapping(
         "/preschool-assistances/{id}", // deprecated
-        "/employee/preschool-assistances/{id}"
+        "/employee/preschool-assistances/{id}",
     )
     fun deletePreschoolAssistance(
         db: Database,
@@ -572,13 +560,7 @@ class AssistanceController(
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
-                        .checkPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.PreschoolAssistance.DELETE,
-                            id,
-                        )
+                        .checkPermissionFor(tx, user, clock, Action.PreschoolAssistance.DELETE, id)
                         .let {
                             if (it.isPermitted()) {
                                 tx.deletePreschoolAssistance(id)
@@ -594,14 +576,14 @@ class AssistanceController(
 
     @PostMapping(
         "/children/{child}/other-assistance-measures", // deprecated
-        "/employee/children/{child}/other-assistance-measures"
+        "/employee/children/{child}/other-assistance-measures",
     )
     fun createOtherAssistanceMeasure(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable child: ChildId,
-        @RequestBody body: OtherAssistanceMeasureUpdate
+        @RequestBody body: OtherAssistanceMeasureUpdate,
     ): OtherAssistanceMeasureId =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -610,7 +592,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.Child.CREATE_OTHER_ASSISTANCE_MEASURE,
-                        child
+                        child,
                     )
                     tx.insertOtherAssistanceMeasure(user, clock.now(), child, body)
                 }
@@ -618,20 +600,20 @@ class AssistanceController(
             .also { id ->
                 Audit.OtherAssistanceMeasureCreate.log(
                     targetId = AuditId(child),
-                    objectId = AuditId(id)
+                    objectId = AuditId(id),
                 )
             }
 
     @PostMapping(
         "/other-assistance-measures/{id}", // deprecated
-        "/employee/other-assistance-measures/{id}"
+        "/employee/other-assistance-measures/{id}",
     )
     fun updateOtherAssistanceMeasure(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: OtherAssistanceMeasureId,
-        @RequestBody body: OtherAssistanceMeasureUpdate
+        @RequestBody body: OtherAssistanceMeasureUpdate,
     ) =
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -640,7 +622,7 @@ class AssistanceController(
                         user,
                         clock,
                         Action.OtherAssistanceMeasure.UPDATE,
-                        id
+                        id,
                     )
                     tx.updateOtherAssistanceMeasure(user, clock.now(), id, body)
                 }
@@ -649,7 +631,7 @@ class AssistanceController(
 
     @DeleteMapping(
         "/other-assistance-measures/{id}", // deprecated
-        "/employee/other-assistance-measures/{id}"
+        "/employee/other-assistance-measures/{id}",
     )
     fun deleteOtherAssistanceMeasure(
         db: Database,

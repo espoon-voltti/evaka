@@ -40,7 +40,7 @@ class UsedServiceTests {
         shiftCareType: ShiftCareType = ShiftCareType.NONE,
         absences: List<Pair<AbsenceType, AbsenceCategory>> = listOf(),
         reservations: List<TimeRange> = listOf(),
-        attendances: List<TimeInterval> = listOf()
+        attendances: List<TimeInterval> = listOf(),
     ) =
         computeUsedService(
             today,
@@ -53,7 +53,7 @@ class UsedServiceTests {
             shiftCareType,
             absences,
             reservations,
-            attendances
+            attendances,
         )
 
     @Test
@@ -79,7 +79,7 @@ class UsedServiceTests {
                 today = today,
                 date = today,
                 reservations = listOf(range(9, 12)),
-                attendances = listOf(interval(8, 12), interval(15, null))
+                attendances = listOf(interval(8, 12), interval(15, null)),
             )
             .also {
                 assertEquals(180, it.reservedMinutes)
@@ -92,7 +92,7 @@ class UsedServiceTests {
                 today = today,
                 date = today,
                 reservations = listOf(range(9, 12)),
-                attendances = listOf(interval(9, 12))
+                attendances = listOf(interval(9, 12)),
             )
             .also {
                 assertEquals(180, it.reservedMinutes)
@@ -111,7 +111,7 @@ class UsedServiceTests {
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 absences = listOf(),
                 reservations = listOf(),
-                attendances = listOf()
+                attendances = listOf(),
             )
             .also {
                 // Five-year-olds get 4 hours for free
@@ -151,7 +151,7 @@ class UsedServiceTests {
     fun `merges adjacent and overlapping ranges`() {
         compute(
                 reservations = listOf(range(9, 12)),
-                attendances = listOf(interval(11, 14), interval(14, 15))
+                attendances = listOf(interval(11, 14), interval(14, 15)),
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(9, 15))) }
     }
@@ -160,7 +160,7 @@ class UsedServiceTests {
     fun `returns no used service for full-day planned absences`() {
         compute(
                 placementType = PlacementType.DAYCARE,
-                absences = listOf(AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE)
+                absences = listOf(AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE),
             )
             .also { assertEquals(it.usedServiceRanges, listOf()) }
         compute(
@@ -168,8 +168,8 @@ class UsedServiceTests {
                 absences =
                     listOf(
                         AbsenceType.PLANNED_ABSENCE to AbsenceCategory.BILLABLE,
-                        AbsenceType.PLANNED_ABSENCE to AbsenceCategory.NONBILLABLE
-                    )
+                        AbsenceType.PLANNED_ABSENCE to AbsenceCategory.NONBILLABLE,
+                    ),
             )
             .also { assertEquals(it.usedServiceRanges, listOf()) }
     }
@@ -186,7 +186,7 @@ class UsedServiceTests {
     fun `uses reserved time even if non-planned absences exist`() {
         compute(
                 reservations = listOf(range(8, 16)),
-                absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE)
+                absences = listOf(AbsenceType.OTHER_ABSENCE to AbsenceCategory.BILLABLE),
             )
             .also {
                 assertEquals(it.usedServiceMinutes, 480)
@@ -197,7 +197,7 @@ class UsedServiceTests {
     @ParameterizedTest(name = "preschool times should be excluded when placement type is {0}")
     @EnumSource(
         value = PlacementType::class,
-        names = ["PRESCHOOL", "PRESCHOOL_CLUB", "PRESCHOOL_DAYCARE", "PRESCHOOL_DAYCARE_ONLY"]
+        names = ["PRESCHOOL", "PRESCHOOL_CLUB", "PRESCHOOL_DAYCARE", "PRESCHOOL_DAYCARE_ONLY"],
     )
     fun `preschool times are excluded`(placementType: PlacementType) {
         compute(
@@ -205,7 +205,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also {
                 assertEquals(it.reservedMinutes, 4 * 60)
@@ -216,7 +216,7 @@ class UsedServiceTests {
     @ParameterizedTest(name = "preparatory times should be excluded when placement type is {0}")
     @EnumSource(
         value = PlacementType::class,
-        names = ["PREPARATORY", "PREPARATORY_DAYCARE", "PREPARATORY_DAYCARE_ONLY"]
+        names = ["PREPARATORY", "PREPARATORY_DAYCARE", "PREPARATORY_DAYCARE_ONLY"],
     )
     fun `preparatory times are excluded`(placementType: PlacementType) {
         compute(
@@ -224,7 +224,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also {
                 assertEquals(it.reservedMinutes, 3 * 60)
@@ -253,7 +253,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = emptyList(),
-                attendances = listOf(interval(9, 13))
+                attendances = listOf(interval(9, 13)),
             )
             .also { assertEquals(it.usedServiceRanges, emptyList()) }
 
@@ -276,7 +276,7 @@ class UsedServiceTests {
                 dailyPreschoolTimes = range(9, 13),
                 dailyPreparatoryTimes = range(9, 14),
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also { assertEquals(it.usedServiceRanges, listOf(range(8, 17))) }
     }
@@ -286,7 +286,7 @@ class UsedServiceTests {
         compute(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also {
                 assertEquals(4 * 60, it.reservedMinutes) // 8 hours - 4 hours = 4 hours
@@ -296,7 +296,7 @@ class UsedServiceTests {
 
         compute(
                 placementType = PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                attendances = listOf(interval(10, 13))
+                attendances = listOf(interval(10, 13)),
             )
             .also {
                 assertEquals(0, it.usedServiceMinutes) // Will not be negative
@@ -309,7 +309,7 @@ class UsedServiceTests {
         compute(
                 placementType = PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also {
                 assertEquals(9 * 60, it.usedServiceMinutes)
@@ -324,7 +324,7 @@ class UsedServiceTests {
                     operationDates = emptySet(),
                     shiftCareType = shiftCareType,
                     reservations = listOf(range(8, 16)),
-                    attendances = listOf(interval(9, 17))
+                    attendances = listOf(interval(9, 17)),
                 )
                 .also {
                     assertEquals(0, it.reservedMinutes)
@@ -340,7 +340,7 @@ class UsedServiceTests {
                 operationDates = emptySet(),
                 shiftCareType = ShiftCareType.INTERMITTENT,
                 reservations = listOf(range(8, 16)),
-                attendances = listOf(interval(9, 17))
+                attendances = listOf(interval(9, 17)),
             )
             .also {
                 assertEquals(8 * 60, it.reservedMinutes)
@@ -355,7 +355,7 @@ class UsedServiceTests {
                 operationDates = emptySet(),
                 shiftCareType = ShiftCareType.INTERMITTENT,
                 reservations = emptyList(),
-                attendances = emptyList()
+                attendances = emptyList(),
             )
             .also {
                 assertEquals(0, it.reservedMinutes)
@@ -379,7 +379,7 @@ class UsedServiceTests {
                         placementType = PlacementType.DAYCARE,
                         serviceNeedHours = 120,
                         absences = listOf(absenceType to AbsenceCategory.BILLABLE),
-                        operationDates = operationDatesWithCount(23)
+                        operationDates = operationDatesWithCount(23),
                     )
                     .also {
                         assertEquals((120.0 * 60 / 23).roundToLong(), it.usedServiceMinutes)
@@ -394,9 +394,9 @@ class UsedServiceTests {
                         absences =
                             listOf(
                                 absenceType to AbsenceCategory.BILLABLE,
-                                absenceType to AbsenceCategory.NONBILLABLE
+                                absenceType to AbsenceCategory.NONBILLABLE,
                             ),
-                        operationDates = operationDatesWithCount(31)
+                        operationDates = operationDatesWithCount(31),
                     )
                     .also {
                         assertEquals((120.0 * 60 / 31).roundToLong(), it.usedServiceMinutes)

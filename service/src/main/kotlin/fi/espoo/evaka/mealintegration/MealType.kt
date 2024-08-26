@@ -10,5 +10,5 @@ enum class MealType {
     LUNCH_PRESCHOOL,
     SNACK,
     SUPPER,
-    EVENING_SNACK
+    EVENING_SNACK,
 }

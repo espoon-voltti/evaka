@@ -86,14 +86,14 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                 DevPerson(
                     id = PersonId(UUID.randomUUID()),
                     firstName = "Partner",
-                    lastName = "Person"
+                    lastName = "Person",
                 )
             child =
                 DevPerson(
                     id = PersonId(UUID.randomUUID()),
                     firstName = "Only",
                     lastName = "Child",
-                    dateOfBirth = LocalDate.of(2020, 2, 2)
+                    dateOfBirth = LocalDate.of(2020, 2, 2),
                 )
 
             tx.insertServiceNeedOptions()
@@ -126,7 +126,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                     placementType = PlacementType.DAYCARE,
                                     serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                                 )
-                            )
+                            ),
                     )
                 )
 
@@ -134,7 +134,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             tx.upsertFeeDecisions(testFeeDecisions)
             tx.setFeeDecisionSent(
                 ids = listOf(fdId),
-                clock = MockEvakaClock(now = feeDecisionSentAt)
+                clock = MockEvakaClock(now = feeDecisionSentAt),
             )
             tx.updateFeeDecisionDocumentKey(fdId, "test-fd-document-key")
 
@@ -152,10 +152,10 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                 LiableCitizenInfo(
                                     headOfFamily.id,
                                     headOfFamily.firstName,
-                                    headOfFamily.lastName
+                                    headOfFamily.lastName,
                                 ),
                             ),
-                        decisionChildren = emptyList()
+                        decisionChildren = emptyList(),
                     )
                 }
 
@@ -171,7 +171,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                         dateOfBirth = child.dateOfBirth,
                         unitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                        serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                     )
                 )
             val voucherValueSentAt = HelsinkiDateTime.atStartOfDay(LocalDate.of(2018, 6, 1))
@@ -192,13 +192,13 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
                                 LiableCitizenInfo(
                                     headOfFamily.id,
                                     headOfFamily.firstName,
-                                    headOfFamily.lastName
+                                    headOfFamily.lastName,
                                 )
                             ),
                         decisionChildren =
                             listOf(
                                 FinanceDecisionChildInfo(child.id, child.firstName, child.lastName)
-                            )
+                            ),
                     )
                 }
         }
@@ -211,7 +211,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
                 AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.STRONG),
-                clock
+                clock,
             )
 
         Assertions.assertThatIterable(financeDecisions)
@@ -227,7 +227,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
                 AuthenticatedUser.Citizen(partner.id, CitizenAuthLevel.STRONG),
-                clock
+                clock,
             )
 
         Assertions.assertThatIterable(financeDecisions)
@@ -243,7 +243,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             applicationControllerCitizen.getLiableCitizenFinanceDecisions(
                 dbInstance(),
                 AuthenticatedUser.Citizen(headOfFamily.id, CitizenAuthLevel.WEAK),
-                clock
+                clock,
             )
         }
     }
@@ -266,7 +266,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         siblingDiscount: Int = 0,
         coPayment: Int = 28900,
         feeAlterations: List<FeeAlterationWithEffect> = listOf(),
-        documentKey: String = "test-voucher-document-key"
+        documentKey: String = "test-voucher-document-key",
     ) =
         VoucherValueDecision(
             id = id,
@@ -293,7 +293,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             feeAlterations = feeAlterations,
             finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
             difference = emptySet(),
-            documentKey = documentKey
+            documentKey = documentKey,
         )
 
     private fun createTestFeeDecision(
@@ -309,7 +309,7 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
         partnerIncome: DecisionIncome? = null,
         familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0,
         created: HelsinkiDateTime = HelsinkiDateTime.now(),
-        documentKey: String = "test-fee-document-key"
+        documentKey: String = "test-fee-document-key",
     ) =
         FeeDecision(
             id = id,
@@ -325,6 +325,6 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             children = children,
             difference = emptySet(),
             created = created,
-            documentKey = documentKey
+            documentKey = documentKey,
         )
 }

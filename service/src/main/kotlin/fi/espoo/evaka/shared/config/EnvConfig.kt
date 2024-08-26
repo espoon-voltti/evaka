@@ -57,7 +57,7 @@ class EnvConfig {
         ScheduledJobsEnv.fromEnvironment(
             ScheduledJob.values().associateWith { it.defaultSettings },
             "evaka.job",
-            env
+            env,
         )
 
     @Bean fun vtjEnv(evakaEnv: EvakaEnv, env: Environment): VtjEnv = VtjEnv.fromEnvironment(env)

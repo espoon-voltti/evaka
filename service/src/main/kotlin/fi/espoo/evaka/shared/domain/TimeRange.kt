@@ -22,16 +22,16 @@ import java.time.LocalTime
 @JsonDeserialize(using = TimeRangeJsonDeserializer::class)
 data class TimeRange(
     override val start: TimeRangeEndpoint.Start,
-    override val end: TimeRangeEndpoint.End
+    override val end: TimeRangeEndpoint.End,
 ) : BoundedRange<TimeRangeEndpoint, TimeRange> {
     constructor(
         start: TimeRangeEndpoint,
-        end: TimeRangeEndpoint
+        end: TimeRangeEndpoint,
     ) : this(start.asStart(), end.asEnd())
 
     constructor(
         start: LocalTime,
-        end: LocalTime
+        end: LocalTime,
     ) : this(TimeRangeEndpoint.Start(start), TimeRangeEndpoint.End(end))
 
     init {
@@ -92,12 +92,12 @@ data class TimeRange(
                             this.start < other.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(this.start, other.start),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             other.start < this.start ->
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(other.start, this.start),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
                         },
@@ -107,15 +107,15 @@ data class TimeRange(
                             other.end < this.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(other.end, this.end),
-                                    isFirst = true
+                                    isFirst = true,
                                 )
                             this.end < other.end ->
                                 BoundedRange.Relation.Remainder(
                                     range = TimeRange(this.end, other.end),
-                                    isFirst = false
+                                    isFirst = false,
                                 )
                             else -> null
-                        }
+                        },
                 )
         }
 
@@ -146,7 +146,7 @@ data class TimeRange(
         val endDate = if (this.end.isMidnight()) date.plusDays(1) else date
         return HelsinkiDateTimeRange(
             HelsinkiDateTime.of(date, this.start.inner),
-            HelsinkiDateTime.of(endDate, this.end.inner)
+            HelsinkiDateTime.of(endDate, this.end.inner),
         )
     }
 
@@ -174,7 +174,7 @@ class TimeRangeJsonSerializer : JsonSerializer<TimeRange>() {
     override fun serialize(value: TimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
         return serializers.defaultSerializeValue(
             SerializableTimeRange(value.start.inner, value.end.inner),
-            gen
+            gen,
         )
     }
 }

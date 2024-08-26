@@ -20,12 +20,12 @@ data class ChildBackupCare(
     val id: BackupCareId,
     @Nested("unit_") val unit: BackupCareUnit,
     @Nested("group_") val group: BackupCareGroup?,
-    val period: FiniteDateRange
+    val period: FiniteDateRange,
 )
 
 data class ChildBackupCareResponse(
     val backupCare: ChildBackupCare,
-    val permittedActions: Set<Action.BackupCare>
+    val permittedActions: Set<Action.BackupCare>,
 )
 
 data class UnitBackupCare(
@@ -35,7 +35,7 @@ data class UnitBackupCare(
     val period: FiniteDateRange,
     @Json val fromUnits: List<String>,
     @Json val serviceNeeds: Set<ServiceNeed>,
-    val missingServiceNeedDays: Int
+    val missingServiceNeedDays: Int,
 )
 
 data class GroupBackupCare(val id: BackupCareId, val childId: ChildId, val period: FiniteDateRange)
@@ -44,7 +44,7 @@ data class BackupCareChild(
     val id: ChildId,
     val firstName: String,
     val lastName: String,
-    val birthDate: LocalDate
+    val birthDate: LocalDate,
 )
 
 data class BackupCareUnit(val id: DaycareId, val name: String)

@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/reports/service-voucher-value", // deprecated
-    "/employee/reports/service-voucher-value"
+    "/employee/reports/service-voucher-value",
 )
 class ServiceVoucherValueReportController(private val accessControl: AccessControl) {
 
@@ -43,7 +43,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam year: Int,
         @RequestParam month: Int,
-        @RequestParam areaId: AreaId?
+        @RequestParam areaId: AreaId?,
     ): ServiceVoucherReport {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -52,7 +52,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_SERVICE_VOUCHER_REPORT
+                        Action.Unit.READ_SERVICE_VOUCHER_REPORT,
                     )
                 getServiceVoucherReport(tx, year, month, areaId, filter)
             }
@@ -62,7 +62,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
     data class ServiceVoucherUnitReport(
         val locked: LocalDate?,
         val rows: List<ServiceVoucherValueRow>,
-        val voucherTotal: Int
+        val voucherTotal: Int,
     )
 
     @GetMapping("/units/{unitId}")
@@ -72,7 +72,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam year: Int,
-        @RequestParam month: Int
+        @RequestParam month: Int,
     ): ServiceVoucherUnitReport {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -81,7 +81,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                     user,
                     clock,
                     Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT,
-                    unitId
+                    unitId,
                 )
 
                 val snapshotTime = tx.getSnapshotDate(year, month)
@@ -95,7 +95,7 @@ class ServiceVoucherValueReportController(private val accessControl: AccessContr
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
                     rows = rows,
-                    voucherTotal = rows.sumOf { it.realizedAmount }
+                    voucherTotal = rows.sumOf { it.realizedAmount },
                 )
             }
         }
@@ -106,7 +106,7 @@ fun freezeVoucherValueReportRows(
     tx: Database.Transaction,
     year: Int,
     month: Int,
-    takenAt: HelsinkiDateTime
+    takenAt: HelsinkiDateTime,
 ) {
     val rows = tx.getServiceVoucherValues(year, month)
 
@@ -131,7 +131,7 @@ VALUES (${bind(voucherValueReportSnapshotId)}, ${bind { it.serviceVoucherDecisio
 
 data class ServiceVoucherReport(
     val locked: LocalDate?,
-    val rows: List<ServiceVoucherValueUnitAggregate>
+    val rows: List<ServiceVoucherValueUnitAggregate>,
 )
 
 fun getServiceVoucherReport(
@@ -139,7 +139,7 @@ fun getServiceVoucherReport(
     year: Int,
     month: Int,
     areaId: AreaId?,
-    unitFilter: AccessControlFilter<DaycareId>
+    unitFilter: AccessControlFilter<DaycareId>,
 ): ServiceVoucherReport {
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
 
@@ -169,14 +169,14 @@ fun getServiceVoucherReport(
                     it.unitId,
                     it.unitName,
                     it.areaId,
-                    it.areaName
+                    it.areaName,
                 )
             }
             .map { (unit, rows) ->
                 ServiceVoucherValueUnitAggregate(
                     unit = unit,
                     childCount = rows.map { it.childId }.distinct().size,
-                    monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
+                    monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount },
                 )
             }
 
@@ -186,13 +186,13 @@ fun getServiceVoucherReport(
 data class ServiceVoucherValueUnitAggregate(
     val unit: UnitData,
     val childCount: Int,
-    val monthlyPaymentSum: Int
+    val monthlyPaymentSum: Int,
 ) {
     data class UnitData(
         val id: DaycareId,
         val name: String,
         val areaId: AreaId,
-        val areaName: String
+        val areaName: String,
     )
 }
 
@@ -225,13 +225,13 @@ data class ServiceVoucherValueRow(
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
     val type: VoucherReportRowType,
-    @get:JsonProperty("isNew") val isNew: Boolean
+    @get:JsonProperty("isNew") val isNew: Boolean,
 )
 
 private data class RowGrouping(
     val childId: ChildId,
     val unitId: DaycareId,
-    val realizedPeriod: FiniteDateRange
+    val realizedPeriod: FiniteDateRange,
 )
 
 fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
@@ -242,7 +242,7 @@ fun removeRefundsAndCorrectionsThatCancelEachOthersOut(
             RowGrouping(
                 childId = it.childId,
                 unitId = it.unitId,
-                realizedPeriod = it.realizedPeriod
+                realizedPeriod = it.realizedPeriod,
             )
         }
         .values
@@ -281,7 +281,7 @@ private fun Database.Read.getServiceVoucherValues(
     year: Int,
     month: Int,
     areaId: AreaId? = null,
-    unitIds: Set<DaycareId>? = null
+    unitIds: Set<DaycareId>? = null,
 ): List<ServiceVoucherValueRow> {
     val reportDate = LocalDate.of(year, month, 1)
     return createQuery {
@@ -496,7 +496,7 @@ WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(u
                 { it.childId },
                 { it.type },
                 { it.realizedPeriod.start },
-                { it.realizedPeriod.end }
+                { it.realizedPeriod.end },
             )
         )
 }
@@ -526,7 +526,7 @@ private fun Database.Read.getSnapshotVoucherValues(
     year: Int,
     month: Int,
     areaId: AreaId? = null,
-    unitIds: Set<DaycareId>? = null
+    unitIds: Set<DaycareId>? = null,
 ): List<ServiceVoucherValueRow> {
     return createQuery {
             sql(

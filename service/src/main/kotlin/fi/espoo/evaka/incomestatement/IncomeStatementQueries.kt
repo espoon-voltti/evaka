@@ -109,7 +109,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 created = created,
                 updated = updated,
                 handled = handled,
-                handlerNote = handlerNote
+                handlerNote = handlerNote,
             )
         IncomeStatementType.INCOME -> {
             val grossIncomeSource = column<IncomeSource?>("gross_income_source")
@@ -119,7 +119,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                         incomeSource = grossIncomeSource,
                         estimatedMonthlyIncome = column("gross_estimated_monthly_income"),
                         otherIncome = column("gross_other_income"),
-                        otherIncomeInfo = column("gross_other_income_info")
+                        otherIncomeInfo = column("gross_other_income_info"),
                     )
                 } else {
                     null
@@ -137,11 +137,11 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                                 EstimatedIncome(
                                     selfEmployedEstimatedMonthlyIncome,
                                     incomeStartDate = column("self_employed_income_start_date"),
-                                    incomeEndDate = column("self_employed_income_end_date")
+                                    incomeEndDate = column("self_employed_income_end_date"),
                                 )
                             } else {
                                 null
-                            }
+                            },
                     )
                 } else {
                     null
@@ -159,7 +159,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                         name = accountantName,
                         address = column("accountant_address"),
                         phone = column("accountant_phone"),
-                        email = column("accountant_email")
+                        email = column("accountant_email"),
                     )
                 } else {
                     null
@@ -180,7 +180,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                         limitedCompany = limitedCompany,
                         partnership = column("partnership"),
                         lightEntrepreneur = column("light_entrepreneur"),
-                        accountant = accountant
+                        accountant = accountant,
                     )
                 } else {
                     null
@@ -202,7 +202,7 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 updated = updated,
                 handled = handled,
                 handlerNote = handlerNote,
-                attachments = jsonColumn("attachments")
+                attachments = jsonColumn("attachments"),
             )
         }
         IncomeStatementType.CHILD_INCOME ->
@@ -218,22 +218,18 @@ private fun Row.mapIncomeStatement(includeEmployeeContent: Boolean): IncomeState
                 handled = handled,
                 handlerNote = handlerNote,
                 otherInfo = column("other_info"),
-                attachments = jsonColumn("attachments")
+                attachments = jsonColumn("attachments"),
             )
     }
 }
 
-data class PagedIncomeStatements(
-    val data: List<IncomeStatement>,
-    val total: Int,
-    val pages: Int,
-)
+data class PagedIncomeStatements(val data: List<IncomeStatement>, val total: Int, val pages: Int)
 
 fun Database.Read.readIncomeStatementsForPerson(
     personId: PersonId,
     includeEmployeeContent: Boolean,
     page: Int,
-    pageSize: Int
+    pageSize: Int,
 ): PagedIncomeStatements =
     @Suppress("DEPRECATION")
     createQuery(selectQuery(single = false, excludeEmployeeAttachments = !includeEmployeeContent))
@@ -247,7 +243,7 @@ fun Database.Read.readIncomeStatementsForPerson(
 fun Database.Read.readIncomeStatementForPerson(
     personId: PersonId,
     incomeStatementId: IncomeStatementId,
-    includeEmployeeContent: Boolean
+    includeEmployeeContent: Boolean,
 ): IncomeStatement? =
     @Suppress("DEPRECATION")
     createQuery(selectQuery(single = true, excludeEmployeeAttachments = !includeEmployeeContent))
@@ -343,7 +339,7 @@ private fun Database.SqlStatement<*>.bindAccountant(accountant: Accountant) {
 
 fun Database.Transaction.createIncomeStatement(
     personId: PersonId,
-    body: IncomeStatementBody
+    body: IncomeStatementBody,
 ): IncomeStatementId {
     @Suppress("DEPRECATION")
     return createQuery(
@@ -416,7 +412,7 @@ RETURNING id
 
 fun Database.Transaction.updateIncomeStatement(
     incomeStatementId: IncomeStatementId,
-    body: IncomeStatementBody
+    body: IncomeStatementBody,
 ): Boolean {
     val rowCount =
         @Suppress("DEPRECATION")
@@ -463,7 +459,7 @@ WHERE id = :id
 fun Database.Transaction.updateIncomeStatementHandled(
     incomeStatementId: IncomeStatementId,
     note: String,
-    handlerId: EmployeeId?
+    handlerId: EmployeeId?,
 ) {
     @Suppress("DEPRECATION")
     createUpdate(
@@ -492,7 +488,7 @@ data class IncomeStatementAwaitingHandler(
     val type: IncomeStatementType,
     val personId: PersonId,
     val personName: String,
-    val primaryCareArea: String?
+    val primaryCareArea: String?,
 )
 
 // language=SQL
@@ -574,7 +570,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     page: Int,
     pageSize: Int,
     sortBy: IncomeStatementSortParam,
-    sortDirection: SortDirection
+    sortDirection: SortDirection,
 ): PagedIncomeStatementsAwaitingHandler {
     val count =
         @Suppress("DEPRECATION")
@@ -626,7 +622,7 @@ fun Database.Read.readIncomeStatementStartDates(personId: PersonId): List<LocalD
 
 fun Database.Read.incomeStatementExistsForStartDate(
     personId: PersonId,
-    startDate: LocalDate
+    startDate: LocalDate,
 ): Boolean =
     @Suppress("DEPRECATION")
     createQuery(
@@ -640,7 +636,7 @@ data class ChildBasicInfo(val id: ChildId, val firstName: String, val lastName: 
 
 fun Database.Read.getIncomeStatementChildrenByGuardian(
     guardianId: PersonId,
-    today: LocalDate
+    today: LocalDate,
 ): List<ChildBasicInfo> =
     @Suppress("DEPRECATION")
     this.createQuery(

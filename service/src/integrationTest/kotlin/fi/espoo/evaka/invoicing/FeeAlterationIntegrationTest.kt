@@ -44,7 +44,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
             expected.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
-            actual.map { it.copy(id = nullId, updatedAt = null) }.toSet()
+            actual.map { it.copy(id = nullId, updatedAt = null) }.toSet(),
         )
     }
 
@@ -72,7 +72,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             validFrom = LocalDate.of(2019, 1, 1),
             validTo = LocalDate.of(2019, 1, 31),
             notes = "",
-            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
+            updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
         )
 
     @Test
@@ -96,9 +96,9 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 testFeeAlteration.copy(
                     id = FeeAlterationId(UUID.randomUUID()),
                     validFrom = testFeeAlteration.validFrom.plusYears(1),
-                    validTo = testFeeAlteration.validTo!!.plusYears(1)
+                    validTo = testFeeAlteration.validTo!!.plusYears(1),
                 ),
-                testFeeAlteration
+                testFeeAlteration,
             )
         db.transaction { tx -> feeAlterations.forEach { tx.upsertFeeAlteration(clock, it) } }
 
@@ -113,7 +113,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         val result = getFeeAlterations(personId)
         assertEqualEnough(
             listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            result.map { it.data }
+            result.map { it.data },
         )
     }
 
@@ -134,7 +134,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         val result = getFeeAlterations(personId)
         assertEqualEnough(
             listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            result.map { it.data }
+            result.map { it.data },
         )
     }
 
@@ -185,7 +185,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
                 )
             ),
-            result.map { it.data }
+            result.map { it.data },
         )
     }
 
@@ -202,7 +202,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         listOf(FeeAlterationAttachment(attachmentId, "evaka-logo.png", "image/png"))
                 )
             ),
-            result.map { it.data }
+            result.map { it.data },
         )
 
         deleteFeeAlteration(testFeeAlterationId)
@@ -234,7 +234,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             user,
             clock,
             id,
-            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
     }
 }

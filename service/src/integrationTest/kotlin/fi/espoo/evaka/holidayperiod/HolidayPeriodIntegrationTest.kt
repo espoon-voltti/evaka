@@ -39,7 +39,7 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(summer.id, christmas.id),
-            db.read { it.getHolidayPeriods() }.map { p -> p.id }
+            db.read { it.getHolidayPeriods() }.map { p -> p.id },
         )
 
         val newDeadline = christmasDeadline.minusWeeks(1)
@@ -48,12 +48,12 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 christmas.id,
                 christmasRange,
                 christmasReservationsOpen,
-                newDeadline
+                newDeadline,
             )
         }
         assertEquals(
             listOf(summer.reservationDeadline, newDeadline),
-            db.read { it.getHolidayPeriods() }.map { p -> p.reservationDeadline }
+            db.read { it.getHolidayPeriods() }.map { p -> p.reservationDeadline },
         )
 
         db.transaction { it.deleteHolidayPeriod(summer.id) }
@@ -79,7 +79,7 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     summer.id,
                     christmasRange,
                     christmasReservationsOpen,
-                    summerDeadline
+                    summerDeadline,
                 )
             }
         }

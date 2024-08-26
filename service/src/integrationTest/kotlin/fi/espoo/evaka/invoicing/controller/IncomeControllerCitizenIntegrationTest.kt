@@ -54,7 +54,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             streetAddress = "Kamreerintie 2",
             postalCode = "02770",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     private val guardianEmail = "guardian@example.com"
@@ -82,7 +82,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                         childId = childId,
                         unitId = daycareId,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insertServiceNeedOptions()
@@ -94,7 +94,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             employeeId = tx.insert(DevEmployee(roles = setOf(UserRole.SERVICE_WORKER)))
             tx.upsertEmployeeUser(employeeId)
@@ -111,7 +111,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                     personId = guardianId,
                     updatedBy = employeeEvakaUserId,
                     validFrom = clock.today().minusMonths(6),
-                    validTo = expirationDate
+                    validTo = expirationDate,
                 )
             )
             it.insert(
@@ -119,7 +119,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
                     headOfChild = guardianId,
                     childId = childId,
                     startDate = clock.today().minusMonths(6),
-                    endDate = expirationDate.plusMonths(6)
+                    endDate = expirationDate.plusMonths(6),
                 )
             )
         }
@@ -128,7 +128,7 @@ class IncomeControllerCitizenIntegrationTest : FullApplicationTest(resetDbBefore
             incomeControllerCitizen.getExpiringIncome(
                 dbInstance(),
                 guardianAuthenticatedUser,
-                clock
+                clock,
             )
 
         assertEquals(1, expirationDates.size)

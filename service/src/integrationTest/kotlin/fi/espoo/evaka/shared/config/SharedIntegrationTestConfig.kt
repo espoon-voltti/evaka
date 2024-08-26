@@ -93,7 +93,7 @@ fun getTestDataSource(): TestDataSource =
                                 .placeholders(
                                     mapOf(
                                         "application_user" to "evaka_application_local",
-                                        "migration_user" to "evaka_migration_local"
+                                        "migration_user" to "evaka_migration_local",
                                     )
                                 )
                                 .load()
@@ -235,27 +235,27 @@ val testFeatureConfig =
                 ArchiveProcessType.APPLICATION_DAYCARE to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.a",
-                        archiveDurationMonths = 10 * 12
+                        archiveDurationMonths = 10 * 12,
                     ),
                 ArchiveProcessType.APPLICATION_PRESCHOOL to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.b",
-                        archiveDurationMonths = 10 * 12
+                        archiveDurationMonths = 10 * 12,
                     ),
                 ArchiveProcessType.APPLICATION_CLUB to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.123.c",
-                        archiveDurationMonths = 10 * 12
+                        archiveDurationMonths = 10 * 12,
                     ),
                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_DAYCARE to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.a",
-                        archiveDurationMonths = 120 * 12
+                        archiveDurationMonths = 120 * 12,
                     ),
                 ArchiveProcessType.ASSISTANCE_NEED_DECISION_PRESCHOOL to
                     ArchiveProcessConfig(
                         processDefinitionNumber = "123.456.b",
-                        archiveDurationMonths = 120 * 12
+                        archiveDurationMonths = 120 * 12,
                     ),
-            )
+            ),
     )

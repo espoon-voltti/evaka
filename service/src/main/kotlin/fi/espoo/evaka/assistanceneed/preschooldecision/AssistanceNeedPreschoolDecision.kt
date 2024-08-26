@@ -37,7 +37,7 @@ data class AssistanceNeedPreschoolDecision(
     val unitPostOffice: String?,
     val preparer1Name: String?,
     val preparer2Name: String?,
-    val decisionMakerName: String?
+    val decisionMakerName: String?,
 ) {
     val isValid: Boolean
         get() {
@@ -57,7 +57,7 @@ data class AssistanceNeedPreschoolDecision(
                         form.basisDocumentPsychologistStatement,
                         form.basisDocumentSocialReport,
                         form.basisDocumentDoctorStatement,
-                        form.basisDocumentOtherOrMissing
+                        form.basisDocumentOtherOrMissing,
                     )
                     .none { it }
             )
@@ -138,7 +138,7 @@ data class AssistanceNeedPreschoolDecisionForm(
 data class AssistanceNeedPreschoolDecisionChild(
     val id: ChildId,
     val name: String,
-    val dateOfBirth: LocalDate
+    val dateOfBirth: LocalDate,
 )
 
 data class AssistanceNeedPreschoolDecisionBasics(
@@ -153,7 +153,7 @@ data class AssistanceNeedPreschoolDecisionBasics(
     val sentForDecision: LocalDate?,
     val decisionMade: LocalDate?,
     val annulmentReason: String,
-    val unreadGuardianIds: List<PersonId>?
+    val unreadGuardianIds: List<PersonId>?,
 )
 
 data class AssistanceNeedPreschoolDecisionGuardian(
@@ -161,7 +161,7 @@ data class AssistanceNeedPreschoolDecisionGuardian(
     val personId: PersonId,
     val name: String,
     val isHeard: Boolean,
-    val details: String
+    val details: String,
 )
 
 data class AssistanceNeedPreschoolDecisionCitizenListItem(
@@ -173,5 +173,5 @@ data class AssistanceNeedPreschoolDecisionCitizenListItem(
     val decisionMade: LocalDate,
     val unitName: String,
     val annulmentReason: String,
-    val isUnread: Boolean
+    val isUnread: Boolean,
 )

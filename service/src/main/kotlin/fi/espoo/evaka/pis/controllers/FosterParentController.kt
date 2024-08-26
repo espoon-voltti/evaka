@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/foster-parent", // deprecated
-    "/employee/foster-parent"
+    "/employee/foster-parent",
 )
 class FosterParentController(private val accessControl: AccessControl) {
     @GetMapping("/by-parent/{parentId}")
@@ -40,7 +40,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable parentId: PersonId
+        @PathVariable parentId: PersonId,
     ): List<FosterParentRelationship> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -49,7 +49,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_FOSTER_CHILDREN,
-                        parentId
+                        parentId,
                     )
                     tx.getFosterChildren(parentId)
                 }
@@ -62,7 +62,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: PersonId
+        @PathVariable childId: PersonId,
     ): List<FosterParentRelationship> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -71,7 +71,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.READ_FOSTER_PARENTS,
-                        childId
+                        childId,
                     )
                     tx.getFosterParents(childId)
                 }
@@ -84,7 +84,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: CreateFosterParentRelationshipBody
+        @RequestBody body: CreateFosterParentRelationshipBody,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -93,7 +93,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
-                        body.parentId
+                        body.parentId,
                     )
                     tx.createFosterParentRelationship(body)
                 }
@@ -102,7 +102,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                 Audit.FosterParentCreateRelationship.log(
                     targetId = AuditId(body.parentId),
                     objectId = AuditId(body.childId),
-                    meta = mapOf("fosterParentId" to id)
+                    meta = mapOf("fosterParentId" to id),
                 )
             }
     }
@@ -113,7 +113,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: FosterParentId,
-        @RequestBody validDuring: DateRange
+        @RequestBody validDuring: DateRange,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -122,7 +122,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.FosterParent.UPDATE,
-                        id
+                        id,
                     )
                     tx.updateFosterParentRelationshipValidity(id, validDuring)
                 }
@@ -130,7 +130,7 @@ class FosterParentController(private val accessControl: AccessControl) {
             .also {
                 Audit.FosterParentUpdateRelationship.log(
                     targetId = AuditId(id),
-                    meta = mapOf("validDuring" to validDuring)
+                    meta = mapOf("validDuring" to validDuring),
                 )
             }
     }
@@ -140,7 +140,7 @@ class FosterParentController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: FosterParentId
+        @PathVariable id: FosterParentId,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -149,7 +149,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.FosterParent.DELETE,
-                        id
+                        id,
                     )
                     tx.deleteFosterParentRelationship(id)
                 }
@@ -162,11 +162,11 @@ data class FosterParentRelationship(
     val relationshipId: FosterParentId,
     @Nested("child") val child: PersonSummary,
     @Nested("parent") val parent: PersonSummary,
-    val validDuring: DateRange
+    val validDuring: DateRange,
 )
 
 data class CreateFosterParentRelationshipBody(
     val childId: PersonId,
     val parentId: PersonId,
-    val validDuring: DateRange
+    val validDuring: DateRange,
 )

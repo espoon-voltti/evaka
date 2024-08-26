@@ -78,7 +78,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                 DevDaycareGroup(
                     id = groupId,
                     daycareId = testDaycare.id,
-                    startDate = placementStart
+                    startDate = placementStart,
                 )
             )
 
@@ -88,7 +88,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -96,7 +96,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
 
@@ -120,7 +120,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                             it,
                             employee,
                             clock,
-                            Action.MessageAccount.ACCESS
+                            Action.MessageAccount.ACCESS,
                         )
                     )
                     .first()
@@ -130,22 +130,22 @@ class MessageNotificationEmailServiceIntegrationTest :
             sender = employeeAccount,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee,
-            clock
+            clock,
         )
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
-            getEmailFor(testPersonFi).content.subject
+            getEmailFor(testPersonFi).content.subject,
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress
+            getEmailFor(testPersonSv).fromAddress,
         )
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress
+            getEmailFor(testPersonEn).fromAddress,
         )
     }
 
@@ -157,7 +157,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             db.transaction { tx ->
                 AuthenticatedUser.Employee(
                     tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
-                    roles = setOf(UserRole.ADMIN)
+                    roles = setOf(UserRole.ADMIN),
                 )
             }
 
@@ -166,14 +166,14 @@ class MessageNotificationEmailServiceIntegrationTest :
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = adminUser,
             clock,
-            type = MessageType.BULLETIN
+            type = MessageType.BULLETIN,
         )
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
-            getEmailFor(testPersonFi).content.subject
+            getEmailFor(testPersonFi).content.subject,
         )
         assertTrue(
             getEmailFor(testPersonFi)
@@ -186,11 +186,11 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonSv).fromAddress
+            getEmailFor(testPersonSv).fromAddress,
         )
         assertEquals(
             "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
-            getEmailFor(testPersonEn).fromAddress
+            getEmailFor(testPersonEn).fromAddress,
         )
     }
 
@@ -203,7 +203,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                             it,
                             employee,
                             clock,
-                            Action.MessageAccount.ACCESS
+                            Action.MessageAccount.ACCESS,
                         )
                     )
                     .first()
@@ -214,7 +214,7 @@ class MessageNotificationEmailServiceIntegrationTest :
                 sender = employeeAccount,
                 recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
                 user = employee,
-                clock = clock
+                clock = clock,
             )
         assertNotNull(contentId)
 
@@ -231,7 +231,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         recipients: List<MessageRecipient>,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        type: MessageType = MessageType.MESSAGE
+        type: MessageType = MessageType.MESSAGE,
     ) =
         messageController.createMessage(
             dbInstance(),
@@ -245,8 +245,8 @@ class MessageNotificationEmailServiceIntegrationTest :
                 recipients = recipients.toSet(),
                 recipientNames = listOf(),
                 urgent = false,
-                sensitive = false
-            )
+                sensitive = false,
+            ),
         )
 
     private fun getEmailFor(person: DevPerson): Email {

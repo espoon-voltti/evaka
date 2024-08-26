@@ -42,7 +42,7 @@ class MockBiEndpoint(env: EspooBiEnv) {
     fun putReport(
         @RequestParam filename: String,
         request: WebRequest,
-        body: InputStream
+        body: InputStream,
     ): ResponseEntity<Nothing> =
         if (request.getHeader("authorization") != authorizationHeader)
             ResponseEntity.status(HttpStatus.FORBIDDEN).build()

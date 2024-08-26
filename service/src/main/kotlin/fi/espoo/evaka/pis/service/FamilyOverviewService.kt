@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service
 class FamilyOverviewService(
     private val jsonMapper: JsonMapper,
     private val incomeTypesProvider: IncomeTypesProvider,
-    private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    private val coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ) {
     fun getFamilyByAdult(tx: Database.Read, clock: EvakaClock, adultId: PersonId): FamilyOverview? {
         val today = clock.today()
@@ -93,7 +93,7 @@ ORDER BY date_of_birth ASC
                     toFamilyOverviewPerson(
                         jsonMapper,
                         incomeTypesProvider,
-                        coefficientMultiplierProvider
+                        coefficientMultiplierProvider,
                     )
                 }
                 .useIterable { rows -> rows.partition { it.headOfChild == null } }
@@ -109,8 +109,8 @@ ORDER BY date_of_birth ASC
                 Pair(supposedHead, children.filter { it.headOfChild == supposedHead.personId }),
                 Pair(
                     supposedPartner,
-                    children.filter { it.headOfChild == supposedPartner?.personId }
-                )
+                    children.filter { it.headOfChild == supposedPartner?.personId },
+                ),
             )
 
         return FamilyOverview(
@@ -123,7 +123,7 @@ ORDER BY date_of_birth ASC
                         getTotalIncomeEffect(
                             partner != null,
                             headOfFamily.income?.effect,
-                            partner?.income?.effect
+                            partner?.income?.effect,
                         ),
                     total =
                         getTotalIncome(
@@ -131,9 +131,9 @@ ORDER BY date_of_birth ASC
                             headOfFamily.income?.effect,
                             headOfFamily.income?.total,
                             partner?.income?.effect,
-                            partner?.income?.total
-                        )
-                )
+                            partner?.income?.total,
+                        ),
+                ),
         )
     }
 }
@@ -142,7 +142,7 @@ data class FamilyOverview(
     val headOfFamily: FamilyOverviewPerson,
     @JsonInclude(JsonInclude.Include.NON_NULL) val partner: FamilyOverviewPerson?,
     val children: List<FamilyOverviewPerson>,
-    val totalIncome: FamilyOverviewIncome?
+    val totalIncome: FamilyOverviewIncome?,
 )
 
 data class FamilyOverviewPerson(
@@ -155,18 +155,18 @@ data class FamilyOverviewPerson(
     val postalCode: String,
     val postOffice: String,
     @JsonInclude(JsonInclude.Include.NON_NULL) val headOfChild: PersonId?,
-    val income: FamilyOverviewIncome?
+    val income: FamilyOverviewIncome?,
 ) : HasDateOfBirth
 
 data class FamilyOverviewIncome(
     @JsonInclude(JsonInclude.Include.NON_NULL) val effect: IncomeEffect?,
-    @JsonInclude(JsonInclude.Include.NON_NULL) val total: Int?
+    @JsonInclude(JsonInclude.Include.NON_NULL) val total: Int?,
 )
 
 fun Row.toFamilyOverviewPerson(
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
-    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider
+    coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
 ): FamilyOverviewPerson {
     return FamilyOverviewPerson(
         personId = column("id"),
@@ -188,11 +188,11 @@ fun Row.toFamilyOverviewPerson(
                                 it,
                                 jsonMapper,
                                 incomeTypesProvider.get(),
-                                coefficientMultiplierProvider
+                                coefficientMultiplierProvider,
                             ),
-                            coefficientMultiplierProvider
+                            coefficientMultiplierProvider,
                         )
-                    }
-            )
+                    },
+            ),
     )
 }

@@ -47,7 +47,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2019, 12, 31)
+                        endDate = LocalDate.of(2019, 12, 31),
                     )
                 )
 
@@ -58,7 +58,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = LocalDate.of(2018, 12, 31),
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                        createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
                 // After placement ends
@@ -68,7 +68,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = LocalDate.of(2020, 1, 2),
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                        createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
                 // After placement ends, has no times
@@ -78,7 +78,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = LocalDate.of(2020, 1, 2),
                         startTime = null,
                         endTime = null,
-                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                        createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
                 // No placement at all
@@ -88,7 +88,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = LocalDate.of(2019, 1, 2),
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                        createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
 
@@ -99,7 +99,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = LocalDate.of(2019, 1, 2),
                         startTime = LocalTime.of(8, 0),
                         endTime = LocalTime.of(16, 0),
-                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                        createdBy = EvakaUserId(testAdult_1.id.raw),
                     )
                 )
             }

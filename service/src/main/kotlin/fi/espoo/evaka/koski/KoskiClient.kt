@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class KoskiClient(
     private val env: KoskiEnv,
     private val ophEnv: OphEnv,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>?
+    asyncJobRunner: AsyncJobRunner<AsyncJob>?,
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the
     // global defaults change.
@@ -68,7 +68,7 @@ class KoskiClient(
     private fun uploadToKoski(
         tx: Database.Transaction,
         msg: AsyncJob.UploadToKoski,
-        today: LocalDate
+        today: LocalDate,
     ) {
         logger.info { "Koski upload ${msg.key}: starting" }
         val data =
@@ -77,7 +77,7 @@ class KoskiClient(
                 ophEnv.organizerOid,
                 ophEnv.municipalityCode,
                 msg.key,
-                today
+                today,
             )
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
@@ -95,7 +95,7 @@ class KoskiClient(
                         method =
                             if (data.operation == KoskiOperation.CREATE) Method.POST
                             else Method.PUT,
-                        path = "${env.url}/oppija"
+                        path = "${env.url}/oppija",
                     )
                     .authentication()
                     .basic(env.user, env.secret.value)
@@ -128,7 +128,7 @@ class KoskiClient(
                                 "method" to request.method,
                                 "url" to request.url,
                                 "body" to request.body.asString("application/json"),
-                                "errorMessage" to error.errorData.decodeToString()
+                                "errorMessage" to error.errorData.decodeToString(),
                             )
                         logger.error(error, meta) {
                             "Koski upload ${msg.key} ${data.operation}: failed, status ${error.response.statusCode}"
@@ -156,7 +156,7 @@ class KoskiClient(
                                             .zip(response.opiskeluoikeudet)
                                             .map { it.first.copy(oid = it.second.oid) }
                                 )
-                            )
+                            ),
                     )
                 )
             }

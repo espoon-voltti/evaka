@@ -42,7 +42,7 @@ private val logger = KotlinLogging.logger {}
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val jsonMapper: JsonMapper,
-    env: VardaEnv
+    env: VardaEnv,
 ) : VardaUnitClient {
     private val fuel = FuelManager()
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
@@ -70,7 +70,7 @@ class VardaClient(
         val errorMessage: String,
         val errorCode: String?,
         val errorDescription: String?,
-        val statusCode: String
+        val statusCode: String,
     ) {
         fun asMap() =
             mapOf(
@@ -80,7 +80,7 @@ class VardaClient(
                 "errorMessage" to errorMessage,
                 "errorCode" to errorCode,
                 "errorDescription" to errorDescription,
-                "statusCode" to statusCode
+                "statusCode" to statusCode,
             )
     }
 
@@ -109,7 +109,7 @@ class VardaClient(
                 errorMessage = errorString,
                 errorCode = errorCodes.first(),
                 errorDescription = descriptions.first(),
-                statusCode = error.response.statusCode.toString()
+                statusCode = error.response.statusCode.toString(),
             )
         } catch (e: Exception) {
             VardaRequestError(
@@ -119,7 +119,7 @@ class VardaClient(
                 errorMessage = error.errorData.decodeToString(),
                 errorCode = null,
                 errorDescription = null,
-                statusCode = error.response.statusCode.toString()
+                statusCode = error.response.statusCode.toString(),
             )
         }
     }
@@ -127,7 +127,7 @@ class VardaClient(
     private fun vardaError(
         request: Request,
         error: FuelError,
-        message: (meta: VardaRequestError) -> String
+        message: (meta: VardaRequestError) -> String,
     ): Nothing {
         val meta = parseVardaError(request, error)
         logger.error(request, meta.asMap()) {
@@ -138,7 +138,7 @@ class VardaClient(
 
     data class VardaPersonSearchRequest(
         @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String? = null,
-        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null
+        @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null,
     ) {
         init {
             check(henkilotunnus != null || henkilo_oid != null) {
@@ -401,7 +401,7 @@ class VardaClient(
 
     override fun updateToimipaikka(
         url: URI,
-        unit: VardaUnitRequest
+        unit: VardaUnitRequest,
     ): VardaUnitClient.ToimipaikkaResponse {
         logger.info("VardaUpdate: client updating unit ${unit.nimi}")
         val (request, _, result) =
@@ -440,12 +440,12 @@ class VardaClient(
         val count: Int,
         val next: String?,
         val previous: String?,
-        val results: List<T>
+        val results: List<T>,
     )
 
     private fun <T> getAllPages(
         initialUrl: String,
-        parseJson: (String) -> PaginatedResponse<T>
+        parseJson: (String) -> PaginatedResponse<T>,
     ): List<T> {
         logger.info("VardaUpdate: client getting paginated result from $initialUrl")
         fun fetchNext(acc: List<T>, next: String?): List<T> {

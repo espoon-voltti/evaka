@@ -81,7 +81,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 DevDaycareGroup(
                     id = groupId,
                     daycareId = testDaycare.id,
-                    startDate = placementStart
+                    startDate = placementStart,
                 )
             )
 
@@ -91,7 +91,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = placementStart,
-                        endDate = placementEnd
+                        endDate = placementEnd,
                     )
                 )
             tx.insert(
@@ -99,7 +99,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                     daycarePlacementId = placementId,
                     daycareGroupId = groupId,
                     startDate = placementStart,
-                    endDate = placementEnd
+                    endDate = placementEnd,
                 )
             )
 
@@ -111,7 +111,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                 testHeadOfChild.id,
                 LocalDate.now().minusYears(1),
                 LocalDate.now().plusYears(1),
-                Creator.DVV
+                Creator.DVV,
             )
 
             tx.insert(DevEmployee(id = employeeId))
@@ -128,11 +128,11 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
-            getEmailFor(testGuardianFi).content.subject
+            getEmailFor(testGuardianFi).content.subject,
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testGuardianSv).fromAddress
+            getEmailFor(testGuardianSv).fromAddress,
         )
     }
 
@@ -170,7 +170,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         updateDocument(
             user = employee,
             doc.id,
-            PedagogicalDocumentPostBody(testChild_1.id, "babar")
+            PedagogicalDocumentPostBody(testChild_1.id, "babar"),
         )
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -200,7 +200,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
                         sql("SELECT email_sent FROM pedagogical_document WHERE id = ${bind(id)}")
                     }
                     .exactlyOne<Boolean>()
-            }
+            },
         )
     }
 
@@ -214,17 +214,17 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
-            getEmailFor(testGuardianFi).content.subject
+            getEmailFor(testGuardianFi).content.subject,
         )
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
-            getEmailFor(testGuardianSv).fromAddress
+            getEmailFor(testGuardianSv).fromAddress,
         )
     }
 
     private fun postNewDocument(
         user: AuthenticatedUser.Employee,
-        body: PedagogicalDocumentPostBody
+        body: PedagogicalDocumentPostBody,
     ) =
         jsonMapper.readValue<PedagogicalDocument>(
             http
@@ -239,7 +239,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     private fun updateDocument(
         user: AuthenticatedUser.Employee,
         id: PedagogicalDocumentId,
-        body: PedagogicalDocumentPostBody
+        body: PedagogicalDocumentPostBody,
     ) =
         jsonMapper.readValue<PedagogicalDocument>(
             http

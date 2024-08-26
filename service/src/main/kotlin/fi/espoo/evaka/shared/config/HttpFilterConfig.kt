@@ -64,7 +64,7 @@ class HttpFilterConfig {
         override fun doFilter(
             request: HttpServletRequest,
             response: HttpServletResponse,
-            chain: FilterChain
+            chain: FilterChain,
         ) {
             if (request.requiresAuthentication()) {
                 val user = request.getAuthenticatedUser()
@@ -104,7 +104,7 @@ class HttpFilterConfig {
         override fun doFilter(
             request: HttpServletRequest,
             response: HttpServletResponse,
-            chain: FilterChain
+            chain: FilterChain,
         ) {
             MdcKey.HTTP_METHOD.set(request.method)
             MdcKey.PATH.set(request.requestURI)

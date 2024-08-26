@@ -24,7 +24,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
     private val adminUser =
         AuthenticatedUser.Employee(
             id = EmployeeId(UUID.randomUUID()),
-            roles = setOf(UserRole.ADMIN)
+            roles = setOf(UserRole.ADMIN),
         )
 
     @Test
@@ -38,7 +38,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 firstName = firstName,
                 lastName = lastName,
                 dateOfBirth = dateOfBirth,
-                ssn = ssn
+                ssn = ssn,
             )
         val personWithoutSsn = personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null)
         db.transaction {
@@ -67,14 +67,14 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 firstName = firstName,
                 lastName = lastName,
                 dateOfBirth = dateOfBirth,
-                ssn = ssn
+                ssn = ssn,
             )
         val personWithoutSsn =
             personWithSsn.copy(
                 id = PersonId(UUID.randomUUID()),
                 firstName = firstName.split(" ")[0] + " ",
                 ssn = null,
-                lastName = " " + lastName
+                lastName = " " + lastName,
             )
         db.transaction {
             it.insert(personWithSsn, DevPersonType.RAW_ROW)
@@ -102,13 +102,13 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 firstName = firstName,
                 lastName = lastName,
                 dateOfBirth = dateOfBirth,
-                ssn = ssn
+                ssn = ssn,
             )
         val personWithoutSsn =
             personWithSsn.copy(
                 id = PersonId(UUID.randomUUID()),
                 ssn = null,
-                dateOfBirth = dateOfBirth.plusDays(1)
+                dateOfBirth = dateOfBirth.plusDays(1),
             )
         db.transaction {
             it.insert(personWithSsn, DevPersonType.RAW_ROW)
@@ -135,7 +135,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 firstName = firstName,
                 lastName = lastName,
                 dateOfBirth = dateOfBirth,
-                ssn = ssn1
+                ssn = ssn1,
             )
         val ssn2 = "010170-1124"
         val personWithSsn2 = personWithSsn1.copy(id = PersonId(UUID.randomUUID()), ssn = ssn2)

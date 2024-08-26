@@ -20,7 +20,7 @@ import java.util.UUID
 fun createDecisionDrafts(
     tx: Database.Transaction,
     user: AuthenticatedUser,
-    application: ApplicationDetails
+    application: ApplicationDetails,
 ) {
     val placementPlan =
         tx.getPlacementPlan(application.id)
@@ -60,7 +60,7 @@ VALUES (${bind(user.evakaUserId)}, ${bind { it.unitId }}, ${bind(application.id)
 fun updateDecisionDrafts(
     tx: Database.Transaction,
     applicationId: ApplicationId,
-    updates: List<DecisionDraftUpdate>
+    updates: List<DecisionDraftUpdate>,
 ) {
     val successfulUpdates =
         tx.executeBatch(updates) {
@@ -84,7 +84,7 @@ data class DecisionDraftUpdate(
     val unitId: DaycareId,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val planned: Boolean
+    val planned: Boolean,
 )
 
 fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> =
@@ -143,7 +143,7 @@ private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
             type = DecisionType.CLUB,
             startDate = plan.period.start,
             endDate = plan.period.end,
-            planned = true
+            planned = true,
         )
     )
 }
@@ -163,14 +163,14 @@ private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> 
             type = type,
             startDate = plan.period.start,
             endDate = plan.period.end,
-            planned = true
+            planned = true,
         )
     )
 }
 
 private fun planPreschoolDecisionDrafts(
     plan: PlacementPlan,
-    application: ApplicationDetails
+    application: ApplicationDetails,
 ): List<DecisionDraft> {
     val primaryType =
         if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
@@ -184,7 +184,7 @@ private fun planPreschoolDecisionDrafts(
             type = primaryType,
             startDate = plan.period.start,
             endDate = plan.period.end,
-            planned = !application.additionalDaycareApplication
+            planned = !application.additionalDaycareApplication,
         )
 
     val connected =
@@ -201,8 +201,8 @@ private fun planPreschoolDecisionDrafts(
                     listOf(
                         PlacementType.PRESCHOOL_DAYCARE,
                         PlacementType.PRESCHOOL_CLUB,
-                        PlacementType.PREPARATORY_DAYCARE
-                    )
+                        PlacementType.PREPARATORY_DAYCARE,
+                    ),
         )
 
     return listOf(primary, connected)

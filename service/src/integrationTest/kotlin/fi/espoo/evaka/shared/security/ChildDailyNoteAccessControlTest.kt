@@ -44,7 +44,7 @@ class ChildDailyNoteAccessControlTest : AccessControlTest() {
                     unitId = placementUnit,
                     childId = placedChild,
                     startDate = clock.today(),
-                    endDate = clock.today().plusDays(30)
+                    endDate = clock.today().plusDays(30),
                 )
             )
         }
@@ -55,18 +55,18 @@ class ChildDailyNoteAccessControlTest : AccessControlTest() {
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(placementUnit to UserRole.UNIT_SUPERVISOR)
+                unitRoles = mapOf(placementUnit to UserRole.UNIT_SUPERVISOR),
             )
         val otherSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),
-                unitRoles = mapOf(otherUnit to UserRole.UNIT_SUPERVISOR)
+                unitRoles = mapOf(otherUnit to UserRole.UNIT_SUPERVISOR),
             )
 
         val action = Action.ChildDailyNote.UPDATE
         rules.add(
             action,
-            HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChildOfChildDailyNote()
+            HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChildOfChildDailyNote(),
         )
 
         db.read { tx ->

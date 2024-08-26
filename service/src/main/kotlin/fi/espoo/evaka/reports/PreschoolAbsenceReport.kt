@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PreschoolAbsenceReport(
-    private val accessControl: AccessControl,
-) {
+class PreschoolAbsenceReport(private val accessControl: AccessControl) {
 
     @GetMapping("/employee/reports/preschool-absence")
     fun getPreschoolAbsenceReport(
@@ -37,7 +35,7 @@ class PreschoolAbsenceReport(
         @RequestParam unitId: DaycareId,
         @RequestParam groupId: GroupId?,
         @RequestParam termStart: LocalDate,
-        @RequestParam termEnd: LocalDate
+        @RequestParam termEnd: LocalDate,
     ): List<ChildPreschoolAbsenceRow> {
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -46,7 +44,7 @@ class PreschoolAbsenceReport(
                         user,
                         clock,
                         Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT,
-                        unitId
+                        unitId,
                     )
                     val daycare = tx.getDaycare(unitId) ?: throw BadRequest("No such unit")
                     val termRange = FiniteDateRange(termStart, termEnd)
@@ -72,15 +70,15 @@ class PreschoolAbsenceReport(
                                 tx,
                                 daycare.id,
                                 termRange,
-                                preschoolAbsenceTypes
+                                preschoolAbsenceTypes,
                             ),
                             calculateDailyPreschoolAttendanceDeviationForUnit(
                                 tx,
                                 unitId,
                                 termRange,
-                                dailyPreschoolTime
+                                dailyPreschoolTime,
                             ),
-                            dailyPreschoolTime
+                            dailyPreschoolTime,
                         )
                     else
                         calculateHourlyResults(
@@ -89,16 +87,16 @@ class PreschoolAbsenceReport(
                                 daycare.id,
                                 groupId,
                                 termRange,
-                                preschoolAbsenceTypes
+                                preschoolAbsenceTypes,
                             ),
                             calculateDailyPreschoolAttendanceDeviationForGroup(
                                 tx,
                                 unitId,
                                 groupId,
                                 termRange,
-                                dailyPreschoolTime
+                                dailyPreschoolTime,
                             ),
-                            dailyPreschoolTime
+                            dailyPreschoolTime,
                         )
                 }
                 .also {
@@ -108,7 +106,7 @@ class PreschoolAbsenceReport(
                                 "unitId" to unitId,
                                 "termStart" to termStart,
                                 "termEnd" to termEnd,
-                                "groupId" to groupId
+                                "groupId" to groupId,
                             )
                     )
                 }
@@ -118,7 +116,7 @@ class PreschoolAbsenceReport(
     private fun calculateHourlyResults(
         absenceRows: List<PreschoolAbsenceRow>,
         deviationsByChild: Map<ChildId, List<ChildDailyAttendanceDeviation>>,
-        dailyPreschoolTime: TimeRange
+        dailyPreschoolTime: TimeRange,
     ): List<ChildPreschoolAbsenceRow> {
         val hourlyRows =
             absenceRows.map { r ->
@@ -135,7 +133,7 @@ class PreschoolAbsenceReport(
                     (r.absenceCount * dailyPreschoolTime.duration.toMinutes() +
                             childAttendanceDeviationMinutes)
                         .floorDiv(60)
-                        .toInt()
+                        .toInt(),
                 )
             }
 
@@ -147,7 +145,7 @@ class PreschoolAbsenceReport(
                     childId = k.key,
                     firstName = k.value[0].firstName,
                     lastName = k.value[0].lastName,
-                    hourlyTypeResults = k.value.associateBy({ it.absenceType }, { it.absenceHours })
+                    hourlyTypeResults = k.value.associateBy({ it.absenceType }, { it.absenceHours }),
                 )
             }
     }
@@ -158,7 +156,7 @@ data class PreschoolAbsenceRow(
     val firstName: String,
     val lastName: String,
     val absenceType: AbsenceType,
-    val absenceCount: Int
+    val absenceCount: Int,
 )
 
 data class PreschoolAbsenceReportRow(
@@ -166,27 +164,27 @@ data class PreschoolAbsenceReportRow(
     val firstName: String,
     val lastName: String,
     val absenceType: AbsenceType,
-    val absenceHours: Int
+    val absenceHours: Int,
 )
 
 data class ChildPreschoolAbsenceRow(
     val childId: ChildId,
     val firstName: String,
     val lastName: String,
-    val hourlyTypeResults: Map<AbsenceType, Int>
+    val hourlyTypeResults: Map<AbsenceType, Int>,
 )
 
 data class ChildDailyAttendanceDeviation(
     val missingMinutes: Int,
     val childId: ChildId,
-    val date: LocalDate
+    val date: LocalDate,
 )
 
 fun getPreschoolAbsenceReportRowsForUnit(
     tx: Database.Read,
     daycareId: DaycareId,
     preschoolTerm: FiniteDateRange,
-    absenceTypes: List<AbsenceType>
+    absenceTypes: List<AbsenceType>,
 ): List<PreschoolAbsenceRow> {
     return tx.createQuery {
             sql(
@@ -232,7 +230,7 @@ fun getPreschoolAbsenceReportRowsForGroup(
     daycareId: DaycareId,
     groupId: GroupId,
     preschoolTerm: FiniteDateRange,
-    absenceTypes: List<AbsenceType>
+    absenceTypes: List<AbsenceType>,
 ): List<PreschoolAbsenceRow> {
     return tx.createQuery {
             sql(

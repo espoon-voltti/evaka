@@ -30,7 +30,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): List<ServiceNeedReportRow> {
         return db.connect { dbc ->
                 dbc.read {
@@ -39,7 +39,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_SERVICE_NEED_REPORT
+                            Action.Unit.READ_SERVICE_NEED_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getServiceNeedRows(date, filter)
@@ -53,7 +53,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
 
 private fun Database.Read.getServiceNeedRows(
     date: LocalDate,
-    idFilter: AccessControlFilter<DaycareId>
+    idFilter: AccessControlFilter<DaycareId>,
 ): List<ServiceNeedReportRow> =
     createQuery {
             sql(
@@ -102,5 +102,5 @@ data class ServiceNeedReportRow(
     val partWeek: Int,
     val shiftCare: Int,
     val missingServiceNeed: Int,
-    val total: Int
+    val total: Int,
 )

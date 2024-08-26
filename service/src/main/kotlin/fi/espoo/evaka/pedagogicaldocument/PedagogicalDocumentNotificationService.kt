@@ -26,7 +26,7 @@ class PedagogicalDocumentNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    private val emailEnv: EmailEnv
+    private val emailEnv: EmailEnv,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendNotification)
@@ -34,7 +34,7 @@ class PedagogicalDocumentNotificationService(
 
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
-        id: PedagogicalDocumentId
+        id: PedagogicalDocumentId,
     ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
         return tx.createQuery {
                 sql(
@@ -54,14 +54,14 @@ WHERE doc.id = ${bind(id)} AND p.email IS NOT NULL
                 AsyncJob.SendPedagogicalDocumentNotificationEmail(
                     pedagogicalDocumentId = id,
                     recipientId = column("recipient_id"),
-                    language = getLanguage(column("language"))
+                    language = getLanguage(column("language")),
                 )
             }
     }
 
     private fun Database.Transaction.updateDocumentEmailJobCreatedAt(
         id: PedagogicalDocumentId,
-        date: HelsinkiDateTime
+        date: HelsinkiDateTime,
     ) {
         createUpdate {
                 sql(
@@ -105,7 +105,7 @@ SELECT EXISTS(
                 tx,
                 payloads = getPedagogicalDocumentationNotifications(tx, id),
                 runAt = HelsinkiDateTime.now(),
-                retryCount = 10
+                retryCount = 10,
             )
         }
     }
@@ -121,7 +121,7 @@ SELECT EXISTS(
     fun sendNotification(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
+        msg: AsyncJob.SendPedagogicalDocumentNotificationEmail,
     ) {
         val childId = db.read { tx -> tx.getPedagogicalDocumentChild(msg.pedagogicalDocumentId) }
         Email.create(

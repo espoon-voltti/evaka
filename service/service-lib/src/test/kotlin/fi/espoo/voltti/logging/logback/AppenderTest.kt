@@ -5,6 +5,7 @@
 package fi.espoo.voltti.logging.logback
 
 import fi.espoo.voltti.logging.loggers.info
+import java.util.UUID
 import mu.KLogger
 import mu.KMarkerFactory
 import mu.KotlinLogging
@@ -13,10 +14,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.slf4j.MDC
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val auditMarker = KMarkerFactory.getMarker("AUDIT_EVENT")
+
 private fun KLogger.audit(msg: String, args: Map<String, Any>) =
     info(auditMarker, msg, StructuredArguments.e(args))
 
@@ -38,10 +39,7 @@ class AppenderTest {
 
                 logger.audit(
                     "$prefix.description",
-                    mapOf(
-                        "eventCode" to "$prefix.someEvent",
-                        "targetId" to "$prefix.id"
-                    )
+                    mapOf("eventCode" to "$prefix.someEvent", "targetId" to "$prefix.id"),
                 )
 
                 it.assertAudit().containsExactly(AuditEvent.dummy(prefix).tuple())
@@ -91,12 +89,15 @@ class AppenderTest {
             it.withLatestSanitized { actual -> defaultInfoAssertions(actual) }
 
             testSSNs.forEach { ssn ->
-                logger.info(mapOf("body" to """{"ssn": "$ssn"}""")) { "Accidental SSN logging: $ssn}" }
+                logger.info(mapOf("body" to """{"ssn": "$ssn"}""")) {
+                    "Accidental SSN logging: $ssn}"
+                }
                 it.withLatestSanitized { actual ->
                     assertThat(actual["message"] as String).doesNotContain(ssn)
                     assertThat(actual["message"] as String).contains(redactedSSN)
                     assertThat((actual["meta"] as Map<*, *>)["body"] as String).doesNotContain(ssn)
-                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).contains(redactedSSN)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String)
+                        .contains(redactedSSN)
                 }
             }
 
@@ -106,7 +107,8 @@ class AppenderTest {
                     assertThat(actual["message"] as String).contains(uuid)
                     assertThat(actual["message"] as String).doesNotContain(redactedSSN)
                     assertThat((actual["meta"] as Map<*, *>)["body"] as String).contains(uuid)
-                    assertThat((actual["meta"] as Map<*, *>)["body"] as String).doesNotContain(redactedSSN)
+                    assertThat((actual["meta"] as Map<*, *>)["body"] as String)
+                        .doesNotContain(redactedSSN)
                 }
             }
 
@@ -122,7 +124,11 @@ class AppenderTest {
         assertThat(actual["meta"]).isNull()
     }
 
-    private fun defaultErrorAssertions(actual: Map<String, Any>, meta: TestMeta, exception: RuntimeException) {
+    private fun defaultErrorAssertions(
+        actual: Map<String, Any>,
+        meta: TestMeta,
+        exception: RuntimeException,
+    ) {
         assertThat(actual["logLevel"]).isEqualTo("ERROR")
         assertThat(actual["@timestamp"] as String).isNotBlank
         assertThat(actual["exception"]).isEqualTo(exception::class.java.simpleName)
@@ -136,5 +142,7 @@ data class TestMeta(val key1: String, val key2: String) {
         fun random() = TestMeta(UUID.randomUUID().toString(), UUID.randomUUID().toString())
     }
 }
+
 class TestException : RuntimeException("BOOM!")
+
 class TestExceptionSensitive : RuntimeException("BOOM! (social_security_number)=(${testSSNs[0]})")

@@ -94,7 +94,7 @@ class HelsinkiDateTimeTest {
                 .minusDays(1)
                 .minusHours(1)
                 .minusMinutes(1)
-                .minusSeconds(1)
+                .minusSeconds(1),
         )
     }
 

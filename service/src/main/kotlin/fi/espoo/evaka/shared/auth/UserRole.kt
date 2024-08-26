@@ -57,7 +57,7 @@ enum class UserRole : DatabaseEnum {
                 SPECIAL_EDUCATION_TEACHER,
                 EARLY_CHILDHOOD_EDUCATION_SECRETARY,
                 MOBILE,
-                GROUP_STAFF
+                GROUP_STAFF,
             )
     }
 }

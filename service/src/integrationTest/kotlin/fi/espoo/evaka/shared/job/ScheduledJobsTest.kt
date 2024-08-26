@@ -63,7 +63,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker =
         AuthenticatedUser.Employee(
             id = testDecisionMaker_1.id,
-            roles = setOf(UserRole.SERVICE_WORKER)
+            roles = setOf(UserRole.SERVICE_WORKER),
         )
 
     @BeforeEach
@@ -117,7 +117,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun setApplicationCreatedDate(
         tx: Database.Transaction,
         applicationId: ApplicationId,
-        created: LocalDate
+        created: LocalDate,
     ) =
         tx.execute {
             sql(
@@ -262,7 +262,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             createTransferApplication(
                 ApplicationType.PRESCHOOL,
                 preferredStartDate,
-                preschoolDaycare = true
+                preschoolDaycare = true,
             )
         val dateRange =
             FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
@@ -311,7 +311,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             createTransferApplication(
                 ApplicationType.PRESCHOOL,
                 preferredStartDate,
-                status = ApplicationStatus.WAITING_PLACEMENT
+                status = ApplicationStatus.WAITING_PLACEMENT,
             )
         db.transaction {
             applicationStateService.createPlacementPlan(
@@ -321,14 +321,14 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 applicationId,
                 DaycarePlacementPlan(
                     testDaycare.id,
-                    FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
-                )
+                    FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
+                ),
             )
             applicationStateService.sendDecisionsWithoutProposal(
                 it,
                 serviceWorker,
                 RealEvakaClock(),
-                applicationId
+                applicationId,
             )
         }
 
@@ -344,7 +344,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.createChildStickyNote(
                 childId = testChild_1.id,
-                note = ChildStickyNoteBody(note = "", expires = LocalDate.now().minusDays(1))
+                note = ChildStickyNoteBody(note = "", expires = LocalDate.now().minusDays(1)),
             )
         }
 
@@ -352,7 +352,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             db.transaction { tx ->
                 tx.createChildStickyNote(
                     childId = testChild_1.id,
-                    note = ChildStickyNoteBody(note = "", expires = LocalDate.now())
+                    note = ChildStickyNoteBody(note = "", expires = LocalDate.now()),
                 )
             }
 
@@ -382,7 +382,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     unitId = testDaycare.id,
                     startDate = LocalDate.now().minusDays(100),
                     endDate = LocalDate.now().plusDays(100),
-                    false
+                    false,
                 )
                 it.createChildDailyNote(
                     testChild_2.id,
@@ -392,8 +392,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         reminderNote = "",
                         sleepingMinutes = null,
                         reminders = emptyList(),
-                        sleepingNote = null
-                    )
+                        sleepingNote = null,
+                    ),
                 )
             }
 
@@ -419,8 +419,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         reminderNote = "",
                         sleepingMinutes = null,
                         reminders = emptyList(),
-                        sleepingNote = null
-                    )
+                        sleepingNote = null,
+                    ),
                 )
                 .let { id ->
                     it.createUpdate {
@@ -445,7 +445,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         childId = testChild_2.id,
                         unitId = testDaycare.id,
                         startDate = LocalDate.now().minusDays(150),
-                        endDate = LocalDate.now().plusDays(150)
+                        endDate = LocalDate.now().plusDays(150),
                     )
                 )
                 it.insert(
@@ -456,8 +456,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         period =
                             FiniteDateRange(
                                 LocalDate.now().minusDays(100),
-                                LocalDate.now().plusDays(100)
-                            )
+                                LocalDate.now().plusDays(100),
+                            ),
                     )
                 )
                 it.createChildDailyNote(
@@ -468,8 +468,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         reminderNote = "",
                         sleepingMinutes = null,
                         reminders = emptyList(),
-                        sleepingNote = null
-                    )
+                        sleepingNote = null,
+                    ),
                 )
             }
 
@@ -489,7 +489,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         preferredStartDate: LocalDate,
         preschoolDaycare: Boolean = false,
         childId: ChildId = testChild_1.id,
-        status: ApplicationStatus = ApplicationStatus.SENT
+        status: ApplicationStatus = ApplicationStatus.SENT,
     ): ApplicationId {
         return db.transaction { tx ->
             tx.insertTestApplication(
@@ -503,8 +503,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         .copy(
                             type = type,
                             preferredStartDate = preferredStartDate,
-                            connectedDaycare = preschoolDaycare
-                        )
+                            connectedDaycare = preschoolDaycare,
+                        ),
             )
         }
     }
@@ -513,7 +513,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         type: ApplicationType,
         preferredStartDate: LocalDate,
         preparatory: Boolean = false,
-        childId: ChildId = testChild_1.id
+        childId: ChildId = testChild_1.id,
     ): ApplicationId {
         return db.transaction { tx ->
             tx.insertTestApplication(
@@ -526,9 +526,9 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                         form.copy(
                             type = type,
                             preferredStartDate = preferredStartDate,
-                            careDetails = form.careDetails.copy(preparatory = preparatory)
+                            careDetails = form.careDetails.copy(preparatory = preparatory),
                         )
-                    }
+                    },
             )
         }
     }
@@ -536,7 +536,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun createPlacement(
         type: PlacementType,
         dateRange: FiniteDateRange,
-        childId: ChildId = testChild_1.id
+        childId: ChildId = testChild_1.id,
     ) {
         db.transaction {
             it.insert(
@@ -545,7 +545,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     childId = childId,
                     unitId = testDaycare.id,
                     startDate = dateRange.start,
-                    endDate = dateRange.end
+                    endDate = dateRange.end,
                 )
             )
         }

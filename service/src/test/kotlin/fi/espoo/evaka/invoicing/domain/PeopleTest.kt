@@ -22,7 +22,7 @@ class PeopleTest {
             streetAddress = "Kamreerintie 2",
             postalCode = "02770",
             postOffice = "Espoo",
-            restrictedDetailsEnabled = false
+            restrictedDetailsEnabled = false,
         )
 
     @Test
@@ -35,7 +35,7 @@ class PeopleTest {
                 testPerson.postOffice,
                 testPerson.streetAddress,
                 "${testPerson.postalCode} ${testPerson.postOffice}",
-                ""
+                "",
             )
         assertEquals(expected, address)
     }

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     "/note", // deprecated
-    "/employee/note"
+    "/employee/note",
 )
 class NoteController(private val accessControl: AccessControl) {
     @GetMapping("/application/{applicationId}")
@@ -34,7 +34,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable applicationId: ApplicationId
+        @PathVariable applicationId: ApplicationId,
     ): List<ApplicationNoteResponse> {
         val notesQuery: (Database.Read) -> List<ApplicationNote> = { tx ->
             if (
@@ -43,7 +43,7 @@ class NoteController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Application.READ_NOTES,
-                    applicationId
+                    applicationId,
                 )
             ) {
                 tx.getApplicationNotes(applicationId)
@@ -53,7 +53,7 @@ class NoteController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES,
-                    applicationId
+                    applicationId,
                 )
                 tx.getApplicationSpecialEducationTeacherNotes(applicationId)
             }
@@ -65,18 +65,18 @@ class NoteController(private val accessControl: AccessControl) {
                     val permittedActions =
                         accessControl.getPermittedActions<
                             ApplicationNoteId,
-                            Action.ApplicationNote
+                            Action.ApplicationNote,
                         >(
                             tx,
                             user,
                             clock,
-                            notes.map { it.id }
+                            notes.map { it.id },
                         )
 
                     notes.map {
                         ApplicationNoteResponse(
                             note = it,
-                            permittedActions = permittedActions[it.id] ?: setOf()
+                            permittedActions = permittedActions[it.id] ?: setOf(),
                         )
                     }
                 }
@@ -84,7 +84,7 @@ class NoteController(private val accessControl: AccessControl) {
             .also {
                 Audit.NoteRead.log(
                     targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size),
                 )
             }
     }
@@ -95,7 +95,7 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody note: NoteRequest
+        @RequestBody note: NoteRequest,
     ): ApplicationNote {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -104,7 +104,7 @@ class NoteController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Application.CREATE_NOTE,
-                        applicationId
+                        applicationId,
                     )
                     it.createApplicationNote(applicationId, note.text, user.evakaUserId)
                 }
@@ -120,7 +120,7 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable noteId: ApplicationNoteId,
-        @RequestBody note: NoteRequest
+        @RequestBody note: NoteRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -129,7 +129,7 @@ class NoteController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.ApplicationNote.UPDATE,
-                    noteId
+                    noteId,
                 )
                 tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
             }
@@ -142,7 +142,7 @@ class NoteController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable noteId: ApplicationNoteId
+        @PathVariable noteId: ApplicationNoteId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -151,7 +151,7 @@ class NoteController(private val accessControl: AccessControl) {
                     user,
                     clock,
                     Action.ApplicationNote.DELETE,
-                    noteId
+                    noteId,
                 )
                 tx.deleteApplicationNote(noteId)
             }
@@ -165,7 +165,7 @@ class NoteController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody note: NoteRequest
+        @RequestBody note: NoteRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -173,7 +173,7 @@ class NoteController(private val accessControl: AccessControl) {
                     tx,
                     user,
                     clock,
-                    Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES
+                    Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES,
                 )
                 tx.updateServiceWorkerApplicationNote(applicationId, note.text)
             }
@@ -186,5 +186,5 @@ data class NoteRequest(val text: String)
 
 data class ApplicationNoteResponse(
     val note: ApplicationNote,
-    val permittedActions: Set<Action.ApplicationNote>
+    val permittedActions: Set<Action.ApplicationNote>,
 )

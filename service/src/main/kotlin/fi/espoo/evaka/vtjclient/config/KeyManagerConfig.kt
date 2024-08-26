@@ -22,7 +22,7 @@ class KeyManagerConfig {
     @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
     fun keyManagers(
         @Qualifier("keyStore") keyStore: ObjectProvider<KeyStoreFactoryBean>,
-        xroadEnv: VtjXroadEnv
+        xroadEnv: VtjXroadEnv,
     ): KeyManagersFactoryBean? =
         keyStore.ifAvailable?.let {
             KeyManagersFactoryBean().apply {

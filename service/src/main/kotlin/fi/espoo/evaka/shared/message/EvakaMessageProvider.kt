@@ -128,7 +128,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     postOffice = "Espoon kaupunki",
                     row1 = "Varhaiskasvatuksen palveluohjaus",
                     row2 = "PL 3125",
-                    row3 = "02070 Espoon kaupunki"
+                    row3 = "02070 Espoon kaupunki",
                 )
             OfficialLanguage.SV ->
                 DecisionSendAddress(
@@ -137,7 +137,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     postOffice = "ESBO STAD",
                     row1 = "Svenska bildningstjänster",
                     row2 = "Småbarnspedagogik",
-                    row3 = "PB 32, 02070 ESBO STAD"
+                    row3 = "PB 32, 02070 ESBO STAD",
                 )
         }
 
@@ -150,7 +150,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     "Espoon kaupunki",
                     "PL 30",
                     "02070 Espoon kaupunki",
-                    ""
+                    "",
                 )
             OfficialLanguage.SV ->
                 DecisionSendAddress(
@@ -159,7 +159,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     "Esbo",
                     "PB 30",
                     "02070 Esbo",
-                    ""
+                    "",
                 )
         }
 }

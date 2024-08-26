@@ -27,14 +27,14 @@ import org.springframework.web.bind.annotation.RestController
 class FamilyDaycareMealReport(private val accessControl: AccessControl) {
     @GetMapping(
         "/reports/family-daycare-meal-count", // deprecated
-        "/employee/reports/family-daycare-meal-count"
+        "/employee/reports/family-daycare-meal-count",
     )
     fun getFamilyDaycareMealReport(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam startDate: LocalDate,
-        @RequestParam endDate: LocalDate
+        @RequestParam endDate: LocalDate,
     ): FamilyDaycareMealReportResult {
         if (endDate < startDate) throw BadRequest("Start date must be before or equal to end date")
         if (endDate.minusMonths(6).isAfter(startDate)) throw BadRequest("Maximum date range is 6kk")
@@ -42,7 +42,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
             MealReportConfig(
                 breakfastTime = TimeRange(LocalTime.of(8, 0, 0, 0), LocalTime.of(8, 45, 0, 0)),
                 lunchTime = TimeRange(LocalTime.of(10, 30, 0, 0), LocalTime.of(12, 30, 0, 0)),
-                snackTime = TimeRange(LocalTime.of(13, 45, 0, 0), LocalTime.of(15, 0, 0, 0))
+                snackTime = TimeRange(LocalTime.of(13, 45, 0, 0), LocalTime.of(15, 0, 0, 0)),
             )
         return db.connect { dbc ->
                 dbc.read {
@@ -51,7 +51,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
                             it,
                             user,
                             clock,
-                            Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT
+                            Action.Unit.READ_FAMILY_DAYCARE_MEAL_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyDaycareMealReportRows(filter, startDate, endDate, defaultMealTimes)
@@ -64,7 +64,7 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         daycareFilter: AccessControlFilter<DaycareId>,
         startDate: LocalDate,
         endDate: LocalDate,
-        mealTimes: MealReportConfig
+        mealTimes: MealReportConfig,
     ): FamilyDaycareMealReportResult {
         val resultRows =
             createQuery {
@@ -129,7 +129,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                 areaResults = emptyList(),
                 breakfastCount = 0,
                 lunchCount = 0,
-                snackCount = 0
+                snackCount = 0,
             )
 
         resultRows.forEach { row ->
@@ -143,7 +143,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         lastName = row.lastName,
                         breakfastCount = row.breakfastCount,
                         lunchCount = row.lunchCount,
-                        snackCount = row.snackCount
+                        snackCount = row.snackCount,
                     )
                 )
             } else if (row.daycareId != null && row.daycareName != null) {
@@ -155,7 +155,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         breakfastCount = row.breakfastCount,
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
-                        childResults = childrenByDaycare[row.daycareId.toString()].orEmpty()
+                        childResults = childrenByDaycare[row.daycareId.toString()].orEmpty(),
                     )
                 )
             } else if (row.areaId != null && row.areaName != null) {
@@ -166,7 +166,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         breakfastCount = row.breakfastCount,
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
-                        daycareResults = daycaresByArea[row.areaId.toString()].orEmpty()
+                        daycareResults = daycaresByArea[row.areaId.toString()].orEmpty(),
                     )
                 )
             } else {
@@ -175,7 +175,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
                         breakfastCount = row.breakfastCount,
                         lunchCount = row.lunchCount,
                         snackCount = row.snackCount,
-                        areaResults = collectedAreaResults
+                        areaResults = collectedAreaResults,
                     )
             }
         }
@@ -193,14 +193,14 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
         val areaId: AreaId?,
         val breakfastCount: Int,
         val lunchCount: Int,
-        val snackCount: Int
+        val snackCount: Int,
     )
 
     data class FamilyDaycareMealReportResult(
         val breakfastCount: Int,
         val lunchCount: Int,
         val snackCount: Int,
-        val areaResults: List<FamilyDaycareMealAreaResult>
+        val areaResults: List<FamilyDaycareMealAreaResult>,
     )
 
     data class FamilyDaycareMealAreaResult(
@@ -209,7 +209,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
         val breakfastCount: Int,
         val lunchCount: Int,
         val snackCount: Int,
-        val daycareResults: List<FamilyDaycareMealDaycareResult>
+        val daycareResults: List<FamilyDaycareMealDaycareResult>,
     )
 
     data class FamilyDaycareMealDaycareResult(
@@ -218,7 +218,7 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
         val breakfastCount: Int,
         val lunchCount: Int,
         val snackCount: Int,
-        val childResults: List<FamilyDaycareMealChildResult>
+        val childResults: List<FamilyDaycareMealChildResult>,
     )
 
     data class FamilyDaycareMealChildResult(
@@ -233,6 +233,6 @@ ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
     data class MealReportConfig(
         val breakfastTime: TimeRange,
         val lunchTime: TimeRange,
-        val snackTime: TimeRange
+        val snackTime: TimeRange,
     )
 }

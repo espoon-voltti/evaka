@@ -83,8 +83,8 @@ val testDaycare =
                 PilotFeature.MESSAGING,
                 PilotFeature.MOBILE,
                 PilotFeature.RESERVATIONS,
-                PilotFeature.PLACEMENT_TERMINATION
-            )
+                PilotFeature.PLACEMENT_TERMINATION,
+            ),
     )
 
 val testDaycare2 =
@@ -100,7 +100,7 @@ val testDaycareNotInvoiced =
         id = DaycareId(UUID.randomUUID()),
         name = "Not Invoiced",
         areaId = testArea.id,
-        invoicedByMunicipality = false
+        invoicedByMunicipality = false,
     )
 
 val testVoucherDaycare =
@@ -113,7 +113,7 @@ val testVoucherDaycare =
         invoicedByMunicipality = false,
         businessId = "1234567-8",
         iban = "FI12 3456 7891 2345 67",
-        providerId = "1234"
+        providerId = "1234",
     )
 
 val testVoucherDaycare2 =
@@ -126,7 +126,7 @@ val testVoucherDaycare2 =
         invoicedByMunicipality = false,
         businessId = "8765432-1-8",
         iban = "FI98 7654 3210 9876 54",
-        providerId = "4321"
+        providerId = "4321",
     )
 
 val testClub =
@@ -140,7 +140,7 @@ val testClub =
         preschoolApplyPeriod = null,
         uploadToVarda = false,
         uploadChildrenToVarda = false,
-        uploadToKoski = false
+        uploadToKoski = false,
     )
 
 val allDayTimeRange = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
@@ -152,7 +152,7 @@ val allWeekOpTimes =
         allDayTimeRange,
         allDayTimeRange,
         allDayTimeRange,
-        allDayTimeRange
+        allDayTimeRange,
     )
 
 val testRoundTheClockDaycare =
@@ -162,14 +162,14 @@ val testRoundTheClockDaycare =
         areaId = testArea.id,
         type = setOf(CareType.CENTRE),
         shiftCareOperationTimes = allWeekOpTimes,
-        shiftCareOpenOnHolidays = true
+        shiftCareOpenOnHolidays = true,
     )
 
 val testDaycareGroup =
     DevDaycareGroup(
         id = GroupId(UUID.randomUUID()),
         daycareId = testDaycare.id,
-        name = "Test group 1"
+        name = "Test group 1",
     )
 
 val testAdult_1 =
@@ -182,7 +182,7 @@ val testAdult_1 =
         streetAddress = "Kamreerintie 2",
         postalCode = "02770",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testAdult_2 =
@@ -196,7 +196,7 @@ val testAdult_2 =
         postalCode = "02770",
         postOffice = "Espoo",
         restrictedDetailsEnabled = false,
-        email = "joan.doe@example.com"
+        email = "joan.doe@example.com",
     )
 
 val testAdult_3 =
@@ -210,7 +210,7 @@ val testAdult_3 =
         postalCode = "",
         postOffice = "",
         restrictedDetailsEnabled = false,
-        email = "mark.foo@example.com"
+        email = "mark.foo@example.com",
     )
 
 val testAdult_4 =
@@ -224,7 +224,7 @@ val testAdult_4 =
         postalCode = "02230",
         postOffice = "Espoo",
         restrictedDetailsEnabled = false,
-        email = "dork.aman@example.com"
+        email = "dork.aman@example.com",
     )
 
 // Matches VTJ mock person Johannes Karhula
@@ -238,7 +238,7 @@ val testAdult_5 =
         streetAddress = "Kamreerintie 1",
         postalCode = "00340",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 // Matches VTJ mock person Ville Vilkas
@@ -253,7 +253,7 @@ val testAdult_6 =
         streetAddress = "Toistie 33",
         postalCode = "02230",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testAdult_7 =
@@ -266,7 +266,7 @@ val testAdult_7 =
         streetAddress = "Suojatie 112",
         postalCode = "02230",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = true
+        restrictedDetailsEnabled = true,
     )
 
 val testChild_1 =
@@ -279,7 +279,7 @@ val testChild_1 =
         streetAddress = "Kamreerintie 2",
         postalCode = "02770",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_2 =
@@ -292,7 +292,7 @@ val testChild_2 =
         streetAddress = "Kamreerintie 2",
         postalCode = "02770",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_3 =
@@ -305,7 +305,7 @@ val testChild_3 =
         streetAddress = "Kankkulankaivo 1",
         postalCode = "00340",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_4 =
@@ -318,7 +318,7 @@ val testChild_4 =
         streetAddress = "Mannerheimintie 1",
         postalCode = "00100",
         postOffice = "Helsinki",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_5 =
@@ -331,7 +331,7 @@ val testChild_5 =
         streetAddress = "Matinkatu 22",
         postalCode = "02230",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 // Matches vtj mock child Jari-Petteri Karhula
@@ -345,7 +345,7 @@ val testChild_6 =
         streetAddress = "Kamreerintie 1",
         postalCode = "00340",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_7 =
@@ -358,7 +358,7 @@ val testChild_7 =
         streetAddress = "Matinkatu 11",
         postalCode = "02230",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 val testChild_8 =
@@ -371,7 +371,7 @@ val testChild_8 =
         streetAddress = "Kamreerintie 2",
         postalCode = "02770",
         postOffice = "Espoo",
-        restrictedDetailsEnabled = false
+        restrictedDetailsEnabled = false,
     )
 
 fun Database.Transaction.insertTestDecisionMaker() {
@@ -381,7 +381,7 @@ fun Database.Transaction.insertTestDecisionMaker() {
                 id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName,
-                roles = setOf(UserRole.SERVICE_WORKER)
+                roles = setOf(UserRole.SERVICE_WORKER),
             )
         )
     }
@@ -413,7 +413,7 @@ val feeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )
 
 val preschoolTerm2020 =
@@ -423,7 +423,7 @@ val preschoolTerm2020 =
         FiniteDateRange(LocalDate.of(2020, 8, 18), LocalDate.of(2021, 6, 4)),
         FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4)),
         FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 val preschoolTerm2021 =
     DevPreschoolTerm(
@@ -432,7 +432,7 @@ val preschoolTerm2021 =
         FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
         FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
         FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 val preschoolTerm2022 =
     DevPreschoolTerm(
@@ -441,7 +441,7 @@ val preschoolTerm2022 =
         FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
         FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2023, 6, 2)),
         FiniteDateRange(LocalDate.of(2022, 1, 10), LocalDate.of(2022, 1, 21)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 val preschoolTerm2023 =
     DevPreschoolTerm(
@@ -454,7 +454,7 @@ val preschoolTerm2023 =
             FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
             FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
             FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
-        )
+        ),
     )
 val preschoolTerm2024 =
     DevPreschoolTerm(
@@ -467,7 +467,7 @@ val preschoolTerm2024 =
             FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
             FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
             FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
-        )
+        ),
     )
 
 val preschoolTerms =
@@ -476,7 +476,7 @@ val preschoolTerms =
         preschoolTerm2021,
         preschoolTerm2022,
         preschoolTerm2023,
-        preschoolTerm2024
+        preschoolTerm2024,
     )
 
 val clubTerm2020 =
@@ -484,7 +484,7 @@ val clubTerm2020 =
         ClubTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4)),
         FiniteDateRange(LocalDate.of(2020, 1, 8), LocalDate.of(2020, 1, 20)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 
 val clubTerm2021 =
@@ -492,7 +492,7 @@ val clubTerm2021 =
         ClubTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
         FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 
 val clubTerm2022 =
@@ -500,7 +500,7 @@ val clubTerm2022 =
         ClubTermId(UUID.randomUUID()),
         FiniteDateRange(LocalDate.of(2022, 8, 11), LocalDate.of(2023, 6, 2)),
         FiniteDateRange(LocalDate.of(2022, 1, 8), LocalDate.of(2022, 1, 20)),
-        DateSet.empty()
+        DateSet.empty(),
     )
 
 val clubTerm2023 =
@@ -512,7 +512,7 @@ val clubTerm2023 =
             FiniteDateRange(LocalDate.of(2023, 10, 16), LocalDate.of(2023, 10, 20)),
             FiniteDateRange(LocalDate.of(2023, 12, 23), LocalDate.of(2024, 1, 7)),
             FiniteDateRange(LocalDate.of(2024, 2, 19), LocalDate.of(2024, 2, 23)),
-        )
+        ),
     )
 
 val clubTerm2024 =
@@ -524,7 +524,7 @@ val clubTerm2024 =
             FiniteDateRange(LocalDate.of(2024, 10, 14), LocalDate.of(2024, 10, 18)),
             FiniteDateRange(LocalDate.of(2024, 12, 21), LocalDate.of(2025, 1, 6)),
             FiniteDateRange(LocalDate.of(2025, 2, 17), LocalDate.of(2025, 2, 21)),
-        )
+        ),
     )
 
 val clubTerms = listOf(clubTerm2020, clubTerm2021, clubTerm2022, clubTerm2023, clubTerm2024)
@@ -584,7 +584,7 @@ fun Database.Transaction.insertApplication(
     guardianEmail: String = "abc@espoo.fi",
     serviceNeedOption: fi.espoo.evaka.application.ServiceNeedOption? = null,
     transferApplication: Boolean = false,
-    preferredUnit: DevDaycare = testDaycare
+    preferredUnit: DevDaycare = testDaycare,
 ): ApplicationDetails {
     val application =
         ApplicationDetails(
@@ -598,7 +598,7 @@ fun Database.Transaction.insertApplication(
                                 PersonBasics(
                                     firstName = child.firstName,
                                     lastName = child.lastName,
-                                    socialSecurityNumber = child.ssn
+                                    socialSecurityNumber = child.ssn,
                                 ),
                             dateOfBirth = child.dateOfBirth,
                             address = addressOf(child),
@@ -608,7 +608,7 @@ fun Database.Transaction.insertApplication(
                             allergies = if (hasAdditionalInfo) "allergies" else "",
                             diet = if (hasAdditionalInfo) "diet" else "",
                             assistanceNeeded = false,
-                            assistanceDescription = ""
+                            assistanceDescription = "",
                         ),
                     guardian =
                         Guardian(
@@ -616,12 +616,12 @@ fun Database.Transaction.insertApplication(
                                 PersonBasics(
                                     firstName = guardian.firstName,
                                     lastName = guardian.lastName,
-                                    socialSecurityNumber = guardian.ssn
+                                    socialSecurityNumber = guardian.ssn,
                                 ),
                             address = addressOf(guardian),
                             futureAddress = null,
                             phoneNumber = "0501234567",
-                            email = guardianEmail
+                            email = guardianEmail,
                         ),
                     preferences =
                         Preferences(
@@ -641,7 +641,7 @@ fun Database.Transaction.insertApplication(
                                         endTime = "15:00",
                                         shiftCare = false,
                                         partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
-                                        serviceNeedOption = serviceNeedOption
+                                        serviceNeedOption = serviceNeedOption,
                                     )
                                 },
                             siblingBasis = null,
@@ -649,16 +649,16 @@ fun Database.Transaction.insertApplication(
                                 appliedType in
                                     listOf(
                                         PlacementType.PREPARATORY,
-                                        PlacementType.PREPARATORY_DAYCARE
+                                        PlacementType.PREPARATORY_DAYCARE,
                                     ),
-                            urgent = urgent
+                            urgent = urgent,
                         ),
                     secondGuardian = null,
                     otherPartner = null,
                     otherChildren = emptyList(),
                     otherInfo = if (hasAdditionalInfo) "foobar" else "",
                     maxFeeAccepted = maxFeeAccepted,
-                    clubDetails = null
+                    clubDetails = null,
                 ),
             status = status,
             origin = ApplicationOrigin.PAPER,
@@ -690,7 +690,7 @@ fun Database.Transaction.insertApplication(
         childId = child.id,
         transferApplication = transferApplication,
         type = appliedType.toApplicationType(),
-        document = DaycareFormV0.fromApplication2(application)
+        document = DaycareFormV0.fromApplication2(application),
     )
     return application
 }
@@ -699,7 +699,7 @@ private fun addressOf(person: DevPerson): Address =
     Address(
         street = person.streetAddress,
         postalCode = person.postalCode,
-        postOffice = person.postOffice
+        postOffice = person.postOffice,
     )
 
 fun DevPerson.toPersonBasic() =
@@ -708,7 +708,7 @@ fun DevPerson.toPersonBasic() =
         dateOfBirth = this.dateOfBirth,
         firstName = this.firstName,
         lastName = this.lastName,
-        ssn = this.ssn
+        ssn = this.ssn,
     )
 
 fun DevPerson.toPersonDetailed() =
@@ -731,7 +731,7 @@ fun DevPerson.toPersonDetailed() =
         invoicingPostalCode = this.invoicingPostalCode,
         invoicingPostOffice = this.invoicingPostOffice,
         restrictedDetailsEnabled = this.restrictedDetailsEnabled,
-        forceManualFeeDecisions = this.forceManualFeeDecisions
+        forceManualFeeDecisions = this.forceManualFeeDecisions,
     )
 
 fun DevEmployee.toEmployeeWithName() =

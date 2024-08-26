@@ -31,7 +31,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: ChildStickyNoteBody
+        @RequestBody body: ChildStickyNoteBody,
     ): ChildStickyNoteId {
         validateExpiration(clock, body.expires)
 
@@ -42,7 +42,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
                         user,
                         clock,
                         Action.Child.CREATE_STICKY_NOTE,
-                        childId
+                        childId,
                     )
                     it.createChildStickyNote(childId, body)
                 }
@@ -50,7 +50,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
             .also { noteId ->
                 Audit.ChildStickyNoteCreate.log(
                     targetId = AuditId(childId),
-                    objectId = AuditId(noteId)
+                    objectId = AuditId(noteId),
                 )
             }
     }
@@ -61,7 +61,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId,
-        @RequestBody body: ChildStickyNoteBody
+        @RequestBody body: ChildStickyNoteBody,
     ): ChildStickyNote {
         validateExpiration(clock, body.expires)
 
@@ -79,7 +79,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable noteId: ChildStickyNoteId
+        @PathVariable noteId: ChildStickyNoteId,
     ) {
         return db.connect { dbc ->
                 dbc.transaction {

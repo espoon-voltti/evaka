@@ -37,7 +37,7 @@ val forceIncludes: Set<KType> =
         typeOf<SystemController.CitizenUserResponse>(),
         typeOf<SystemController.EmployeeUserResponse>(),
         typeOf<MobileDeviceDetails>(),
-        typeOf<CurriculumTemplateError>()
+        typeOf<CurriculumTemplateError>(),
     )
 
 // these endpoint paths are deprecated, and API clients should not call them
@@ -62,7 +62,7 @@ private val deprecatedEndpoints =
         "/public/service-needs/options",
         "/public/units",
         "/public/units/{applicationType}",
-        "/units"
+        "/units",
     )
 
 // these endpoint paths are planned, and API clients should not call them *yet*
@@ -391,7 +391,7 @@ val defaultMetadata =
                 serializeRequestParam = { value, nullable ->
                     value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
-                Imports.localDate
+                Imports.localDate,
             ),
         LocalTime::class to
             TsExternalTypeRef(
@@ -404,7 +404,7 @@ val defaultMetadata =
                 serializeRequestParam = { value, nullable ->
                     value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
-                Imports.localTime
+                Imports.localTime,
             ),
         HelsinkiDateTime::class to
             TsExternalTypeRef(
@@ -417,7 +417,7 @@ val defaultMetadata =
                 serializeRequestParam = { value, nullable ->
                     value + if (nullable) "?.formatIso()" else ".formatIso()"
                 },
-                Imports.helsinkiDateTime
+                Imports.helsinkiDateTime,
             ),
         FiniteDateRange::class to
             TsExternalTypeRef(
@@ -428,7 +428,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.finiteDateRange
+                Imports.finiteDateRange,
             ),
         DateRange::class to
             TsExternalTypeRef(
@@ -439,7 +439,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.dateRange
+                Imports.dateRange,
             ),
         DateSet::class to
             TsExternalTypeRef(
@@ -452,7 +452,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.finiteDateRange
+                Imports.finiteDateRange,
             ),
         TimeInterval::class to
             TsExternalTypeRef(
@@ -463,7 +463,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.timeInterval
+                Imports.timeInterval,
             ),
         TimeRange::class to
             TsExternalTypeRef(
@@ -474,7 +474,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.timeRange
+                Imports.timeRange,
             ),
         VasuQuestion::class to
             TsExternalTypeRef(
@@ -485,7 +485,7 @@ val defaultMetadata =
                 },
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.vasuQuestion
+                Imports.vasuQuestion,
             ),
         MessageReceiver::class to
             TsExternalTypeRef(
@@ -494,7 +494,7 @@ val defaultMetadata =
                 deserializeJson = null,
                 serializePathVariable = null,
                 serializeRequestParam = null,
-                Imports.messageReceiver
+                Imports.messageReceiver,
             ),
         UUID::class to
             TsExternalTypeRef(
@@ -503,7 +503,7 @@ val defaultMetadata =
                 deserializeJson = null,
                 serializePathVariable = { value -> value },
                 serializeRequestParam = { value, _ -> value },
-                Imports.uuid
+                Imports.uuid,
             ),
         Id::class to
             TsExternalTypeRef(
@@ -512,7 +512,7 @@ val defaultMetadata =
                 deserializeJson = null,
                 serializePathVariable = { value -> value },
                 serializeRequestParam = { value, _ -> value },
-                Imports.uuid
+                Imports.uuid,
             ),
         List::class to TsArray,
         Set::class to TsArray,
@@ -531,8 +531,8 @@ val defaultMetadata =
                     value +
                         if (nullable) "?.formatExotic('yyyy-MM')" else ".formatExotic('yyyy-MM')"
                 },
-                Imports.localDate
-            )
+                Imports.localDate,
+            ),
     ) +
         TypeMetadata(
             Action::class.nestedClasses.associateWith { action ->
@@ -542,7 +542,7 @@ val defaultMetadata =
                     deserializeJson = null,
                     serializePathVariable = { value -> value },
                     serializeRequestParam = { value, _ -> value },
-                    Imports.action
+                    Imports.action,
                 )
             } +
                 Action.Citizen::class.nestedClasses.associateWith { action ->
@@ -552,7 +552,7 @@ val defaultMetadata =
                         deserializeJson = null,
                         serializePathVariable = { value -> value },
                         serializeRequestParam = { value, _ -> value },
-                        Imports.action
+                        Imports.action,
                     )
                 }
         )

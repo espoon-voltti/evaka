@@ -50,7 +50,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId,
                         startDate = date.minusDays(1),
                         endDate = date.minusDays(1),
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 )
                 tx.insert(
@@ -59,7 +59,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId,
                         startDate = date.plusDays(1),
                         endDate = date.plusDays(1),
-                        placeGuarantee = true
+                        placeGuarantee = true,
                     )
                 )
                 childId
@@ -70,7 +70,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 user,
                 clock,
-                date.minusDays(1)
+                date.minusDays(1),
             )
         assertThat(yesterdayReport).isEmpty()
 
@@ -79,7 +79,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 user,
                 clock,
-                date
+                date,
             )
         assertThat(todayReport)
             .extracting({ it.childId }, { it.placementStartDate }, { it.placementEndDate })
@@ -90,7 +90,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 dbInstance(),
                 user,
                 clock,
-                date.plusDays(1)
+                date.plusDays(1),
             )
         assertThat(tomorrowReport).isEmpty()
     }
@@ -110,7 +110,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId1,
                         startDate = date.minusDays(1),
                         endDate = date.minusDays(1),
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 )
                 tx.insert(
@@ -119,7 +119,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId1,
                         startDate = date.plusDays(1),
                         endDate = date.plusDays(1),
-                        placeGuarantee = true
+                        placeGuarantee = true,
                     )
                 )
                 val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
@@ -129,7 +129,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId2,
                         startDate = date.minusDays(1),
                         endDate = date.minusDays(1),
-                        placeGuarantee = false
+                        placeGuarantee = false,
                     )
                 )
                 tx.insert(
@@ -138,7 +138,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                         unitId = unitId2,
                         startDate = date.plusDays(1),
                         endDate = date.plusDays(1),
-                        placeGuarantee = true
+                        placeGuarantee = true,
                     )
                 )
                 childId1
@@ -149,7 +149,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 tx.insertDaycareAclRow(
                     daycareId = unitId1,
                     employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR
+                    role = UserRole.UNIT_SUPERVISOR,
                 )
                 employeeId
             }
@@ -160,7 +160,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 AuthenticatedUser.Employee(employeeId, setOf()),
                 MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.of(9, 12))),
                 date,
-                unitId1
+                unitId1,
             )
 
         assertThat(unit1Rows).extracting({ it.childId }).containsExactly(Tuple(childId))
@@ -171,7 +171,7 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
                 AuthenticatedUser.Employee(employeeId, setOf()),
                 MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.of(9, 12))),
                 date,
-                unitId2
+                unitId2,
             )
 
         assertThat(unit2Rows).isEmpty()

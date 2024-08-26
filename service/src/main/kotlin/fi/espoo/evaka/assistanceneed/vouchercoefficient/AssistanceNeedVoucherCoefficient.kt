@@ -14,15 +14,15 @@ data class AssistanceNeedVoucherCoefficient(
     val id: AssistanceNeedVoucherCoefficientId,
     val childId: ChildId,
     val coefficient: BigDecimal,
-    val validityPeriod: FiniteDateRange
+    val validityPeriod: FiniteDateRange,
 )
 
 data class AssistanceNeedVoucherCoefficientRequest(
     val coefficient: Double,
-    val validityPeriod: FiniteDateRange
+    val validityPeriod: FiniteDateRange,
 )
 
 data class AssistanceNeedVoucherCoefficientResponse(
     val voucherCoefficient: AssistanceNeedVoucherCoefficient,
-    val permittedActions: Set<Action.AssistanceNeedVoucherCoefficient>
+    val permittedActions: Set<Action.AssistanceNeedVoucherCoefficient>,
 )

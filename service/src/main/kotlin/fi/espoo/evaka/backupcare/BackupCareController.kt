@@ -36,13 +36,13 @@ import org.springframework.web.bind.annotation.RestController
 class BackupCareController(private val accessControl: AccessControl) {
     @GetMapping(
         "/children/{childId}/backup-cares", // deprecated
-        "/employee/children/{childId}/backup-cares"
+        "/employee/children/{childId}/backup-cares",
     )
     fun getChildBackupCares(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable childId: ChildId
+        @PathVariable childId: ChildId,
     ): ChildBackupCaresResponse {
         return ChildBackupCaresResponse(
             db.connect { dbc ->
@@ -52,7 +52,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.Child.READ_BACKUP_CARE,
-                            childId
+                            childId,
                         )
                         val backupCares = tx.getBackupCaresForChild(childId)
                         val backupCareIds = backupCares.map { bc -> bc.id }
@@ -61,7 +61,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx,
                                 user,
                                 clock,
-                                backupCareIds
+                                backupCareIds,
                             )
                         backupCares.map { bc ->
                             ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet())
@@ -71,7 +71,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 .also {
                     Audit.ChildBackupCareRead.log(
                         targetId = AuditId(childId),
-                        meta = mapOf("count" to it.size)
+                        meta = mapOf("count" to it.size),
                     )
                 }
         )
@@ -79,14 +79,14 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @PostMapping(
         "/children/{childId}/backup-cares", // deprecated
-        "/employee/children/{childId}/backup-cares"
+        "/employee/children/{childId}/backup-cares",
     )
     fun createBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestBody body: NewBackupCare
+        @RequestBody body: NewBackupCare,
     ): BackupCareCreateResponse {
         try {
             val id =
@@ -97,7 +97,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                             user,
                             clock,
                             Action.Child.CREATE_BACKUP_CARE,
-                            childId
+                            childId,
                         )
                         if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
                             throw BadRequest(
@@ -109,7 +109,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx.clearCalendarEventAttendees(
                                     childId,
                                     placement.unitId,
-                                    body.period
+                                    body.period,
                                 )
                             }
                         tx.createBackupCare(childId, body)
@@ -117,7 +117,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 }
             Audit.ChildBackupCareCreate.log(
                 targetId = AuditId(childId),
-                objectId = AuditId(body.unitId)
+                objectId = AuditId(body.unitId),
             )
             return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
@@ -127,14 +127,14 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @PostMapping(
         "/backup-cares/{id}", // deprecated
-        "/employee/backup-cares/{id}"
+        "/employee/backup-cares/{id}",
     )
     fun updateBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: BackupCareId,
-        @RequestBody body: BackupCareUpdateRequest
+        @RequestBody body: BackupCareUpdateRequest,
     ) {
         try {
             db.connect { dbc ->
@@ -144,12 +144,12 @@ class BackupCareController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.BackupCare.UPDATE,
-                        id
+                        id,
                     )
                     if (
                         !tx.childPlacementsHasConsecutiveRange(
                             tx.getBackupCareChildId(id),
-                            body.period
+                            body.period,
                         )
                     ) {
                         throw BadRequest(
@@ -167,8 +167,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     existing.unitId,
                                     FiniteDateRange(
                                         existing.period.start,
-                                        body.period.start.minusDays(1)
-                                    )
+                                        body.period.start.minusDays(1),
+                                    ),
                                 )
                             } else {
                                 // the backup care was extended; clear calendar event attendees for
@@ -177,7 +177,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx.getPlacementsForChildDuring(
                                         existing.childId,
                                         body.period.start,
-                                        existing.period.start
+                                        existing.period.start,
                                     )
                                     .forEach { placement ->
                                         tx.clearCalendarEventAttendees(
@@ -185,8 +185,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                             placement.unitId,
                                             FiniteDateRange(
                                                 body.period.start,
-                                                existing.period.start
-                                            )
+                                                existing.period.start,
+                                            ),
                                         )
                                     }
                             }
@@ -200,8 +200,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                                     existing.unitId,
                                     FiniteDateRange(
                                         body.period.end.plusDays(1),
-                                        existing.period.end
-                                    )
+                                        existing.period.end,
+                                    ),
                                 )
                             } else {
                                 // the backup care was extended; clear calendar event attendees for
@@ -210,13 +210,13 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx.getPlacementsForChildDuring(
                                         existing.childId,
                                         existing.period.end,
-                                        body.period.end
+                                        body.period.end,
                                     )
                                     .forEach { placement ->
                                         tx.clearCalendarEventAttendees(
                                             existing.childId,
                                             placement.unitId,
-                                            FiniteDateRange(existing.period.end, body.period.end)
+                                            FiniteDateRange(existing.period.end, body.period.end),
                                         )
                                     }
                             }
@@ -227,7 +227,7 @@ class BackupCareController(private val accessControl: AccessControl) {
             }
             Audit.BackupCareUpdate.log(
                 targetId = AuditId(id),
-                objectId = body.groupId?.let(AuditId::invoke)
+                objectId = body.groupId?.let(AuditId::invoke),
             )
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -236,13 +236,13 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @DeleteMapping(
         "/backup-cares/{id}", // deprecated
-        "/employee/backup-cares/{id}"
+        "/employee/backup-cares/{id}",
     )
     fun deleteBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @PathVariable id: BackupCareId
+        @PathVariable id: BackupCareId,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -252,7 +252,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                     tx.clearCalendarEventAttendees(
                         backupCare.childId,
                         backupCare.unitId,
-                        backupCare.period
+                        backupCare.period,
                     )
                 }
                 tx.deleteBackupCare(id)
@@ -263,7 +263,7 @@ class BackupCareController(private val accessControl: AccessControl) {
 
     @GetMapping(
         "/daycares/{daycareId}/backup-cares", // deprecated
-        "/employee/daycares/{daycareId}/backup-cares"
+        "/employee/daycares/{daycareId}/backup-cares",
     )
     fun getUnitBackupCares(
         db: Database,
@@ -271,7 +271,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
     ): UnitBackupCaresResponse {
         val backupCares =
             db.connect { dbc ->
@@ -281,7 +281,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                         user,
                         clock,
                         Action.Unit.READ_BACKUP_CARE,
-                        daycareId
+                        daycareId,
                     )
                     it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate))
                 }
@@ -289,7 +289,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.DaycareBackupCareRead.log(
             targetId = AuditId(daycareId),
             meta =
-                mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size)
+                mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size),
         )
         return UnitBackupCaresResponse(backupCares)
     }

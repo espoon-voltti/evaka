@@ -14,7 +14,7 @@ interface InvoiceIntegrationClient {
     data class SendResult(
         val succeeded: List<InvoiceDetailed> = listOf(),
         val failed: List<InvoiceDetailed> = listOf(),
-        val manuallySent: List<InvoiceDetailed> = listOf()
+        val manuallySent: List<InvoiceDetailed> = listOf(),
     )
 
     fun send(invoices: List<InvoiceDetailed>): SendResult

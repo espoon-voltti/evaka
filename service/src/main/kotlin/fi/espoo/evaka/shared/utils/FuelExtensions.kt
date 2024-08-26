@@ -66,7 +66,7 @@ fun Request.responseStringWithRetries(
     errorCallback: (r: ErrorResponseResultOf, remainingTries: Int) -> ResponseResultOf<String> =
         { r, _ ->
             r
-        }
+        },
 ): ResponseResultOf<String> {
     val retryWaitLoggingThresholdSeconds = 10L
     val responseResult = responseString()
@@ -87,7 +87,7 @@ fun Request.responseStringWithRetries(
                                         "Failed to receive a non-throttled response after all retries"
                                     )
                                 )
-                            )
+                            ),
                         )
                     } else {
                         val retryAfter =
@@ -113,7 +113,7 @@ fun Request.responseStringWithRetries(
                 false -> {
                     return errorCallback(
                         ErrorResponseResultOf(request, response, result),
-                        remainingTries - 1
+                        remainingTries - 1,
                     )
                 }
             }

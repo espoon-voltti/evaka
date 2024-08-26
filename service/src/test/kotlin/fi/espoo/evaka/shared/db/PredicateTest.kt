@@ -42,13 +42,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = a.or(b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", predicate.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            predicate.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), predicate.bindings)
     }
 
     @Test
@@ -57,13 +51,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = a.and(b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", predicate.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            predicate.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), predicate.bindings)
     }
 
     @Test
@@ -72,13 +60,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = Predicate.any(a, b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", predicate.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            predicate.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), predicate.bindings)
     }
 
     @Test
@@ -87,13 +69,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val predicate = Predicate.all(a, b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", predicate.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            predicate.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), predicate.bindings)
     }
 
     @Test
@@ -116,13 +92,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val triple = Predicate.all(a, Predicate.alwaysTrue(), b).forTable("some_table")
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", triple.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            triple.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), triple.bindings)
     }
 
     @Test
@@ -145,13 +115,7 @@ class PredicateTest {
         val b = Predicate { where("$it.b = ${bind(2)}") }
         val triple = Predicate.any(a, Predicate.alwaysFalse(), b).forTable("some_table")
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", triple.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            triple.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), triple.bindings)
     }
 
     @Test
@@ -167,16 +131,11 @@ class PredicateTest {
                 .forTable("some_table")
         assertEquals(
             "(((some_table.a = ?) AND (some_table.b = ?)) OR (some_table.c = ?) OR (some_table.b = ?))",
-            predicate.sql.toString()
+            predicate.sql.toString(),
         )
         assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-                ValueBinding.of(3),
-                ValueBinding.of(2),
-            ),
-            predicate.bindings
+            listOf(ValueBinding.of(1), ValueBinding.of(2), ValueBinding.of(3), ValueBinding.of(2)),
+            predicate.bindings,
         )
     }
 
@@ -200,13 +159,7 @@ class PredicateTest {
 
         val triple = PredicateSql.all(a, alwaysTrue, b)
         assertEquals("((some_table.a = ?) AND (some_table.b = ?))", triple.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            triple.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), triple.bindings)
     }
 
     @Test
@@ -229,12 +182,6 @@ class PredicateTest {
 
         val triple = PredicateSql.any(a, alwaysFalse, b)
         assertEquals("((some_table.a = ?) OR (some_table.b = ?))", triple.sql.toString())
-        assertEquals(
-            listOf(
-                ValueBinding.of(1),
-                ValueBinding.of(2),
-            ),
-            triple.bindings
-        )
+        assertEquals(listOf(ValueBinding.of(1), ValueBinding.of(2)), triple.bindings)
     }
 }

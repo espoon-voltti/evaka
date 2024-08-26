@@ -21,7 +21,7 @@ class SettingQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val secondMap =
                 mapOf(
                     SettingType.DECISION_MAKER_NAME to "Pekka Päätöksentekijä",
-                    SettingType.DECISION_MAKER_TITLE to "Sijainen"
+                    SettingType.DECISION_MAKER_TITLE to "Sijainen",
                 )
             tx.setSettings(secondMap)
             assertThat(tx.getSettings()).containsExactlyInAnyOrderEntriesOf(secondMap)

@@ -136,7 +136,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = mon,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
             it.insertServiceNeed(
@@ -147,7 +147,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insertServiceNeed(
                 placementId = child1PlacementId,
@@ -157,14 +157,14 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = child1PlacementId,
                     daycareGroupId = testGroup1.id,
                     startDate = mon,
-                    endDate = thu
+                    endDate = thu,
                 )
             )
             it.insert(
@@ -172,7 +172,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycarePlacementId = child1PlacementId,
                     daycareGroupId = testGroup2.id,
                     startDate = fri,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
             it.insert(
@@ -181,14 +181,14 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = HelsinkiDateTime.of(mon, LocalTime.of(8, 15)),
-                departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5))
+                departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5)),
             )
             it.insert(
                 DevAbsence(
@@ -196,7 +196,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = EvakaUserId(employeeId.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             // Reservation with no times
@@ -206,7 +206,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = wed,
                     startTime = null,
                     endTime = null,
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
 
@@ -217,7 +217,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_4.id,
                     unitId = testDaycare.id,
                     startDate = wed,
-                    endDate = thu
+                    endDate = thu,
                 )
             )
 
@@ -229,7 +229,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_5.id,
                         unitId = testDaycare2.id,
                         startDate = mon,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
             it.insert(
@@ -237,7 +237,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycarePlacementId = testChild5PlacementId,
                     daycareGroupId = testGroupInDaycare2.id,
                     startDate = mon,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
             it.insert(
@@ -245,7 +245,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_5.id,
                     unitId = testDaycare.id,
                     groupId = testGroup2.id,
-                    period = FiniteDateRange(fri, fri)
+                    period = FiniteDateRange(fri, fri),
                 )
             )
             it.insertServiceNeed(
@@ -256,14 +256,14 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insert(
                 DevDailyServiceTimes(
                     childId = testChild_5.id,
                     validityPeriod = monFri.asDateRange(),
                     type = DailyServiceTimesType.REGULAR,
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                 )
             )
 
@@ -274,7 +274,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_6.id,
                         unitId = testDaycare.id,
                         startDate = wed,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
             it.insert(
@@ -282,7 +282,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     daycarePlacementId = child6PlacementId,
                     daycareGroupId = testGroup1.id,
                     startDate = wed,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
             // ... and has a backup in another group in this unit
@@ -291,7 +291,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_6.id,
                     unitId = testDaycare.id,
                     groupId = testGroup2.id,
-                    period = FiniteDateRange(thu, thu)
+                    period = FiniteDateRange(thu, thu),
                 )
             )
             // ... and has a backup in another unit
@@ -300,7 +300,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_6.id,
                     unitId = testDaycare2.id,
                     groupId = testGroupInDaycare2.id,
-                    period = FiniteDateRange(fri, fri)
+                    period = FiniteDateRange(fri, fri),
                 )
             )
             // Reservation is shown in the result because the child is in this unit
@@ -310,7 +310,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = thu,
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(15, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
             // Reservation is NOT shown in the result because the child is in another unit
@@ -320,7 +320,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = fri,
                     startTime = LocalTime.of(7, 0),
                     endTime = LocalTime.of(17, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
         }
@@ -330,7 +330,7 @@ class AttendanceReservationsControllerIntegrationTest :
 
         assertEquals(
             setOf(testChild_1.id, testChild_4.id, testChild_5.id, testChild_6.id),
-            response.children.map { it.id }.toSet()
+            response.children.map { it.id }.toSet(),
         )
         response.children
             .first { it.id == testChild_1.id }
@@ -344,7 +344,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = FiniteDateRange(mon, thu),
                             shiftCare = ShiftCareType.NONE,
-                            partWeek = false
+                            partWeek = false,
                         ),
                         ChildServiceNeedInfo(
                             childId = testChild_1.id,
@@ -353,10 +353,10 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionName = snDaycareFullDay35.nameFi,
                             validDuring = FiniteDateRange(fri, fri),
                             shiftCare = ShiftCareType.NONE,
-                            partWeek = false
-                        )
+                            partWeek = false,
+                        ),
                     ),
-                    child1.serviceNeeds
+                    child1.serviceNeeds,
                 )
             }
         response.children
@@ -374,10 +374,10 @@ class AttendanceReservationsControllerIntegrationTest :
                             optionName = snDaycareContractDays15.nameFi,
                             validDuring = monFri,
                             shiftCare = ShiftCareType.NONE,
-                            partWeek = false
+                            partWeek = false,
                         )
                     ),
-                    child5.serviceNeeds
+                    child5.serviceNeeds,
                 )
             }
         response.children
@@ -389,7 +389,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 UnitAttendanceReservations.ReservationGroup(testGroup1.id, testGroup1.name),
                 UnitAttendanceReservations.ReservationGroup(testGroup2.id, testGroup2.name),
             ),
-            response.groups
+            response.groups,
         )
 
         assertEquals(5, response.days.size)
@@ -402,7 +402,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                         shiftCareOpenOnHoliday = false,
                         isHoliday = false,
-                        isInHolidayPeriod = false
+                        isInHolidayPeriod = false,
                     )
             }
         )
@@ -419,14 +419,14 @@ class AttendanceReservationsControllerIntegrationTest :
                                 listOf(
                                     ReservationResponse.Times(
                                         TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-                                        true
+                                        true,
                                     )
                                 ),
                             attendances =
                                 listOf(
                                     TimeInterval(
                                         start = LocalTime.of(8, 15),
-                                        end = LocalTime.of(16, 5)
+                                        end = LocalTime.of(16, 5),
                                     )
                                 ),
                             absenceBillable = null,
@@ -436,10 +436,10 @@ class AttendanceReservationsControllerIntegrationTest :
                             groupId = testGroup1.id,
                             backupGroupId = null,
                             inOtherUnit = false,
-                            scheduleType = ScheduleType.RESERVATION_REQUIRED
+                            scheduleType = ScheduleType.RESERVATION_REQUIRED,
                         )
                     ),
-                    monChildren
+                    monChildren,
                 )
             }
 
@@ -460,10 +460,10 @@ class AttendanceReservationsControllerIntegrationTest :
                             groupId = testGroup1.id,
                             backupGroupId = null,
                             inOtherUnit = false,
-                            scheduleType = ScheduleType.RESERVATION_REQUIRED
+                            scheduleType = ScheduleType.RESERVATION_REQUIRED,
                         )
                     ),
-                    tueChildren
+                    tueChildren,
                 )
             }
 
@@ -484,9 +484,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup1.id,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    wedChildren.first { it.childId == testChild_1.id }
+                    wedChildren.first { it.childId == testChild_1.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -500,9 +500,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = null,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    wedChildren.first { it.childId == testChild_4.id }
+                    wedChildren.first { it.childId == testChild_4.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -516,9 +516,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup1.id,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    wedChildren.first { it.childId == testChild_6.id }
+                    wedChildren.first { it.childId == testChild_6.id },
                 )
             }
 
@@ -539,9 +539,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup1.id,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    thuChildren.first { it.childId == testChild_1.id }
+                    thuChildren.first { it.childId == testChild_1.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -555,9 +555,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = null,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    thuChildren.first { it.childId == testChild_4.id }
+                    thuChildren.first { it.childId == testChild_4.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -566,7 +566,7 @@ class AttendanceReservationsControllerIntegrationTest :
                             listOf(
                                 ReservationResponse.Times(
                                     TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
-                                    true
+                                    true,
                                 )
                             ),
                         attendances = emptyList(),
@@ -577,9 +577,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup1.id,
                         backupGroupId = testGroup2.id,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    thuChildren.first { it.childId == testChild_6.id }
+                    thuChildren.first { it.childId == testChild_6.id },
                 )
             }
 
@@ -600,9 +600,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup2.id,
                         backupGroupId = null,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    friChildren.first { it.childId == testChild_1.id }
+                    friChildren.first { it.childId == testChild_1.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -615,14 +615,14 @@ class AttendanceReservationsControllerIntegrationTest :
                         dailyServiceTimes =
                             DailyServiceTimesValue.RegularTimes(
                                 validityPeriod = monFri.asDateRange(),
-                                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+                                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
                             ),
                         groupId = null,
                         backupGroupId = testGroup2.id,
                         inOtherUnit = false,
-                        scheduleType = ScheduleType.FIXED_SCHEDULE
+                        scheduleType = ScheduleType.FIXED_SCHEDULE,
                     ),
-                    friChildren.first { it.childId == testChild_5.id }
+                    friChildren.first { it.childId == testChild_5.id },
                 )
                 assertEquals(
                     UnitAttendanceReservations.ChildRecordOfDay(
@@ -636,9 +636,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         groupId = testGroup1.id,
                         backupGroupId = null,
                         inOtherUnit = true,
-                        scheduleType = ScheduleType.RESERVATION_REQUIRED
+                        scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     ),
-                    friChildren.first { it.childId == testChild_6.id }
+                    friChildren.first { it.childId == testChild_6.id },
                 )
             }
     }
@@ -651,7 +651,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = mon,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
             listOf(
@@ -660,49 +660,49 @@ class AttendanceReservationsControllerIntegrationTest :
                         date = mon,
                         startTime = LocalTime.of(19, 0),
                         endTime = LocalTime.of(23, 59),
-                        createdBy = EvakaUserId(employeeId.raw)
+                        createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
                         childId = testChild_1.id,
                         date = tue,
                         startTime = LocalTime.of(0, 0),
                         endTime = LocalTime.of(8, 0),
-                        createdBy = EvakaUserId(employeeId.raw)
+                        createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
                         childId = testChild_1.id,
                         date = tue,
                         startTime = LocalTime.of(17, 30),
                         endTime = LocalTime.of(23, 59),
-                        createdBy = EvakaUserId(employeeId.raw)
+                        createdBy = EvakaUserId(employeeId.raw),
                     ),
                     DevReservation(
                         childId = testChild_1.id,
                         date = wed,
                         startTime = LocalTime.of(0, 0),
                         endTime = LocalTime.of(9, 30),
-                        createdBy = EvakaUserId(employeeId.raw)
-                    )
+                        createdBy = EvakaUserId(employeeId.raw),
+                    ),
                 )
                 .forEach { tx.insert(it) }
 
             listOf(
                     Pair(
                         HelsinkiDateTime.of(mon, LocalTime.of(19, 10)),
-                        HelsinkiDateTime.of(mon, LocalTime.of(23, 59))
+                        HelsinkiDateTime.of(mon, LocalTime.of(23, 59)),
                     ),
                     Pair(
                         HelsinkiDateTime.of(tue, LocalTime.of(0, 0)),
-                        HelsinkiDateTime.of(tue, LocalTime.of(10, 30))
+                        HelsinkiDateTime.of(tue, LocalTime.of(10, 30)),
                     ),
-                    Pair(HelsinkiDateTime.of(tue, LocalTime.of(17, 0)), null)
+                    Pair(HelsinkiDateTime.of(tue, LocalTime.of(17, 0)), null),
                 )
                 .forEach {
                     tx.insertTestChildAttendance(
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         arrived = it.first,
-                        departed = it.second
+                        departed = it.second,
                     )
                 }
         }
@@ -717,7 +717,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         listOf(
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(19, 0), LocalTime.of(23, 59)),
-                                true
+                                true,
                             )
                         ),
                     attendances = listOf(TimeInterval(LocalTime.of(19, 10), LocalTime.of(23, 59))),
@@ -728,10 +728,10 @@ class AttendanceReservationsControllerIntegrationTest :
                     groupId = null,
                     backupGroupId = null,
                     inOtherUnit = false,
-                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                 )
             ),
-            response.days.first { it.date == mon }.children
+            response.days.first { it.date == mon }.children,
         )
 
         assertEquals(
@@ -742,11 +742,11 @@ class AttendanceReservationsControllerIntegrationTest :
                         listOf(
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(0, 0), LocalTime.of(8, 0)),
-                                true
+                                true,
                             ),
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(17, 30), LocalTime.of(23, 59)),
-                                true
+                                true,
                             ),
                         ),
                     attendances =
@@ -761,10 +761,10 @@ class AttendanceReservationsControllerIntegrationTest :
                     groupId = null,
                     backupGroupId = null,
                     inOtherUnit = false,
-                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                 )
             ),
-            response.days.first { it.date == tue }.children
+            response.days.first { it.date == tue }.children,
         )
 
         assertEquals(
@@ -775,7 +775,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         listOf(
                             ReservationResponse.Times(
                                 TimeRange(LocalTime.of(0, 0), LocalTime.of(9, 30)),
-                                true
+                                true,
                             )
                         ),
                     attendances = emptyList(),
@@ -786,10 +786,10 @@ class AttendanceReservationsControllerIntegrationTest :
                     groupId = null,
                     backupGroupId = null,
                     inOtherUnit = false,
-                    scheduleType = ScheduleType.RESERVATION_REQUIRED
+                    scheduleType = ScheduleType.RESERVATION_REQUIRED,
                 )
             ),
-            response.days.first { it.date == wed }.children
+            response.days.first { it.date == wed }.children,
         )
     }
 
@@ -806,9 +806,9 @@ class AttendanceReservationsControllerIntegrationTest :
                     shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     shiftCareOpenOnHoliday = false,
                     isHoliday = false,
-                    isInHolidayPeriod = true
+                    isInHolidayPeriod = true,
                 ),
-                day.dateInfo
+                day.dateInfo,
             )
         }
     }
@@ -829,9 +829,9 @@ class AttendanceReservationsControllerIntegrationTest :
                     shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                     shiftCareOpenOnHoliday = false,
                     isHoliday = false,
-                    isInHolidayPeriod = true
+                    isInHolidayPeriod = true,
                 ),
-                day.dateInfo
+                day.dateInfo,
             )
         }
     }
@@ -847,9 +847,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCareOperatingTimes = TimeRange(LocalTime.of(0, 0), LocalTime.of(23, 59)),
                 shiftCareOpenOnHoliday = false,
                 isHoliday = true,
-                isInHolidayPeriod = false
+                isInHolidayPeriod = false,
             ),
-            result.days.first().dateInfo
+            result.days.first().dateInfo,
         )
     }
 
@@ -862,7 +862,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = mon,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
@@ -872,7 +872,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
-                testChild_1.id
+                testChild_1.id,
             )
         assertEquals(
             listOf(
@@ -881,31 +881,31 @@ class AttendanceReservationsControllerIntegrationTest :
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
-                    dailyServiceTimes = null
+                    dailyServiceTimes = null,
                 ),
                 ConfirmedRangeDate(
                     date = wed,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
-                    dailyServiceTimes = null
+                    dailyServiceTimes = null,
                 ),
                 ConfirmedRangeDate(
                     date = thu,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
-                    dailyServiceTimes = null
+                    dailyServiceTimes = null,
                 ),
                 ConfirmedRangeDate(
                     date = fri,
                     scheduleType = ScheduleType.RESERVATION_REQUIRED,
                     reservations = emptyList(),
                     absenceType = null,
-                    dailyServiceTimes = null
+                    dailyServiceTimes = null,
                 ),
             ),
-            reservations
+            reservations,
         )
     }
 
@@ -921,7 +921,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = mon,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
         }
@@ -937,12 +937,12 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations =
                     listOf(
                         Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))),
-                        Reservation.Times(TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59)))
+                        Reservation.Times(TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59))),
                     ),
                 attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), null)),
                 absenceBillable = AbsenceType.OTHER_ABSENCE,
-                absenceNonbillable = AbsenceType.OTHER_ABSENCE
-            )
+                absenceNonbillable = AbsenceType.OTHER_ABSENCE,
+            ),
         )
 
         assertEquals(
@@ -952,12 +952,12 @@ class AttendanceReservationsControllerIntegrationTest :
                     listOf(
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
-                            true
+                            true,
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(22, 0), LocalTime.of(23, 59)),
-                            true
-                        )
+                            true,
+                        ),
                     ),
                 attendances = listOf(TimeInterval(start = LocalTime.of(12, 30), end = null)),
                 absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
@@ -968,9 +968,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 groupId = null,
                 backupGroupId = null,
                 inOtherUnit = false,
-                scheduleType = ScheduleType.RESERVATION_REQUIRED
+                scheduleType = ScheduleType.RESERVATION_REQUIRED,
             ),
-            getAttendanceReservations(testClock).days[2].children.first()
+            getAttendanceReservations(testClock).days[2].children.first(),
         )
 
         // updating as a different user
@@ -986,13 +986,13 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations =
                     listOf(
                         Reservation.Times(TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0))),
-                        Reservation.Times(TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59)))
+                        Reservation.Times(TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59))),
                     ),
                 attendances =
                     listOf(TimeInterval(start = LocalTime.of(12, 30), LocalTime.of(17, 0))),
                 absenceBillable = AbsenceType.FORCE_MAJEURE,
-                absenceNonbillable = AbsenceType.OTHER_ABSENCE
-            )
+                absenceNonbillable = AbsenceType.OTHER_ABSENCE,
+            ),
         )
 
         assertEquals(
@@ -1002,12 +1002,12 @@ class AttendanceReservationsControllerIntegrationTest :
                     listOf(
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(9, 0), LocalTime.of(17, 0)),
-                            true
+                            true,
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(21, 30), LocalTime.of(23, 59)),
-                            true
-                        )
+                            true,
+                        ),
                     ),
                 attendances =
                     listOf(TimeInterval(start = LocalTime.of(12, 30), end = LocalTime.of(17, 0))),
@@ -1019,9 +1019,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 groupId = null,
                 backupGroupId = null,
                 inOtherUnit = false,
-                scheduleType = ScheduleType.RESERVATION_REQUIRED
+                scheduleType = ScheduleType.RESERVATION_REQUIRED,
             ),
-            getAttendanceReservations(testClock).days[2].children.first()
+            getAttendanceReservations(testClock).days[2].children.first(),
         )
         db.read { tx ->
             val reservationCreators =
@@ -1047,8 +1047,8 @@ class AttendanceReservationsControllerIntegrationTest :
                 reservations = emptyList(),
                 attendances = emptyList(),
                 absenceBillable = null,
-                absenceNonbillable = null
-            )
+                absenceNonbillable = null,
+            ),
         )
 
         assertEquals(
@@ -1064,9 +1064,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 groupId = null,
                 backupGroupId = null,
                 inOtherUnit = false,
-                scheduleType = ScheduleType.RESERVATION_REQUIRED
+                scheduleType = ScheduleType.RESERVATION_REQUIRED,
             ),
-            getAttendanceReservations(testClock).days[2].children.first()
+            getAttendanceReservations(testClock).days[2].children.first(),
         )
     }
 
@@ -1079,7 +1079,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
-                testChild_1.id
+                testChild_1.id,
             )
         }
     }
@@ -1093,7 +1093,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare2.id,
                         startDate = mon,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
@@ -1103,7 +1103,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 dbInstance(),
                 AuthenticatedUser.MobileDevice(id = mobileDeviceId),
                 clock,
-                testChild_1.id
+                testChild_1.id,
             )
         }
     }
@@ -1117,7 +1117,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = mon,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
                 tx.insert(DevMobileDevice(unitId = testDaycare.id))
@@ -1133,7 +1133,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     reservations = emptyList(),
                     absenceType = null,
                 )
-            )
+            ),
         )
     }
 
@@ -1152,9 +1152,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 0,
-                                groupId = null
+                                groupId = null,
                             )
-                        )
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = LocalDate.of(2021, 2, 25),
@@ -1164,9 +1164,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 0,
-                                groupId = null
+                                groupId = null,
                             )
-                        )
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = mon,
@@ -1176,15 +1176,15 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal("1.0000"),
                                 presentCount = 1,
                                 absentCount = 0,
-                                groupId = testGroup1.id
+                                groupId = testGroup1.id,
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 1,
-                                groupId = testGroup2.id
-                            )
-                        )
+                                groupId = testGroup2.id,
+                            ),
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = tue,
@@ -1194,15 +1194,15 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 1,
-                                groupId = testGroup1.id
+                                groupId = testGroup1.id,
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 1,
-                                groupId = testGroup2.id
-                            )
-                        )
+                                groupId = testGroup2.id,
+                            ),
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = wed,
@@ -1212,15 +1212,15 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal.ZERO,
                                 presentCount = 0,
                                 absentCount = 1,
-                                groupId = testGroup1.id
+                                groupId = testGroup1.id,
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal("0.5000"),
                                 presentCount = 1,
                                 absentCount = 0,
-                                groupId = testGroup2.id
-                            )
-                        )
+                                groupId = testGroup2.id,
+                            ),
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = thu,
@@ -1230,9 +1230,9 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal("1.5000"),
                                 presentCount = 2,
                                 absentCount = 0,
-                                groupId = testGroup2.id
+                                groupId = testGroup2.id,
                             )
-                        )
+                        ),
                 ),
                 AttendanceReservationController.DayReservationStatisticsResult(
                     date = fri,
@@ -1242,15 +1242,15 @@ class AttendanceReservationsControllerIntegrationTest :
                                 calculatedPresent = BigDecimal("1.250"),
                                 presentCount = 1,
                                 absentCount = 0,
-                                groupId = testGroup1.id
+                                groupId = testGroup1.id,
                             ),
                             AttendanceReservationController.GroupReservationStatisticResult(
                                 calculatedPresent = BigDecimal("0.5000"),
                                 presentCount = 1,
                                 absentCount = 0,
-                                groupId = testGroup2.id
-                            )
-                        )
+                                groupId = testGroup2.id,
+                            ),
+                        ),
                 ),
             )
 
@@ -1260,7 +1260,7 @@ class AttendanceReservationsControllerIntegrationTest :
             getConfirmedDailyReservationStats(
                 testDaycare.id,
                 mobileDeviceId = mobileDeviceId,
-                clock = testClock
+                clock = testClock,
             )
 
         result.forEachIndexed { index, dayReservationStatisticsResult ->
@@ -1280,7 +1280,7 @@ class AttendanceReservationsControllerIntegrationTest :
             getConfirmedChildReservationsForDay(
                 mon,
                 testDaycare.id,
-                mobileDeviceId = mobileDeviceId
+                mobileDeviceId = mobileDeviceId,
             )
 
         val childMap =
@@ -1292,8 +1292,8 @@ class AttendanceReservationsControllerIntegrationTest :
                         firstName = testChild_1.firstName,
                         lastName = testChild_1.lastName,
                         preferredName = testChild_1.preferredName,
-                        dateOfBirth = testChild_1.dateOfBirth
-                    )
+                        dateOfBirth = testChild_1.dateOfBirth,
+                    ),
                 ),
                 Pair(
                     testChild_2.id,
@@ -1302,9 +1302,9 @@ class AttendanceReservationsControllerIntegrationTest :
                         firstName = testChild_2.firstName,
                         lastName = testChild_2.lastName,
                         preferredName = testChild_2.preferredName,
-                        dateOfBirth = testChild_2.dateOfBirth
-                    )
-                )
+                        dateOfBirth = testChild_2.dateOfBirth,
+                    ),
+                ),
             )
 
         val child1Expectation =
@@ -1314,19 +1314,19 @@ class AttendanceReservationsControllerIntegrationTest :
                     listOf(
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
-                            true
+                            true,
                         ),
                         ReservationResponse.Times(
                             TimeRange(LocalTime.of(13, 0), LocalTime.of(16, 0)),
-                            true
-                        )
+                            true,
+                        ),
                     ),
                 groupId = testGroup1.id,
                 absent = false,
                 backupPlacement = null,
                 dailyServiceTimes = null,
                 scheduleType = ScheduleType.RESERVATION_REQUIRED,
-                isInHolidayPeriod = false
+                isInHolidayPeriod = false,
             )
 
         val child2Expectation =
@@ -1334,20 +1334,20 @@ class AttendanceReservationsControllerIntegrationTest :
                 childId = testChild_2.id,
                 groupId = testGroup2.id,
                 scheduleType = ScheduleType.TERM_BREAK,
-                reservations = listOf()
+                reservations = listOf(),
             )
 
         val mondayExpectation =
             AttendanceReservationController.DailyChildReservationResult(
                 children = childMap,
-                childReservations = listOf(child1Expectation, child2Expectation)
+                childReservations = listOf(child1Expectation, child2Expectation),
             )
 
         val tuesdayResult =
             getConfirmedChildReservationsForDay(
                 tue,
                 testDaycare.id,
-                mobileDeviceId = mobileDeviceId
+                mobileDeviceId = mobileDeviceId,
             )
 
         val tuesdayExpectation =
@@ -1356,15 +1356,15 @@ class AttendanceReservationsControllerIntegrationTest :
                 childReservations =
                     listOf(
                         child1Expectation.copy(reservations = listOf(), absent = true),
-                        child2Expectation
-                    )
+                        child2Expectation,
+                    ),
             )
 
         val fridayResult =
             getConfirmedChildReservationsForDay(
                 fri,
                 testDaycare.id,
-                mobileDeviceId = mobileDeviceId
+                mobileDeviceId = mobileDeviceId,
             )
 
         val fridayExpectation =
@@ -1379,14 +1379,14 @@ class AttendanceReservationsControllerIntegrationTest :
                                     validityPeriod =
                                         DateRange(
                                             LocalDate.of(2021, 3, 5),
-                                            LocalDate.of(2021, 3, 5)
+                                            LocalDate.of(2021, 3, 5),
                                         ),
                                     regularTimes =
-                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0))
-                                )
+                                        TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0)),
+                                ),
                         ),
-                        child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE)
-                    )
+                        child2Expectation.copy(scheduleType = ScheduleType.FIXED_SCHEDULE),
+                    ),
             )
         assertEquals(mondayExpectation.children, mondayResult.children)
         assertThat(mondayResult.childReservations)
@@ -1404,7 +1404,7 @@ class AttendanceReservationsControllerIntegrationTest :
         val range =
             FiniteDateRange(
                 LocalDate.of(2024, 5, 20), // Mon
-                LocalDate.of(2024, 5, 26) // Sun
+                LocalDate.of(2024, 5, 26), // Sun
             )
         val daycareId =
             db.transaction { tx ->
@@ -1418,7 +1418,7 @@ class AttendanceReservationsControllerIntegrationTest :
                                 listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
                             // mon-sat
                             shiftCareOperationTimes =
-                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null)
+                                listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, null),
                         )
                     )
                 tx.insertDaycareAclRow(daycareId, employeeId, UserRole.STAFF)
@@ -1438,25 +1438,25 @@ class AttendanceReservationsControllerIntegrationTest :
             getAttendanceReservations(
                 range = range,
                 daycareId = daycareId,
-                includeNonOperationalDays = true
+                includeNonOperationalDays = true,
             )
         assertEquals(7, result.days.size)
         result.days.take(5).forEach { monToFri ->
             assertEquals(
                 setOf(normalChild, shiftCareChild, intermittentShiftCareChild),
-                monToFri.children.map { it.childId }.toSet()
+                monToFri.children.map { it.childId }.toSet(),
             )
         }
         result.days[5].let { saturday ->
             assertEquals(
                 setOf(shiftCareChild, intermittentShiftCareChild),
-                saturday.children.map { it.childId }.toSet()
+                saturday.children.map { it.childId }.toSet(),
             )
         }
         result.days[6].let { sunday ->
             assertEquals(
                 setOf(intermittentShiftCareChild),
-                sunday.children.map { it.childId }.toSet()
+                sunday.children.map { it.childId }.toSet(),
             )
         }
     }
@@ -1476,7 +1476,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 preschoolTerm2020.swedishPreschool,
                 preschoolTerm2020.extendedTerm,
                 preschoolTerm2020.applicationPeriod,
-                DateSet.of(FiniteDateRange(mon, tue))
+                DateSet.of(FiniteDateRange(mon, tue)),
             )
 
             it.insert(DevHoliday(previousFriday, "holiday"))
@@ -1487,7 +1487,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_1.id,
                         unitId = testDaycare.id,
                         startDate = previousFriday,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
 
@@ -1499,7 +1499,7 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insertServiceNeed(
                 placementId = child1PlacementId,
@@ -1509,14 +1509,14 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = child1PlacementId,
                     daycareGroupId = testGroup1.id,
                     startDate = previousFriday,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
 
@@ -1527,7 +1527,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         childId = testChild_2.id,
                         unitId = testDaycare.id,
                         startDate = previousFriday,
-                        endDate = fri
+                        endDate = fri,
                     )
                 )
             it.insertServiceNeed(
@@ -1538,14 +1538,14 @@ class AttendanceReservationsControllerIntegrationTest :
                 shiftCare = ShiftCareType.NONE,
                 partWeek = false,
                 confirmedBy = null,
-                confirmedAt = null
+                confirmedAt = null,
             )
             it.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = child2PlacementId,
                     daycareGroupId = testGroup2.id,
                     startDate = previousFriday,
-                    endDate = fri
+                    endDate = fri,
                 )
             )
 
@@ -1555,7 +1555,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(12, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
             it.insert(
@@ -1564,7 +1564,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = mon,
                     startTime = LocalTime.of(13, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employeeId.raw)
+                    createdBy = EvakaUserId(employeeId.raw),
                 )
             )
             it.insert(
@@ -1573,7 +1573,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = EvakaUserId(employeeId.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -1582,7 +1582,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = EvakaUserId(employeeId.raw),
-                    absenceCategory = AbsenceCategory.NONBILLABLE
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
             )
             it.insert(
@@ -1591,7 +1591,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = fri,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = EvakaUserId(employeeId.raw),
-                    absenceCategory = AbsenceCategory.NONBILLABLE
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
                 )
             )
             it.insert(
@@ -1600,7 +1600,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     date = tue,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedBy = EvakaUserId(employeeId.raw),
-                    absenceCategory = AbsenceCategory.BILLABLE
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
             it.insert(
@@ -1608,7 +1608,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(wed, wed)
+                    period = FiniteDateRange(wed, wed),
                 )
             )
             it.insert(
@@ -1616,14 +1616,14 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     groupId = testGroup2.id,
-                    period = FiniteDateRange(thu, thu)
+                    period = FiniteDateRange(thu, thu),
                 )
             )
             it.insert(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
                     validityPeriod = DateRange(fri, fri),
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0))
+                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(15, 0)),
                 )
             )
             it.insertAssistanceFactor(
@@ -1632,9 +1632,9 @@ class AttendanceReservationsControllerIntegrationTest :
                 update =
                     AssistanceFactorUpdate(
                         validDuring = FiniteDateRange(start = fri, end = fri),
-                        capacityFactor = 2.5
+                        capacityFactor = 2.5,
                     ),
-                now = HelsinkiDateTime.atStartOfDay(mon)
+                now = HelsinkiDateTime.atStartOfDay(mon),
             )
         }
     }
@@ -1643,7 +1643,7 @@ class AttendanceReservationsControllerIntegrationTest :
         clock: EvakaClock = this.clock,
         range: FiniteDateRange = monFri,
         daycareId: DaycareId = testDaycare.id,
-        includeNonOperationalDays: Boolean = false
+        includeNonOperationalDays: Boolean = false,
     ): UnitAttendanceReservations =
         attendanceReservationController.getAttendanceReservations(
             dbInstance(),
@@ -1652,7 +1652,7 @@ class AttendanceReservationsControllerIntegrationTest :
             daycareId,
             from = range.start,
             to = range.end,
-            includeNonOperationalDays = includeNonOperationalDays
+            includeNonOperationalDays = includeNonOperationalDays,
         )
 
     private fun getConfirmedDailyReservationStats(
@@ -1671,7 +1671,7 @@ class AttendanceReservationsControllerIntegrationTest :
         date: LocalDate,
         daycareId: DaycareId,
         mobileDeviceId: MobileDeviceId,
-        clock: EvakaClock = this.clock
+        clock: EvakaClock = this.clock,
     ): AttendanceReservationController.DailyChildReservationResult =
         attendanceReservationController.getChildReservationsForDay(
             dbInstance(),
@@ -1686,7 +1686,7 @@ class AttendanceReservationsControllerIntegrationTest :
         range: FiniteDateRange,
         daycareId: DaycareId,
         groupId: GroupId,
-        shiftCareType: ShiftCareType
+        shiftCareType: ShiftCareType,
     ): ChildId {
         val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
         tx.insert(
@@ -1694,7 +1694,7 @@ class AttendanceReservationsControllerIntegrationTest :
                     childId = childId,
                     unitId = daycareId,
                     startDate = range.start,
-                    endDate = range.end
+                    endDate = range.end,
                 )
             )
             .also { placementId ->
@@ -1703,7 +1703,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         daycarePlacementId = placementId,
                         daycareGroupId = groupId,
                         startDate = range.start,
-                        endDate = range.end
+                        endDate = range.end,
                     )
                 )
                 tx.insert(
@@ -1713,7 +1713,7 @@ class AttendanceReservationsControllerIntegrationTest :
                         endDate = range.end,
                         optionId = snDaycareFullDay35.id,
                         shiftCare = shiftCareType,
-                        confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId
+                        confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                     )
                 )
             }

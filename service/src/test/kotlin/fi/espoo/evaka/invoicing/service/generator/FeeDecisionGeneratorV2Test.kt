@@ -58,7 +58,7 @@ class FeeDecisionGeneratorV2Test {
         val f2 =
             feeDecision.copy(
                 validDuring = DateRange(date(11), date(20)),
-                partnerId = PersonId(UUID.randomUUID())
+                partnerId = PersonId(UUID.randomUUID()),
             )
         val merged = mergeAdjacentIdenticalDrafts(listOf(f1, f2))
         assertEquals(listOf(f1, f2), merged)
@@ -81,12 +81,12 @@ class FeeDecisionGeneratorV2Test {
                             child =
                                 ChildWithDateOfBirth(
                                     id = childBasis.child.id,
-                                    dateOfBirth = childBasis.child.dateOfBirth
+                                    dateOfBirth = childBasis.child.dateOfBirth,
                                 ),
                             placement =
                                 FeeDecisionPlacement(
                                     unitId = childBasis.placement.unitId,
-                                    type = childBasis.placement.placementType
+                                    type = childBasis.placement.placementType,
                                 ),
                             serviceNeed =
                                 FeeDecisionServiceNeed(
@@ -99,14 +99,14 @@ class FeeDecisionGeneratorV2Test {
                                         childBasis.placement.serviceNeedOption.feeDescriptionFi,
                                     descriptionSv =
                                         childBasis.placement.serviceNeedOption.feeDescriptionSv,
-                                    missing = !childBasis.placement.hasServiceNeed
+                                    missing = !childBasis.placement.hasServiceNeed,
                                 ),
                             baseFee = 28900,
                             siblingDiscount = 80,
                             fee = 5800,
                             feeAlterations = emptyList(),
                             finalFee = 5800,
-                            childIncome = null
+                            childIncome = null,
                         )
                     ),
                 headOfFamilyId = feeBasis.headOfFamilyId,
@@ -124,11 +124,11 @@ class FeeDecisionGeneratorV2Test {
                         maxIncomeThreshold = feeThresholds.maxIncomeThreshold5,
                         incomeMultiplier = feeThresholds.incomeMultiplier5,
                         maxFee = feeThresholds.maxFee,
-                        minFee = feeThresholds.minFee
+                        minFee = feeThresholds.minFee,
                     ),
                 difference = emptySet(),
-                created = decision.created
-            )
+                created = decision.created,
+            ),
         )
     }
 }
@@ -152,11 +152,11 @@ private val feeDecision =
                             null,
                             "foo",
                             "foo",
-                            false
-                        )
+                            false,
+                        ),
                 )
             ),
-        headOfFamilyId = PersonId(UUID.randomUUID())
+        headOfFamilyId = PersonId(UUID.randomUUID()),
     )
 
 private fun date(d: Int) = LocalDate.of(2000, 1, d)
@@ -172,7 +172,7 @@ private fun createFeeBasis(): FeeBasis {
                 totalIncome = 400000,
                 totalExpenses = 100000,
                 total = 500000,
-                worksAtECHA = false
+                worksAtECHA = false,
             ),
         partnerId = PersonId(UUID.randomUUID()),
         partnerIncome =
@@ -182,7 +182,7 @@ private fun createFeeBasis(): FeeBasis {
                 totalIncome = 200000,
                 totalExpenses = 0,
                 total = 200000,
-                worksAtECHA = false
+                worksAtECHA = false,
             ),
         children =
             listOf(
@@ -190,23 +190,23 @@ private fun createFeeBasis(): FeeBasis {
                     placementType = PlacementType.DAYCARE,
                     siblingIndex = 0,
                     invoicedUnit = false,
-                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+                    providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
                 ),
                 createChildFeeBasis(
                     placementType = PlacementType.PRESCHOOL,
                     siblingIndex = 1,
                     invoicedUnit = false,
-                    providerType = ProviderType.MUNICIPAL
+                    providerType = ProviderType.MUNICIPAL,
                 ),
                 createChildFeeBasis(
                     placementType = PlacementType.DAYCARE,
                     siblingIndex = 2,
                     invoicedUnit = true,
-                    providerType = ProviderType.MUNICIPAL
-                )
+                    providerType = ProviderType.MUNICIPAL,
+                ),
             ),
         familySize = 5,
-        feeThresholds = feeThresholds
+        feeThresholds = feeThresholds,
     )
 }
 
@@ -214,7 +214,7 @@ private fun createChildFeeBasis(
     placementType: PlacementType,
     providerType: ProviderType,
     invoicedUnit: Boolean = true,
-    siblingIndex: Int = 0
+    siblingIndex: Int = 0,
 ): ChildFeeBasis {
     val id = PersonId(UUID.randomUUID())
     return ChildFeeBasis(
@@ -230,11 +230,11 @@ private fun createChildFeeBasis(
                 invoicedUnit = invoicedUnit,
                 hasServiceNeed = true,
                 serviceNeedOption = snDaycareFullDay35,
-                serviceNeedVoucherValues = null
+                serviceNeedVoucherValues = null,
             ),
         serviceNeedOptionFee = null,
         feeAlterations = emptyList(),
-        income = null
+        income = null,
     )
 }
 
@@ -261,7 +261,7 @@ private val snDaycareFullDay35 =
         voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
         voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
         validFrom = LocalDate.of(2000, 1, 1),
-        validTo = null
+        validTo = null,
     )
 
 private val feeThresholds =
@@ -290,5 +290,5 @@ private val feeThresholds =
         temporaryFee = 2900,
         temporaryFeePartDay = 1500,
         temporaryFeeSibling = 1500,
-        temporaryFeeSiblingPartDay = 800
+        temporaryFeeSiblingPartDay = 800,
     )

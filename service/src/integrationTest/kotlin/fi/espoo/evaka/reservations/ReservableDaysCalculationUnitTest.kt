@@ -25,7 +25,7 @@ class ReservableDaysCalculationUnitTest {
     fun `reservable days query date is Monday`() {
         assertReservableDays(
             FiniteDateRange(LocalDate.of(2021, 6, 14), end2021),
-            LocalDateTime.of(2021, 6, 7, 12, 0)
+            LocalDateTime.of(2021, 6, 7, 12, 0),
         )
     }
 
@@ -33,7 +33,7 @@ class ReservableDaysCalculationUnitTest {
     fun `reservable days query date is Tuesday`() {
         assertReservableDays(
             FiniteDateRange(LocalDate.of(2021, 6, 21), end2021),
-            LocalDateTime.of(2021, 6, 8, 12, 0)
+            LocalDateTime.of(2021, 6, 8, 12, 0),
         )
     }
 
@@ -41,7 +41,7 @@ class ReservableDaysCalculationUnitTest {
     fun `reservable days includes next year when start is in July`() {
         assertReservableDays(
             FiniteDateRange(LocalDate.of(2021, 7, 5), end2022),
-            LocalDateTime.of(2021, 6, 28, 12, 0)
+            LocalDateTime.of(2021, 6, 28, 12, 0),
         )
     }
 
@@ -49,7 +49,7 @@ class ReservableDaysCalculationUnitTest {
     fun `reservable days query date is in September`() {
         assertReservableDays(
             FiniteDateRange(LocalDate.of(2021, 9, 13), end2022),
-            LocalDateTime.of(2021, 9, 1, 12, 0)
+            LocalDateTime.of(2021, 9, 1, 12, 0),
         )
     }
 
@@ -60,7 +60,7 @@ class ReservableDaysCalculationUnitTest {
     fun `reservable days query date is just before threshold`() {
         assertReservableDays(
             FiniteDateRange(mondayNextWeekAfterThreshold, end2022),
-            justBeforeThreshold
+            justBeforeThreshold,
         )
     }
 
@@ -69,7 +69,7 @@ class ReservableDaysCalculationUnitTest {
         val justAtThreshold = justBeforeThreshold.plusMinutes(1)
         assertReservableDays(
             FiniteDateRange(mondayNextWeekAfterThreshold.plusWeeks(1), end2022),
-            justAtThreshold
+            justAtThreshold,
         )
     }
 }

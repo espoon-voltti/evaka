@@ -45,8 +45,8 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         streetAddress = "",
                         postalCode = "",
                         postOffice = "",
-                        residenceCode = ""
-                    )
+                        residenceCode = "",
+                    ),
                 )
             }
 
@@ -64,7 +64,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 phone = "123456",
                 streetAddress = "Testikatu 1",
                 postalCode = "12345",
-                postOffice = "Espoo"
+                postOffice = "Espoo",
             )
         val personId = db.transaction { createPerson(it, body) }
 
@@ -147,7 +147,7 @@ class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 PersonReference("varda_state", "child_id"),
                 PersonReference("voucher_value_decision", "child_id"),
                 PersonReference("voucher_value_decision", "head_of_family_id"),
-                PersonReference("voucher_value_decision", "partner_id")
+                PersonReference("voucher_value_decision", "partner_id"),
             )
         assertEquals(expected, references)
         assertEquals(expected.size, references.size)

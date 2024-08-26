@@ -38,20 +38,20 @@ enum class QuestionType {
     RADIO_BUTTON_GROUP,
     STATIC_TEXT_DISPLAY,
     DATE,
-    GROUPED_TEXT_FIELDS
+    GROUPED_TEXT_FIELDS,
 }
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type"
+    property = "type",
 )
 sealed class Question(val type: QuestionType) {
     abstract val id: String
 
     abstract fun generateHtml(
         answeredQuestion: AnsweredQuestion<*>?,
-        language: OfficialLanguage
+        language: OfficialLanguage,
     ): HtmlElement
 
     fun htmlClassName() = "question question-${type.name.lowercase().replace('_', '-')}"
@@ -61,11 +61,11 @@ sealed class Question(val type: QuestionType) {
         override val id: String,
         val label: String,
         val infoText: String = "",
-        val multiline: Boolean = false
+        val multiline: Boolean = false,
     ) : Question(QuestionType.TEXT) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -86,7 +86,7 @@ sealed class Question(val type: QuestionType) {
                         span("-")
                     } else {
                         div { multilineText(answeredQuestion.answer) }
-                    }
+                    },
                 )
             }
         }
@@ -96,11 +96,11 @@ sealed class Question(val type: QuestionType) {
     data class CheckboxQuestion(
         override val id: String,
         val label: String,
-        val infoText: String = ""
+        val infoText: String = "",
     ) : Question(QuestionType.CHECKBOX) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -117,7 +117,7 @@ sealed class Question(val type: QuestionType) {
             return HtmlBuilder.div(className = htmlClassName()) {
                 listOf(
                     label(label),
-                    div(if (answeredQuestion.answer) translations.yes else translations.no)
+                    div(if (answeredQuestion.answer) translations.yes else translations.no),
                 )
             }
         }
@@ -128,11 +128,11 @@ sealed class Question(val type: QuestionType) {
         override val id: String,
         val label: String,
         val options: List<CheckboxGroupQuestionOption>,
-        val infoText: String = ""
+        val infoText: String = "",
     ) : Question(QuestionType.CHECKBOX_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -160,7 +160,7 @@ sealed class Question(val type: QuestionType) {
                                 )
                             }
                         }
-                    }
+                    },
                 )
             }
         }
@@ -171,11 +171,11 @@ sealed class Question(val type: QuestionType) {
         override val id: String,
         val label: String,
         val options: List<RadioButtonGroupQuestionOption>,
-        val infoText: String = ""
+        val infoText: String = "",
     ) : Question(QuestionType.RADIO_BUTTON_GROUP) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -196,7 +196,7 @@ sealed class Question(val type: QuestionType) {
                         span("-")
                     } else {
                         div(options.find { it.id == answeredQuestion.answer }!!.label)
-                    }
+                    },
                 )
             }
         }
@@ -207,16 +207,16 @@ sealed class Question(val type: QuestionType) {
         override val id: String,
         val label: String = "",
         val text: String = "",
-        val infoText: String = ""
+        val infoText: String = "",
     ) : Question(QuestionType.STATIC_TEXT_DISPLAY) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             return HtmlBuilder.div(className = htmlClassName()) {
                 listOfNotNull(
                     if (label.isNotBlank()) label(label) else null,
-                    if (text.isNotBlank()) div { multilineText(text) } else null
+                    if (text.isNotBlank()) div { multilineText(text) } else null,
                 )
             }
         }
@@ -227,7 +227,7 @@ sealed class Question(val type: QuestionType) {
         Question(QuestionType.DATE) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             if (answeredQuestion == null)
                 return HtmlBuilder.div(className = htmlClassName()) {
@@ -247,7 +247,7 @@ sealed class Question(val type: QuestionType) {
                     div(
                         answeredQuestion.answer?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                             ?: "-"
-                    )
+                    ),
                 )
             }
         }
@@ -259,11 +259,11 @@ sealed class Question(val type: QuestionType) {
         val label: String,
         val fieldLabels: List<String>,
         val infoText: String = "",
-        val allowMultipleRows: Boolean
+        val allowMultipleRows: Boolean,
     ) : Question(QuestionType.GROUPED_TEXT_FIELDS) {
         override fun generateHtml(
             answeredQuestion: AnsweredQuestion<*>?,
-            language: OfficialLanguage
+            language: OfficialLanguage,
         ): HtmlElement {
             val headerRow = HtmlBuilder.tr { fieldLabels.map { th(it) } }
             val emptyRow = HtmlBuilder.tr { fieldLabels.map { td("-") } }
@@ -294,10 +294,10 @@ sealed class Question(val type: QuestionType) {
                                     answerRow.map { answer ->
                                         td(answer.takeIf { it.isNotBlank() } ?: "-")
                                     }
-                                }
+                                },
                             )
                         }
-                    }
+                    },
                 )
             }
         }
@@ -307,7 +307,7 @@ sealed class Question(val type: QuestionType) {
 data class CheckboxGroupQuestionOption(
     val id: String,
     val label: String,
-    val withText: Boolean = false
+    val withText: Boolean = false,
 )
 
 data class RadioButtonGroupQuestionOption(val id: String, val label: String)
@@ -316,7 +316,7 @@ data class Section(
     val id: String,
     val label: String,
     val questions: List<Question>,
-    val infoText: String = ""
+    val infoText: String = "",
 )
 
 @Json data class DocumentTemplateContent(val sections: List<Section>)
@@ -348,7 +348,7 @@ data class DocumentTemplate(
     val published: Boolean,
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
-    @Json val content: DocumentTemplateContent
+    @Json val content: DocumentTemplateContent,
 )
 
 data class ExportedDocumentTemplate(
@@ -360,7 +360,7 @@ data class ExportedDocumentTemplate(
     val validity: DateRange,
     val processDefinitionNumber: String?,
     val archiveDurationMonths: Int?,
-    @Json val content: DocumentTemplateContent
+    @Json val content: DocumentTemplateContent,
 )
 
 data class DocumentTemplateBasicsRequest(
@@ -371,7 +371,7 @@ data class DocumentTemplateBasicsRequest(
     val legalBasis: String,
     val validity: DateRange,
     val processDefinitionNumber: String?,
-    val archiveDurationMonths: Int?
+    val archiveDurationMonths: Int?,
 )
 
 data class DocumentTemplateSummary(
@@ -380,5 +380,5 @@ data class DocumentTemplateSummary(
     val type: DocumentType,
     val language: OfficialLanguage,
     val validity: DateRange,
-    val published: Boolean
+    val published: Boolean,
 )

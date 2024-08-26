@@ -50,7 +50,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
-                departed = null
+                departed = null,
             )
         }
 
@@ -71,14 +71,14 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testRoundTheClockDaycare.id,
                     startDate = LocalDate.now().minusDays(1),
-                    endDate = LocalDate.now().plusDays(1)
+                    endDate = LocalDate.now().plusDays(1),
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testRoundTheClockDaycare.id,
                 arrived = arrived,
-                departed = null
+                departed = null,
             )
         }
 
@@ -100,14 +100,14 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testRoundTheClockDaycare.id,
                     startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().minusDays(1)
+                    endDate = LocalDate.now().minusDays(1),
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testRoundTheClockDaycare.id,
                 arrived = arrived,
-                departed = null
+                departed = null,
             )
 
             // A placement to another unit is active
@@ -116,7 +116,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.now(),
-                    endDate = LocalDate.now().plusDays(1)
+                    endDate = LocalDate.now().plusDays(1),
                 )
             )
         }
@@ -139,7 +139,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().plusDays(1)
+                    endDate = LocalDate.now().plusDays(1),
                 )
             )
             // Backup placement to attendance's unit is active
@@ -149,14 +149,14 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = testRoundTheClockDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().plusDays(1))
+                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().plusDays(1)),
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testRoundTheClockDaycare.id,
                 arrived = arrived,
-                departed = null
+                departed = null,
             )
         }
 
@@ -178,7 +178,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.now().minusDays(2),
-                    endDate = LocalDate.now().plusDays(1)
+                    endDate = LocalDate.now().plusDays(1),
                 )
             )
             // Backup placement to attendance's unit has ended
@@ -188,7 +188,7 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = testRoundTheClockDaycare.id,
                     groupId = null,
                     period =
-                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().minusDays(1))
+                        FiniteDateRange(LocalDate.now().minusDays(2), LocalDate.now().minusDays(1)),
                 )
             )
             // Backup placement to another unit has ended
@@ -197,14 +197,14 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
                     groupId = null,
-                    period = FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1))
+                    period = FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testRoundTheClockDaycare.id,
                 arrived = arrived,
-                departed = null
+                departed = null,
             )
         }
 
