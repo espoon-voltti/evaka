@@ -12,6 +12,8 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.placement.PlacementPlanService
+import fi.espoo.evaka.reports.AttendanceReservationReportRow
+import fi.espoo.evaka.reports.getAttendanceReservationReport
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -250,6 +252,36 @@ class OccupancyController(
             }
         Audit.OccupancyRead.log(targetId = AuditId(unitId))
         return occupancies
+    }
+
+    @GetMapping("/employee/occupancy/units/{unitId}/day/planned")
+    fun getUnitPlannedOccupanciesForDay(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam groupId: GroupId?,
+    ): List<AttendanceReservationReportRow> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId,
+                    )
+                    getAttendanceReservationReport(
+                        db = tx,
+                        start = date,
+                        end = date,
+                        unitId = unitId,
+                        groupIds = if (groupId != null) listOf(groupId) else null,
+                    )
+                }
+            }
+            .also { Audit.OccupancyRead.log(targetId = AuditId(unitId)) }
     }
 
     @GetMapping(

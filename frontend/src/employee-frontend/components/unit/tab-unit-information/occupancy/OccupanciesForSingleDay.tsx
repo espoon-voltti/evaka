@@ -15,10 +15,12 @@ import { useTranslation } from '../../../../state/i18n'
 import { renderResult } from '../../../async-rendering'
 import {
   unitOccupanciesQuery,
+  unitPlannedOccupanciesForDayQuery,
   unitRealizedOccupanciesForDayQuery
 } from '../../queries'
 
-import OccupancyDayGraph from './OccupancyDayGraph'
+import OccupancyDayGraphPlanned from './OccupancyDayGraphPlanned'
+import OccupancyDayGraphRealized from './OccupancyDayGraphRealized'
 
 const Container = styled.div`
   text-align: center;
@@ -37,8 +39,8 @@ export const LegendSquare = styled.div<{ color: string; small?: boolean }>`
   border-radius: 2px;
 `
 
-export const RealtimeOccupanciesForSingleDay = React.memo(
-  function RealTimeOccupanciesForSingleDay({
+export const RealtimeRealizedOccupanciesForSingleDay = React.memo(
+  function RealtimeRealizedOccupanciesForSingleDay({
     unitId,
     groupId,
     date,
@@ -55,11 +57,33 @@ export const RealtimeOccupanciesForSingleDay = React.memo(
 
     return renderResult(occupancies, (occupancies, isReloading) => (
       <div data-qa="unit-attendances" data-isloading={isReloading}>
-        <OccupancyDayGraph
+        <OccupancyDayGraphRealized
           queryDate={date}
           occupancy={occupancies}
           shiftCareUnit={shiftCareUnit}
         />
+      </div>
+    ))
+  }
+)
+
+export const RealtimePlannedOccupanciesForSingleDay = React.memo(
+  function RealtimePlannedOccupanciesForSingleDay({
+    unitId,
+    groupId,
+    date
+  }: {
+    unitId: UUID
+    groupId: UUID | null
+    date: LocalDate
+  }) {
+    const rows = useQueryResult(
+      unitPlannedOccupanciesForDayQuery({ unitId, date, groupId })
+    )
+
+    return renderResult(rows, (rows, isReloading) => (
+      <div data-qa="unit-attendances" data-isloading={isReloading}>
+        <OccupancyDayGraphPlanned rows={rows} />
       </div>
     ))
   }

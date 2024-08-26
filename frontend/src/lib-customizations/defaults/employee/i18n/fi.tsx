@@ -2190,7 +2190,7 @@ export const fi = {
       }
     },
     occupancy: {
-      group: 'Ryhmä',
+      display: 'Näytä',
       fullUnit: 'Koko yksikkö',
       title: 'Yksikön täyttöaste',
       subtitles: {
@@ -2205,9 +2205,14 @@ export const fi = {
       noValidValues: 'Aikavälille ei voitu laskea täyttöastetta',
       noValidValuesRealized: 'Aikavälille ei voitu laskea käyttöastetta',
       realtime: {
+        modes: {
+          REALIZED: 'Toteuma',
+          PLANNED: 'Suunnitelma'
+        },
         noData: 'Ei tietoja valitulle päivälle',
         legendTitle: 'Merkintöjen selitykset',
         chartYAxisTitle: 'Lapsia kertoimilla',
+        chartY1AxisTitle: 'Henkilökuntaa',
         staffPresent: 'Työntekijöiden lukumäärä',
         staffRequired: 'Tarvittavat työntekijät',
         childrenMax: 'Lasten maksimimäärä (kertoimella)',

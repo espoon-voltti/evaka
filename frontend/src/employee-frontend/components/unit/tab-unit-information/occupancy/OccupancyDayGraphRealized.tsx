@@ -1,16 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  Chart,
-  ChartData,
-  ChartDataset,
-  ChartOptions,
-  TooltipModel
-} from 'chart.js'
+import { Chart, ChartData, ChartOptions, TooltipModel } from 'chart.js'
 import { compareAsc, isBefore, max, min, roundToNearestMinutes } from 'date-fns'
-import { fi } from 'date-fns/locale'
 import ceil from 'lodash/ceil'
 import first from 'lodash/first'
 import isEqual from 'lodash/isEqual'
@@ -37,8 +30,7 @@ import { Translations, useTranslation } from '../../../../state/i18n'
 
 import { ChartTooltip } from './ChartTooltip'
 import { LegendSquare } from './OccupanciesForSingleDay'
-
-type DatePoint = { x: Date; y: number | null }
+import { DatePoint, defaultChartOptions, line } from './chart-commons'
 
 interface Props {
   queryDate: LocalDate
@@ -46,7 +38,7 @@ interface Props {
   shiftCareUnit: boolean
 }
 
-export default React.memo(function OccupancyDayGraph({
+export default React.memo(function OccupancyDayGraphRealized({
   queryDate,
   occupancy,
   shiftCareUnit
@@ -405,24 +397,13 @@ function graphData(
   }
 
   const graphOptions: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
+    ...defaultChartOptions,
     scales: {
+      ...defaultChartOptions.scales,
       x: {
-        type: 'time',
+        ...defaultChartOptions.scales?.x,
         min: xMin.getTime(),
-        max: xMax.getTime(),
-        time: {
-          displayFormats: {
-            hour: 'HH:00'
-          },
-          minUnit: 'hour'
-        },
-        adapters: {
-          date: {
-            locale: fi
-          }
-        }
+        max: xMax.getTime()
       },
       y: {
         min: 0,
@@ -436,13 +417,9 @@ function graphData(
       }
     },
     plugins: {
-      legend: {
-        display: false
-      },
+      ...defaultChartOptions.plugins,
       tooltip: {
-        enabled: false,
-        position: 'nearest',
-        intersect: false,
+        ...defaultChartOptions.plugins?.tooltip,
         // The types in the chart package are bad so we need this...
         external: tooltipHandler as unknown as (
           this: TooltipModel<'line'>,
@@ -453,25 +430,6 @@ function graphData(
   }
 
   return { data, graphOptions }
-}
-
-function line(
-  label: string,
-  data: DatePoint[],
-  color: string
-): ChartDataset<'line', DatePoint[]> {
-  return {
-    label,
-    data,
-    spanGaps: true,
-    stepped: 'before',
-    fill: false,
-    pointRadius: 0,
-    pointBackgroundColor: color,
-    borderWidth: 2,
-    borderColor: color,
-    borderJoinStyle: 'miter'
-  }
 }
 
 function getCurrentMinute(): HelsinkiDateTime {
