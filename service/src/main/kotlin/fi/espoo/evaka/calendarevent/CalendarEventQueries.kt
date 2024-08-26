@@ -544,7 +544,10 @@ WHERE cet.id = ${bind(eventTimeId)}
         .exactlyOneOrNull<DiscussionTimeReminderData>()
 }
 
-fun Database.Read.getParentsWithNewEventsAfter(cutoff: HelsinkiDateTime): List<ParentWithEvents> {
+fun Database.Read.getParentsWithNewEventsAfter(
+    today: LocalDate,
+    cutoff: HelsinkiDateTime,
+): List<ParentWithEvents> {
     return createQuery {
             sql(
                 """
@@ -554,7 +557,7 @@ WITH matching_events AS (
     SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
     FROM matching_events ce
     JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
-    JOIN placement pl ON pl.unit_id = cea.unit_id AND daterange(pl.start_date, pl.end_date, '[]') && ce.period
+    JOIN placement pl ON pl.unit_id = cea.unit_id AND daterange(pl.start_date, pl.end_date, '[]') && ce.period AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     WHERE
         -- Affects the whole unit
         cea.group_id IS NULL AND
@@ -573,7 +576,7 @@ WITH matching_events AS (
     FROM matching_events ce
     JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
     JOIN daycare_group_placement dgp ON dgp.daycare_group_id = cea.group_id AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
-    JOIN placement pl ON pl.id = dgp.daycare_placement_id
+    JOIN placement pl ON pl.id = dgp.daycare_placement_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
     WHERE
         -- Affects a single group
         cea.group_id IS NOT NULL AND
@@ -592,6 +595,7 @@ WITH matching_events AS (
     FROM matching_events ce
     JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
     WHERE
+        EXISTS (SELECT FROM placement pl WHERE daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}) AND
         -- Affects a single child (in a single group)
         cea.group_id IS NOT NULL AND
         cea.child_id IS NOT NULL

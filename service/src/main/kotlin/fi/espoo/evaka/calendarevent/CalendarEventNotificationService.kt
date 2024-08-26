@@ -124,7 +124,7 @@ class CalendarEventNotificationService(
     }
 
     fun sendCalendarEventDigests(dbc: Database.Connection, now: HelsinkiDateTime) {
-        dbc.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+        dbc.read { tx -> tx.getParentsWithNewEventsAfter(now.toLocalDate(), now.minusHours(24)) }
             .also { parents ->
                 logger.info { "Sending calendar event notifications to ${parents.size} parents" }
             }
