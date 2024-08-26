@@ -1752,7 +1752,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     phone = "",
                     backupPhone = "",
                     email = "example@example.com",
-                )
+                ),
             )
         }
 
@@ -1768,9 +1768,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     listOf(
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
-                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
                         )
-                    )
+                    ),
             )
 
         val event = createCalendarEvent(form)
@@ -1791,7 +1791,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val notificationEmailContent =
             emailMessageProvider.discussionSurveyCreationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertEmails(expectedRecipients, notificationEmailContent, expectedFromAddress)
@@ -1809,7 +1809,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     phone = "",
                     backupPhone = "",
                     email = "example@example.com",
-                )
+                ),
             )
         }
 
@@ -1825,9 +1825,9 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     listOf(
                         CalendarEventTimeForm(
                             date = today.plusDays(1),
-                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
                         )
-                    )
+                    ),
             )
 
         val event = createCalendarEvent(form)
@@ -1848,7 +1848,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val notificationEmailContent =
             emailMessageProvider.discussionSurveyCreationNotification(
                 language = Language.fi,
-                notificationDetails = emailDetails
+                notificationDetails = emailDetails,
             )
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertEmails(expectedRecipients, notificationEmailContent, expectedFromAddress)
@@ -1866,14 +1866,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     phone = "",
                     backupPhone = "",
                     email = "example@example.com",
-                )
+                ),
             )
         }
 
         val eventTimeForm =
             CalendarEventTimeForm(
                 date = today.plusDays(2),
-                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
             )
         val form =
             CalendarEventForm(
@@ -1883,7 +1883,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 description = "gsu",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
-                times = listOf(eventTimeForm)
+                times = listOf(eventTimeForm),
             )
 
         val event = createCalendarEvent(form)
@@ -1895,7 +1895,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            reservationForm
+            reservationForm,
         )
 
         // flush reservation email
@@ -1916,13 +1916,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 date = eventTimeForm.date,
                 firstName = testChild_1.firstName,
                 lastName = testChild_1.lastName,
-                childId = testChild_1.id
+                childId = testChild_1.id,
             )
 
         val reminderEmailContent =
             emailMessageProvider.discussionTimeReservationReminder(
                 language = Language.fi,
-                reminderData = emailDetails
+                reminderData = emailDetails,
             )
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
         assertEmails(expectedRecipients, reminderEmailContent, expectedFromAddress)
@@ -1939,20 +1939,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     phone = "",
                     backupPhone = "",
                     email = "example@example.com",
-                )
+                ),
             )
         }
 
         val eventTimeForm =
             CalendarEventTimeForm(
                 date = today.plusDays(1),
-                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
             )
 
         val eventTimeForm2 =
             CalendarEventTimeForm(
                 date = today.plusDays(3),
-                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0))
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
             )
         val form =
             CalendarEventForm(
@@ -1962,7 +1962,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 description = "gsu",
                 period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
                 eventType = CalendarEventType.DISCUSSION_SURVEY,
-                times = listOf(eventTimeForm, eventTimeForm2)
+                times = listOf(eventTimeForm, eventTimeForm2),
             )
 
         val event = createCalendarEvent(form)
@@ -1971,13 +1971,13 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeEmployeeReservationForm(event.times.first().id, testChild_1.id)
+            CalendarEventTimeEmployeeReservationForm(event.times.first().id, testChild_1.id),
         )
         calendarEventController.setCalendarEventTimeReservation(
             dbInstance(),
             admin,
             clock,
-            CalendarEventTimeEmployeeReservationForm(event.times.last().id, testChild_1.id)
+            CalendarEventTimeEmployeeReservationForm(event.times.last().id, testChild_1.id),
         )
 
         // flush reservation email

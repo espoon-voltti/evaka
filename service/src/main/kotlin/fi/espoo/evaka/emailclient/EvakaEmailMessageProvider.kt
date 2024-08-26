@@ -686,7 +686,7 @@ $unsubscribeEn
 
     override fun discussionSurveyCreationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyCreationNotificationData
+        notificationDetails: DiscussionSurveyCreationNotificationData,
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
@@ -709,13 +709,13 @@ $unsubscribeSv
 $unsubscribeEn
 <hr>
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 
     override fun discussionTimeReservationReminder(
         language: Language,
-        reminderData: DiscussionTimeReminderData
+        reminderData: DiscussionTimeReminderData,
     ): EmailContent {
         return EmailContent.fromHtml(
             subject =
@@ -747,7 +747,7 @@ $unsubscribeSv
 $unsubscribeEn
 <hr>
             """
-                    .trimIndent()
+                    .trimIndent(),
         )
     }
 }

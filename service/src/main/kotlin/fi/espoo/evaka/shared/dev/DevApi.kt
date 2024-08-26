@@ -1654,8 +1654,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             startTime = LocalTime.of(12, 20),
                             endTime = LocalTime.of(12, 50),
                             childId = PersonId(UUID.randomUUID()),
-                            title = "VASU-keskustelut 2029 syksy"
-                        )
+                            title = "VASU-keskustelut 2029 syksy",
+                        ),
                     )
                 EmailMessageType.discussionSurveyCreation ->
                     emailMessageProvider.discussionSurveyCreationNotification(
@@ -1664,8 +1664,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                             eventId = CalendarEventId(UUID.randomUUID()),
                             eventTitle = "VASU-keskustelut 2029 syksy",
                             eventDescription =
-                                "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
-                        )
+                                "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki.",
+                        ),
                     )
             }
         val content =

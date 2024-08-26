@@ -481,7 +481,7 @@ data class ParentWithEventTimes(
 data class ParentWithDiscussionSurveys(
     val parentId: PersonId,
     val language: Language,
-    val surveys: List<DiscussionSurveyCreationNotificationData>
+    val surveys: List<DiscussionSurveyCreationNotificationData>,
 )
 
 fun Database.Read.getRecipientsForEventTimeRemindersAt(
@@ -703,7 +703,7 @@ GROUP BY mp.parent_id, p.language
             ParentWithDiscussionSurveys(
                 parentId = column("parent_id"),
                 language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                surveys = jsonColumn<List<DiscussionSurveyCreationNotificationData>>("surveys")
+                surveys = jsonColumn<List<DiscussionSurveyCreationNotificationData>>("surveys"),
             )
         }
 }

@@ -439,7 +439,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
                     SendDiscussionReservationReminderEmail::class,
-                )
+                ),
             )
         val urgent =
             AsyncJobRunner.Pool(

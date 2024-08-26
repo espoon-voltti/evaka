@@ -114,12 +114,12 @@ interface IEmailMessageProvider {
 
     fun discussionSurveyCreationNotification(
         language: Language,
-        notificationDetails: DiscussionSurveyCreationNotificationData
+        notificationDetails: DiscussionSurveyCreationNotificationData,
     ): EmailContent
 
     fun discussionTimeReservationReminder(
         language: Language,
-        reminderData: DiscussionTimeReminderData
+        reminderData: DiscussionTimeReminderData,
     ): EmailContent
 
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
@@ -146,5 +146,5 @@ data class DiscussionSurveyReservationNotificationData(
 data class DiscussionSurveyCreationNotificationData(
     val eventTitle: String,
     val eventDescription: String,
-    val eventId: CalendarEventId
+    val eventId: CalendarEventId,
 )

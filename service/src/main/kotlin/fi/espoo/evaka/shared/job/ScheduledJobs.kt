@@ -186,11 +186,11 @@ enum class ScheduledJob(
     ),
     ScheduleDiscussionSurveyDigests(
         ScheduledJobs::scheduleDiscussionSurveyDigests,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0))),
     ),
     ScheduleDiscussionTimeReservationReminders(
         ScheduledJobs::scheduleDiscussionTimeReservationReminders,
-        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(19, 0)))
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(19, 0))),
     ),
     ScheduleOrphanAttachmentDeletion(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,

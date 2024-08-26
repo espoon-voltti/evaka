@@ -52,10 +52,10 @@ class CalendarEventNotificationService(
                         AsyncJob.SendDiscussionReservationReminderEmail(
                             it.parentId,
                             it.language,
-                            it.eventTimeId
+                            it.eventTimeId,
                         )
                     },
-                runAt = now
+                runAt = now,
             )
         }
     }
@@ -84,7 +84,7 @@ class CalendarEventNotificationService(
                             }
                         }
                         .flatten(),
-                runAt = now
+                runAt = now,
             )
         }
     }
@@ -92,7 +92,7 @@ class CalendarEventNotificationService(
     fun runSendDiscussionSurveyDigest(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendDiscussionSurveyCreationNotificationEmail
+        msg: AsyncJob.SendDiscussionSurveyCreationNotificationEmail,
     ) {
 
         val fromAddress = emailEnv.sender(Language.fi)
@@ -103,8 +103,8 @@ class CalendarEventNotificationService(
                     DiscussionSurveyCreationNotificationData(
                         eventId = msg.eventId,
                         eventTitle = msg.eventTitle,
-                        eventDescription = msg.eventDescription
-                    )
+                        eventDescription = msg.eventDescription,
+                    ),
             )
         Email.create(
                 db,
@@ -166,7 +166,7 @@ class CalendarEventNotificationService(
                         title = msg.eventTitle,
                         calendarEventTime = eventTime,
                         childName = "${child.firstName} ${child.lastName}",
-                    )
+                    ),
             )
         Email.create(
                 db,
@@ -206,7 +206,7 @@ class CalendarEventNotificationService(
                         title = msg.eventTitle,
                         calendarEventTime = eventTime,
                         childName = "${child.firstName} ${child.lastName}",
-                    )
+                    ),
             )
         Email.create(
                 db,
@@ -226,7 +226,7 @@ class CalendarEventNotificationService(
     fun runSendDiscussionTimeReminder(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendDiscussionReservationReminderEmail
+        msg: AsyncJob.SendDiscussionReservationReminderEmail,
     ) {
         logger.info {
             "Processing discussion time reminder email for (recipientId: ${msg.recipientId}, eventTimeId: ${msg.eventTimeId})"
@@ -244,7 +244,7 @@ class CalendarEventNotificationService(
                 emailEnv.sender(msg.recipientLanguage),
                 emailMessageProvider.discussionTimeReservationReminder(
                     msg.recipientLanguage,
-                    messageDetails
+                    messageDetails,
                 ),
                 "${msg.recipientId}: ${msg.eventTimeId}",
             )

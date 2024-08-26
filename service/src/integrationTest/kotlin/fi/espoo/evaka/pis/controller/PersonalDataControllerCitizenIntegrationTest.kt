@@ -68,7 +68,7 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 discussionTimeReservationConfirmation = true,
                 discussionSurveyCreationNotification = true,
                 discussionTimeReservationReminder = true,
-            )
+            ),
         )
 
         val settings =
