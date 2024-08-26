@@ -77,6 +77,8 @@ data class AssistanceNeedDecision(
             assistanceLevels,
             motivationForDecision,
         )
+
+    override fun toString(): String = "**REDACTED**"
 }
 
 data class AssistanceNeedDecisionForm(
@@ -105,7 +107,9 @@ data class AssistanceNeedDecisionForm(
     val otherRepresentativeDetails: String?,
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
-)
+) {
+    override fun toString(): String = "**REDACTED**"
+}
 
 data class AssistanceNeedDecisionBasics(
     val id: AssistanceNeedDecisionId,
