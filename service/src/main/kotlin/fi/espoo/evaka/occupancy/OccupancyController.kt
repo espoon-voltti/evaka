@@ -69,7 +69,7 @@ class OccupancyController(
                         FiniteDateRange(from, to),
                         type,
                         AccessControlFilter.PermitAll,
-                        groupId = null
+                        groupId = null,
                     )
                 }
             }
@@ -189,7 +189,7 @@ class OccupancyController(
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam groupId: GroupId?
+        @RequestParam groupId: GroupId?,
     ): UnitOccupancies {
         val period = FiniteDateRange(from, to)
         val occupancies =
@@ -208,7 +208,7 @@ class OccupancyController(
                         unitId,
                         period,
                         AccessControlFilter.PermitAll,
-                        groupId
+                        groupId,
                     )
                 }
             }
@@ -223,7 +223,7 @@ class OccupancyController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-        @RequestParam groupId: GroupId?
+        @RequestParam groupId: GroupId?,
     ): RealtimeOccupancy {
         val occupancies =
             db.connect { dbc ->
@@ -233,18 +233,18 @@ class OccupancyController(
                         user,
                         clock,
                         Action.Unit.READ_OCCUPANCIES,
-                        unitId
+                        unitId,
                     )
                     val queryTimeRange =
                         HelsinkiDateTimeRange(
                             HelsinkiDateTime.of(date, LocalTime.MIN),
-                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.MIN)
+                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.MIN),
                         )
                     RealtimeOccupancy(
                         childAttendances =
                             tx.getChildOccupancyAttendances(unitId, queryTimeRange, groupId),
                         staffAttendances =
-                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId)
+                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId),
                     )
                 }
             }
@@ -318,7 +318,7 @@ data class UnitOccupancies(
     val planned: OccupancyResponse,
     val confirmed: OccupancyResponse,
     val realized: OccupancyResponse,
-    val caretakers: Caretakers
+    val caretakers: Caretakers,
 )
 
 private fun getUnitOccupancies(
@@ -327,7 +327,7 @@ private fun getUnitOccupancies(
     unitId: DaycareId,
     period: FiniteDateRange,
     unitFilter: AccessControlFilter<DaycareId>,
-    groupId: GroupId?
+    groupId: GroupId?,
 ): UnitOccupancies {
     return UnitOccupancies(
         planned =
@@ -338,7 +338,7 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.PLANNED,
                     unitFilter,
-                    groupId
+                    groupId,
                 )
             ),
         confirmed =
@@ -349,7 +349,7 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.CONFIRMED,
                     unitFilter,
-                    groupId
+                    groupId,
                 )
             ),
         realized =
@@ -360,10 +360,10 @@ private fun getUnitOccupancies(
                     period,
                     OccupancyType.REALIZED,
                     unitFilter,
-                    groupId
+                    groupId,
                 )
             ),
-        caretakers = tx.getUnitStats(unitId, period.start, period.end)
+        caretakers = tx.getUnitStats(unitId, period.start, period.end),
     )
 }
 
@@ -404,7 +404,7 @@ fun Database.Read.calculateOccupancyPeriods(
     period: FiniteDateRange,
     type: OccupancyType,
     unitFilter: AccessControlFilter<DaycareId>,
-    groupId: GroupId?
+    groupId: GroupId?,
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -426,7 +426,7 @@ fun Database.Read.calculateOccupancyPeriods(
                     type,
                     unitFilter,
                     unitId = unitId,
-                    groupId = groupId
+                    groupId = groupId,
                 )
             )
         val key = valueMap.keys.find { it.groupId == groupId } ?: return emptyList()

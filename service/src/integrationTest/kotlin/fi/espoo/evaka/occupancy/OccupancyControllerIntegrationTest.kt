@@ -532,21 +532,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = start,
-                endDate = end
+                endDate = end,
             )
         val groupPlacement1a =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement1.id,
                 daycareGroupId = group1.id,
                 startDate = start,
-                endDate = start.plusDays(2)
+                endDate = start.plusDays(2),
             )
         val groupPlacement1b =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement1.id,
                 daycareGroupId = group2.id,
                 startDate = start.plusDays(3),
-                endDate = end
+                endDate = end,
             )
         val placement2 =
             DevPlacement(
@@ -554,28 +554,28 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 type = PlacementType.PRESCHOOL,
                 unitId = testDaycare.id,
                 startDate = start.plusDays(1),
-                endDate = end
+                endDate = end,
             )
         val groupPlacement2 =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement2.id,
                 daycareGroupId = group1.id,
                 startDate = start.plusDays(1),
-                endDate = end
+                endDate = end,
             )
         val placement3 =
             DevPlacement(
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = start,
-                endDate = end.minusDays(1)
+                endDate = end.minusDays(1),
             )
         val groupPlacement3 =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement3.id,
                 daycareGroupId = group2.id,
                 startDate = start,
-                endDate = end.minusDays(1)
+                endDate = end.minusDays(1),
             )
 
         db.transaction { tx ->
@@ -606,21 +606,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     sum = 2.0,
                                     headcount = 2,
                                     caretakers = 3.0,
-                                    percentage = 9.5
+                                    percentage = 9.5,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
                                     sum = 2.5,
                                     headcount = 3,
                                     caretakers = 3.0,
-                                    percentage = 11.9
+                                    percentage = 11.9,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
                                     sum = 1.5,
                                     headcount = 2,
                                     caretakers = 3.0,
-                                    percentage = 7.1
+                                    percentage = 7.1,
                                 ),
                             ),
                         max =
@@ -629,7 +629,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 2.5,
                                 headcount = 3,
                                 caretakers = 3.0,
-                                percentage = 11.9
+                                percentage = 11.9,
                             ),
                         min =
                             OccupancyPeriod(
@@ -637,8 +637,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 1.5,
                                 headcount = 2,
                                 caretakers = 3.0,
-                                percentage = 7.1
-                            )
+                                percentage = 7.1,
+                            ),
                     ),
                 planned =
                     OccupancyResponse(
@@ -650,21 +650,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     sum = 2.0,
                                     headcount = 2,
                                     caretakers = 3.0,
-                                    percentage = 9.5
+                                    percentage = 9.5,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today.plusDays(1)),
                                     sum = 2.5,
                                     headcount = 3,
                                     caretakers = 3.0,
-                                    percentage = 11.9
+                                    percentage = 11.9,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.plusDays(2), today.plusDays(2)),
                                     sum = 1.5,
                                     headcount = 2,
                                     caretakers = 3.0,
-                                    percentage = 7.1
+                                    percentage = 7.1,
                                 ),
                             ),
                         max =
@@ -673,7 +673,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 2.5,
                                 headcount = 3,
                                 caretakers = 3.0,
-                                percentage = 11.9
+                                percentage = 11.9,
                             ),
                         min =
                             OccupancyPeriod(
@@ -681,8 +681,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 1.5,
                                 headcount = 2,
                                 caretakers = 3.0,
-                                percentage = 7.1
-                            )
+                                percentage = 7.1,
+                            ),
                     ),
                 realized =
                     OccupancyResponse(
@@ -696,21 +696,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     // note: realized caretakers are read from staff_attendance or
                                     // staff_attendance_realtime tables which have no data here
                                     caretakers = null,
-                                    percentage = null
+                                    percentage = null,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today),
                                     sum = 2.5,
                                     headcount = 3,
                                     caretakers = null,
-                                    percentage = null
-                                )
+                                    percentage = null,
+                                ),
                             ),
                         max = null,
-                        min = null
+                        min = null,
                     ),
             ),
-            occupanciesForUnit
+            occupanciesForUnit,
         )
 
         val occupanciesForGroup1 = getUnitOccupancies(start, end, groupId = group1.id)
@@ -727,21 +727,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     sum = 1.0,
                                     headcount = 1,
                                     caretakers = 2.0,
-                                    percentage = 7.1
+                                    percentage = 7.1,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today),
                                     sum = 1.5,
                                     headcount = 2,
                                     caretakers = 2.0,
-                                    percentage = 10.7
+                                    percentage = 10.7,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                                     sum = 0.5,
                                     headcount = 1,
                                     caretakers = 2.0,
-                                    percentage = 3.6
+                                    percentage = 3.6,
                                 ),
                             ),
                         max =
@@ -750,7 +750,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 1.5,
                                 headcount = 2,
                                 caretakers = 2.0,
-                                percentage = 10.7
+                                percentage = 10.7,
                             ),
                         min =
                             OccupancyPeriod(
@@ -758,8 +758,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 0.5,
                                 headcount = 1,
                                 caretakers = 2.0,
-                                percentage = 3.6
-                            )
+                                percentage = 3.6,
+                            ),
                     ),
                 planned =
                     OccupancyResponse(
@@ -771,21 +771,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     sum = 1.0,
                                     headcount = 1,
                                     caretakers = 2.0,
-                                    percentage = 7.1
+                                    percentage = 7.1,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today),
                                     sum = 1.5,
                                     headcount = 2,
                                     caretakers = 2.0,
-                                    percentage = 10.7
+                                    percentage = 10.7,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                                     sum = 0.5,
                                     headcount = 1,
                                     caretakers = 2.0,
-                                    percentage = 3.6
+                                    percentage = 3.6,
                                 ),
                             ),
                         max =
@@ -794,7 +794,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 1.5,
                                 headcount = 2,
                                 caretakers = 2.0,
-                                percentage = 10.7
+                                percentage = 10.7,
                             ),
                         min =
                             OccupancyPeriod(
@@ -802,8 +802,8 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                 sum = 0.5,
                                 headcount = 1,
                                 caretakers = 2.0,
-                                percentage = 3.6
-                            )
+                                percentage = 3.6,
+                            ),
                     ),
                 realized =
                     OccupancyResponse(
@@ -815,21 +815,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                                     sum = 1.0,
                                     headcount = 1,
                                     caretakers = null,
-                                    percentage = null
+                                    percentage = null,
                                 ),
                                 OccupancyPeriod(
                                     period = FiniteDateRange(today.minusDays(1), today),
                                     sum = 1.5,
                                     headcount = 2,
                                     caretakers = null,
-                                    percentage = null
+                                    percentage = null,
                                 ),
                             ),
                         max = null,
-                        min = null
+                        min = null,
                     ),
             ),
-            occupanciesForGroup1
+            occupanciesForGroup1,
         )
     }
 
@@ -846,14 +846,14 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val groupPlacement1 =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement1.id,
                 daycareGroupId = group1.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val placement2 =
             DevPlacement(
@@ -861,28 +861,28 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 type = PlacementType.PRESCHOOL,
                 unitId = testDaycare.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val groupPlacement2 =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement2.id,
                 daycareGroupId = group1.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val placement3 =
             DevPlacement(
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val groupPlacement3 =
             DevDaycareGroupPlacement(
                 daycarePlacementId = placement3.id,
                 daycareGroupId = group2.id,
                 startDate = placementRange.start,
-                endDate = placementRange.end
+                endDate = placementRange.end,
             )
         val childAttendance1 =
             DevChildAttendance(
@@ -890,7 +890,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitId = testDaycare.id,
                 date = today,
                 arrived = LocalTime.of(9, 15),
-                departed = LocalTime.of(14, 55)
+                departed = LocalTime.of(14, 55),
             )
         val childAttendance2 =
             DevChildAttendance(
@@ -898,7 +898,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitId = testDaycare.id,
                 date = today,
                 arrived = LocalTime.of(10, 0),
-                departed = null
+                departed = null,
             )
         val childAttendance3 =
             DevChildAttendance(
@@ -906,7 +906,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 unitId = testDaycare.id,
                 date = today,
                 arrived = LocalTime.of(9, 0),
-                departed = LocalTime.of(14, 0)
+                departed = LocalTime.of(14, 0),
             )
 
         val staff1 = DevEmployee()
@@ -917,7 +917,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 employeeId = staff1.id,
                 groupId = group1.id,
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
-                departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0))
+                departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
             )
         val staffAttendance2 =
             DevStaffAttendance(
@@ -925,14 +925,14 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId = group1.id,
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                 departed = null,
-                occupancyCoefficient = BigDecimal.ZERO
+                occupancyCoefficient = BigDecimal.ZERO,
             )
         val staffAttendance3 =
             DevStaffAttendance(
                 employeeId = staff3.id,
                 groupId = group2.id,
                 arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 30)),
-                departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0))
+                departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
             )
 
         db.transaction { tx ->
@@ -964,41 +964,41 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             childId = testChild_1.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 15)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 55)),
-                            capacity = 1.0
+                            capacity = 1.0,
                         ),
                         ChildOccupancyAttendance(
                             childId = testChild_2.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
-                            capacity = 0.5
+                            capacity = 0.5,
                         ),
                         ChildOccupancyAttendance(
                             childId = testChild_3.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 0)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
-                            capacity = 1.0
-                        )
+                            capacity = 1.0,
+                        ),
                     ),
                 staffAttendances =
                     listOf(
                         StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
-                            capacity = 7.0
+                            capacity = 7.0,
                         ),
                         StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
-                            capacity = 0.0
+                            capacity = 0.0,
                         ),
                         StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 30)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(15, 0)),
-                            capacity = 7.0
+                            capacity = 7.0,
                         ),
-                    )
+                    ),
             ),
-            occupanciesForUnit
+            occupanciesForUnit,
         )
 
         val occupanciesForGroup1 = getUnitRealizedOccupanciesForDay(today, group1.id)
@@ -1010,30 +1010,30 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             childId = testChild_1.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(9, 15)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 55)),
-                            capacity = 1.0
+                            capacity = 1.0,
                         ),
                         ChildOccupancyAttendance(
                             childId = testChild_2.id,
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
-                            capacity = 0.5
-                        )
+                            capacity = 0.5,
+                        ),
                     ),
                 staffAttendances =
                     listOf(
                         StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
                             departed = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
-                            capacity = 7.0
+                            capacity = 7.0,
                         ),
                         StaffOccupancyAttendance(
                             arrived = HelsinkiDateTime.of(today, LocalTime.of(10, 0)),
                             departed = null,
-                            capacity = 0.0
+                            capacity = 0.0,
                         ),
-                    )
+                    ),
             ),
-            occupanciesForGroup1
+            occupanciesForGroup1,
         )
     }
 
@@ -1088,7 +1088,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             testDaycare.id,
             startDate,
             endDate,
-            groupId
+            groupId,
         )
 
     private fun getUnitRealizedOccupanciesForDay(date: LocalDate, groupId: GroupId?) =
@@ -1098,6 +1098,6 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             mockClock,
             testDaycare.id,
             date,
-            groupId
+            groupId,
         )
 }

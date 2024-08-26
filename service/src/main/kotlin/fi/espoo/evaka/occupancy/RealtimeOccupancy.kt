@@ -124,7 +124,7 @@ data class OccupancyPoint(
 fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange,
-    groupId: GroupId? = null
+    groupId: GroupId? = null,
 ): List<ChildOccupancyAttendance> =
     createQuery {
             sql(
@@ -170,7 +170,7 @@ val presentStaffAttendanceTypes =
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange,
-    groupId: GroupId? = null
+    groupId: GroupId? = null,
 ): List<StaffOccupancyAttendance> =
     createQuery {
             sql(

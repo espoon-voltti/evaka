@@ -153,7 +153,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
     unitId: DaycareId? = null,
-    groupId: GroupId? = null
+    groupId: GroupId? = null,
 ): List<DailyOccupancyValues<UnitGroupKey>> {
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
@@ -167,7 +167,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
             providerType,
             unitTypes,
             unitId,
-            groupId
+            groupId,
         )
 
     val placements =
@@ -411,7 +411,7 @@ private fun Database.Read.getDailyGroupCaretakers(
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
     unitId: DaycareId?,
-    groupId: GroupId? = null
+    groupId: GroupId? = null,
 ): Map<UnitGroupKey, DateMap<BigDecimal>> {
     val unitPredicate =
         Predicate.allNotNull(
