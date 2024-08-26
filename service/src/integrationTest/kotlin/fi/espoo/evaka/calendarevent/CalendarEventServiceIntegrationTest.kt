@@ -1774,12 +1774,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
 
         val event = createCalendarEvent(form)
+        val event2 = createCalendarEvent(form.copy(title = "Second survey", description = "ssd"))
 
         calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
-
-        val expectedRecipients = listOf(testAdult_1.copy(email = email))
 
         val emailDetails =
             DiscussionSurveyCreationNotificationData(
@@ -1788,13 +1787,31 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 eventDescription = event.description,
             )
 
+        val emailDetails2 =
+            DiscussionSurveyCreationNotificationData(
+                eventId = event2.id,
+                eventTitle = event2.title,
+                eventDescription = event2.description,
+            )
+
         val notificationEmailContent =
             emailMessageProvider.discussionSurveyCreationNotification(
                 language = Language.fi,
                 notificationDetails = emailDetails,
             )
+
+        val notificationEmailContent2 =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails2,
+            )
+
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
-        assertEmails(expectedRecipients, notificationEmailContent, expectedFromAddress)
+        assertAllEmailsFor(
+            testAdult_1.copy(email = email),
+            listOf(notificationEmailContent, notificationEmailContent2),
+            expectedFromAddress,
+        )
     }
 
     @Test
@@ -2897,6 +2914,17 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 private fun getEmailFor(person: DevPerson): Email {
     val address = person.email ?: throw Error("$person has no email")
     return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+}
+
+private fun assertAllEmailsFor(
+    recipient: DevPerson,
+    expectedContents: List<EmailContent>,
+    expectedFromAddress: String,
+) {
+    val recipientEmails = MockEmailClient.emails.filter { e -> e.toAddress == recipient.email }
+    recipientEmails.forEach { e -> assertEquals(expectedFromAddress, e.fromAddress) }
+    assertThat(recipientEmails.map { e -> e.content })
+        .containsExactlyInAnyOrderElementsOf(expectedContents)
 }
 
 private fun assertEmails(

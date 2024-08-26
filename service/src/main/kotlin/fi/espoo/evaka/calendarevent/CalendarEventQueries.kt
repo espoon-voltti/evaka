@@ -6,7 +6,6 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.CalendarEventNotificationData
-import fi.espoo.evaka.emailclient.DiscussionSurveyCreationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
@@ -481,7 +480,7 @@ data class ParentWithEventTimes(
 data class ParentWithDiscussionSurveys(
     val parentId: PersonId,
     val language: Language,
-    val surveys: List<DiscussionSurveyCreationNotificationData>,
+    val surveys: List<CalendarEventId>,
 )
 
 fun Database.Read.getRecipientsForEventTimeRemindersAt(
@@ -684,13 +683,8 @@ WITH matching_events AS (
 SELECT
     mp.parent_id,
     p.language,
-    jsonb_agg(
-            jsonb_build_object(
-                    'eventId', ce.id,
-                    'eventTitle', ce.title,
-                    'eventDescription', ce.description
-            )
-            ORDER BY lower(ce.period)
+    array_agg(
+        mp.event_id
     ) AS surveys
 FROM matching_parents mp
          JOIN person p ON p.id = mp.parent_id
@@ -703,7 +697,7 @@ GROUP BY mp.parent_id, p.language
             ParentWithDiscussionSurveys(
                 parentId = column("parent_id"),
                 language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                surveys = jsonColumn<List<DiscussionSurveyCreationNotificationData>>("surveys"),
+                surveys = column("surveys"),
             )
         }
 }

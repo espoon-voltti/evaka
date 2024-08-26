@@ -365,8 +365,6 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendDiscussionSurveyCreationNotificationEmail(
         val recipientId: PersonId,
         val eventId: CalendarEventId,
-        val eventDescription: String,
-        val eventTitle: String,
         val language: Language,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null

@@ -77,9 +77,7 @@ class CalendarEventNotificationService(
                                 AsyncJob.SendDiscussionSurveyCreationNotificationEmail(
                                     recipientId = recipient.parentId,
                                     language = recipient.language,
-                                    eventId = it.eventId,
-                                    eventTitle = it.eventTitle,
-                                    eventDescription = it.eventDescription,
+                                    eventId = it,
                                 )
                             }
                         }
@@ -95,6 +93,10 @@ class CalendarEventNotificationService(
         msg: AsyncJob.SendDiscussionSurveyCreationNotificationEmail,
     ) {
 
+        val eventData =
+            db.read {
+                it.getCalendarEventById(msg.eventId) ?: throw NotFound("No discussion survey found")
+            }
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.discussionSurveyCreationNotification(
@@ -102,8 +104,8 @@ class CalendarEventNotificationService(
                 notificationDetails =
                     DiscussionSurveyCreationNotificationData(
                         eventId = msg.eventId,
-                        eventTitle = msg.eventTitle,
-                        eventDescription = msg.eventDescription,
+                        eventTitle = eventData.title,
+                        eventDescription = eventData.description,
                     ),
             )
         Email.create(
