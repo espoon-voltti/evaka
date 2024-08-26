@@ -65,7 +65,7 @@ export interface IncomeForm {
   data: IncomeTableData
   isEntrepreneur: boolean
   worksAtECHA: boolean
-  validFrom: LocalDate
+  validFrom: LocalDate | null
   validTo: LocalDate | null
   notes: string
   attachments: Attachment[]
@@ -81,7 +81,7 @@ const emptyIncome: IncomeForm = {
   isEntrepreneur: false,
   worksAtECHA: false,
   notes: '',
-  validFrom: LocalDate.todayInSystemTz(),
+  validFrom: null,
   validTo: null,
   attachments: []
 }
@@ -134,6 +134,8 @@ function formToIncomeBody(
   coefficientMultipliers: Record<IncomeCoefficient, number>,
   personId: UUID
 ): IncomeRequest | undefined {
+  if (form.validFrom === null || form.validTo === null) return undefined
+
   const result: IncomeFields = {}
 
   for (const [key, value] of Object.entries(form.data)) {
@@ -151,7 +153,13 @@ function formToIncomeBody(
     }
   }
 
-  return { ...form, data: result, personId }
+  return {
+    ...form,
+    validFrom: form.validFrom,
+    validTo: form.validTo,
+    data: result,
+    personId
+  }
 }
 
 interface CommonProps {
@@ -200,13 +208,30 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
     Partial<{ [K in keyof Income | 'dates']: boolean }>
   >({})
   const retroactive = useMemo(() => {
-    const initialContent = omit(initialForm, ['validFrom', 'validTo'])
-    const editedContent = omit(editedIncome, ['validFrom', 'validTo'])
-    return isChangeRetroactive(
-      new DateRange(editedIncome.validFrom, editedIncome.validTo ?? null),
-      new DateRange(initialForm.validFrom, initialForm.validTo ?? null),
-      !isEqual(initialContent, editedContent),
-      LocalDate.todayInHelsinkiTz()
+    const editedContent = omit(editedIncome, [
+      'validFrom',
+      'validTo',
+      'attachments'
+    ])
+    const initialContent = omit(initialForm, [
+      'validFrom',
+      'validTo',
+      'attachments'
+    ])
+    const editedRange = editedIncome.validFrom
+      ? new DateRange(editedIncome.validFrom, editedIncome.validTo)
+      : null
+    const initialRange = initialForm.validFrom
+      ? new DateRange(initialForm.validFrom, initialForm.validTo)
+      : null
+    return (
+      editedIncome.validFrom !== null &&
+      isChangeRetroactive(
+        editedRange,
+        initialRange,
+        !isEqual(editedContent, initialContent),
+        LocalDate.todayInHelsinkiTz()
+      )
     )
   }, [editedIncome, initialForm])
   const [confirmedRetroactive, setConfirmedRetroactive] = useState(false)
@@ -214,15 +239,19 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
   const [prevValidFrom, setPrevValidFrom] = useState(editedIncome.validFrom)
   const onRangeChange = useCallback(
     (from: LocalDate | null, to: LocalDate | null) => {
-      if (from) {
-        setEditedIncome((prev) => ({
-          ...prev,
-          validFrom: from,
-          validTo:
-            to || from.isEqual(prevValidFrom) ? to : from.addYears(1).subDays(1)
-        }))
-        setPrevValidFrom(from)
-      }
+      const fromWasChanged =
+        (prevValidFrom === null && from !== null) ||
+        (prevValidFrom !== null && from === null) ||
+        (prevValidFrom !== null &&
+          from !== null &&
+          !from.isEqual(prevValidFrom))
+      setEditedIncome((prev) => ({
+        ...prev,
+        validFrom: from,
+        validTo:
+          from !== null && fromWasChanged ? from.addYears(1).subDays(1) : to
+      }))
+      setPrevValidFrom(from)
     },
     [prevValidFrom]
   )
@@ -256,6 +285,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           onChange={onRangeChange}
           onValidationResult={setValidationResult}
           locale={lang}
+          required
         />
       </div>
       <Gap size="L" />
@@ -384,6 +414,8 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           textDone={i18n.common.saved}
           disabled={
             Object.values(validationErrors).some(Boolean) ||
+            editedIncome.validFrom === null ||
+            editedIncome.validTo === null ||
             (retroactive && !confirmedRetroactive)
           }
           onClick={(): Promise<Result<unknown>> | void => {

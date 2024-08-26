@@ -203,6 +203,9 @@ describe('Income', () => {
   it('Attachments can be added.', async () => {
     await incomesSection.openNewIncomeForm()
 
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.addAttachment()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
@@ -217,6 +220,9 @@ describe('Income', () => {
   it('Income with attachment can be deleted.', async () => {
     await incomesSection.openNewIncomeForm()
 
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.addAttachment()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
@@ -229,6 +235,9 @@ describe('Income', () => {
   it('Attachment can be deleted while editing income without dead links', async () => {
     await incomesSection.openNewIncomeForm()
 
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.fillIncomeEndDate('31.1.2020')
+    await incomesSection.confirmRetroactive.check()
     await incomesSection.addAttachment()
     await incomesSection.save()
     await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
