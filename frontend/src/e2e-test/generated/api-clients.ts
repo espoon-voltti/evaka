@@ -80,7 +80,7 @@ import { FeeDecision } from 'lib-common/generated/api-types/invoicing'
 import { FeeThresholds } from 'lib-common/generated/api-types/invoicing'
 import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { GroupNoteBody } from 'lib-common/generated/api-types/note'
-import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
 import { IncomeNotification } from 'lib-common/generated/api-types/invoicing'
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { JsonCompatible } from 'lib-common/json'
@@ -1072,14 +1072,14 @@ export async function createHoliday(
 export async function createHolidayPeriod(
   request: {
     id: UUID,
-    body: HolidayPeriodBody
+    body: HolidayPeriodCreate
   }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/holiday-period/${request.id}`.toString(),
       method: 'POST',
-      data: request.body satisfies JsonCompatible<HolidayPeriodBody>
+      data: request.body satisfies JsonCompatible<HolidayPeriodCreate>
     })
     return json
   } catch (e) {

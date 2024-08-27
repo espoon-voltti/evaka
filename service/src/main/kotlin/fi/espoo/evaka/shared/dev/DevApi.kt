@@ -61,7 +61,7 @@ import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
-import fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+import fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
 import fi.espoo.evaka.holidayperiod.createFixedPeriodQuestionnaire
 import fi.espoo.evaka.holidayperiod.insertHolidayPeriod
 import fi.espoo.evaka.identity.ExternalId
@@ -939,7 +939,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     fun createHolidayPeriod(
         db: Database,
         @PathVariable id: HolidayPeriodId,
-        @RequestBody body: HolidayPeriodBody,
+        @RequestBody body: HolidayPeriodCreate,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->

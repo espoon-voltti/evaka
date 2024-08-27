@@ -22,7 +22,6 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -185,14 +184,16 @@ export default React.memo(function HolidayPeriodForm({
       <H1>{i18n.titles.holidayPeriod}</H1>
       <ListGrid>
         <Label>{i18n.holidayPeriods.period} *</Label>
-        <FixedSpaceRow alignItems="center">
+        {holidayPeriod === undefined ? (
           <DateRangePickerF
             bind={period}
             locale={lang}
             hideErrorsBeforeTouched
             data-qa="period"
           />
-        </FixedSpaceRow>
+        ) : (
+          <div>{holidayPeriod.period.format()}</div>
+        )}
 
         <Label>{i18n.holidayPeriods.reservationsOpenOn} *</Label>
         <DatePickerF

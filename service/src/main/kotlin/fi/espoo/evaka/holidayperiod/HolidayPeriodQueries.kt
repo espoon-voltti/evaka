@@ -57,7 +57,6 @@ RETURNING *
 
 fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,
-    period: FiniteDateRange,
     reservationsOpenOn: LocalDate,
     reservationDeadline: LocalDate,
 ) =
@@ -66,7 +65,6 @@ fun Database.Transaction.updateHolidayPeriod(
                 """
 UPDATE holiday_period
 SET
-    period = ${bind(period)},
     reservations_open_on = ${bind(reservationsOpenOn)},
     reservation_deadline = ${bind(reservationDeadline)}
 WHERE id = ${bind(id)}

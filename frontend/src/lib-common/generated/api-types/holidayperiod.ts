@@ -70,9 +70,9 @@ export interface HolidayPeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodBody
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
 */
-export interface HolidayPeriodBody {
+export interface HolidayPeriodCreate {
   period: FiniteDateRange
   reservationDeadline: LocalDate
   reservationsOpenOn: LocalDate
@@ -109,6 +109,14 @@ export namespace HolidayPeriodEffect {
 */
 export type HolidayPeriodEffect = HolidayPeriodEffect.NotYetReservable | HolidayPeriodEffect.ReservationsClosed | HolidayPeriodEffect.ReservationsOpen
 
+
+/**
+* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodUpdate
+*/
+export interface HolidayPeriodUpdate {
+  reservationDeadline: LocalDate
+  reservationsOpenOn: LocalDate
+}
 
 /**
 * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
@@ -183,7 +191,7 @@ export function deserializeJsonHolidayPeriod(json: JsonOf<HolidayPeriod>): Holid
 }
 
 
-export function deserializeJsonHolidayPeriodBody(json: JsonOf<HolidayPeriodBody>): HolidayPeriodBody {
+export function deserializeJsonHolidayPeriodCreate(json: JsonOf<HolidayPeriodCreate>): HolidayPeriodCreate {
   return {
     ...json,
     period: FiniteDateRange.parseJson(json.period),
@@ -205,6 +213,15 @@ export function deserializeJsonHolidayPeriodEffect(json: JsonOf<HolidayPeriodEff
   switch (json.type) {
     case 'NotYetReservable': return deserializeJsonHolidayPeriodEffectNotYetReservable(json)
     default: return json
+  }
+}
+
+
+export function deserializeJsonHolidayPeriodUpdate(json: JsonOf<HolidayPeriodUpdate>): HolidayPeriodUpdate {
+  return {
+    ...json,
+    reservationDeadline: LocalDate.parseIso(json.reservationDeadline),
+    reservationsOpenOn: LocalDate.parseIso(json.reservationsOpenOn)
   }
 }
 
