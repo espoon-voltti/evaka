@@ -27,7 +27,6 @@ dependencies {
 
 ktfmt {
     kotlinLangStyle()
-    manageTrailingCommas = true
 }
 
 ktlint {

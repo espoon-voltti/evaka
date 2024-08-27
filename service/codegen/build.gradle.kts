@@ -44,7 +44,6 @@ tasks {
 
 ktfmt {
     kotlinLangStyle()
-    manageTrailingCommas = true
 }
 
 ktlint {
