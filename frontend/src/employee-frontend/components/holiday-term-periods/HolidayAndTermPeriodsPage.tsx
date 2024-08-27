@@ -94,7 +94,9 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
                 <Tr key={holiday.id} data-qa="holiday-period-row">
                   <Td data-qa="holiday-period">{holiday.period.format()}</Td>
                   <Td>{holiday.reservationsOpenOn.format()}</Td>
-                  <Td>{holiday.reservationDeadline.format()}</Td>
+                  <Td data-qa="holiday-period-deadline">
+                    {holiday.reservationDeadline.format()}
+                  </Td>
                   <Td>
                     <FixedSpaceRow spacing="s">
                       <IconOnlyButton

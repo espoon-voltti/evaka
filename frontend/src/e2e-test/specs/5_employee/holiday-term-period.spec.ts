@@ -64,13 +64,19 @@ describe('Holiday and term periods page', () => {
       () => holidayAndTermPeriodsPage.visiblePeriods,
       ['15.12.2021 - 31.12.2021', '01.02.2022 - 07.02.2022']
     )
+    await waitUntilEqual(
+      () => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines,
+      ['07.12.2021', '15.01.2022']
+    )
 
     await holidayAndTermPeriodsPage.editHolidayPeriod(0)
-    await holidayAndTermPeriodsPage.fillHolidayPeriodForm({ end: '6.1.2022' })
+    await holidayAndTermPeriodsPage.fillHolidayPeriodForm({
+      reservationDeadline: '8.12.2021'
+    })
     await holidayAndTermPeriodsPage.submit()
     await waitUntilEqual(
-      () => holidayAndTermPeriodsPage.visiblePeriods,
-      ['15.12.2021 - 06.01.2022', '01.02.2022 - 07.02.2022']
+      () => holidayAndTermPeriodsPage.visibleHolidayPeriodDeadlines,
+      ['08.12.2021', '15.01.2022']
     )
 
     await holidayAndTermPeriodsPage.deleteHolidayPeriod(0)
