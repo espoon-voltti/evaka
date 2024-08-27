@@ -1992,9 +1992,17 @@ const sv: Translations = {
       message: 'Meddelanden som personalen skickat i eVaka',
       bulletin: 'Bulletiner i eVaka',
       discussionTimeReservationConfirmation:
-        'Bekräftelser på bokningar av samtalstid i eVaka',
+        'Bekräftelser på bokningar av diskussionstid i eVaka',
       discussionTimeReservationConfirmationInfo:
-        'Ett bekräftelsemeddelande skickas för en bokad eller avbokad bokning av diskussiontid.',
+        'Ett bekräftelsemeddelande skickas för en bokad eller avbokad bokning av diskussionstid.',
+      discussionTimeReservationReminder:
+        'Påminnelser om bokade diskussionstider i eVaka',
+      discussionTimeReservationReminderInfo:
+        'Ett påminnelsemeddelande skickas före den bokade tiden.',
+      discussionSurveyCreationNotification:
+        'Meddelande om öppnade diskussionsenkäter i eVaka',
+      discussionSurveyCreationNotificationInfo:
+        'Meddelandet skickas när en ny diskussionsenkät gällande ditt barn har skapats i eVaka',
       outdatedIncome: 'Påminnelse om att uppdatera inkomstuppgifter',
       outdatedIncomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',

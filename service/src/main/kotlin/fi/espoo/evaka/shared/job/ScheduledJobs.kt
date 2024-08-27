@@ -189,6 +189,14 @@ enum class ScheduledJob(
         ScheduledJobs::sendCalendarEventDigests,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0))),
     ),
+    ScheduleDiscussionSurveyDigests(
+        ScheduledJobs::scheduleDiscussionSurveyDigests,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(18, 0))),
+    ),
+    ScheduleDiscussionTimeReservationReminders(
+        ScheduledJobs::scheduleDiscussionTimeReservationReminders,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(19, 0))),
+    ),
     ScheduleOrphanAttachmentDeletion(
         ScheduledJobs::scheduleOrphanAttachmentDeletion,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
@@ -430,6 +438,14 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {
         calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
+    }
+
+    fun scheduleDiscussionSurveyDigests(db: Database.Connection, clock: EvakaClock) {
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, clock.now())
+    }
+
+    fun scheduleDiscussionTimeReservationReminders(db: Database.Connection, clock: EvakaClock) {
+        calendarEventNotificationService.scheduleDiscussionTimeReminders(db, clock.now())
     }
 
     fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =

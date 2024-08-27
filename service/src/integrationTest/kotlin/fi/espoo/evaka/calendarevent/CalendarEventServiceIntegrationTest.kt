@@ -11,7 +11,9 @@ import fi.espoo.evaka.backupcare.BackupCareUpdateRequest
 import fi.espoo.evaka.backupcare.NewBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.DiscussionSurveyCreationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
+import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailContent
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
@@ -1739,6 +1741,274 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `notifications are sent for new group wide discussion survey`() {
+        val email = "example@example.com"
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                        )
+                    ),
+            )
+
+        val event = createCalendarEvent(form)
+        val event2 = createCalendarEvent(form.copy(title = "Second survey", description = "ssd"))
+
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val emailDetails =
+            DiscussionSurveyCreationNotificationData(
+                eventId = event.id,
+                eventTitle = event.title,
+                eventDescription = event.description,
+            )
+
+        val emailDetails2 =
+            DiscussionSurveyCreationNotificationData(
+                eventId = event2.id,
+                eventTitle = event2.title,
+                eventDescription = event2.description,
+            )
+
+        val notificationEmailContent =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails,
+            )
+
+        val notificationEmailContent2 =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails2,
+            )
+
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertAllEmailsFor(
+            testAdult_1.copy(email = email),
+            listOf(notificationEmailContent, notificationEmailContent2),
+            expectedFromAddress,
+        )
+    }
+
+    @Test
+    fun `notifications are sent for new child specific discussion survey`() {
+        val email = "example@example.com"
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to setOf(testChild_1.id)),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                        )
+                    ),
+            )
+
+        val event = createCalendarEvent(form)
+
+        calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val expectedRecipients = listOf(testAdult_1.copy(email = email))
+
+        val emailDetails =
+            DiscussionSurveyCreationNotificationData(
+                eventId = event.id,
+                eventTitle = event.title,
+                eventDescription = event.description,
+            )
+
+        val notificationEmailContent =
+            emailMessageProvider.discussionSurveyCreationNotification(
+                language = Language.fi,
+                notificationDetails = emailDetails,
+            )
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, notificationEmailContent, expectedFromAddress)
+    }
+
+    @Test
+    fun `reminder sent for impending discussion time reservation`() {
+        val email = "example@example.com"
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(2),
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+            )
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times = listOf(eventTimeForm),
+            )
+
+        val event = createCalendarEvent(form)
+
+        val reservationForm =
+            CalendarEventTimeEmployeeReservationForm(event.times.first().id, testChild_1.id)
+
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            reservationForm,
+        )
+
+        // flush reservation email
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        calendarEventNotificationService.scheduleDiscussionTimeReminders(db, now)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        val expectedRecipients = listOf(testAdult_1.copy(email = email))
+
+        val emailDetails =
+            DiscussionTimeReminderData(
+                startTime = eventTimeForm.timeRange.start.inner,
+                endTime = eventTimeForm.timeRange.end.inner,
+                title = event.title,
+                date = eventTimeForm.date,
+                firstName = testChild_1.firstName,
+                lastName = testChild_1.lastName,
+                childId = testChild_1.id,
+            )
+
+        val reminderEmailContent =
+            emailMessageProvider.discussionTimeReservationReminder(
+                language = Language.fi,
+                reminderData = emailDetails,
+            )
+        val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        assertEmails(expectedRecipients, reminderEmailContent, expectedFromAddress)
+    }
+
+    @Test
+    fun `reminders not sent outside notification window for discussion time reservations`() {
+        db.transaction { tx ->
+            // Email address is needed
+            tx.updatePersonalDetails(
+                testAdult_1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(1),
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+            )
+
+        val eventTimeForm2 =
+            CalendarEventTimeForm(
+                date = today.plusDays(3),
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+            )
+        val form =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to null),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times = listOf(eventTimeForm, eventTimeForm2),
+            )
+
+        val event = createCalendarEvent(form)
+
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(event.times.first().id, testChild_1.id),
+        )
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(event.times.last().id, testChild_1.id),
+        )
+
+        // flush reservation email
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        calendarEventNotificationService.scheduleDiscussionTimeReminders(db, now)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
     fun `content timestamp updated on all edits except reservation changes`() {
         val tickingClock = MockEvakaClock(now)
 
@@ -2074,7 +2344,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                unitName = testDaycare.name,
+                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
                 title = event.title,
                 calendarEventTime =
                     CalendarEventTime(
@@ -2205,7 +2475,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                unitName = testDaycare.name,
+                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
                 title = event.title,
                 calendarEventTime =
                     CalendarEventTime(
@@ -2326,7 +2596,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                unitName = testDaycare.name,
+                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
                 title = event.title,
                 calendarEventTime =
                     CalendarEventTime(
@@ -2646,6 +2916,17 @@ private fun getEmailFor(person: DevPerson): Email {
     return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
 }
 
+private fun assertAllEmailsFor(
+    recipient: DevPerson,
+    expectedContents: List<EmailContent>,
+    expectedFromAddress: String,
+) {
+    val recipientEmails = MockEmailClient.emails.filter { e -> e.toAddress == recipient.email }
+    recipientEmails.forEach { e -> assertEquals(expectedFromAddress, e.fromAddress) }
+    assertThat(recipientEmails.map { e -> e.content })
+        .containsExactlyInAnyOrderElementsOf(expectedContents)
+}
+
 private fun assertEmails(
     recipients: List<DevPerson>,
     expectedContent: EmailContent,
@@ -2656,7 +2937,8 @@ private fun assertEmails(
         MockEmailClient.emails.map { it.toAddress }.toSet(),
     )
     recipients.forEach {
-        assertEquals(expectedContent.subject, getEmailFor(it).content.subject)
-        assertEquals(expectedFromAddress, getEmailFor(it).fromAddress)
+        val mail = getEmailFor(it)
+        assertEquals(expectedContent.subject, mail.content.subject)
+        assertEquals(expectedFromAddress, mail.fromAddress)
     }
 }

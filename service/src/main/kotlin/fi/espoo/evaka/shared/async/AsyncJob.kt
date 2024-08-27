@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.CalendarEventId
+import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
@@ -346,7 +348,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
-        val unitName: String,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -357,7 +358,22 @@ sealed interface AsyncJob : AsyncJobPayload {
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
-        val unitName: String,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendDiscussionSurveyCreationNotificationEmail(
+        val recipientId: PersonId,
+        val eventId: CalendarEventId,
+        val language: Language,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendDiscussionReservationReminderEmail(
+        val recipientId: PersonId,
+        val recipientLanguage: Language,
+        val eventTimeId: CalendarEventTimeId,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -419,6 +435,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendNewVoucherValueDecisionEmail::class,
                     SendDiscussionSurveyReservationEmail::class,
                     SendDiscussionSurveyReservationCancellationEmail::class,
+                    SendDiscussionSurveyCreationNotificationEmail::class,
+                    SendDiscussionReservationReminderEmail::class,
                 ),
             )
         val urgent =

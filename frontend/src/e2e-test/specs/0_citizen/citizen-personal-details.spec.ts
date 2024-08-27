@@ -154,5 +154,11 @@ describe('Citizen notification settings', () => {
     await section.checkboxes.discussionTimeReservationConfirmation.waitUntilChecked(
       true
     )
+    await section.checkboxes.discussionTimeReservationReminder.waitUntilChecked(
+      true
+    )
+    await section.checkboxes.discussionSurveyCreationNotificaiton.waitUntilChecked(
+      true
+    )
   })
 })

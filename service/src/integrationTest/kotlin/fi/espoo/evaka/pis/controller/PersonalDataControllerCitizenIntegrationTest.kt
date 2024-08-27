@@ -41,6 +41,8 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = true,
                 discussionTimeReservationConfirmation = true,
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
             ),
             settings,
         )
@@ -64,6 +66,8 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = false,
                 discussionTimeReservationConfirmation = true,
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
             ),
         )
 
@@ -84,6 +88,8 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                 informalDocument = true,
                 missingAttendanceReservation = false,
                 discussionTimeReservationConfirmation = true,
+                discussionSurveyCreationNotification = true,
+                discussionTimeReservationReminder = true,
             ),
             settings,
         )

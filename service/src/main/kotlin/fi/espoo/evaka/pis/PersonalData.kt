@@ -56,6 +56,12 @@ enum class EmailMessageType {
 
     /** Confirmation email for discussion time reservation */
     DISCUSSION_TIME_RESERVATION_CONFIRMATION,
+
+    /** Notification on the creation of a new discussion survey * */
+    DISCUSSION_SURVEY_CREATION_NOTIFICATION,
+
+    /** Reminder of an impending discussion time reservation * */
+    DISCUSSION_TIME_RESERVATION_REMINDER,
 }
 
 data class EmailNotificationSettings(
@@ -68,6 +74,8 @@ data class EmailNotificationSettings(
     val informalDocument: Boolean,
     val missingAttendanceReservation: Boolean,
     val discussionTimeReservationConfirmation: Boolean,
+    val discussionSurveyCreationNotification: Boolean,
+    val discussionTimeReservationReminder: Boolean,
 ) {
     fun toNotificationTypes() =
         listOfNotNull(
@@ -85,6 +93,12 @@ data class EmailNotificationSettings(
             EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION.takeIf {
                 discussionTimeReservationConfirmation
             },
+            EmailMessageType.DISCUSSION_SURVEY_CREATION_NOTIFICATION.takeIf {
+                discussionSurveyCreationNotification
+            },
+            EmailMessageType.DISCUSSION_TIME_RESERVATION_REMINDER.takeIf {
+                discussionTimeReservationReminder
+            },
         )
 
     companion object {
@@ -101,6 +115,8 @@ data class EmailNotificationSettings(
                     informalDocument = true,
                     missingAttendanceReservation = true,
                     discussionTimeReservationConfirmation = true,
+                    discussionSurveyCreationNotification = true,
+                    discussionTimeReservationReminder = true,
                 )
             } else {
                 EmailNotificationSettings(
@@ -119,6 +135,12 @@ data class EmailNotificationSettings(
                             enabledNotificationTypes,
                     discussionTimeReservationConfirmation =
                         EmailMessageType.DISCUSSION_TIME_RESERVATION_CONFIRMATION in
+                            enabledNotificationTypes,
+                    discussionSurveyCreationNotification =
+                        EmailMessageType.DISCUSSION_SURVEY_CREATION_NOTIFICATION in
+                            enabledNotificationTypes,
+                    discussionTimeReservationReminder =
+                        EmailMessageType.DISCUSSION_TIME_RESERVATION_REMINDER in
                             enabledNotificationTypes,
                 )
             }
