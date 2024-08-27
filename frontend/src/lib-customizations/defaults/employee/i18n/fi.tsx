@@ -3580,7 +3580,8 @@ export const fi = {
       },
       absenceType: 'Poissaolo',
       reservationStartTime: 'Tulo',
-      reservationEndTime: 'Lähtö'
+      reservationEndTime: 'Lähtö',
+      timeFilterError: 'Virhe'
     },
     childAttendance: {
       title: 'Lapsen läsnä- ja poissaolotiedot',

@@ -207,6 +207,22 @@ export default React.memo(function AttendanceReservationByChild() {
 
   const periodAriaId = useUniqueId()
 
+  const validateTimeFilter = (
+    startTime: string,
+    endTime: string
+  ): { status: 'warning'; text: string } | undefined => {
+    const startTimeLocalTime = LocalTime.tryParse(startTime)
+    const endTimeLocalTime = LocalTime.tryParse(endTime)
+    return !startTimeLocalTime ||
+      !endTimeLocalTime ||
+      endTimeLocalTime.isEqualOrBefore(startTimeLocalTime)
+      ? {
+          status: 'warning',
+          text: i18n.reports.attendanceReservationByChild.timeFilterError
+        }
+      : undefined
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -306,6 +322,7 @@ export default React.memo(function AttendanceReservationByChild() {
               hideErrorsBeforeTouched={true}
               width="xs"
               data-qa="start-time-filter"
+              info={validateTimeFilter(startTime, endTime)}
             />
             <InputField
               value={endTime}
@@ -313,6 +330,7 @@ export default React.memo(function AttendanceReservationByChild() {
               hideErrorsBeforeTouched={true}
               width="xs"
               data-qa="end-time-filter"
+              info={validateTimeFilter(startTime, endTime)}
             />
           </FlexRow>
         </FilterRow>
