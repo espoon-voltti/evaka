@@ -527,7 +527,7 @@ class DaycareController(
                         } else {
                             emptyList()
                         }
-                    val caretakers = tx.getGroupStats(unitId, from, to)
+                    val caretakers = tx.getGroupStats(unitId, FiniteDateRange(from, to))
                     val backupCareIds =
                         backupCares.map { it.id }.toSet() +
                             missingGroupPlacements
