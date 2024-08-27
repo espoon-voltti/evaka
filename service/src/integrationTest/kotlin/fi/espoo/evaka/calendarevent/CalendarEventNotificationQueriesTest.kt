@@ -38,7 +38,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -48,8 +47,10 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     private val today: LocalDate = LocalDate.of(2023, 5, 1)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(18, 0, 0))
 
-    @BeforeEach
-    fun beforeEach() {
+    private fun insertTestData(
+        placementStart: LocalDate = today.minusYears(1),
+        placementEnd: LocalDate = today.plusYears(1),
+    ) {
         db.transaction { tx ->
             tx.insert(testArea)
             tx.insert(testDaycare)
@@ -62,8 +63,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = today.minusYears(1),
-                    endDate = today.plusYears(1),
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
             )
 
@@ -75,8 +76,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     DevPlacement(
                         childId = testChild_2.id,
                         unitId = testDaycare.id,
-                        startDate = today.minusYears(1),
-                        endDate = today.plusYears(1),
+                        startDate = placementStart,
+                        endDate = placementEnd,
                     )
                 )
                 .also { placementId ->
@@ -98,8 +99,8 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     DevPlacement(
                         childId = testChild_3.id,
                         unitId = testDaycare.id,
-                        startDate = today.minusYears(1),
-                        endDate = today.plusYears(1),
+                        startDate = placementStart,
+                        endDate = placementEnd,
                     )
                 )
                 .also { placementId ->
@@ -126,14 +127,16 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
     @Test
     fun `No events`() {
+        insertTestData()
         assertEquals(
             listOf(),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) },
         )
     }
 
     @Test
     fun `Unit-wide event`() {
+        insertTestData()
         createCalendarEvent(
             title = "Unit-wide event",
             period = FiniteDateRange(today, today),
@@ -165,13 +168,14 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ),
                 )
                 .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) }
                 .sortedBy { it.parentId },
         )
     }
 
     @Test
     fun `Group event`() {
+        insertTestData()
         createCalendarEvent(
             title = "Group event",
             period = FiniteDateRange(today, today),
@@ -193,12 +197,13 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     events = listOf(expectedEvent),
                 )
             ),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) },
         )
     }
 
     @Test
     fun `Notification plus backup care`() {
+        insertTestData()
         db.transaction { tx ->
             // Backup care covers the whole event -> no notification
             tx.insert(
@@ -256,13 +261,14 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ),
                 )
                 .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) }
                 .sortedBy { it.parentId },
         )
     }
 
     @Test
     fun `Specific children event`() {
+        insertTestData()
         // testChild_3 is in backup care, but the parent still gets notified about child-specific
         // events
         db.transaction { tx ->
@@ -306,13 +312,45 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ),
                 )
                 .sortedBy { it.parentId },
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) }
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) }
                 .sortedBy { it.parentId },
         )
     }
 
     @Test
+    fun `No notification if placement has ended`() {
+        insertTestData(placementEnd = today.minusDays(1))
+
+        createCalendarEvent(
+            title = "Unit-wide event",
+            period = FiniteDateRange(today.minusDays(1), today),
+            unitId = testDaycare.id,
+            created = now.minusHours(24),
+        )
+        createCalendarEvent(
+            title = "Group-wide event",
+            period = FiniteDateRange(today.minusDays(1), today),
+            unitId = testDaycare.id,
+            groupIds = listOf(testDaycareGroup.id),
+            created = now.minusHours(24),
+        )
+        createCalendarEvent(
+            title = "Child event",
+            period = FiniteDateRange(today.minusDays(1), today),
+            unitId = testDaycare.id,
+            groupIds = listOf(testDaycareGroup2.id),
+            groupChildIds = listOf(testDaycareGroup2.id to testChild_3.id),
+            created = now.minusHours(24),
+        )
+        assertEquals(
+            listOf(),
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) },
+        )
+    }
+
+    @Test
     fun `No notification for events created over 24 hours ago`() {
+        insertTestData()
         createCalendarEvent(
             title = "Unit-wide event",
             period = FiniteDateRange(today, today),
@@ -322,7 +360,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
 
         assertEquals(
             listOf(),
-            db.read { tx -> tx.getParentsWithNewEventsAfter(now.minusHours(24)) },
+            db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) },
         )
     }
 
