@@ -261,11 +261,4 @@ describe('Employee - unit editor validations and warnings', () => {
       false
     )
   })
-
-  test('Invoicing related fields are only shown if unit is invoiced by municipality', async () => {
-    const unitEditorPage = await openUnitEditorPage()
-    await unitEditorPage.assertInvoicingFieldsVisibility(true)
-    await unitEditorPage.clickInvoicedByMunicipality()
-    await unitEditorPage.assertInvoicingFieldsVisibility(false)
-  })
 })

@@ -1606,39 +1606,30 @@ export default function UnitEditor(props: Props) {
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.invoicedByMunicipality)}</div>
-        <div>
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.invoicingByEvaka}
-            checked={form.invoicedByMunicipality}
-            onChange={(invoicedByMunicipality) =>
-              updateForm({ invoicedByMunicipality })
-            }
-            data-qa="check-invoice-by-municipality"
+        <Checkbox
+          disabled={!props.editable}
+          label={i18n.unitEditor.field.invoicingByEvaka}
+          checked={form.invoicedByMunicipality}
+          onChange={(invoicedByMunicipality) =>
+            updateForm({ invoicedByMunicipality })
+          }
+          data-qa="check-invoice-by-municipality"
+        />
+      </FormPart>
+      <FormPart>
+        <label htmlFor="unit-cost-center">
+          {i18n.unitEditor.label.costCenter}
+        </label>
+        {props.editable ? (
+          <InputField
+            id="unit-cost-center"
+            placeholder={showRequired(i18n.unitEditor.placeholder.costCenter)}
+            value={form.costCenter}
+            onChange={(value) => updateForm({ costCenter: value })}
           />
-          {form.invoicedByMunicipality && (
-            <>
-              <Gap size="m" />
-              <FormPart>
-                <label htmlFor="unit-cost-center">
-                  {i18n.unitEditor.label.costCenter}
-                </label>
-                {props.editable ? (
-                  <InputField
-                    id="unit-cost-center"
-                    placeholder={showRequired(
-                      i18n.unitEditor.placeholder.costCenter
-                    )}
-                    value={form.costCenter}
-                    onChange={(value) => updateForm({ costCenter: value })}
-                  />
-                ) : (
-                  form.costCenter
-                )}
-              </FormPart>
-            </>
-          )}
-        </div>
+        ) : (
+          form.costCenter
+        )}
       </FormPart>
       <FormPart>
         <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
