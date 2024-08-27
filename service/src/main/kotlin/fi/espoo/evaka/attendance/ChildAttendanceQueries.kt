@@ -268,8 +268,8 @@ fun Database.Read.getUnitChildAttendances(
                 """
 SELECT
     child_id,
-    (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
-    (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
+    ca.arrived,
+    ca.departed
 FROM child_attendance ca
 WHERE
     ca.unit_id = ${bind(unitId)} AND (
