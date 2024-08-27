@@ -95,14 +95,15 @@ class AssistanceNeedDecisionService(
                     .key
             tx.updateAssistanceNeedDocumentKey(decision.id, key)
 
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.SendAssistanceNeedDecisionEmail(msg.decisionId),
-                    AsyncJob.SendAssistanceNeedDecisionSfiMessage(msg.decisionId),
-                ),
-                runAt = clock.now(),
-            )
+            val emailJobs =
+                decision.child?.id?.let { childId ->
+                    val guardians = tx.getChildGuardiansAndFosterParents(childId, clock.today())
+                    guardians.map { guardianId ->
+                        AsyncJob.SendAssistanceNeedDecisionEmail(msg.decisionId, guardianId)
+                    }
+                } ?: emptyList()
+            val sfiJob = AsyncJob.SendAssistanceNeedDecisionSfiMessage(msg.decisionId)
+            asyncJobRunner.plan(tx, emailJobs + sfiJob, runAt = clock.now())
 
             tx.getArchiveProcessByAssistanceNeedDecisionId(msg.decisionId)?.also {
                 tx.insertProcessHistoryRow(
@@ -124,10 +125,7 @@ class AssistanceNeedDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedDecisionEmail,
     ) {
-        val decisionId = msg.decisionId
-        val today = clock.today()
-
-        val decision = db.read { tx -> tx.getAssistanceNeedDecisionById(decisionId) }
+        val decision = db.read { tx -> tx.getAssistanceNeedDecisionById(msg.decisionId) }
 
         if (decision.child?.id == null) {
             throw IllegalStateException(
@@ -137,9 +135,6 @@ class AssistanceNeedDecisionService(
 
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
-        val guardians =
-            db.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
-
         val language =
             when (decision.language) {
                 OfficialLanguage.SV -> Language.sv
@@ -148,17 +143,15 @@ class AssistanceNeedDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedDecisionNotification(language)
 
-        guardians.forEach { guardianId ->
-            Email.create(
-                    db,
-                    guardianId,
-                    EmailMessageType.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$decisionId - $guardianId",
-                )
-                ?.also { emailClient.send(it) }
-        }
+        Email.create(
+                db,
+                msg.guardianId,
+                EmailMessageType.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "${msg.decisionId} - ${msg.guardianId}",
+            )
+            ?.also { emailClient.send(it) }
 
         logger.info { "Successfully sent assistance need decision email (id: ${msg.decisionId})." }
     }
