@@ -77,7 +77,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     private val daycareGroup2 = DevDaycareGroup(daycareId = daycare2Id)
 
     private val today = LocalDate.of(2024, 8, 5)
-    private val clock = MockEvakaClock(HelsinkiDateTime.Companion.of(today, LocalTime.of(15, 0)))
+    private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(15, 0)))
 
     private val placementStart = today.minusMonths(3)
     private val placementEnd = placementStart.plusMonths(6)
@@ -219,7 +219,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     fun `terminating preschool also terminates upcoming daycare placements`() {
         val placementTerminationDate = today.plusWeeks(1)
 
-        val startPreschool = LocalDate.now().minusWeeks(2)
+        val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
         val startDaycare = endPreschool.plusDays(1)
         val endDaycare = startDaycare.plusMonths(1)
@@ -232,8 +232,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     childId = child.id,
                     unitId = daycareId,
                     // placement in the past unaffected
-                    startDate = LocalDate.now().minusYears(3),
-                    endDate = LocalDate.now().minusYears(2),
+                    startDate = today.minusYears(3),
+                    endDate = today.minusYears(2),
                 )
             )
             it.insert(
@@ -242,8 +242,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                     childId = child.id,
                     unitId = daycareId,
                     // placement in the past unaffected
-                    startDate = LocalDate.now().minusMonths(12),
-                    endDate = LocalDate.now().minusMonths(6),
+                    startDate = today.minusMonths(12),
+                    endDate = today.minusMonths(6),
                 )
             )
             it.insert(
