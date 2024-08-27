@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import orderBy from 'lodash/orderBy'
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -233,7 +234,11 @@ export default React.memo(function DocumentTemplatesPage() {
                 </Tr>
               </Thead>
               <Tbody>
-                {data.map((template) => (
+                {orderBy(
+                  data,
+                  [(t) => t.validity.start, (t) => t.name],
+                  ['desc', 'asc']
+                ).map((template) => (
                   <TemplateRow
                     key={template.id}
                     template={template}
