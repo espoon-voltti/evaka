@@ -83,7 +83,7 @@ export const RealtimePlannedOccupanciesForSingleDay = React.memo(
 
     return renderResult(rows, (rows, isReloading) => (
       <div data-qa="unit-attendances" data-isloading={isReloading}>
-        <OccupancyDayGraphPlanned rows={rows} />
+        <OccupancyDayGraphPlanned queryDate={date} rows={rows} />
       </div>
     ))
   }

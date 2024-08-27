@@ -5,12 +5,15 @@
 import { Chart, ChartData, ChartOptions, TooltipModel } from 'chart.js'
 import ceil from 'lodash/ceil'
 import isEqual from 'lodash/isEqual'
+import max from 'lodash/max'
 import React, { useMemo, useCallback, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -26,14 +29,18 @@ import { LegendSquare } from './OccupanciesForSingleDay'
 import { DatePoint, defaultChartOptions, hidden, line } from './chart-commons'
 
 interface Props {
+  queryDate: LocalDate
   rows: AttendanceReservationReportRow[]
 }
 
-export default React.memo(function OccupancyDayGraphPlanned({ rows }: Props) {
+export default React.memo(function OccupancyDayGraphPlanned({
+  queryDate,
+  rows
+}: Props) {
   const { i18n } = useTranslation()
   return (
     <FixedSpaceColumn>
-      <Graph rows={rows} />
+      <Graph queryDate={queryDate} rows={rows} />
       <H3>{i18n.unit.occupancy.realtime.legendTitle}</H3>
       <FixedSpaceColumn>
         <FixedSpaceRow>
@@ -49,7 +56,7 @@ export default React.memo(function OccupancyDayGraphPlanned({ rows }: Props) {
   )
 })
 
-const Graph = React.memo(function Graph({ rows }: Props) {
+const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
   const { i18n } = useTranslation()
   const [tooltipParams, setTooltipParams] = useState<{
     position?: {
@@ -118,8 +125,8 @@ const Graph = React.memo(function Graph({ rows }: Props) {
   )
 
   const { data, graphOptions } = useMemo(
-    () => graphData(rows, i18n, tooltipHandler),
-    [rows, i18n, tooltipHandler]
+    () => graphData(queryDate, rows, i18n, tooltipHandler),
+    [queryDate, rows, i18n, tooltipHandler]
   )
 
   const tooltipContent = useMemo(
@@ -195,6 +202,7 @@ const GraphContainer = styled.div`
 `
 
 function graphData(
+  queryDate: LocalDate,
   rows: AttendanceReservationReportRow[],
   i18n: Translations,
   tooltipHandler: (args: {
@@ -233,6 +241,9 @@ function graphData(
     ]
   }
 
+  const now = HelsinkiDateTime.now()
+  const maxY = max(rows.map((row) => row.capacityFactor))
+
   const graphOptions: ChartOptions<'line'> = {
     ...defaultChartOptions,
     scales: {
@@ -268,7 +279,26 @@ function graphData(
           this: TooltipModel<'line'>,
           args: { chart: Chart; tooltip: TooltipModel<'line'> }
         ) => void
-      }
+      },
+      ...(now.toLocalDate().isEqual(queryDate)
+        ? {
+            annotation: {
+              annotations: {
+                currentTime: {
+                  type: 'line',
+                  xMin: now.toSystemTzDate().getTime(),
+                  xMax: now.toSystemTzDate().getTime(),
+                  yMin: 0,
+                  yMax: maxY !== undefined && maxY > 0 ? maxY : 1,
+                  borderColor: colors.status.success,
+                  arrowHeads: {
+                    display: true
+                  }
+                }
+              }
+            }
+          }
+        : undefined)
     }
   }
 
