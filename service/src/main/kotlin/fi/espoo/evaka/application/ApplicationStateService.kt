@@ -53,6 +53,7 @@ import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.process.ArchivedProcessState
+import fi.espoo.evaka.process.cancelLastProcessHistoryRow
 import fi.espoo.evaka.process.getArchiveProcessByApplicationId
 import fi.espoo.evaka.process.insertProcess
 import fi.espoo.evaka.process.insertProcessHistoryRow
@@ -385,7 +386,16 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
-        verifyStatus(application, WAITING_PLACEMENT)
+        verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
+
+        if (application.status == CANCELLED) {
+            tx.getArchiveProcessByApplicationId(applicationId)?.also { process ->
+                if (process.history.any { it.state == ArchivedProcessState.COMPLETED }) {
+                    tx.cancelLastProcessHistoryRow(process.id, ArchivedProcessState.COMPLETED)
+                }
+            }
+        }
+
         tx.syncApplicationOtherGuardians(applicationId, clock.today())
         tx.updateApplicationStatus(application.id, SENT)
         Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))

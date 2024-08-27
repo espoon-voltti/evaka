@@ -232,3 +232,23 @@ fun updateDocumentProcessHistory(
         }
     }
 }
+
+fun Database.Transaction.cancelLastProcessHistoryRow(
+    processId: ArchivedProcessId,
+    stateToCancel: ArchivedProcessState,
+) {
+    createUpdate {
+            sql(
+                """
+    DELETE FROM archived_process_history aph
+    WHERE aph.process_id = ${bind(processId)} AND aph.state = ${bind(stateToCancel)} AND 
+        aph.row_index = (
+            SELECT max(row_index) 
+            FROM archived_process_history
+            WHERE process_id = ${bind(processId)}
+        )
+"""
+            )
+        }
+        .updateExactlyOne()
+}
