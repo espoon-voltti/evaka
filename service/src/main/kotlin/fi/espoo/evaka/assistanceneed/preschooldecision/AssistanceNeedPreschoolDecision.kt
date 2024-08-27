@@ -85,6 +85,8 @@ data class AssistanceNeedPreschoolDecision(
 
             return true
         }
+
+    override fun toString(): String = "**REDACTED**"
 }
 
 enum class AssistanceNeedPreschoolDecisionType : DatabaseEnum {
@@ -133,7 +135,9 @@ data class AssistanceNeedPreschoolDecisionForm(
     val preparer2PhoneNumber: String,
     val decisionMakerEmployeeId: EmployeeId?,
     val decisionMakerTitle: String,
-)
+) {
+    override fun toString(): String = "**REDACTED**"
+}
 
 data class AssistanceNeedPreschoolDecisionChild(
     val id: ChildId,
