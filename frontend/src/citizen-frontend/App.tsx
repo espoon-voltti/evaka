@@ -6,6 +6,7 @@ import isPropValid from '@emotion/is-prop-valid'
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
 import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import styled, { StyleSheetManager, ThemeProvider } from 'styled-components'
 
 import {
@@ -113,6 +114,9 @@ const Content = React.memo(function Content() {
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <Notifications apiVersion={apiVersion} />
+      <div aria-live="polite">
+        <ToastContainer />
+      </div>
       <MainContainer ariaHidden={modalOpen}>
         <Outlet />
       </MainContainer>

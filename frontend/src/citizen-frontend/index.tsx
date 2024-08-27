@@ -17,6 +17,7 @@ import { appConfig } from 'lib-customizations/citizen'
 
 import router from './App'
 import './index.css'
+import 'react-toastify/dist/ReactToastify.css'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({

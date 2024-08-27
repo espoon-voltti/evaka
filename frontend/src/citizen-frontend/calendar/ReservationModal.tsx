@@ -4,6 +4,7 @@
 
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 
 import { getDuplicateChildInfo } from 'citizen-frontend/utils/duplicated-child-utils'
@@ -341,7 +342,30 @@ export default React.memo(function ReservationModal({
                       : cancelMutation
                   }
                 }}
-                onSuccess={onSuccess}
+                onSuccess={() => {
+                  const start = dayProperties.minDate
+                  const end = dayProperties.maxDate
+                  const singleDay = start === end
+                  const ariaDescription =
+                    (singleDay
+                      ? 'Reservation for ' +
+                        start?.formatExotic('cccc do MMMM', lang)
+                      : 'Reservation from ' +
+                        start?.formatExotic('cccc do MMMM', lang) +
+                        ' to ' +
+                        end?.formatExotic('cccc do MMMM', lang)) + ' saved!'
+                  const description =
+                    (singleDay
+                      ? 'Reservation for ' + start?.formatExotic('d.M.')
+                      : 'Reservations for ' +
+                        start?.formatExotic('d.M.') +
+                        ' - ' +
+                        end?.formatExotic('d.M.')) + ' saved!'
+                  toast(<div aria-label={ariaDescription}>{description}</div>, {
+                    autoClose: 20000
+                  })
+                  onSuccess()
+                }}
                 onFailure={(reason) => showSaveError(reason)}
                 data-qa="modal-okBtn"
               />

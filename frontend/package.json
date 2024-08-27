@@ -67,6 +67,7 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.0",
     "react-select": "^5.8.0",
+    "react-toastify": "^10.0.5",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.1.0",
     "tslib": "^2.7.0",
