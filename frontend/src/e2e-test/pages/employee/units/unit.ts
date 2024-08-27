@@ -233,7 +233,7 @@ export class UnitEditor {
   #invoiceByMunicipality: Checkbox
   #closingDateInput: DatePickerDeprecated
   #unitHandlerAddressInput: TextInput
-  #unitCostCenterInput: TextInput
+  unitCostCenterInput: TextInput
   saveButton: Element
   constructor(private readonly page: Page) {
     this.#unitNameInput = new TextInput(page.findByDataQa('unit-name-input'))
@@ -262,7 +262,7 @@ export class UnitEditor {
     this.#unitHandlerAddressInput = new TextInput(
       page.find('#unit-handler-address')
     )
-    this.#unitCostCenterInput = new TextInput(page.find('#unit-cost-center'))
+    this.unitCostCenterInput = new TextInput(page.find('#unit-cost-center'))
     this.saveButton = page.findByDataQa('save-button')
   }
 
@@ -435,14 +435,6 @@ export class UnitEditor {
 
   async clickInvoicedByMunicipality() {
     await this.#checkInvoicedByMunicipality.click()
-  }
-
-  async assertInvoicingFieldsVisibility(visible: boolean) {
-    if (visible) {
-      await this.#unitCostCenterInput.waitUntilVisible()
-    } else {
-      await this.#unitCostCenterInput.waitUntilHidden()
-    }
   }
 
   async submit() {
