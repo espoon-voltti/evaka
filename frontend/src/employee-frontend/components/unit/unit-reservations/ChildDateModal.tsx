@@ -422,7 +422,8 @@ export default React.memo(function ChildDateModal({
           />
         )}
         {expectedAbsences.isSuccess &&
-          expectedAbsences.value?.categories !== null && (
+          expectedAbsences.value !== null &&
+          expectedAbsences.value.categories !== null && (
             <FixedSpaceColumn data-qa="absence-warnings">
               {expectedAbsences.value?.categories.includes('NONBILLABLE') &&
                 nonBillableAbsence.value() === undefined && (
