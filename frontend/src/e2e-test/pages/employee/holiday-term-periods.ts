@@ -127,6 +127,10 @@ export class HolidayAndTermPeriodsPage {
     return this.page.findAllByDataQa('holiday-period').allTexts()
   }
 
+  get visibleHolidayPeriodDeadlines(): Promise<string[]> {
+    return this.page.findAllByDataQa('holiday-period-deadline').allTexts()
+  }
+
   get visibleClubTermPeriods(): Promise<string[]> {
     return this.page.findAllByDataQa('term').allTexts()
   }

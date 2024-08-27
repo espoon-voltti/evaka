@@ -79,7 +79,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: HolidayPeriodBody,
+        @RequestBody body: HolidayPeriodCreate,
     ): HolidayPeriod {
         return db.connect { dbc ->
                 dbc.transaction {
@@ -133,7 +133,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayPeriodId,
-        @RequestBody body: HolidayPeriodBody,
+        @RequestBody body: HolidayPeriodUpdate,
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -145,10 +145,9 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                 )
                 try {
                     it.updateHolidayPeriod(
-                        id,
-                        body.period,
-                        body.reservationsOpenOn,
-                        body.reservationDeadline,
+                        id = id,
+                        reservationsOpenOn = body.reservationsOpenOn,
+                        reservationDeadline = body.reservationDeadline,
                     )
                 } catch (e: Exception) {
                     throw mapPSQLException(e)

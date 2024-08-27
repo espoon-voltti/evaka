@@ -7,7 +7,8 @@
 import { FixedPeriodQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { FixedPeriodQuestionnaireBody } from 'lib-common/generated/api-types/holidayperiod'
 import { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayPeriodBody } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayPeriodCreate } from 'lib-common/generated/api-types/holidayperiod'
+import { HolidayPeriodUpdate } from 'lib-common/generated/api-types/holidayperiod'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -22,13 +23,13 @@ import { uri } from 'lib-common/uri'
 */
 export async function createHolidayPeriod(
   request: {
-    body: HolidayPeriodBody
+    body: HolidayPeriodCreate
   }
 ): Promise<HolidayPeriod> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod>>({
     url: uri`/holiday-period`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<HolidayPeriodBody>
+    data: request.body satisfies JsonCompatible<HolidayPeriodCreate>
   })
   return deserializeJsonHolidayPeriod(json)
 }
@@ -84,13 +85,13 @@ export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
 export async function updateHolidayPeriod(
   request: {
     id: UUID,
-    body: HolidayPeriodBody
+    body: HolidayPeriodUpdate
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/holiday-period/${request.id}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<HolidayPeriodBody>
+    data: request.body satisfies JsonCompatible<HolidayPeriodUpdate>
   })
   return json
 }
