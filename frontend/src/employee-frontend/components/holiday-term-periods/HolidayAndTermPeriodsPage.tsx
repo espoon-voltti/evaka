@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import orderBy from 'lodash/orderBy'
 import React, { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -90,7 +91,7 @@ export default React.memo(function HolidayAndTermPeriodsPage() {
               </Tr>
             </Thead>
             <Tbody>
-              {data.map((holiday) => (
+              {orderBy(data, (h) => h.period.start, ['desc']).map((holiday) => (
                 <Tr key={holiday.id} data-qa="holiday-period-row">
                   <Td data-qa="holiday-period">{holiday.period.format()}</Td>
                   <Td>{holiday.reservationsOpenOn.format()}</Td>
