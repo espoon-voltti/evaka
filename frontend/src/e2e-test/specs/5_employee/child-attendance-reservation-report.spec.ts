@@ -93,5 +93,23 @@ describe('Child attendance reservation report', () => {
         attendanceReservationEnd: '16:00'
       }
     ])
+
+    await report.selectTimeFilter('00:00', '09:59')
+    await report.assertRows([
+      {
+        childName: `${child.lastName} ${child.firstName}`,
+        attendanceReservationStart: '08:00',
+        attendanceReservationEnd: '10:00'
+      }
+    ])
+
+    await report.selectTimeFilter('14:00', '23:59')
+    await report.assertRows([
+      {
+        childName: `${child.lastName} ${child.firstName}`,
+        attendanceReservationStart: '14:00',
+        attendanceReservationEnd: '16:00'
+      }
+    ])
   })
 })

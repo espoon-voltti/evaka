@@ -600,6 +600,17 @@ export class ChildAttendanceReservationReport {
     await groupSelector.fillAndSelectFirst(groupName)
   }
 
+  async selectTimeFilter(startTime: string, endTime: string) {
+    const startTimeInput = new TextInput(
+      this.page.findByDataQa('start-time-filter')
+    )
+    const endTimeInput = new TextInput(
+      this.page.findByDataQa('end-time-filter')
+    )
+    await startTimeInput.fill(startTime)
+    await endTimeInput.fill(endTime)
+  }
+
   async assertRows(
     expected: {
       childName: string
