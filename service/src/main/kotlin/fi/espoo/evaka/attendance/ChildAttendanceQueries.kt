@@ -420,7 +420,7 @@ fun Database.Read.childrenHaveAttendanceInRange(
     return createQuery {
             sql(
                 """
-            SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND ${bind(range)} @> date)
+            SELECT EXISTS(SELECT FROM child_attendance WHERE child_id = any(${bind(childIds)}) AND between_start_and_end(${bind(range)}, date))
             """
             )
         }
