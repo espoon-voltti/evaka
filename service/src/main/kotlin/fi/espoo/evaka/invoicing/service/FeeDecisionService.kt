@@ -369,26 +369,20 @@ class FeeDecisionService(
 
         logger.info { "Sending fee decision emails for (decisionId: $feeDecisionId)" }
 
-        val recipients = listOfNotNull(decision.headOfFamily)
+        // simplified to get rid of superfluous language requirement
+        val fromAddress = emailEnv.sender(Language.fi)
+        val content =
+            emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
+        Email.create(
+                db,
+                decision.headOfFamily.id,
+                EmailMessageType.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "$feeDecisionId - ${decision.headOfFamily.id}",
+            )
+            ?.also { emailClient.send(it) }
 
-        recipients.forEach { recipient ->
-            // simplified to get rid of superfluous language requirement
-            val fromAddress = emailEnv.sender(Language.fi)
-            val content =
-                emailMessageProvider.financeDecisionNotification(FinanceDecisionType.FEE_DECISION)
-            Email.create(
-                    db,
-                    recipient.id,
-                    EmailMessageType.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$feeDecisionId - ${recipient.id}",
-                )
-                ?.also { emailClient.send(it) }
-        }
-
-        logger.info {
-            "Successfully sent fee decision emails (${recipients.size}) (id: $feeDecisionId)."
-        }
+        logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
     }
 }

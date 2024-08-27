@@ -254,28 +254,24 @@ class VoucherValueDecisionService(
             "Sending voucher value decision emails for (decisionId: $voucherValueDecisionId)"
         }
 
-        val recipients = listOfNotNull(decision.headOfFamily)
-
-        recipients.forEach { recipient ->
-            // simplified to get rid of superfluous language requirement
-            val fromAddress = emailEnv.sender(Language.fi)
-            val content =
-                emailMessageProvider.financeDecisionNotification(
-                    FinanceDecisionType.VOUCHER_VALUE_DECISION
-                )
-            Email.create(
-                    db,
-                    recipient.id,
-                    EmailMessageType.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$voucherValueDecisionId - ${recipient.id}",
-                )
-                ?.also { emailClient.send(it) }
-        }
+        // simplified to get rid of superfluous language requirement
+        val fromAddress = emailEnv.sender(Language.fi)
+        val content =
+            emailMessageProvider.financeDecisionNotification(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION
+            )
+        Email.create(
+                db,
+                decision.headOfFamily.id,
+                EmailMessageType.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "$voucherValueDecisionId - ${decision.headOfFamily.id}",
+            )
+            ?.also { emailClient.send(it) }
 
         logger.info {
-            "Successfully sent voucher value decision emails (${recipients.size}) (id: $voucherValueDecisionId)."
+            "Successfully sent voucher value decision email (id: $voucherValueDecisionId)."
         }
     }
 }
