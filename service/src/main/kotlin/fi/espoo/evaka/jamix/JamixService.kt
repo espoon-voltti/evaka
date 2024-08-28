@@ -15,6 +15,7 @@ import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.JamixEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.daycare.isUnitOperationDay
@@ -26,6 +27,7 @@ import fi.espoo.evaka.reports.MealReportChildInfo
 import fi.espoo.evaka.reports.mealReportData
 import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -68,6 +70,16 @@ class JamixService(
     fun planOrders(dbc: Database.Connection, clock: EvakaClock) {
         if (client == null) error("Cannot plan Jamix order: JamixEnv is not configured")
         planJamixOrderJobs(dbc, asyncJobRunner, client, clock.now())
+    }
+
+    fun planOrdersForUnitAndDate(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        unitId: DaycareId,
+        date: LocalDate,
+    ) {
+        if (client == null) error("Cannot plan Jamix order: JamixEnv is not configured")
+        planJamixOrderJobsForUnitAndDate(dbc, asyncJobRunner, client, clock.now(), unitId, date)
     }
 
     fun sendOrder(dbc: Database.Connection, clock: EvakaClock, job: AsyncJob.SendJamixOrder) {
@@ -209,38 +221,72 @@ fun planJamixOrderJobs(
     now: HelsinkiDateTime,
 ) {
     val range = now.toLocalDate().startOfNextWeek().weekSpan()
+    val customerMapping = getCustomerMapping(client)
+    dbc.transaction { tx ->
+        val customerNumbers = tx.getJamixCustomerNumbers()
+        planJamixOrderJobs(tx, asyncJobRunner, now, range, customerNumbers, customerMapping)
+    }
+}
 
+fun planJamixOrderJobsForUnitAndDate(
+    dbc: Database.Connection,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    client: JamixClient,
+    now: HelsinkiDateTime,
+    unitId: DaycareId,
+    date: LocalDate,
+) {
+    if (date.isBefore(now.toLocalDate().plusDays(2))) {
+        throw IllegalArgumentException("Cannot send orders anymore for date $date")
+    }
+    val range = FiniteDateRange(date, date)
+    val customerMapping = getCustomerMapping(client)
+    dbc.transaction { tx ->
+        val customerNumbers =
+            tx.getDaycareGroups(unitId, range.start, range.end)
+                .mapNotNull { it.jamixCustomerNumber }
+                .toSet()
+        planJamixOrderJobs(tx, asyncJobRunner, now, range, customerNumbers, customerMapping)
+    }
+}
+
+private fun getCustomerMapping(client: JamixClient): Map<Int, Int> {
     logger.info { "Getting Jamix customers" }
     val customers = client.getCustomers()
     val customerMapping = customers.associateBy({ it.customerNumber }, { it.customerId })
+    return customerMapping
+}
 
-    dbc.transaction { tx ->
-        val customerNumbers = tx.getJamixCustomerNumbers()
-        logger.info { "Planning Jamix orders for ${customerNumbers.size} customers" }
-        asyncJobRunner.plan(
-            tx,
-            range.dates().flatMap { date ->
-                customerNumbers.mapNotNull { customerNumber ->
-                    val customerId = customerMapping[customerNumber]
-                    if (customerId == null) {
-                        logger.error {
-                            "Jamix customerId not found for customerNumber $customerNumber"
-                        }
-                        null
-                    } else {
-                        AsyncJob.SendJamixOrder(
-                            customerNumber = customerNumber,
-                            customerId = customerId,
-                            date = date,
-                        )
-                    }
+private fun planJamixOrderJobs(
+    tx: Database.Transaction,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+    range: FiniteDateRange,
+    customerNumbers: Set<Int>,
+    customerMapping: Map<Int, Int>,
+) {
+    logger.info { "Planning Jamix orders for ${customerNumbers.size} customers" }
+    asyncJobRunner.plan(
+        tx,
+        range.dates().flatMap { date ->
+            customerNumbers.mapNotNull { customerNumber ->
+                val customerId = customerMapping[customerNumber]
+                if (customerId == null) {
+                    logger.error { "Jamix customerId not found for customerNumber $customerNumber" }
+                    null
+                } else {
+                    AsyncJob.SendJamixOrder(
+                        customerNumber = customerNumber,
+                        customerId = customerId,
+                        date = date,
+                    )
                 }
-            },
-            runAt = now,
-            retryInterval = Duration.ofHours(1),
-            retryCount = 3,
-        )
-    }
+            }
+        },
+        runAt = now,
+        retryInterval = Duration.ofHours(1),
+        retryCount = 3,
+    )
 }
 
 fun createAndSendJamixOrder(
