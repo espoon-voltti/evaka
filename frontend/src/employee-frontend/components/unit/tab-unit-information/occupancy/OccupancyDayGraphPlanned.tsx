@@ -11,6 +11,7 @@ import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
+import { useBoolean } from 'lib-common/form/hooks'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -74,17 +75,8 @@ const Graph = React.memo(function Graph({ queryDate, rows }: Props) {
       staffRequired: number
     }
   }>({})
-  const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
-
-  const showTooltip = useCallback(() => {
-    if (!tooltipVisible) {
-      setTooltipVisible(true)
-    }
-  }, [tooltipVisible, setTooltipVisible])
-
-  const hideTooltip = useCallback(() => {
-    setTooltipVisible(false)
-  }, [setTooltipVisible])
+  const [tooltipVisible, { on: showTooltip, off: hideTooltip }] =
+    useBoolean(false)
 
   const tooltipHandler = useCallback(
     ({

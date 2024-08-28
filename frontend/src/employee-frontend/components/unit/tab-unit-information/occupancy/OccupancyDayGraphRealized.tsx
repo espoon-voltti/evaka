@@ -13,6 +13,7 @@ import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
 import { formatTime } from 'lib-common/date'
+import { useBoolean } from 'lib-common/form/hooks'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -96,17 +97,9 @@ const Graph = React.memo(function Graph({
       staffRequired: number
     }
   }>({})
-  const [tooltipVisible, setTooltipVisible] = useState<boolean>(false)
+  const [tooltipVisible, { on: showTooltip, off: hideTooltip }] =
+    useBoolean(false)
   const currentMinute = getCurrentMinute()
-
-  const showTooltip = useCallback(() => {
-    if (!tooltipVisible) {
-      setTooltipVisible(true)
-    }
-  }, [tooltipVisible, setTooltipVisible])
-  const hideTooltip = useCallback(() => {
-    setTooltipVisible(false)
-  }, [setTooltipVisible])
 
   const getChildrenPresentAtTime = useCallback(
     (time: Date): number =>
