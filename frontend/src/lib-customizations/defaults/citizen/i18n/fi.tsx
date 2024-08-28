@@ -361,10 +361,10 @@ export default {
       'Jos haluat muuttaa poissaoloa, ota yhteyttä henkilökuntaan.',
 
     intermittentShiftCareNotification: 'Ilta-/vuorohoito',
-    newReservationOrAbsence: 'Läsnäolo / Poissaolo',
+    newReservationOrAbsence: 'Läsnäolot / Poissaolot',
     newHoliday: 'Vastaa poissaolokyselyyn',
-    newAbsence: 'Ilmoita poissaolo',
-    newReservationBtn: 'Ilmoita läsnäolo',
+    newAbsence: 'Ilmoita poissaoloja',
+    newReservationBtn: 'Ilmoita läsnäoloja',
     reservationsOpenOn: (date: LocalDate) =>
       `Il­moit­tau­tu­mi­nen a­va­taan ${date.format()}`,
     notYetReservable: 'Ilmoituksia ei voi vielä tehdä',
@@ -406,7 +406,7 @@ export default {
       </>
     ),
     reservationModal: {
-      title: 'Ilmoita läsnäolo',
+      title: 'Ilmoita läsnäoloja',
       selectChildren: 'Valitse lapset',
       holidayPeriod: (period: FiniteDateRange) =>
         `Loma-aika: ${period.start.format('dd.MM.')}-${period.end.format(
@@ -447,7 +447,7 @@ export default {
         'Loma-ajalle merkittävät poissaolot voi perua vain olemalla yhteydessä henkilökuntaan.'
     },
     absenceModal: {
-      title: 'Ilmoita poissaolo',
+      title: 'Ilmoita poissaoloja',
       selectedChildren: 'Valitse lapset, jotka ovat poissa',
       selectChildrenInfo:
         'Ilmoita tässä vain koko päivän kestävät poissaolot. Osapäiväiset poissaolot voit ilmoittaa muokkaamalla lapsen läsnäoloaikaa.',

@@ -85,6 +85,20 @@ const HoverButton = styled(LegacyButton)`
   right: ${defaultMargins.s};
   border-radius: 40px;
   z-index: 2;
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  animation: pulse 0.35s 2;
+  animation-delay: 1.5s;
 `
 
 const Icon = styled(FontAwesomeIcon)`
