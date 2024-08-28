@@ -96,6 +96,21 @@ describe('Income', () => {
     await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
   })
 
+  it('Create a new income without end date.', async () => {
+    await incomesSection.openNewIncomeForm()
+
+    await incomesSection.fillIncomeStartDate('1.1.2020')
+    await incomesSection.chooseIncomeEffect('INCOME')
+    // end date is set to +1 year
+    await incomesSection.incomeEndDateInput.assertValueEquals('31.12.2020')
+    // end date can be removed
+    await incomesSection.fillIncomeEndDate('')
+    await incomesSection.confirmRetroactive.check()
+    await incomesSection.save()
+
+    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
+  })
+
   test('Income editor save button is disabled with invalid values', async () => {
     await incomesSection.openNewIncomeForm()
 

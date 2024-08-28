@@ -134,7 +134,7 @@ function formToIncomeBody(
   coefficientMultipliers: Record<IncomeCoefficient, number>,
   personId: UUID
 ): IncomeRequest | undefined {
-  if (form.validFrom === null || form.validTo === null) return undefined
+  if (form.validFrom === null) return undefined
 
   const result: IncomeFields = {}
 
@@ -415,7 +415,6 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
           disabled={
             Object.values(validationErrors).some(Boolean) ||
             editedIncome.validFrom === null ||
-            editedIncome.validTo === null ||
             (retroactive && !confirmedRetroactive)
           }
           onClick={(): Promise<Result<unknown>> | void => {
