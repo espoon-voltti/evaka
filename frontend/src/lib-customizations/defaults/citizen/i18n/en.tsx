@@ -358,10 +358,10 @@ const en: Translations = {
     contactStaffToEditAbsence:
       'Contact staff if you want to change the absence',
     intermittentShiftCareNotification: 'Shift care',
-    newReservationOrAbsence: 'Attendance / Absence',
+    newReservationOrAbsence: 'Attendances / Absences',
     newHoliday: 'Holiday questionnaire',
-    newAbsence: 'Register absence',
-    newReservationBtn: 'Register attendance',
+    newAbsence: 'Register absences',
+    newReservationBtn: 'Register attendances',
     reservationsOpenOn: (date: LocalDate) =>
       `Reservations will open on ${date.format()}`,
     notYetReservable: 'Reservations cannot be made yet',
@@ -405,7 +405,7 @@ const en: Translations = {
       </>
     ),
     reservationModal: {
-      title: 'Register attendance',
+      title: 'Register attendances',
       selectChildren: 'Select children',
       holidayPeriod: (period: FiniteDateRange) =>
         `Holiday period: ${period.start.format('dd.MM.')}-${period.end.format(
@@ -445,7 +445,7 @@ const en: Translations = {
         'Absences marked for the holiday period can only be canceled by contacting the staff.'
     },
     absenceModal: {
-      title: 'Report absence',
+      title: 'Register absences',
       selectedChildren: 'Selected children',
       selectChildrenInfo:
         'Only report full day absences. Part-day absences can be reported when making a reservation.',
