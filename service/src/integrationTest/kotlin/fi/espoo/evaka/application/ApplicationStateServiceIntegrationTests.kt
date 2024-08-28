@@ -29,6 +29,7 @@ import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.preschoolTerm2021
 import fi.espoo.evaka.process.ArchivedProcessState
 import fi.espoo.evaka.process.ProcessMetadataController
+import fi.espoo.evaka.process.getArchiveProcessByApplicationId
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
@@ -78,6 +79,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -726,6 +728,37 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.SENT, application.status)
+        }
+    }
+
+    @Test
+    fun `returnToSent after cancelling - status is changed and process history is reverted`() {
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.cancelApplication(tx, serviceWorker, clock, applicationId)
+
+            val process = tx.getArchiveProcessByApplicationId(applicationId)
+            assertNotNull(process)
+            assertTrue(process.history.any { it.state == ArchivedProcessState.COMPLETED })
+        }
+
+        db.transaction { tx ->
+            // when
+            service.returnToSent(tx, serviceWorker, clock, applicationId)
+        }
+
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.SENT, application.status)
+            val process = tx.getArchiveProcessByApplicationId(applicationId)
+            assertNotNull(process)
+            assertFalse(process.history.any { it.state == ArchivedProcessState.COMPLETED })
         }
     }
 

@@ -78,7 +78,9 @@ export default React.memo(function ApplicationActions({
       {
         id: 'return-to-sent',
         label: i18n.applications.actions.returnToSent,
-        enabled: application.status === 'WAITING_PLACEMENT',
+        enabled:
+          application.status === 'WAITING_PLACEMENT' ||
+          application.status === 'CANCELLED',
         disabled: actionInFlight,
         onClick: () => {
           setActionInFlight(true)
