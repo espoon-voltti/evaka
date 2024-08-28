@@ -40,7 +40,7 @@ class MockSfiMessagesRestEndpoint {
             if (body.username == USERNAME && body.password == PASSWORD) {
                 val token = UUID.randomUUID().toString()
                 tokens.add(token)
-                ResponseEntity.ok(AccessTokenResponse(token))
+                ResponseEntity.ok(AccessTokenResponse(access_token = token, token_type = "bearer"))
             } else ResponseEntity.badRequest().body(ApiError("Invalid credentials"))
         }
 

@@ -161,7 +161,7 @@ class SfiMessagesRestClient(
             .use { response ->
                 if (response.isSuccessful) {
                     val body = jsonResponseBody<AccessTokenResponse>(response)
-                    return body.accessToken
+                    return body.access_token
                 } else {
                     val body = jsonResponseBody<ApiError>(response)
                     error(
