@@ -315,6 +315,10 @@ export class DatePicker extends Element {
     await this.#input.fill(text)
     await this.#input.press('Escape')
   }
+
+  async assertValueEquals(value: string) {
+    await this.#input.assertValueEquals(value)
+  }
 }
 
 export class DatePickerDeprecated extends Element {
