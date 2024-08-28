@@ -8,9 +8,9 @@ import com.google.common.hash.HashCode
 import fi.espoo.evaka.shared.security.Action
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
-import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import java.util.UUID
 
@@ -24,6 +24,9 @@ object Tracing {
     val asyncJobId = ToStringAttributeKey<UUID>("asyncjob.id")
     val asyncJobRemainingAttempts = AttributeKey.longKey("asyncjob.remainingattempts")
     val headOfFamilyId = ToStringAttributeKey<PersonId>("headoffamily.id")
+    // OTEL standard attribute:
+    // https://opentelemetry.io/docs/specs/semconv/attributes-registry/exception/
+    val exceptionEscaped = AttributeKey.booleanKey("exception.escaped")
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -46,13 +49,15 @@ fun <T> SpanBuilder.withAttribute(attribute: AttributeValue<T>): SpanBuilder =
     attribute.value?.let { setAttribute(attribute.key, it) } ?: this
 
 inline fun <T> withSpan(span: Span, crossinline f: () -> T): T =
-    try {
-        f()
-    } catch (e: Exception) {
-        span.setStatus(StatusCode.ERROR)
-        throw e
-    } finally {
-        span.end()
+    span.makeCurrent().use {
+        try {
+            f()
+        } catch (e: Exception) {
+            span.recordException(e, Attributes.of(Tracing.exceptionEscaped, true))
+            throw e
+        } finally {
+            span.end()
+        }
     }
 
 inline fun <T> Tracer.withSpan(
