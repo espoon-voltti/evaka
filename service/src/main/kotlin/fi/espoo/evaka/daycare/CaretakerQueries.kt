@@ -5,10 +5,13 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.Caretakers
+import fi.espoo.evaka.occupancy.GroupPredicate
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.math.BigDecimal
 import java.time.LocalDate
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
@@ -19,55 +22,61 @@ fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, 
     }
 }
 
-fun Database.Read.getUnitStats(
-    unitId: DaycareId,
-    startDate: LocalDate,
-    endDate: LocalDate,
-): Caretakers {
-    if (startDate.isBefore(endDate.minusYears(5))) {
-        throw BadRequest("Too long time range")
-    }
-
-    return createQuery {
-            sql(
-                """
-with dailyTotals as (
-    select t, sum(ct.amount) as total
-    from generate_series(${bind(startDate)}::date, ${bind(endDate)}::date, '1 day') t
-    left outer join daycare_caretaker ct on daterange(ct.start_date, ct.end_date, '[]') @> t::date
-    left outer join daycare_group dg on ct.group_id = dg.id and daterange(dg.start_date, dg.end_date, '[]') @> t::date
-    where dg.daycare_id = ${bind(unitId)}
-    group by t
-)
-select
-    coalesce(min(total), 0.0) as minimum,
-    coalesce(max(total), 0.0) as maximum
-from dailyTotals
-        """
-            )
+fun Database.Read.getUnitStats(unitId: DaycareId, range: FiniteDateRange): Caretakers {
+    val countsByGroup = getPlannedCaretakersForGroups(GroupPredicate.ByUnit(unitId), range)
+    val unitDailyTotals =
+        countsByGroup.values.fold(DateMap.empty<BigDecimal>()) { acc, groupDailyCounts ->
+            acc.update(groupDailyCounts) { _, old, new -> old + new }
         }
-        .exactlyOne()
+    return Caretakers.fromDailyCounts(unitDailyTotals)
 }
 
 fun Database.Read.getGroupStats(
     unitId: DaycareId,
-    startDate: LocalDate,
-    endDate: LocalDate,
+    range: FiniteDateRange,
 ): Map<GroupId, Caretakers> =
-    createQuery {
+    getPlannedCaretakersForGroups(GroupPredicate.ByUnit(unitId), range).mapValues {
+        (_, groupDailyCounts) ->
+        Caretakers.fromDailyCounts(groupDailyCounts)
+    }
+
+/**
+ * Return *date-based* `daycare_caretaker` counts for the given groups and the given date range.
+ *
+ * The resulting DateMap is minimal and contains data *only* for groups that have entries and *only*
+ * for dates within the given date range where the group is active and a caretaker count exists in
+ * the database.
+ */
+fun Database.Read.getPlannedCaretakersForGroups(
+    byGroup: GroupPredicate,
+    range: FiniteDateRange,
+): Map<GroupId, DateMap<BigDecimal>> {
+    data class RawCaretakers(
+        val groupId: GroupId,
+        val range: FiniteDateRange,
+        val amount: BigDecimal,
+    )
+    return createQuery {
             sql(
                 """
-select
-    dg.id as group_id,
-    min(coalesce(dc.amount, 0)) as minimum,
-    max(coalesce(dc.amount, 0)) as maximum
-from daycare_group dg
-left outer join daycare_caretaker dc on dg.id = dc.group_id
-where dg.daycare_id = ${bind(unitId)}
-and daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(dc.start_date, dc.end_date, '[]')
-and daterange(${bind(startDate)}, ${bind(endDate)}, '[]') && daterange(dg.start_date, dg.end_date, '[]')
-group by dg.id
+SELECT
+    dg.id AS group_id,
+    daterange(dc.start_date, dc.end_date, '[]') * daterange(dg.start_date, dg.end_date, '[]') * ${bind(range)} AS range,
+    dc.amount
+FROM daycare_group dg
+JOIN daycare_caretaker dc ON dg.id = dc.group_id
+WHERE ${predicate(byGroup.toRawPredicate().forTable("dg"))}
+AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
+AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
 """
             )
         }
-        .toMap { column<GroupId>("group_id") to row<Caretakers>() }
+        .mapTo<RawCaretakers>()
+        .useSequence { rows ->
+            rows
+                .groupingBy { it.groupId }
+                .fold(DateMap.empty()) { countsForGroup, row ->
+                    countsForGroup.set(row.range, row.amount)
+                }
+        }
+}

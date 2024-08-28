@@ -8,6 +8,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.attendance.occupancyCoefficientSeven
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getPlannedCaretakersForGroups
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
@@ -245,38 +246,28 @@ private fun calculateCaretakers(duration: Duration, coefficient: BigDecimal): Bi
         .setScale(4, RoundingMode.HALF_UP)
 }
 
-/**
- * Return *date-based* `daycare_caretaker` counts for the given groups and the given date range.
- *
- * The resulting DateMap contains data *only* for dates within the given date range.
- */
-private fun Database.Read.getPlannedCaretakersForGroups(
-    groups: Collection<GroupId>,
-    range: FiniteDateRange,
-): Map<GroupId, DateMap<BigDecimal>> {
-    data class RawCaretakers(
-        val groupId: GroupId,
-        val range: FiniteDateRange,
-        val amount: BigDecimal,
-    )
-    return createQuery {
-            sql(
-                """
-SELECT dc.group_id, daterange(dc.start_date, dc.end_date, '[]') * ${bind(range)} AS range, dc.amount
-FROM daycare_caretaker dc
-WHERE dc.group_id = ANY(${bind(groups)})
-AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
-"""
-            )
-        }
-        .mapTo<RawCaretakers>()
-        .useSequence { rows ->
-            rows
-                .groupingBy { it.groupId }
-                .fold(DateMap.empty()) { countsForGroup, row ->
-                    countsForGroup.set(row.range, row.amount)
-                }
-        }
+/** A high-level predicate for selecting daycare groups based on some criteria. */
+sealed interface GroupPredicate {
+    /**
+     * Converts this high-level predicate into a raw SQL predicate targeting the `daycare_group`
+     * table
+     */
+    fun toRawPredicate(): Predicate
+
+    @JvmInline
+    value class ByUnit(val id: DaycareId) : GroupPredicate {
+        override fun toRawPredicate() = Predicate { where("$it.daycare_id = ${bind(id)}") }
+    }
+
+    @JvmInline
+    value class ById(val id: GroupId) : GroupPredicate {
+        override fun toRawPredicate() = Predicate { where("$it.id = ${bind(id)}") }
+    }
+
+    @JvmInline
+    value class ByIds(val ids: Collection<GroupId>) : GroupPredicate {
+        override fun toRawPredicate() = Predicate { where("$it.id = ANY(${bind(ids)})") }
+    }
 }
 
 /**
@@ -467,7 +458,10 @@ WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))
         when (type) {
             OccupancyType.PLANNED,
             OccupancyType.CONFIRMED ->
-                getPlannedCaretakersForGroups(groups.map { it.key.groupId }, period)
+                getPlannedCaretakersForGroups(
+                    GroupPredicate.ByIds(groups.map { it.key.groupId }),
+                    period,
+                )
             OccupancyType.REALIZED ->
                 getRealizedCaretakersForGroups(groups.map { it.key.groupId }, period)
         }

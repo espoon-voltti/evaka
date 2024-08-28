@@ -14,10 +14,12 @@ import fi.espoo.evaka.messaging.deleteDaycareGroupMessageAccount
 import fi.espoo.evaka.placement.hasGroupPlacements
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
@@ -79,4 +81,14 @@ data class DaycareGroup(
     val jamixCustomerNumber: Int?,
 )
 
-data class Caretakers(val minimum: Double, val maximum: Double)
+data class Caretakers(val minimum: Double, val maximum: Double) {
+    companion object {
+        fun fromDailyCounts(caretakers: DateMap<BigDecimal>): Caretakers =
+            Caretakers(
+                minimum =
+                    caretakers.entries().minOfOrNull { (_, count) -> count }?.toDouble() ?: 0.0,
+                maximum =
+                    caretakers.entries().maxOfOrNull { (_, count) -> count }?.toDouble() ?: 0.0,
+            )
+    }
+}

@@ -131,8 +131,8 @@ fun Database.Read.getChildOccupancyAttendances(
                 """
 SELECT 
     ca.child_id,
-    (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
-    (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed,
+    ca.arrived,
+    ca.departed,
     COALESCE(COALESCE(an.capacity_factor, 1) * CASE 
         WHEN u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] THEN $familyUnitPlacementCoefficient
         WHEN extract(YEARS FROM age(ca.date, ch.date_of_birth)) < 3 THEN coalesce(sno.realized_occupancy_coefficient_under_3y, default_sno.realized_occupancy_coefficient_under_3y)
@@ -148,7 +148,7 @@ LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placeme
 LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date
 WHERE
     ca.unit_id = ${bind(unitId)} AND
-    tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && ${bind(timeRange)} 
+    tstzrange(ca.arrived, ca.departed) && ${bind(timeRange)}
     
     ${if (groupId == null) "" else """
         AND (EXISTS(

@@ -191,6 +191,9 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam groupId: GroupId?,
     ): UnitOccupancies {
+        if (from.isBefore(to.minusYears(5))) {
+            throw BadRequest("Too long time range")
+        }
         val period = FiniteDateRange(from, to)
         val occupancies =
             db.connect { dbc ->
@@ -363,7 +366,7 @@ private fun getUnitOccupancies(
                     groupId,
                 )
             ),
-        caretakers = tx.getUnitStats(unitId, period.start, period.end),
+        caretakers = tx.getUnitStats(unitId, period),
     )
 }
 
