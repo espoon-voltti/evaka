@@ -38,6 +38,7 @@
     "babel-plugin-styled-components": "^2.1.4",
     "chart.js": "^4.4.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-annotation": "^3.0.1",
     "classnames": "^2.5.1",
     "compute-scroll-into-view": "^3.1.0",
     "core-js": "^3.38.0",

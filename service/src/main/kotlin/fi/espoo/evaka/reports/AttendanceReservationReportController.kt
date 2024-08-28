@@ -358,7 +358,7 @@ data class AttendanceReservationReportRow(
     val staffCountRequired: Double,
 )
 
-private fun getAttendanceReservationReport(
+fun getAttendanceReservationReport(
     db: Database.Read,
     start: LocalDate,
     end: LocalDate,

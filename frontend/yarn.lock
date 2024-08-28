@@ -5473,6 +5473,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chartjs-plugin-annotation@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "chartjs-plugin-annotation@npm:3.0.1"
+  peerDependencies:
+    chart.js: ">=4.0.0"
+  checksum: 10/638550f92c6cc948205822f8b8fcfde20769d923a9bff26edd07f58ccfc6f48a456d8307f8cb837f16a7fe86a9c3646914649c77144337ea12d70e99916c9248
+  languageName: node
+  linkType: hard
+
 "chokidar@npm:^3.5.3":
   version: 3.5.3
   resolution: "chokidar@npm:3.5.3"
@@ -7109,6 +7118,7 @@ __metadata:
     babel-plugin-styled-components: "npm:^2.1.4"
     chart.js: "npm:^4.4.0"
     chartjs-adapter-date-fns: "npm:^3.0.0"
+    chartjs-plugin-annotation: "npm:^3.0.1"
     classnames: "npm:^2.5.1"
     compute-scroll-into-view: "npm:^3.1.0"
     concurrently: "npm:^8.2.0"

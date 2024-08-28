@@ -19,7 +19,8 @@ import UnitDataFilters from '../UnitDataFilters'
 
 import OccupanciesForDateRange from './occupancy/OccupanciesForDateRange'
 import {
-  RealtimeOccupanciesForSingleDay,
+  RealtimePlannedOccupanciesForSingleDay,
+  RealtimeRealizedOccupanciesForSingleDay,
   SimpleOccupanciesForSingleDay
 } from './occupancy/OccupanciesForSingleDay'
 
@@ -37,6 +38,9 @@ type Props = {
   groups: DaycareGroupResponse[]
 }
 
+const dayGraphModes = ['REALIZED', 'PLANNED'] as const
+type DayGraphMode = (typeof dayGraphModes)[number]
+
 export default React.memo(function OccupancyContainer({
   unitId,
   filters,
@@ -49,6 +53,7 @@ export default React.memo(function OccupancyContainer({
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
   const [groupId, setGroupId] = useState<UUID | null>(null)
+  const [mode, setMode] = useState<DayGraphMode>('REALIZED')
 
   return (
     <CollapsibleContentArea
@@ -64,7 +69,7 @@ export default React.memo(function OccupancyContainer({
       </FixedSpaceRow>
       <Gap size="s" />
       <FixedSpaceRow alignItems="center">
-        <Label>{i18n.unit.occupancy.group}</Label>
+        <Label>{i18n.unit.occupancy.display}</Label>
         <Select
           items={[null, ...groups]}
           selectedItem={
@@ -74,17 +79,38 @@ export default React.memo(function OccupancyContainer({
           getItemValue={(g: DaycareGroupResponse | null) => (g ? g.id : '')}
           getItemLabel={(g) => (g ? g.name : i18n.unit.occupancy.fullUnit)}
         />
+        {startDate.isEqual(endDate) && realtimeStaffAttendanceEnabled && (
+          <Select
+            items={dayGraphModes}
+            selectedItem={mode}
+            onChange={(newMode) => {
+              if (newMode !== null) setMode(newMode)
+            }}
+            getItemLabel={(item) => i18n.unit.occupancy.realtime.modes[item]}
+          />
+        )}
       </FixedSpaceRow>
       <Gap />
       <Container data-qa="occupancies">
         {startDate.isEqual(endDate) ? (
           realtimeStaffAttendanceEnabled ? (
-            <RealtimeOccupanciesForSingleDay
-              unitId={unitId}
-              groupId={groupId}
-              date={startDate}
-              shiftCareUnit={shiftCareUnit}
-            />
+            <div>
+              {mode === 'REALIZED' && (
+                <RealtimeRealizedOccupanciesForSingleDay
+                  unitId={unitId}
+                  groupId={groupId}
+                  date={startDate}
+                  shiftCareUnit={shiftCareUnit}
+                />
+              )}
+              {mode === 'PLANNED' && (
+                <RealtimePlannedOccupanciesForSingleDay
+                  unitId={unitId}
+                  groupId={groupId}
+                  date={startDate}
+                />
+              )}
+            </div>
           ) : (
             <SimpleOccupanciesForSingleDay
               unitId={unitId}

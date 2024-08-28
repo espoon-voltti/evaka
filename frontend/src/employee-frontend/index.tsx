@@ -14,6 +14,7 @@ import {
   TimeScale,
   Tooltip
 } from 'chart.js'
+import annotationPlugin from 'chartjs-plugin-annotation'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
@@ -41,7 +42,14 @@ Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-Chart.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip)
+Chart.register(
+  TimeScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  annotationPlugin
+)
 Chart.defaults.animation = false
 Chart.defaults.font = {
   family: '"Open Sans", "Arial", sans-serif',
