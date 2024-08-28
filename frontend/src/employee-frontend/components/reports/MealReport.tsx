@@ -2,22 +2,29 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
+import { wrapResult } from 'lib-common/api'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { MealReportData } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
+import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H2 } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/employee'
+import { faFileExport } from 'lib-icons'
 
+import { sendJamixOrders } from '../../generated/api-clients/jamix'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitsQuery } from '../unit/queries'
@@ -26,12 +33,15 @@ import ReportDownload from './ReportDownload'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 import { mealReportByUnitQuery } from './queries'
 
+const sendJamixOrdersResult = wrapResult(sendJamixOrders)
+
 function getWeekDates(date: LocalDate) {
   return Array.from({ length: 7 }, (_, i) => date.startOfWeek().addDays(i))
 }
 
 export default React.memo(function MealReport() {
   const { lang, i18n } = useTranslation()
+  const { user } = useContext(UserContext)
 
   const [selectedUnit, setSelectedUnit] = useState<Daycare | null>(null)
   const units = useQueryResult(unitsQuery({ includeClosed: false })).getOrElse(
@@ -47,35 +57,64 @@ export default React.memo(function MealReport() {
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.meals.title}</Title>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
-          <FlexRow>
-            <Combobox
-              items={units}
-              onChange={setSelectedUnit}
-              selectedItem={selectedUnit}
-              getItemLabel={(item) => item.name}
-              placeholder={i18n.filters.unitPlaceholder}
-            />
-          </FlexRow>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <FlexRow>
-            <DatePicker date={date} onChange={setDate} locale={lang} />
-          </FlexRow>
-        </FilterRow>
-        <FilterRow>
-          <FilterLabel>{i18n.reports.meals.wholeWeekLabel}</FilterLabel>
-          <FlexRow>
-            <Checkbox
-              label={i18n.reports.meals.wholeWeekLabel}
-              hiddenLabel={true}
-              checked={wholeWeek}
-              onChange={setWholeWeek}
-            />
-          </FlexRow>
-        </FilterRow>
+        <FixedSpaceRow justifyContent="space-between" alignItems="flex-start">
+          <div>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+              <FlexRow>
+                <Combobox
+                  items={units}
+                  onChange={setSelectedUnit}
+                  selectedItem={selectedUnit}
+                  getItemLabel={(item) => item.name}
+                  placeholder={i18n.filters.unitPlaceholder}
+                />
+              </FlexRow>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.common.date}</FilterLabel>
+              <FlexRow>
+                <DatePicker date={date} onChange={setDate} locale={lang} />
+              </FlexRow>
+            </FilterRow>
+            <FilterRow>
+              <FilterLabel>{i18n.reports.meals.wholeWeekLabel}</FilterLabel>
+              <FlexRow>
+                <Checkbox
+                  label={i18n.reports.meals.wholeWeekLabel}
+                  hiddenLabel={true}
+                  checked={wholeWeek}
+                  onChange={setWholeWeek}
+                />
+              </FlexRow>
+            </FilterRow>
+          </div>
+          {featureFlags.jamixIntegration &&
+            user?.permittedGlobalActions?.includes('SEND_JAMIX_ORDERS') && (
+              <AsyncButton
+                text={i18n.reports.meals.jamixSend.button}
+                icon={faFileExport}
+                appearance="inline"
+                disabled={
+                  selectedUnit === null ||
+                  date === null ||
+                  wholeWeek ||
+                  date.isBefore(LocalDate.todayInHelsinkiTz().addDays(2))
+                }
+                onClick={async () => {
+                  if (selectedUnit === null || date === null)
+                    return Promise.reject()
+
+                  return sendJamixOrdersResult({
+                    unitId: selectedUnit.id,
+                    date
+                  })
+                }}
+                onSuccess={() => undefined}
+              />
+            )}
+        </FixedSpaceRow>
+
         {date &&
           selectedUnit &&
           (wholeWeek ? getWeekDates(date) : [date]).map((adate, idx) => (

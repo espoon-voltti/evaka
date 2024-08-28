@@ -4100,6 +4100,9 @@ export const fi = {
       description:
         'Laskee varauksiin perustuvat ruokailijamäärät yksikkökohtaisesti.',
       wholeWeekLabel: 'Koko viikko',
+      jamixSend: {
+        button: 'Lähetä uudelleen Jamixiin'
+      },
       mealName: {
         BREAKFAST: 'Aamupala',
         LUNCH: 'Lounas',
