@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { SyntheticEvent, useCallback, useEffect, useState } from 'react'
-import ReactCrop, { centerCrop, Crop, makeAspectCrop } from 'react-image-crop'
+import ReactCrop, {
+  centerCrop,
+  convertToPixelCrop,
+  Crop,
+  makeAspectCrop
+} from 'react-image-crop'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -215,27 +220,31 @@ function cropImage(image: HTMLImageElement, crop: Crop): Promise<File> {
   if (!ctx) {
     throw new Error('Could not get canvas context')
   }
+  const cropInPx =
+    crop.unit == '%'
+      ? convertToPixelCrop(crop, image.width, image.height)
+      : crop
 
   const scaleX = image.naturalWidth / image.width
   const scaleY = image.naturalHeight / image.height
   const pixelRatio = window.devicePixelRatio
 
-  canvas.width = crop.width * pixelRatio
-  canvas.height = crop.height * pixelRatio
+  canvas.width = cropInPx.width * pixelRatio
+  canvas.height = cropInPx.height * pixelRatio
 
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
   ctx.imageSmoothingQuality = 'high'
 
   ctx.drawImage(
     image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
+    cropInPx.x * scaleX,
+    cropInPx.y * scaleY,
+    cropInPx.width * scaleX,
+    cropInPx.height * scaleY,
     0,
     0,
-    crop.width,
-    crop.height
+    cropInPx.width,
+    cropInPx.height
   )
 
   if (canvas.width > 512 || canvas.height > 512) {
