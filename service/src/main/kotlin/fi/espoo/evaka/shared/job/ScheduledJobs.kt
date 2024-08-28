@@ -437,7 +437,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun sendCalendarEventDigests(db: Database.Connection, clock: EvakaClock) {
-        calendarEventNotificationService.sendCalendarEventDigests(db, clock.now())
+        calendarEventNotificationService.scheduleCalendarEventDigestEmails(db, clock.now())
     }
 
     fun scheduleDiscussionSurveyDigests(db: Database.Connection, clock: EvakaClock) {

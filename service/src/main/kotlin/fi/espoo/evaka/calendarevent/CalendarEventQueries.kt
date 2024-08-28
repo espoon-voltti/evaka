@@ -5,7 +5,6 @@
 package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
@@ -81,6 +80,10 @@ private fun unit(unitId: DaycareId) = Predicate { where("cea.unit_id = ${bind(un
 private fun range(range: FiniteDateRange) = Predicate { where("ce.period && ${bind(range)}") }
 
 private fun event(eventId: CalendarEventId) = Predicate { where("ce.id = ${bind(eventId)}") }
+
+private fun events(eventIds: Set<CalendarEventId>) = Predicate {
+    where("ce.id = ANY (${bind(eventIds)})")
+}
 
 private fun group(groupId: GroupId) = Predicate { where("cea.group_id = ${bind(groupId)}") }
 
@@ -184,6 +187,9 @@ fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
 
 fun Database.Read.getCalendarEventById(id: CalendarEventId) =
     getCalendarEventsQuery(event(id)).exactlyOneOrNull<CalendarEvent>()
+
+fun Database.Read.getCalendarEventsById(ids: Set<CalendarEventId>) =
+    getCalendarEventsQuery(events(ids)).toList<CalendarEvent>()
 
 fun Database.Read.getCalendarEventsByGroupAndType(
     groupId: GroupId,
@@ -465,7 +471,7 @@ fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
 data class ParentWithEvents(
     val parentId: PersonId,
     val language: Language,
-    val events: List<CalendarEventNotificationData>,
+    val events: List<CalendarEventId>,
 )
 
 data class ParentWithEventTimes(
@@ -544,8 +550,8 @@ WHERE cet.id = ${bind(eventTimeId)}
 fun Database.Read.getParentsWithNewEventsAfter(
     today: LocalDate,
     cutoff: HelsinkiDateTime,
-): List<ParentWithEvents> {
-    return createQuery {
+): List<ParentWithEvents> =
+    createQuery {
             sql(
                 """
 WITH matching_events AS (
@@ -611,22 +617,9 @@ WITH matching_events AS (
     FROM matching_children mc
     JOIN foster_parent fp ON fp.child_id = mc.child_id AND fp.valid_during && mc.period
 )
-SELECT
-    mp.parent_id,
-    p.language,
-    jsonb_agg(
-        jsonb_build_object(
-            'title', ce.title,
-            'period', jsonb_build_object(
-                'start', lower(ce.period),
-                'end', upper(ce.period) - 1
-            )
-        )
-        ORDER BY lower(ce.period)
-    ) AS events
+SELECT mp.parent_id, p.language, array_agg(mp.event_id) AS events
 FROM matching_parents mp
 JOIN person p ON p.id = mp.parent_id
-JOIN calendar_event ce ON ce.id = mp.event_id
 GROUP BY mp.parent_id, p.language
 """
             )
@@ -635,10 +628,9 @@ GROUP BY mp.parent_id, p.language
             ParentWithEvents(
                 parentId = column("parent_id"),
                 language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                events = jsonColumn<List<CalendarEventNotificationData>>("events"),
+                events = column("events"),
             )
         }
-}
 
 fun Database.Read.getParentsWithNewDiscussionSurveysAfter(
     cutoff: HelsinkiDateTime

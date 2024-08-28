@@ -237,6 +237,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendCalendarEventDigestEmail(
+        val parentId: PersonId,
+        val language: Language,
+        val events: List<CalendarEventId>,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class CreateAssistanceNeedPreschoolDecisionPdf(
         val decisionId: AssistanceNeedPreschoolDecisionId
     ) : AsyncJob {
@@ -425,6 +433,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendApplicationEmail::class,
                     SendAssistanceNeedDecisionEmail::class,
                     SendAssistanceNeedPreschoolDecisionEmail::class,
+                    SendCalendarEventDigestEmail::class,
                     SendChildDocumentNotificationEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingReservationsReminder::class,
