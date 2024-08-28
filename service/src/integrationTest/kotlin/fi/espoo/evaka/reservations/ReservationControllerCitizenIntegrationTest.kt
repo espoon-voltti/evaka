@@ -51,13 +51,13 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeInterval
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareHours120
 import fi.espoo.evaka.snPreschoolDaycareContractDays13
-import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -957,9 +957,7 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     @Test
     fun `irregular daily service time absences are non-editable`() {
         val dailyServiceTimesController =
-            DailyServiceTimesController(
-                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
-            )
+            DailyServiceTimesController(AccessControl(EspooActionRuleMapping(), noopTracer()))
 
         val area = DevCareArea()
         val daycare =

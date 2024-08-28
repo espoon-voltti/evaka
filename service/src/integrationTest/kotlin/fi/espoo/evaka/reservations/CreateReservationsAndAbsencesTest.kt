@@ -43,11 +43,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareHours120
-import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -778,9 +778,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     @Test
     fun `irregular daily service times absences are not overwritten`() {
         val dailyServiceTimesController =
-            DailyServiceTimesController(
-                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
-            )
+            DailyServiceTimesController(AccessControl(EspooActionRuleMapping(), noopTracer()))
         // given
         db.transaction {
             it.insert(

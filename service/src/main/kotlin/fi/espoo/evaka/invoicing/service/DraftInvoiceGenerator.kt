@@ -31,11 +31,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.utils.memoize
 import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.shared.withValue
-import io.opentracing.Tracer
-import io.opentracing.noop.NoopTracerFactory
+import io.opentelemetry.api.trace.Tracer
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -79,7 +79,7 @@ class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
     private val featureConfig: FeatureConfig,
     private val invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser,
-    private val tracer: Tracer = NoopTracerFactory.create(),
+    private val tracer: Tracer = noopTracer(),
 ) {
     fun generateDraftInvoices(
         tx: Database.Read,

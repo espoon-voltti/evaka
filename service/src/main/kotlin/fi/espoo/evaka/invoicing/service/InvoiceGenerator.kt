@@ -38,9 +38,9 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.getHolidays
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChildren
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.withSpan
-import io.opentracing.Tracer
-import io.opentracing.noop.NoopTracerFactory
+import io.opentelemetry.api.trace.Tracer
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component
 class InvoiceGenerator(
     private val draftInvoiceGenerator: DraftInvoiceGenerator,
     private val featureConfig: FeatureConfig,
-    private val tracer: Tracer = NoopTracerFactory.create(),
+    private val tracer: Tracer = noopTracer(),
 ) {
     fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
         tx.setStatementTimeout(Duration.ofMinutes(10))

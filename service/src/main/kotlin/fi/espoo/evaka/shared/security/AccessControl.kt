@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.shared.withValue
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.util.EnumSet
 
 class AccessControl(private val actionRuleMapping: ActionRuleMapping, private val tracer: Tracer) {

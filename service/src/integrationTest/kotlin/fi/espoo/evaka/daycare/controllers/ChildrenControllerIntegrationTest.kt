@@ -18,9 +18,9 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -105,10 +105,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val featureConfig: FeatureConfig = testFeatureConfig
 
         val espooChildController =
-            ChildController(
-                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create()),
-                featureConfig,
-            )
+            ChildController(AccessControl(EspooActionRuleMapping(), noopTracer()), featureConfig)
         val user =
             AuthenticatedUser.Employee(
                 EmployeeId(UUID.randomUUID()),

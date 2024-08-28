@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.withSpan
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
 import kotlin.reflect.KClass
 import kotlin.reflect.KType

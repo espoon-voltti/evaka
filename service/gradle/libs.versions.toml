@@ -14,7 +14,6 @@ ktfmt = "0.20.1"
 ktlint = "1.3.0"
 ktlint-gradle = "12.1.0"
 mockito = "5.12.0"
-opentracing = "0.33.0"
 owasp = "10.0.2"
 spring-boot = "3.3.2"
 versions = "0.51.0"
@@ -36,8 +35,6 @@ ktlint-rule-engine-core = { module = "com.pinterest.ktlint:ktlint-rule-engine-co
 ktlint-test = { module = "com.pinterest.ktlint:ktlint-test", version.ref = "ktlint" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
-opentracing-api = { module = "io.opentracing:opentracing-api", version.ref = "opentracing" }
-opentracing-util = { module = "io.opentracing:opentracing-util", version.ref = "opentracing" }
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 
 [plugins]

@@ -8,7 +8,7 @@ import fi.espoo.evaka.shared.dev.ensureDevData
 import fi.espoo.evaka.shared.dev.runDevScript
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.legacyMockVtjDataset
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 
 class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {

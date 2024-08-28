@@ -4,12 +4,16 @@
 
 package fi.espoo.evaka.shared.config
 
-import io.opentracing.Tracer
-import io.opentracing.util.GlobalTracer
+import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TracingConfig {
-    @Bean fun tracer(): Tracer = GlobalTracer.get()
+    @Bean fun openTelemetry(): OpenTelemetry = GlobalOpenTelemetry.get()
+
+    @Bean
+    fun tracer(openTelemetry: OpenTelemetry): Tracer = openTelemetry.getTracer("evaka-service")
 }

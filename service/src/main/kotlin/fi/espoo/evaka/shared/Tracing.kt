@@ -6,70 +6,77 @@ package fi.espoo.evaka.shared
 
 import com.google.common.hash.HashCode
 import fi.espoo.evaka.shared.security.Action
-import io.opentracing.Span
-import io.opentracing.Tracer
-import io.opentracing.Tracer.SpanBuilder
-import io.opentracing.tag.AbstractTag
-import io.opentracing.tag.IntTag
-import io.opentracing.tag.StringTag
-import io.opentracing.tag.Tag
-import io.opentracing.tag.Tags
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
 import java.util.UUID
 
+fun noopTracer(): Tracer = OpenTelemetry.noop().getTracer("evaka-service")
+
 object Tracing {
-    val action = ToStringTag<Action>("action")
-    val actionClass = ToStringTag<Class<out Any>>("actionclass")
-    val enduserIdHash = ToStringTag<HashCode>("enduser.idhash")
-    val evakaTraceId = StringTag("evaka.traceid")
-    val asyncJobId = ToStringTag<UUID>("asyncjob.id")
-    val asyncJobRemainingAttempts = IntTag("asyncjob.remainingattempts")
-    val headOfFamilyId = ToStringTag<PersonId>("headoffamily.id")
+    val action = ToStringAttributeKey<Action>("action")
+    val actionClass = ToStringAttributeKey<Class<out Any>>("actionclass")
+    val enduserIdHash = ToStringAttributeKey<HashCode>("enduser.idhash")
+    val evakaTraceId = AttributeKey.stringKey("evaka.traceid")
+    val asyncJobId = ToStringAttributeKey<UUID>("asyncjob.id")
+    val asyncJobRemainingAttempts = AttributeKey.longKey("asyncjob.remainingattempts")
+    val headOfFamilyId = ToStringAttributeKey<PersonId>("headoffamily.id")
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline infix fun <T> Tag<T>.withValue(value: T) = TagValue(this, value)
+inline infix fun <T> AttributeKey<T>.withValue(value: T) = AttributeValue(this, value)
 
-class ToStringTag<T>(key: String) : AbstractTag<T>(key) {
-    override fun set(span: Span, tagValue: T) {
-        span.setTag(key, tagValue.toString())
-    }
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun <T> ToStringAttributeKey<T>.withValue(value: T) =
+    AttributeValue(this.key, value.toString())
+
+class ToStringAttributeKey<T>(key: String) {
+    val key: AttributeKey<String> = AttributeKey.stringKey(key)
 }
 
-data class TagValue<T>(val tag: Tag<T>, val value: T)
+data class AttributeValue<T>(val key: AttributeKey<T>, val value: T)
 
-fun <T> SpanBuilder.withTag(tagValue: TagValue<T>): SpanBuilder =
-    withTag(tagValue.tag, tagValue.value)
+fun <T> Span.setAttribute(attribute: ToStringAttributeKey<T>, value: T): Span =
+    value?.let { setAttribute(attribute.key, it.toString()) } ?: this
 
-inline fun <T> Tracer.withSpan(span: Span, crossinline f: () -> T): T =
+fun <T> SpanBuilder.withAttribute(attribute: AttributeValue<T>): SpanBuilder =
+    attribute.value?.let { setAttribute(attribute.key, it) } ?: this
+
+inline fun <T> withSpan(span: Span, crossinline f: () -> T): T =
     try {
-        activateSpan(span).use { f() }
+        f()
     } catch (e: Exception) {
-        span.setTag(Tags.ERROR, true)
+        span.setStatus(StatusCode.ERROR)
         throw e
     } finally {
-        span.finish()
+        span.end()
     }
 
 inline fun <T> Tracer.withSpan(
     operationName: String,
-    vararg tags: TagValue<*>,
+    vararg attributes: AttributeValue<*>,
     crossinline f: () -> T,
 ): T =
     withSpan(
-        buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
+        spanBuilder(operationName)
+            .let { attributes.fold(it) { span, attribute -> span.withAttribute(attribute) } }
+            .startSpan(),
         f,
     )
 
 inline fun <T> Tracer.withDetachedSpan(
     operationName: String,
-    vararg tags: TagValue<*>,
+    vararg attributes: AttributeValue<*>,
     crossinline f: () -> T,
 ): T =
     withSpan(
-        buildSpan(operationName)
-            .ignoreActiveSpan()
-            .let { tags.fold(it) { span, tag -> span.withTag(tag) } }
-            .start(),
+        spanBuilder(operationName)
+            .setNoParent()
+            .let { attributes.fold(it) { span, attribute -> span.withAttribute(attribute) } }
+            .startSpan(),
         f,
     )
 

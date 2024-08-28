@@ -25,7 +25,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.trustAllCerts
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.io.File
 import java.net.URL
 import org.jdbi.v3.core.Jdbi

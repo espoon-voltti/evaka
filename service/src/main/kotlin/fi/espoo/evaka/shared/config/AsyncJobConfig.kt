@@ -8,7 +8,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import io.micrometer.core.instrument.MeterRegistry
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi

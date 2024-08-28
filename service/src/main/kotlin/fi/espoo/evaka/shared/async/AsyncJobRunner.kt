@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import io.micrometer.core.instrument.MeterRegistry
-import io.opentracing.Tracer
+import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
 import java.time.Instant
 import java.util.Timer

@@ -24,9 +24,9 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -356,9 +356,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
             }
 
         val espooChildControllerCitizen =
-            ChildControllerCitizen(
-                AccessControl(EspooActionRuleMapping(), NoopTracerFactory.create())
-            )
+            ChildControllerCitizen(AccessControl(EspooActionRuleMapping(), noopTracer()))
         val result =
             espooChildControllerCitizen.getChildren(
                 dbInstance(),
