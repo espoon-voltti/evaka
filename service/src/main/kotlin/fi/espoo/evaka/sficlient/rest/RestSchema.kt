@@ -39,7 +39,14 @@ data class ValidationError(val error: String)
 data class AccessTokenRequestBody(val username: String, val password: String)
 
 // https://api.messages-qa.suomi.fi/api-docs#model-AccessTokenResponse
-data class AccessTokenResponse(val accessToken: String)
+// Standard OAuth 2.0 response: https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
+data class AccessTokenResponse(
+    val access_token: String,
+    val token_type: String,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val expires_in: Long? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val refresh_token: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val scope: String? = null,
+)
 
 private val pdfMediaType = "application/pdf".toMediaType()
 
