@@ -644,7 +644,8 @@ WITH matching_events AS (
     SELECT ce.id AS event_id, ce.period * daterange(pl.start_date, pl.end_date, '[]') AS period, pl.child_id
     FROM matching_events ce
              JOIN calendar_event_attendee cea ON cea.calendar_event_id = ce.id
-             JOIN placement pl ON pl.unit_id = cea.unit_id AND daterange(pl.start_date, pl.end_date, '[]') && ce.period
+             JOIN daycare_group_placement dgp ON dgp.daycare_group_id = cea.group_id AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
+             JOIN placement pl ON pl.id = dgp.daycare_placement_id
     WHERE
       -- Affects a single group
         cea.group_id IS NOT NULL AND
