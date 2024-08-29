@@ -6,6 +6,7 @@ package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.DiscussionSurveyCreationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
 import fi.espoo.evaka.emailclient.Email
@@ -35,6 +36,7 @@ class CalendarEventNotificationService(
     init {
         asyncJobRunner.registerHandler(::runSendDiscussionSurveyReservationMessage)
         asyncJobRunner.registerHandler(::runSendDiscussionSurveyReservationCancellationMessage)
+        asyncJobRunner.registerHandler(::runSendCalendarEventDigestEmail)
         asyncJobRunner.registerHandler(::runSendDiscussionTimeReminder)
         asyncJobRunner.registerHandler(::runSendDiscussionSurveyDigest)
     }
@@ -123,25 +125,45 @@ class CalendarEventNotificationService(
         }
     }
 
-    fun sendCalendarEventDigests(dbc: Database.Connection, now: HelsinkiDateTime) {
-        dbc.read { tx -> tx.getParentsWithNewEventsAfter(now.toLocalDate(), now.minusHours(24)) }
-            .also { parents ->
-                logger.info { "Sending calendar event notifications to ${parents.size} parents" }
-            }
-            .forEach { parent ->
-                Email.create(
-                        dbc,
-                        parent.parentId,
-                        EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
-                        emailEnv.sender(parent.language),
-                        emailMessageProvider.calendarEventNotification(
-                            parent.language,
-                            parent.events,
-                        ),
-                        "${now.toLocalDate()}:${parent.parentId}",
-                    )
-                    ?.also { emailClient.send(it) }
-            }
+    fun scheduleCalendarEventDigestEmails(dbc: Database.Connection, now: HelsinkiDateTime) {
+        dbc.transaction { tx ->
+            val parents = tx.getParentsWithNewEventsAfter(now.toLocalDate(), now.minusHours(24))
+            logger.info { "Scheduling calendar event notifications to ${parents.size} parents" }
+            asyncJobRunner.plan(
+                tx,
+                parents.map {
+                    AsyncJob.SendCalendarEventDigestEmail(it.parentId, it.language, it.events)
+                },
+                runAt = now,
+            )
+        }
+    }
+
+    fun runSendCalendarEventDigestEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendCalendarEventDigestEmail,
+    ) {
+        val notificationData =
+            dbc.read { tx -> tx.getCalendarEventsById(msg.events.toSet()) }
+                .map { CalendarEventNotificationData(it.title, it.period) }
+                .sortedWith(compareBy({ it.period.start }, { it.title }))
+        if (notificationData.isEmpty()) {
+            logger.info { "No events to notify for parent ${msg.parentId}" }
+            return
+        }
+        Email.create(
+                dbc,
+                msg.parentId,
+                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
+                emailEnv.sender(msg.language),
+                emailMessageProvider.calendarEventNotification(msg.language, notificationData),
+                "${clock.today()}:${msg.parentId}",
+            )
+            ?.also { emailClient.send(it) }
+        logger.info {
+            "Successfully sent calendar event digest email (personId: ${msg.parentId}, event count: ${notificationData.size})."
+        }
     }
 
     fun runSendDiscussionSurveyReservationMessage(

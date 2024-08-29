@@ -1728,7 +1728,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
-        calendarEventNotificationService.sendCalendarEventDigests(db, now)
+        calendarEventNotificationService.scheduleCalendarEventDigestEmails(db, now)
+        asyncJobRunner.runPendingJobsSync(clock)
 
         assertEquals(1, MockEmailClient.emails.size)
         MockEmailClient.emails.first().let { email ->

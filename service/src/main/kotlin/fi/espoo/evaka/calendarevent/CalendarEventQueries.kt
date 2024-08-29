@@ -5,7 +5,6 @@
 package fi.espoo.evaka.calendarevent
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
@@ -15,6 +14,7 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -25,18 +25,11 @@ fun Database.Read.getCalendarEventsByUnit(
     unitId: DaycareId,
     range: FiniteDateRange,
 ): List<CalendarEvent> =
-    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
+    getCalendarEventsQuery(unit(unitId).and(range(range))).toList<CalendarEvent>()
 
-private fun Database.Read.getCalendarEventsQuery(
-    calendarEventId: CalendarEventId? = null,
-    unitId: DaycareId? = null,
-    range: FiniteDateRange? = null,
-    groupId: GroupId? = null,
-    eventTypes: List<CalendarEventType>? = null,
-) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getCalendarEventsQuery(where: Predicate) = createQuery {
+    sql(
+        """
 SELECT
     ce.id, cea.unit_id, ce.title, ce.description, ce.period, ce.content_modified_at, ce.event_type,
     (
@@ -67,11 +60,7 @@ JOIN calendar_event ce ON cea.calendar_event_id = ce.id
 LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN person p ON p.id = cea.child_id
 LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
-WHERE (:calendarEventId IS NULL OR ce.id = :calendarEventId) 
-AND (:unitId IS NULL OR cea.unit_id = :unitId) 
-AND (:groupId IS NULL OR cea.group_id = :groupId)
-AND (:range IS NULL OR ce.period && :range)
-AND (:eventTypes::calendar_event_type[] IS NULL OR ce.event_type = ANY(:eventTypes::calendar_event_type[]))
+WHERE ${predicate(where.forTable(""))}
 AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
@@ -82,14 +71,25 @@ AND (cea.child_id IS NULL OR EXISTS(
       AND rp.unit_id = cea.unit_id
 ))
 GROUP BY ce.id, cea.unit_id
-        """
-            )
-        }
-        .bind("calendarEventId", calendarEventId)
-        .bind("unitId", unitId)
-        .bind("groupId", groupId)
-        .bind("range", range)
-        .bind("eventTypes", eventTypes.takeIf { !it.isNullOrEmpty() })
+"""
+    )
+}
+
+private fun unit(unitId: DaycareId) = Predicate { where("cea.unit_id = ${bind(unitId)}") }
+
+private fun range(range: FiniteDateRange) = Predicate { where("ce.period && ${bind(range)}") }
+
+private fun event(eventId: CalendarEventId) = Predicate { where("ce.id = ${bind(eventId)}") }
+
+private fun events(eventIds: Set<CalendarEventId>) = Predicate {
+    where("ce.id = ANY (${bind(eventIds)})")
+}
+
+private fun group(groupId: GroupId) = Predicate { where("cea.group_id = ${bind(groupId)}") }
+
+private fun eventType(eventTypes: List<CalendarEventType>) = Predicate {
+    where("ce.event_type = ANY(${bind(eventTypes)})")
+}
 
 fun Database.Transaction.createCalendarEvent(
     event: CalendarEventForm,
@@ -186,15 +186,18 @@ fun Database.Transaction.deleteCalendarEventTime(id: CalendarEventTimeId) =
         .updateExactlyOne()
 
 fun Database.Read.getCalendarEventById(id: CalendarEventId) =
-    getCalendarEventsQuery(calendarEventId = id).exactlyOneOrNull<CalendarEvent>()
+    getCalendarEventsQuery(event(id)).exactlyOneOrNull<CalendarEvent>()
+
+fun Database.Read.getCalendarEventsById(ids: Set<CalendarEventId>) =
+    getCalendarEventsQuery(events(ids)).toList<CalendarEvent>()
 
 fun Database.Read.getCalendarEventsByGroupAndType(
     groupId: GroupId,
     eventTypes: List<CalendarEventType>,
-) = getCalendarEventsQuery(groupId = groupId, eventTypes = eventTypes).toList<CalendarEvent>()
+) = getCalendarEventsQuery(group(groupId).and(eventType(eventTypes))).toList<CalendarEvent>()
 
 fun Database.Read.getCalendarEventsByUnitWithRange(unitId: DaycareId, range: FiniteDateRange) =
-    getCalendarEventsQuery(unitId = unitId, range = range).toList<CalendarEvent>()
+    getCalendarEventsQuery(unit(unitId).and(range(range))).toList<CalendarEvent>()
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
     this.createUpdate { sql("DELETE FROM calendar_event WHERE id = ${bind(eventId)}") }
@@ -468,7 +471,7 @@ fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
 data class ParentWithEvents(
     val parentId: PersonId,
     val language: Language,
-    val events: List<CalendarEventNotificationData>,
+    val events: List<CalendarEventId>,
 )
 
 data class ParentWithEventTimes(
@@ -547,8 +550,8 @@ WHERE cet.id = ${bind(eventTimeId)}
 fun Database.Read.getParentsWithNewEventsAfter(
     today: LocalDate,
     cutoff: HelsinkiDateTime,
-): List<ParentWithEvents> {
-    return createQuery {
+): List<ParentWithEvents> =
+    createQuery {
             sql(
                 """
 WITH matching_events AS (
@@ -614,22 +617,9 @@ WITH matching_events AS (
     FROM matching_children mc
     JOIN foster_parent fp ON fp.child_id = mc.child_id AND fp.valid_during && mc.period
 )
-SELECT
-    mp.parent_id,
-    p.language,
-    jsonb_agg(
-        jsonb_build_object(
-            'title', ce.title,
-            'period', jsonb_build_object(
-                'start', lower(ce.period),
-                'end', upper(ce.period) - 1
-            )
-        )
-        ORDER BY lower(ce.period)
-    ) AS events
+SELECT mp.parent_id, p.language, array_agg(mp.event_id) AS events
 FROM matching_parents mp
 JOIN person p ON p.id = mp.parent_id
-JOIN calendar_event ce ON ce.id = mp.event_id
 GROUP BY mp.parent_id, p.language
 """
             )
@@ -638,10 +628,9 @@ GROUP BY mp.parent_id, p.language
             ParentWithEvents(
                 parentId = column("parent_id"),
                 language = Language.tryValueOf(column<String?>("language")) ?: Language.fi,
-                events = jsonColumn<List<CalendarEventNotificationData>>("events"),
+                events = column("events"),
             )
         }
-}
 
 fun Database.Read.getParentsWithNewDiscussionSurveysAfter(
     cutoff: HelsinkiDateTime

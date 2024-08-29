@@ -7,7 +7,6 @@ import fi.espoo.evaka.calendarevent.CalendarEventType
 import fi.espoo.evaka.calendarevent.ParentWithEvents
 import fi.espoo.evaka.calendarevent.getParentsWithNewEventsAfter
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.emailclient.CalendarEventNotificationData
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -137,16 +136,11 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `Unit-wide event`() {
         insertTestData()
-        createCalendarEvent(
-            title = "Unit-wide event",
-            period = FiniteDateRange(today, today),
-            unitId = testDaycare.id,
-        )
-
-        val expectedEvent =
-            CalendarEventNotificationData(
+        val eventId =
+            createCalendarEvent(
                 title = "Unit-wide event",
                 period = FiniteDateRange(today, today),
+                unitId = testDaycare.id,
             )
 
         assertEquals(
@@ -154,17 +148,17 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_1.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                 )
                 .sortedBy { it.parentId },
@@ -176,17 +170,12 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
     @Test
     fun `Group event`() {
         insertTestData()
-        createCalendarEvent(
-            title = "Group event",
-            period = FiniteDateRange(today, today),
-            unitId = testDaycare.id,
-            groupIds = listOf(testDaycareGroup.id),
-        )
-
-        val expectedEvent =
-            CalendarEventNotificationData(
+        val eventId =
+            createCalendarEvent(
                 title = "Group event",
                 period = FiniteDateRange(today, today),
+                unitId = testDaycare.id,
+                groupIds = listOf(testDaycareGroup.id),
             )
 
         assertEquals(
@@ -194,7 +183,7 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 ParentWithEvents(
                     parentId = testAdult_2.id,
                     language = Language.fi,
-                    events = listOf(expectedEvent),
+                    events = listOf(eventId),
                 )
             ),
             db.read { tx -> tx.getParentsWithNewEventsAfter(today, now.minusHours(24)) },
@@ -235,16 +224,11 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 )
             )
         }
-        createCalendarEvent(
-            title = "Backup care",
-            period = FiniteDateRange(today, today.plusDays(1)),
-            unitId = testDaycare.id,
-        )
-
-        val expectedEvent =
-            CalendarEventNotificationData(
+        val eventId =
+            createCalendarEvent(
                 title = "Backup care",
                 period = FiniteDateRange(today, today.plusDays(1)),
+                unitId = testDaycare.id,
             )
 
         assertEquals(
@@ -252,12 +236,12 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                 )
                 .sortedBy { it.parentId },
@@ -281,21 +265,16 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                 )
             )
         }
-        createCalendarEvent(
-            title = "Child event",
-            period = FiniteDateRange(today, today),
-            unitId = testDaycare.id,
-            groupChildIds =
-                listOf(
-                    testDaycareGroup.id to testChild_2.id,
-                    testDaycareGroup2.id to testChild_3.id,
-                ),
-        )
-
-        val expectedEvent =
-            CalendarEventNotificationData(
+        val eventId =
+            createCalendarEvent(
                 title = "Child event",
                 period = FiniteDateRange(today, today),
+                unitId = testDaycare.id,
+                groupChildIds =
+                    listOf(
+                        testDaycareGroup.id to testChild_2.id,
+                        testDaycareGroup2.id to testChild_3.id,
+                    ),
             )
 
         assertEquals(
@@ -303,12 +282,12 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
                     ParentWithEvents(
                         parentId = testAdult_2.id,
                         language = Language.fi,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                     ParentWithEvents(
                         parentId = testAdult_3.id,
                         language = Language.sv,
-                        events = listOf(expectedEvent),
+                        events = listOf(eventId),
                     ),
                 )
                 .sortedBy { it.parentId },

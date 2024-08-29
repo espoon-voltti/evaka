@@ -97,14 +97,13 @@ class AssistanceNeedPreschoolDecisionService(
 
             tx.updateAssistanceNeedPreschoolDocumentKey(decision.id, key)
 
-            asyncJobRunner.plan(
-                tx,
-                listOf(
-                    AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(decisionId),
-                    AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId),
-                ),
-                runAt = clock.now(),
-            )
+            val guardians = tx.getChildGuardiansAndFosterParents(decision.child.id, clock.today())
+            val emailJobs =
+                guardians.map { guardianId ->
+                    AsyncJob.SendAssistanceNeedPreschoolDecisionEmail(decisionId, guardianId)
+                }
+            val sfiJob = AsyncJob.SendAssistanceNeedPreschoolDecisionSfiMessage(decisionId)
+            asyncJobRunner.plan(tx, emailJobs + sfiJob, runAt = clock.now())
 
             tx.getArchiveProcessByAssistanceNeedPreschoolDecisionId(msg.decisionId)?.also {
                 tx.insertProcessHistoryRow(
@@ -126,10 +125,7 @@ class AssistanceNeedPreschoolDecisionService(
         clock: EvakaClock,
         msg: AsyncJob.SendAssistanceNeedPreschoolDecisionEmail,
     ) {
-        val decisionId = msg.decisionId
-        val today = clock.today()
-
-        val decision = db.read { tx -> tx.getAssistanceNeedPreschoolDecisionById(decisionId) }
+        val decision = db.read { tx -> tx.getAssistanceNeedPreschoolDecisionById(msg.decisionId) }
 
         logger.info { "Sending assistance need preschool decision email (decisionId: $decision)" }
 
@@ -141,22 +137,18 @@ class AssistanceNeedPreschoolDecisionService(
         val fromAddress = emailEnv.applicationReceivedSender(language)
         val content = emailMessageProvider.assistanceNeedPreschoolDecisionNotification(language)
 
-        val guardians =
-            db.read { tx -> tx.getChildGuardiansAndFosterParents(decision.child.id, today) }
-        guardians.forEach { guardianId ->
-            Email.create(
-                    db,
-                    guardianId,
-                    EmailMessageType.DECISION_NOTIFICATION,
-                    fromAddress,
-                    content,
-                    "$decisionId - $guardianId",
-                )
-                ?.also { emailClient.send(it) }
-        }
+        Email.create(
+                db,
+                msg.guardianId,
+                EmailMessageType.DECISION_NOTIFICATION,
+                fromAddress,
+                content,
+                "${msg.decisionId} - ${msg.guardianId}",
+            )
+            ?.also { emailClient.send(it) }
 
         logger.info {
-            "Successfully sent assistance need preschool decision email (id: $decisionId)."
+            "Successfully sent assistance need preschool decision email (id: ${msg.decisionId})."
         }
     }
 
