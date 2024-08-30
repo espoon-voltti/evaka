@@ -621,7 +621,7 @@ $unsubscribeEn
             html =
                 """
 <p>Lapsellenne on varattu keskusteluaika</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -629,7 +629,7 @@ $unsubscribeEn
 $unsubscribeFi
 <hr>
 <p>En diskussionstid har reserverats för ditt barn</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -637,7 +637,7 @@ $unsubscribeFi
 $unsubscribeSv
 <hr>
 <p>New discussion time reserved for your child</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -659,21 +659,21 @@ $unsubscribeEn
             html =
                 """
 <p>Lapsellenne varattu keskusteluaika on peruttu</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
 $unsubscribeFi
 <hr>
 <p>Den diskussionstid som bokats för ditt barn har avbokats</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
 $unsubscribeSv
 <hr>
 <p>Discussion time reserved for your child has been cancelled</p>
-<p>${notificationDetails.title}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.title)}</p>
 <p>${notificationDetails.childName}</p>
 <p>${notificationDetails.calendarEventTime.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${notificationDetails.calendarEventTime.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${notificationDetails.calendarEventTime.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -693,18 +693,18 @@ $unsubscribeEn
                 "Varaa keskusteluaika varhaiskasvatukseen / Boka en diskussionstid för småbarnspedagogik / Reserve a discussion time for early childhood education ",
             html =
                 """
-<p>${notificationDetails.eventTitle}</p>
-<p>${notificationDetails.eventDescription}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventTitle)}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventDescription)}</p>
 <p>Ajan voi varata eVakan kalenterinäkymästä</p>
 $unsubscribeFi
 <hr>
-<p>${notificationDetails.eventTitle}</p>
-<p>${notificationDetails.eventDescription}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventTitle)}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventDescription)}</p>
 <p>Tiden kan bokas från eVakas kalendervy</p>
 $unsubscribeSv
 <hr>
-<p>${notificationDetails.eventTitle}</p>
-<p>${notificationDetails.eventDescription}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventTitle)}</p>
+<p>${HtmlEscape.escapeHtml5(notificationDetails.eventDescription)}</p>
 <p>You can reserve a time using eVaka calendar view</p>
 $unsubscribeEn
 <hr>
@@ -723,7 +723,7 @@ $unsubscribeEn
             html =
                 """
 <p>Lapsellenne on varattu keskusteluaika</p>
-<p>${reminderData.title}</p>
+<p>${HtmlEscape.escapeHtml5(reminderData.title)}</p>
 <p>${reminderData.firstName} ${reminderData.lastName}</p>
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${reminderData.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -731,7 +731,7 @@ $unsubscribeEn
 $unsubscribeFi
 <hr>
 <p>En diskussionstid har bokats för ditt barn</p>
-<p>${reminderData.title}</p>
+<p>${HtmlEscape.escapeHtml5(reminderData.title)}</p>
 <p>${reminderData.firstName} ${reminderData.lastName}</p>
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${reminderData.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
@@ -739,7 +739,7 @@ $unsubscribeFi
 $unsubscribeSv
 <hr>
 <p>New discussion time reserved for your child</p>
-<p>${reminderData.title}</p>
+<p>${HtmlEscape.escapeHtml5(reminderData.title)}</p>
 <p>${reminderData.firstName} ${reminderData.lastName}</p>
 <p>${reminderData.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</p>
 <p>${reminderData.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${reminderData.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}</p>
