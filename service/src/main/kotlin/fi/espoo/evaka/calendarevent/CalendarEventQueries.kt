@@ -452,6 +452,8 @@ FROM child_placement cp
          JOIN calendar_event_time cet
                   ON ce.id = cet.calendar_event_id
                        AND (cet.child_id IS NULL OR cet.child_id = cp.child_id)
+                       AND cp.period @> cet.date
+                       AND daterange(dgp.start_date, dgp.end_date, '[]') @> cet.date
 WHERE cp.period && ce.period
   AND ce.period && ${bind(range)}
   AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period

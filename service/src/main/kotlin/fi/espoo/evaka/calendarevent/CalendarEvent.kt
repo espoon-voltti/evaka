@@ -79,7 +79,7 @@ data class CitizenCalendarEvent(
     val title: String,
     val description: String,
     val period: FiniteDateRange,
-    @Json val timesByChild: Map<ChildId, List<CitizenCalendarEventTime>>,
+    @Json val timesByChild: Map<ChildId, Set<CitizenCalendarEventTime>>,
     val eventType: CalendarEventType,
     @Json val attendingChildren: Map<ChildId, List<AttendingChild>>,
 )

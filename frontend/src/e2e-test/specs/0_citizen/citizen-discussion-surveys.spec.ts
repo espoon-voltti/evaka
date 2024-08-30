@@ -12,8 +12,10 @@ import {
   createDaycarePlacementFixture,
   Fixture,
   testAdult,
+  testAdult2,
   testCareArea,
   testChild,
+  testChild2,
   testDaycare,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -36,6 +38,7 @@ let calendarPage: CitizenCalendarPage
 let children: DevPerson[]
 const today = LocalDate.of(2022, 1, 3)
 
+const groupId = uuidv4()
 const groupEventId = uuidv4()
 const unitEventId = uuidv4()
 const individualEventId = uuidv4()
@@ -73,6 +76,7 @@ beforeEach(async () => {
   })
 
   const daycareGroup = await Fixture.daycareGroup({
+    id: groupId,
     daycareId: testDaycare.id,
     name: 'Group 1'
   }).save()
@@ -390,3 +394,167 @@ describe.each(e)('Citizen calendar discussion surveys (%s)', (env) => {
     await reservationModal.assertEventTimeNotShown(restrictedEventTimeId)
   })
 })
+
+const visibleEventTimeId = uuidv4()
+const unavailableEventTimeId = uuidv4()
+const visibleLaterEventTimeId = uuidv4()
+const multiPlacementEventId = uuidv4()
+
+describe.each(e)('Citizen calendar event time visibility (%s)', (env) => {
+  beforeEach(async () => {
+    await Fixture.family({
+      guardian: testAdult2,
+      children: [testChild2]
+    }).save()
+
+    const multiPlacementEvent = await Fixture.calendarEvent({
+      id: multiPlacementEventId,
+      title: 'Duplication test event',
+      description: 'Whole group',
+      period: new FiniteDateRange(today, today.addDays(4)),
+      modifiedAt: HelsinkiDateTime.fromLocal(today, LocalTime.MIN),
+      eventType: 'DISCUSSION_SURVEY'
+    }).save()
+
+    await Fixture.calendarEventAttendee({
+      calendarEventId: multiPlacementEvent.id,
+      unitId: testDaycare.id,
+      groupId: groupId
+    }).save()
+
+    await Fixture.calendarEventTime({
+      id: visibleEventTimeId,
+      calendarEventId: multiPlacementEvent.id,
+      date: today.addDays(2),
+      start: LocalTime.of(8, 0),
+      end: LocalTime.of(8, 30),
+      childId: null
+    }).save()
+
+    await Fixture.calendarEventTime({
+      id: unavailableEventTimeId,
+      calendarEventId: multiPlacementEvent.id,
+      date: today.addDays(3),
+      start: LocalTime.of(9, 0),
+      end: LocalTime.of(9, 30),
+      childId: null
+    }).save()
+
+    await Fixture.calendarEventTime({
+      id: visibleLaterEventTimeId,
+      calendarEventId: multiPlacementEvent.id,
+      date: today.addDays(4),
+      start: LocalTime.of(10, 0),
+      end: LocalTime.of(10, 30),
+      childId: null
+    }).save()
+  })
+  test('Citizen receives only one correct set of event times despite 2 placements', async () => {
+    const placement1 = createDaycarePlacementFixture(
+      uuidv4(),
+      testChild2.id,
+      testDaycare.id,
+      today,
+      today.addDays(2)
+    )
+
+    const placement2 = createDaycarePlacementFixture(
+      uuidv4(),
+      testChild2.id,
+      testDaycare.id,
+      today.addDays(4),
+      today.addDays(4)
+    )
+
+    await createDaycarePlacements({
+      body: [placement1, placement2]
+    })
+
+    await Fixture.groupPlacement({
+      startDate: today,
+      endDate: today.addDays(2),
+      daycareGroupId: groupId,
+      daycarePlacementId: placement1.id
+    }).save()
+
+    await Fixture.groupPlacement({
+      startDate: today.addDays(4),
+      endDate: today.addDays(4),
+      daycareGroupId: groupId,
+      daycarePlacementId: placement2.id
+    }).save()
+
+    calendarPage = await loginAndOpenCalendar(env, testAdult2)
+
+    const reservationModal = await calendarPage.openDiscussionReservationModal(
+      multiPlacementEventId,
+      testChild2.id
+    )
+
+    await reservationModal.assertEventTimes([
+      visibleEventTimeId,
+      visibleLaterEventTimeId
+    ])
+  })
+
+  test('Citizen is receives only one correct set of event times despite 2 group placements', async () => {
+    const placement1 = createDaycarePlacementFixture(
+      uuidv4(),
+      testChild2.id,
+      testDaycare.id,
+      today,
+      today.addDays(4)
+    )
+
+    await createDaycarePlacements({
+      body: [placement1]
+    })
+
+    await Fixture.groupPlacement({
+      startDate: today,
+      endDate: today.addDays(2),
+      daycareGroupId: groupId,
+      daycarePlacementId: placement1.id
+    }).save()
+
+    await Fixture.groupPlacement({
+      startDate: today.addDays(4),
+      endDate: today.addDays(4),
+      daycareGroupId: groupId,
+      daycarePlacementId: placement1.id
+    }).save()
+
+    calendarPage = await loginAndOpenCalendar(env, testAdult2)
+
+    const reservationModal = await calendarPage.openDiscussionReservationModal(
+      multiPlacementEventId,
+      testChild2.id
+    )
+
+    await reservationModal.assertEventTimes([
+      visibleEventTimeId,
+      visibleLaterEventTimeId
+    ])
+  })
+})
+
+async function loginAndOpenCalendar(
+  env: 'desktop' | 'mobile',
+  user: DevPerson
+): Promise<CitizenCalendarPage> {
+  const viewport =
+    env === 'mobile'
+      ? { width: 375, height: 812 }
+      : { width: 1920, height: 1080 }
+
+  const page = await Page.open({
+    viewport,
+    screen: viewport,
+    mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
+  })
+  await enduserLogin(page, user)
+  const calendarPage = new CitizenCalendarPage(page, env)
+  const header = new CitizenHeader(page, env)
+  await header.selectTab('calendar')
+  return calendarPage
+}
