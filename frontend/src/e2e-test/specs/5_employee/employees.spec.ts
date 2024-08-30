@@ -44,7 +44,24 @@ describe('Employees page', () => {
       () => employeesPage.visibleUsers,
       ['Sorsa Seppo', 'Testaaja Teppo']
     )
-    await employeesPage.nameInput.type('Test')
+
+    await employeesPage.deactivateEmployee(0)
+    await waitUntilEqual(
+      () => employeesPage.visibleUsers,
+      ['Sorsa Seppo', 'Testaaja Teppo']
+    )
+
+    await employeesPage.clickDeactivatedEmployees()
+    await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+
+    await employeesPage.clickDeactivatedEmployees()
+    await employeesPage.activateEmployee(0)
+    await waitUntilEqual(
+      () => employeesPage.visibleUsers,
+      ['Sorsa Seppo', 'Testaaja Teppo']
+    )
+
+    await employeesPage.nameInput.fill('Test')
     await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
   })
 })

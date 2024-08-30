@@ -599,6 +599,7 @@ export interface RestrictedDetails {
 * Generated from fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 */
 export interface SearchEmployeeRequest {
+  hideDeactivated: boolean | null
   page: number | null
   pageSize: number | null
   searchTerm: string | null

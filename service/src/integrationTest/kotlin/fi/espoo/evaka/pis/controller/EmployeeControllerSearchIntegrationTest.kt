@@ -53,7 +53,12 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, pageSize = 4, searchTerm = null),
+                SearchEmployeeRequest(
+                    page = 1,
+                    pageSize = 4,
+                    searchTerm = null,
+                    hideDeactivated = false,
+                ),
             )
 
         assertEquals(4, body.total)
@@ -88,7 +93,12 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
                 dbInstance(),
                 user,
                 RealEvakaClock(),
-                SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super"),
+                SearchEmployeeRequest(
+                    page = 1,
+                    pageSize = 10,
+                    searchTerm = "super",
+                    hideDeactivated = false,
+                ),
             )
         assertEquals(1, body.data.size)
         assertEquals("Sammy", body.data[0].firstName)

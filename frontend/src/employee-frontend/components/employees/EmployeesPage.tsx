@@ -9,8 +9,10 @@ import { useQueryResult } from 'lib-common/query'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import Pagination from 'lib-components/Pagination'
 import Title from 'lib-components/atoms/Title'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Container, ContentArea } from 'lib-components/layout/Container'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { defaultMargins } from 'lib-components/white-space'
 import { faSearch } from 'lib-icons'
 
@@ -45,12 +47,18 @@ export default React.memo(function EmployeesPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState<number>(1)
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [hideDeactivated, setHideDeactivated] = useState<boolean>(false)
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
   const employees = useQueryResult(
     searchEmployeesQuery({
-      body: { page, pageSize: PAGE_SIZE, searchTerm: debouncedSearchTerm }
+      body: {
+        page,
+        pageSize: PAGE_SIZE,
+        searchTerm: debouncedSearchTerm,
+        hideDeactivated
+      }
     })
   )
 
@@ -60,17 +68,29 @@ export default React.memo(function EmployeesPage() {
         <Title>{i18n.titles.employees}</Title>
         <TopBar>
           <SearchBar>
-            <InputField
-              data-qa="employee-name-filter"
-              value={searchTerm}
-              placeholder={i18n.employees.findByName}
-              onChange={(s) => {
-                setSearchTerm(s)
-                setPage(1)
-              }}
-              icon={faSearch}
-              width="L"
-            />
+            <FixedSpaceRow>
+              <InputField
+                data-qa="employee-name-filter"
+                value={searchTerm}
+                placeholder={i18n.employees.findByName}
+                onChange={(s) => {
+                  setSearchTerm(s)
+                  setPage(1)
+                }}
+                icon={faSearch}
+                width="L"
+              />
+
+              <Checkbox
+                label={i18n.employees.hideDeactivated}
+                checked={hideDeactivated}
+                onChange={(enabled) => {
+                  setHideDeactivated(enabled)
+                  setPage(1)
+                }}
+                data-qa="hide-deactivated-checkbox"
+              />
+            </FixedSpaceRow>
           </SearchBar>
           <PaginationContainer>
             <div>
