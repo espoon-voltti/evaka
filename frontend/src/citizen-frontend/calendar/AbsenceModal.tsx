@@ -23,7 +23,7 @@ import LocalDate from 'lib-common/local-date'
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
-import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -31,6 +31,7 @@ import {
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
@@ -208,7 +209,9 @@ export default React.memo(function AbsenceModal({
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
-                <HorizontalLine dashed hiddenOnMobile slim />
+                <TabletAndDesktop>
+                  <HorizontalLine dashed slim />
+                </TabletAndDesktop>
               </LineContainer>
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.dateRange}</H2>
@@ -256,32 +259,36 @@ export default React.memo(function AbsenceModal({
               </CalendarModalSection>
               <Gap size="zero" sizeOnMobile="s" />
               <LineContainer>
-                <HorizontalLine dashed hiddenOnMobile slim />
+                <TabletAndDesktop>
+                  <HorizontalLine dashed slim />
+                </TabletAndDesktop>
               </LineContainer>
               <CalendarModalSection>
                 <H2 id="absence-type-heading">
                   {i18n.calendar.absenceModal.absenceType}
                 </H2>
                 <FixedSpaceFlexWrap verticalSpacing="xs">
-                  <ChoiceChip
+                  <SelectionChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
                     selected={absenceType.state === 'SICKLEAVE'}
                     onChange={(selected) =>
                       absenceType.set(selected ? 'SICKLEAVE' : undefined)
                     }
                     data-qa="absence-SICKLEAVE"
+                    hideIcon
                   />
-                  <ChoiceChip
+                  <SelectionChip
                     text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
                     selected={absenceType.state === 'OTHER_ABSENCE'}
                     onChange={(selected) =>
                       absenceType.set(selected ? 'OTHER_ABSENCE' : undefined)
                     }
                     data-qa="absence-OTHER_ABSENCE"
+                    hideIcon
                   />
                   {showShiftCareAbsenceType ? (
                     <>
-                      <ChoiceChip
+                      <SelectionChip
                         text={
                           i18n.calendar.absenceModal.absenceTypes
                             .PLANNED_ABSENCE
@@ -293,6 +300,7 @@ export default React.memo(function AbsenceModal({
                           )
                         }
                         data-qa="absence-PLANNED_ABSENCE"
+                        hideIcon
                       />
                     </>
                   ) : null}

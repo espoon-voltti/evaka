@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading, Result } from 'lib-common/api'
@@ -13,11 +15,11 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { SelectionChip } from 'lib-components/atoms/Chip'
-import { InternalLink } from 'lib-components/atoms/InternalLink'
 import CrossIconButton from 'lib-components/atoms/buttons/CrossIconButton'
 import { Bold, H1, InformationText, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { faLink } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -190,11 +192,14 @@ export default React.memo(function UnitCard({
           <CrossIconButton active={false} onClick={removeUnit} />
         </RemoveBtn>
       )}
-      <InternalLink
+      <Link
         to={`/units/${unitId}/unit-info?start=${period.start.formatIso()}`}
-        text={<Title primary>{unitName}</Title>}
-        newTab
-      />
+        target="_blank"
+      >
+        <Bold>
+          <Title primary>{unitName}</Title> <FontAwesomeIcon icon={faLink} />
+        </Bold>
+      </Link>
       <Gap size="m" />
       <OccupancyContainer>
         {renderResult(occupancies, (occupancies) => {

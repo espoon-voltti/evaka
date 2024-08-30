@@ -312,7 +312,7 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             onChange={(selected) =>
               selected ? update({ absenceType: 'FREE_ABSENCE' }) : null
             }
-            showIcon={false}
+            hideIcon
           />
         </FixedSpaceRow>
 

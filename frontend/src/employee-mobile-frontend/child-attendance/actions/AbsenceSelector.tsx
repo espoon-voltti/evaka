@@ -5,7 +5,7 @@
 import React, { Fragment } from 'react'
 
 import { AbsenceType } from 'lib-common/generated/api-types/absence'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../common/i18n'
@@ -29,11 +29,12 @@ export default function AbsenceSelector({
     <ChipWrapper margin="xxs">
       {absenceTypes.map((absenceType) => (
         <Fragment key={absenceType}>
-          <ChoiceChip
+          <SelectionChip
             text={i18n.absences.absenceTypes[absenceType]}
             selected={selectedAbsenceType === absenceType}
             onChange={() => setSelectedAbsenceType(absenceType)}
             data-qa={`mark-absent-${absenceType}`}
+            hideIcon
           />
           <Gap horizontal size="xxs" />
         </Fragment>

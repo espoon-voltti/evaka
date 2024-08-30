@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, {
   Dispatch,
   SetStateAction,
@@ -11,7 +12,7 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading, Loading, Result, Success, wrapResult } from 'lib-common/api'
@@ -25,14 +26,14 @@ import {
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import { InternalLink } from 'lib-components/atoms/InternalLink'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
-import { H1, H2, Label } from 'lib-components/typography'
+import { Bold, H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { faLink } from 'lib-icons'
 
 import WarningLabel from '../../components/common/WarningLabel'
 import {
@@ -318,11 +319,15 @@ export default React.memo(function PlacementDraft() {
                   <span>{placementDraft.child.dob.format()}</span>
                 </ListGrid>
                 <Gap size="s" />
-                <InternalLink
+                <Link
                   to={`/child-information/${placementDraft.child.id}`}
-                  text={i18n.titles.childInformation}
-                  newTab
-                />
+                  target="_blank"
+                >
+                  <Bold>
+                    {i18n.titles.childInformation}{' '}
+                    <FontAwesomeIcon icon={faLink} />
+                  </Bold>
+                </Link>
               </section>
               {placementDraft.placements && (
                 <>

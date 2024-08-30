@@ -16,7 +16,7 @@ import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
-import { ChoiceChip } from 'lib-components/atoms/Chip'
+import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -233,12 +233,13 @@ const CalendarContent = React.memo(function CalendarContent({
       availableModes.length >= 2 ? (
         <FixedSpaceRow spacing="xs" justifyContent="flex-end">
           {availableModes.map((m) => (
-            <ChoiceChip
+            <SelectionChip
               key={m}
               data-qa={`choose-calendar-mode-${m}`}
               text={i18n.unit.calendar.modes[m]}
               selected={mode === m}
               onChange={() => setRequestedMode(m)}
+              hideIcon
             />
           ))}
         </FixedSpaceRow>

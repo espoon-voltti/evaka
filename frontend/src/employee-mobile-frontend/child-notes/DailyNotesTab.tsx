@@ -14,7 +14,7 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { useMutation, useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -258,7 +258,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             <ChipWrapper margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
-                  <ChoiceChip
+                  <SelectionChip
                     text={i18n.attendances.notes.feedingValues[level]}
                     selected={dailyNote.feedingNote === level}
                     onChange={() => {
@@ -268,6 +268,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
                       })
                     }}
                     data-qa={`feeding-note-${level}`}
+                    hideIcon
                   />
                   <Gap horizontal size="xxs" />
                 </Fragment>
@@ -279,7 +280,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             <ChipWrapper margin="zero">
               {childDailyNoteLevelValues.map((level) => (
                 <Fragment key={level}>
-                  <ChoiceChip
+                  <SelectionChip
                     text={i18n.attendances.notes.sleepingValues[level]}
                     selected={dailyNote.sleepingNote === level}
                     onChange={() =>
@@ -289,6 +290,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
                       })
                     }
                     data-qa={`sleeping-note-${level}`}
+                    hideIcon
                   />
                   <Gap horizontal size="xxs" />
                 </Fragment>

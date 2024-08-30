@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import classNames from 'classnames'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -11,7 +10,7 @@ import { faMeh } from 'lib-icons'
 
 import { defaultMargins, Gap } from '../../white-space'
 
-const StyledSegment = styled.div`
+const StyledSegment = styled.div<{ $compact?: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -30,10 +29,7 @@ const StyledSegment = styled.div`
     margin-right: ${defaultMargins.s};
   }
 
-  padding: ${defaultMargins.XL} 0;
-  &.compact {
-    padding: ${defaultMargins.m} 0;
-  }
+  padding: ${(p) => (p.$compact ? defaultMargins.m : defaultMargins.XL)} 0;
 `
 
 interface ErrorSegmentProps {
@@ -48,7 +44,7 @@ export default React.memo(function ErrorSegment({
   compact
 }: ErrorSegmentProps) {
   return (
-    <StyledSegment className={classNames({ compact })}>
+    <StyledSegment $compact={compact}>
       <div>
         <FontAwesomeIcon icon={faMeh} />
         <span>{title}</span>

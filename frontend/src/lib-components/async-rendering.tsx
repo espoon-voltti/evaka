@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
+import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
-  LoadableContent,
+  SpinnerOverlay,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
 
@@ -65,6 +66,10 @@ export function makeHelpers(useFailureMessage: () => string) {
     spinnerOptions?: SpinnerOptions
   }
 
+  const Relative = styled.div`
+    position: relative;
+  `
+
   function RenderResult<T>({
     result,
     renderer,
@@ -79,13 +84,14 @@ export function makeHelpers(useFailureMessage: () => string) {
             margin={spinnerOptions.margin}
           />
         ) : (
-          <LoadableContent loading={result.isSuccess && result.isReloading}>
+          <Relative>
+            {result.isSuccess && result.isReloading && <SpinnerOverlay />}
             {result.isFailure ? (
               <ErrorSegment title={failureMessage} />
             ) : result.isSuccess ? (
               renderer(result.value, result.isReloading)
             ) : null}
-          </LoadableContent>
+          </Relative>
         ),
       [result, renderer, failureMessage, spinnerOptions]
     )

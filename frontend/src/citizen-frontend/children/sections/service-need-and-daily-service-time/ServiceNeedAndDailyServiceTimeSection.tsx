@@ -12,6 +12,7 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
+import { MobileOnly } from 'lib-components/layout/responsive-layout'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -88,7 +89,9 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           />
         </>
       )}
-      <HorizontalLine slim hiddenOnTabletAndDesktop />
+      <MobileOnly>
+        <HorizontalLine slim />
+      </MobileOnly>
       {showServiceTimes && (
         <>
           <H3>{t.children.dailyServiceTime.title}</H3>

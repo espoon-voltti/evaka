@@ -14,7 +14,7 @@ import {
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
@@ -188,7 +188,7 @@ export default React.memo(function ChildDailyNoteForm({
           <ChipWrapper margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
-                <ChoiceChip
+                <SelectionChip
                   text={i18n.unit.groups.daycareDailyNote.level[level]}
                   selected={form.feedingNote === level}
                   onChange={() =>
@@ -197,6 +197,7 @@ export default React.memo(function ChildDailyNoteForm({
                     })
                   }
                   data-qa={`feeding-level-${level.toLowerCase()}`}
+                  hideIcon
                 />
                 <Gap horizontal size="xxs" />
               </Fragment>
@@ -209,7 +210,7 @@ export default React.memo(function ChildDailyNoteForm({
           <ChipWrapper margin="zero">
             {childDailyNoteLevelValues.map((level) => (
               <Fragment key={level}>
-                <ChoiceChip
+                <SelectionChip
                   text={i18n.unit.groups.daycareDailyNote.level[level]}
                   selected={form.sleepingNote === level}
                   onChange={() =>
@@ -218,6 +219,7 @@ export default React.memo(function ChildDailyNoteForm({
                     })
                   }
                   data-qa={`sleeping-level-${level.toLowerCase()}`}
+                  hideIcon
                 />
                 <Gap horizontal size="xxs" />
               </Fragment>

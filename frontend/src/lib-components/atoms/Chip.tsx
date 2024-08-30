@@ -53,7 +53,7 @@ type SelectionChipProps = {
   onChange: (selected: boolean) => void
   disabled?: boolean
   'data-qa'?: string
-  showIcon?: boolean
+  hideIcon?: boolean
   translate?: 'yes' | 'no'
 }
 
@@ -67,7 +67,7 @@ export const SelectionChip = React.memo(function SelectionChip({
   onChange,
   disabled,
   'data-qa': dataQa,
-  showIcon = true,
+  hideIcon = false,
   translate
 }: SelectionChipProps) {
   const onClick = useCallback(
@@ -77,6 +77,8 @@ export const SelectionChip = React.memo(function SelectionChip({
     },
     [onChange, selected]
   )
+
+  const renderIcon = !hideIcon && selected
 
   return (
     <SelectionChipWrapper
@@ -91,13 +93,13 @@ export const SelectionChip = React.memo(function SelectionChip({
       <SelectionChipInnerWrapper
         className={classNames({ checked: selected, disabled })}
       >
-        {showIcon && selected && (
+        {renderIcon && (
           <IconWrapper>
             <FontAwesomeIcon icon={faCheck} />
           </IconWrapper>
         )}
         <StyledLabel
-          className={classNames({ checked: showIcon && selected, disabled })}
+          className={classNames({ disabled })}
           aria-hidden="true"
           onClick={preventDefault}
           translate={translate}
@@ -106,25 +108,6 @@ export const SelectionChip = React.memo(function SelectionChip({
         </StyledLabel>
       </SelectionChipInnerWrapper>
     </SelectionChipWrapper>
-  )
-})
-
-export const ChoiceChip = React.memo(function ChoiceChip({
-  text,
-  selected,
-  onChange,
-  disabled,
-  'data-qa': dataQa
-}: SelectionChipProps) {
-  return (
-    <SelectionChip
-      text={text}
-      selected={selected}
-      onChange={onChange}
-      disabled={disabled}
-      data-qa={dataQa}
-      showIcon={false}
-    />
   )
 })
 
