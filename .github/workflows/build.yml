@@ -625,7 +625,7 @@ jobs:
           retention-days: 2
 
   frontend-s3:
-    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
+    #if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
     needs:
       - frontend
       - frontend-test
