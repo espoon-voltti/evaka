@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import range from 'lodash/range'
-import React, {useEffect, useMemo, useState} from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -20,12 +21,11 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import { getEndedPlacementsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-import { distinct } from "../../utils";
-import sortBy from "lodash/sortBy";
 
 const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
 
@@ -142,21 +142,21 @@ export default React.memo(function EndedPlacements() {
                 onChange={(option) =>
                   option
                     ? setDisplayFilters({
-                      ...displayFilters,
-                      careArea: option.value
-                    })
+                        ...displayFilters,
+                        careArea: option.value
+                      })
                     : undefined
                 }
                 selectedItem={
                   displayFilters.careArea !== ''
                     ? {
-                      label: displayFilters.careArea,
-                      value: displayFilters.careArea
-                    }
+                        label: displayFilters.careArea,
+                        value: displayFilters.careArea
+                      }
                     : {
-                      label: i18n.common.all,
-                      value: ''
-                    }
+                        label: i18n.common.all,
+                        value: ''
+                      }
                 }
                 placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
                 getItemLabel={(item) => item.label}
