@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
-import {EndedPlacementsReportRow, StartingPlacementsRow} from 'lib-common/generated/api-types/reports'
+import { EndedPlacementsReportRow, StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,7 +24,7 @@ import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
-import {distinct} from "../../utils";
+import { distinct } from "../../utils";
 
 const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
 
