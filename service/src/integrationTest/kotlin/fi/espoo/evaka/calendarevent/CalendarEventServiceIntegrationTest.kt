@@ -1742,7 +1742,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `notifications are sent for new group wide discussion survey`() {
+    fun `notifications are sent only to appropriate guardians for new discussion surveys`() {
         val email = "example@example.com"
         db.transaction { tx ->
             // Email address is needed
@@ -1755,9 +1755,27 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     email = "example@example.com",
                 ),
             )
+            tx.insertGuardian(testAdult_3.id, testChild_3.id)
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId2,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
         }
 
-        val form =
+        val groupSurveyForm =
             CalendarEventForm(
                 unitId = testDaycare.id,
                 tree = mapOf(groupId to null),
@@ -1774,8 +1792,25 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     ),
             )
 
-        val event = createCalendarEvent(form)
-        val event2 = createCalendarEvent(form.copy(title = "Second survey", description = "ssd"))
+        val individualChildSurveyForm =
+            CalendarEventForm(
+                unitId = testDaycare.id,
+                tree = mapOf(groupId to setOf(testChild_1.id)),
+                title = "Individual child survey",
+                description = "ids",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times =
+                    listOf(
+                        CalendarEventTimeForm(
+                            date = today.plusDays(1),
+                            timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+                        )
+                    ),
+            )
+
+        val event = createCalendarEvent(groupSurveyForm)
+        val event2 = createCalendarEvent(individualChildSurveyForm)
 
         calendarEventNotificationService.scheduleDiscussionSurveyDigests(db, now)
 
@@ -1808,6 +1843,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
 
         val expectedFromAddress = "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>"
+        val mails = MockEmailClient.emails
+        assertEquals(2, MockEmailClient.emails.size)
         assertAllEmailsFor(
             testAdult_1.copy(email = email),
             listOf(notificationEmailContent, notificationEmailContent2),
