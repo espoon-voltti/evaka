@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import range from 'lodash/range'
-import React, { useEffect, useState } from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -20,6 +21,7 @@ import { Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import { getEndedPlacementsReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
+import { distinct } from '../../utils'
 import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
@@ -56,10 +58,34 @@ export default React.memo(function EndedPlacements() {
     month: today.month
   })
 
+  interface DisplayFilters {
+    careArea: string
+  }
+
+  const emptyDisplayFilters: DisplayFilters = {
+    careArea: ''
+  }
+
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
+
+  const displayFilter = (row: EndedPlacementsReportRow): boolean =>
+    !(displayFilters.careArea && row.areaName !== displayFilters.careArea)
+
   useEffect(() => {
     setRows(Loading.of())
     void getEndedPlacementsReportResult(filters).then(setRows)
   }, [filters])
+
+  const filteredRows: EndedPlacementsReportRow[] = useMemo(
+    () =>
+      sortBy(rows.getOrElse([]).filter(displayFilter), [
+        (row) => row.areaName,
+        (row) => row.firstName,
+        (row) => row.lastName
+      ]),
+    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   return (
     <Container>
@@ -96,12 +122,55 @@ export default React.memo(function EndedPlacements() {
             </Wrapper>
           </FlexRow>
         </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <FlexRow>
+            <Wrapper>
+              <Combobox
+                items={[
+                  { value: '', label: i18n.common.all },
+                  ...rows
+                    .map((rs) =>
+                      distinct(rs.map((row) => row.areaName)).map((s) => ({
+                        value: s,
+                        label: s
+                      }))
+                    )
+                    .getOrElse([])
+                ]}
+                onChange={(option) =>
+                  option
+                    ? setDisplayFilters({
+                        ...displayFilters,
+                        careArea: option.value
+                      })
+                    : undefined
+                }
+                selectedItem={
+                  displayFilters.careArea !== ''
+                    ? {
+                        label: displayFilters.careArea,
+                        value: displayFilters.careArea
+                      }
+                    : {
+                        label: i18n.common.all,
+                        value: ''
+                      }
+                }
+                placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+                getItemLabel={(item) => item.label}
+              />
+            </Wrapper>
+          </FlexRow>
+        </FilterRow>
+
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.value.map((row) => ({
+              data={filteredRows.map((row) => ({
                 ...row,
                 placementEnd: row.placementEnd.format(),
                 nextPlacementStart: row.nextPlacementStart?.format()
@@ -130,14 +199,14 @@ export default React.memo(function EndedPlacements() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row) => (
+                {filteredRows.map((row) => (
                   <Tr key={row.childId}>
                     <Td>
                       <Link to={`/child-information/${row.childId}`}>{`${
                         row.lastName ?? ''
                       } ${row.firstName ?? ''}`}</Link>
                     </Td>
-                    <Td>{row.ssn}</Td>
+                    <Td>{row.ssn ?? ''}</Td>
                     <Td>{row.placementEnd.format()}</Td>
                     <Td>{row.unitName}</Td>
                     <Td>{row.areaName}</Td>
