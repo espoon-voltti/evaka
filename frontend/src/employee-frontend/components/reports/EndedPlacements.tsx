@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
-import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
+import {EndedPlacementsReportRow, StartingPlacementsRow} from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
@@ -24,6 +24,7 @@ import { FlexRow } from '../common/styled/containers'
 import ReportDownload from '../reports/ReportDownload'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
+import {distinct} from "../../utils";
 
 const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
 
@@ -55,6 +56,20 @@ export default React.memo(function EndedPlacements() {
     year: today.year,
     month: today.month
   })
+
+  interface DisplayFilters {
+    careArea: string
+  }
+
+  const emptyDisplayFilters: DisplayFilters = {
+    careArea: ''
+  }
+
+  const [displayFilters, setDisplayFilters] =
+    useState<DisplayFilters>(emptyDisplayFilters)
+
+  const displayFilter = (row: StartingPlacementsRow): boolean =>
+    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())
@@ -96,6 +111,49 @@ export default React.memo(function EndedPlacements() {
             </Wrapper>
           </FlexRow>
         </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <FlexRow>
+            <Wrapper>
+              <Combobox
+                items={[
+                  { value: '', label: i18n.common.all },
+                  ...rows
+                    .map((rs) =>
+                      distinct(rs.map((row) => row.areaName)).map((s) => ({
+                        value: s,
+                        label: s
+                      }))
+                    )
+                    .getOrElse([])
+                ]}
+                onChange={(option) =>
+                  option
+                    ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.value
+                    })
+                    : undefined
+                }
+                selectedItem={
+                  displayFilters.careArea !== ''
+                    ? {
+                      label: displayFilters.careArea,
+                      value: displayFilters.careArea
+                    }
+                    : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
+                }
+                placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+                getItemLabel={(item) => item.label}
+              />
+            </Wrapper>
+          </FlexRow>
+        </FilterRow>
+
         {rows.isLoading && <Loader />}
         {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {rows.isSuccess && (
