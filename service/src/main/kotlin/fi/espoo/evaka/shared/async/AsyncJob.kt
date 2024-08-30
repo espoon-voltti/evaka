@@ -20,7 +20,9 @@ import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.CalendarEventTimeId
 import fi.espoo.evaka.shared.ChildDocumentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -37,6 +39,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.specialdiet.SpecialDiet
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
 import java.time.Duration
 import java.time.LocalDate
@@ -393,6 +396,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendSpecialDietNullificationWarningEmail(
+        val unitId: DaycareId,
+        val employeeId: EmployeeId,
+        val diets: List<Pair<ChildId, SpecialDiet>>,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -449,6 +460,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyCreationNotificationEmail::class,
                     SendDiscussionReservationReminderEmail::class,
+                    SendSpecialDietNullificationWarningEmail::class,
                 ),
             )
         val urgent =

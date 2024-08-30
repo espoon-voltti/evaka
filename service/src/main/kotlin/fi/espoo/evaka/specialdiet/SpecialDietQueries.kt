@@ -5,12 +5,21 @@
 package fi.espoo.evaka.specialdiet
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
 data class MealTexture(@PropagateNull val id: Int?, val name: String)
 
 data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
+
+data class NulledSpecialDiet(
+    val unitId: DaycareId,
+    val childId: ChildId,
+    @Nested("special_diet") val specialDiet: SpecialDiet,
+)
 
 /**
  * Sets child's special diets to null if there are some children whose special diet is not contained
@@ -18,22 +27,33 @@ data class SpecialDiet(@PropagateNull val id: Int?, val abbreviation: String)
  * child.
  */
 fun Database.Transaction.resetSpecialDietsNotContainedWithin(
-    specialDietList: List<SpecialDiet>
-): Map<ChildId, SpecialDiet> {
+    today: LocalDate,
+    specialDietList: List<SpecialDiet>,
+): List<NulledSpecialDiet> {
     val newSpecialDietIds = specialDietList.map { it.id }
 
     val previousDiets =
         createQuery {
                 sql(
                     """
-SELECT child.id as child_id, special_diet.id, special_diet.abbreviation 
+SELECT
+    pl.unit_id,
+    child.id AS child_id,
+    special_diet.id AS special_diet_id,
+    special_diet.abbreviation AS special_diet_abbreviation
 FROM child 
-INNER JOIN special_diet ON child.diet_id = special_diet.id
+JOIN LATERAL (
+    SELECT unit_id FROM placement
+    WHERE child_id = child.id AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, NULL)
+    ORDER BY start_date
+    LIMIT 1
+) pl ON true
+JOIN special_diet ON child.diet_id = special_diet.id
 WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
         """
                 )
             }
-            .toMap { column<ChildId>("child_id") to row<SpecialDiet>() }
+            .toList<NulledSpecialDiet>()
 
     execute {
         sql("UPDATE child SET diet_id = null WHERE diet_id != ALL (${bind(newSpecialDietIds)})")
