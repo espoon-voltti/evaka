@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -1819,15 +1820,15 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val emailDetails =
             DiscussionSurveyCreationNotificationData(
                 eventId = event.id,
-                eventTitle = event.title,
-                eventDescription = event.description,
+                eventTitle = HtmlSafe(event.title),
+                eventDescription = HtmlSafe(event.description),
             )
 
         val emailDetails2 =
             DiscussionSurveyCreationNotificationData(
                 eventId = event2.id,
-                eventTitle = event2.title,
-                eventDescription = event2.description,
+                eventTitle = HtmlSafe(event2.title),
+                eventDescription = HtmlSafe(event2.description),
             )
 
         val notificationEmailContent =
@@ -1896,8 +1897,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val emailDetails =
             DiscussionSurveyCreationNotificationData(
                 eventId = event.id,
-                eventTitle = event.title,
-                eventDescription = event.description,
+                eventTitle = HtmlSafe(event.title),
+                eventDescription = HtmlSafe(event.description),
             )
 
         val notificationEmailContent =
@@ -1967,10 +1968,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             DiscussionTimeReminderData(
                 startTime = eventTimeForm.timeRange.start.inner,
                 endTime = eventTimeForm.timeRange.end.inner,
-                title = event.title,
+                title = HtmlSafe(event.title),
                 date = eventTimeForm.date,
-                firstName = testChild_1.firstName,
-                lastName = testChild_1.lastName,
+                firstName = HtmlSafe(testChild_1.firstName),
+                lastName = HtmlSafe(testChild_1.lastName),
                 childId = testChild_1.id,
             )
 
@@ -2382,8 +2383,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
-                title = event.title,
+                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
+                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,
@@ -2513,8 +2514,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
-                title = event.title,
+                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
+                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,
@@ -2634,8 +2635,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val emailDetails =
             DiscussionSurveyReservationNotificationData(
-                childName = "${testChild_3.firstName} ${testChild_3.lastName}",
-                title = event.title,
+                childName = HtmlSafe("${testChild_3.firstName} ${testChild_3.lastName}"),
+                title = HtmlSafe(event.title),
                 calendarEventTime =
                     CalendarEventTime(
                         id = calendarEventTimeForm.id,

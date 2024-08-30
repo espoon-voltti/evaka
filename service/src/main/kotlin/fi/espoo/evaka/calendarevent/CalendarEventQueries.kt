@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
@@ -527,6 +528,16 @@ WHERE cet.date = ${bind(date)}
 fun Database.Read.getEventTimeReminderInfo(
     eventTimeId: CalendarEventTimeId
 ): DiscussionTimeReminderData? {
+    data class RawRow(
+        val title: String,
+        val firstName: String,
+        val lastName: String,
+        val date: LocalDate,
+        val startTime: LocalTime,
+        val endTime: LocalTime,
+        val childId: ChildId,
+    )
+
     return createQuery {
             sql(
                 """
@@ -544,7 +555,18 @@ WHERE cet.id = ${bind(eventTimeId)}
 """
             )
         }
-        .exactlyOneOrNull<DiscussionTimeReminderData>()
+        .exactlyOneOrNull<RawRow>()
+        ?.let {
+            DiscussionTimeReminderData(
+                title = HtmlSafe(it.title),
+                firstName = HtmlSafe(it.firstName),
+                lastName = HtmlSafe(it.lastName),
+                date = it.date,
+                startTime = it.startTime,
+                endTime = it.endTime,
+                childId = it.childId,
+            )
+        }
 }
 
 fun Database.Read.getParentsWithNewEventsAfter(

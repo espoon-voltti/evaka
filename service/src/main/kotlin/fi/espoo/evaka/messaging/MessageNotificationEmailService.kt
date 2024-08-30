@@ -8,7 +8,9 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.MessageThreadData
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -110,7 +112,14 @@ WHERE m.id = ANY(${bind(messageIds)})
                 content =
                     emailMessageProvider.messageNotification(
                         msg.language,
-                        thread,
+                        MessageThreadData(
+                            id = thread.id,
+                            type = thread.type,
+                            title = HtmlSafe(thread.title),
+                            urgent = thread.urgent,
+                            sensitive = thread.sensitive,
+                            isCopy = thread.isCopy,
+                        ),
                         isSenderMunicipalAccount,
                     ),
                 traceId = msg.messageRecipientId.toString(),

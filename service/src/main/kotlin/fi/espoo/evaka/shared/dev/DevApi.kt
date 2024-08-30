@@ -59,6 +59,7 @@ import fi.espoo.evaka.emailclient.DiscussionSurveyReservationNotificationData
 import fi.espoo.evaka.emailclient.DiscussionTimeReminderData
 import fi.espoo.evaka.emailclient.Email
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
+import fi.espoo.evaka.emailclient.MessageThreadData
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.holidayperiod.FixedPeriodQuestionnaireBody
 import fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
@@ -91,7 +92,6 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotification
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
 import fi.espoo.evaka.invoicing.service.createIncomeNotification
-import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
 import fi.espoo.evaka.note.child.daily.createChildDailyNote
@@ -160,6 +160,7 @@ import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.OtherAssistanceMeasureId
@@ -1570,10 +1571,10 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                 EmailMessageType.messageNotification ->
                     emailMessageProvider.messageNotification(
                         Language.fi,
-                        MessageThreadStub(
+                        MessageThreadData(
                             id = MessageThreadId(UUID.randomUUID()),
                             type = MessageType.MESSAGE,
-                            title = "Testiviesti",
+                            title = HtmlSafe("Testiviesti"),
                             urgent = false,
                             sensitive = false,
                             isCopy = false,
@@ -1596,11 +1597,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                         Language.fi,
                         listOf(
                             CalendarEventNotificationData(
-                                "Esimerkki 1",
+                                HtmlSafe("Esimerkki 1"),
                                 FiniteDateRange(LocalDate.now(), LocalDate.now().plusDays(1)),
                             ),
                             CalendarEventNotificationData(
-                                "Esimerkki 2",
+                                HtmlSafe("Esimerkki 2"),
                                 FiniteDateRange(
                                     LocalDate.now().plusDays(7),
                                     LocalDate.now().plusDays(7),
@@ -1616,8 +1617,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                     emailMessageProvider.discussionSurveyReservationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            childName = "Terttu Testaaja",
-                            title = "Testikeskustelun otsikko",
+                            childName = HtmlSafe("Terttu Testaaja"),
+                            title = HtmlSafe("Testikeskustelun otsikko"),
                             calendarEventTime =
                                 CalendarEventTime(
                                     id = CalendarEventTimeId(UUID.randomUUID()),
@@ -1632,8 +1633,8 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                     emailMessageProvider.discussionSurveyReservationCancellationNotification(
                         Language.fi,
                         DiscussionSurveyReservationNotificationData(
-                            childName = "Terttu Testaaja",
-                            title = "Testikeskustelun otsikko",
+                            childName = HtmlSafe("Terttu Testaaja"),
+                            title = HtmlSafe("Testikeskustelun otsikko"),
                             calendarEventTime =
                                 CalendarEventTime(
                                     id = CalendarEventTimeId(UUID.randomUUID()),
@@ -1649,12 +1650,12 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                         Language.fi,
                         DiscussionTimeReminderData(
                             date = LocalDate.now(),
-                            firstName = "Terttu",
-                            lastName = "Testaaja",
+                            firstName = HtmlSafe("Terttu"),
+                            lastName = HtmlSafe("Testaaja"),
                             startTime = LocalTime.of(12, 20),
                             endTime = LocalTime.of(12, 50),
                             childId = PersonId(UUID.randomUUID()),
-                            title = "VASU-keskustelut 2029 syksy",
+                            title = HtmlSafe("VASU-keskustelut 2029 syksy"),
                         ),
                     )
                 EmailMessageType.discussionSurveyCreation ->
@@ -1662,9 +1663,11 @@ VALUES (${bind(body.id)}, ${bind(body.guardianId)})
                         Language.fi,
                         DiscussionSurveyCreationNotificationData(
                             eventId = CalendarEventId(UUID.randomUUID()),
-                            eventTitle = "VASU-keskustelut 2029 syksy",
+                            eventTitle = HtmlSafe("VASU-keskustelut 2029 syksy"),
                             eventDescription =
-                                "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki.",
+                                HtmlSafe(
+                                    "Hei, järjestämme keskustelut lasten varhaiskasvatussuunnitelmia varten viikolla 39. Varatkaa sopiva aika ja tulkaa juttelemaan päiväkodille. Tervetuloa ja nähdään paikanpäällä! Terveisin Testiryhmä ykkösen väki."
+                                ),
                         ),
                     )
             }

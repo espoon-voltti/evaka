@@ -8,7 +8,6 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
-import fi.espoo.evaka.messaging.MessageThreadStub
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -16,7 +15,6 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
-import org.unbescape.html.HtmlEscape
 
 /** Use http://localhost:9099/api/internal/dev-api/email-content to preview email messages */
 class EvakaEmailMessageProvider(private val env: EvakaEnv) : IEmailMessageProvider {
@@ -298,12 +296,12 @@ $unsubscribeEn
     override fun assistanceNeedPreschoolDecisionNotification(language: Language): EmailContent =
         assistanceNeedDecisionNotification(language) // currently same content
 
-    override fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent =
+    override fun messageNotification(language: Language, thread: MessageThreadData): EmailContent =
         messageNotification(language, thread, false)
 
     override fun messageNotification(
         language: Language,
-        thread: MessageThreadStub,
+        thread: MessageThreadData,
         isSenderMunicipalAccount: Boolean,
     ): EmailContent {
         val (typeFi, typeSv, typeEn) =
@@ -332,15 +330,15 @@ $unsubscribeEn
             subject = "Uusi $typeFi eVakassa / Nytt $typeSv i eVaka / New $typeEn in eVaka",
             html =
                 """
-<p>Sinulle on saapunut uusi $typeFi eVakaan${if (showSubjectInBody) " otsikolla \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
+<p>Sinulle on saapunut uusi $typeFi eVakaan${if (showSubjectInBody) " otsikolla \"" + thread.title + "\"" else ""}. Lue viesti ${if (thread.urgent) "mahdollisimman pian " else ""}täältä: ${messageLink(Language.fi, thread.id)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
-<p>Du har fått ett nytt $typeSv i eVaka${if (showSubjectInBody) " med titeln \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
+<p>Du har fått ett nytt $typeSv i eVaka${if (showSubjectInBody) " med titeln \"" + thread.title + "\"" else ""}. Läs meddelandet ${if (thread.urgent) "så snart som möjligt " else ""}här: ${messageLink(Language.sv, thread.id)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
 <hr>
-<p>You have received a new $typeEn in eVaka${if (showSubjectInBody) " with title \"" + HtmlEscape.escapeHtml5(thread.title) + "\"" else ""}. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
+<p>You have received a new $typeEn in eVaka${if (showSubjectInBody) " with title \"" + thread.title + "\"" else ""}. Read the message ${if (thread.urgent) "as soon as possible " else ""}here: ${messageLink(Language.en, thread.id)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """,
@@ -556,7 +554,7 @@ $unsubscribeEn
                     if (event.period.end != event.period.start) {
                         period += "-${event.period.end.format(format)}"
                     }
-                    "<li>$period: ${HtmlEscape.escapeHtml5(event.title)}</li>"
+                    "<li>$period: ${event.title}</li>"
                 } +
                 "</ul>"
         return EmailContent.fromHtml(

@@ -8,9 +8,11 @@ import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionType
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
-import fi.espoo.evaka.messaging.MessageThreadStub
+import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.shared.CalendarEventId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.HtmlSafe
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
@@ -78,11 +80,11 @@ interface IEmailMessageProvider {
 
     fun missingHolidayReservationsNotification(language: Language): EmailContent
 
-    fun messageNotification(language: Language, thread: MessageThreadStub): EmailContent
+    fun messageNotification(language: Language, thread: MessageThreadData): EmailContent
 
     fun messageNotification(
         language: Language,
-        thread: MessageThreadStub,
+        thread: MessageThreadData,
         isSenderMunicipalAccount: Boolean,
     ): EmailContent = messageNotification(language, thread)
 
@@ -125,12 +127,21 @@ interface IEmailMessageProvider {
     fun financeDecisionNotification(decisionType: FinanceDecisionType): EmailContent
 }
 
-data class CalendarEventNotificationData(val title: String, val period: FiniteDateRange)
+data class MessageThreadData(
+    val id: MessageThreadId,
+    val type: MessageType,
+    val title: HtmlSafe<String>,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+    val isCopy: Boolean,
+)
+
+data class CalendarEventNotificationData(val title: HtmlSafe<String>, val period: FiniteDateRange)
 
 data class DiscussionTimeReminderData(
-    val title: String,
-    val firstName: String,
-    val lastName: String,
+    val title: HtmlSafe<String>,
+    val firstName: HtmlSafe<String>,
+    val lastName: HtmlSafe<String>,
     val date: LocalDate,
     val startTime: LocalTime,
     val endTime: LocalTime,
@@ -138,13 +149,13 @@ data class DiscussionTimeReminderData(
 )
 
 data class DiscussionSurveyReservationNotificationData(
-    val title: String,
-    val childName: String,
+    val title: HtmlSafe<String>,
+    val childName: HtmlSafe<String>,
     val calendarEventTime: CalendarEventTime,
 )
 
 data class DiscussionSurveyCreationNotificationData(
-    val eventTitle: String,
-    val eventDescription: String,
+    val eventTitle: HtmlSafe<String>,
+    val eventDescription: HtmlSafe<String>,
     val eventId: CalendarEventId,
 )
