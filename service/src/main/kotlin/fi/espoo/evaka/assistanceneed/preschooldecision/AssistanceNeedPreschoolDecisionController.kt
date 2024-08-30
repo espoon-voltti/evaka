@@ -45,7 +45,10 @@ class AssistanceNeedPreschoolDecisionController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
-    @PostMapping("/children/{childId}/assistance-need-preschool-decisions")
+    @PostMapping(
+        "/children/{childId}/assistance-need-preschool-decisions", // deprecated
+        "/employee/children/{childId}/assistance-need-preschool-decisions",
+    )
     fun createAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -403,7 +406,10 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = AuditId(id)) }
     }
 
-    @GetMapping("/children/{childId}/assistance-need-preschool-decisions")
+    @GetMapping(
+        "/children/{childId}/assistance-need-preschool-decisions", // deprecated
+        "/employee/children/{childId}/assistance-need-preschool-decisions",
+    )
     fun getAssistanceNeedPreschoolDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,

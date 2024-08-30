@@ -8,19 +8,19 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.s3.responseEntityToS3URL
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevMobileDevice
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.utils.decodeHex
-import fi.espoo.evaka.testChild_1
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import javax.imageio.ImageIO
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -35,20 +35,35 @@ import org.springframework.web.multipart.MultipartFile
 class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var childImageController: ChildImageController
 
-    private final val adminId = EmployeeId(UUID.randomUUID())
-    private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
+    private val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+    private val child = DevPerson()
+    private val area = DevCareArea()
+    private val unit = DevDaycare(areaId = area.id)
+    private val mobileDevice = DevMobileDevice(unitId = unit.id)
+    private val mobileUser = AuthenticatedUser.MobileDevice(mobileDevice.id)
 
     @BeforeEach
     fun beforeEach() {
         db.transaction {
-            it.insert(testChild_1, DevPersonType.CHILD)
-            it.insert(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))
+            it.insert(child, DevPersonType.CHILD)
+            it.insert(area)
+            it.insert(unit)
+            it.insert(
+                DevPlacement(
+                    unitId = unit.id,
+                    childId = child.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusMonths(1),
+                )
+            )
+            it.insert(mobileDevice)
         }
     }
 
     @Test
     fun `image round trip`() {
-        uploadImage(testChild_1.id, image1)
+        uploadImage(child.id, image1)
 
         val images =
             db.read { it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>() }
@@ -60,13 +75,13 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `replacing image`() {
-        uploadImage(testChild_1.id, image1)
+        uploadImage(child.id, image1)
         val oldImage =
             db.read {
                 it.createQuery { sql("SELECT * FROM child_images") }.exactlyOne<ChildImage>()
             }
 
-        uploadImage(testChild_1.id, image2)
+        uploadImage(child.id, image2)
 
         val newImage =
             db.read {
@@ -80,8 +95,8 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `deleting image`() {
-        uploadImage(testChild_1.id, image1)
-        deleteImage(testChild_1.id)
+        uploadImage(child.id, image1)
+        deleteImage(child.id)
 
         val newImages =
             db.read { it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>() }
@@ -97,7 +112,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertThrows<BadRequest> {
             uploadImage(
-                testChild_1.id,
+                child.id,
                 MockMultipartFile("file", "test1.jpg", "image/jpeg", output.toByteArray()),
             )
         }
@@ -138,15 +153,15 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
         )
 
     private fun uploadImage(childId: ChildId, file: MultipartFile) {
-        childImageController.putImage(dbInstance(), admin, RealEvakaClock(), childId, file)
+        childImageController.putImage(dbInstance(), mobileUser, clock, childId, file)
     }
 
     private fun deleteImage(childId: ChildId) {
-        childImageController.deleteImage(dbInstance(), admin, RealEvakaClock(), childId)
+        childImageController.deleteImage(dbInstance(), mobileUser, clock, childId)
     }
 
     private fun downloadImage(imageId: ChildImageId): ByteArray {
-        val response = childImageController.getImage(dbInstance(), admin, RealEvakaClock(), imageId)
+        val response = childImageController.getImage(dbInstance(), mobileUser, clock, imageId)
         val (_, _, data) = http.get(responseEntityToS3URL(response)).response()
         return data.get()
     }

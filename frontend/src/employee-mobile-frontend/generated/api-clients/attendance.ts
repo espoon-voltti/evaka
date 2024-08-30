@@ -13,15 +13,12 @@ import { CurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-type
 import { DepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { ExpectedAbsencesOnDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { ExpectedAbsencesOnDepartureResponse } from 'lib-common/generated/api-types/attendance'
-import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { ExternalStaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { ExternalStaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
 import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { StaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
-import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
@@ -33,7 +30,6 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
-import { deserializeJsonStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
 
@@ -382,98 +378,6 @@ export async function getUnitStats(
     url: uri`/mobile/units/stats`.toString(),
     method: 'GET',
     params
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteExternalStaffRealtimeAttendances
-*/
-export async function deleteExternalStaffRealtimeAttendances(
-  request: {
-    unitId: UUID,
-    attendanceId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/${request.unitId}/external/${request.attendanceId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.deleteStaffRealtimeAttendances
-*/
-export async function deleteStaffRealtimeAttendances(
-  request: {
-    unitId: UUID,
-    attendanceId: UUID
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/${request.unitId}/${request.attendanceId}`.toString(),
-    method: 'DELETE'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getRealtimeStaffAttendances
-*/
-export async function getRealtimeStaffAttendances(
-  request: {
-    unitId: UUID,
-    start: LocalDate,
-    end: LocalDate
-  }
-): Promise<StaffAttendanceResponse> {
-  const params = createUrlSearchParams(
-    ['unitId', request.unitId],
-    ['start', request.start.formatIso()],
-    ['end', request.end.formatIso()]
-  )
-  const { data: json } = await client.request<JsonOf<StaffAttendanceResponse>>({
-    url: uri`/staff-attendances/realtime`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonStaffAttendanceResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances
-*/
-export async function upsertDailyExternalRealtimeAttendances(
-  request: {
-    body: ExternalAttendanceBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/upsert-external`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ExternalAttendanceBody>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances
-*/
-export async function upsertDailyStaffRealtimeAttendances(
-  request: {
-    body: StaffAttendanceBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/upsert`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<StaffAttendanceBody>
   })
   return json
 }

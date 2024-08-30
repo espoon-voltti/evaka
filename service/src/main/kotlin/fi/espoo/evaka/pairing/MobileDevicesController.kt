@@ -27,10 +27,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MobileDevicesController(private val accessControl: AccessControl) {
-    @GetMapping("/mobile-devices")
+    @GetMapping(
+        "/mobile-devices", // deprecated
+        "/employee/mobile-devices",
+    )
     fun getMobileDevices(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
     ): List<MobileDevice> {
@@ -54,7 +57,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping("/mobile-devices/personal")
+    @GetMapping(
+        "/mobile-devices/personal", // deprecated
+        "/employee/mobile-devices/personal",
+    )
     fun getPersonalMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -81,10 +87,13 @@ class MobileDevicesController(private val accessControl: AccessControl) {
 
     data class RenameRequest(val name: String)
 
-    @PutMapping("/mobile-devices/{id}/name")
+    @PutMapping(
+        "/mobile-devices/{id}/name", // deprecated
+        "/employee/mobile-devices/{id}/name",
+    )
     fun putMobileDeviceName(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest,
@@ -104,10 +113,13 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         Audit.MobileDevicesRename.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping("/mobile-devices/{id}")
+    @DeleteMapping(
+        "/mobile-devices/{id}", // deprecated
+        "/employee/mobile-devices/{id}",
+    )
     fun deleteMobileDevice(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId,
     ) {
@@ -120,7 +132,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         Audit.MobileDevicesDelete.log(targetId = AuditId(id))
     }
 
-    @PostMapping("/mobile-devices/pin-login")
+    @PostMapping(
+        "/mobile-devices/pin-login", // deprecated
+        "/employee-mobile/pin-login",
+    )
     fun pinLogin(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

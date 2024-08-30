@@ -6,7 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.childimages.ChildImageController
+import fi.espoo.evaka.childimages.replaceImage
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.NewMessageStub
 import fi.espoo.evaka.messaging.archiveThread
@@ -19,13 +19,13 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.dev.DevCareArea
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevParentship
@@ -37,12 +37,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.utils.decodeHex
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -63,20 +58,24 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var documentClient: DocumentService
     @Autowired private lateinit var bucketEnv: BucketEnv
-    @Autowired private lateinit var childImageController: ChildImageController
 
     private lateinit var mergeService: MergeService
     private lateinit var mergeServiceAsyncJobRunnerMock: AsyncJobRunner<AsyncJob>
+
+    private val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+    private val child = DevPerson()
+    private val area = DevCareArea()
+    private val unit = DevDaycare(areaId = area.id)
 
     @BeforeEach
     fun setUp() {
         mergeServiceAsyncJobRunnerMock = mock {}
         mergeService = MergeService(mergeServiceAsyncJobRunnerMock, documentClient, bucketEnv)
         db.transaction { tx ->
-            tx.insert(testDecisionMaker_1)
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -107,7 +106,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         val id = ChildId(UUID.randomUUID())
         db.transaction {
             it.insert(DevPerson(id = id), DevPersonType.CHILD)
-            it.insert(DevPlacement(childId = id, unitId = testDaycare.id))
+            it.insert(DevPlacement(childId = id, unitId = unit.id))
         }
 
         assertThrows<Conflict> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
@@ -137,7 +136,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     adultIdDuplicate,
                     validFrom = validFrom,
                     validTo = validTo,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
                 )
             )
         }
@@ -153,7 +152,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             }
         assertEquals(1, countBefore)
 
-        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), adultId, adultIdDuplicate) }
+        db.transaction { mergeService.mergePeople(it, clock, adultId, adultIdDuplicate) }
 
         val countAfter =
             db.read {
@@ -195,7 +194,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             it.insert(
                 DevPlacement(
                     childId = childIdDuplicate,
-                    unitId = testDaycare.id,
+                    unitId = unit.id,
                     startDate = from,
                     endDate = to,
                 )
@@ -213,7 +212,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             }
         assertEquals(1, countBefore)
 
-        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+        db.transaction { mergeService.mergePeople(it, clock, childId, childIdDuplicate) }
 
         val countAfter =
             db.read {
@@ -252,13 +251,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderDuplicateAccount,
                 dummyMessage,
                 recipients = setOf(receiverAccount),
-                children = setOf(testChild_1.id),
+                children = setOf(child.id),
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
 
         db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), senderId, senderIdDuplicate)
+            mergeService.mergePeople(it, clock, senderId, senderIdDuplicate)
             mergeService.deleteEmptyPerson(it, senderIdDuplicate)
         }
 
@@ -287,7 +286,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         tx.insert(DevPerson(id = it), DevPersonType.ADULT)
                         tx.getCitizenMessageAccount(it)
                     }
-                    .also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
+                    .also { tx.insertGuardian(receiverIdDuplicate, child.id) }
             }
 
         db.transaction { tx ->
@@ -297,7 +296,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderAccount,
                 dummyMessage,
                 recipients = setOf(receiverDuplicateAccount),
-                children = setOf(testChild_1.id),
+                children = setOf(child.id),
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -308,7 +307,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         )
 
         db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), receiverId, receiverIdDuplicate)
+            mergeService.mergePeople(it, clock, receiverId, receiverIdDuplicate)
             mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
         }
 
@@ -360,7 +359,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 sender = senderAccount,
                 dummyMessage,
                 recipients = setOf(receiverDuplicateAccount),
-                children = setOf(testChild_1.id),
+                children = setOf(child.id),
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -380,7 +379,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         )
 
         db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), receiverId, receiverIdDuplicate)
+            mergeService.mergePeople(it, clock, receiverId, receiverIdDuplicate)
             mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
         }
 
@@ -414,14 +413,14 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             it.insert(
                 DevPlacement(
                     childId = childIdDuplicate,
-                    unitId = testDaycare.id,
+                    unitId = unit.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
             )
         }
 
-        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+        db.transaction { mergeService.mergePeople(it, clock, childId, childIdDuplicate) }
 
         verify(mergeServiceAsyncJobRunnerMock)
             .plan(
@@ -462,7 +461,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
 
         db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), person.id, duplicate.id)
+            mergeService.mergePeople(it, clock, person.id, duplicate.id)
             mergeService.deleteEmptyPerson(it, duplicate.id)
         }
         db.read {
@@ -486,13 +485,21 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         db.transaction {
             it.insert(DevPerson(id = childId), DevPersonType.CHILD)
             it.insert(DevPerson(id = childIdDuplicate), DevPersonType.CHILD)
+            it.insert(
+                DevPlacement(
+                    unitId = unit.id,
+                    childId = childIdDuplicate,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusMonths(1),
+                )
+            )
         }
 
         setChildImage(childIdDuplicate)
         assertEquals(0, childImageCount(childId))
         assertEquals(1, childImageCount(childIdDuplicate))
 
-        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+        db.transaction { mergeService.mergePeople(it, clock, childId, childIdDuplicate) }
 
         assertEquals(1, childImageCount(childId))
         assertEquals(0, childImageCount(childIdDuplicate))
@@ -512,7 +519,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         assertEquals(1, childImageCount(childId))
         assertEquals(1, childImageCount(childIdDuplicate))
 
-        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
+        db.transaction { mergeService.mergePeople(it, clock, childId, childIdDuplicate) }
 
         assertEquals(1, childImageCount(childId))
         assertEquals(1, childImageCount(childIdDuplicate))
@@ -530,12 +537,13 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         )
 
     private fun setChildImage(childId: ChildId) =
-        childImageController.putImage(
-            dbInstance(),
-            AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN)),
-            RealEvakaClock(),
+        replaceImage(
+            db,
+            documentClient,
+            bucketEnv.data,
             childId,
             MockMultipartFile("file", imageName, "image/jpeg", imageData),
+            "image/jpeg",
         )
 
     private fun childImageCount(childId: ChildId): Int =

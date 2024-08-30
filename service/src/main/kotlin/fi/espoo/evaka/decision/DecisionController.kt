@@ -8,8 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.shared.ApplicationId
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -63,69 +61,6 @@ class DecisionController(
                 }
             }
         Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
-        return DecisionListResponse(decisions)
-    }
-
-    @GetMapping("/by-child")
-    fun getDecisionsByChild(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestParam id: ChildId,
-    ): DecisionListResponse {
-        val decisions =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.READ_DECISIONS,
-                        id,
-                    )
-                    val filter =
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            user,
-                            clock,
-                            Action.Decision.READ,
-                        )
-                    it.getDecisionsByChild(id, filter)
-                }
-            }
-        Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
-        return DecisionListResponse(decisions)
-    }
-
-    @GetMapping("/by-application")
-    fun getDecisionsByApplication(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestParam id: ApplicationId,
-    ): DecisionListResponse {
-        val decisions =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Application.READ_DECISIONS,
-                        id,
-                    )
-                    val filter =
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            user,
-                            clock,
-                            Action.Decision.READ,
-                        )
-                    it.getDecisionsByApplication(id, filter)
-                }
-            }
-        Audit.DecisionReadByApplication.log(targetId = AuditId(id))
-
         return DecisionListResponse(decisions)
     }
 

@@ -62,7 +62,10 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
         }
     }
 
-    @GetMapping("/reports/exceeded-service-need/rows")
+    @GetMapping(
+        "/reports/exceeded-service-need/rows", // deprecated
+        "/employee/reports/exceeded-service-need/rows",
+    )
     fun getExceededServiceNeedReportRows(
         db: Database,
         user: AuthenticatedUser.Employee,

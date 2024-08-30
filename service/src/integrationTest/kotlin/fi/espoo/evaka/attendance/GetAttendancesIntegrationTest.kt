@@ -474,7 +474,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun getChildren(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ): List<AttendanceChild> {
         return childAttendanceController.getChildren(
             dbInstance(),
@@ -486,7 +486,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun expectOneChild(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ): AttendanceChild {
         val children = getChildren(unitId, user)
         assertEquals(1, children.size)
@@ -495,7 +495,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun expectNoChildren(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ) {
         val children = getChildren(unitId, user)
         assertEquals(0, children.size)
@@ -503,7 +503,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun getAttendanceStatuses(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ): Map<ChildId, ChildAttendanceController.ChildAttendanceStatusResponse> {
         return childAttendanceController.getAttendanceStatuses(
             dbInstance(),
@@ -515,7 +515,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun expectOneChildAttendance(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ): ChildAttendanceController.ChildAttendanceStatusResponse {
         val response = getAttendanceStatuses(unitId, user)
         assertEquals(1, response.size)
@@ -524,7 +524,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun expectNoChildAttendances(
         unitId: DaycareId = testDaycare.id,
-        user: AuthenticatedUser = mobileUser,
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ) {
         val response = getAttendanceStatuses(unitId, user)
         assertEquals(0, response.size)

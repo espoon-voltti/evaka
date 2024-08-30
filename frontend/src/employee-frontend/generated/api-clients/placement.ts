@@ -11,13 +11,11 @@ import { GroupTransferRequestBody } from 'lib-common/generated/api-types/placeme
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PlacementCreateRequestBody } from 'lib-common/generated/api-types/placement'
-import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { PlacementUpdateRequestBody } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonPlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import { deserializeJsonPlacementResponse } from 'lib-common/generated/api-types/placement'
 import { uri } from 'lib-common/uri'
 
@@ -102,30 +100,6 @@ export async function getChildPlacementPeriods(
     method: 'GET'
   })
   return json.map(e => FiniteDateRange.parseJson(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.placement.PlacementController.getPlacementPlans
-*/
-export async function getPlacementPlans(
-  request: {
-    daycareId: UUID,
-    from: LocalDate,
-    to: LocalDate
-  }
-): Promise<PlacementPlanDetails[]> {
-  const params = createUrlSearchParams(
-    ['daycareId', request.daycareId],
-    ['from', request.from.formatIso()],
-    ['to', request.to.formatIso()]
-  )
-  const { data: json } = await client.request<JsonOf<PlacementPlanDetails[]>>({
-    url: uri`/placements/plans`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonPlacementPlanDetails(e))
 }
 
 

@@ -22,7 +22,6 @@ import { ThreadByApplicationResponse } from 'lib-common/generated/api-types/mess
 import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { UnreadCountByAccount } from 'lib-common/generated/api-types/messaging'
-import { UnreadCountByAccountAndGroup } from 'lib-common/generated/api-types/messaging'
 import { UpdatableDraftContent } from 'lib-common/generated/api-types/messaging'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
@@ -277,22 +276,6 @@ export async function getThreadByApplicationId(
 export async function getUnreadMessages(): Promise<UnreadCountByAccount[]> {
   const { data: json } = await client.request<JsonOf<UnreadCountByAccount[]>>({
     url: uri`/messages/unread`.toString(),
-    method: 'GET'
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageController.getUnreadMessagesByUnit
-*/
-export async function getUnreadMessagesByUnit(
-  request: {
-    unitId: UUID
-  }
-): Promise<UnreadCountByAccountAndGroup[]> {
-  const { data: json } = await client.request<JsonOf<UnreadCountByAccountAndGroup[]>>({
-    url: uri`/messages/unread/${request.unitId}`.toString(),
     method: 'GET'
   })
   return json

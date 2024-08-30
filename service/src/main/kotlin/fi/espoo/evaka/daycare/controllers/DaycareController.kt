@@ -76,7 +76,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/daycares")
+@RequestMapping(
+    "/daycares", // deprecated
+    "/employee/daycares",
+)
 class DaycareController(
     private val daycareService: DaycareService,
     private val accessControl: AccessControl,
@@ -84,7 +87,7 @@ class DaycareController(
     @GetMapping
     fun getDaycares(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam includeClosed: Boolean = true,
     ): List<Daycare> {
@@ -101,7 +104,7 @@ class DaycareController(
     @GetMapping("/features")
     fun getUnitFeatures(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<UnitFeatures> {
         return db.connect { dbc ->
@@ -121,7 +124,7 @@ class DaycareController(
     @PutMapping("/unit-features")
     fun updateUnitFeatures(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody request: UpdateFeaturesRequest,
     ) {
@@ -148,7 +151,7 @@ class DaycareController(
     @GetMapping("/{daycareId}")
     fun getDaycare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
     ): DaycareResponse {
@@ -187,7 +190,7 @@ class DaycareController(
     @GetMapping("/{daycareId}/groups")
     fun getGroups(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
@@ -216,7 +219,7 @@ class DaycareController(
     @PostMapping("/{daycareId}/groups")
     fun createGroup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest,
@@ -257,7 +260,7 @@ class DaycareController(
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -281,7 +284,7 @@ class DaycareController(
     @DeleteMapping("/{daycareId}/groups/{groupId}")
     fun deleteGroup(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -298,7 +301,7 @@ class DaycareController(
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun getCaretakers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -330,7 +333,7 @@ class DaycareController(
     @PostMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun createCaretakers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -364,7 +367,7 @@ class DaycareController(
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun updateCaretakers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -396,7 +399,7 @@ class DaycareController(
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun removeCaretakers(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId,
@@ -420,7 +423,7 @@ class DaycareController(
     @PutMapping("/{daycareId}")
     fun updateDaycare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields,
@@ -446,7 +449,7 @@ class DaycareController(
     @PostMapping
     fun createDaycare(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody fields: DaycareFields,
     ): CreateDaycareResponse {
@@ -473,7 +476,7 @@ class DaycareController(
     @GetMapping("/{unitId}/group-details")
     fun getUnitGroupDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -622,7 +625,7 @@ class DaycareController(
     @GetMapping("/{daycareId}/notifications")
     fun getUnitNotifications(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
     ): UnitNotifications {

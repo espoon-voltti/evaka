@@ -11,12 +11,9 @@ import fi.espoo.evaka.espoo.EspooActionRuleMapping
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.testFeatureConfig
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.noopTracer
 import fi.espoo.evaka.shared.security.AccessControl
@@ -27,7 +24,6 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -70,16 +66,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
     }
 
-    @Test
-    fun `get additional info throws forbidden with enduser`() {
-        assertThrows<Forbidden> {
-            getAdditionalInfo(
-                AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-            )
-        }
-    }
-
-    fun getAdditionalInfo(user: AuthenticatedUser) {
+    fun getAdditionalInfo(user: AuthenticatedUser.Employee) {
         val body = childController.getAdditionalInfo(dbInstance(), user, RealEvakaClock(), childId)
 
         assertEquals(child.additionalInformation.diet, body.diet)

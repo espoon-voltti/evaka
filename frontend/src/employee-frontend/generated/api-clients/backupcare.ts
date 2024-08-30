@@ -4,7 +4,6 @@
 
 // GENERATED FILE: no manual modifications
 
-import LocalDate from 'lib-common/local-date'
 import { BackupCareCreateResponse } from 'lib-common/generated/api-types/backupcare'
 import { BackupCareUpdateRequest } from 'lib-common/generated/api-types/backupcare'
 import { ChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
@@ -12,11 +11,8 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { NewBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { UUID } from 'lib-common/types'
-import { UnitBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { client } from '../../api/client'
-import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonChildBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
-import { deserializeJsonUnitBackupCaresResponse } from 'lib-common/generated/api-types/backupcare'
 import { uri } from 'lib-common/uri'
 
 
@@ -67,29 +63,6 @@ export async function getChildBackupCares(
     method: 'GET'
   })
   return deserializeJsonChildBackupCaresResponse(json)
-}
-
-
-/**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.getUnitBackupCares
-*/
-export async function getUnitBackupCares(
-  request: {
-    daycareId: UUID,
-    startDate: LocalDate,
-    endDate: LocalDate
-  }
-): Promise<UnitBackupCaresResponse> {
-  const params = createUrlSearchParams(
-    ['startDate', request.startDate.formatIso()],
-    ['endDate', request.endDate.formatIso()]
-  )
-  const { data: json } = await client.request<JsonOf<UnitBackupCaresResponse>>({
-    url: uri`/daycares/${request.daycareId}/backup-cares`.toString(),
-    method: 'GET',
-    params
-  })
-  return deserializeJsonUnitBackupCaresResponse(json)
 }
 
 

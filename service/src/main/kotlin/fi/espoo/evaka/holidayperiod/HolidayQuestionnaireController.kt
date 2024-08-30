@@ -24,12 +24,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/holiday-period/questionnaire")
+@RequestMapping(
+    "/holiday-period/questionnaire", // deprecated
+    "/employee/holiday-period/questionnaire",
+)
 class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     @GetMapping
     fun getQuestionnaires(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<FixedPeriodQuestionnaire> {
         return db.connect { dbc ->
@@ -49,7 +52,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     @GetMapping("/{id}")
     fun getQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
     ): FixedPeriodQuestionnaire {
@@ -70,7 +73,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     @PostMapping
     fun createHolidayQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: FixedPeriodQuestionnaireBody,
     ) {
@@ -96,7 +99,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     @PutMapping("/{id}")
     fun updateHolidayQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodQuestionnaireBody,
@@ -122,7 +125,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     @DeleteMapping("/{id}")
     fun deleteHolidayQuestionnaire(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId,
     ) {

@@ -45,20 +45,21 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/attendances")
 class ChildAttendanceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
 ) {
-    @GetMapping("/units/{unitId}/children")
+    @GetMapping(
+        "/attendances/units/{unitId}/children", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children",
+    )
     fun getChildren(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): List<AttendanceChild> {
@@ -121,10 +122,13 @@ class ChildAttendanceController(
         val status: AttendanceStatus,
     )
 
-    @GetMapping("/units/{unitId}/attendances")
+    @GetMapping(
+        "/attendances/units/{unitId}/attendances", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/attendances",
+    )
     fun getAttendanceStatuses(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): Map<ChildId, ChildAttendanceStatusResponse> {
@@ -186,10 +190,13 @@ class ChildAttendanceController(
         @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
 
-    @PostMapping("/units/{unitId}/children/{childId}/arrival")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/arrival", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival",
+    )
     fun postArrival(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -223,10 +230,13 @@ class ChildAttendanceController(
         )
     }
 
-    @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/return-to-coming", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-coming",
+    )
     fun returnToComing(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -258,10 +268,13 @@ class ChildAttendanceController(
 
     data class ExpectedAbsencesOnDepartureResponse(val categories: Set<AbsenceCategory>?)
 
-    @PostMapping("/units/{unitId}/children/{childId}/departure/expected-absences")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/departure/expected-absences", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure/expected-absences",
+    )
     fun getChildExpectedAbsencesOnDeparture(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -308,10 +321,13 @@ class ChildAttendanceController(
         val absenceTypeBillable: AbsenceType?,
     )
 
-    @PostMapping("/units/{unitId}/children/{childId}/departure")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/departure", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure",
+    )
     fun postDeparture(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -420,10 +436,13 @@ class ChildAttendanceController(
         setChildDateAbsences(tx, now, user.evakaUserId, childId, now.toLocalDate(), absences)
     }
 
-    @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/return-to-present", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-present",
+    )
     fun returnToPresent(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -452,10 +471,13 @@ class ChildAttendanceController(
 
     data class FullDayAbsenceRequest(val absenceType: AbsenceType)
 
-    @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/full-day-absence", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence",
+    )
     fun postFullDayAbsence(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -500,10 +522,13 @@ class ChildAttendanceController(
         )
     }
 
-    @DeleteMapping("/units/{unitId}/children/{childId}/full-day-absence")
+    @DeleteMapping(
+        "/attendances/units/{unitId}/children/{childId}/full-day-absence", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence",
+    )
     fun cancelFullDayAbsence(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -542,10 +567,13 @@ class ChildAttendanceController(
 
     data class AbsenceRangeRequest(val absenceType: AbsenceType, val range: FiniteDateRange)
 
-    @PostMapping("/units/{unitId}/children/{childId}/absence-range")
+    @PostMapping(
+        "/attendances/units/{unitId}/children/{childId}/absence-range", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range",
+    )
     fun postAbsenceRange(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,
@@ -595,10 +623,13 @@ class ChildAttendanceController(
         )
     }
 
-    @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
+    @DeleteMapping(
+        "/attendances/units/{unitId}/children/{childId}/absence-range", // deprecated
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range",
+    )
     fun deleteAbsenceRange(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId,

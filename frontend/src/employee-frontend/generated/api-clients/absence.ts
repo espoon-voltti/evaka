@@ -6,7 +6,6 @@
 
 import { Absence } from 'lib-common/generated/api-types/absence'
 import { AbsenceUpsert } from 'lib-common/generated/api-types/absence'
-import { DeleteChildAbsenceBody } from 'lib-common/generated/api-types/absence'
 import { GroupMonthCalendar } from 'lib-common/generated/api-types/absence'
 import { HolidayReservationsDelete } from 'lib-common/generated/api-types/absence'
 import { JsonCompatible } from 'lib-common/json'
@@ -33,24 +32,6 @@ export async function addPresences(
     url: uri`/absences/${request.groupId}/present`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<Presence[]>
-  })
-  return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.absence.AbsenceController.deleteAbsence
-*/
-export async function deleteAbsence(
-  request: {
-    childId: UUID,
-    body: DeleteChildAbsenceBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/absences/by-child/${request.childId}/delete`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<DeleteChildAbsenceBody>
   })
   return json
 }

@@ -215,36 +215,6 @@ class AbsenceController(
             }
     }
 
-    data class DeleteChildAbsenceBody(val date: LocalDate)
-
-    @PostMapping("/by-child/{childId}/delete")
-    fun deleteAbsence(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable childId: ChildId,
-        @RequestBody body: DeleteChildAbsenceBody,
-    ) {
-        val deleted =
-            db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.DELETE_ABSENCE,
-                        childId,
-                    )
-                    it.deleteChildAbsences(childId, body.date)
-                }
-            }
-        Audit.AbsenceDelete.log(
-            targetId = AuditId(childId),
-            objectId = AuditId(deleted),
-            meta = mapOf("date" to body.date),
-        )
-    }
-
     @GetMapping("/by-child/{childId}")
     fun getAbsencesOfChild(
         db: Database,

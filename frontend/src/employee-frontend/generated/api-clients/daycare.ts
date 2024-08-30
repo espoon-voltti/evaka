@@ -37,7 +37,6 @@ import { UUID } from 'lib-common/types'
 import { UnitFeatures } from 'lib-common/generated/api-types/daycare'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
-import { UnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { UnitStub } from 'lib-common/generated/api-types/daycare'
 import { UnitTypeFilter } from 'lib-common/generated/api-types/daycare'
 import { UpdateFeaturesRequest } from 'lib-common/generated/api-types/daycare'
@@ -54,7 +53,6 @@ import { deserializeJsonPreschoolTerm } from 'lib-common/generated/api-types/day
 import { deserializeJsonPublicUnit } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonStaffAttendanceForDates } from 'lib-common/generated/api-types/daycare'
 import { deserializeJsonUnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import { deserializeJsonUnitStaffAttendance } from 'lib-common/generated/api-types/daycare'
 import { uri } from 'lib-common/uri'
 
 
@@ -471,22 +469,6 @@ export async function getUnits(
     params
   })
   return json
-}
-
-
-/**
-* Generated from fi.espoo.evaka.daycare.controllers.StaffAttendanceController.getAttendancesByUnit
-*/
-export async function getAttendancesByUnit(
-  request: {
-    unitId: UUID
-  }
-): Promise<UnitStaffAttendance> {
-  const { data: json } = await client.request<JsonOf<UnitStaffAttendance>>({
-    url: uri`/staff-attendances/unit/${request.unitId}`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonUnitStaffAttendance(json)
 }
 
 

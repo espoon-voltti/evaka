@@ -57,10 +57,13 @@ class UnitAclController(private val accessControl: AccessControl) {
     val coefficientPositiveValue = BigDecimal("7.00")
     val coefficientNegativeValue = BigDecimal("0.00")
 
-    @GetMapping("/daycares/{daycareId}/acl")
+    @GetMapping(
+        "/daycares/{daycareId}/acl", // deprecated
+        "/employee/daycares/{daycareId}/acl",
+    )
     fun getDaycareAcl(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
     ): List<DaycareAclRow> {
@@ -103,10 +106,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
+    @DeleteMapping(
+        "/daycares/{daycareId}/supervisors/{employeeId}", // deprecated
+        "/employee/daycares/{daycareId}/supervisors/{employeeId}",
+    )
     fun deleteUnitSupervisor(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -127,10 +133,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
-    @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
+    @DeleteMapping(
+        "/daycares/{daycareId}/specialeducationteacher/{employeeId}", // deprecated
+        "/employee/daycares/{daycareId}/specialeducationteacher/{employeeId}",
+    )
     fun deleteSpecialEducationTeacher(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -156,10 +165,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
-    @DeleteMapping("/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}")
+    @DeleteMapping(
+        "/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}", // deprecated
+        "/employee/daycares/{daycareId}/earlychildhoodeducationsecretary/{employeeId}",
+    )
     fun deleteEarlyChildhoodEducationSecretary(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -185,10 +197,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
-    @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
+    @DeleteMapping(
+        "/daycares/{daycareId}/staff/{employeeId}", // deprecated
+        "/employee/daycares/{daycareId}/staff/{employeeId}",
+    )
     fun deleteStaff(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -209,10 +224,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         Audit.UnitAclDelete.log(targetId = AuditId(daycareId), objectId = AuditId(employeeId))
     }
 
-    @PutMapping("/daycares/{daycareId}/staff/{employeeId}/groups")
+    @PutMapping(
+        "/daycares/{daycareId}/staff/{employeeId}/groups", // deprecated
+        "/employee/daycares/{daycareId}/staff/{employeeId}/groups",
+    )
     fun updateGroupAclWithOccupancyCoefficient(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -272,10 +290,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         }
     }
 
-    @PutMapping("/daycares/{daycareId}/full-acl/{employeeId}")
+    @PutMapping(
+        "/daycares/{daycareId}/full-acl/{employeeId}", // deprecated
+        "/employee/daycares/{daycareId}/full-acl/{employeeId}",
+    )
     fun addFullAclForRole(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -349,10 +370,13 @@ class UnitAclController(private val accessControl: AccessControl) {
             else -> throw BadRequest("Invalid daycare acl role: $role")
         }
 
-    @GetMapping("/daycares/{unitId}/temporary")
+    @GetMapping(
+        "/daycares/{unitId}/temporary", // deprecated
+        "/employee/daycares/{unitId}/temporary",
+    )
     fun getTemporaryEmployees(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): List<Employee> {
@@ -373,10 +397,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         return employees
     }
 
-    @PostMapping("/daycares/{unitId}/temporary")
+    @PostMapping(
+        "/daycares/{unitId}/temporary", // deprecated
+        "/employee/daycares/{unitId}/temporary",
+    )
     fun createTemporaryEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @RequestBody input: TemporaryEmployee,
@@ -414,10 +441,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         return employeeId
     }
 
-    @GetMapping("/daycares/{unitId}/temporary/{employeeId}")
+    @GetMapping(
+        "/daycares/{unitId}/temporary/{employeeId}", // deprecated
+        "/employee/daycares/{unitId}/temporary/{employeeId}",
+    )
     fun getTemporaryEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -460,10 +490,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         return employee
     }
 
-    @PutMapping("/daycares/{unitId}/temporary/{employeeId}")
+    @PutMapping(
+        "/daycares/{unitId}/temporary/{employeeId}", // deprecated
+        "/employee/daycares/{unitId}/temporary/{employeeId}",
+    )
     fun updateTemporaryEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -493,10 +526,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         )
     }
 
-    @DeleteMapping("/daycares/{unitId}/temporary/{employeeId}/acl")
+    @DeleteMapping(
+        "/daycares/{unitId}/temporary/{employeeId}/acl", // deprecated
+        "/employee/daycares/{unitId}/temporary/{employeeId}/acl",
+    )
     fun deleteTemporaryEmployeeAcl(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
@@ -520,10 +556,13 @@ class UnitAclController(private val accessControl: AccessControl) {
         )
     }
 
-    @DeleteMapping("/daycares/{unitId}/temporary/{employeeId}")
+    @DeleteMapping(
+        "/daycares/{unitId}/temporary/{employeeId}", // deprecated
+        "/employee/daycares/{unitId}/temporary/{employeeId}",
+    )
     fun deleteTemporaryEmployee(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,

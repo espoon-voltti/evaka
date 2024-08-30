@@ -24,9 +24,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -34,12 +32,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/staff-attendances/realtime")
+@RequestMapping(
+    "/staff-attendances/realtime", // deprecated
+    "/employee/staff-attendances/realtime",
+)
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
     @GetMapping
     fun getRealtimeStaffAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
@@ -184,7 +185,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @PostMapping("/upsert")
     fun upsertDailyStaffRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: StaffAttendanceBody,
     ) {
@@ -272,7 +273,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     @PostMapping("/upsert-external")
     fun upsertDailyExternalRealtimeAttendances(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: ExternalAttendanceBody,
     ) {
@@ -322,51 +323,5 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             objectId = AuditId(externalAttendanceIds),
             meta = mapOf("date" to body.date),
         )
-    }
-
-    @DeleteMapping("/{unitId}/{attendanceId}")
-    fun deleteStaffRealtimeAttendances(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @PathVariable attendanceId: StaffAttendanceRealtimeId,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.DELETE_STAFF_ATTENDANCES,
-                    unitId,
-                )
-                tx.deleteStaffAttendance(attendanceId)
-            }
-        }
-        Audit.StaffAttendanceDelete.log(targetId = AuditId(attendanceId))
-    }
-
-    @DeleteMapping("/{unitId}/external/{attendanceId}")
-    fun deleteExternalStaffRealtimeAttendances(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @PathVariable attendanceId: StaffAttendanceExternalId,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.DELETE_STAFF_ATTENDANCES,
-                    unitId,
-                )
-                tx.deleteExternalStaffAttendance(attendanceId)
-            }
-        }
-        Audit.StaffAttendanceExternalDelete.log(targetId = AuditId(attendanceId))
     }
 }

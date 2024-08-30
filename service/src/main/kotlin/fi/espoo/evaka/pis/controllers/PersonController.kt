@@ -63,7 +63,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/person")
+@RequestMapping(
+    "/person", // deprecated
+    "/employee/person",
+)
 class PersonController(
     private val personService: PersonService,
     private val mergeService: MergeService,
@@ -75,7 +78,7 @@ class PersonController(
     @PostMapping
     fun createEmpty(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): PersonIdentityResponseJSON {
         return db.connect { dbc ->
@@ -91,7 +94,7 @@ class PersonController(
     @GetMapping("/{personId}")
     fun getPerson(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonResponse {
@@ -118,7 +121,7 @@ class PersonController(
     @PostMapping("/{personId}/duplicate")
     fun duplicatePerson(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonId {
@@ -180,10 +183,10 @@ class PersonController(
             .also { Audit.PersonDuplicate.log(targetId = AuditId(personId)) }
     }
 
-    @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
+    @GetMapping("/details/{personId}")
     fun getPersonIdentity(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonJSON {
@@ -224,7 +227,7 @@ class PersonController(
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): List<PersonWithChildrenDTO> {
@@ -252,7 +255,7 @@ class PersonController(
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: ChildId,
     ): List<PersonJSON> {
@@ -280,7 +283,7 @@ class PersonController(
     @GetMapping("/blocked-guardians/{personId}")
     fun getPersonBlockedGuardians(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable(value = "personId") personId: ChildId,
     ): List<PersonJSON> {
@@ -336,7 +339,7 @@ class PersonController(
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestBody data: PersonPatch,
@@ -423,7 +426,7 @@ class PersonController(
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ) {
@@ -439,7 +442,7 @@ class PersonController(
     @PutMapping("/{personId}/ssn")
     fun addSsn(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestBody body: AddSsnRequest,
@@ -491,7 +494,7 @@ class PersonController(
     @PutMapping("/{personId}/ssn/disable")
     fun disableSsn(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestBody body: DisableSsnRequest,
@@ -525,7 +528,7 @@ class PersonController(
     @PostMapping("/details/ssn")
     fun getOrCreatePersonBySsn(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: GetOrCreatePersonBySsnRequest,
     ): PersonJSON {
@@ -555,7 +558,7 @@ class PersonController(
     @PostMapping("/merge")
     fun mergePeople(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: MergeRequest,
     ) {
@@ -582,7 +585,7 @@ class PersonController(
     @PostMapping("/create")
     fun createPerson(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: CreatePersonBody,
     ): PersonId {
@@ -598,7 +601,7 @@ class PersonController(
     @PostMapping("/{personId}/vtj-update")
     fun updatePersonAndFamilyFromVtj(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ) {
@@ -622,7 +625,7 @@ class PersonController(
     @PostMapping("/{childId}/evaka-rights")
     fun updateGuardianEvakaRights(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestBody body: EvakaRightsRequest,
@@ -654,7 +657,7 @@ class PersonController(
     @GetMapping("/{guardianId}/address-page/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun getAddressPagePdf(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId,
     ): ResponseEntity<*> =
