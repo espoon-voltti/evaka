@@ -636,7 +636,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_SST }}
+          role-to-assume: ${{ secrets.AWS_ROLE }}
           role-duration-seconds: 1200
 
       - name: Login to Amazon ECR
@@ -651,6 +651,14 @@ jobs:
           docker create -ti --name frontend_instance "${{ needs.frontend.outputs.image }}" sh
           docker cp frontend_instance:/static ./frontend-build
           docker rm -f frontend_instance
+
+      - name: Configure AWS credentials
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_SST }}
+          role-duration-seconds: 1200
 
       - name: Clean build from non-versioned files
         run: |
