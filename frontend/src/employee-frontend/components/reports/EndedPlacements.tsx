@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import range from 'lodash/range'
-import React, { useEffect, useState } from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result, Success, wrapResult } from 'lib-common/api'
-import { EndedPlacementsReportRow, StartingPlacementsRow } from 'lib-common/generated/api-types/reports'
+import { EndedPlacementsReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import { Arg0 } from 'lib-common/types'
 import Loader from 'lib-components/atoms/Loader'
@@ -25,6 +25,7 @@ import ReportDownload from '../reports/ReportDownload'
 
 import { FilterLabel, FilterRow, RowCountInfo, TableScrollable } from './common'
 import { distinct } from "../../utils";
+import sortBy from "lodash/sortBy";
 
 const getEndedPlacementsReportResult = wrapResult(getEndedPlacementsReport)
 
@@ -68,13 +69,23 @@ export default React.memo(function EndedPlacements() {
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
 
-  const displayFilter = (row: StartingPlacementsRow): boolean =>
-    !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
+  const displayFilter = (row: EndedPlacementsReportRow): boolean =>
+    !(displayFilters.careArea && row.areaName !== displayFilters.careArea)
 
   useEffect(() => {
     setRows(Loading.of())
     void getEndedPlacementsReportResult(filters).then(setRows)
   }, [filters])
+
+  const filteredRows: EndedPlacementsReportRow[] = useMemo(
+    () =>
+      sortBy(rows.getOrElse([]).filter(displayFilter), [
+        (row) => row.areaName,
+        (row) => row.firstName,
+        (row) => row.lastName
+      ]),
+    [rows, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   return (
     <Container>
@@ -159,7 +170,7 @@ export default React.memo(function EndedPlacements() {
         {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.value.map((row) => ({
+              data={filteredRows.map((row) => ({
                 ...row,
                 placementEnd: row.placementEnd.format(),
                 nextPlacementStart: row.nextPlacementStart?.format()
@@ -188,14 +199,14 @@ export default React.memo(function EndedPlacements() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.value.map((row) => (
+                {filteredRows.map((row) => (
                   <Tr key={row.childId}>
                     <Td>
                       <Link to={`/child-information/${row.childId}`}>{`${
                         row.lastName ?? ''
                       } ${row.firstName ?? ''}`}</Link>
                     </Td>
-                    <Td>{row.ssn}</Td>
+                    <Td>{row.ssn ?? ''}</Td>
                     <Td>{row.placementEnd.format()}</Td>
                     <Td>{row.unitName}</Td>
                     <Td>{row.areaName}</Td>
