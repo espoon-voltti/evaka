@@ -183,7 +183,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
         assertNotNull(application)
-        assert(application.hasOtherGuardian)
+        assert(application.allowOtherGuardianAccess)
     }
 
     @Test fun `create application without proper child`() {
