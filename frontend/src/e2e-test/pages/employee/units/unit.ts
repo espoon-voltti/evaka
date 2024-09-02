@@ -930,6 +930,13 @@ export class UnitCalendarEventsSection {
       .nth(idx)
   }
 
+  getSurveyOfDay(date: LocalDate, idx: number) {
+    return this.page
+      .findByDataQa(`calendar-event-day-${date.formatIso()}`)
+      .findAllByDataQa('survey')
+      .nth(idx)
+  }
+
   async assertNoEventsForDay(date: LocalDate) {
     await this.page
       .findByDataQa(`calendar-event-day-${date.formatIso()}`)

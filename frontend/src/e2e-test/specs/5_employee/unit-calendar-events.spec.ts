@@ -31,7 +31,7 @@ let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
 let child1Fixture: DevPerson
 let child2Fixture: DevPerson
-let child1DaycarePlacementId: UUID
+
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 
@@ -43,6 +43,9 @@ const groupId: UUID = uuidv4()
 const groupId2 = uuidv4()
 const testSurveyId = uuidv4()
 const eventTimeId = uuidv4()
+const eventTimeId2 = uuidv4()
+const child1DaycarePlacementId = uuidv4()
+const child1DaycarePlacementId2 = uuidv4()
 
 beforeEach(async () => {
   await resetServiceState()
@@ -74,12 +77,19 @@ beforeEach(async () => {
   child1Fixture = familyWithTwoGuardians.children[0]
   child2Fixture = familyWithRestrictedDetailsGuardian.children[0]
 
-  child1DaycarePlacementId = uuidv4()
   await Fixture.placement({
     id: child1DaycarePlacementId,
     childId: child1Fixture.id,
     unitId: daycare.id,
     startDate: placementStartDate,
+    endDate: mockedToday
+  }).save()
+
+  await Fixture.placement({
+    id: child1DaycarePlacementId2,
+    childId: child1Fixture.id,
+    unitId: daycare.id,
+    startDate: mockedToday.addDays(1),
     endDate: placementEndDate
   }).save()
 
@@ -87,6 +97,13 @@ beforeEach(async () => {
     daycareGroupId: groupId,
     daycarePlacementId: child1DaycarePlacementId,
     startDate: placementStartDate,
+    endDate: placementEndDate
+  }).save()
+
+  await Fixture.groupPlacement({
+    daycareGroupId: groupId,
+    daycarePlacementId: child1DaycarePlacementId2,
+    startDate: mockedToday.addDays(1),
     endDate: placementEndDate
   }).save()
 
@@ -110,7 +127,7 @@ beforeEach(async () => {
     id: testSurveyId,
     title: 'Survey title',
     description: 'Survey description',
-    period: new FiniteDateRange(mockedToday, mockedToday),
+    period: new FiniteDateRange(mockedToday, mockedToday.addDays(1)),
     eventType: 'DISCUSSION_SURVEY'
   }).save()
 
@@ -125,6 +142,15 @@ beforeEach(async () => {
     calendarEventId: testSurveyId,
     date: mockedToday,
     modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN)
+  }).save()
+
+  await Fixture.calendarEventTime({
+    id: eventTimeId2,
+    calendarEventId: testSurveyId,
+    date: mockedToday.addDays(1),
+    modifiedAt: mockedToday.toHelsinkiDateTime(LocalTime.MIN),
+    start: LocalTime.of(16, 30),
+    end: LocalTime.of(17, 0)
   }).save()
 
   page = await Page.open({
@@ -225,7 +251,7 @@ describe('Discussion surveys', () => {
     await calendarPage.weekModeButton.click()
 
     await calendarPage.calendarEventsSection
-      .getEventOfDay(mockedToday, 0)
+      .getSurveyOfDay(mockedToday, 0)
       .click()
     await calendarPage.calendarEventsSection.surveySummaryModal.assertDescription(
       'Survey description'
@@ -343,8 +369,12 @@ describe('Discussion surveys', () => {
       endTime: '09:30'
     })
 
-    const reserationModal = await surveyView.openReservationModal(0, testDay)
-    await reserationModal.deleteEventTime()
+    const reservationModal = await surveyView.openReservationModal(0, testDay)
+    await reservationModal.deleteEventTime()
+    await surveyView.waitUntilLoaded()
+
+    const reservationModal2 = await surveyView.openReservationModal(0, testDay)
+    await reservationModal2.deleteEventTime()
     await surveyView.waitUntilLoaded()
 
     await surveyView.assertNoTimesExist(testDay)

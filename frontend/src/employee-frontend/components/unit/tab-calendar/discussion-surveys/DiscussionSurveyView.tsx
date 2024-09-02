@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import partition from 'lodash/partition'
 import React, {
@@ -27,7 +28,10 @@ import {
   DiscussionReservationDay
 } from 'lib-common/generated/api-types/calendarevent'
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
-import { ChildBasics } from 'lib-common/generated/api-types/placement'
+import {
+  ChildBasics,
+  DaycarePlacementWithDetails
+} from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
@@ -68,6 +72,24 @@ export interface ChildGroupInfo {
   groupPlacements: DateRange[]
 }
 
+export const getCombinedChildPlacementsForGroup = (
+  placements: DaycarePlacementWithDetails[],
+  groupId: UUID
+) => {
+  const validPlacements = placements.filter((p) =>
+    p.groupPlacements.some((gp) => gp.groupId === groupId)
+  )
+  return Object.values(groupBy(validPlacements, (p) => p.child.id)).map(
+    (placements) => ({
+      child: placements[0].child,
+      groupPlacements: placements
+        .flatMap((p) => p.groupPlacements)
+        .filter((gp) => gp.groupId === groupId)
+        .map((gp) => new DateRange(gp.startDate, gp.endDate))
+    })
+  )
+}
+
 export const getInvitedChildInfo = (
   unitDetails: UnitGroupDetails,
   eventData: CalendarEvent,
@@ -80,26 +102,24 @@ export const getInvitedChildInfo = (
     return !anyIndividuals
   })
   const childSelections = eventData.individualChildren.map((c) => c.id)
-  const allInvitedChildren = unitDetails.placements
-    .filter((p) => {
-      const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
-        const placedGroupIsInFullGroups = fullGroupSelections.some(
-          (gi) => gi.id === gp.groupId
-        )
-        const durationsOverlap = eventData.period.overlaps(
-          new DateRange(gp.startDate, gp.endDate)
-        )
-        return placedGroupIsInFullGroups && durationsOverlap
-      })
-      const isPartOfIndividualSelections = childSelections.includes(p.child.id)
-      return isPartOfFullGroupSelection || isPartOfIndividualSelections
+  const invitedChildPlacements = unitDetails.placements.filter((p) => {
+    const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
+      const placedGroupIsInFullGroups = fullGroupSelections.some(
+        (gi) => gi.id === gp.groupId
+      )
+      const durationsOverlap = eventData.period.overlaps(
+        new DateRange(gp.startDate, gp.endDate)
+      )
+      return placedGroupIsInFullGroups && durationsOverlap
     })
-    .map((p) => ({
-      child: p.child,
-      groupPlacements: p.groupPlacements
-        .filter((gp) => gp.groupId === groupId)
-        .map((gp) => new DateRange(gp.startDate, gp.endDate))
-    }))
+    const isPartOfIndividualSelections = childSelections.includes(p.child.id)
+    return isPartOfFullGroupSelection || isPartOfIndividualSelections
+  })
+
+  const allInvitedChildren = getCombinedChildPlacementsForGroup(
+    invitedChildPlacements,
+    groupId
+  )
 
   const sortedResults = orderBy(allInvitedChildren, [
     (c) => c.child.lastName,
