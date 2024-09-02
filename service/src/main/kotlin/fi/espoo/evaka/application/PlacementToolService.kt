@@ -4,7 +4,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -16,7 +15,6 @@ import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -32,8 +30,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 enum class PlacementToolCsvField(val fieldName: String) {
-    CHILD_ID("lapsen id"),
-    PRESCHOOL_GROUP_ID("esiopetusryhma_id")
+    CHILD_ID("lapsen_id"),
+    PRESCHOOL_UNIT_ID("yksikon_id")
 }
 
 @Service
@@ -192,7 +190,7 @@ class PlacementToolService(
                     preschoolId =
                         DaycareId(
                             UUID.fromString(
-                                row.get(PlacementToolCsvField.PRESCHOOL_GROUP_ID.fieldName)
+                                row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName)
                             )
                         )
                 )
@@ -253,7 +251,8 @@ class PlacementToolService(
                                         agreementStatus = OtherGuardianAgreementStatus.AGREED
                                     )
                                 }
-                    )
+                    ),
+                allowOtherGuardianAccess = guardianIds.any { it != application.guardianId }
             )
 
         applicationStateService.updateApplicationContentsServiceWorker(
