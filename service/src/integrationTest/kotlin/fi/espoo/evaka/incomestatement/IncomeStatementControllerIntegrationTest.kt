@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -65,6 +64,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
+
+    private val now = HelsinkiDateTime.of(LocalDate.of(2024, 8, 30), LocalTime.of(12, 0))
 
     @BeforeEach
     fun beforeEach() {
@@ -986,7 +987,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatement(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             citizenId,
             id,
         )
@@ -996,7 +997,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatements(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             personId,
             page = 1,
             pageSize = 10,
@@ -1010,7 +1011,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         incomeStatementController.setIncomeStatementHandled(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             id,
             body,
         )
@@ -1019,7 +1020,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
-        clock: EvakaClock = RealEvakaClock(),
+        clock: EvakaClock = MockEvakaClock(now),
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
@@ -1033,7 +1034,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
