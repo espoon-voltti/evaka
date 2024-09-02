@@ -53,13 +53,11 @@ export interface InvoiceRowStub {
 
 interface Props {
   row: InvoiceRowStub
-  update: UpdateStateFn<InvoiceRowStub>
-  remove: (() => void) | undefined
+  update?: UpdateStateFn<InvoiceRowStub>
+  remove?: () => void
   products: ProductWithName[]
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
-  editable: boolean
-  deletable: boolean
   addNote?: () => void
   status?: ReactNode
 }
@@ -79,8 +77,6 @@ function InvoiceRowSectionRow({
   },
   update,
   remove,
-  editable,
-  deletable,
   products,
   unitIds,
   unitDetails,
@@ -93,6 +89,8 @@ function InvoiceRowSectionRow({
   const productOpts = useMemo(() => products.map(({ key }) => key), [products])
 
   const unit = unitId ? unitDetails[unitId] : null
+  const editable = update !== undefined
+  const deletable = remove !== undefined
 
   return (
     <Tr data-qa="invoice-details-invoice-row">
@@ -321,7 +319,9 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
   )
 })
 
-type UnitComboboxProps = Pick<Props, 'unitDetails' | 'update'> & {
+interface UnitComboboxProps {
+  update: UpdateStateFn<InvoiceRowStub>
+  unitDetails: Record<UUID, InvoiceDaycare>
   items: UUID[]
   selectedItem: UUID | null
 }

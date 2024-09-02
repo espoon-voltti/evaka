@@ -487,11 +487,6 @@ fun Database.Transaction.insertInvoices(
     )
 }
 
-fun Database.Transaction.updateInvoiceRows(invoiceId: InvoiceId, rows: List<InvoiceRow>) {
-    deleteInvoiceRows(invoiceId)
-    insertInvoiceRows(listOf(invoiceId to rows))
-}
-
 private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoice>) {
     executeBatch(invoices) {
         sql(
@@ -522,10 +517,6 @@ INSERT INTO invoice (
 """
         )
     }
-}
-
-private fun Database.Transaction.deleteInvoiceRows(invoiceId: InvoiceId) {
-    execute { sql("DELETE FROM invoice_row WHERE invoice_id = ${bind(invoiceId)}") }
 }
 
 private fun Database.Transaction.insertInvoiceRows(

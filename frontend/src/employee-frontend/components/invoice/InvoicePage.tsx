@@ -8,8 +8,7 @@ import { Navigate } from 'react-router-dom'
 import { Loading, Result, wrapResult } from 'lib-common/api'
 import {
   InvoiceCodes,
-  InvoiceDetailedResponse,
-  InvoiceRowDetailed
+  InvoiceDetailedResponse
 } from 'lib-common/generated/api-types/invoicing'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
@@ -22,7 +21,6 @@ import {
 } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import { totalPrice } from '../../utils/pricing'
 
 import Actions from './Actions'
 import InvoiceDetailsSection from './InvoiceDetailsSection'
@@ -62,18 +60,6 @@ export default React.memo(function InvoiceDetailsPage() {
     }
   }, [invoice]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const editable = invoice
-    .map((inv) => inv.data.status === 'DRAFT')
-    .getOrElse(false)
-
-  const updateRows = useCallback(
-    (rows: InvoiceRowDetailed[]) =>
-      setInvoice((previous: Result<InvoiceDetailedResponse>) =>
-        previous.map((inv) => ({ ...inv, data: { ...inv.data, rows } }))
-      ),
-    []
-  )
-
   if (invoice.isFailure) {
     return <Navigate replace to="/finance/invoices" />
   }
@@ -94,26 +80,10 @@ export default React.memo(function InvoiceDetailsPage() {
             <InvoiceDetailsSection invoice={invoice.value.data} />
             <InvoiceRowsSection
               rows={invoice.value.data.rows}
-              permittedActions={invoice.value.permittedActions}
-              updateRows={updateRows}
               invoiceCodes={invoiceCodes}
-              editable={editable}
             />
-            <Sum
-              title="familyTotal"
-              sum={
-                editable
-                  ? totalPrice(invoice.value.data.rows)
-                  : invoice.value.data.totalPrice
-              }
-            />
-            <Actions
-              invoice={invoice.value.data}
-              loadInvoice={loadInvoice}
-              editable={
-                editable && invoice.value.permittedActions.includes('UPDATE')
-              }
-            />
+            <Sum title="familyTotal" sum={invoice.value.data.totalPrice} />
+            <Actions invoice={invoice.value} loadInvoice={loadInvoice} />
           </ContentArea>
         ) : null}
       </Container>

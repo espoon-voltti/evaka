@@ -27,7 +27,6 @@ import fi.espoo.evaka.invoicing.domain.InvoiceRowSummary
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.InvoiceSummary
 import fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
-import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.InvoiceId
@@ -62,7 +61,6 @@ import fi.espoo.evaka.toPersonDetailed
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -703,66 +701,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `updateInvoice works on drafts without updates`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-
-        updateInvoice(draft)
-    }
-
-    @Test
-    fun `updateInvoice returns bad request on sent invoices`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
-
-        assertThrows<BadRequest> { updateInvoice(sent) }
-    }
-
-    @Test
-    fun `updateInvoice updates invoice row unitId and adds a new row`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        val updated =
-            original.copy(
-                rows =
-                    original.rows.map {
-                        it.copy(description = "UPDATED", unitId = testDaycare2.id)
-                    } +
-                        createInvoiceRowFixture(testChild_1.id, testDaycare.id)
-                            .copy(
-                                product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
-                                amount = 100,
-                                unitPrice = 100000,
-                            )
-            )
-
-        updateInvoice(updated)
-
-        val result = getInvoice(updated.id)
-        assertDetailedEqualEnough(listOf(toDetailed(updated)), listOf(result))
-    }
-
-    @Test
-    fun `updateInvoice does not update invoice status, periods, invoiceDate, dueDate or headOfFamily`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        val updated =
-            original.copy(
-                status = InvoiceStatus.SENT,
-                periodStart = LocalDate.MIN,
-                periodEnd = LocalDate.MAX,
-                invoiceDate = LocalDate.MIN,
-                dueDate = LocalDate.MAX,
-            )
-
-        updateInvoice(updated)
-
-        val result = getInvoice(updated.id)
-        assertNotEquals(toDetailed(updated), result)
-        assertDetailedEqualEnough(listOf(toDetailed(original)), listOf(result))
-    }
-
-    @Test
     fun `createAllDraftInvoices works with one decision`() {
         val decision = decision1
         insertDecisions(listOf(decision))
@@ -952,10 +890,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getInvoice(id: InvoiceId): InvoiceDetailed {
         return invoiceController.getInvoice(dbInstance(), testUser, RealEvakaClock(), id).data
-    }
-
-    private fun updateInvoice(invoice: Invoice) {
-        invoiceController.putInvoice(dbInstance(), testUser, RealEvakaClock(), invoice.id, invoice)
     }
 
     private fun markInvoicesAsSent(ids: List<InvoiceId>) {
