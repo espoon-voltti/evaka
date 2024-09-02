@@ -30,7 +30,6 @@ import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -66,6 +65,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
 
+    private val today = LocalDate.of(2024, 8, 30)
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -85,8 +87,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `set as handled`() {
-        val startDate = LocalDate.now()
-        val endDate = LocalDate.now().plusDays(30)
+        val startDate = today
+        val endDate = today.plusDays(30)
 
         val id =
             db.transaction { tx ->
@@ -167,7 +169,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 tx.createIncomeStatement(
                     citizenId,
                     IncomeStatementBody.Income(
-                        startDate = LocalDate.now(),
+                        startDate = today,
                         endDate = null,
                         gross =
                             Gross(
@@ -194,7 +196,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = testAdult_1.id,
                 firstName = testAdult_1.firstName,
                 lastName = testAdult_1.lastName,
-                startDate = LocalDate.now(),
+                startDate = today,
                 endDate = null,
                 gross =
                     Gross(
@@ -233,10 +235,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             db.transaction { tx ->
                 tx.createIncomeStatement(
                     personId,
-                    IncomeStatementBody.HighestFee(
-                        startDate = startDate ?: LocalDate.now(),
-                        endDate = null,
-                    ),
+                    IncomeStatementBody.HighestFee(startDate = startDate ?: today, endDate = null),
                 )
             }
         return db.read { it.readIncomeStatementForPerson(personId, id, true)!! }
@@ -248,7 +247,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 tx.createIncomeStatement(
                     personId,
                     IncomeStatementBody.ChildIncome(
-                        startDate = LocalDate.now(),
+                        startDate = today,
                         endDate = null,
                         attachmentIds = listOf(),
                         otherInfo = "",
@@ -272,8 +271,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val placementId2 = PlacementId(UUID.randomUUID())
         val placementId3 = PlacementId(UUID.randomUUID())
         val placementId4 = PlacementId(UUID.randomUUID())
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
         val createdAt = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 0, 0))
 
         db.transaction { tx ->
@@ -456,8 +455,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - area filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
@@ -531,8 +530,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - provider type filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
@@ -603,8 +602,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - sent date filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
@@ -648,7 +647,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement1 = createTestIncomeStatement(citizenId)
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
 
-        val newCreated = HelsinkiDateTime.now().minusDays(2)
+        val newCreated = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
         db.transaction {
             it.execute {
@@ -677,8 +676,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
-                    sentStartDate = LocalDate.now().minusDays(3),
-                    sentEndDate = LocalDate.now().minusDays(1),
+                    sentStartDate = today.minusDays(3),
+                    sentEndDate = today.minusDays(1),
                 )
             ),
         )
@@ -700,9 +699,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1,
                 1,
             ),
-            getIncomeStatementsAwaitingHandler(
-                SearchIncomeStatementsRequest(sentStartDate = LocalDate.now())
-            ),
+            getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest(sentStartDate = today)),
         )
     }
 
@@ -884,8 +881,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - sent date sort`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
-        val placementStart = LocalDate.now().minusDays(30)
-        val placementEnd = LocalDate.now().plusDays(30)
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
         db.transaction { tx ->
             tx.insert(
                 DevParentship(
@@ -931,7 +928,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement2 =
             createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
 
-        val newCreated = HelsinkiDateTime.now().minusDays(2)
+        val newCreated = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
 
         db.transaction {
             @Suppress("DEPRECATION")
@@ -986,7 +983,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatement(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             citizenId,
             id,
         )
@@ -996,7 +993,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatements(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             personId,
             page = 1,
         )
@@ -1009,7 +1006,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         incomeStatementController.setIncomeStatementHandled(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             id,
             body,
         )
@@ -1018,7 +1015,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, null, null, emptyList(), emptyList(), null, null),
-        clock: EvakaClock = RealEvakaClock(),
+        clock: EvakaClock = MockEvakaClock(now),
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
@@ -1032,7 +1029,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             employee,
-            RealEvakaClock(),
+            MockEvakaClock(now),
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
