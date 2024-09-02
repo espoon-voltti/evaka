@@ -434,13 +434,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:8.0.1":
-  version: 8.0.1
-  resolution: "@datadog/native-appsec@npm:8.0.1"
+"@datadog/native-appsec@npm:8.1.1":
+  version: 8.1.1
+  resolution: "@datadog/native-appsec@npm:8.1.1"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/64cec5c0af199737b6590f5c82eb4f069731d7d0e7cdc38e9ba3aa2ba26b1b6877ead5382c89c38c1d82081dd29b6a05399e48403d283df7962810875b24ba6d
+  checksum: 10/5e5e2398ce799a5c3e084e9fd51514af7d963d3ab656a2ba06fc53b55b3f2fdbd4b9aa596f46b63358d639f9aa35371196f2140f2e734a8638b23e7935c83a3b
   languageName: node
   linkType: hard
 
@@ -2678,11 +2678,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:^5.21.0":
-  version: 5.21.0
-  resolution: "dd-trace@npm:5.21.0"
+"dd-trace@npm:^5.22.0":
+  version: 5.22.0
+  resolution: "dd-trace@npm:5.22.0"
   dependencies:
-    "@datadog/native-appsec": "npm:8.0.1"
+    "@datadog/native-appsec": "npm:8.1.1"
     "@datadog/native-iast-rewriter": "npm:2.4.1"
     "@datadog/native-iast-taint-tracking": "npm:3.1.0"
     "@datadog/native-metrics": "npm:^2.0.0"
@@ -2711,7 +2711,7 @@ __metadata:
     semver: "npm:^7.5.4"
     shell-quote: "npm:^1.8.1"
     tlhunter-sorted-set: "npm:^0.1.0"
-  checksum: 10/85c6bf5c95e191c4629a41ed225b3ce66a3c16c1e957f91ba4a6b67add0b60ab54510a1d045cf3b6d46304bfd23a0e76981b56d9f19f0d77a9d4b5c61cd450a9
+  checksum: 10/c93a4ac117f9d26246b8e51b45d4e00ae8f5b3b9674cbb7b5d283e5cbbec33ad60187be9ccedbe6a6458f820596c481f85d65728d12773a7d86ea2394b999b59
   languageName: node
   linkType: hard
 
@@ -3382,7 +3382,7 @@ __metadata:
     connect-redis: "npm:^7.1.0"
     cookie-parser: "npm:^1.4.6"
     date-fns: "npm:^3.6.0"
-    dd-trace: "npm:^5.21.0"
+    dd-trace: "npm:^5.22.0"
     eslint: "npm:^9.9.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:^2.29.1"
