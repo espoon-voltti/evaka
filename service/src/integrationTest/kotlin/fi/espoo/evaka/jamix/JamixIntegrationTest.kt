@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    private val customerNumberToIdMapping = mapOf(88 to 888, 99 to 999)
+    private val customerNumberToIdMapping = mapOf(77 to 777, 88 to 888, 99 to 999)
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 8), LocalTime.of(2, 25))
 
     @Test
@@ -107,14 +107,72 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val dates = FiniteDateRange(mondayNextWeek, sundayNextWeek).dates().toList()
         assertEquals(
             dates.flatMap { date ->
-                customerNumberToIdMapping.map { (customerNumber, customerId) ->
-                    AsyncJob.SendJamixOrder(
-                        customerNumber = customerNumber,
-                        customerId = customerId,
-                        date,
-                    )
-                }
+                listOf(
+                    AsyncJob.SendJamixOrder(customerNumber = 88, customerId = 888, date),
+                    AsyncJob.SendJamixOrder(customerNumber = 99, customerId = 999, date),
+                )
             },
+            jobs.sortedWith(compareBy({ it.date }, { it.customerId })),
+        )
+    }
+
+    @Test
+    fun `meal order jobs can be manually requested for a unit and date`() {
+        val area = DevCareArea()
+        val daycare = DevDaycare(areaId = area.id)
+        val daycare2 = DevDaycare(areaId = area.id)
+        val group1 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 77)
+        val group2 = DevDaycareGroup(daycareId = daycare.id, jamixCustomerNumber = 88)
+        val group3 = DevDaycareGroup(daycareId = daycare2.id, jamixCustomerNumber = 99)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(daycare2)
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(group3)
+        }
+
+        // Tuesday
+        val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 2), LocalTime.of(2, 25))
+
+        // Date must be at least 2 days in future
+        assertThrows<IllegalArgumentException> {
+            planJamixOrderJobsForUnitAndDate(
+                dbc = db,
+                asyncJobRunner = asyncJobRunner,
+                client = TestJamixClient(customerNumberToIdMapping),
+                now = now,
+                unitId = daycare.id,
+                date = now.toLocalDate().plusDays(1),
+            )
+        }
+
+        val date = now.toLocalDate().plusDays(2)
+        planJamixOrderJobsForUnitAndDate(
+            dbc = db,
+            asyncJobRunner = asyncJobRunner,
+            client = TestJamixClient(customerNumberToIdMapping),
+            now = now,
+            unitId = daycare.id,
+            date = date,
+        )
+
+        val jobs =
+            db.read { tx ->
+                tx.createQuery {
+                        sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'")
+                    }
+                    .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+                    .toList()
+            }
+
+        assertEquals(
+            listOf(
+                AsyncJob.SendJamixOrder(customerNumber = 77, customerId = 777, date),
+                AsyncJob.SendJamixOrder(customerNumber = 88, customerId = 888, date),
+            ),
             jobs.sortedWith(compareBy({ it.date }, { it.customerId })),
         )
     }
