@@ -24,6 +24,7 @@ export type QueryKeyPrefix =
   | 'messaging'
   | 'personDetails'
   | 'systemNotifications'
+  | 'invoices'
 
 export const queryClient = new QueryClient({
   defaultOptions: {

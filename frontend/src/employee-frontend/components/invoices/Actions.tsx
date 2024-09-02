@@ -5,21 +5,18 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { wrapResult } from 'lib-common/api'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
-import { deleteDraftInvoices } from '../../generated/api-clients/invoicing'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 
 import { InvoicesActions } from './invoices-state'
-
-const deleteDraftInvoicesResult = wrapResult(deleteDraftInvoices)
+import { MutateButton } from '../../../lib-components/atoms/buttons/MutateButton'
+import { deleteDraftInvoicesMutation } from './queries'
 
 const ErrorMessage = styled.div`
   color: ${colors.status.danger};
@@ -73,10 +70,11 @@ const Actions = React.memo(function Actions({
         </>
       ) : null}
       {canDelete && (
-        <AsyncButton
+        <MutateButton
           text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
           disabled={checkedIds.length === 0}
-          onClick={() => deleteDraftInvoicesResult({ body: checkedIds })}
+          mutation={deleteDraftInvoicesMutation}
+          onClick={() => ({ body: checkedIds })}
           onSuccess={() => {
             setError(undefined)
             actions.clearChecked()
