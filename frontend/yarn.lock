@@ -7170,7 +7170,7 @@ __metadata:
     react-datepicker: "npm:^7.3.0"
     react-day-picker: "npm:^9.0.7"
     react-dom: "npm:^18.3.1"
-    react-focus-lock: "npm:2.12.1"
+    react-focus-lock: "npm:2.13.2"
     react-image-crop: "npm:^11.0.6"
     react-leaflet: "npm:^4.2.1"
     react-router-dom: "npm:^6.26.0"
@@ -11153,9 +11153,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-focus-lock@npm:2.12.1":
-  version: 2.12.1
-  resolution: "react-focus-lock@npm:2.12.1"
+"react-focus-lock@npm:2.13.2":
+  version: 2.13.2
+  resolution: "react-focus-lock@npm:2.13.2"
   dependencies:
     "@babel/runtime": "npm:^7.0.0"
     focus-lock: "npm:^1.3.5"
@@ -11169,7 +11169,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/4183e713668e49b5954ab4124307fee220826fa5ca26c400646132fbad02a8d9047fc688cf94b20f7afbd29c84857a5bd7e8341f3674f464a0d4ad6776735f7a
+  checksum: 10/a169e060e2a2457062489fb5e48811f334823b3878a4599162878c93c683f47807407044009c3886da07f2adaa9d7325cbb4fafc104a7f8cd4d1dad7325304f8
   languageName: node
   linkType: hard
 
