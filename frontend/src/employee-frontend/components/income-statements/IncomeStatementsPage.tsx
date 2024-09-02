@@ -7,13 +7,13 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Success, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { queryOrDefault, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -32,16 +32,12 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCommentAlt, fasCommentAltLines, fasFile } from 'lib-icons'
 
-import { getIncomeStatementsAwaitingHandler } from '../../generated/api-clients/incomestatement'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 
 import IncomeStatementFilters from './IncomeStatementFilters'
-
-const getIncomeStatementsAwaitingHandlerResult = wrapResult(
-  getIncomeStatementsAwaitingHandler
-)
+import { incomeStatementsAwaitingHandlerQuery } from './queries'
 
 const pageSize = 50
 
@@ -156,29 +152,34 @@ export default React.memo(function IncomeStatementsPage() {
     incomeStatements: { searchFilters }
   } = useContext(InvoicingUiContext)
 
-  const [incomeStatements] = useApiState(() => {
-    const { sentStartDate, sentEndDate } = searchFilters
-    if (sentStartDate && sentEndDate && sentStartDate.isAfter(sentEndDate)) {
-      return Promise.resolve(Success.of({ data: [], pages: 0, total: 0 }))
-    }
-
-    return getIncomeStatementsAwaitingHandlerResult({
-      body: {
-        page,
-        pageSize,
-        sortBy,
-        sortDirection,
-        areas: searchFilters.area.length > 0 ? searchFilters.area : null,
-        providerTypes:
-          searchFilters.providerTypes.length > 0
-            ? searchFilters.providerTypes
-            : null,
-        sentStartDate: searchFilters.sentStartDate ?? null,
-        sentEndDate: searchFilters.sentEndDate ?? null,
-        placementValidDate: searchFilters.placementValidDate ?? null
-      }
-    })
-  }, [page, sortBy, sortDirection, searchFilters])
+  const incomeStatements = useQueryResult(
+    queryOrDefault(incomeStatementsAwaitingHandlerQuery, {
+      data: [],
+      pages: 0,
+      total: 0
+    })(
+      searchFilters.sentStartDate == null ||
+        searchFilters.sentEndDate == null ||
+        searchFilters.sentStartDate.isEqualOrBefore(searchFilters.sentEndDate)
+        ? {
+            body: {
+              page,
+              pageSize,
+              sortBy,
+              sortDirection,
+              areas: searchFilters.area.length > 0 ? searchFilters.area : null,
+              providerTypes:
+                searchFilters.providerTypes.length > 0
+                  ? searchFilters.providerTypes
+                  : null,
+              sentStartDate: searchFilters.sentStartDate ?? null,
+              sentEndDate: searchFilters.sentEndDate ?? null,
+              placementValidDate: searchFilters.placementValidDate ?? null
+            }
+          }
+        : undefined
+    )
+  )
 
   return (
     <Container
