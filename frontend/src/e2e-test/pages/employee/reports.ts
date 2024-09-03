@@ -572,3 +572,65 @@ export class PreschoolAbsenceReport {
     )
   }
 }
+
+export class ChildAttendanceReservationReport {
+  constructor(private page: Page) {}
+
+  async setDates(startDate: LocalDate, endDate: LocalDate) {
+    const startDateInput = new DatePicker(this.page.findByDataQa('start-date'))
+    await startDateInput.fill(startDate)
+    const endDateInput = new DatePicker(this.page.findByDataQa('end-date'))
+    await endDateInput.fill(endDate)
+  }
+
+  async endDate(date: LocalDate) {
+    const endDateInput = new DatePicker(this.page.findByDataQa('end-date'))
+    await endDateInput.fill(date)
+  }
+
+  async selectUnit(unitName: string) {
+    const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
+    await unitSelector.fillAndSelectFirst(unitName)
+  }
+
+  async selectGroup(groupName: string) {
+    const groupSelector = new MultiSelect(
+      this.page.findByDataQa('group-select')
+    )
+    await groupSelector.fillAndSelectFirst(groupName)
+  }
+
+  async selectTimeFilter(startTime: string, endTime: string) {
+    const startTimeInput = new TextInput(
+      this.page.findByDataQa('start-time-filter')
+    )
+    const endTimeInput = new TextInput(
+      this.page.findByDataQa('end-time-filter')
+    )
+    await startTimeInput.fill(startTime)
+    await endTimeInput.fill(endTime)
+  }
+
+  async assertRows(
+    expected: {
+      childName: string
+      attendanceReservationStart: string
+      attendanceReservationEnd: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('child-attendance-reservation-row')
+    await rows.assertCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await row
+          .findByDataQa('attendance-reservation-start')
+          .assertTextEquals(data.attendanceReservationStart)
+        await row
+          .findByDataQa('attendance-reservation-end')
+          .assertTextEquals(data.attendanceReservationEnd)
+      })
+    )
+  }
+}

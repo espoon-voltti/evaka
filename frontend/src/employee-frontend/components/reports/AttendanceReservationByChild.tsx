@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DefaultTheme, useTheme } from 'styled-components'
 
@@ -20,6 +20,7 @@ import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
+import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -70,6 +71,9 @@ export default React.memo(function AttendanceReservationByChild() {
   )
   const [orderBy, setOrderBy] = useState<OrderBy>('start')
 
+  const [startTime, setStartTime] = useState<string>('00:00')
+  const [endTime, setEndTime] = useState<string>('23:59')
+
   const units = useQueryResult(unitsQuery({ includeClosed: true }))
   const groups = useQueryResult(
     queryOrDefault(unitGroupsQuery, [])(unitId ? { daycareId: unitId } : null)
@@ -89,11 +93,41 @@ export default React.memo(function AttendanceReservationByChild() {
     [unitId, filters]
   )
 
+  const parsedStartTime = useMemo(
+    () => LocalTime.tryParse(startTime),
+    [startTime]
+  )
+  const parsedEndTime = useMemo(() => LocalTime.tryParse(endTime), [endTime])
+
+  const rowReservationTimeIsWithinTimeFilter = (
+    row: AttendanceReservationReportByChildRow
+  ) => {
+    return (
+      parsedStartTime &&
+      parsedEndTime &&
+      ((row.reservationStartTime !== null &&
+        row.reservationStartTime.isEqualOrAfter(parsedStartTime) &&
+        row.reservationStartTime.isEqualOrBefore(parsedEndTime)) ||
+        (row.reservationEndTime !== null &&
+          row.reservationEndTime.isEqualOrAfter(parsedStartTime) &&
+          row.reservationEndTime.isEqualOrBefore(parsedEndTime)))
+    )
+  }
+
   const sortedRows = report
-    .map<
-      AttendanceReservationReportByChildRow[]
-    >((rows) => rows.sort((a, b) => compareByGroup(a, b, lang) || compareByDate(a, b) || (orderBy === 'start' ? compareByStartTime(a, b) : 0) || (orderBy === 'end' ? compareByEndTime(a, b) : 0) || compareByChildName(a, b, lang)))
+    .map<AttendanceReservationReportByChildRow[]>((rows) =>
+      rows.sort(
+        (a, b) =>
+          compareByGroup(a, b, lang) ||
+          compareByDate(a, b) ||
+          (orderBy === 'start' ? compareByStartTime(a, b) : 0) ||
+          (orderBy === 'end' ? compareByEndTime(a, b) : 0) ||
+          compareByChildName(a, b, lang)
+      )
+    )
     .getOrElse<AttendanceReservationReportByChildRow[]>([])
+    .filter((row) => rowReservationTimeIsWithinTimeFilter(row))
+
   const sortedUnits = units
     .map((data) => data.sort((a, b) => a.name.localeCompare(b.name, lang)))
     .getOrElse([])
@@ -173,6 +207,22 @@ export default React.memo(function AttendanceReservationByChild() {
 
   const periodAriaId = useUniqueId()
 
+  const validateTimeFilter = (
+    startTime: string,
+    endTime: string
+  ): { status: 'warning'; text: string } | undefined => {
+    const startTimeLocalTime = LocalTime.tryParse(startTime)
+    const endTimeLocalTime = LocalTime.tryParse(endTime)
+    return !startTimeLocalTime ||
+      !endTimeLocalTime ||
+      endTimeLocalTime.isEqualOrBefore(startTimeLocalTime)
+      ? {
+          status: 'warning',
+          text: i18n.reports.attendanceReservationByChild.timeFilterError
+        }
+      : undefined
+  }
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -216,6 +266,7 @@ export default React.memo(function AttendanceReservationByChild() {
               }
               getItemLabel={(item) => item.name}
               placeholder={i18n.filters.unitPlaceholder}
+              data-qa="unit-select"
             />
           </FlexRow>
         </FilterRow>
@@ -237,6 +288,7 @@ export default React.memo(function AttendanceReservationByChild() {
               getOptionLabel={(group) => group.name}
               placeholder=""
               isClearable={true}
+              data-qa="group-select"
             />
           </div>
         </FilterRow>
@@ -256,6 +308,29 @@ export default React.memo(function AttendanceReservationByChild() {
               getItemLabel={(item) =>
                 i18n.reports.attendanceReservationByChild.orderByOptions[item]
               }
+            />
+          </FlexRow>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel id={periodAriaId}>
+            {i18n.reports.common.clock}
+          </FilterLabel>
+          <FlexRow>
+            <InputField
+              value={startTime}
+              onChange={(time) => setStartTime(time)}
+              hideErrorsBeforeTouched={true}
+              width="xs"
+              data-qa="start-time-filter"
+              info={validateTimeFilter(startTime, endTime)}
+            />
+            <InputField
+              value={endTime}
+              onChange={(time) => setEndTime(time)}
+              hideErrorsBeforeTouched={true}
+              width="xs"
+              data-qa="end-time-filter"
+              info={validateTimeFilter(startTime, endTime)}
             />
           </FlexRow>
         </FilterRow>
@@ -337,7 +412,7 @@ const getTableBody = (
   const components: React.ReactNode[] = []
   rows.forEach((row, rowIndex) => {
     components.push(
-      <Tr key={`row-${rowIndex}`}>
+      <Tr key={`row-${rowIndex}`} data-qa="child-attendance-reservation-row">
         {getTableRow(row, rowIndex, dates, i18n, theme)}
       </Tr>
     )
@@ -373,7 +448,10 @@ const getTableRow = (
               {column.isBackupCare && (
                 <StaticChip color={theme.colors.main.m1}>v</StaticChip>
               )}
-              <Link to={`/child-information/${column.childId}`}>
+              <Link
+                to={`/child-information/${column.childId}`}
+                data-qa="child-name"
+              >
                 {getChildName(column)}
               </Link>
             </>
@@ -400,6 +478,7 @@ const getTableRow = (
                   borderEdge={isToday && isFirstRow ? ['top'] : []}
                   isToday={isToday}
                   isFuture={isFuture}
+                  data-qa="attendance-reservation-start"
                 >
                   {column.reservationStartTime?.format(timeFormat)}
                 </AttendanceReservationReportTd>
@@ -410,6 +489,7 @@ const getTableRow = (
                   ]}
                   isToday={isToday}
                   isFuture={isFuture}
+                  data-qa="attendance-reservation-end"
                 >
                   {column.reservationEndTime?.format(timeFormat)}
                 </AttendanceReservationReportTd>
