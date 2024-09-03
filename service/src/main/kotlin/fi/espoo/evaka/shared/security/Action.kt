@@ -1614,7 +1614,7 @@ sealed interface Action {
     enum class Invoice(override vararg val defaultRules: ScopedActionRule<in InvoiceId>) :
         ScopedAction<InvoiceId> {
         READ(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
-        UPDATE(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
+        MARK_SENT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
         SEND(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE(HasGlobalRole(ADMIN, FINANCE_ADMIN));
 

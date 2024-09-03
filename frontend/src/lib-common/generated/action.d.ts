@@ -310,9 +310,9 @@ export type Income =
 
 export type Invoice =
   | 'DELETE'
+  | 'MARK_SENT'
   | 'READ'
   | 'SEND'
-  | 'UPDATE'
 
 export type InvoiceCorrection =
   | 'DELETE'

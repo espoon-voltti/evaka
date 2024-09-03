@@ -17,7 +17,6 @@ import {
   AsyncButton,
   Checkable,
   Checkbox,
-  Combobox,
   DatePickerDeprecated,
   Page,
   Radio,
@@ -361,8 +360,6 @@ export class InvoicesPage {
   #sendInvoicesDialog: Element
   #navigateBack: Element
   #invoiceDetailsHeadOfFamily: Element
-  #addInvoiceRowButton: Element
-  #saveChangesButton: AsyncButton
   #markInvoiceSentButton: AsyncButton
   #invoices: Element
   #sendInvoicesButton: AsyncButton
@@ -382,10 +379,6 @@ export class InvoicesPage {
     this.#invoiceDetailsHeadOfFamily = page.findByDataQa(
       'invoice-details-head-of-family'
     )
-    this.#addInvoiceRowButton = page.findByDataQa('invoice-button-add-row')
-    this.#saveChangesButton = new AsyncButton(
-      page.findByDataQa('invoice-actions-save-changes')
-    )
     this.#markInvoiceSentButton = new AsyncButton(
       page.findByDataQa('invoice-actions-mark-sent')
     )
@@ -393,21 +386,6 @@ export class InvoicesPage {
     this.#sendInvoicesButton = new AsyncButton(
       page.find('[data-qa="send-invoices-dialog"] [data-qa="modal-okBtn"]')
     )
-  }
-
-  #invoiceRow = (index: number) => {
-    const row = this.page.find(
-      `[data-qa="invoice-details-invoice-row"]:nth-child(${index + 1})`
-    )
-    return {
-      productSelect: new Select(row.find('[data-qa="select-product"]')),
-      unitSelector: new Combobox(row.find('[data-qa="input-unit"]')),
-      amountInput: new TextInput(row.find('[data-qa="input-amount"]')),
-      unitPriceInput: new TextInput(row.find('[data-qa="input-price"]')),
-      deleteRowButton: new TextInput(
-        row.find('[data-qa="delete-invoice-row-button"]')
-      )
-    }
   }
 
   async assertLoaded() {
@@ -472,30 +450,6 @@ export class InvoicesPage {
         this.page.findAll('[data-qa="invoice-details-invoice-row"]').count(),
       count
     )
-  }
-
-  async addNewInvoiceRow(
-    product: string,
-    unitName: string,
-    amount: number,
-    unitPrice: number
-  ) {
-    await this.#addInvoiceRowButton.click()
-    const invoiceRow = this.#invoiceRow(1)
-    await invoiceRow.productSelect.selectOption(product)
-    await invoiceRow.unitSelector.fillAndSelectFirst(unitName)
-    await invoiceRow.amountInput.fill('')
-    await invoiceRow.amountInput.type(this.formatFinnishDecimal(amount))
-    await invoiceRow.unitPriceInput.fill('')
-    await invoiceRow.unitPriceInput.type(this.formatFinnishDecimal(unitPrice))
-    await this.#saveChangesButton.click()
-    await this.#saveChangesButton.waitUntilIdle()
-  }
-
-  async deleteInvoiceRow(index: number) {
-    await this.#invoiceRow(index).deleteRowButton.click()
-    await this.#saveChangesButton.click()
-    await this.#saveChangesButton.waitUntilIdle()
   }
 
   async assertInvoiceTotal(total: number) {

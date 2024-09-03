@@ -34,7 +34,6 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -233,7 +232,7 @@ class InvoiceController(
                     it,
                     user,
                     clock,
-                    Action.Invoice.UPDATE,
+                    Action.Invoice.MARK_SENT,
                     invoiceIds,
                 )
                 it.markManuallySent(user, clock.now(), invoiceIds)
@@ -295,23 +294,6 @@ class InvoiceController(
             .also {
                 Audit.InvoicesRead.log(targetId = AuditId(id), meta = mapOf("count" to it.size))
             }
-    }
-
-    @PutMapping("/{id}")
-    fun putInvoice(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: InvoiceId,
-        @RequestBody invoice: Invoice,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Invoice.UPDATE, id)
-                service.updateDraftInvoiceRows(it, id, invoice)
-            }
-        }
-        Audit.InvoicesUpdate.log(targetId = AuditId(id))
     }
 
     @GetMapping("/codes")

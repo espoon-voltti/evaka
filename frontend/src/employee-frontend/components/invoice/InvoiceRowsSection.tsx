@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
 import {
   InvoiceCodes,
   InvoiceRowDetailed,
@@ -36,48 +35,9 @@ const TitleContainer = styled.div`
   align-items: baseline;
 `
 
-const updateInvoiceRow =
-  (
-    update: (rows: InvoiceRowDetailed[]) => void,
-    invoiceRows: InvoiceRowDetailed[],
-    invoiceRow: InvoiceRowDetailed
-  ) =>
-  (value: Partial<InvoiceRowDetailed>) =>
-    update(
-      invoiceRows.map((row) =>
-        row === invoiceRow ? { ...invoiceRow, ...value } : row
-      )
-    )
-
-const emptyInvoiceRow = (
-  invoiceRow: InvoiceRowDetailed
-): InvoiceRowDetailed => ({
-  id: '',
-  child: invoiceRow.child,
-  periodStart: invoiceRow.periodStart,
-  periodEnd: invoiceRow.periodEnd,
-  product: 'DAYCARE' as const,
-  description: '',
-  unitId: '',
-  unitName: '',
-  unitProviderType: 'MUNICIPAL',
-  daycareType: [],
-  costCenter: '',
-  subCostCenter: '',
-  savedCostCenter: null,
-  amount: 0,
-  unitPrice: 0,
-  price: 0,
-  correctionId: null,
-  note: null
-})
-
 interface Props {
   rows: InvoiceRowDetailed[]
-  permittedActions: Action.Invoice[]
-  updateRows: (rows: InvoiceRowDetailed[]) => void
   invoiceCodes: Result<InvoiceCodes>
-  editable: boolean
 }
 
 const InvoiceRowsTable = styled(Table)`
@@ -110,10 +70,7 @@ const TotalPriceTh = styled(Th)`
 
 export default React.memo(function InvoiceRowsSection({
   rows,
-  permittedActions,
-  updateRows,
-  invoiceCodes,
-  editable
+  invoiceCodes
 }: Props) {
   const { i18n } = useTranslation()
   const [child, setChild] = useState<PersonDetailed>()
@@ -127,9 +84,6 @@ export default React.memo(function InvoiceRowsSection({
     setAbsenceModalDate(date)
     toggleUiMode('invoices-absence-modal')
   }
-
-  const getAddInvoiceRow = (invoiceRow: InvoiceRowDetailed) => () =>
-    updateRows([...rows, emptyInvoiceRow(invoiceRow)])
 
   const groupedRows = groupBy(get('child.id'), rows)
 
@@ -161,7 +115,7 @@ export default React.memo(function InvoiceRowsSection({
       >
         <div className="invoice-rows">
           {Object.entries(groupedRows).map(([childId, childRows]) => {
-            const [firstRow, ...otherRows] = childRows
+            const firstRow = childRows[0]
             return (
               <div key={childId}>
                 <TitleContainer>
@@ -219,57 +173,17 @@ export default React.memo(function InvoiceRowsSection({
                     </Tr>
                   </Thead>
                   <Tbody>
-                    <InvoiceRowsSectionRow
-                      key={firstRow.id || ''}
-                      row={firstRow}
-                      update={updateInvoiceRow(updateRows, rows, firstRow)}
-                      remove={
-                        editable
-                          ? () =>
-                              updateRows(
-                                rows.filter(({ id }) => id !== firstRow.id)
-                              )
-                          : undefined
-                      }
-                      products={products}
-                      unitIds={unitIds}
-                      unitDetails={unitDetails}
-                      editable={editable && permittedActions.includes('UPDATE')}
-                      deletable={permittedActions.includes('DELETE')}
-                    />
-                    {otherRows.map((row, index) => (
+                    {childRows.map((row, index) => (
                       <InvoiceRowsSectionRow
                         key={index}
                         row={row}
-                        update={updateInvoiceRow(updateRows, rows, row)}
-                        remove={
-                          editable
-                            ? () =>
-                                updateRows(
-                                  rows.filter(({ id }) => id !== row.id)
-                                )
-                            : undefined
-                        }
                         products={products}
                         unitIds={unitIds}
                         unitDetails={unitDetails}
-                        editable={
-                          editable && permittedActions.includes('UPDATE')
-                        }
-                        deletable={permittedActions.includes('DELETE')}
                       />
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                {permittedActions.includes('UPDATE') && (
-                  <Button
-                    appearance="inline"
-                    disabled={!editable}
-                    onClick={getAddInvoiceRow(firstRow)}
-                    data-qa="invoice-button-add-row"
-                    text={i18n.invoice.form.rows.addRow}
-                  />
-                )}
                 <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
               </div>
             )

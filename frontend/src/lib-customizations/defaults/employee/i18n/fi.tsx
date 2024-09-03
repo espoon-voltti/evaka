@@ -2765,8 +2765,7 @@ export const fi = {
         amount: 'Kpl',
         unitPrice: 'A-hinta',
         price: 'Summa',
-        subtotal: 'Laskun summa',
-        addRow: 'Lisää laskurivi'
+        subtotal: 'Laskun summa'
       },
       sum: {
         rowSubTotal: 'Lapsen rivien summa',

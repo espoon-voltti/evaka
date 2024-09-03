@@ -313,11 +313,10 @@ const ChildSection = React.memo(function ChildSection({
               products={products}
               unitIds={unitIds}
               unitDetails={unitDetails}
-              editable={false}
-              deletable={permittedActions.includes('DELETE')}
-              update={() => undefined}
               remove={
-                correction.invoiceStatus && correction.invoiceStatus !== 'DRAFT'
+                permittedActions.includes('DELETE') &&
+                correction.invoiceStatus &&
+                correction.invoiceStatus !== 'DRAFT'
                   ? undefined
                   : () => deleteCorrection(correction.id)
               }
@@ -345,10 +344,7 @@ const ChildSection = React.memo(function ChildSection({
               products={products}
               unitIds={unitIds}
               unitDetails={unitDetails}
-              editable={true}
-              deletable={false}
               update={updateState}
-              remove={undefined}
               addNote={() => editNote(editState.id, editState.note)}
               status={<span />}
             />

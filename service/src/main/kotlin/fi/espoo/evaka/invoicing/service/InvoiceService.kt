@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.invoicing.service
 
-import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDates
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
@@ -12,14 +11,11 @@ import fi.espoo.evaka.invoicing.data.lockInvoices
 import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
 import fi.espoo.evaka.invoicing.data.setDraftsWaitingForManualSending
-import fi.espoo.evaka.invoicing.data.updateInvoiceRows
-import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,7 +23,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
-import java.util.UUID
 import org.springframework.stereotype.Component
 
 data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
@@ -77,24 +72,6 @@ class InvoiceService(
             sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id }
         )
         tx.markInvoicedCorrectionsAsComplete()
-    }
-
-    fun updateDraftInvoiceRows(tx: Database.Transaction, uuid: InvoiceId, invoice: Invoice) {
-        if (invoice.rows.any { it.amount <= 0 }) {
-            throw BadRequest("Invoice rows amounts must be positive")
-        }
-
-        tx.getInvoice(uuid)?.also {
-            if (it.status != InvoiceStatus.DRAFT) {
-                throw BadRequest("Only draft invoices can be updated")
-            }
-        } ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
-
-        val rows =
-            invoice.rows.map { row ->
-                if (row.id == null) row.copy(id = InvoiceRowId(UUID.randomUUID())) else row
-            }
-        tx.updateInvoiceRows(uuid, rows)
     }
 
     fun getInvoiceIds(

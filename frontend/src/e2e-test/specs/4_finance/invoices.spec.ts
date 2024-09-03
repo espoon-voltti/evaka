@@ -121,32 +121,6 @@ describe('Invoices', () => {
     await invoicesPage.navigateBackToInvoices()
   })
 
-  test('Add a new invoice row, modify its amount and price and persist the changes', async () => {
-    await invoicesPage.createInvoiceDrafts()
-    await invoicesPage.openFirstInvoice()
-    await invoicesPage.assertInvoiceRowCount(1)
-    await invoicesPage.addNewInvoiceRow(
-      'DAYCARE_INCREASE',
-      testDaycare.name,
-      10,
-      100
-    )
-    await invoicesPage.navigateBackToInvoices()
-    const originalInvoiceTotal = feeDecisionFixture.children.reduce(
-      (sum, { finalFee }) => sum + finalFee / 100,
-      0
-    )
-    await invoicesPage.assertInvoiceTotal(originalInvoiceTotal + 10 * 100)
-  })
-
-  test('Delete an invoice row', async () => {
-    await invoicesPage.createInvoiceDrafts()
-    await invoicesPage.openFirstInvoice()
-    await invoicesPage.assertInvoiceRowCount(1)
-    await invoicesPage.deleteInvoiceRow(0)
-    await invoicesPage.assertInvoiceRowCount(0)
-  })
-
   test('Invoices are toggled and sent', async () => {
     await createInvoices({
       body: [

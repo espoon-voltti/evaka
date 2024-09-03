@@ -642,24 +642,6 @@ export async function markInvoicesSent(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.putInvoice
-*/
-export async function putInvoice(
-  request: {
-    id: UUID,
-    body: Invoice
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/invoices/${request.id}`.toString(),
-    method: 'PUT',
-    data: request.body satisfies JsonCompatible<Invoice>
-  })
-  return json
-}
-
-
-/**
 * Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.searchInvoices
 */
 export async function searchInvoices(
