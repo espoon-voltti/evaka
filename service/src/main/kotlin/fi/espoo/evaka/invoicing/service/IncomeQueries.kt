@@ -81,8 +81,10 @@ FROM expiring_income_with_billable_placement_day_after_expiration expiring_incom
 WHERE NOT EXISTS (
     SELECT 1 FROM income_statement
     WHERE person_id = expiring_income.person_id
-        AND (created > ${bind(today)} - INTERVAL '1 month' OR (end_date IS NOT NULL AND ${bind(dayAfterExpiration)} <= end_date))
         AND handler_id IS NULL
+        AND created > ${bind(today)} - INTERVAL '12 months'
+        AND (end_date IS NULL OR ${bind(dayAfterExpiration)} <= end_date)
+    
 ) 
 ${if (checkForExistingRecentIncomeNotificationType != null) """AND NOT EXISTS (
     SELECT 1 FROM income_notification
