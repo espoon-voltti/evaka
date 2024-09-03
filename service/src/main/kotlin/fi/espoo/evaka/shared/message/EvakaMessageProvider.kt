@@ -165,7 +165,8 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
 
     override fun getPlacementToolHeader(lang: OfficialLanguage): String =
         when (lang) {
-            OfficialLanguage.FI -> "Esitäyttetty hakemus esiopetukseen / Pre-filled application for preschool education"
+            OfficialLanguage.FI ->
+                "Esitäyttetty hakemus esiopetukseen / Pre-filled application for preschool education"
             OfficialLanguage.SV -> "Förfyllad ansökan om förskoleundervisning"
         }
 
@@ -186,10 +187,12 @@ We have made a pre-filled application for preschool education for your child. Th
 If you want to apply for a place other than the one assigned to your child, you can edit the application in eVaka.
 
 If you accept the assigned pre-school place, you don't have to do anything.
-                """.trimIndent()
+                """
+                    .trimIndent()
             OfficialLanguage.SV ->
                 """
 Vi har gjort en förifylld ansökan om förskoleundervisning för ditt barn.
-                """.trimIndent()
+                """
+                    .trimIndent()
         }
 }

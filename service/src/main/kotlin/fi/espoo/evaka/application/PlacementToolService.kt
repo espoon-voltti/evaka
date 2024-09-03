@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
@@ -31,14 +35,14 @@ import org.springframework.web.multipart.MultipartFile
 
 enum class PlacementToolCsvField(val fieldName: String) {
     CHILD_ID("lapsen_id"),
-    PRESCHOOL_UNIT_ID("yksikon_id")
+    PRESCHOOL_UNIT_ID("yksikon_id"),
 }
 
 @Service
 class PlacementToolService(
     private val applicationStateService: ApplicationStateService,
     private val personService: PersonService,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler(::doCreatePlacementToolApplications)
@@ -47,7 +51,7 @@ class PlacementToolService(
     fun doCreatePlacementToolApplications(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.PlacementTool
+        msg: AsyncJob.PlacementTool,
     ) {
         msg.user?.let {
             createApplication(
@@ -56,7 +60,7 @@ class PlacementToolService(
                 clock,
                 msg.data,
                 msg.defaultServiceNeedOption,
-                msg.nextPreschoolTerm
+                msg.nextPreschoolTerm,
             )
         }
     }
@@ -65,7 +69,7 @@ class PlacementToolService(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        file: MultipartFile
+        file: MultipartFile,
     ) {
 
         db.connect { dbc ->
@@ -79,7 +83,7 @@ class PlacementToolService(
                                 nameFi = it.nameFi,
                                 nameSv = it.nameSv,
                                 nameEn = it.nameEn,
-                                validPlacementType = it.validPlacementType
+                                validPlacementType = it.validPlacementType,
                             )
                         }
                 if (null == defaultServiceNeedOption) {
@@ -99,11 +103,11 @@ class PlacementToolService(
                                 AsyncJob.PlacementTool(
                                     data,
                                     defaultServiceNeedOption,
-                                    nextPreschoolTerm
+                                    nextPreschoolTerm,
                                 )
                             ),
                             runAt = clock.now(),
-                            retryCount = 1
+                            retryCount = 1,
                         )
                     }
                     .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
@@ -117,7 +121,7 @@ class PlacementToolService(
         clock: EvakaClock,
         data: PlacementToolData,
         defaultServiceNeedOption: ServiceNeedOption?,
-        nextPreschoolTerm: PreschoolTerm
+        nextPreschoolTerm: PreschoolTerm,
     ) {
         dbc.transaction { tx ->
             if (tx.getChild(data.childId) == null) {
@@ -135,7 +139,7 @@ class PlacementToolService(
                         tx.getParentships(
                                 headOfChildId = null,
                                 childId = data.childId,
-                                period = DateRange(clock.today(), null)
+                                period = DateRange(clock.today(), null),
                             )
                             .firstOrNull()
                             ?.headOfChildId
@@ -154,10 +158,10 @@ class PlacementToolService(
                         type = ApplicationType.PRESCHOOL,
                         sentDate = clock.today(),
                         hideFromGuardian = false,
-                        transferApplication = false
+                        transferApplication = false,
                     ),
                     personService,
-                    applicationStateService
+                    applicationStateService,
                 )
 
             val application = tx.fetchApplicationDetails(applicationId)!!
@@ -170,7 +174,7 @@ class PlacementToolService(
                 data,
                 guardianIds,
                 defaultServiceNeedOption,
-                nextPreschoolTerm
+                nextPreschoolTerm,
             )
 
             applicationStateService.sendPlacementToolApplication(tx, user, clock, application)
@@ -192,7 +196,7 @@ class PlacementToolService(
                             UUID.fromString(
                                 row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName)
                             )
-                        )
+                        ),
                 )
             }
 
@@ -204,16 +208,14 @@ class PlacementToolService(
         data: PlacementToolData,
         guardianIds: List<PersonId>,
         defaultServiceNeedOption: ServiceNeedOption?,
-        preschoolTerm: PreschoolTerm
+        preschoolTerm: PreschoolTerm,
     ) {
         val preferredUnit = tx.getDaycare(data.preschoolId)!!
         val partTime =
-            tx.getPlacementsForChildDuring(data.childId, clock.today(), null)
-                .firstOrNull()
-                ?.type in
+            tx.getPlacementsForChildDuring(data.childId, clock.today(), null).firstOrNull()?.type in
                 listOf(
                     PlacementType.DAYCARE_PART_TIME,
-                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                 )
 
         // update preferences to application
@@ -233,12 +235,12 @@ class PlacementToolService(
                                             endTime = "17:00", // todo: parametrize
                                             shiftCare = false,
                                             partTime = false,
-                                            serviceNeedOption = defaultServiceNeedOption
+                                            serviceNeedOption = defaultServiceNeedOption,
                                         )
                                     } else {
                                         null
                                     },
-                                urgent = false
+                                urgent = false,
                             ),
                         secondGuardian =
                             guardianIds
@@ -248,11 +250,11 @@ class PlacementToolService(
                                     SecondGuardian(
                                         phoneNumber = guardian2.phone,
                                         email = guardian2.email ?: "",
-                                        agreementStatus = OtherGuardianAgreementStatus.AGREED
+                                        agreementStatus = OtherGuardianAgreementStatus.AGREED,
                                     )
-                                }
+                                },
                     ),
-                allowOtherGuardianAccess = guardianIds.any { it != application.guardianId }
+                allowOtherGuardianAccess = true,
             )
 
         applicationStateService.updateApplicationContentsServiceWorker(
@@ -261,7 +263,7 @@ class PlacementToolService(
             clock.now(),
             application.id,
             ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form)),
-            user.evakaUserId
+            user.evakaUserId,
         )
     }
 }

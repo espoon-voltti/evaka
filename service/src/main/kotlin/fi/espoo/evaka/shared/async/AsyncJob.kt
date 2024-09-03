@@ -445,7 +445,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UpdateFromVtj::class,
                     UploadToKoski::class,
                     VTJRefresh::class,
-                    PlacementTool::class
+                    PlacementTool::class,
                 ),
             )
         val email =

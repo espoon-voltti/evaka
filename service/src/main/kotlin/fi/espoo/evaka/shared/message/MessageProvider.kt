@@ -38,6 +38,7 @@ interface IMessageProvider {
     fun getDefaultFinancialDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
 
     fun getPlacementToolHeader(lang: OfficialLanguage): String
+
     fun getPlacementToolContent(lang: OfficialLanguage): String
 }
 
