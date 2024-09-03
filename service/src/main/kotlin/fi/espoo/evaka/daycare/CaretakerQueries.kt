@@ -64,7 +64,7 @@ SELECT
     daterange(dc.start_date, dc.end_date, '[]') * daterange(dg.start_date, dg.end_date, '[]') * ${bind(range)} AS range,
     dc.amount
 FROM daycare_group dg
-JOIN daycare_caretaker dc ON dg.id = dc.group_id
+JOIN daycare_caretaker dc ON dg.id = dc.group_id AND daterange(dg.start_date, dg.end_date, '[]') && daterange(dc.start_date, dc.end_date, '[]')
 WHERE ${predicate(byGroup.toRawPredicate().forTable("dg"))}
 AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
 AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
