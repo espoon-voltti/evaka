@@ -14,7 +14,6 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.JamixEnv
-import fi.espoo.evaka.children.getActivePlacementUnitsForChildren
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.getDaycaresById
 import fi.espoo.evaka.daycare.getPreschoolTerms
@@ -27,7 +26,6 @@ import fi.espoo.evaka.reports.MealReportChildInfo
 import fi.espoo.evaka.reports.mealReportData
 import fi.espoo.evaka.reports.mealTexturesForChildren
 import fi.espoo.evaka.reports.specialDietsForChildren
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
@@ -64,6 +62,7 @@ class JamixService(
     init {
         asyncJobRunner.registerHandler(::sendOrder)
         asyncJobRunner.registerHandler(::syncDiets)
+        asyncJobRunner.registerHandler(::sendSpecialDietNullificationWarningEmail)
     }
 
     fun planOrders(dbc: Database.Connection, clock: EvakaClock) {
@@ -104,21 +103,35 @@ class JamixService(
 
     fun syncDiets(db: Database.Connection, clock: EvakaClock, job: AsyncJob.SyncJamixDiets) {
         if (client == null) error("Cannot sync diet list: JamixEnv is not configured")
-        val warningEmails =
-            fetchAndUpdateJamixDiets(client, db, clock, emailEnv.sender(Language.fi))
-        try {
-            fetchAndUpdateJamixTextures(client, db)
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to sync meal textures from Jamix" }
-        } finally {
-            warningEmails.forEach { email ->
-                try {
-                    emailClient.send(email)
-                } catch (e: Exception) {
-                    logger.error(e) { "Failed to send warning email" }
-                }
-            }
-        }
+        fetchAndUpdateJamixDiets(client, db, asyncJobRunner, clock.now())
+        fetchAndUpdateJamixTextures(client, db)
+    }
+
+    fun sendSpecialDietNullificationWarningEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendSpecialDietNullificationWarningEmail,
+    ) {
+        val content =
+            EmailContent.fromHtml(
+                subject = "Muutoksia Jamix erityisruokavalioihin",
+                html =
+                    "<p>Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:</p>\n" +
+                        job.diets
+                            .sortedWith(compareBy({ it.second.abbreviation }, { it.first }))
+                            .joinToString("\n") { (childId, diet) ->
+                                "<p>- Lapsen tunniste: '$childId', Alkuperäinen erityisruokavalio: '${diet.abbreviation}' ERV tunniste: ${diet.id}</p>"
+                            },
+            )
+
+        Email.createForEmployee(
+                dbc,
+                job.employeeId,
+                content = content,
+                traceId = "${job.unitId}:${job.employeeId}",
+                emailEnv.sender(Language.fi),
+            )
+            ?.let { emailClient.send(it) }
     }
 }
 
@@ -126,10 +139,9 @@ class JamixService(
 fun fetchAndUpdateJamixDiets(
     client: JamixClient,
     db: Database.Connection,
-    clock: EvakaClock,
-    fromAddress: String,
-    warner: (s: String) -> Unit = loggerWarner,
-): List<Email> {
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    now: HelsinkiDateTime,
+) {
     val dietsFromJamix = client.getDiets()
 
     val cleanedDietList = cleanupJamixDietList(dietsFromJamix)
@@ -138,71 +150,32 @@ fun fetchAndUpdateJamixDiets(
     )
     if (cleanedDietList.isEmpty()) error("Refusing to sync empty diet list into database")
     return db.transaction { tx ->
-        val nulledChildren = tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
-        if (nulledChildren.isNotEmpty()) {
-                warner(
-                    "Jamix diet list update caused ${nulledChildren.size} child special diets to be set to null"
-                )
-                generateSpecialDietNullificationWarningEmails(
-                    tx,
-                    clock,
-                    nulledChildren,
-                    fromAddress,
-                )
-            } else {
-                emptyList()
-            }
-            .also {
-                val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
-                logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
-            }
-    }
-}
+        val nulledSpecialDiets =
+            tx.resetSpecialDietsNotContainedWithin(now.toLocalDate(), cleanedDietList)
+        val deletedDietsCount = tx.setSpecialDiets(cleanedDietList)
+        logger.info("Deleted: $deletedDietsCount diets, inserted ${cleanedDietList.size}")
 
-fun generateSpecialDietNullificationWarningEmails(
-    tx: Database.Transaction,
-    clock: EvakaClock,
-    nulledChildren: Map<ChildId, SpecialDiet>,
-    fromAddress: String,
-): List<Email> {
-    val childrenByUnit = tx.getActivePlacementUnitsForChildren(clock.today(), nulledChildren.keys)
-    if (childrenByUnit.isEmpty()) return emptyList()
-
-    return childrenByUnit.flatMap { (unitId, childrenInUnit) ->
-        val emailBody = createEmailBodyForUnit(childrenInUnit, nulledChildren)
-
-        val supervisors =
-            tx.getDaycareAclRows(unitId, false, UserRole.UNIT_SUPERVISOR).map { it.employee }
-
-        supervisors.mapNotNull { recipient ->
-            Email.createForEmployee(
-                recipient,
-                content =
-                    EmailContent(
-                        subject = "Muutoksia Jamix erityisruokavalioihin",
-                        html = emailBody.replace("\n", "<br>"),
-                        text = emailBody,
-                    ),
-                traceId = "",
-                fromAddress,
+        if (nulledSpecialDiets.isNotEmpty()) {
+            val byUnit = nulledSpecialDiets.groupBy({ it.unitId }, { it.childId to it.specialDiet })
+            asyncJobRunner.plan(
+                tx,
+                byUnit.flatMap { (unitId, nulled) ->
+                    val supervisors =
+                        tx.getDaycareAclRows(unitId, false, UserRole.UNIT_SUPERVISOR)
+                            .map { it.employee }
+                            .sortedBy { it.id }
+                    supervisors.map { supervisor ->
+                        AsyncJob.SendSpecialDietNullificationWarningEmail(
+                            unitId,
+                            supervisor.id,
+                            nulled,
+                        )
+                    }
+                },
+                runAt = now,
             )
         }
     }
-}
-
-private fun createEmailBodyForUnit(
-    childrenInUnit: List<ChildId>,
-    nulledChildren: Map<ChildId, SpecialDiet>,
-): String {
-    val emailBodyLines =
-        childrenInUnit.mapNotNull { childId ->
-            nulledChildren[childId]?.let { diet ->
-                "Lapsen tunniste: '$childId', Alkuperäinen erityisruokavalio: '${diet.abbreviation}' ERV tunniste: ${diet.id}"
-            }
-        }
-
-    return "Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:\n" +
-        emailBodyLines.joinToString("\n")
 }
 
 /** Throws an IllegalStateException if Jamix returns an empty texture list. */

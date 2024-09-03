@@ -1706,10 +1706,10 @@ $form
     }
 
     @PutMapping("/diets")
-    fun putDiets(db: Database, @RequestBody diets: List<SpecialDiet>) {
+    fun putDiets(db: Database, clock: EvakaClock, @RequestBody diets: List<SpecialDiet>) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.resetSpecialDietsNotContainedWithin(diets)
+                tx.resetSpecialDietsNotContainedWithin(clock.today(), diets)
                 tx.setSpecialDiets(diets)
             }
         }

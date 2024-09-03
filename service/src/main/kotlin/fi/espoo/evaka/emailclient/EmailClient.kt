@@ -5,8 +5,9 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.pis.EmailMessageType
+import fi.espoo.evaka.pis.getEmployee
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 
@@ -21,7 +22,6 @@ private constructor(
     val content: EmailContent,
     val traceId: String,
 ) {
-
     companion object {
         fun create(
             dbc: Database.Connection,
@@ -46,7 +46,7 @@ private constructor(
                 return null
             }
 
-            if (emailType !in (enabledEmailTypes ?: EmailMessageType.values().toList())) {
+            if (emailType !in (enabledEmailTypes ?: EmailMessageType.entries)) {
                 logger.info {
                     "Not sending email (traceId: $traceId): $emailType not enabled for person $personId"
                 }
@@ -57,11 +57,14 @@ private constructor(
         }
 
         fun createForEmployee(
-            employee: DaycareAclRowEmployee,
+            dbc: Database.Connection,
+            employeeId: EmployeeId,
             content: EmailContent,
             traceId: String,
             fromAddress: String,
         ): Email? {
+            val employee = dbc.read { it.getEmployee(employeeId) } ?: return null
+
             if (employee.email == null) {
                 logger.warn("Will not send email due to missing email address: (traceId: $traceId)")
                 return null
@@ -69,7 +72,7 @@ private constructor(
 
             if (!employee.email.matches(EMAIL_PATTERN)) {
                 logger.warn(
-                    "Will not send email due to invalid toAddress \"$employee.email\": (traceId: $traceId)"
+                    "Will not send email due to invalid toAddress \"${employee.email}\": (traceId: $traceId)"
                 )
                 return null
             }

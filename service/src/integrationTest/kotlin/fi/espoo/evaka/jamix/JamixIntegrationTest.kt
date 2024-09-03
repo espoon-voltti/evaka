@@ -7,6 +7,7 @@ package fi.espoo.evaka.jamix
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.mealintegration.DefaultMealTypeMapper
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -30,6 +31,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val customerNumberToIdMapping = mapOf(88 to 888, 99 to 999)
+    private val now = HelsinkiDateTime.of(LocalDate.of(2024, 4, 8), LocalTime.of(2, 25))
 
     @Test
     fun `meal order jobs for daycare groups without customer number are not planned`() {
@@ -303,14 +305,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `diet sync does not sync empty data`() {
         val client = TestJamixClient()
-        assertThrows<Exception> {
-            fetchAndUpdateJamixDiets(
-                client,
-                db,
-                clock = MockEvakaClock(2024, 4, 8, 12, 0),
-                fromAddress = "Foobar <foobar@example.com>",
-            )
-        }
+        assertThrows<Exception> { fetchAndUpdateJamixDiets(client, db, asyncJobRunner, now) }
     }
 
     @Test
@@ -323,12 +318,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         JamixSpecialDiet(2, JamixSpecialDietFields("Hello World", "Hello")),
                     )
             )
-        fetchAndUpdateJamixDiets(
-            client,
-            db,
-            clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>",
-        )
+        fetchAndUpdateJamixDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
             val diets = tx.getSpecialDiets().toSet()
             assertEquals(setOf(SpecialDiet(1, "Foo"), SpecialDiet(2, "Hello")), diets)
@@ -347,20 +337,8 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             TestJamixClient(
                 specialDiets = listOf(JamixSpecialDiet(1, JamixSpecialDietFields("Foobar", "Foo")))
             )
-        val warnings = mutableListOf<String>()
-        fetchAndUpdateJamixDiets(
-            client,
-            db,
-            clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>",
-        ) { s ->
-            warnings.add(s)
-        }
-        // assert that logger.warn has been called
-        assertEquals(
-            setOf("Jamix diet list update caused 1 child special diets to be set to null"),
-            warnings.toSet(),
-        )
+        fetchAndUpdateJamixDiets(client, db, asyncJobRunner, now)
+
         db.transaction { tx ->
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
             assertNotNull(childAfterSync)
@@ -370,61 +348,99 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `diet sync generates warning emails`() {
-
-        val monday = LocalDate.of(2024, 4, 8)
-        val tuesday = LocalDate.of(2024, 4, 9)
-
         val area = DevCareArea()
-        val daycare =
-            DevDaycare(
-                areaId = area.id,
-                mealtimeBreakfast = TimeRange(LocalTime.of(8, 0), LocalTime.of(8, 20)),
-                mealtimeLunch = TimeRange(LocalTime.of(11, 15), LocalTime.of(11, 45)),
-                mealtimeSnack = TimeRange(LocalTime.of(13, 30), LocalTime.of(13, 50)),
-            )
+        val daycare = DevDaycare(areaId = area.id, name = "Daycare 1")
+        val daycare2 = DevDaycare(areaId = area.id, name = "Daycare 2")
         val employee1 = DevEmployee(email = "supervisor_the_first@city.fi")
         val employee2 = DevEmployee(email = "supervisor_the_second@city.fi")
+        val employee3 = DevEmployee(email = "supervisor_the_third@city.fi")
 
-        val childWithSpecialDiet = DevPerson(firstName = "Diet", lastName = "Johnson")
+        val child1 = DevPerson()
+        val child2 = DevPerson()
+        val child3 = DevPerson()
 
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
-            tx.insert(employee1)
-            tx.insert(employee2)
-            tx.updateDaycareAclWithEmployee(daycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
-            tx.updateDaycareAclWithEmployee(daycare.id, employee2.id, UserRole.UNIT_SUPERVISOR)
+            tx.insert(daycare2)
+            tx.insert(employee1, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(employee2, mapOf(daycare.id to UserRole.UNIT_SUPERVISOR))
+            tx.insert(employee3, mapOf(daycare2.id to UserRole.UNIT_SUPERVISOR))
 
-            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet abbreviation")))
-
-            tx.insert(childWithSpecialDiet, DevPersonType.RAW_ROW)
-            tx.insert(DevChild(id = childWithSpecialDiet.id, dietId = 1))
+            tx.setSpecialDiets(listOf(SpecialDiet(1, "diet 1"), SpecialDiet(2, "diet 2")))
+            tx.insert(child1, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = child1.id, dietId = 1))
             tx.insert(
                 DevPlacement(
-                    childId = childWithSpecialDiet.id,
+                    childId = child1.id,
                     unitId = daycare.id,
-                    startDate = monday,
-                    endDate = tuesday,
+                    startDate = now.toLocalDate().minusYears(1),
+                    endDate = now.toLocalDate(),
+                )
+            )
+            // Placement today and another in the future -> email is generated only for the current
+            // placement
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare2.id,
+                    startDate = now.toLocalDate().plusDays(1),
+                    endDate = now.toLocalDate().plusYears(1),
+                )
+            )
+
+            tx.insert(child2, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = child2.id, dietId = 2))
+            // No placement today, placement starts in the future -> email is generated
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = now.toLocalDate().plusDays(1),
+                    endDate = now.toLocalDate().plusYears(1),
+                )
+            )
+
+            tx.insert(child3, DevPersonType.RAW_ROW)
+            tx.insert(DevChild(id = child3.id, dietId = 2))
+            // Placement ended in the past -> no email
+            tx.insert(
+                DevPlacement(
+                    childId = child3.id,
+                    unitId = daycare.id,
+                    startDate = now.toLocalDate().minusYears(1),
+                    endDate = now.toLocalDate().minusDays(1),
                 )
             )
         }
+
         val client =
             TestJamixClient(
-                specialDiets = listOf(JamixSpecialDiet(2, JamixSpecialDietFields("Foobar", "Foo")))
+                specialDiets =
+                    listOf(
+                        JamixSpecialDiet(3, JamixSpecialDietFields("diet 3", "diet abbreviation 3"))
+                    )
             )
-        val emails =
-            fetchAndUpdateJamixDiets(
-                client,
-                db,
-                clock = MockEvakaClock(2024, 4, 8, 12, 0),
-                fromAddress = "Foobar <foobar@example.com>",
-            )
-        assertEquals(2, emails.size)
-        val s = childWithSpecialDiet.id.raw
+        fetchAndUpdateJamixDiets(client, db, asyncJobRunner, now)
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
+        val expectedTextContent =
+            """
+Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:
+
+- Lapsen tunniste: '${child1.id}', Alkuperäinen erityisruokavalio: 'diet 1' ERV tunniste: 1
+
+- Lapsen tunniste: '${child2.id}', Alkuperäinen erityisruokavalio: 'diet 2' ERV tunniste: 2
+"""
+                .trim()
+
+        val employees =
+            listOf(employee1.id to employee1.email, employee2.id to employee2.email).sortedBy {
+                it.first
+            }
         assertEquals(
-            "Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden poistumisesta Jamixista:\n" +
-                "Lapsen tunniste: '$s', Alkuperäinen erityisruokavalio: 'diet abbreviation' ERV tunniste: 1",
-            emails[0].content.text,
+            employees.map { it.second to expectedTextContent },
+            MockEmailClient.emails.map { it.toAddress to it.content.text },
         )
     }
 
@@ -446,12 +462,7 @@ class JamixIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         )
                     )
             )
-        fetchAndUpdateJamixDiets(
-            client,
-            db,
-            clock = MockEvakaClock(2024, 4, 8, 12, 0),
-            fromAddress = "Foobar <foobar@example.com>",
-        )
+        fetchAndUpdateJamixDiets(client, db, asyncJobRunner, now)
         db.transaction { tx ->
             val childAfterSync = tx.getChild(childWithSpecialDiet.id)
             assertNotNull(childAfterSync)

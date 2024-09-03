@@ -41,7 +41,7 @@ class SpecialDietController(private val accessControl: AccessControl) {
                         Action.Global.UPDATE_SPECIAL_DIET_LIST,
                     )
                     val cleanedDietList = cleanupJamixDietList(specialDietList)
-                    tx.resetSpecialDietsNotContainedWithin(cleanedDietList)
+                    tx.resetSpecialDietsNotContainedWithin(clock.today(), cleanedDietList)
                     tx.setSpecialDiets(cleanedDietList)
                 }
             }
