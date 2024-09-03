@@ -322,7 +322,7 @@ export const ReservationGridItem = React.memo(function ReservationGridItem({
           ? capitalizeFirstLetter(itemData.date.format('EEEEEE d.M.', lang))
           : ''}
       </Label>
-      <Label>{durationString}</Label>
+      <Label data-qa="discussion-time-duration">{durationString}</Label>
       <Radio
         key={itemData.id}
         checked={bind.state === itemData.id}

@@ -662,21 +662,23 @@ class CalendarEventController(
                                             .groupBy { it.childId }
                                             .map { (key, values) ->
                                                 key to
-                                                    values.map {
-                                                        CitizenCalendarEventTime(
-                                                            id = it.eventTimeId,
-                                                            childId = it.eventTimeOccupant,
-                                                            startTime = it.eventTimeStart,
-                                                            endTime = it.eventTimeEnd,
-                                                            date = it.eventTimeDate,
-                                                            isEditable =
-                                                                !it.eventTimeDate.isBefore(
-                                                                    getManipulationWindowStart(
-                                                                        today
-                                                                    )
-                                                                ),
-                                                        )
-                                                    }
+                                                    values
+                                                        .map {
+                                                            CitizenCalendarEventTime(
+                                                                id = it.eventTimeId,
+                                                                childId = it.eventTimeOccupant,
+                                                                startTime = it.eventTimeStart,
+                                                                endTime = it.eventTimeEnd,
+                                                                date = it.eventTimeDate,
+                                                                isEditable =
+                                                                    !it.eventTimeDate.isBefore(
+                                                                        getManipulationWindowStart(
+                                                                            today
+                                                                        )
+                                                                    ),
+                                                            )
+                                                        }
+                                                        .toSet()
                                             }
                                             .toMap(),
                                 )
