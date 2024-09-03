@@ -255,7 +255,7 @@ fun savePaperApplication(
     clock: EvakaClock,
     body: PaperApplicationCreateRequest,
     personService: PersonService,
-    applicationStateService: ApplicationStateService
+    applicationStateService: ApplicationStateService,
 ): Pair<PersonId, ApplicationId> {
     val child =
         tx.getPersonById(body.childId)
@@ -268,7 +268,7 @@ fun savePaperApplication(
                     .getOrCreatePerson(
                         tx,
                         user,
-                        ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                        ExternalIdentifier.SSN.getInstance(body.guardianSsn),
                     )
                     ?.id
                     ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
@@ -299,7 +299,7 @@ fun savePaperApplication(
             origin = ApplicationOrigin.PAPER,
             hideFromGuardian = body.hideFromGuardian,
             sentDate = body.sentDate,
-            allowOtherGuardianAccess = true
+            allowOtherGuardianAccess = true,
         )
     return Pair(guardianId, applicationId)
 }

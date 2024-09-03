@@ -333,7 +333,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        application: ApplicationDetails
+        application: ApplicationDetails,
     ) {
         val applicationFlags = tx.applicationFlags(application, clock.today())
         tx.updateApplicationFlags(application.id, applicationFlags)
@@ -353,7 +353,7 @@ class ApplicationStateService(
                     title = messageProvider.getPlacementToolHeader(OfficialLanguage.FI),
                     content = messageProvider.getPlacementToolContent(OfficialLanguage.FI),
                     urgent = false,
-                    sensitive = false
+                    sensitive = false,
                 ),
             recipients =
                 setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
@@ -365,7 +365,7 @@ class ApplicationStateService(
                 ),
             attachments = setOf(),
             relatedApplication = application.id,
-            filters = null
+            filters = null,
         )
 
         tx.updateApplicationStatus(application.id, SENT)

@@ -128,7 +128,7 @@ class ApplicationControllerV2(
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
-    private val placementToolService: PlacementToolService
+    private val placementToolService: PlacementToolService,
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -153,7 +153,7 @@ class ApplicationControllerV2(
                         clock,
                         body,
                         personService,
-                        applicationStateService
+                        applicationStateService,
                     )
                 }
             }
@@ -170,7 +170,7 @@ class ApplicationControllerV2(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): UUID {
         placementToolService.createPlacementToolApplications(db, user, clock, file)
 
