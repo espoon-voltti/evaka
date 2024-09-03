@@ -485,6 +485,7 @@ data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
+    val incomeEndDate: LocalDate?,
     val handlerNote: String,
     val type: IncomeStatementType,
     val personId: PersonId,
@@ -519,11 +520,17 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.created,
     i.start_date,
     i.handler_note,
+    last_income.valid_to AS income_end_date,
     person.id AS person_id,
     person.last_name || ' ' || person.first_name AS person_name,
     ca.name AS primary_care_area
 FROM income_statement i
 JOIN person ON person.id = i.person_id
+LEFT JOIN (
+    SELECT person_id, valid_to, row_number() OVER (PARTITION BY person_id ORDER BY valid_from DESC) AS row
+    FROM income
+    WHERE effect <> 'INCOMPLETE'
+) last_income ON last_income.person_id = i.person_id AND last_income.row = 1
 
 -- guardian
 LEFT JOIN guardian g ON g.guardian_id = i.person_id
@@ -580,6 +587,8 @@ ${if (placementValidDate != null) "AND p.start_date IS NOT NULL AND p.end_date I
         when (sortBy) {
             IncomeStatementSortParam.CREATED -> "created ${sortDirection.name}, start_date"
             IncomeStatementSortParam.START_DATE -> "start_date ${sortDirection.name}, created"
+            IncomeStatementSortParam.INCOME_END_DATE ->
+                "income_end_date ${sortDirection.name}, created"
         }
     val rows =
         createQuery {

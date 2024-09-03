@@ -2088,7 +2088,8 @@ export const fi = {
       customer: 'Asiakas',
       area: 'Alue',
       created: 'Luotu',
-      startDate: 'Voimassa',
+      startDate: 'Voimassa alkaen',
+      incomeEndDate: 'Tulotieto päättyy',
       type: 'Tyyppi',
       link: 'Selvitys',
       note: 'Muistiinpano'
