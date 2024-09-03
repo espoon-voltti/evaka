@@ -14,6 +14,7 @@ import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
@@ -106,8 +107,8 @@ class CalendarEventNotificationService(
                 notificationDetails =
                     DiscussionSurveyCreationNotificationData(
                         eventId = msg.eventId,
-                        eventTitle = eventData.title,
-                        eventDescription = eventData.description,
+                        eventTitle = HtmlSafe(eventData.title),
+                        eventDescription = HtmlSafe(eventData.description),
                     ),
             )
         Email.create(
@@ -146,8 +147,8 @@ class CalendarEventNotificationService(
     ) {
         val notificationData =
             dbc.read { tx -> tx.getCalendarEventsById(msg.events.toSet()) }
-                .map { CalendarEventNotificationData(it.title, it.period) }
-                .sortedWith(compareBy({ it.period.start }, { it.title }))
+                .map { CalendarEventNotificationData(HtmlSafe(it.title), it.period) }
+                .sortedWith(compareBy({ it.period.start }, { it.title.toString() }))
         if (notificationData.isEmpty()) {
             logger.info { "No events to notify for parent ${msg.parentId}" }
             return
@@ -187,9 +188,9 @@ class CalendarEventNotificationService(
                 language = msg.language,
                 notificationDetails =
                     DiscussionSurveyReservationNotificationData(
-                        title = msg.eventTitle,
+                        title = HtmlSafe(msg.eventTitle),
                         calendarEventTime = eventTime,
-                        childName = "${child.firstName} ${child.lastName}",
+                        childName = HtmlSafe("${child.firstName} ${child.lastName}"),
                     ),
             )
         Email.create(
@@ -227,9 +228,9 @@ class CalendarEventNotificationService(
                 language = msg.language,
                 notificationDetails =
                     DiscussionSurveyReservationNotificationData(
-                        title = msg.eventTitle,
+                        title = HtmlSafe(msg.eventTitle),
                         calendarEventTime = eventTime,
-                        childName = "${child.firstName} ${child.lastName}",
+                        childName = HtmlSafe("${child.firstName} ${child.lastName}"),
                     ),
             )
         Email.create(
