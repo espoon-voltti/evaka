@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { wrapResult } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import { Daycare } from 'lib-common/generated/api-types/daycare'
 import { MealReportData } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
@@ -89,36 +90,17 @@ export default React.memo(function MealReport() {
               </FlexRow>
             </FilterRow>
           </div>
-          {featureFlags.jamixIntegration &&
-            user?.permittedGlobalActions?.includes('SEND_JAMIX_ORDERS') && (
-              <AsyncButton
-                text={i18n.reports.meals.jamixSend.button}
-                icon={faFileExport}
-                appearance="inline"
-                disabled={
-                  selectedUnit === null ||
-                  date === null ||
-                  wholeWeek ||
-                  date.isBefore(LocalDate.todayInHelsinkiTz().addDays(2))
-                }
-                onClick={async () => {
-                  if (selectedUnit === null || date === null)
-                    return Promise.reject()
-
-                  return sendJamixOrdersResult({
-                    unitId: selectedUnit.id,
-                    date
-                  })
-                }}
-                onSuccess={() => undefined}
-              />
-            )}
         </FixedSpaceRow>
 
         {date &&
           selectedUnit &&
           (wholeWeek ? getWeekDates(date) : [date]).map((adate, idx) => (
-            <MealReportData key={idx} date={adate} unitId={selectedUnit.id} />
+            <MealReportData
+              key={idx}
+              date={adate}
+              unitId={selectedUnit.id}
+              permittedGlobalActions={user?.permittedGlobalActions ?? []}
+            />
           ))}
       </ContentArea>
     </Container>
@@ -127,10 +109,12 @@ export default React.memo(function MealReport() {
 
 const MealReportData = ({
   date,
-  unitId
+  unitId,
+  permittedGlobalActions
 }: {
   date: LocalDate
   unitId: string
+  permittedGlobalActions: Action.Global[]
 }) => {
   const { i18n } = useTranslation()
   const reportResult = useQueryResult(mealReportByUnitQuery({ date, unitId }))
@@ -161,11 +145,25 @@ const MealReportData = ({
           {i18n.common.datetime.weekdays[report.date.getIsoDayOfWeek() - 1]}{' '}
           {report.date.format()}
         </H2>
-        <ReportDownload
-          data={tableData}
-          headers={headers}
-          filename={`${i18n.reports.meals.title} ${report.reportName} ${report.date.formatIso()}.csv`}
-        />
+        <FixedSpaceRow alignItems="center" justifyContent="right">
+          {featureFlags.jamixIntegration === true &&
+            permittedGlobalActions.includes('SEND_JAMIX_ORDERS') &&
+            date.isEqualOrAfter(LocalDate.todayInHelsinkiTz().addDays(2)) &&
+            tableData.length > 0 && (
+              <AsyncButton
+                text={i18n.reports.meals.jamixSend.button}
+                icon={faFileExport}
+                appearance="inline"
+                onClick={async () => sendJamixOrdersResult({ unitId, date })}
+                onSuccess={() => undefined}
+              />
+            )}
+          <ReportDownload
+            data={tableData}
+            headers={headers}
+            filename={`${i18n.reports.meals.title} ${report.reportName} ${report.date.formatIso()}.csv`}
+          />
+        </FixedSpaceRow>
         <TableScrollable>
           <Thead>
             <Tr>
