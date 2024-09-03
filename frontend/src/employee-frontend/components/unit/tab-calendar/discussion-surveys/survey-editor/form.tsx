@@ -4,7 +4,6 @@
 
 import orderBy from 'lodash/orderBy'
 
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { boolean, requiredLocalTimeRange, string } from 'lib-common/form/fields'
 import {
@@ -23,6 +22,8 @@ import {
 import { UnitGroupDetails } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
+import { getCombinedChildPlacementsForGroup } from '../DiscussionSurveyView'
 
 export interface TreeNodeInfo {
   key: string
@@ -104,12 +105,13 @@ export const filterAttendees = (
     }
     const individualChildrenOfSelectedGroup =
       invitedAttendees.individualChildren.filter((c) => c.groupId === groupId)
-    const groupChildren = placements.filter((p) =>
-      p.groupPlacements.some(
-        (gp) =>
-          gp.groupId === g.id &&
-          period.overlaps(new DateRange(gp.startDate, gp.endDate))
-      )
+
+    // children who have any group placements across all placements that overlap with survey period
+    const groupChildren = getCombinedChildPlacementsForGroup(
+      placements,
+      groupId
+    ).filter((p) =>
+      p.groupPlacements.some((gp) => gp.overlapsWith(period.asDateRange()))
     )
 
     const sortedGroupChildren = orderBy(groupChildren, [

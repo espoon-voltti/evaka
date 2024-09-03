@@ -415,7 +415,7 @@ export default React.memo(function CalendarEventsSection({
                           >
                             <Link
                               to={`/units/${unitId}/calendar/events/${event.id}?eventDay=${day.formatIso()}`}
-                              data-qa="event"
+                              data-qa="survey"
                             >
                               <P noMargin>
                                 <Bold>{event.title}</Bold>
