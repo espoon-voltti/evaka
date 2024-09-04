@@ -16,7 +16,6 @@ import { useTranslation } from '../../state/i18n'
 const RowRightAligned = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 8px;
 `
 
 const DisabledLink = styled.span`

@@ -450,6 +450,7 @@ enum class Audit(
     PushSettingsSet,
     PushSubscriptionUpsert,
     RawReportRead,
+    SendJamixOrders,
     ServiceNeedOptionsRead,
     ServiceNeedReportRead,
     SettingsRead,
