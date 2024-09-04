@@ -9,7 +9,6 @@ import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.invoicing.controller.SortDirection
-import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
@@ -23,7 +22,6 @@ import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
-import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -32,6 +30,7 @@ import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -66,8 +65,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
-
-    private val now = HelsinkiDateTime.of(LocalDate.of(2024, 8, 30), LocalTime.of(12, 0))
 
     @BeforeEach
     fun beforeEach() {
@@ -271,8 +268,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `list income statements awaiting handler`() {
-        val incomeDate1 = LocalDate.now().minusDays(2)
-        val incomeDate2 = LocalDate.now().plusMonths(1)
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
         val placementId3 = PlacementId(UUID.randomUUID())
@@ -298,24 +293,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     unitId = daycare1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
-                )
-            )
-
-            // `validTo` of the newest income statement is returned as `incomeEndDate`
-            tx.insert(
-                DevIncome(
-                    personId = citizenId,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    validFrom = incomeDate1.minusYears(1),
-                    validTo = incomeDate1.minusMonths(1).minusDays(1),
-                )
-            )
-            tx.insert(
-                DevIncome(
-                    personId = citizenId,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    validFrom = incomeDate1.minusMonths(1),
-                    validTo = incomeDate1,
                 )
             )
 
@@ -363,25 +340,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 )
             )
 
-            // Latest income has no end date -> incomeEndDate is null
-            tx.insert(
-                DevIncome(
-                    personId = testAdult_2.id,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    validFrom = incomeDate2.minusMonths(1),
-                    validTo = incomeDate2.minusDays(1),
-                )
-            )
-            tx.insert(
-                DevIncome(
-                    personId = testAdult_2.id,
-                    updatedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                    validFrom = incomeDate2,
-                    validTo = null,
-                )
-            )
-
             tx.insert(
                 DevParentship(
                     childId = testChild_4.id,
@@ -420,7 +378,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement1.id,
                         created = incomeStatement1.created,
                         startDate = incomeStatement1.startDate,
-                        incomeEndDate = incomeDate1,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
@@ -431,7 +388,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -442,7 +398,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement3.id,
                         created = incomeStatement3.created,
                         startDate = incomeStatement3.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
@@ -453,7 +408,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement4.id,
                         created = incomeStatement4.created,
                         startDate = incomeStatement4.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
@@ -464,7 +418,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement5.id,
                         created = incomeStatement5.created,
                         startDate = incomeStatement5.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
@@ -475,7 +428,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement6.id,
                         created = incomeStatement6.created,
                         startDate = incomeStatement6.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_6.id,
@@ -486,7 +438,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement7.id,
                         created = incomeStatement7.created,
                         startDate = incomeStatement7.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.CHILD_INCOME,
                         personId = testChild_1.id,
@@ -557,7 +508,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -633,7 +583,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -716,7 +665,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement1.id,
                         created = newCreated,
                         startDate = incomeStatement1.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
@@ -742,7 +690,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -841,7 +788,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement1.id,
                         created = newCreated,
                         startDate = incomeStatement1.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
@@ -852,7 +798,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -863,7 +808,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement3.id,
                         created = incomeStatement3.created,
                         startDate = incomeStatement3.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
@@ -886,7 +830,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -910,7 +853,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement1.id,
                         created = newCreated,
                         startDate = incomeStatement1.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
@@ -921,7 +863,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = incomeStatement2.id,
                         created = incomeStatement2.created,
                         startDate = incomeStatement2.startDate,
-                        incomeEndDate = null,
                         handlerNote = "",
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
@@ -1004,7 +945,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 id = incomeStatement1.id,
                 created = newCreated,
                 startDate = incomeStatement1.startDate,
-                incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = citizenId,
@@ -1016,7 +956,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 id = incomeStatement2.id,
                 created = newCreated,
                 startDate = incomeStatement2.startDate,
-                incomeEndDate = null,
                 handlerNote = "",
                 type = IncomeStatementType.HIGHEST_FEE,
                 personId = testAdult_2.id,
@@ -1047,7 +986,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatement(
             dbInstance(),
             employee,
-            MockEvakaClock(now),
+            RealEvakaClock(),
             citizenId,
             id,
         )
@@ -1057,7 +996,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return incomeStatementController.getIncomeStatements(
             dbInstance(),
             employee,
-            MockEvakaClock(now),
+            RealEvakaClock(),
             personId,
             page = 1,
             pageSize = 10,
@@ -1071,7 +1010,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         incomeStatementController.setIncomeStatementHandled(
             dbInstance(),
             employee,
-            MockEvakaClock(now),
+            RealEvakaClock(),
             id,
             body,
         )
@@ -1080,7 +1019,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
-        clock: EvakaClock = MockEvakaClock(now),
+        clock: EvakaClock = RealEvakaClock(),
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(
             dbInstance(),
@@ -1094,7 +1033,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         return attachmentsController.uploadIncomeStatementAttachmentEmployee(
             dbInstance(),
             employee,
-            MockEvakaClock(now),
+            RealEvakaClock(),
             id,
             MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes()),
         )
