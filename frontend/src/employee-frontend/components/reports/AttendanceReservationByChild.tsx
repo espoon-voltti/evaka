@@ -6,14 +6,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DefaultTheme, useTheme } from 'styled-components'
 
-import { Loading, wrapResult } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import Loader from 'lib-components/atoms/Loader'
@@ -28,17 +26,13 @@ import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicke
 import { Translations } from 'lib-customizations/employee'
 
 import ReportDownload from '../../components/reports/ReportDownload'
-import { getAttendanceReservationReportByUnitAndChild } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, unitsQuery } from '../unit/queries'
 
 import { AttendanceReservationReportTd } from './AttendanceReservation'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
-
-const getAttendanceReservationReportByUnitAndChildResult = wrapResult(
-  getAttendanceReservationReportByUnitAndChild
-)
+import { attendanceReservationReportByUnitAndChildQuery } from './queries'
 
 interface AttendanceReservationReportFilters {
   range: FiniteDateRange
@@ -78,19 +72,20 @@ export default React.memo(function AttendanceReservationByChild() {
   const groups = useQueryResult(
     unitId ? unitGroupsQuery({ daycareId: unitId }) : constantQuery([])
   )
-  const [report] = useApiState(
-    () =>
+  const report = useQueryResult(
+    queryOrDefault(
+      attendanceReservationReportByUnitAndChildQuery,
+      []
+    )(
       unitId !== null
-        ? getAttendanceReservationReportByUnitAndChildResult({
+        ? {
             unitId,
             start: filters.range.start,
             end: filters.range.end,
             groupIds: filters.groupIds
-          })
-        : Promise.resolve(
-            Loading.of<AttendanceReservationReportByChildRow[]>()
-          ),
-    [unitId, filters]
+          }
+        : undefined
+    )
   )
 
   const parsedStartTime = useMemo(
