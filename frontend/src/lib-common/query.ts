@@ -23,10 +23,16 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
+export interface QueryOptions {
+  enabled?: boolean
+  refetchOnMount?: boolean | 'always'
+  staleTime?: number
+}
+
 export function query<Args extends unknown[], Data>(opts: {
   api: (...args: Args) => Promise<Data>
   queryKey: (...args: Args) => QueryKey
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+  options?: QueryOptions
 }): (...args: Args) => UseQueryOptions<Data, unknown> {
   const { api, queryKey, options } = opts
   return (...args: Args): UseQueryOptions<Data, unknown> => ({
@@ -38,7 +44,7 @@ export function query<Args extends unknown[], Data>(opts: {
 
 export function useQuery<Data>(
   query: UseQueryOptions<Data, unknown>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryKey' | 'queryFn'>
+  options?: QueryOptions
 ): UseQueryResult<Data, unknown> {
   return useQueryOriginal({ ...query, ...options })
 }
@@ -60,7 +66,7 @@ function queryResult<T>(
 
 export function useQueryResult<Data>(
   query: UseQueryOptions<Data, unknown>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+  options?: QueryOptions
 ): Result<Data> {
   const { data, error, isFetching } = useQuery(query, options)
   return useMemo(
@@ -71,7 +77,7 @@ export function useQueryResult<Data>(
 
 export function useChainedQuery<Data>(
   query: Result<UseQueryOptions<Data, unknown>>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+  options?: QueryOptions
 ): Result<Data> {
   const result = useQueryResult(
     // The result of `constantQuery(null)` is never returned to the caller, because the query is enabled only when the previous query is successful.
@@ -103,19 +109,7 @@ export function pagedInfiniteQuery<Args extends unknown[], Data, Id>(opts: {
   api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>
   queryKey: (...args: Args) => QueryKey
   id: (data: Data) => Id
-  options?:
-    | Omit<
-        UseInfiniteQueryOptions<
-          Paged<Data>,
-          unknown,
-          InfiniteData<Paged<Data>>,
-          Paged<Data>,
-          QueryKey,
-          number
-        >,
-        'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
-      >
-    | undefined
+  options?: QueryOptions
 }): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
   const { api, queryKey, id, options } = opts
   return (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
@@ -140,17 +134,7 @@ export interface PagedInfiniteQueryResult<Data> {
 
 export function usePagedInfiniteQueryResult<Data, Id>(
   queryDescription: PagedInfiniteQueryDescription<Data, Id>,
-  options?: Omit<
-    UseInfiniteQueryOptions<
-      Paged<Data>,
-      unknown,
-      InfiniteData<Paged<Data>>,
-      Paged<Data>,
-      QueryKey,
-      number
-    >,
-    'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
-  >
+  options?: QueryOptions
 ): PagedInfiniteQueryResult<Data> {
   const { id, queryKey, ...queryOptions } = queryDescription
   const {
