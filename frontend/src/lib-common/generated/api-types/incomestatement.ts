@@ -157,7 +157,6 @@ export interface IncomeStatementAwaitingHandler {
   created: HelsinkiDateTime
   handlerNote: string
   id: UUID
-  incomeEndDate: LocalDate | null
   personId: UUID
   personName: string
   primaryCareArea: string | null
@@ -215,7 +214,6 @@ export type IncomeStatementBody = IncomeStatementBody.ChildIncome | IncomeStatem
 export type IncomeStatementSortParam =
   | 'CREATED'
   | 'START_DATE'
-  | 'INCOME_END_DATE'
 
 /**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
@@ -377,7 +375,6 @@ export function deserializeJsonIncomeStatementAwaitingHandler(json: JsonOf<Incom
   return {
     ...json,
     created: HelsinkiDateTime.parseIso(json.created),
-    incomeEndDate: (json.incomeEndDate != null) ? LocalDate.parseIso(json.incomeEndDate) : null,
     startDate: LocalDate.parseIso(json.startDate)
   }
 }
