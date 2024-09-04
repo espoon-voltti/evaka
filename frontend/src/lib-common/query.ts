@@ -42,10 +42,16 @@ export function query<Args extends unknown[], Data>(opts: {
   })
 }
 
-export function useQuery<Data>(
-  query: UseQueryOptions<Data, unknown>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyUseQueryOptions = UseQueryOptions<any, unknown>
+
+type DataOf<T extends AnyUseQueryOptions> =
+  T extends UseQueryOptions<infer Data, unknown> ? Data : never
+
+export function useQuery<T extends AnyUseQueryOptions>(
+  query: T,
   options?: QueryOptions
-): UseQueryResult<Data, unknown> {
+): UseQueryResult<DataOf<T>, unknown> {
   return useQueryOriginal({ ...query, ...options })
 }
 
@@ -64,10 +70,10 @@ function queryResult<T>(
   return Loading.of()
 }
 
-export function useQueryResult<Data>(
-  query: UseQueryOptions<Data, unknown>,
+export function useQueryResult<T extends AnyUseQueryOptions>(
+  query: T,
   options?: QueryOptions
-): Result<Data> {
+): Result<DataOf<T>> {
   const { data, error, isFetching } = useQuery(query, options)
   return useMemo(
     () => queryResult(data, error, isFetching),
@@ -75,13 +81,13 @@ export function useQueryResult<Data>(
   )
 }
 
-export function useChainedQuery<Data>(
-  query: Result<UseQueryOptions<Data, unknown>>,
+export function useChainedQuery<T extends AnyUseQueryOptions>(
+  query: Result<T>,
   options?: QueryOptions
-): Result<Data> {
+): Result<DataOf<T>> {
   const result = useQueryResult(
     // The result of `constantQuery(null)` is never returned to the caller, because the query is enabled only when the previous query is successful.
-    query.getOrElse(constantQuery(null)) as UseQueryOptions<Data, unknown>,
+    query.getOrElse(constantQuery(null)) as T,
     {
       ...options,
       enabled: (options?.enabled ?? true) && query.isSuccess
@@ -282,7 +288,7 @@ export function queryKeysNamespace<QueryKeyPrefix extends string>() {
   /* eslint-enable */
 }
 
-function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
+export function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
   return {
     queryFn: () => Promise.resolve(result),
     queryKey: ['builtin', 'constant', result],
