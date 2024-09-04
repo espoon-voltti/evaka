@@ -131,6 +131,7 @@ export function EmployeeList({ employees }: Props) {
               confirmationTitle={i18n.employees.deactivateConfirm}
               mutation={deactivateEmployeeMutation}
               onClick={() => ({ id })}
+              data-qa="deactivate-button"
             />
           ) : (
             <ConfirmedMutation
@@ -138,6 +139,7 @@ export function EmployeeList({ employees }: Props) {
               confirmationTitle={i18n.employees.activateConfirm}
               mutation={activateEmployeeMutation}
               onClick={() => ({ id })}
+              data-qa="activate-button"
             />
           )}
         </Td>

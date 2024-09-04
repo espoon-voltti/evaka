@@ -22,15 +22,16 @@ export const queryKeys = createQueryKeys('employees', {
   search: (
     page: number | null,
     pageSize: number | null,
-    searchTerm: string | null
-  ) => ['search', page, pageSize, searchTerm],
+    searchTerm: string | null,
+    hideDeactivated: boolean | null
+  ) => ['search', page, pageSize, searchTerm, hideDeactivated],
   byId: (id: UUID) => ['id', id]
 })
 
 export const searchEmployeesQuery = query({
   api: searchEmployees,
-  queryKey: ({ body: { page, pageSize, searchTerm } }) =>
-    queryKeys.search(page, pageSize, searchTerm)
+  queryKey: ({ body: { page, pageSize, searchTerm, hideDeactivated } }) =>
+    queryKeys.search(page, pageSize, searchTerm, hideDeactivated)
 })
 
 export const employeeDetailsQuery = query({
