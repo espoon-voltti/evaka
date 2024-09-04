@@ -106,7 +106,7 @@ const features: Features = {
     voucherUnitPayments: false,
     intermittentShiftCare: false,
     noAbsenceType: false,
-    discussionReservations: false,
+    discussionReservations: true,
     forceUnpublishDocumentTemplate: false,
     invoiceDisplayAccountNumber: true
   }
