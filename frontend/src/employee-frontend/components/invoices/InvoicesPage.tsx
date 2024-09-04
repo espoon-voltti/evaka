@@ -7,49 +7,112 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
-import { Loading, Result, Success } from 'lib-common/api'
-import { InvoiceSummaryResponse } from 'lib-common/generated/api-types/invoicing'
+import { useBoolean } from 'lib-common/form/hooks'
+import {
+  InvoiceSortParam,
+  SortDirection
+} from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
+import {
+  first,
+  queryOrDefault,
+  second,
+  useQueryResult,
+  useSelectMutation
+} from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 
 import Actions from './Actions'
 import InvoiceFilters from './InvoiceFilters'
 import Invoices from './Invoices'
-import { InvoicesActions, useInvoicesState } from './invoices-state'
+import {
+  invoicesQuery,
+  sendInvoicesByDateMutation,
+  sendInvoicesMutation
+} from './queries'
+
+const pageSize = 200
 
 export default React.memo(function InvoicesPage() {
   const { user } = useContext(UserContext)
   const {
-    actions,
-    state: {
-      page,
-      invoices,
-      invoiceTotals,
-      sortBy,
-      sortDirection,
-      checkedInvoices,
-      allInvoicesToggle,
-      showModal
-    },
-    searchFilters,
-    reloadInvoices,
-    refreshInvoices,
-    sendInvoices,
-    onSendSuccess
-  } = useInvoicesState()
+    invoices: { searchFilters, debouncedSearchTerms }
+  } = useContext(InvoicingUiContext)
 
-  const canSend = (invoices[page] ?? Success.of<InvoiceSummaryResponse[]>([]))
-    .map((a) => a.some((b) => b.permittedActions.includes('SEND')))
+  const { startDate, endDate, area, unit, status, distinctiveDetails } =
+    searchFilters
+
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState<InvoiceSortParam>('HEAD_OF_FAMILY')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+
+  const invoices = useQueryResult(
+    queryOrDefault(invoicesQuery, {
+      data: [],
+      pages: 0,
+      total: 0
+    })(
+      !startDate || !endDate || startDate.isEqualOrBefore(endDate)
+        ? {
+            body: {
+              page,
+              pageSize,
+              sortBy,
+              sortDirection,
+              area,
+              unit: unit ?? null,
+              status: status.length > 0 ? [status] : null,
+              distinctions: distinctiveDetails,
+              searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
+              periodStart: startDate ?? null,
+              periodEnd: endDate ?? null
+            }
+          }
+        : undefined
+    )
+  )
+
+  const [showModal, { off: closeModal, on: openModal }] = useBoolean(false)
+
+  const [fullAreaSelection, { set: setFullAreaSelection }] = useBoolean(false)
+
+  const [checkedInvoices, setCheckedInvoices] = useState<Set<UUID>>(new Set())
+  const toggleChecked = (invoiceId: UUID) =>
+    setCheckedInvoices((prev) => {
+      const next = new Set([...prev])
+      if (next.has(invoiceId)) {
+        next.delete(invoiceId)
+      } else {
+        next.add(invoiceId)
+      }
+      return next
+    })
+  const clearChecked = () => setCheckedInvoices(new Set())
+  const checkAllOnPage = () =>
+    setCheckedInvoices((prev) => {
+      const next = new Set([...prev])
+      invoices
+        .map((res) => res.data.map((invoice) => invoice.data.id))
+        .getOrElse([])
+        .forEach((invoiceId) => next.add(invoiceId))
+      return next
+    })
+
+  const canSend = invoices
+    .map((a) => a.data.some((b) => b.permittedActions.includes('SEND')))
     .getOrElse(false)
-  const canDelete = (invoices[page] ?? Success.of<InvoiceSummaryResponse[]>([]))
-    .map((a) => a.some((b) => b.permittedActions.includes('DELETE')))
+
+  const canDelete = invoices
+    .map((a) => a.data.some((b) => b.permittedActions.includes('DELETE')))
     .getOrElse(false)
 
   return (
@@ -61,40 +124,46 @@ export default React.memo(function InvoicesPage() {
       <ContentArea opaque>
         <Invoices
           user={user}
-          actions={actions}
-          invoices={invoices[page] ?? Loading.of()}
-          refreshInvoices={refreshInvoices}
-          total={invoiceTotals?.total}
-          pages={invoiceTotals?.pages}
+          pagedInvoices={invoices}
           currentPage={page}
+          setCurrentPage={setPage}
           sortBy={sortBy}
+          setSortBy={setSortBy}
           sortDirection={sortDirection}
+          setSortDirection={setSortDirection}
           showCheckboxes={
             (searchFilters.status === 'DRAFT' ||
               searchFilters.status === 'WAITING_FOR_SENDING') &&
             (canSend || canDelete)
           }
           checked={checkedInvoices}
-          allInvoicesToggle={allInvoicesToggle}
-          allInvoicesToggleDisabled={searchFilters.area.length < 1}
+          checkAll={checkAllOnPage}
+          clearChecked={clearChecked}
+          toggleChecked={toggleChecked}
+          fullAreaSelection={fullAreaSelection}
+          setFullAreaSelection={setFullAreaSelection}
+          fullAreaSelectionDisabled={searchFilters.area.length < 1}
         />
       </ContentArea>
       <Actions
-        actions={actions}
-        reloadInvoices={reloadInvoices}
+        openModal={openModal}
         status={searchFilters.status}
         canSend={canSend}
         canDelete={canDelete}
         checkedInvoices={checkedInvoices}
+        clearCheckedInvoices={clearChecked}
         checkedAreas={searchFilters.area}
-        allInvoicesToggle={allInvoicesToggle}
+        fullAreaSelection={fullAreaSelection}
       />
       {showModal ? (
         <Modal
-          actions={actions}
-          onSendDone={onSendSuccess}
-          sendInvoices={sendInvoices}
-          allInvoicesToggle={allInvoicesToggle}
+          onClose={closeModal}
+          onSendDone={() => {
+            closeModal()
+            clearChecked()
+          }}
+          checkedInvoices={checkedInvoices}
+          fullAreaSelection={fullAreaSelection}
         />
       ) : null}
     </Container>
@@ -102,34 +171,68 @@ export default React.memo(function InvoicesPage() {
 })
 
 const Modal = React.memo(function Modal({
-  actions,
+  onClose,
   onSendDone,
-  sendInvoices,
-  allInvoicesToggle
+  checkedInvoices,
+  fullAreaSelection
 }: {
-  actions: InvoicesActions
+  onClose: () => void
   onSendDone: () => void
-  sendInvoices: (args: {
-    invoiceDate: LocalDate
-    dueDate: LocalDate
-  }) => Promise<Result<void>>
-  allInvoicesToggle: boolean
+  checkedInvoices: Set<UUID>
+  fullAreaSelection: boolean
 }) {
   const { i18n } = useTranslation()
+  const {
+    invoices: { searchFilters }
+  } = useContext(InvoicingUiContext)
+
   const [invoiceDate, setInvoiceDate] = useState(LocalDate.todayInSystemTz())
   const [dueDate, setDueDate] = useState(
     LocalDate.todayInSystemTz().addBusinessDays(10)
   )
 
+  const [mutation, onClick] = useSelectMutation(
+    () => (fullAreaSelection ? first() : second()),
+    [
+      sendInvoicesByDateMutation,
+      () => ({
+        body: {
+          dueDate,
+          invoiceDate,
+          areas: searchFilters.area,
+          from:
+            searchFilters.startDate &&
+            searchFilters.useCustomDatesForInvoiceSending
+              ? searchFilters.startDate
+              : LocalDate.todayInSystemTz().withDate(1),
+          to:
+            searchFilters.endDate &&
+            searchFilters.useCustomDatesForInvoiceSending
+              ? searchFilters.endDate
+              : LocalDate.todayInSystemTz().lastDayOfMonth()
+        }
+      })
+    ],
+    [
+      sendInvoicesMutation,
+      () => ({
+        invoiceDate,
+        dueDate,
+        body: [...checkedInvoices]
+      })
+    ]
+  )
+
   return (
-    <AsyncFormModal
+    <MutateFormModal
       type="info"
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
-      resolveAction={() => sendInvoices({ invoiceDate, dueDate })}
+      resolveMutation={mutation}
+      resolveAction={onClick}
       resolveLabel={i18n.common.confirm}
       onSuccess={onSendDone}
-      rejectAction={actions.closeModal}
+      rejectAction={onClose}
       rejectLabel={i18n.common.cancel}
       data-qa="send-invoices-dialog"
     >
@@ -153,7 +256,7 @@ const Modal = React.memo(function Modal({
             data-qa="invoice-due-date-input"
           />
         </div>
-        {!allInvoicesToggle && i18n.invoices.buttons.individualSendAlertText ? (
+        {!fullAreaSelection && i18n.invoices.buttons.individualSendAlertText ? (
           <>
             <Gap size="s" />
             <AlertBox
@@ -163,7 +266,7 @@ const Modal = React.memo(function Modal({
           </>
         ) : null}
       </ModalContent>
-    </AsyncFormModal>
+    </MutateFormModal>
   )
 })
 

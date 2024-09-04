@@ -26,7 +26,7 @@ const Actions = React.memo(function Actions({ invoice }: Props) {
           primary
           text={i18n.invoice.form.buttons.markSent}
           mutation={markInvoicesSentMutation}
-          onClick={() => ({body: [invoice.data.id]})}
+          onClick={() => ({ body: [invoice.data.id] })}
           data-qa="invoice-actions-mark-sent"
         />
       ) : null}

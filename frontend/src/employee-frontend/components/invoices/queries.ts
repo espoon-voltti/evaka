@@ -6,10 +6,14 @@ import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
-  createDraftInvoices, deleteDraftInvoices,
+  createDraftInvoices,
+  deleteDraftInvoices,
   getInvoice,
   getInvoiceCodes,
-  markInvoicesSent, searchInvoices, sendInvoices, sendInvoicesByDate
+  markInvoicesSent,
+  searchInvoices,
+  sendInvoices,
+  sendInvoicesByDate
 } from '../../generated/api-clients/invoicing'
 import { createQueryKeys } from '../../query'
 
@@ -18,7 +22,7 @@ const queryKeys = createQueryKeys('invoices', {
   invoiceDetails: (id: UUID) => ['invoiceDetails', id],
   invoiceDetailsAll: () => ['invoiceDetails'],
   invoices: (args: Arg0<typeof searchInvoices>) => ['invoices', args],
-  invoicesAll: () => ['invoices'],
+  invoicesAll: () => ['invoices']
 })
 
 export const invoiceCodesQuery = query({
@@ -38,9 +42,7 @@ export const invoiceDetailsQuery = query({
 
 export const createDraftInvoicesMutation = mutation({
   api: createDraftInvoices,
-  invalidateQueryKeys: () => [
-    queryKeys.invoicesAll()
-  ]
+  invalidateQueryKeys: () => [queryKeys.invoicesAll()]
 })
 
 export const sendInvoicesMutation = mutation({

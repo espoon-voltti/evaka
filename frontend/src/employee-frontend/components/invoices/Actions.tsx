@@ -6,7 +6,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
+import { UUID } from 'lib-common/types'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -14,8 +16,6 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 
-import { InvoicesActions } from './invoices-state'
-import { MutateButton } from '../../../lib-components/atoms/buttons/MutateButton'
 import { deleteDraftInvoicesMutation } from './queries'
 
 const ErrorMessage = styled.div`
@@ -29,29 +29,28 @@ const CheckedRowsInfo = styled.div`
 `
 
 type Props = {
-  actions: InvoicesActions
-  reloadInvoices: () => void
+  openModal: () => void
   status: InvoiceStatus
   canSend: boolean
   canDelete: boolean
-  checkedInvoices: Record<string, true>
+  checkedInvoices: Set<UUID>
+  clearCheckedInvoices: () => void
   checkedAreas: string[]
-  allInvoicesToggle: boolean
+  fullAreaSelection: boolean
 }
 
 const Actions = React.memo(function Actions({
-  actions,
-  reloadInvoices,
+  openModal,
   status,
   canSend,
   canDelete,
   checkedInvoices,
+  clearCheckedInvoices,
   checkedAreas,
-  allInvoicesToggle
+  fullAreaSelection
 }: Props) {
   const { i18n } = useTranslation()
   const [error, setError] = useState<string>()
-  const checkedIds = Object.keys(checkedInvoices)
 
   return status === 'DRAFT' ? (
     <StickyActionBar align="right">
@@ -61,24 +60,23 @@ const Actions = React.memo(function Actions({
           <Gap size="s" horizontal />
         </>
       ) : null}
-      {checkedIds.length > 0 ? (
+      {checkedInvoices.size > 0 ? (
         <>
           <CheckedRowsInfo>
-            {i18n.invoices.buttons.checked(checkedIds.length)}
+            {i18n.invoices.buttons.checked(checkedInvoices.size)}
           </CheckedRowsInfo>
           <Gap size="s" horizontal />
         </>
       ) : null}
       {canDelete && (
         <MutateButton
-          text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
-          disabled={checkedIds.length === 0}
+          text={i18n.invoices.buttons.deleteInvoice(checkedInvoices.size)}
+          disabled={checkedInvoices.size === 0}
           mutation={deleteDraftInvoicesMutation}
-          onClick={() => ({ body: checkedIds })}
+          onClick={() => ({ body: [...checkedInvoices] })}
           onSuccess={() => {
             setError(undefined)
-            actions.clearChecked()
-            reloadInvoices()
+            clearCheckedInvoices()
           }}
           onFailure={() => setError(i18n.common.error.unknown)}
           data-qa="delete-invoices"
@@ -89,11 +87,11 @@ const Actions = React.memo(function Actions({
         <LegacyButton
           primary
           disabled={
-            (!allInvoicesToggle && checkedIds.length === 0) ||
-            (allInvoicesToggle && checkedAreas.length === 0)
+            (!fullAreaSelection && checkedInvoices.size === 0) ||
+            (fullAreaSelection && checkedAreas.length === 0)
           }
-          text={i18n.invoices.buttons.sendInvoice(checkedIds.length)}
-          onClick={actions.openModal}
+          text={i18n.invoices.buttons.sendInvoice(checkedInvoices.size)}
+          onClick={openModal}
           data-qa="open-send-invoices-dialog"
         />
       )}
