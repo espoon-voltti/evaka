@@ -2368,7 +2368,8 @@ const sv: Translations = {
         'Blanketten saknar vissa nödvändiga uppgifter eller uppgifterna är felaktiga. Vänligen kontrollera den information som du har fyllt i.',
       choose: 'Välj ett alternativ',
       chooseAtLeastOne: 'Välj minst ett alternativ',
-      deleteFailed: 'Inkomstutredningen kunde inte raderas'
+      deleteFailed: 'Inkomstutredningen kunde inte raderas',
+      dateRangeInvalid: 'Inkomstuppgifter kan vara giltiga i högst ett år'
     },
     table: {
       title: 'Inkomstutredningar',
