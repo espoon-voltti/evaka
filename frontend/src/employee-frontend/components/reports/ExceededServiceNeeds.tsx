@@ -10,7 +10,7 @@ import { object, oneOf, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ExceededServiceNeedReportUnit } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
@@ -103,7 +103,7 @@ const Report = React.memo(function Report({
     [params, units]
   )
   const reportRows = useQueryResult(
-    queryOrDefault(exceededServiceNeedsReportRowsQuery, null)(params)
+    params ? exceededServiceNeedsReportRowsQuery(params) : constantQuery(null)
   )
 
   return (

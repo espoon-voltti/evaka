@@ -11,7 +11,7 @@ import {
   AttendanceStatus
 } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQuery, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQuery, useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { Bold, InformationText } from 'lib-components/typography'
@@ -113,10 +113,9 @@ export default React.memo(function ChildListItem({
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
   const { data: groupNotes = [] } = useQuery(
-    queryOrDefault(
-      groupNotesQuery,
-      []
-    )(child.groupId ? { groupId: child.groupId } : undefined)
+    child.groupId
+      ? groupNotesQuery({ groupId: child.groupId })
+      : constantQuery([])
   )
   const groupName = unitInfoResponse
     .map(

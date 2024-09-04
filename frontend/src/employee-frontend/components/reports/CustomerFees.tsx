@@ -16,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -83,10 +83,9 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
   const { date, unitId, areaId, decisionType } = useFormFields(filters)
 
   const rowsResult = useQueryResult(
-    queryOrDefault(
-      customerFeesReportQuery,
-      []
-    )(filters.isValid() ? filters.value() : null)
+    filters.isValid()
+      ? customerFeesReportQuery(filters.value())
+      : constantQuery([])
   )
 
   const sortedRows = useMemo(

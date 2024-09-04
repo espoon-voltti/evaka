@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { combine, Loading, Result } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import {
-  queryOrDefault,
+  constantQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -38,10 +38,7 @@ interface EditorState {
 
 function useInitialEditorState(id: UUID | undefined): Result<EditorState> {
   const incomeStatement = useQueryResult(
-    queryOrDefault(
-      incomeStatementQuery,
-      null
-    )(id ? { incomeStatementId: id } : undefined)
+    id ? incomeStatementQuery({ incomeStatementId: id }) : constantQuery(null)
   )
   const startDates = useQueryResult(incomeStatementStartDatesQuery())
 

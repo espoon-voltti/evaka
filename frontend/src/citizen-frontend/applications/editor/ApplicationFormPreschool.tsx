@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -36,22 +36,17 @@ export default React.memo(function ApplicationFormPreschool({
   const t = useTranslation()
 
   const serviceNeedOptions = useQueryResult(
-    queryOrDefault(
-      serviceNeedOptionPublicInfosQuery,
-      []
-    )(
-      featureFlags.preschoolApplication.serviceNeedOption
-        ? {
-            placementTypes: [
-              'PRESCHOOL_DAYCARE',
-              ...(application.form.preferences.serviceNeed?.serviceNeedOption
-                ?.validPlacementType === 'PRESCHOOL_CLUB'
-                ? (['PRESCHOOL_CLUB'] as const)
-                : [])
-            ]
-          }
-        : undefined
-    )
+    featureFlags.preschoolApplication.serviceNeedOption
+      ? serviceNeedOptionPublicInfosQuery({
+          placementTypes: [
+            'PRESCHOOL_DAYCARE',
+            ...(application.form.preferences.serviceNeed?.serviceNeedOption
+              ?.validPlacementType === 'PRESCHOOL_CLUB'
+              ? (['PRESCHOOL_CLUB'] as const)
+              : [])
+          ]
+        })
+      : constantQuery([])
   )
 
   const updateUnitPreferenceFormData = useCallback(

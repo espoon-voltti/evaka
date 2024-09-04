@@ -39,8 +39,7 @@ import {
   UnitDateInfo
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
-import TimeRange from 'lib-common/time-range'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -253,23 +252,17 @@ export default React.memo(function ChildDateModal({
   const attendanceElems = useFormElems(attendances)
 
   const expectedAbsences = useQueryResult(
-    queryOrDefault(
-      (attendances: TimeRange[]) =>
-        childDateExpectedAbsencesQuery({
+    date.isBefore(LocalDate.todayInHelsinkiTz()) &&
+      attendances.isValid() &&
+      attendances.value().every((a) => a.end !== null)
+      ? childDateExpectedAbsencesQuery({
           body: {
             childId: child.id,
             date,
-            attendances
+            attendances: attendances.value().flatMap((a) => a.asTimeRange()!)
           }
-        }),
-      null
-    )(
-      date.isBefore(LocalDate.todayInHelsinkiTz()) &&
-        attendances.isValid() &&
-        attendances.value().every((a) => a.end !== null)
-        ? attendances.value().flatMap((a) => a.asTimeRange()!)
-        : null
-    )
+        })
+      : constantQuery(null)
   )
 
   return (

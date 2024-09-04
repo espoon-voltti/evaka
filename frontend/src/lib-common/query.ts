@@ -297,16 +297,6 @@ export function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
   }
 }
 
-export function queryOrDefault<T, R, D>(
-  query: (arg: T) => UseQueryOptions<R, unknown>,
-  defaultValue: D
-): (arg: T | null | undefined) => UseQueryOptions<R | D, unknown> {
-  return (arg) =>
-    (arg !== undefined && arg !== null
-      ? query(arg)
-      : constantQuery(defaultValue)) as UseQueryOptions<R | D, unknown>
-}
-
 export const cancelMutation: unique symbol = Symbol('cancelMutation')
 
 export type Either<A, B> =

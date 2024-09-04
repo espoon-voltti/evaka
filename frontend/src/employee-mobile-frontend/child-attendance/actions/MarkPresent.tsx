@@ -16,7 +16,7 @@ import {
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import {
-  queryOrDefault,
+  constantQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -87,10 +87,9 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
   }, [childLatestDeparture, time])
 
   const groupNotes = useQueryResult(
-    queryOrDefault(
-      groupNotesQuery,
-      []
-    )(child.groupId ? { groupId: child.groupId } : null)
+    child.groupId
+      ? groupNotesQuery({ groupId: child.groupId })
+      : constantQuery([])
   )
 
   return (
