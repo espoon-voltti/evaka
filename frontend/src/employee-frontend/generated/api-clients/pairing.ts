@@ -28,7 +28,7 @@ export async function deleteMobileDevice(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile-devices/${request.id}`.toString(),
+    url: uri`/employee/mobile-devices/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -47,7 +47,7 @@ export async function getMobileDevices(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
-    url: uri`/mobile-devices`.toString(),
+    url: uri`/employee/mobile-devices`.toString(),
     method: 'GET',
     params
   })
@@ -60,7 +60,7 @@ export async function getMobileDevices(
 */
 export async function getPersonalMobileDevices(): Promise<MobileDevice[]> {
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
-    url: uri`/mobile-devices/personal`.toString(),
+    url: uri`/employee/mobile-devices/personal`.toString(),
     method: 'GET'
   })
   return json
@@ -77,7 +77,7 @@ export async function putMobileDeviceName(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile-devices/${request.id}/name`.toString(),
+    url: uri`/employee/mobile-devices/${request.id}/name`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<RenameRequest>
   })
@@ -110,7 +110,7 @@ export async function postPairing(
   }
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
-    url: uri`/pairings`.toString(),
+    url: uri`/employee/pairings`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingReq>
   })
@@ -128,7 +128,7 @@ export async function postPairingResponse(
   }
 ): Promise<Pairing> {
   const { data: json } = await client.request<JsonOf<Pairing>>({
-    url: uri`/pairings/${request.id}/response`.toString(),
+    url: uri`/employee/pairings/${request.id}/response`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PostPairingResponseReq>
   })

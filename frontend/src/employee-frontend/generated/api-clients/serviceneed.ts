@@ -28,7 +28,7 @@ export async function deleteServiceNeed(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/service-needs/${request.id}`.toString(),
+    url: uri`/employee/service-needs/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -60,7 +60,7 @@ export async function getServiceNeedOptionPublicInfos(
 */
 export async function getServiceNeedOptions(): Promise<ServiceNeedOption[]> {
   const { data: json } = await client.request<JsonOf<ServiceNeedOption[]>>({
-    url: uri`/service-needs/options`.toString(),
+    url: uri`/employee/service-needs/options`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonServiceNeedOption(e))
@@ -76,7 +76,7 @@ export async function postServiceNeed(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/service-needs`.toString(),
+    url: uri`/employee/service-needs`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ServiceNeedCreateRequest>
   })
@@ -94,7 +94,7 @@ export async function putServiceNeed(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/service-needs/${request.id}`.toString(),
+    url: uri`/employee/service-needs/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ServiceNeedUpdateRequest>
   })

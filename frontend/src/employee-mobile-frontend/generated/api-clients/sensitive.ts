@@ -21,7 +21,7 @@ export async function getSensitiveInfo(
   }
 ): Promise<ChildSensitiveInformation> {
   const { data: json } = await client.request<JsonOf<ChildSensitiveInformation>>({
-    url: uri`/children/${request.childId}/sensitive-info`.toString(),
+    url: uri`/employee-mobile/children/${request.childId}/sensitive-info`.toString(),
     method: 'GET'
   })
   return deserializeJsonChildSensitiveInformation(json)

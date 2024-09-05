@@ -19,7 +19,7 @@ export async function markChildForVardaReset(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/varda/child/reset/${request.childId}`.toString(),
+    url: uri`/employee/varda/child/reset/${request.childId}`.toString(),
     method: 'POST'
   })
   return json
@@ -31,7 +31,7 @@ export async function markChildForVardaReset(
 */
 export async function runFullVardaReset(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/varda/start-reset`.toString(),
+    url: uri`/employee/varda/start-reset`.toString(),
     method: 'POST'
   })
   return json
@@ -43,7 +43,7 @@ export async function runFullVardaReset(): Promise<void> {
 */
 export async function runFullVardaUpdate(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/varda/start-update`.toString(),
+    url: uri`/employee/varda/start-update`.toString(),
     method: 'POST'
   })
   return json

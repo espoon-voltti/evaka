@@ -34,7 +34,7 @@ export async function getOccupancyPeriods(
     ['type', request.type.toString()]
   )
   const { data: json } = await client.request<JsonOf<OccupancyResponse>>({
-    url: uri`/occupancy/by-unit/${request.unitId}`.toString(),
+    url: uri`/employee-mobile/occupancy/by-unit/${request.unitId}`.toString(),
     method: 'GET',
     params
   })
@@ -59,7 +59,7 @@ export async function getOccupancyPeriodsOnGroups(
     ['type', request.type.toString()]
   )
   const { data: json } = await client.request<JsonOf<OccupancyResponseGroupLevel[]>>({
-    url: uri`/occupancy/by-unit/${request.unitId}/groups`.toString(),
+    url: uri`/employee-mobile/occupancy/by-unit/${request.unitId}/groups`.toString(),
     method: 'GET',
     params
   })

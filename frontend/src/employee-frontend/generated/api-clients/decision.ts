@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getDecisionUnits(): Promise<DecisionUnit[]> {
   const { data: json } = await client.request<JsonOf<DecisionUnit[]>>({
-    url: uri`/decisions2/units`.toString(),
+    url: uri`/employee/decisions/units`.toString(),
     method: 'GET'
   })
   return json
@@ -38,7 +38,7 @@ export async function getDecisionsByGuardian(
     ['id', request.id]
   )
   const { data: json } = await client.request<JsonOf<DecisionListResponse>>({
-    url: uri`/decisions2/by-guardian`.toString(),
+    url: uri`/employee/decisions/by-guardian`.toString(),
     method: 'GET',
     params
   })

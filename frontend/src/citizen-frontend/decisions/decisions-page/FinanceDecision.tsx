@@ -13,6 +13,7 @@ import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faFileAlt } from 'lib-icons'
 
+import { API_URL } from '../../api-client'
 import { useTranslation } from '../../localization'
 
 interface Props {
@@ -22,8 +23,8 @@ interface Props {
 
 const getDecisionUrl = (decisionId: string, type: FinanceDecisionType) =>
   type === 'FEE_DECISION'
-    ? `/api/application/citizen/fee-decisions/${decisionId}/download`
-    : `/api/application/citizen/voucher-value-decisions/${decisionId}/download`
+    ? `${API_URL}/citizen/fee-decisions/${decisionId}/download`
+    : `${API_URL}/citizen/voucher-value-decisions/${decisionId}/download`
 
 export default React.memo(function FinanceDecision({
   decisionData,

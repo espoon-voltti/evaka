@@ -72,7 +72,7 @@ export async function activateEmployee(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/activate`.toString(),
+    url: uri`/employee/employees/${request.id}/activate`.toString(),
     method: 'PUT'
   })
   return json
@@ -88,7 +88,7 @@ export async function createEmployee(
   }
 ): Promise<Employee> {
   const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee`.toString(),
+    url: uri`/employee/employees`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NewEmployee>
   })
@@ -105,7 +105,7 @@ export async function deactivateEmployee(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/deactivate`.toString(),
+    url: uri`/employee/employees/${request.id}/deactivate`.toString(),
     method: 'PUT'
   })
   return json
@@ -121,7 +121,7 @@ export async function deleteEmployee(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}`.toString(),
+    url: uri`/employee/employees/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -141,7 +141,7 @@ export async function deleteEmployeeDaycareRoles(
     ['daycareId', request.daycareId]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/daycare-roles`.toString(),
+    url: uri`/employee/employees/${request.id}/daycare-roles`.toString(),
     method: 'DELETE',
     params
   })
@@ -158,7 +158,7 @@ export async function getEmployee(
   }
 ): Promise<Employee> {
   const { data: json } = await client.request<JsonOf<Employee>>({
-    url: uri`/employee/${request.id}`.toString(),
+    url: uri`/employee/employees/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonEmployee(json)
@@ -174,7 +174,7 @@ export async function getEmployeeDetails(
   }
 ): Promise<EmployeeWithDaycareRoles> {
   const { data: json } = await client.request<JsonOf<EmployeeWithDaycareRoles>>({
-    url: uri`/employee/${request.id}/details`.toString(),
+    url: uri`/employee/employees/${request.id}/details`.toString(),
     method: 'GET'
   })
   return deserializeJsonEmployeeWithDaycareRoles(json)
@@ -186,7 +186,7 @@ export async function getEmployeeDetails(
 */
 export async function getEmployeePreferredFirstName(): Promise<EmployeePreferredFirstName> {
   const { data: json } = await client.request<JsonOf<EmployeePreferredFirstName>>({
-    url: uri`/employee/preferred-first-name`.toString(),
+    url: uri`/employee/employees/preferred-first-name`.toString(),
     method: 'GET'
   })
   return json
@@ -198,7 +198,7 @@ export async function getEmployeePreferredFirstName(): Promise<EmployeePreferred
 */
 export async function getEmployees(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/employee`.toString(),
+    url: uri`/employee/employees`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -210,7 +210,7 @@ export async function getEmployees(): Promise<Employee[]> {
 */
 export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/employee/finance-decision-handler`.toString(),
+    url: uri`/employee/employees/finance-decision-handler`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -222,7 +222,7 @@ export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
 */
 export async function isPinLocked(): Promise<boolean> {
   const { data: json } = await client.request<JsonOf<boolean>>({
-    url: uri`/employee/pin-code/is-pin-locked`.toString(),
+    url: uri`/employee/employees/pin-code/is-pin-locked`.toString(),
     method: 'GET'
   })
   return json
@@ -238,7 +238,7 @@ export async function searchEmployees(
   }
 ): Promise<PagedEmployeesWithDaycareRoles> {
   const { data: json } = await client.request<JsonOf<PagedEmployeesWithDaycareRoles>>({
-    url: uri`/employee/search`.toString(),
+    url: uri`/employee/employees/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchEmployeeRequest>
   })
@@ -255,7 +255,7 @@ export async function setEmployeePreferredFirstName(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/preferred-first-name`.toString(),
+    url: uri`/employee/employees/preferred-first-name`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<EmployeeSetPreferredFirstNameUpdateRequest>
   })
@@ -273,7 +273,7 @@ export async function updateEmployeeGlobalRoles(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/global-roles`.toString(),
+    url: uri`/employee/employees/${request.id}/global-roles`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UserRole[]>
   })
@@ -291,7 +291,7 @@ export async function upsertEmployeeDaycareRoles(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/${request.id}/daycare-roles`.toString(),
+    url: uri`/employee/employees/${request.id}/daycare-roles`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpsertEmployeeDaycareRolesRequest>
   })
@@ -308,7 +308,7 @@ export async function upsertPinCode(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/pin-code`.toString(),
+    url: uri`/employee/employees/pin-code`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PinCode>
   })
@@ -325,7 +325,7 @@ export async function getFamilyByPerson(
   }
 ): Promise<FamilyOverview> {
   const { data: json } = await client.request<JsonOf<FamilyOverview>>({
-    url: uri`/family/by-adult/${request.id}`.toString(),
+    url: uri`/employee/family/by-adult/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonFamilyOverview(json)
@@ -344,7 +344,7 @@ export async function getFamilyContactSummary(
     ['childId', request.childId]
   )
   const { data: json } = await client.request<JsonOf<FamilyContact[]>>({
-    url: uri`/family/contacts`.toString(),
+    url: uri`/employee/family/contacts`.toString(),
     method: 'GET',
     params
   })
@@ -361,7 +361,7 @@ export async function updateFamilyContactDetails(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/family/contacts`.toString(),
+    url: uri`/employee/family/contacts`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FamilyContactUpdate>
   })
@@ -378,7 +378,7 @@ export async function updateFamilyContactPriority(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/family/contacts/priority`.toString(),
+    url: uri`/employee/family/contacts/priority`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<FamilyContactPriorityUpdate>
   })
@@ -395,7 +395,7 @@ export async function createFosterParentRelationship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/foster-parent`.toString(),
+    url: uri`/employee/foster-parent`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateFosterParentRelationshipBody>
   })
@@ -412,7 +412,7 @@ export async function deleteFosterParentRelationship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/foster-parent/${request.id}`.toString(),
+    url: uri`/employee/foster-parent/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -428,7 +428,7 @@ export async function getFosterChildren(
   }
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
-    url: uri`/foster-parent/by-parent/${request.parentId}`.toString(),
+    url: uri`/employee/foster-parent/by-parent/${request.parentId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFosterParentRelationship(e))
@@ -444,7 +444,7 @@ export async function getFosterParents(
   }
 ): Promise<FosterParentRelationship[]> {
   const { data: json } = await client.request<JsonOf<FosterParentRelationship[]>>({
-    url: uri`/foster-parent/by-child/${request.childId}`.toString(),
+    url: uri`/employee/foster-parent/by-child/${request.childId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonFosterParentRelationship(e))
@@ -461,7 +461,7 @@ export async function updateFosterParentRelationshipValidity(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/foster-parent/${request.id}`.toString(),
+    url: uri`/employee/foster-parent/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DateRange>
   })
@@ -478,7 +478,7 @@ export async function createParentship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships`.toString(),
+    url: uri`/employee/parentships`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ParentshipRequest>
   })
@@ -495,7 +495,7 @@ export async function deleteParentship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}`.toString(),
+    url: uri`/employee/parentships/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -511,7 +511,7 @@ export async function getParentship(
   }
 ): Promise<Parentship> {
   const { data: json } = await client.request<JsonOf<Parentship>>({
-    url: uri`/parentships/${request.id}`.toString(),
+    url: uri`/employee/parentships/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonParentship(json)
@@ -532,7 +532,7 @@ export async function getParentships(
     ['childId', request.childId]
   )
   const { data: json } = await client.request<JsonOf<ParentshipWithPermittedActions[]>>({
-    url: uri`/parentships`.toString(),
+    url: uri`/employee/parentships`.toString(),
     method: 'GET',
     params
   })
@@ -549,7 +549,7 @@ export async function retryParentship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}/retry`.toString(),
+    url: uri`/employee/parentships/${request.id}/retry`.toString(),
     method: 'PUT'
   })
   return json
@@ -566,7 +566,7 @@ export async function updateParentship(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/parentships/${request.id}`.toString(),
+    url: uri`/employee/parentships/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ParentshipUpdateRequest>
   })
@@ -583,7 +583,7 @@ export async function createPartnership(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/partnerships`.toString(),
+    url: uri`/employee/partnerships`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PartnershipRequest>
   })
@@ -600,7 +600,7 @@ export async function deletePartnership(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/partnerships/${request.partnershipId}`.toString(),
+    url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -616,7 +616,7 @@ export async function getPartnership(
   }
 ): Promise<Partnership> {
   const { data: json } = await client.request<JsonOf<Partnership>>({
-    url: uri`/partnerships/${request.partnershipId}`.toString(),
+    url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonPartnership(json)
@@ -635,7 +635,7 @@ export async function getPartnerships(
     ['personId', request.personId]
   )
   const { data: json } = await client.request<JsonOf<PartnershipWithPermittedActions[]>>({
-    url: uri`/partnerships`.toString(),
+    url: uri`/employee/partnerships`.toString(),
     method: 'GET',
     params
   })
@@ -652,7 +652,7 @@ export async function retryPartnership(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/partnerships/${request.partnershipId}/retry`.toString(),
+    url: uri`/employee/partnerships/${request.partnershipId}/retry`.toString(),
     method: 'PUT'
   })
   return json
@@ -669,7 +669,7 @@ export async function updatePartnership(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/partnerships/${request.partnershipId}`.toString(),
+    url: uri`/employee/partnerships/${request.partnershipId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PartnershipUpdateRequest>
   })
@@ -687,7 +687,7 @@ export async function addSsn(
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
-    url: uri`/person/${request.personId}/ssn`.toString(),
+    url: uri`/employee/person/${request.personId}/ssn`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AddSsnRequest>
   })
@@ -700,7 +700,7 @@ export async function addSsn(
 */
 export async function createEmpty(): Promise<PersonIdentityResponseJSON> {
   const { data: json } = await client.request<JsonOf<PersonIdentityResponseJSON>>({
-    url: uri`/person`.toString(),
+    url: uri`/employee/person`.toString(),
     method: 'POST'
   })
   return json
@@ -716,7 +716,7 @@ export async function createPerson(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/person/create`.toString(),
+    url: uri`/employee/person/create`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreatePersonBody>
   })
@@ -734,7 +734,7 @@ export async function disableSsn(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/person/${request.personId}/ssn/disable`.toString(),
+    url: uri`/employee/person/${request.personId}/ssn/disable`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DisableSsnRequest>
   })
@@ -751,7 +751,7 @@ export async function duplicatePerson(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/person/${request.personId}/duplicate`.toString(),
+    url: uri`/employee/person/${request.personId}/duplicate`.toString(),
     method: 'POST'
   })
   return json
@@ -767,7 +767,7 @@ export async function getOrCreatePersonBySsn(
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
-    url: uri`/person/details/ssn`.toString(),
+    url: uri`/employee/person/details/ssn`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GetOrCreatePersonBySsnRequest>
   })
@@ -784,7 +784,7 @@ export async function getPerson(
   }
 ): Promise<PersonResponse> {
   const { data: json } = await client.request<JsonOf<PersonResponse>>({
-    url: uri`/person/${request.personId}`.toString(),
+    url: uri`/employee/person/${request.personId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonPersonResponse(json)
@@ -800,7 +800,7 @@ export async function getPersonBlockedGuardians(
   }
 ): Promise<PersonJSON[]> {
   const { data: json } = await client.request<JsonOf<PersonJSON[]>>({
-    url: uri`/person/blocked-guardians/${request.personId}`.toString(),
+    url: uri`/employee/person/blocked-guardians/${request.personId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPersonJSON(e))
@@ -816,7 +816,7 @@ export async function getPersonDependants(
   }
 ): Promise<PersonWithChildrenDTO[]> {
   const { data: json } = await client.request<JsonOf<PersonWithChildrenDTO[]>>({
-    url: uri`/person/dependants/${request.personId}`.toString(),
+    url: uri`/employee/person/dependants/${request.personId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPersonWithChildrenDTO(e))
@@ -832,7 +832,7 @@ export async function getPersonGuardians(
   }
 ): Promise<PersonJSON[]> {
   const { data: json } = await client.request<JsonOf<PersonJSON[]>>({
-    url: uri`/person/guardians/${request.personId}`.toString(),
+    url: uri`/employee/person/guardians/${request.personId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPersonJSON(e))
@@ -848,7 +848,7 @@ export async function getPersonIdentity(
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
-    url: uri`/person/details/${request.personId}`.toString(),
+    url: uri`/employee/person/details/${request.personId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonPersonJSON(json)
@@ -864,7 +864,7 @@ export async function mergePeople(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/person/merge`.toString(),
+    url: uri`/employee/person/merge`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<MergeRequest>
   })
@@ -881,7 +881,7 @@ export async function safeDeletePerson(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/person/${request.personId}`.toString(),
+    url: uri`/employee/person/${request.personId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -897,7 +897,7 @@ export async function searchPerson(
   }
 ): Promise<PersonSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonSummary[]>>({
-    url: uri`/person/search`.toString(),
+    url: uri`/employee/person/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchPersonBody>
   })
@@ -915,7 +915,7 @@ export async function updateGuardianEvakaRights(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/person/${request.childId}/evaka-rights`.toString(),
+    url: uri`/employee/person/${request.childId}/evaka-rights`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<EvakaRightsRequest>
   })
@@ -932,7 +932,7 @@ export async function updatePersonAndFamilyFromVtj(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/person/${request.personId}/vtj-update`.toString(),
+    url: uri`/employee/person/${request.personId}/vtj-update`.toString(),
     method: 'POST'
   })
   return json
@@ -949,7 +949,7 @@ export async function updatePersonDetails(
   }
 ): Promise<PersonJSON> {
   const { data: json } = await client.request<JsonOf<PersonJSON>>({
-    url: uri`/person/${request.personId}`.toString(),
+    url: uri`/employee/person/${request.personId}`.toString(),
     method: 'PATCH',
     data: request.body satisfies JsonCompatible<PersonPatch>
   })

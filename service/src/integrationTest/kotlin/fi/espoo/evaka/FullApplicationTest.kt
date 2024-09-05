@@ -103,8 +103,8 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     ): Boolean {
         val path =
             if (user is AuthenticatedUser.Citizen)
-                "/attachments/citizen/applications/$applicationId"
-            else "/attachments/applications/$applicationId"
+                "/citizen/attachments/applications/$applicationId"
+            else "/employee/attachments/applications/$applicationId"
         val (_, res, _) =
             http
                 .upload(path, parameters = listOf("type" to type))

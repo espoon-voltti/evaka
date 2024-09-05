@@ -48,7 +48,7 @@ export async function annulAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/annul`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/annul`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AnnulAssistanceNeedDecisionRequest>
   })
@@ -66,7 +66,7 @@ export async function createAssistanceNeedDecision(
   }
 ): Promise<AssistanceNeedDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecision>>({
-    url: uri`/children/${request.childId}/assistance-needs/decision`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-needs/decision`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceNeedDecisionRequest>
   })
@@ -84,7 +84,7 @@ export async function decideAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/decide`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/decide`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DecideAssistanceNeedDecisionRequest>
   })
@@ -101,7 +101,7 @@ export async function deleteAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -117,7 +117,7 @@ export async function getAssistanceDecisionMakerOptions(
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/assistance-need-decision/${request.id}/decision-maker-option`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/decision-maker-option`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -133,7 +133,7 @@ export async function getAssistanceNeedDecision(
   }
 ): Promise<AssistanceNeedDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionResponse>>({
-    url: uri`/assistance-need-decision/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonAssistanceNeedDecisionResponse(json)
@@ -149,7 +149,7 @@ export async function getAssistanceNeedDecisions(
   }
 ): Promise<AssistanceNeedDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedDecisionBasicsResponse[]>>({
-    url: uri`/children/${request.childId}/assistance-needs/decisions`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-needs/decisions`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAssistanceNeedDecisionBasicsResponse(e))
@@ -165,7 +165,7 @@ export async function markAssistanceNeedDecisionAsOpened(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/mark-as-opened`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/mark-as-opened`.toString(),
     method: 'POST'
   })
   return json
@@ -181,7 +181,7 @@ export async function revertToUnsentAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/revert-to-unsent`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/revert-to-unsent`.toString(),
     method: 'POST'
   })
   return json
@@ -197,7 +197,7 @@ export async function sendAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/send`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/send`.toString(),
     method: 'POST'
   })
   return json
@@ -214,7 +214,7 @@ export async function updateAssistanceNeedDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AssistanceNeedDecisionRequest>
   })
@@ -232,7 +232,7 @@ export async function updateAssistanceNeedDecisionDecisionMaker(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-decision/${request.id}/update-decision-maker`.toString(),
+    url: uri`/employee/assistance-need-decision/${request.id}/update-decision-maker`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<UpdateDecisionMakerForAssistanceNeedDecisionRequest>
   })
@@ -250,7 +250,7 @@ export async function annulAssistanceNeedPreschoolDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/annul`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/annul`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AnnulAssistanceNeedPreschoolDecisionRequest>
   })
@@ -267,7 +267,7 @@ export async function createAssistanceNeedPreschoolDecision(
   }
 ): Promise<AssistanceNeedPreschoolDecision> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecision>>({
-    url: uri`/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
     method: 'POST'
   })
   return deserializeJsonAssistanceNeedPreschoolDecision(json)
@@ -284,7 +284,7 @@ export async function decideAssistanceNeedPreschoolDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/decide`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decide`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DecideAssistanceNeedPreschoolDecisionRequest>
   })
@@ -301,7 +301,7 @@ export async function deleteAssistanceNeedPreschoolDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -317,7 +317,7 @@ export async function getAssistanceNeedPreschoolDecision(
   }
 ): Promise<AssistanceNeedPreschoolDecisionResponse> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionResponse>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
     method: 'GET'
   })
   return deserializeJsonAssistanceNeedPreschoolDecisionResponse(json)
@@ -333,7 +333,7 @@ export async function getAssistanceNeedPreschoolDecisions(
   }
 ): Promise<AssistanceNeedPreschoolDecisionBasicsResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedPreschoolDecisionBasicsResponse[]>>({
-    url: uri`/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-need-preschool-decisions`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAssistanceNeedPreschoolDecisionBasicsResponse(e))
@@ -349,7 +349,7 @@ export async function getAssistancePreschoolDecisionMakerOptions(
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/decision-maker-options`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decision-maker-options`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -365,7 +365,7 @@ export async function markAssistanceNeedPreschoolDecisionAsOpened(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/mark-as-opened`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/mark-as-opened`.toString(),
     method: 'PUT'
   })
   return json
@@ -381,7 +381,7 @@ export async function revertAssistanceNeedPreschoolDecisionToUnsent(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/unsend`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/unsend`.toString(),
     method: 'PUT'
   })
   return json
@@ -397,7 +397,7 @@ export async function sendAssistanceNeedPreschoolDecisionForDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/send`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/send`.toString(),
     method: 'PUT'
   })
   return json
@@ -414,7 +414,7 @@ export async function updateAssistanceNeedPreschoolDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AssistanceNeedPreschoolDecisionForm>
   })
@@ -432,7 +432,7 @@ export async function updateAssistanceNeedPreschoolDecisionDecisionMaker(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-preschool-decisions/${request.id}/decision-maker`.toString(),
+    url: uri`/employee/assistance-need-preschool-decisions/${request.id}/decision-maker`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpdateDecisionMakerForAssistanceNeedPreschoolDecisionRequest>
   })
@@ -450,7 +450,7 @@ export async function createAssistanceNeedVoucherCoefficient(
   }
 ): Promise<AssistanceNeedVoucherCoefficient> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficient>>({
-    url: uri`/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AssistanceNeedVoucherCoefficientRequest>
   })
@@ -467,7 +467,7 @@ export async function deleteAssistanceNeedVoucherCoefficient(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/assistance-need-voucher-coefficients/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-voucher-coefficients/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -483,7 +483,7 @@ export async function getAssistanceNeedVoucherCoefficients(
   }
 ): Promise<AssistanceNeedVoucherCoefficientResponse[]> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficientResponse[]>>({
-    url: uri`/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
+    url: uri`/employee/children/${request.childId}/assistance-need-voucher-coefficients`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAssistanceNeedVoucherCoefficientResponse(e))
@@ -500,7 +500,7 @@ export async function updateAssistanceNeedVoucherCoefficient(
   }
 ): Promise<AssistanceNeedVoucherCoefficient> {
   const { data: json } = await client.request<JsonOf<AssistanceNeedVoucherCoefficient>>({
-    url: uri`/assistance-need-voucher-coefficients/${request.id}`.toString(),
+    url: uri`/employee/assistance-need-voucher-coefficients/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AssistanceNeedVoucherCoefficientRequest>
   })

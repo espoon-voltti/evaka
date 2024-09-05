@@ -36,6 +36,8 @@ import { H1, H2, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faArrowDownToLine, faPrint } from 'lib-icons'
 
+import { API_URL } from '../api-client'
+
 import { childDocumentDetailsQuery, childDocumentReadMutation } from './queries'
 
 const TopButtonRow = styled(FixedSpaceRow)`
@@ -76,7 +78,7 @@ export default React.memo(function ChildDocumentPage() {
                 text={i18n.common.download}
                 onClick={() => {
                   window.open(
-                    `/api/application/citizen/child-documents/${id}/pdf`,
+                    `${API_URL}/citizen/child-documents/${id}/pdf`,
                     '_blank',
                     'noopener,noreferrer'
                   )

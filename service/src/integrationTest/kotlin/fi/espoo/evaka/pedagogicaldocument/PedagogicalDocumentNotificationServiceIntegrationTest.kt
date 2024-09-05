@@ -253,7 +253,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
     private fun uploadDocumentAttachment(user: AuthenticatedUser, id: PedagogicalDocumentId) {
         http
-            .upload("/attachments/pedagogical-documents/$id")
+            .upload("/employee/attachments/pedagogical-documents/$id")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .response()

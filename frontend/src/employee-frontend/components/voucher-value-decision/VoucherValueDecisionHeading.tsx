@@ -22,7 +22,7 @@ import { formatName } from '../../utils'
 import { TypeSelect } from '../fee-decision-details/TypeSelect'
 
 function getVoucherValueDecisionPdfUrl(decisionId: string): string {
-  return `${API_URL}/value-decisions/pdf/${decisionId}`
+  return `${API_URL}/employee/value-decisions/pdf/${decisionId}`
 }
 
 type Props = {

@@ -21,7 +21,7 @@ export async function futureAbsencesOfChild(
   }
 ): Promise<Absence[]> {
   const { data: json } = await client.request<JsonOf<Absence[]>>({
-    url: uri`/absences/by-child/${request.childId}/future`.toString(),
+    url: uri`/employee-mobile/absences/by-child/${request.childId}/future`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonAbsence(e))

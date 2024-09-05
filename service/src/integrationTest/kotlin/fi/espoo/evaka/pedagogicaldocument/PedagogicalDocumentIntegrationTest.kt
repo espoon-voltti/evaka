@@ -122,11 +122,22 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun getAttachmentAsUser(
         attachmentId: AttachmentId,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Citizen,
         requestedFilename: String = "evaka-logo.png",
     ) =
         http
-            .get("/attachments/$attachmentId/download/$requestedFilename")
+            .get("/citizen/attachments/$attachmentId/download/$requestedFilename")
+            .asUser(user)
+            .responseString()
+            .second
+
+    private fun getAttachmentAsUser(
+        attachmentId: AttachmentId,
+        user: AuthenticatedUser.Employee,
+        requestedFilename: String = "evaka-logo.png",
+    ) =
+        http
+            .get("/employee/attachments/$attachmentId/download/$requestedFilename")
             .asUser(user)
             .responseString()
             .second
@@ -456,7 +467,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {
         val (_, _, result) =
             http
-                .upload("/attachments/pedagogical-documents/$id")
+                .upload("/employee/attachments/pedagogical-documents/$id")
                 .add(FileDataPart(File(pngFile.toURI()), name = "file"))
                 .asUser(employee)
                 .responseObject<AttachmentId>(jsonMapper)

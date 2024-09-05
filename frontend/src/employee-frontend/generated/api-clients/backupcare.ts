@@ -26,7 +26,7 @@ export async function createBackupCare(
   }
 ): Promise<BackupCareCreateResponse> {
   const { data: json } = await client.request<JsonOf<BackupCareCreateResponse>>({
-    url: uri`/children/${request.childId}/backup-cares`.toString(),
+    url: uri`/employee/children/${request.childId}/backup-cares`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NewBackupCare>
   })
@@ -43,7 +43,7 @@ export async function deleteBackupCare(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/backup-cares/${request.id}`.toString(),
+    url: uri`/employee/backup-cares/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -59,7 +59,7 @@ export async function getChildBackupCares(
   }
 ): Promise<ChildBackupCaresResponse> {
   const { data: json } = await client.request<JsonOf<ChildBackupCaresResponse>>({
-    url: uri`/children/${request.childId}/backup-cares`.toString(),
+    url: uri`/employee/children/${request.childId}/backup-cares`.toString(),
     method: 'GET'
   })
   return deserializeJsonChildBackupCaresResponse(json)
@@ -76,7 +76,7 @@ export async function updateBackupCare(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/backup-cares/${request.id}`.toString(),
+    url: uri`/employee/backup-cares/${request.id}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<BackupCareUpdateRequest>
   })

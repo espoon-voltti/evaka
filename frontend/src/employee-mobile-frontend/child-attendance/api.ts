@@ -40,7 +40,7 @@ export async function uploadChildImage({
   formData.append('file', file)
 
   return client
-    .put(`/children/${childId}/image`, formData, {
+    .put(`/employee-mobile/children/${childId}/image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

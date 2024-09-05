@@ -20,6 +20,8 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
+import { API_URL } from '../../api-client'
+
 import {
   assistanceDecisionQuery,
   markAssistanceNeedDecisionAsReadMutation
@@ -50,7 +52,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
               text={i18n.common.download}
               onClick={() => {
                 window.open(
-                  `/api/application/citizen/children/assistance-need-decision/${id}/pdf`,
+                  `${API_URL}/citizen/children/assistance-need-decision/${id}/pdf`,
                   '_blank',
                   'noopener,noreferrer'
                 )

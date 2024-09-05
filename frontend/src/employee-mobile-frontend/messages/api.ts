@@ -11,5 +11,5 @@ export function getAttachmentUrl(
   requestedFilename: string
 ): string {
   const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/attachments/${attachmentId}/download/${encodedFilename}`
+  return `${API_URL}/employee-mobile/attachments/${attachmentId}/download/${encodedFilename}`
 }

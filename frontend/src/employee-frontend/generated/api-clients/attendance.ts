@@ -33,7 +33,7 @@ export async function getRealtimeStaffAttendances(
     ['end', request.end.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<StaffAttendanceResponse>>({
-    url: uri`/staff-attendances/realtime`.toString(),
+    url: uri`/employee/staff-attendances/realtime`.toString(),
     method: 'GET',
     params
   })
@@ -50,7 +50,7 @@ export async function upsertDailyExternalRealtimeAttendances(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/upsert-external`.toString(),
+    url: uri`/employee/staff-attendances/realtime/upsert-external`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExternalAttendanceBody>
   })
@@ -67,7 +67,7 @@ export async function upsertDailyStaffRealtimeAttendances(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/realtime/upsert`.toString(),
+    url: uri`/employee/staff-attendances/realtime/upsert`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceBody>
   })

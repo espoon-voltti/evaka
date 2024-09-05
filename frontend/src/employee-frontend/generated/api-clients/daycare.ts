@@ -65,7 +65,7 @@ export async function getAdditionalInfo(
   }
 ): Promise<AdditionalInformation> {
   const { data: json } = await client.request<JsonOf<AdditionalInformation>>({
-    url: uri`/children/${request.childId}/additional-information`.toString(),
+    url: uri`/employee/children/${request.childId}/additional-information`.toString(),
     method: 'GET'
   })
   return json
@@ -81,7 +81,7 @@ export async function getChild(
   }
 ): Promise<ChildResponse> {
   const { data: json } = await client.request<JsonOf<ChildResponse>>({
-    url: uri`/children/${request.childId}`.toString(),
+    url: uri`/employee/children/${request.childId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonChildResponse(json)
@@ -98,7 +98,7 @@ export async function updateAdditionalInfo(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/children/${request.childId}/additional-information`.toString(),
+    url: uri`/employee/children/${request.childId}/additional-information`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AdditionalInformation>
   })
@@ -117,7 +117,7 @@ export async function createCaretakers(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CaretakerRequest>
   })
@@ -134,7 +134,7 @@ export async function createDaycare(
   }
 ): Promise<CreateDaycareResponse> {
   const { data: json } = await client.request<JsonOf<CreateDaycareResponse>>({
-    url: uri`/daycares`.toString(),
+    url: uri`/employee/daycares`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycareFields>
   })
@@ -152,7 +152,7 @@ export async function createGroup(
   }
 ): Promise<DaycareGroup> {
   const { data: json } = await client.request<JsonOf<DaycareGroup>>({
-    url: uri`/daycares/${request.daycareId}/groups`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<CreateGroupRequest>
   })
@@ -170,7 +170,7 @@ export async function deleteGroup(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -187,7 +187,7 @@ export async function getCaretakers(
   }
 ): Promise<CaretakersResponse> {
   const { data: json } = await client.request<JsonOf<CaretakersResponse>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers`.toString(),
     method: 'GET'
   })
   return deserializeJsonCaretakersResponse(json)
@@ -203,7 +203,7 @@ export async function getDaycare(
   }
 ): Promise<DaycareResponse> {
   const { data: json } = await client.request<JsonOf<DaycareResponse>>({
-    url: uri`/daycares/${request.daycareId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonDaycareResponse(json)
@@ -222,7 +222,7 @@ export async function getDaycares(
     ['includeClosed', request.includeClosed?.toString()]
   )
   const { data: json } = await client.request<JsonOf<Daycare[]>>({
-    url: uri`/daycares`.toString(),
+    url: uri`/employee/daycares`.toString(),
     method: 'GET',
     params
   })
@@ -245,7 +245,7 @@ export async function getGroups(
     ['to', request.to?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<DaycareGroup[]>>({
-    url: uri`/daycares/${request.daycareId}/groups`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups`.toString(),
     method: 'GET',
     params
   })
@@ -258,7 +258,7 @@ export async function getGroups(
 */
 export async function getUnitFeatures(): Promise<UnitFeatures[]> {
   const { data: json } = await client.request<JsonOf<UnitFeatures[]>>({
-    url: uri`/daycares/features`.toString(),
+    url: uri`/employee/daycares/features`.toString(),
     method: 'GET'
   })
   return json
@@ -280,7 +280,7 @@ export async function getUnitGroupDetails(
     ['to', request.to.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<UnitGroupDetails>>({
-    url: uri`/daycares/${request.unitId}/group-details`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/group-details`.toString(),
     method: 'GET',
     params
   })
@@ -297,7 +297,7 @@ export async function getUnitNotifications(
   }
 ): Promise<UnitNotifications> {
   const { data: json } = await client.request<JsonOf<UnitNotifications>>({
-    url: uri`/daycares/${request.daycareId}/notifications`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/notifications`.toString(),
     method: 'GET'
   })
   return json
@@ -315,7 +315,7 @@ export async function removeCaretakers(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -334,7 +334,7 @@ export async function updateCaretakers(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}/caretakers/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<CaretakerRequest>
   })
@@ -352,7 +352,7 @@ export async function updateDaycare(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DaycareFields>
   })
@@ -371,7 +371,7 @@ export async function updateGroup(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/groups/${request.groupId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<GroupUpdateRequest>
   })
@@ -388,7 +388,7 @@ export async function updateUnitFeatures(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/unit-features`.toString(),
+    url: uri`/employee/daycares/unit-features`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<UpdateFeaturesRequest>
   })
@@ -441,7 +441,7 @@ export async function getApplicationUnits(
 */
 export async function getAreas(): Promise<AreaJSON[]> {
   const { data: json } = await client.request<JsonOf<AreaJSON[]>>({
-    url: uri`/areas`.toString(),
+    url: uri`/employee/areas`.toString(),
     method: 'GET'
   })
   return json
@@ -464,7 +464,7 @@ export async function getUnits(
     ['from', request.from?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<UnitStub[]>>({
-    url: uri`/filters/units`.toString(),
+    url: uri`/employee/filters/units`.toString(),
     method: 'GET',
     params
   })
@@ -487,7 +487,7 @@ export async function getStaffAttendancesByGroup(
     ['month', request.month.toString()]
   )
   const { data: json } = await client.request<JsonOf<StaffAttendanceForDates>>({
-    url: uri`/staff-attendances/group/${request.groupId}`.toString(),
+    url: uri`/employee/staff-attendances/group/${request.groupId}`.toString(),
     method: 'GET',
     params
   })
@@ -505,7 +505,7 @@ export async function upsertStaffAttendance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/group/${request.groupId}`.toString(),
+    url: uri`/employee/staff-attendances/group/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
   })
@@ -522,7 +522,7 @@ export async function createClubTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/club-terms`.toString(),
+    url: uri`/employee/club-terms`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ClubTermRequest>
   })
@@ -539,7 +539,7 @@ export async function createPreschoolTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-terms`.toString(),
+    url: uri`/employee/preschool-terms`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
   })
@@ -556,7 +556,7 @@ export async function deleteClubTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/club-terms/${request.id}`.toString(),
+    url: uri`/employee/club-terms/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -572,7 +572,7 @@ export async function deletePreschoolTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-terms/${request.id}`.toString(),
+    url: uri`/employee/preschool-terms/${request.id}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -613,7 +613,7 @@ export async function updateClubTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/club-terms/${request.id}`.toString(),
+    url: uri`/employee/club-terms/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ClubTermRequest>
   })
@@ -631,7 +631,7 @@ export async function updatePreschoolTerm(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/preschool-terms/${request.id}`.toString(),
+    url: uri`/employee/preschool-terms/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PreschoolTermRequest>
   })
@@ -650,7 +650,7 @@ export async function addFullAclForRole(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/full-acl/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/full-acl/${request.employeeId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<FullAclInfo>
   })
@@ -668,7 +668,7 @@ export async function createTemporaryEmployee(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/daycares/${request.unitId}/temporary`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<TemporaryEmployee>
   })
@@ -686,7 +686,7 @@ export async function deleteEarlyChildhoodEducationSecretary(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/earlychildhoodeducationsecretary/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/earlychildhoodeducationsecretary/${request.employeeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -703,7 +703,7 @@ export async function deleteSpecialEducationTeacher(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/specialeducationteacher/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/specialeducationteacher/${request.employeeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -720,7 +720,7 @@ export async function deleteStaff(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/staff/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/staff/${request.employeeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -737,7 +737,7 @@ export async function deleteTemporaryEmployee(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -754,7 +754,7 @@ export async function deleteTemporaryEmployeeAcl(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.unitId}/temporary/${request.employeeId}/acl`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}/acl`.toString(),
     method: 'DELETE'
   })
   return json
@@ -771,7 +771,7 @@ export async function deleteUnitSupervisor(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/supervisors/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/supervisors/${request.employeeId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -787,7 +787,7 @@ export async function getDaycareAcl(
   }
 ): Promise<DaycareAclRow[]> {
   const { data: json } = await client.request<JsonOf<DaycareAclRow[]>>({
-    url: uri`/daycares/${request.daycareId}/acl`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/acl`.toString(),
     method: 'GET'
   })
   return json
@@ -804,7 +804,7 @@ export async function getTemporaryEmployee(
   }
 ): Promise<TemporaryEmployee> {
   const { data: json } = await client.request<JsonOf<TemporaryEmployee>>({
-    url: uri`/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
     method: 'GET'
   })
   return json
@@ -820,7 +820,7 @@ export async function getTemporaryEmployees(
   }
 ): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
-    url: uri`/daycares/${request.unitId}/temporary`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonEmployee(e))
@@ -838,7 +838,7 @@ export async function updateGroupAclWithOccupancyCoefficient(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.daycareId}/staff/${request.employeeId}/groups`.toString(),
+    url: uri`/employee/daycares/${request.daycareId}/staff/${request.employeeId}/groups`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<AclUpdate>
   })
@@ -857,7 +857,7 @@ export async function updateTemporaryEmployee(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
+    url: uri`/employee/daycares/${request.unitId}/temporary/${request.employeeId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<TemporaryEmployee>
   })

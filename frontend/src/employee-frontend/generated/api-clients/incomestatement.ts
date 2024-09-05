@@ -31,7 +31,7 @@ export async function getIncomeStatement(
   }
 ): Promise<IncomeStatement> {
   const { data: json } = await client.request<JsonOf<IncomeStatement>>({
-    url: uri`/income-statements/person/${request.personId}/${request.incomeStatementId}`.toString(),
+    url: uri`/employee/income-statements/person/${request.personId}/${request.incomeStatementId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonIncomeStatement(json)
@@ -47,7 +47,7 @@ export async function getIncomeStatementChildren(
   }
 ): Promise<ChildBasicInfo[]> {
   const { data: json } = await client.request<JsonOf<ChildBasicInfo[]>>({
-    url: uri`/income-statements/guardian/${request.guardianId}/children`.toString(),
+    url: uri`/employee/income-statements/guardian/${request.guardianId}/children`.toString(),
     method: 'GET'
   })
   return json
@@ -69,7 +69,7 @@ export async function getIncomeStatements(
     ['pageSize', request.pageSize.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
-    url: uri`/income-statements/person/${request.personId}`.toString(),
+    url: uri`/employee/income-statements/person/${request.personId}`.toString(),
     method: 'GET',
     params
   })
@@ -86,7 +86,7 @@ export async function getIncomeStatementsAwaitingHandler(
   }
 ): Promise<PagedIncomeStatementsAwaitingHandler> {
   const { data: json } = await client.request<JsonOf<PagedIncomeStatementsAwaitingHandler>>({
-    url: uri`/income-statements/awaiting-handler`.toString(),
+    url: uri`/employee/income-statements/awaiting-handler`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchIncomeStatementsRequest>
   })
@@ -104,7 +104,7 @@ export async function setIncomeStatementHandled(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/income-statements/${request.incomeStatementId}/handled`.toString(),
+    url: uri`/employee/income-statements/${request.incomeStatementId}/handled`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SetIncomeStatementHandledBody>
   })

@@ -37,7 +37,7 @@ export async function getAttendanceReservations(
     ['includeNonOperationalDays', request.includeNonOperationalDays?.toString()]
   )
   const { data: json } = await client.request<JsonOf<UnitAttendanceReservations>>({
-    url: uri`/attendance-reservations`.toString(),
+    url: uri`/employee/attendance-reservations`.toString(),
     method: 'GET',
     params
   })
@@ -54,7 +54,7 @@ export async function getExpectedAbsences(
   }
 ): Promise<ExpectedAbsencesResponse> {
   const { data: json } = await client.request<JsonOf<ExpectedAbsencesResponse>>({
-    url: uri`/attendance-reservations/child-date/expected-absences`.toString(),
+    url: uri`/employee/attendance-reservations/child-date/expected-absences`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ExpectedAbsencesRequest>
   })
@@ -71,7 +71,7 @@ export async function postChildDatePresence(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendance-reservations/child-date`.toString(),
+    url: uri`/employee/attendance-reservations/child-date`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<ChildDatePresence>
   })
@@ -92,7 +92,7 @@ export async function postReservations(
     ['automaticFixedScheduleAbsencesEnabled', request.automaticFixedScheduleAbsencesEnabled?.toString()]
   )
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/attendance-reservations`.toString(),
+    url: uri`/employee/attendance-reservations`.toString(),
     method: 'POST',
     params,
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>

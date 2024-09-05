@@ -17,7 +17,7 @@ import { uri } from 'lib-common/uri'
 */
 export async function getPushSettings(): Promise<PushSettings> {
   const { data: json } = await client.request<JsonOf<PushSettings>>({
-    url: uri`/mobile-devices/push-settings`.toString(),
+    url: uri`/employee-mobile/push-settings`.toString(),
     method: 'GET'
   })
   return json
@@ -33,7 +33,7 @@ export async function setPushSettings(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile-devices/push-settings`.toString(),
+    url: uri`/employee-mobile/push-settings`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PushSettings>
   })
@@ -50,7 +50,7 @@ export async function upsertPushSubscription(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/mobile-devices/push-subscription`.toString(),
+    url: uri`/employee-mobile/push-subscription`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<WebPushSubscription>
   })

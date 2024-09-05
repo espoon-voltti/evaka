@@ -143,7 +143,7 @@ data class ChildBasicsRow(
             placementType,
             groupId,
             backup,
-            imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" },
+            imageUrl = imageId?.let { id -> "/api/internal/employee-mobile/child-images/$id" },
         )
 }
 

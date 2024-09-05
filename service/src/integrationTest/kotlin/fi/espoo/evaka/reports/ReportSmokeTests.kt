@@ -42,51 +42,65 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     @Test
     fun `applications report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/applications", listOf("from" to "2020-05-01", "to" to "2020-08-01"))
+            http.get(
+                "/employee/reports/applications",
+                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
+            )
         )
     }
 
     @Test
     fun `assistance needs and actions report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/assistance-needs-and-actions", listOf("date" to "2020-08-01"))
+            http.get(
+                "/employee/reports/assistance-needs-and-actions",
+                listOf("date" to "2020-08-01"),
+            )
         )
     }
 
     @Test
     fun `child-age-language report returns http 200`() {
-        assertOkResponse(http.get("/reports/child-age-language", listOf("date" to "2020-08-01")))
+        assertOkResponse(
+            http.get("/employee/reports/child-age-language", listOf("date" to "2020-08-01"))
+        )
     }
 
     @Test
     fun `children-in-different-address report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/children-in-different-address", listOf("date" to "2020-08-01"))
+            http.get(
+                "/employee/reports/children-in-different-address",
+                listOf("date" to "2020-08-01"),
+            )
         )
     }
 
     @Test
     fun `decisions report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/decisions", listOf("from" to "2020-05-01", "to" to "2020-08-01"))
+            http.get(
+                "/employee/reports/decisions",
+                listOf("from" to "2020-05-01", "to" to "2020-08-01"),
+            )
         )
     }
 
     @Test
     fun `duplicate-people report returns http 200`() {
-        assertOkResponse(http.get("/reports/duplicate-people"))
+        assertOkResponse(http.get("/employee/reports/duplicate-people"))
     }
 
     @Test
     fun `ended-placements report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/ended-placements", listOf("year" to 2020, "month" to 1))
+            http.get("/employee/reports/ended-placements", listOf("year" to 2020, "month" to 1))
         )
     }
 
     @Test
     fun `family-conflicts report returns http 200`() {
-        assertOkResponse(http.get("/reports/family-conflicts"))
+        assertOkResponse(http.get("/employee/reports/family-conflicts"))
     }
 
     @Test
@@ -104,21 +118,23 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 2, 1), LocalTime.of(12, 0))
         assertOkResponse(
             http
-                .get("/reports/family-contacts?unitId=${testDaycare.id}&date=${now.toLocalDate()}")
+                .get(
+                    "/employee/reports/family-contacts?unitId=${testDaycare.id}&date=${now.toLocalDate()}"
+                )
                 .withMockedTime(now)
         )
     }
 
     @Test
     fun `invoice report returns http 200`() {
-        assertOkResponse(http.get("/reports/invoices", listOf("date" to "2020-08-01")))
+        assertOkResponse(http.get("/employee/reports/invoices", listOf("date" to "2020-08-01")))
     }
 
     @Test
     fun `missing-head-of-family report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/missing-head-of-family",
+                "/employee/reports/missing-head-of-family",
                 listOf("from" to "2020-05-01", "to" to "2020-08-01"),
             )
         )
@@ -128,7 +144,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     fun `missing-service-need report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/missing-service-need",
+                "/employee/reports/missing-service-need",
                 listOf("from" to "2020-05-01", "to" to "2020-08-01"),
             )
         )
@@ -138,7 +154,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     fun `occupancy-by-unit report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/occupancy-by-unit",
+                "/employee/reports/occupancy-by-unit",
                 listOf(
                     "type" to "PLANNED",
                     "careAreaId" to testArea.id,
@@ -150,7 +166,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
         assertOkResponse(
             http.get(
-                "/reports/occupancy-by-unit",
+                "/employee/reports/occupancy-by-unit",
                 listOf(
                     "type" to "CONFIRMED",
                     "careAreaId" to testArea.id,
@@ -162,7 +178,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
         assertOkResponse(
             http.get(
-                "/reports/occupancy-by-unit",
+                "/employee/reports/occupancy-by-unit",
                 listOf(
                     "type" to "REALIZED",
                     "careAreaId" to testArea.id,
@@ -177,7 +193,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     fun `occupancy-by-group report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/occupancy-by-group",
+                "/employee/reports/occupancy-by-group",
                 listOf(
                     "type" to "CONFIRMED",
                     "careAreaId" to testArea.id,
@@ -189,7 +205,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
         assertOkResponse(
             http.get(
-                "/reports/occupancy-by-group",
+                "/employee/reports/occupancy-by-group",
                 listOf(
                     "type" to "REALIZED",
                     "careAreaId" to testArea.id,
@@ -202,32 +218,35 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `partners-in-different-address report returns http 200`() {
-        assertOkResponse(http.get("/reports/partners-in-different-address"))
+        assertOkResponse(http.get("/employee/reports/partners-in-different-address"))
     }
 
     @Test
     fun `presences report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/presences", listOf("from" to "2020-05-01", "to" to "2020-05-02"))
+            http.get(
+                "/employee/reports/presences",
+                listOf("from" to "2020-05-01", "to" to "2020-05-02"),
+            )
         )
     }
 
     @Test
     fun `raw report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/raw", listOf("from" to "2020-05-01", "to" to "2020-05-02"))
+            http.get("/employee/reports/raw", listOf("from" to "2020-05-01", "to" to "2020-05-02"))
         )
     }
 
     @Test
     fun `service-need report returns http 200`() {
-        assertOkResponse(http.get("/reports/service-need", listOf("date" to "2020-08-01")))
+        assertOkResponse(http.get("/employee/reports/service-need", listOf("date" to "2020-08-01")))
     }
 
     @Test
     fun `starting-placements report returns http 200`() {
         assertOkResponse(
-            http.get("/reports/starting-placements", listOf("year" to 2020, "month" to 1))
+            http.get("/employee/reports/starting-placements", listOf("year" to 2020, "month" to 1))
         )
     }
 
@@ -235,7 +254,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     fun `placement sketching report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/placement-sketching",
+                "/employee/reports/placement-sketching",
                 listOf(
                     "placementStartDate" to "2021-01-01",
                     "earliestPreferredStartDate" to "2021-08-13",
@@ -246,13 +265,13 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `varda error reports return http 200`() {
-        assertOkResponse(http.get("/reports/varda-child-errors"))
-        assertOkResponse(http.get("/reports/varda-unit-errors"))
+        assertOkResponse(http.get("/employee/reports/varda-child-errors"))
+        assertOkResponse(http.get("/employee/reports/varda-unit-errors"))
     }
 
     @Test
     fun `units report returns http 200`() {
-        assertOkResponse(http.get("/reports/units"))
+        assertOkResponse(http.get("/employee/reports/units"))
     }
 
     private fun assertOkResponse(req: Request) {

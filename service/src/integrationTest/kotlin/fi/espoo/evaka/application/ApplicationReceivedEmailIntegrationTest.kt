@@ -200,7 +200,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             }
         val (_, res, _) =
             http
-                .post("/v2/applications/$applicationId/actions/send-application")
+                .post("/employee/applications/$applicationId/actions/send-application")
                 .withMockedTime(mockedTime)
                 .asUser(serviceWorker)
                 .response()
@@ -323,7 +323,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             }
         val (_, res, _) =
             http
-                .post("/v2/applications/$applicationId/actions/send-application")
+                .post("/employee/applications/$applicationId/actions/send-application")
                 .withMockedTime(mockedTime)
                 .asUser(serviceWorker)
                 .response()

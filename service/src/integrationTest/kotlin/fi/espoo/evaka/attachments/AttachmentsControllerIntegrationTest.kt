@@ -102,16 +102,16 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
         type: AttachmentType = AttachmentType.URGENCY,
     ): Boolean {
         return uploadAttachment(
-            "/attachments/citizen/applications/$applicationId",
+            "/citizen/attachments/applications/$applicationId",
             listOf("type" to type),
         )
     }
 
     private fun uploadIncomeStatementAttachment(incomeStatementId: IncomeStatementId): Boolean {
-        return uploadAttachment("/attachments/citizen/income-statements/$incomeStatementId")
+        return uploadAttachment("/citizen/attachments/income-statements/$incomeStatementId")
     }
 
     private fun uploadUnparentedAttachment(): Boolean {
-        return uploadAttachment("/attachments/citizen/income-statements")
+        return uploadAttachment("/citizen/attachments/income-statements")
     }
 }

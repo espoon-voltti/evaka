@@ -23,7 +23,7 @@ export async function getAttendancesByUnit(
   }
 ): Promise<UnitStaffAttendance> {
   const { data: json } = await client.request<JsonOf<UnitStaffAttendance>>({
-    url: uri`/staff-attendances/unit/${request.unitId}`.toString(),
+    url: uri`/employee-mobile/staff-attendances/unit/${request.unitId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonUnitStaffAttendance(json)
@@ -40,7 +40,7 @@ export async function upsertStaffAttendance(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/staff-attendances/group/${request.groupId}`.toString(),
+    url: uri`/employee-mobile/staff-attendances/group/${request.groupId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<StaffAttendanceUpdate>
   })

@@ -26,7 +26,7 @@ export async function pinLogin(
   }
 ): Promise<PinLoginResponse> {
   const { data: json } = await client.request<JsonOf<PinLoginResponse>>({
-    url: uri`/mobile-devices/pin-login`.toString(),
+    url: uri`/employee-mobile/pin-login`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PinLoginRequest>
   })

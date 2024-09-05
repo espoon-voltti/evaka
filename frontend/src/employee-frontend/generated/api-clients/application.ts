@@ -47,7 +47,7 @@ export async function acceptDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/accept-decision`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/accept-decision`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<AcceptDecisionRequest>
   })
@@ -64,7 +64,7 @@ export async function acceptPlacementProposal(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/placement-proposals/${request.unitId}/accept`.toString(),
+    url: uri`/employee/applications/placement-proposals/${request.unitId}/accept`.toString(),
     method: 'POST'
   })
   return json
@@ -80,7 +80,7 @@ export async function createPaperApplication(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/v2/applications`.toString(),
+    url: uri`/employee/applications`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PaperApplicationCreateRequest>
   })
@@ -98,7 +98,7 @@ export async function createPlacementPlan(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/create-placement-plan`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<DaycarePlacementPlan>
   })
@@ -115,7 +115,7 @@ export async function getApplicationDetails(
   }
 ): Promise<ApplicationResponse> {
   const { data: json } = await client.request<JsonOf<ApplicationResponse>>({
-    url: uri`/v2/applications/${request.applicationId}`.toString(),
+    url: uri`/employee/applications/${request.applicationId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonApplicationResponse(json)
@@ -131,7 +131,7 @@ export async function getApplicationSummaries(
   }
 ): Promise<PagedApplicationSummaries> {
   const { data: json } = await client.request<JsonOf<PagedApplicationSummaries>>({
-    url: uri`/v2/applications/search`.toString(),
+    url: uri`/employee/applications/search`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SearchApplicationRequest>
   })
@@ -148,7 +148,7 @@ export async function getChildApplicationSummaries(
   }
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
-    url: uri`/v2/applications/by-child/${request.childId}`.toString(),
+    url: uri`/employee/applications/by-child/${request.childId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPersonApplicationSummary(e))
@@ -164,7 +164,7 @@ export async function getDecisionDrafts(
   }
 ): Promise<DecisionDraftGroup> {
   const { data: json } = await client.request<JsonOf<DecisionDraftGroup>>({
-    url: uri`/v2/applications/${request.applicationId}/decision-drafts`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/decision-drafts`.toString(),
     method: 'GET'
   })
   return deserializeJsonDecisionDraftGroup(json)
@@ -180,7 +180,7 @@ export async function getGuardianApplicationSummaries(
   }
 ): Promise<PersonApplicationSummary[]> {
   const { data: json } = await client.request<JsonOf<PersonApplicationSummary[]>>({
-    url: uri`/v2/applications/by-guardian/${request.guardianId}`.toString(),
+    url: uri`/employee/applications/by-guardian/${request.guardianId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonPersonApplicationSummary(e))
@@ -196,7 +196,7 @@ export async function getPlacementPlanDraft(
   }
 ): Promise<PlacementPlanDraft> {
   const { data: json } = await client.request<JsonOf<PlacementPlanDraft>>({
-    url: uri`/v2/applications/${request.applicationId}/placement-draft`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/placement-draft`.toString(),
     method: 'GET'
   })
   return deserializeJsonPlacementPlanDraft(json)
@@ -212,7 +212,7 @@ export async function getUnitApplications(
   }
 ): Promise<UnitApplications> {
   const { data: json } = await client.request<JsonOf<UnitApplications>>({
-    url: uri`/v2/applications/units/${request.unitId}`.toString(),
+    url: uri`/employee/applications/units/${request.unitId}`.toString(),
     method: 'GET'
   })
   return deserializeJsonUnitApplications(json)
@@ -229,7 +229,7 @@ export async function rejectDecision(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/reject-decision`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/reject-decision`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<RejectDecisionRequest>
   })
@@ -247,7 +247,7 @@ export async function respondToPlacementProposal(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/respond-to-placement-proposal`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/respond-to-placement-proposal`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PlacementProposalConfirmationUpdate>
   })
@@ -264,7 +264,7 @@ export async function sendApplication(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/send-application`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/send-application`.toString(),
     method: 'POST'
   })
   return json
@@ -281,7 +281,7 @@ export async function simpleApplicationAction(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/actions/${request.action}`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/actions/${request.action}`.toString(),
     method: 'POST'
   })
   return json
@@ -298,7 +298,7 @@ export async function simpleBatchAction(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/batch/actions/${request.action}`.toString(),
+    url: uri`/employee/applications/batch/actions/${request.action}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<SimpleBatchRequest>
   })
@@ -316,7 +316,7 @@ export async function updateApplication(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}`.toString(),
+    url: uri`/employee/applications/${request.applicationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ApplicationUpdate>
   })
@@ -334,7 +334,7 @@ export async function updateDecisionDrafts(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/v2/applications/${request.applicationId}/decision-drafts`.toString(),
+    url: uri`/employee/applications/${request.applicationId}/decision-drafts`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<DecisionDraftUpdate[]>
   })
@@ -352,7 +352,7 @@ export async function createNote(
   }
 ): Promise<ApplicationNote> {
   const { data: json } = await client.request<JsonOf<ApplicationNote>>({
-    url: uri`/note/application/${request.applicationId}`.toString(),
+    url: uri`/employee/note/application/${request.applicationId}`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<NoteRequest>
   })
@@ -369,7 +369,7 @@ export async function deleteNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/note/${request.noteId}`.toString(),
+    url: uri`/employee/note/${request.noteId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -385,7 +385,7 @@ export async function getNotes(
   }
 ): Promise<ApplicationNoteResponse[]> {
   const { data: json } = await client.request<JsonOf<ApplicationNoteResponse[]>>({
-    url: uri`/note/application/${request.applicationId}`.toString(),
+    url: uri`/employee/note/application/${request.applicationId}`.toString(),
     method: 'GET'
   })
   return json.map(e => deserializeJsonApplicationNoteResponse(e))
@@ -402,7 +402,7 @@ export async function updateNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/note/${request.noteId}`.toString(),
+    url: uri`/employee/note/${request.noteId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<NoteRequest>
   })
@@ -420,7 +420,7 @@ export async function updateServiceWorkerNote(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/note/service-worker/application/${request.applicationId}`.toString(),
+    url: uri`/employee/note/service-worker/application/${request.applicationId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<NoteRequest>
   })

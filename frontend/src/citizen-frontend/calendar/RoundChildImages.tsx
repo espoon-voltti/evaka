@@ -12,6 +12,8 @@ import { UUID } from 'lib-common/types'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
 
+import { API_URL } from '../api-client'
+
 export interface ChildImageData {
   childId: UUID
   imageId: UUID | null
@@ -95,7 +97,7 @@ export const RoundChildImage = React.memo(function RoundChildImage({
 }: RoundChildImageProps) {
   return imageId !== null ? (
     <ChildImage
-      src={`/api/application/citizen/child-images/${imageId}`}
+      src={`${API_URL}/citizen/child-images/${imageId}`}
       size={size}
       border={border}
     />

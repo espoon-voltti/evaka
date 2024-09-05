@@ -30,7 +30,7 @@ export async function createGroupPlacement(
   }
 ): Promise<UUID> {
   const { data: json } = await client.request<JsonOf<UUID>>({
-    url: uri`/placements/${request.placementId}/group-placements`.toString(),
+    url: uri`/employee/placements/${request.placementId}/group-placements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupPlacementRequestBody>
   })
@@ -47,7 +47,7 @@ export async function createPlacement(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/placements`.toString(),
+    url: uri`/employee/placements`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<PlacementCreateRequestBody>
   })
@@ -64,7 +64,7 @@ export async function deleteGroupPlacement(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/group-placements/${request.groupPlacementId}`.toString(),
+    url: uri`/employee/group-placements/${request.groupPlacementId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -80,7 +80,7 @@ export async function deletePlacement(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/placements/${request.placementId}`.toString(),
+    url: uri`/employee/placements/${request.placementId}`.toString(),
     method: 'DELETE'
   })
   return json
@@ -96,7 +96,7 @@ export async function getChildPlacementPeriods(
   }
 ): Promise<FiniteDateRange[]> {
   const { data: json } = await client.request<JsonOf<FiniteDateRange[]>>({
-    url: uri`/placements/child-placement-periods/${request.adultId}`.toString(),
+    url: uri`/employee/placements/child-placement-periods/${request.adultId}`.toString(),
     method: 'GET'
   })
   return json.map(e => FiniteDateRange.parseJson(e))
@@ -121,7 +121,7 @@ export async function getPlacements(
     ['to', request.to?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<PlacementResponse>>({
-    url: uri`/placements`.toString(),
+    url: uri`/employee/placements`.toString(),
     method: 'GET',
     params
   })
@@ -139,7 +139,7 @@ export async function transferGroupPlacement(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/group-placements/${request.groupPlacementId}/transfer`.toString(),
+    url: uri`/employee/group-placements/${request.groupPlacementId}/transfer`.toString(),
     method: 'POST',
     data: request.body satisfies JsonCompatible<GroupTransferRequestBody>
   })
@@ -157,7 +157,7 @@ export async function updatePlacementById(
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/placements/${request.placementId}`.toString(),
+    url: uri`/employee/placements/${request.placementId}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PlacementUpdateRequestBody>
   })
