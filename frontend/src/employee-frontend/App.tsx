@@ -85,6 +85,7 @@ import ReportFamilyConflicts from './components/reports/FamilyConflicts'
 import ReportFamilyContacts from './components/reports/FamilyContacts'
 import FamilyDaycareMealCount from './components/reports/FamilyDaycareMealCount'
 import FuturePreschoolersReport from './components/reports/FuturePreschoolersReport'
+import HolidayPeriodAttendanceReport from './components/reports/HolidayPeriodAttendanceReport'
 import ReportInvoices from './components/reports/Invoices'
 import ManualDuplicationReport from './components/reports/ManualDuplicationReport'
 import MealReport from './components/reports/MealReport'
@@ -826,6 +827,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="reports">
               <ChildAttendanceReport />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/reports/holiday-period-attendance',
+          element: (
+            <EmployeeRoute title="reports">
+              <HolidayPeriodAttendanceReport />
             </EmployeeRoute>
           )
         },

@@ -634,6 +634,20 @@ export default React.memo(function Reports() {
                     />
                   )
                 }
+              : null,
+            reports.has('HOLIDAY_PERIOD_ATTENDANCE')
+              ? {
+                  name: i18n.reports.holidayPeriodAttendance.title,
+                  item: (
+                    <Report
+                      path="/reports/holiday-period-attendance"
+                      color={colors.main.m2}
+                      icon={faChild}
+                      i18n={i18n.reports.holidayPeriodAttendance}
+                      data-qa="report-holiday-period-attendance"
+                    />
+                  )
+                }
               : null
           ]
 

@@ -27,6 +27,7 @@ enum class Report {
     EXCEEDED_SERVICE_NEEDS,
     FAMILY_CONFLICT,
     FAMILY_DAYCARE_MEAL_REPORT,
+    HOLIDAY_PERIOD_ATTENDANCE,
     INVOICE,
     MANUAL_DUPLICATION,
     MISSING_HEAD_OF_FAMILY,
@@ -213,6 +214,11 @@ class ReportPermissions(private val accessControl: AccessControl) {
                     Report.PRESCHOOL_ABSENCES.takeIf {
                         permittedActionsForSomeUnit.contains(
                             Action.Unit.READ_PRESCHOOL_ABSENCE_REPORT
+                        )
+                    },
+                    Report.HOLIDAY_PERIOD_ATTENDANCE.takeIf {
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT
                         )
                     },
                 )
