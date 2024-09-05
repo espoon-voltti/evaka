@@ -4,11 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useState } from 'react'
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { useQueryResult } from 'lib-common/query'
-import LinkWrapperInlineBlock from 'lib-components/atoms/LinkWrapperInlineBlock'
 import Main from 'lib-components/atoms/Main'
 import LinkButton from 'lib-components/atoms/buttons/LinkButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -166,6 +165,8 @@ export default React.memo(function LoginPage() {
   )
 })
 
-const MapLink = styled(LinkWrapperInlineBlock)`
+const MapLink = styled(Link)`
+  text-decoration: none;
+  display: inline-block;
   font-weight: ${fontWeights.semibold};
 `

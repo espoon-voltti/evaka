@@ -60,7 +60,10 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { MobileOnly } from 'lib-components/layout/responsive-layout'
+import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
 import {
   ExpandingInfoBox,
   InfoButton
@@ -469,7 +472,9 @@ const DayModal = React.memo(function DayModal({
                     ) : null}
                     <CalendarModalSection data-qa={`child-${row.childId}`}>
                       {childIndex !== 0 ? (
-                        <HorizontalLine dashed slim hiddenOnMobile />
+                        <TabletAndDesktop>
+                          <HorizontalLine dashed slim />
+                        </TabletAndDesktop>
                       ) : null}
                       <FixedSpaceRow>
                         <FixedSpaceColumn>

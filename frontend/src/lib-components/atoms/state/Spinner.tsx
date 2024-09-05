@@ -9,11 +9,10 @@ import styled from 'styled-components'
 import { spinnerOverlayZIndex } from '../../layout/z-helpers'
 import { defaultMargins, SpacingSize } from '../../white-space'
 
-export const Spinner = styled.div<{ zIndex?: number; size?: string }>`
+export const Spinner = styled.div<{ size?: string }>`
   border-radius: 50%;
   width: ${(p) => p.size ?? defaultMargins.XXL};
   height: ${(p) => p.size ?? defaultMargins.XXL};
-  ${({ zIndex }) => (zIndex ? `z-index: ${zIndex};` : '')}
 
   border: 5px solid ${(p) => transparentize(0.8, p.theme.colors.main.m2)};
   border-left-color: ${(p) => p.theme.colors.main.m2};
@@ -84,25 +83,6 @@ export const SpinnerOverlay = React.memo(function SpinnerOverlay() {
     <SpinnerOverlayRoot>
       <Spinner data-qa="spinner" />
     </SpinnerOverlayRoot>
-  )
-})
-
-const Relative = styled.div`
-  position: relative;
-`
-
-export const LoadableContent = React.memo(function LoadableContent({
-  loading,
-  children
-}: {
-  loading: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <Relative>
-      {loading && <SpinnerOverlay />}
-      {children}
-    </Relative>
   )
 })
 

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { CustomTitle } from 'employee-mobile-frontend/common/components'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
-import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
+import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employeeMobile'
@@ -35,7 +35,7 @@ export default React.memo(function StaffAttendanceTypeSelection({
       <Gap size="s" />
       <ChipWrapper margin="xs" $justifyContent="center">
         {types.map((type) => (
-          <ChoiceChip
+          <SelectionChip
             key={type}
             text={i18n.attendances.staffTypes[type]}
             selected={selectedType === type}
@@ -45,6 +45,7 @@ export default React.memo(function StaffAttendanceTypeSelection({
                 : setSelectedType(type)
             }
             data-qa={`attendance-type-${type}`}
+            hideIcon
           />
         ))}
       </ChipWrapper>

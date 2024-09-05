@@ -24,6 +24,7 @@ import {
 } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
@@ -245,7 +246,9 @@ export default React.memo(function ReservationModal({
               <Gap size="xxs" sizeOnMobile="s" />
 
               <CalendarModalSection>
-                <HorizontalLine slim dashed hiddenOnMobile />
+                <TabletAndDesktop>
+                  <HorizontalLine slim dashed />
+                </TabletAndDesktop>
 
                 <H2>{i18n.calendar.reservationModal.dateRange}</H2>
 
