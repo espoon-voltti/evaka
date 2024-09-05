@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.document.childdocument.AnsweredQuestion
 import fi.espoo.evaka.document.childdocument.DocumentStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.HtmlBuilder
 import fi.espoo.evaka.shared.HtmlElement
@@ -330,7 +331,8 @@ enum class DocumentType(val statuses: List<DocumentStatus>) : DatabaseEnum {
     MIGRATED_VASU(listOf(DocumentStatus.COMPLETED)),
     MIGRATED_LEOPS(listOf(DocumentStatus.COMPLETED)),
     VASU(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
-    LEOPS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED));
+    LEOPS(listOf(DocumentStatus.DRAFT, DocumentStatus.PREPARED, DocumentStatus.COMPLETED)),
+    OTHER(listOf(DocumentStatus.DRAFT, DocumentStatus.COMPLETED));
 
     fun isMigrated() = this in listOf(MIGRATED_VASU, MIGRATED_LEOPS)
 
@@ -341,6 +343,7 @@ data class DocumentTemplate(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
+    val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
@@ -354,6 +357,7 @@ data class DocumentTemplate(
 data class ExportedDocumentTemplate(
     val name: String,
     val type: DocumentType,
+    val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
@@ -366,6 +370,7 @@ data class ExportedDocumentTemplate(
 data class DocumentTemplateBasicsRequest(
     val name: String,
     val type: DocumentType,
+    val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
     val confidential: Boolean,
     val legalBasis: String,
@@ -378,6 +383,7 @@ data class DocumentTemplateSummary(
     val id: DocumentTemplateId,
     val name: String,
     val type: DocumentType,
+    val placementTypes: Set<PlacementType>,
     val language: OfficialLanguage,
     val validity: DateRange,
     val published: Boolean,

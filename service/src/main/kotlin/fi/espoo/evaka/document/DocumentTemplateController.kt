@@ -7,7 +7,8 @@ package fi.espoo.evaka.document
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.EvakaEnv
-import fi.espoo.evaka.placement.getChildPlacementUnitLanguage
+import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DocumentTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -19,6 +20,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -118,12 +120,17 @@ class DocumentTemplateController(
                         clock,
                         Action.Global.READ_DOCUMENT_TEMPLATE,
                     )
-                    val placementLanguage = tx.getChildPlacementUnitLanguage(childId, clock.today())
+
+                    val placement =
+                        tx.getChildActivePlacementInfo(childId, clock.today())
+                            ?: return@read emptyList()
+
                     tx.getTemplateSummaries().filter {
                         it.published &&
                             it.validity.includes(clock.today()) &&
-                            (placementLanguage == null ||
-                                it.language.name.uppercase() == placementLanguage.name.uppercase())
+                            it.placementTypes.contains(placement.type) &&
+                            (it.language.name.uppercase() ==
+                                placement.unitLanguage.name.uppercase())
                     }
                 }
             }
@@ -382,3 +389,21 @@ private fun assertUniqueIds(content: DocumentTemplateContent) {
     if (questionIds.size > questionIds.distinct().size)
         throw BadRequest("Found non unique question ids")
 }
+
+private data class ActivePlacementInfo(val type: PlacementType, val unitLanguage: Language)
+
+private fun Database.Read.getChildActivePlacementInfo(
+    childId: ChildId,
+    date: LocalDate,
+): ActivePlacementInfo? =
+    createQuery {
+            sql(
+                """
+SELECT pl.type, d.language AS unit_language
+FROM placement pl
+JOIN daycare d on d.id = pl.unit_id
+WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+"""
+            )
+        }
+        .exactlyOneOrNull<ActivePlacementInfo>()

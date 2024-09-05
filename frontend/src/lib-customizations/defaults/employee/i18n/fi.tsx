@@ -4597,7 +4597,8 @@ export const fi = {
       MIGRATED_VASU: 'Varhaiskasvatussuunnitelma',
       MIGRATED_LEOPS: 'Esiopetuksen oppimissuunnitelma',
       VASU: 'Varhaiskasvatussuunnitelma',
-      LEOPS: 'Esiopetuksen oppimissuunnitelma'
+      LEOPS: 'Esiopetuksen oppimissuunnitelma',
+      OTHER: 'Muu lomake'
     },
     languages: {
       FI: 'Suomenkielinen',
@@ -4620,6 +4621,7 @@ export const fi = {
       title: 'Uusi lomakepohja',
       name: 'Nimi',
       type: 'Lomakkeen tyyppi',
+      placementTypes: 'Käytössä sijoituksilla',
       language: 'Lomakkeen kieli',
       confidential: 'Lomake on salassapidettävä',
       legalBasis: 'Lait joihin lomake perustuu (vapaaehtoinen)',

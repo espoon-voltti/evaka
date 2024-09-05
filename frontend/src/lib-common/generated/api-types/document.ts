@@ -10,6 +10,7 @@ import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { JsonOf } from '../../json'
 import { OfficialLanguage } from './shared'
+import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 
@@ -220,6 +221,7 @@ export interface DocumentTemplate {
   language: OfficialLanguage
   legalBasis: string
   name: string
+  placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   published: boolean
   type: DocumentType
@@ -235,6 +237,7 @@ export interface DocumentTemplateBasicsRequest {
   language: OfficialLanguage
   legalBasis: string
   name: string
+  placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   type: DocumentType
   validity: DateRange
@@ -255,6 +258,7 @@ export interface DocumentTemplateSummary {
   id: UUID
   language: OfficialLanguage
   name: string
+  placementTypes: PlacementType[]
   published: boolean
   type: DocumentType
   validity: DateRange
@@ -270,7 +274,8 @@ export const documentTypes = [
   'MIGRATED_VASU',
   'MIGRATED_LEOPS',
   'VASU',
-  'LEOPS'
+  'LEOPS',
+  'OTHER'
 ] as const
 
 export type DocumentType = typeof documentTypes[number]
@@ -294,6 +299,7 @@ export interface ExportedDocumentTemplate {
   language: OfficialLanguage
   legalBasis: string
   name: string
+  placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   type: DocumentType
   validity: DateRange

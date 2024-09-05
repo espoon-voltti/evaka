@@ -300,6 +300,7 @@ private fun toBasicsRequest(vasu: VasuDocument): DocumentTemplateBasicsRequest {
                 CurriculumType.DAYCARE -> DocumentType.MIGRATED_VASU
                 CurriculumType.PRESCHOOL -> DocumentType.MIGRATED_LEOPS
             },
+        placementTypes = emptySet(),
         language =
             when (vasu.language) {
                 OfficialLanguage.FI -> OfficialLanguage.FI

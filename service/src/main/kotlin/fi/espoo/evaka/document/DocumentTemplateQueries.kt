@@ -12,8 +12,8 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest)
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
+INSERT INTO document_template (name, type, placement_types,  language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
 RETURNING *
 """
             )
@@ -25,8 +25,8 @@ fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): Doc
     createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content)
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
+INSERT INTO document_template (name, type, placement_types, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content)
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.content)})
 RETURNING *
 """
             )
@@ -40,8 +40,8 @@ fun Database.Transaction.duplicateTemplate(
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
-SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
+INSERT INTO document_template (name, type, placement_types, language, confidential, legal_basis, validity, process_definition_number, archive_duration_months, content) 
+SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidential)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, content FROM document_template WHERE id = ${bind(id)}
 RETURNING *
 """
             )
@@ -57,6 +57,7 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
                     id,
                     name,
                     type,
+                    placement_types,
                     language,
                     validity,
                     published,
@@ -89,6 +90,7 @@ fun Database.Transaction.updateDraftTemplateBasics(
                 SET
                     name = ${bind(basics.name)}, 
                     type = ${bind(basics.type)},
+                    placement_types = ${bind(basics.placementTypes)},
                     language = ${bind(basics.language)},
                     confidential = ${bind(basics.confidential)},
                     legal_basis = ${bind(basics.legalBasis)},

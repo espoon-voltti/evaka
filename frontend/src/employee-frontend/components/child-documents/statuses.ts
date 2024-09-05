@@ -14,7 +14,8 @@ const statusesByType: Record<DocumentType, DocumentStatus[]> = {
   MIGRATED_VASU: ['COMPLETED'],
   MIGRATED_LEOPS: ['COMPLETED'],
   VASU: ['DRAFT', 'PREPARED', 'COMPLETED'],
-  LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED']
+  LEOPS: ['DRAFT', 'PREPARED', 'COMPLETED'],
+  OTHER: ['DRAFT', 'COMPLETED']
 }
 
 export const getNextDocumentStatus = (

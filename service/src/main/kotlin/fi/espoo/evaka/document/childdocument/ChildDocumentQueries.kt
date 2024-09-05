@@ -65,6 +65,7 @@ SELECT
     dt.id as template_id,
     dt.name as template_name,
     dt.type as template_type,
+    dt.placement_types as template_placement_types,
     dt.language as template_language,
     dt.legal_basis as template_legal_basis,
     dt.confidential as template_confidential,
