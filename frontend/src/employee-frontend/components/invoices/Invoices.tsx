@@ -4,23 +4,25 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import uniqBy from 'lodash/uniqBy'
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, isLoading, Loading, Result, Success } from 'lib-common/api'
+import { isLoading, Result } from 'lib-common/api'
 import { User } from 'lib-common/api-types/employee-auth'
+import { useBoolean } from 'lib-common/form/hooks'
 import {
   InvoiceSortParam,
   InvoiceSummaryResponse,
+  PagedInvoiceSummaryResponses,
   SortDirection
 } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
+import { UUID } from 'lib-common/types'
 import Pagination from 'lib-components/Pagination'
-import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import {
   SortableTh,
@@ -36,66 +38,75 @@ import colors from 'lib-customizations/common'
 import { faExclamation, faSync } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
 
-import { InvoicesActions } from './invoices-state'
+import { createDraftInvoicesMutation } from './queries'
 
 interface Props {
   user: User | undefined
-  actions: InvoicesActions
-  invoices: Result<InvoiceSummaryResponse[]>
-  refreshInvoices: () => Promise<void>
-  total?: number
-  pages?: number
+  pagedInvoices: Result<PagedInvoiceSummaryResponses>
+
   currentPage: number
+  setCurrentPage: (p: number) => void
   sortBy: InvoiceSortParam
+  setSortBy: (sb: InvoiceSortParam) => void
   sortDirection: SortDirection
+  setSortDirection: (sd: SortDirection) => void
+
   showCheckboxes: boolean
-  checked: Record<string, true>
-  allInvoicesToggle: boolean
-  allInvoicesToggleDisabled: boolean
+
+  checked: Set<UUID>
+  checkAll: () => void
+  clearChecked: () => void
+  toggleChecked: (id: UUID) => void
+
+  fullAreaSelection: boolean
+  setFullAreaSelection: (checked: boolean) => void
+  fullAreaSelectionDisabled: boolean
 }
 
 export default React.memo(function Invoices({
   user,
-  actions,
-  invoices,
-  refreshInvoices,
-  total,
-  pages,
+  pagedInvoices,
   currentPage,
+  setCurrentPage,
   sortBy,
+  setSortBy,
   sortDirection,
+  setSortDirection,
   showCheckboxes,
   checked,
-  allInvoicesToggle,
-  allInvoicesToggleDisabled
+  checkAll,
+  clearChecked,
+  toggleChecked,
+  fullAreaSelection,
+  setFullAreaSelection,
+  fullAreaSelectionDisabled
 }: Props) {
   const { i18n } = useTranslation()
-  const [refreshResult, setRefreshResult] = useState<Result<void>>(
-    Success.of(undefined)
-  )
+
+  const [
+    draftCreationError,
+    { on: setDraftCreationError, off: clearDraftCreationError }
+  ] = useBoolean(false)
 
   return (
-    <div className="invoices" data-isloading={isLoading(invoices)}>
+    <div className="invoices" data-isloading={isLoading(pagedInvoices)}>
       {user?.accessibleFeatures.createDraftInvoices && (
         <RefreshInvoices>
-          {refreshResult.isFailure ? (
+          {draftCreationError && (
             <RefreshError>{i18n.common.error.unknown}</RefreshError>
-          ) : null}
-          <Button
+          )}
+          <MutateButton
             appearance="inline"
             icon={faSync}
-            disabled={refreshResult.isLoading}
-            onClick={() => {
-              setRefreshResult(Loading.of())
-              refreshInvoices()
-                .then(() => setRefreshResult(Success.of()))
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                .catch((err) => setRefreshResult(Failure.of(err)))
-            }}
+            mutation={createDraftInvoicesMutation}
+            onClick={() => undefined}
+            onSuccess={clearDraftCreationError}
+            onFailure={setDraftCreationError}
             text={i18n.invoices.buttons.createInvoices}
             data-qa="create-invoices"
           />
@@ -103,63 +114,67 @@ export default React.memo(function Invoices({
       )}
       <TitleRowContainer>
         <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
-        {invoices?.isSuccess && (
+        {pagedInvoices?.isSuccess && (
           <ResultsContainer>
-            <div>{total ? i18n.common.resultCount(total) : null}</div>
+            <div>
+              {pagedInvoices.value.total
+                ? i18n.common.resultCount(pagedInvoices.value.total)
+                : null}
+            </div>
             <Pagination
-              pages={pages}
+              pages={pagedInvoices.value.pages}
               currentPage={currentPage}
-              setPage={actions.setPage}
+              setPage={setCurrentPage}
               label={i18n.common.page}
             />
           </ResultsContainer>
         )}
       </TitleRowContainer>
-      {invoices?.isLoading ? <Loader /> : null}
-      {!invoices || invoices.isFailure ? (
-        <div>{i18n.common.error.unknown}</div>
-      ) : null}
-      {invoices?.isSuccess && (
+
+      {renderResult(pagedInvoices, ({ data: invoices, pages }) => (
         <>
           <ResultsContainer>
             {showCheckboxes && (
               <Checkbox
-                checked={allInvoicesToggle}
+                checked={fullAreaSelection}
                 label={i18n.invoices.table.toggleAll}
-                onChange={actions.allInvoicesToggle}
-                disabled={allInvoicesToggleDisabled}
+                onChange={setFullAreaSelection}
+                disabled={fullAreaSelectionDisabled}
               />
             )}
           </ResultsContainer>
           <Gap size="m" />
           <Table data-qa="table-of-invoices">
             <InvoiceTableHeader
-              actions={actions}
               invoices={invoices}
               checked={checked}
+              checkAll={checkAll}
+              clearChecked={clearChecked}
               sortBy={sortBy}
+              setSortBy={setSortBy}
               sortDirection={sortDirection}
+              setSortDirection={setSortDirection}
               showCheckboxes={showCheckboxes}
-              allInvoicesToggle={allInvoicesToggle}
+              fullAreaSelection={fullAreaSelection}
             />
             <InvoiceTableBody
-              actions={actions}
-              invoices={invoices.value}
+              invoices={invoices}
               showCheckboxes={showCheckboxes}
               checked={checked}
-              allInvoicesToggle={allInvoicesToggle}
+              toggleChecked={toggleChecked}
+              fullAreaSelection={fullAreaSelection}
             />
           </Table>
           <ResultsContainer>
             <Pagination
               pages={pages}
               currentPage={currentPage}
-              setPage={actions.setPage}
+              setPage={setCurrentPage}
               label={i18n.common.page}
             />
           </ResultsContainer>
         </>
-      )}
+      ))}
     </div>
   )
 })
@@ -193,39 +208,44 @@ const SectionTitle = styled(Title)`
 `
 
 const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
-  actions,
   invoices,
   checked,
   sortBy,
+  setSortBy,
   sortDirection,
+  setSortDirection,
   showCheckboxes,
-  allInvoicesToggle
+  clearChecked,
+  checkAll,
+  fullAreaSelection
 }: Pick<
   Props,
-  | 'actions'
-  | 'invoices'
   | 'checked'
   | 'sortBy'
+  | 'setSortBy'
   | 'sortDirection'
+  | 'setSortDirection'
   | 'showCheckboxes'
-  | 'allInvoicesToggle'
->) {
+  | 'clearChecked'
+  | 'checkAll'
+  | 'fullAreaSelection'
+> & {
+  invoices: InvoiceSummaryResponse[]
+}) {
   const { i18n } = useTranslation()
 
   const allChecked =
-    invoices
-      ?.map((is) => is.length > 0 && is.every((i) => checked[i.data.id]))
-      .getOrElse(false) ?? false
+    invoices.length > 0 && invoices.every((i) => checked.has(i.data.id))
 
   const isSorted = (column: InvoiceSortParam) =>
     sortBy === column ? sortDirection : undefined
 
   const toggleSort = (column: InvoiceSortParam) => () => {
     if (sortBy === column) {
-      actions.setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
+      setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {
-      actions.setSortBy(column)
-      actions.setSortDirection('ASC')
+      setSortBy(column)
+      setSortDirection('ASC')
     }
   }
 
@@ -265,11 +285,9 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
             <Checkbox
               hiddenLabel
               label=""
-              checked={allChecked || allInvoicesToggle}
-              disabled={allInvoicesToggle}
-              onChange={() =>
-                allChecked ? actions.clearChecked() : actions.checkAll()
-              }
+              checked={allChecked || fullAreaSelection}
+              disabled={fullAreaSelection}
+              onChange={() => (allChecked ? clearChecked() : checkAll())}
               data-qa="toggle-all-invoices"
             />
           </Th>
@@ -280,14 +298,14 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
 })
 
 const InvoiceTableBody = React.memo(function InvoiceTableBody({
-  actions,
   invoices,
   showCheckboxes,
   checked,
-  allInvoicesToggle
+  toggleChecked,
+  fullAreaSelection
 }: Pick<
   Props,
-  'actions' | 'showCheckboxes' | 'checked' | 'allInvoicesToggle'
+  'showCheckboxes' | 'checked' | 'toggleChecked' | 'fullAreaSelection'
 > & {
   invoices: InvoiceSummaryResponse[]
 }) {
@@ -337,9 +355,9 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 <Checkbox
                   hiddenLabel
                   label=""
-                  checked={!!checked[item.id] || allInvoicesToggle}
-                  disabled={allInvoicesToggle}
-                  onChange={() => actions.toggleChecked(item.id)}
+                  checked={checked.has(item.id) || fullAreaSelection}
+                  disabled={fullAreaSelection}
+                  onChange={() => toggleChecked(item.id)}
                   data-qa="toggle-invoice"
                 />
               </Td>
