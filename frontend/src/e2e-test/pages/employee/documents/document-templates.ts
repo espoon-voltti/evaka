@@ -8,6 +8,7 @@ import {
   Checkbox,
   Element,
   FileInput,
+  MultiSelect,
   Page,
   Select,
   TextInput
@@ -74,6 +75,7 @@ export class DocumentTemplateRow extends Element {
 export class TemplateModal extends Element {
   readonly nameInput
   readonly typeSelect
+  readonly placementTypesSelect
   readonly validityStartInput
   readonly confirmCreateButton
 
@@ -81,6 +83,9 @@ export class TemplateModal extends Element {
     super(locator)
     this.nameInput = new TextInput(this.findByDataQa('name-input'))
     this.typeSelect = new Select(this.findByDataQa('type-select'))
+    this.placementTypesSelect = new MultiSelect(
+      this.findByDataQa('placement-types-select')
+    )
     this.validityStartInput = new TextInput(this.findByDataQa('start-date'))
     this.confirmCreateButton = this.findByDataQa('modal-okBtn')
   }

@@ -29,6 +29,7 @@ import fi.espoo.evaka.document.childdocument.generateChildDocumentHtml
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.createAddressPagePdf
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildDocumentId
@@ -274,6 +275,7 @@ class PdfGeneratorTest {
                     DocumentTemplate(
                         id = DocumentTemplateId(UUID.randomUUID()),
                         type = DocumentType.HOJKS,
+                        placementTypes = PlacementType.entries.toSet(),
                         name = "Varhaiskasvatussuunnitelma 2023-2024",
                         language = OfficialLanguage.FI,
                         confidential = true,

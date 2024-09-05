@@ -45,7 +45,8 @@ beforeEach(async () => {
     childId: testChild2.id,
     unitId: testDaycare.id,
     startDate: now.toLocalDate().subYears(1),
-    endDate: now.toLocalDate().addYears(1)
+    endDate: now.toLocalDate().addYears(1),
+    type: 'PRESCHOOL'
   }).save()
 })
 
@@ -64,6 +65,7 @@ describe('Employee - Child documents', () => {
     const documentName = 'HOJKS 2022-2023'
     await modal.nameInput.fill(documentName)
     await modal.typeSelect.selectOption('HOJKS')
+    await modal.placementTypesSelect.fillAndSelectFirst('Esiopetus')
     await modal.validityStartInput.fill('01.08.2022')
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)

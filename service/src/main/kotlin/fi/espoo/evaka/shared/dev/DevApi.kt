@@ -2356,6 +2356,7 @@ data class DevDocumentTemplate(
     val id: DocumentTemplateId = DocumentTemplateId(UUID.randomUUID()),
     val name: String = "Pedagoginen arvio 2023",
     val type: DocumentType = DocumentType.PEDAGOGICAL_ASSESSMENT,
+    val placementTypes: Set<PlacementType> = PlacementType.entries.toSet(),
     val language: OfficialLanguage = OfficialLanguage.FI,
     val confidential: Boolean = true,
     val legalBasis: String = "§15",

@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.document.childdocument.ChildDocumentController
 import fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -62,6 +63,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         DocumentTemplateBasicsRequest(
             name = "test",
             type = DocumentType.PEDAGOGICAL_ASSESSMENT,
+            placementTypes = PlacementType.entries.toSet(),
             language = OfficialLanguage.FI,
             confidential = true,
             legalBasis = "§42",
@@ -113,6 +115,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     id = created.id,
                     name = created.name,
                     type = created.type,
+                    placementTypes = PlacementType.entries.toSet(),
                     language = created.language,
                     validity = created.validity,
                     documentCount = 0,
@@ -277,6 +280,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 DocumentTemplateBasicsRequest(
                     name = "another",
                     type = DocumentType.PEDAGOGICAL_REPORT,
+                    placementTypes = PlacementType.entries.toSet(),
                     language = OfficialLanguage.SV,
                     confidential = false,
                     legalBasis = "",
@@ -419,6 +423,25 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
 
         val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, childId)
+        assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint does not return templates where placement type does not match`() {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employeeUser,
+                now,
+                testCreationRequest.copy(
+                    placementTypes = setOf(PlacementType.PRESCHOOL),
+                    language = OfficialLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employeeUser, now, template.id)
+
+        val active = controller.getActiveTemplates(dbInstance(), employeeUser, now, testChild_1.id)
         assertTrue(active.isEmpty())
     }
 

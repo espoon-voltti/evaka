@@ -247,6 +247,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
         getOptionId={(pt) => pt}
         getOptionLabel={(pt) => i18n.placement.type[pt]}
         placeholder={i18n.common.select}
+        data-qa="placement-types-select"
       />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.language}</Label>
