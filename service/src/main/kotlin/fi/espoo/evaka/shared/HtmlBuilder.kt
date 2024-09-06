@@ -15,7 +15,10 @@ sealed class HtmlElement {
         val className: String? = null,
     ) : HtmlElement() {
         override fun toHtml(): String {
-            val maybeClass = className?.let { " class=\"${HtmlEscape.escapeHtml5Xml(it)}\"" } ?: ""
+            val maybeClass =
+                className?.let {
+                    " class=\"${HtmlEscape.escapeHtml5Xml(it.removeXmlIncompatibleChars())}\""
+                } ?: ""
             return if (children.isEmpty()) {
                 "<$tag$maybeClass/>"
             } else {
@@ -31,10 +34,18 @@ sealed class HtmlElement {
 
     data class Text(val text: String) : HtmlElement() {
         override fun toHtml(): String {
-            return HtmlEscape.escapeHtml5Xml(text)
+            return HtmlEscape.escapeHtml5Xml(text.removeXmlIncompatibleChars())
         }
     }
 }
+
+// Characters that are incompatible with XML 1.0 documents
+// (= most ASCII control chars, 0xD800-0xDFFF surrogate range, and non-characters 0xFFFE/0xFFFF)
+// Reference: https://www.w3.org/TR/xml/#charsets
+private val XML_INCOMPATIBLE_CHARS =
+    Regex("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x{D800}-\\x{DFFF}\\x{FFFE}\\x{FFFF}]")
+
+private fun String.removeXmlIncompatibleChars() = replace(XML_INCOMPATIBLE_CHARS, "")
 
 data object HtmlBuilder {
     fun text(text: String) = HtmlElement.Text(text)
