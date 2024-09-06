@@ -12,7 +12,7 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { UserContext } from '../auth/state'
@@ -56,10 +56,9 @@ export const MessageContextProvider = React.memo(
     const shouldFetch = !!unitId && !!pinLoggedEmployeeId
 
     const groupAccounts = useQueryResult(
-      queryOrDefault(
-        messagingAccountsQuery,
-        []
-      )(shouldFetch ? { unitId, employeeId: pinLoggedEmployeeId } : undefined)
+      shouldFetch
+        ? messagingAccountsQuery({ unitId, employeeId: pinLoggedEmployeeId })
+        : constantQuery([])
     )
 
     const groupAccount = useCallback(

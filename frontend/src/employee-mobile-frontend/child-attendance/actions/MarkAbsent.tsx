@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import {
-  queryOrDefault,
+  constantQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -55,7 +55,7 @@ export default React.memo(function MarkAbsent({ unitId }: { unitId: UUID }) {
 
   const groupId = child.map(({ groupId }) => groupId).getOrElse(null)
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(groupId ? { groupId } : null)
+    groupId ? groupNotesQuery({ groupId }) : constantQuery([])
   )
 
   return (

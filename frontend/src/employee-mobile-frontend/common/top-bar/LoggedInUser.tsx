@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { useTranslation } from 'employee-mobile-frontend/common/i18n'
 import { combine } from 'lib-common/api'
 import { Staff } from 'lib-common/generated/api-types/attendance'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -47,7 +47,7 @@ export const LoggedInUser = React.memo(function LoggedInUser({
   const { user, refreshAuthStatus } = useContext(UserContext)
 
   const unitInfoResponse = useQueryResult(
-    queryOrDefault(unitInfoQuery, null)(unitId ? { unitId } : null)
+    unitId ? unitInfoQuery({ unitId }) : constantQuery(null)
   )
 
   const userNames = useMemo(

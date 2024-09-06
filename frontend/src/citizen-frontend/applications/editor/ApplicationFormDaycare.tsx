@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react'
 
 import { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -35,13 +35,11 @@ export default React.memo(function ApplicationFormDaycare({
   const t = useTranslation()
 
   const serviceNeedOptions = useQueryResult(
-    serviceNeedOptionPublicInfosQuery({
-      placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
-    }),
-    {
-      enabled: featureFlags.daycareApplication.serviceNeedOption,
-      initialData: []
-    }
+    featureFlags.daycareApplication.serviceNeedOption
+      ? serviceNeedOptionPublicInfosQuery({
+          placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
+        })
+      : constantQuery([])
   )
 
   const updateUnitPreferenceFormData = useCallback(

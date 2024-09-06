@@ -9,7 +9,7 @@ import { localDateRange } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -45,14 +45,13 @@ export default React.memo(function ChildAttendanceReport() {
   const { range } = useFormFields(filters)
 
   const rowsResult = useQueryResult(
-    queryOrDefault(
-      childAttendanceReportQuery,
-      []
-    )(
-      range.isValid()
-        ? { childId: childId, from: range.value().start, to: range.value().end }
-        : null
-    )
+    range.isValid()
+      ? childAttendanceReportQuery({
+          childId: childId,
+          from: range.value().start,
+          to: range.value().end
+        })
+      : constantQuery([])
   )
 
   return (

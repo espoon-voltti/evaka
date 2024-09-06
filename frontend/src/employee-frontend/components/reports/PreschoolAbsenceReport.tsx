@@ -16,7 +16,7 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
@@ -55,10 +55,9 @@ export default React.memo(function PreschoolAbsenceReport() {
   const [selectedTerm, setSelectedTerm] = useState<PreschoolTerm | null>(null)
   const units = useQueryResult(unitsQuery({ includeClosed: true }))
   const groups = useQueryResult(
-    queryOrDefault(
-      unitGroupsQuery,
-      []
-    )(selectedUnit?.id ? { daycareId: selectedUnit.id } : null)
+    selectedUnit?.id
+      ? unitGroupsQuery({ daycareId: selectedUnit.id })
+      : constantQuery([])
   )
   const terms = useQueryResult(preschoolTermsQuery())
 

@@ -23,7 +23,7 @@ import {
   SentMessage
 } from 'lib-common/generated/api-types/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
-import { queryOrDefault, useChainedQuery } from 'lib-common/query'
+import { constantQuery, useChainedQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -67,14 +67,9 @@ export const ReceivedThreadPage = React.memo(function ReceivedThreadPage({
   )
   const thread = useChainedQuery(
     selectedAccount.map((selectedAccount) =>
-      queryOrDefault(
-        threadQuery,
-        null
-      )(
-        selectedAccount !== undefined
-          ? { accountId: selectedAccount.account.id, threadId }
-          : undefined
-      )
+      selectedAccount !== undefined
+        ? threadQuery({ accountId: selectedAccount.account.id, threadId })
+        : constantQuery(null)
     )
   )
   return renderResult(

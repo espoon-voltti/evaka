@@ -15,8 +15,8 @@ import {
 import LocalDate from 'lib-common/local-date'
 import {
   first,
-  queryOrDefault,
   second,
+  constantQuery,
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
@@ -56,29 +56,23 @@ export default React.memo(function InvoicesPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
 
   const invoices = useQueryResult(
-    queryOrDefault(invoicesQuery, {
-      data: [],
-      pages: 0,
-      total: 0
-    })(
-      !startDate || !endDate || startDate.isEqualOrBefore(endDate)
-        ? {
-            body: {
-              page,
-              pageSize,
-              sortBy,
-              sortDirection,
-              area,
-              unit: unit ?? null,
-              status: status.length > 0 ? [status] : null,
-              distinctions: distinctiveDetails,
-              searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
-              periodStart: startDate ?? null,
-              periodEnd: endDate ?? null
-            }
+    !startDate || !endDate || startDate.isEqualOrBefore(endDate)
+      ? invoicesQuery({
+          body: {
+            page,
+            pageSize,
+            sortBy,
+            sortDirection,
+            area,
+            unit: unit ?? null,
+            status: status.length > 0 ? [status] : null,
+            distinctions: distinctiveDetails,
+            searchTerms: debouncedSearchTerms ? debouncedSearchTerms : null,
+            periodStart: startDate ?? null,
+            periodEnd: endDate ?? null
           }
-        : undefined
-    )
+        })
+      : constantQuery({ data: [], pages: 0, total: 0 })
   )
 
   const [showModal, { off: closeModal, on: openModal }] = useBoolean(false)

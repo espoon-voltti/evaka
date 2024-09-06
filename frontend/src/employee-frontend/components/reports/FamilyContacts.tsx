@@ -9,7 +9,7 @@ import { localDate } from 'lib-common/form/fields'
 import { object, required } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -43,10 +43,9 @@ export default React.memo(function FamilyContacts() {
   const { date } = useFormFields(filters)
 
   const rows = useQueryResult(
-    queryOrDefault(
-      familyContactsReportQuery,
-      []
-    )(filters.isValid() ? { unitId, date: date.value() } : null)
+    filters.isValid()
+      ? familyContactsReportQuery({ unitId, date: date.value() })
+      : constantQuery([])
   )
 
   const unit = useQueryResult(unitQuery({ daycareId: unitId }))

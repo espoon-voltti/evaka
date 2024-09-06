@@ -23,10 +23,16 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 
 import { useStableCallback } from './utils/useStableCallback'
 
+export interface QueryOptions {
+  enabled?: boolean
+  refetchOnMount?: boolean | 'always'
+  staleTime?: number
+}
+
 export function query<Args extends unknown[], Data>(opts: {
   api: (...args: Args) => Promise<Data>
   queryKey: (...args: Args) => QueryKey
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
+  options?: QueryOptions
 }): (...args: Args) => UseQueryOptions<Data, unknown> {
   const { api, queryKey, options } = opts
   return (...args: Args): UseQueryOptions<Data, unknown> => ({
@@ -36,10 +42,16 @@ export function query<Args extends unknown[], Data>(opts: {
   })
 }
 
-export function useQuery<Data>(
-  query: UseQueryOptions<Data, unknown>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryKey' | 'queryFn'>
-): UseQueryResult<Data, unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyUseQueryOptions = UseQueryOptions<any, unknown>
+
+type DataOf<T extends AnyUseQueryOptions> =
+  T extends UseQueryOptions<infer Data, unknown> ? Data : never
+
+export function useQuery<T extends AnyUseQueryOptions>(
+  query: T,
+  options?: QueryOptions
+): UseQueryResult<DataOf<T>, unknown> {
   return useQueryOriginal({ ...query, ...options })
 }
 
@@ -58,10 +70,10 @@ function queryResult<T>(
   return Loading.of()
 }
 
-export function useQueryResult<Data>(
-  query: UseQueryOptions<Data, unknown>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
-): Result<Data> {
+export function useQueryResult<T extends AnyUseQueryOptions>(
+  query: T,
+  options?: QueryOptions
+): Result<DataOf<T>> {
   const { data, error, isFetching } = useQuery(query, options)
   return useMemo(
     () => queryResult(data, error, isFetching),
@@ -69,13 +81,13 @@ export function useQueryResult<Data>(
   )
 }
 
-export function useChainedQuery<Data>(
-  query: Result<UseQueryOptions<Data, unknown>>,
-  options?: Omit<UseQueryOptions<Data, unknown>, 'queryFn' | 'queryKey'>
-): Result<Data> {
+export function useChainedQuery<T extends AnyUseQueryOptions>(
+  query: Result<T>,
+  options?: QueryOptions
+): Result<DataOf<T>> {
   const result = useQueryResult(
     // The result of `constantQuery(null)` is never returned to the caller, because the query is enabled only when the previous query is successful.
-    query.getOrElse(constantQuery(null)) as UseQueryOptions<Data, unknown>,
+    query.getOrElse(constantQuery(null)) as T,
     {
       ...options,
       enabled: (options?.enabled ?? true) && query.isSuccess
@@ -103,19 +115,7 @@ export function pagedInfiniteQuery<Args extends unknown[], Data, Id>(opts: {
   api: (...args: Args) => (pageParam: number) => Promise<Paged<Data>>
   queryKey: (...args: Args) => QueryKey
   id: (data: Data) => Id
-  options?:
-    | Omit<
-        UseInfiniteQueryOptions<
-          Paged<Data>,
-          unknown,
-          InfiniteData<Paged<Data>>,
-          Paged<Data>,
-          QueryKey,
-          number
-        >,
-        'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
-      >
-    | undefined
+  options?: QueryOptions
 }): (...args: Args) => PagedInfiniteQueryDescription<Data, Id> {
   const { api, queryKey, id, options } = opts
   return (...args: Args): PagedInfiniteQueryDescription<Data, Id> => ({
@@ -140,17 +140,7 @@ export interface PagedInfiniteQueryResult<Data> {
 
 export function usePagedInfiniteQueryResult<Data, Id>(
   queryDescription: PagedInfiniteQueryDescription<Data, Id>,
-  options?: Omit<
-    UseInfiniteQueryOptions<
-      Paged<Data>,
-      unknown,
-      InfiniteData<Paged<Data>>,
-      Paged<Data>,
-      QueryKey,
-      number
-    >,
-    'queryFn' | 'queryKey' | 'initialPageParam' | 'getNextPageParam'
-  >
+  options?: QueryOptions
 ): PagedInfiniteQueryResult<Data> {
   const { id, queryKey, ...queryOptions } = queryDescription
   const {
@@ -298,23 +288,13 @@ export function queryKeysNamespace<QueryKeyPrefix extends string>() {
   /* eslint-enable */
 }
 
-function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
+export function constantQuery<R>(result: R): UseQueryOptions<R, unknown> {
   return {
     queryFn: () => Promise.resolve(result),
     queryKey: ['builtin', 'constant', result],
     initialData: result,
     staleTime: Infinity
   }
-}
-
-export function queryOrDefault<T, R, D>(
-  query: (arg: T) => UseQueryOptions<R, unknown>,
-  defaultValue: D
-): (arg: T | null | undefined) => UseQueryOptions<R | D, unknown> {
-  return (arg) =>
-    (arg !== undefined && arg !== null
-      ? query(arg)
-      : constantQuery(defaultValue)) as UseQueryOptions<R | D, unknown>
 }
 
 export const cancelMutation: unique symbol = Symbol('cancelMutation')

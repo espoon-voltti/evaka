@@ -10,7 +10,7 @@ import { object, required, transformed } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { ValidationSuccess } from 'lib-common/form/types'
 import LocalDate from 'lib-common/local-date'
-import { queryOrDefault, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -56,10 +56,9 @@ export default React.memo(function MissingHeadOfFamily() {
   const { range, showIntentionalDuplicates } = useFormFields(filters)
 
   const rows = useQueryResult(
-    queryOrDefault(
-      missingHeadOfFamilyReportQuery,
-      []
-    )(filters.isValid() ? filters.value() : null)
+    filters.isValid()
+      ? missingHeadOfFamilyReportQuery(filters.value())
+      : constantQuery([])
   )
 
   return (

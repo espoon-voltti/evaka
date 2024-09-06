@@ -18,7 +18,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import {
-  queryOrDefault,
+  constantQuery,
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
@@ -116,7 +116,7 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
 
   const groupId = child.groupId
   const groupNotes = useQueryResult(
-    queryOrDefault(groupNotesQuery, [])(groupId ? { groupId } : null)
+    groupId ? groupNotesQuery({ groupId }) : constantQuery([])
   )
 
   const [time, setTime] = useState(() =>
@@ -138,15 +138,13 @@ const MarkDepartedInner = React.memo(function MarkDepartedWithChild({
   )
 
   const expectedAbsences = useQueryResult(
-    queryOrDefault(
-      (departed: LocalTime) =>
-        childExpectedAbsencesOnDepartureQuery({
+    timeError === undefined
+      ? childExpectedAbsencesOnDepartureQuery({
           unitId,
           childId,
-          body: { departed }
-        }),
-      null
-    )(timeError === undefined ? LocalTime.tryParse(time) : null)
+          body: { departed: LocalTime.parse(time) }
+        })
+      : constantQuery(null)
   )
 
   const { mutateAsync: createDeparture } = useMutationResult(
