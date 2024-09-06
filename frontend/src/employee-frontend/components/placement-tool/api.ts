@@ -34,7 +34,7 @@ export async function uploadPlacementFile(
   }
 }
 
-export function deletePlacementFile(id: UUID): Promise<Result<void>> {
+export function deletePlacementFile(): Promise<Result<void>> {
   return new Promise<Result<void>>((resolve) => {
     resolve(Success.of(void 0))
   })

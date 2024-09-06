@@ -17,6 +17,7 @@ import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
+import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
@@ -35,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile
 
 enum class PlacementToolCsvField(val fieldName: String) {
     CHILD_ID("lapsen_id"),
-    PRESCHOOL_UNIT_ID("yksikon_id"),
+    PRESCHOOL_UNIT_ID("esiopetusyksikon_id"),
 }
 
 @Service
@@ -53,16 +54,15 @@ class PlacementToolService(
         clock: EvakaClock,
         msg: AsyncJob.PlacementTool,
     ) {
-        msg.user?.let {
-            createApplication(
-                db,
-                it,
-                clock,
-                msg.data,
-                msg.defaultServiceNeedOption,
-                msg.nextPreschoolTerm,
-            )
-        }
+        createApplication(
+            db,
+            msg.user,
+            clock,
+            msg.data,
+            msg.partTimeServiceNeedOption,
+            msg.defaultServiceNeedOption,
+            msg.nextPreschoolTerm,
+        )
     }
 
     fun createPlacementToolApplications(
@@ -74,9 +74,26 @@ class PlacementToolService(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                val serviceNeedOptions =
+                    tx.getServiceNeedOptions()
+                val partTimeServiceNeedOption =
+                    serviceNeedOptions
+                        .firstOrNull{ it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption }
+                        ?.let {
+                            ServiceNeedOption(
+                                id = it.id,
+                                nameFi = it.nameFi,
+                                nameSv = it.nameSv,
+                                nameEn = it.nameEn,
+                                validPlacementType = it.validPlacementType,
+                            )
+                        }
+                if (null == partTimeServiceNeedOption) {
+                    throw NotFound("No part time service need option found")
+                }
                 val defaultServiceNeedOption =
-                    tx.getServiceNeedOptionPublicInfos(listOf(PlacementType.PRESCHOOL_DAYCARE))
-                        .firstOrNull()
+                    serviceNeedOptions
+                        .firstOrNull{ it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption }
                         ?.let {
                             ServiceNeedOption(
                                 id = it.id,
@@ -101,9 +118,11 @@ class PlacementToolService(
                             tx,
                             listOf(
                                 AsyncJob.PlacementTool(
+                                    user,
                                     data,
+                                    partTimeServiceNeedOption,
                                     defaultServiceNeedOption,
-                                    nextPreschoolTerm,
+                                    nextPreschoolTerm
                                 )
                             ),
                             runAt = clock.now(),
@@ -120,6 +139,7 @@ class PlacementToolService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         data: PlacementToolData,
+        partTimeServiceNeedOption: ServiceNeedOption?,
         defaultServiceNeedOption: ServiceNeedOption?,
         nextPreschoolTerm: PreschoolTerm,
     ) {
@@ -173,6 +193,7 @@ class PlacementToolService(
                 application,
                 data,
                 guardianIds,
+                partTimeServiceNeedOption,
                 defaultServiceNeedOption,
                 nextPreschoolTerm,
             )
@@ -185,8 +206,13 @@ class PlacementToolService(
         CSVFormat.Builder.create(CSVFormat.DEFAULT)
             .setHeader()
             .apply { setIgnoreSurroundingSpaces(true) }
+            .apply { setDelimiter(';') }
             .build()
             .parse(inputStream.reader())
+            .filter { row ->
+                row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
+                        row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
+            }
             .map { row ->
                 PlacementToolData(
                     childId =
@@ -207,6 +233,7 @@ class PlacementToolService(
         application: ApplicationDetails,
         data: PlacementToolData,
         guardianIds: List<PersonId>,
+        partTimeServiceNeedOption: ServiceNeedOption?,
         defaultServiceNeedOption: ServiceNeedOption?,
         preschoolTerm: PreschoolTerm,
     ) {
@@ -228,18 +255,13 @@ class PlacementToolService(
                                 preferredStartDate = preschoolTerm.finnishPreschool.start,
                                 preferredUnits =
                                     listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
-                                serviceNeed =
-                                    if (partTime) {
-                                        ServiceNeed(
-                                            startTime = "07:00", // todo: parametrize
-                                            endTime = "17:00", // todo: parametrize
-                                            shiftCare = false,
-                                            partTime = false,
-                                            serviceNeedOption = defaultServiceNeedOption,
-                                        )
-                                    } else {
-                                        null
-                                    },
+                                serviceNeed = ServiceNeed(
+                                    startTime = "",
+                                    endTime = "",
+                                    shiftCare = false,
+                                    partTime = false,
+                                    serviceNeedOption = if (partTime) partTimeServiceNeedOption else defaultServiceNeedOption,
+                                ),
                                 urgent = false,
                             ),
                         secondGuardian =

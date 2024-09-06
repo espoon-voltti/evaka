@@ -64,6 +64,14 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             snDefaultPreschool.nameFi,
             snDefaultPreschool.nameSv,
             snDefaultPreschool.nameEn,
+            PlacementType.PRESCHOOL_DAYCARE,
+        )
+    val partTimeServiceNeedOption =
+        ServiceNeedOption(
+            snDefaultPreschool.id,
+            snDefaultPreschool.nameFi,
+            snDefaultPreschool.nameSv,
+            snDefaultPreschool.nameEn,
             PlacementType.PRESCHOOL,
         )
     val preschoolTerm =
@@ -114,8 +122,8 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `parse csv`() {
         val csv =
             """
-            "lapsen_id","yksikon_id"
-            "${testChild_1.id}","${testDaycare.id}"
+            "lapsen_id";"esiopetusyksikon_id"
+            "${testChild_1.id}";"${testDaycare.id}"
         """
                 .trimIndent()
 
@@ -129,30 +137,45 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `parse csv with faulty child id`() {
         val csv =
             """
-            "lapsen_id","yksikon_id"
-            "","${testDaycare.id}"
+            "lapsen_id";"esiopetusyksikon_id"
+            "";"${testDaycare.id}"
         """
                 .trimIndent()
 
-        assertThrows<Exception> { service.parsePlacementToolCsv(csv.byteInputStream()) }
+        val data = service.parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
     }
 
     @Test
     fun `parse csv with faulty group id`() {
         val csv =
             """
-            "lapsen_id","yksikon_id"
-            "${testChild_1.id}",""
+            "lapsen_id";"esiopetusyksikon_id"
+            "${testChild_1.id}";""
         """
                 .trimIndent()
 
-        assertThrows<Exception> { service.parsePlacementToolCsv(csv.byteInputStream()) }
+        val data = service.parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
+    }
+
+    @Test
+    fun `parse csv with missing group id field`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${testChild_1.id}";
+        """
+                .trimIndent()
+
+        val data = service.parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
     }
 
     @Test
     fun `create application with one guardian`() {
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare.id)
-        service.createApplication(db, admin, clock, data, serviceNeedOption, preschoolTerm)
+        service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -192,7 +215,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockPersonDetailsService.addDependants(testAdult_2, testChild_1)
         }
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare.id)
-        service.createApplication(db, admin, clock, data, serviceNeedOption, preschoolTerm)
+        service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -214,7 +237,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application without proper child`() {
         val data = PlacementToolData(childId = testChild_3.id, preschoolId = testDaycare.id)
         assertThrows<Exception> {
-            service.createApplication(db, admin, clock, data, serviceNeedOption, preschoolTerm)
+            service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
         }
     }
 
@@ -222,7 +245,7 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application without proper unit`() {
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare2.id)
         assertThrows<Exception> {
-            service.createApplication(db, admin, clock, data, serviceNeedOption, preschoolTerm)
+            service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
         }
     }
 }

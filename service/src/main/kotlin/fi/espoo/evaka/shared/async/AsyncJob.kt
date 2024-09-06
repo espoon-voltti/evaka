@@ -408,12 +408,12 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class PlacementTool(
+        override val user: AuthenticatedUser,
         val data: PlacementToolData,
+        val partTimeServiceNeedOption: ServiceNeedOption,
         val defaultServiceNeedOption: ServiceNeedOption,
         val nextPreschoolTerm: PreschoolTerm,
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
+    ) : AsyncJob
 
     companion object {
         val main =
