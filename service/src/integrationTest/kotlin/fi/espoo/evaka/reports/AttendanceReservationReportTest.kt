@@ -9,6 +9,7 @@ import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.children.Group
 import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -1009,34 +1010,60 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
-    fun `Absence is supported`() {
+    fun `absences work correctly`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            listOf(testChild_1, testChild_2).forEach { testChild ->
-                tx.insert(
-                    DevPlacement(
-                        childId = testChild.id,
-                        unitId = testDaycare.id,
-                        startDate = date,
-                        endDate = date,
-                    )
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date,
                 )
-                tx.insert(
-                    DevReservation(
-                        childId = testChild.id,
-                        date = date,
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(8, 15),
-                        createdBy = admin.evakaUserId,
-                    )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = testChild_2.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(8, 15),
+                    createdBy = admin.evakaUserId,
                 )
-            }
-
+            )
+            // Full-day absence
             tx.insert(
                 DevAbsence(
                     childId = testChild_2.id,
                     date = date,
                     absenceType = AbsenceType.SICKLEAVE,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = date,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(8, 15),
+                    createdBy = admin.evakaUserId,
+                )
+            )
+            // PRESCHOOL_DAYCARE child with only one absence -> should be included
+            tx.insert(
+                DevAbsence(
+                    childId = testChild_1.id,
+                    date = date,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
                     absenceCategory = AbsenceCategory.BILLABLE,
                 )
             )
