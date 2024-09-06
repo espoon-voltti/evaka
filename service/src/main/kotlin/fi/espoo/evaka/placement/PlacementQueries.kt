@@ -5,7 +5,6 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.backupcare.recreateBackupCares
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -821,19 +820,6 @@ fun Database.Read.childPlacementsHasConsecutiveRange(
             )
         }
         .exactlyOne<Boolean>()
-
-fun Database.Read.getChildPlacementUnitLanguage(childId: ChildId, date: LocalDate): Language? =
-    createQuery {
-            sql(
-                """
-SELECT d.language
-FROM placement pl
-JOIN daycare d on d.id = pl.unit_id
-WHERE pl.child_id = ${bind(childId)} AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
-"""
-            )
-        }
-        .exactlyOneOrNull<Language>()
 
 fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
     childId: ChildId,

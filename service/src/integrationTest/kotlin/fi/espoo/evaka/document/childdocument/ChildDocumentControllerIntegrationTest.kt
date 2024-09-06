@@ -225,6 +225,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                                 id = templateIdPed,
                                 name = devTemplatePed.name,
                                 type = devTemplatePed.type,
+                                placementTypes = devTemplatePed.placementTypes,
                                 language = devTemplatePed.language,
                                 confidential = devTemplatePed.confidential,
                                 legalBasis = devTemplatePed.legalBasis,

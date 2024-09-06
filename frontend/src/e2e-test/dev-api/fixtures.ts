@@ -1054,6 +1054,23 @@ export class Fixture {
     return new DocumentTemplateBuilder({
       id: uuidv4(),
       type: 'PEDAGOGICAL_REPORT',
+      placementTypes: [
+        'DAYCARE',
+        'PRESCHOOL',
+        'PRESCHOOL_DAYCARE',
+        'PRESCHOOL_DAYCARE_ONLY',
+        'PRESCHOOL_CLUB',
+        'DAYCARE_PART_TIME',
+        'PREPARATORY',
+        'PREPARATORY_DAYCARE',
+        'PREPARATORY_DAYCARE_ONLY',
+        'CLUB',
+        'TEMPORARY_DAYCARE',
+        'TEMPORARY_DAYCARE_PART_DAY',
+        'DAYCARE_FIVE_YEAR_OLDS',
+        'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
+        'SCHOOL_SHIFT_CARE'
+      ],
       language: 'FI',
       name: 'Pedagoginen selvitys',
       confidential: true,

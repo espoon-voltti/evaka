@@ -11,6 +11,7 @@ import {
   string
 } from 'lib-common/form/fields'
 import {
+  array,
   object,
   oneOf,
   required,
@@ -27,6 +28,7 @@ import {
   documentTypes,
   ExportedDocumentTemplate
 } from 'lib-common/generated/api-types/document'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   OfficialLanguage,
   officialLanguages
@@ -37,11 +39,13 @@ import { UUID } from 'lib-common/types'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { placementTypes as placementTypeValues } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
 import {
@@ -54,6 +58,9 @@ export const documentTemplateForm = transformed(
   object({
     name: validated(string(), nonBlank),
     type: required(oneOf<DocumentType>()),
+    placementTypes: validated(array(value<PlacementType>()), (arr) =>
+      arr.length === 0 ? 'required' : undefined
+    ),
     language: required(oneOf<OfficialLanguage>()),
     confidential: boolean(),
     legalBasis: string(),
@@ -142,6 +149,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
               domValue: mode.data.type,
               options: typeOptions
             },
+            placementTypes: mode.data.placementTypes,
             language: {
               domValue: mode.data.language,
               options: languageOptions
@@ -161,6 +169,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
               domValue: 'PEDAGOGICAL_ASSESSMENT',
               options: typeOptions
             },
+            placementTypes: [],
             language: {
               domValue: 'FI',
               options: languageOptions
@@ -179,6 +188,7 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
   const {
     name,
     type,
+    placementTypes,
     language,
     confidential,
     legalBasis,
@@ -228,6 +238,17 @@ export default React.memo(function TemplateModal({ onClose, mode }: Props) {
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.type}</Label>
       <SelectF bind={type} data-qa="type-select" />
+      <Gap />
+      <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
+      <MultiSelect
+        value={placementTypes.state}
+        options={placementTypeValues}
+        onChange={placementTypes.set}
+        getOptionId={(pt) => pt}
+        getOptionLabel={(pt) => i18n.placement.type[pt]}
+        placeholder={i18n.common.select}
+        data-qa="placement-types-select"
+      />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.language}</Label>
       <SelectF bind={language} />

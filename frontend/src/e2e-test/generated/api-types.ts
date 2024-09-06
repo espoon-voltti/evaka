@@ -522,6 +522,7 @@ export interface DevDocumentTemplate {
   language: OfficialLanguage
   legalBasis: string
   name: string
+  placementTypes: PlacementType[]
   processDefinitionNumber: string | null
   published: boolean
   type: DocumentType

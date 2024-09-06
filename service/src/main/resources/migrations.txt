@@ -428,3 +428,4 @@ V428__remove_messaging_blocklist.sql
 V429__placement_created_updated_not_null.sql
 V430__child_attendance_timestamps.sql
 V431__child_attendance_range_index.sql
+V432__document_template_placement_types.sql

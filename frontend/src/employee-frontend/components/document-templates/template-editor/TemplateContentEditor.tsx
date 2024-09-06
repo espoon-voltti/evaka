@@ -29,6 +29,7 @@ import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -39,7 +40,10 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { DateRangePickerF } from 'lib-components/molecules/date-picker/DateRangePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
+import {
+  featureFlags,
+  placementTypes as placementTypeValues
+} from 'lib-customizations/employee'
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -246,6 +250,12 @@ const BasicsSection = React.memo(function BasicsSection({
                 value: i18n.documentTemplates.documentTypes[template.type]
               },
               {
+                label: i18n.documentTemplates.templateModal.placementTypes,
+                value: template.placementTypes
+                  .map((t) => i18n.placement.type[t])
+                  .join(', ')
+              },
+              {
                 label:
                   i18n.documentTemplates.templateModal.processDefinitionNumber,
                 value: template.processDefinitionNumber
@@ -308,6 +318,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
         domValue: template.type,
         options: typeOptions
       },
+      placementTypes: template.placementTypes,
       language: {
         domValue: template.language,
         options: languageOptions
@@ -326,6 +337,7 @@ const BasicsEditor = React.memo(function BasicsEditor({
   const {
     name,
     type,
+    placementTypes,
     language,
     confidential,
     legalBasis,
@@ -345,6 +357,16 @@ const BasicsEditor = React.memo(function BasicsEditor({
         <Gap />
         <Label>{i18n.documentTemplates.templateModal.type}</Label>
         <SelectF bind={type} data-qa="type-select" />
+        <Gap />
+        <Label>{i18n.documentTemplates.templateModal.placementTypes}</Label>
+        <MultiSelect
+          value={placementTypes.state}
+          options={placementTypeValues}
+          onChange={placementTypes.set}
+          getOptionId={(pt) => pt}
+          getOptionLabel={(pt) => i18n.placement.type[pt]}
+          placeholder={i18n.common.select}
+        />
         <Gap />
         <Label>{i18n.documentTemplates.templateModal.language}</Label>
         <SelectF bind={language} />
