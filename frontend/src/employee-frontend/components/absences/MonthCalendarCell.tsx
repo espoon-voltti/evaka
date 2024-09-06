@@ -193,7 +193,7 @@ export const DisabledCell = styled.div`
   width: ${cellSize}px;
 `
 
-const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected: boolean }>`
+export const AbsenceCellDiv = styled(DisabledCell)<{ $isSelected: boolean }>`
   ${(p) =>
     p.$isSelected &&
     css`

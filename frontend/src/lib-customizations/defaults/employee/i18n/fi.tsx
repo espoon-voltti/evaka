@@ -3346,6 +3346,7 @@ export const fi = {
       absenceSummaryTitle: 'Lapsen poissaolokooste'
     },
     table: {
+      selectAll: 'Valitse kaikki',
       staffRow: 'Henkilökuntaa paikalla',
       disabledStaffCellTooltip: 'Ryhmä ei ole olemassa valittuna päivänä',
       reservationsTotal: 'Varaus/kk',

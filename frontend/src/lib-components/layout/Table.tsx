@@ -65,7 +65,7 @@ export const Th = styled.th<ThProps>`
 `
 
 export const Td = styled.td<{
-  align?: 'right' | 'left'
+  align?: 'right' | 'left' | 'center'
   verticalAlign?: 'top' | 'middle' | 'bottom'
   color?: string
   minimalWidth?: boolean
