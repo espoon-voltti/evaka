@@ -16,7 +16,6 @@ import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.getChildGuardiansAndFosterParents
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.serviceneed.getServiceNeedOptionPublicInfos
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -74,11 +73,12 @@ class PlacementToolService(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val serviceNeedOptions =
-                    tx.getServiceNeedOptions()
+                val serviceNeedOptions = tx.getServiceNeedOptions()
                 val partTimeServiceNeedOption =
                     serviceNeedOptions
-                        .firstOrNull{ it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption }
+                        .firstOrNull {
+                            it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption
+                        }
                         ?.let {
                             ServiceNeedOption(
                                 id = it.id,
@@ -93,7 +93,10 @@ class PlacementToolService(
                 }
                 val defaultServiceNeedOption =
                     serviceNeedOptions
-                        .firstOrNull{ it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption }
+                        .firstOrNull {
+                            it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE &&
+                                it.defaultOption
+                        }
                         ?.let {
                             ServiceNeedOption(
                                 id = it.id,
@@ -122,7 +125,7 @@ class PlacementToolService(
                                     data,
                                     partTimeServiceNeedOption,
                                     defaultServiceNeedOption,
-                                    nextPreschoolTerm
+                                    nextPreschoolTerm,
                                 )
                             ),
                             runAt = clock.now(),
@@ -211,7 +214,7 @@ class PlacementToolService(
             .parse(inputStream.reader())
             .filter { row ->
                 row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
-                        row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
+                    row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
             }
             .map { row ->
                 PlacementToolData(
@@ -255,13 +258,16 @@ class PlacementToolService(
                                 preferredStartDate = preschoolTerm.finnishPreschool.start,
                                 preferredUnits =
                                     listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
-                                serviceNeed = ServiceNeed(
-                                    startTime = "",
-                                    endTime = "",
-                                    shiftCare = false,
-                                    partTime = false,
-                                    serviceNeedOption = if (partTime) partTimeServiceNeedOption else defaultServiceNeedOption,
-                                ),
+                                serviceNeed =
+                                    ServiceNeed(
+                                        startTime = "",
+                                        endTime = "",
+                                        shiftCare = false,
+                                        partTime = false,
+                                        serviceNeedOption =
+                                            if (partTime) partTimeServiceNeedOption
+                                            else defaultServiceNeedOption,
+                                    ),
                                 urgent = false,
                             ),
                         secondGuardian =

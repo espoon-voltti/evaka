@@ -175,7 +175,15 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `create application with one guardian`() {
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare.id)
-        service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            partTimeServiceNeedOption,
+            serviceNeedOption,
+            preschoolTerm,
+        )
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -215,7 +223,15 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             MockPersonDetailsService.addDependants(testAdult_2, testChild_1)
         }
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare.id)
-        service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            partTimeServiceNeedOption,
+            serviceNeedOption,
+            preschoolTerm,
+        )
 
         clock.tick()
         asyncJobRunner.runPendingJobsSync(clock)
@@ -237,7 +253,15 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application without proper child`() {
         val data = PlacementToolData(childId = testChild_3.id, preschoolId = testDaycare.id)
         assertThrows<Exception> {
-            service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
+            service.createApplication(
+                db,
+                admin,
+                clock,
+                data,
+                partTimeServiceNeedOption,
+                serviceNeedOption,
+                preschoolTerm,
+            )
         }
     }
 
@@ -245,7 +269,15 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `create application without proper unit`() {
         val data = PlacementToolData(childId = testChild_1.id, preschoolId = testDaycare2.id)
         assertThrows<Exception> {
-            service.createApplication(db, admin, clock, data, partTimeServiceNeedOption, serviceNeedOption, preschoolTerm)
+            service.createApplication(
+                db,
+                admin,
+                clock,
+                data,
+                partTimeServiceNeedOption,
+                serviceNeedOption,
+                preschoolTerm,
+            )
         }
     }
 }
