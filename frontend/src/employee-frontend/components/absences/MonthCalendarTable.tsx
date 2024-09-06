@@ -127,6 +127,7 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
       </ChildNameTd>
       <Td
         align="center"
+        verticalAlign="middle"
         onClick={() => {
           if (fullySelected) {
             selectedCellsOfChild.forEach(toggleCellSelection)
