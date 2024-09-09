@@ -295,6 +295,16 @@ server {
     include     proxy_params;
     proxy_pass  $internalUrl;
 
+    location /api/internal/employee/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
+
+    location /api/internal/employee-mobile/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
+
     location /api/internal/attachments {
       client_max_body_size 100m;
       proxy_pass  $internalUrl;
