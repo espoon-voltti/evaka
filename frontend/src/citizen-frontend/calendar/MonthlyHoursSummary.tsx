@@ -34,17 +34,11 @@ export const HoursMinutes = ({ minutes }: { minutes: number }) => {
   if (hours === 0 && minutes === 0) {
     return '-'
   }
-  return (
-    <>
-      {hours > 0 && (
-        <>
-          {hours} {i18n.calendar.monthSummary.hours}
-        </>
-      )}
-      {extraMinutes != 0 &&
-        ' ' + extraMinutes + ' ' + i18n.calendar.monthSummary.minutes}
-    </>
-  )
+  return `${hours > 0 ? `${hours} ${i18n.calendar.monthSummary.hours}` : ''}${
+    extraMinutes != 0
+      ? ` ${extraMinutes} ${i18n.calendar.monthSummary.minutes}`
+      : ''
+  }`
 }
 export type MonthlyTimeSummary = {
   name: string

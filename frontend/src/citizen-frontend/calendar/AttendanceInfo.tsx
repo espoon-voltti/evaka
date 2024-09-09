@@ -143,10 +143,10 @@ function AttendanceInfoWithServiceUsage({
         usedService.usedServiceMinutes > 0 ? (
           <>
             {usedService.usedServiceRanges.map((timeRange, index, array) => (
-              <React.Fragment key={index}>
+              <span key={index}>
                 {timeRange.format()}
                 {index < array.length - 1 && ', '}
-              </React.Fragment>
+              </span>
             ))}{' '}
             (<HoursMinutes minutes={usedService.usedServiceMinutes} />)
           </>
