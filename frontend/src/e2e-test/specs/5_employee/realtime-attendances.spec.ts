@@ -563,6 +563,9 @@ describe('Realtime staff attendances', () => {
       await modal.newAttendanceButton.assertDisabled(true)
       await modal.openAttendanceWarning.waitUntilVisible()
     })
+    test('If there is open attendance entry for yesterday in another unit, warning is visible', async () => {
+      // TODO
+    })
   })
 
   describe('Staff count sums in the table', () => {

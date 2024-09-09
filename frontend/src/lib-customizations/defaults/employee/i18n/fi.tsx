@@ -2624,6 +2624,9 @@ export const fi = {
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
       openAttendanceWarning: (arrival: string) => `Avoin kirjaus ${arrival}`,
+      openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
+      openAttendanceInAnotherUnitWarningCont:
+        '. Kirjaus on päätettävä ennen uuden lisäystä.',
       personCount: 'Läsnäolleiden yhteismäärä',
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',

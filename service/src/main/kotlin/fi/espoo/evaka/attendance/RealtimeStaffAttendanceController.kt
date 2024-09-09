@@ -25,17 +25,15 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/staff-attendances/realtime", // deprecated
-    "/employee/staff-attendances/realtime",
-)
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
-    @GetMapping
+    @GetMapping(
+        "/staff-attendances/realtime", // deprecated
+        "/employee/staff-attendances/realtime",
+    )
     fun getRealtimeStaffAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -180,7 +178,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping("/upsert")
+    @PostMapping(
+        "/staff-attendances/realtime/upsert", // deprecated
+        "/employee/staff-attendances/realtime/upsert",
+    )
     fun upsertDailyStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -263,7 +264,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping("/upsert-external")
+    @PostMapping(
+        "/staff-attendances/realtime/upsert-external", // deprecated
+        "/employee/staff-attendances/realtime/upsert-external",
+    )
     fun upsertDailyExternalRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -312,4 +316,29 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             meta = mapOf("date" to body.date),
         )
     }
+
+    @GetMapping("/employee/staff-attendances/realtime/open-attendences")
+    fun getOpenAttendances(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam userId: EmployeeId,
+    ): OpenAttendanceResponse {
+        val openAttendance =
+            db.connect { dbc ->
+                    // TODO check permissions
+                    dbc.transaction { tx -> tx.getOpenAttendancesForEmployee(userId) }
+                }
+                .also { Audit.StaffOpenAttendanceRead.log(targetId = AuditId(userId)) }
+        return OpenAttendanceResponse(openAttendance)
+    }
+
+    data class OpenAttendanceResponse(val openAttendance: OpenAttendance?)
+
+    data class OpenAttendance(
+        val unitName: String,
+        val unitId: DaycareId,
+        val date: LocalDate,
+        val groupId: GroupId? = null,
+    )
 }

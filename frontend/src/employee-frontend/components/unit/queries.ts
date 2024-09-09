@@ -12,6 +12,7 @@ import {
   getUnitApplications,
   respondToPlacementProposal
 } from '../../generated/api-clients/application'
+import { getOpenAttendances } from '../../generated/api-clients/attendance'
 import {
   createBackupCare,
   updateBackupCare
@@ -89,7 +90,9 @@ export const queryKeys = createQueryKeys('unit', {
   expectedAbsences: (arg: Arg0<typeof getExpectedAbsences>) => [
     'expectedAbsences',
     arg
-  ]
+  ],
+  // TODO do we need include the userId param here somehow?
+  openAttendances: () => ['openAttendances']
 })
 
 export const areaQuery = query({
@@ -263,4 +266,9 @@ export const respondToPlacementProposalMutation = mutation({
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)
   ]
+})
+
+export const openAttendancesQuery = query({
+  api: getOpenAttendances,
+  queryKey: queryKeys.openAttendances
 })

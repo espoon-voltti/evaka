@@ -318,6 +318,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       staffOccupancyEffectDefault={target.hasOccupancyEffect}
       validate={staffAttendanceValidator(detailsModalConfig)}
       name={detailsModalConfig.name}
+      employeeId={target.employeeId}
       date={detailsModalConfig.date}
       attendances={modalData.attendances}
       plannedAttendances={modalData.plannedAttendances}

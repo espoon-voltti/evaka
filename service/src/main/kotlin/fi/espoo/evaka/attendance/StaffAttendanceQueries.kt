@@ -612,3 +612,17 @@ WHERE
 """
     )
 }
+
+fun Database.Read.getOpenAttendancesForEmployee(
+    employeeId: EmployeeId
+): RealtimeStaffAttendanceController.OpenAttendance? =
+    createQuery {
+            sql(
+                """
+                SELECT d.name as unit_name, dg.daycare_id as unit_id, sa.arrived::date AS date, sa.group_id
+                FROM staff_attendance_realtime sa JOIN daycare_group dg ON sa.group_id = dg.id JOIN daycare d ON dg.daycare_id = d.id
+                WHERE sa.employee_id = ${bind(employeeId)} AND sa.departed IS NULL
+                """
+            )
+        }
+        .exactlyOneOrNull<RealtimeStaffAttendanceController.OpenAttendance>()
