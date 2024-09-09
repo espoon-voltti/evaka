@@ -99,7 +99,7 @@
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^10.0.0",
     "babel-loader": "^9.1.2",
-    "concurrently": "^8.2.0",
+    "concurrently": "^9.0.0",
     "css-loader": "^7.1.1",
     "csstype": "^3.1.2",
     "esbuild": "^0.23.0",
