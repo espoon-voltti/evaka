@@ -37,7 +37,7 @@
     "make-error-cause": "^2.3.0",
     "nocache": "^4.0.0",
     "passport": "^0.7.0",
-    "pino": "^9.3.1",
+    "pino": "^9.4.0",
     "pino-http": "^10.3.0",
     "pino-pretty": "^11.2.0",
     "pump": "^3.0.0",
