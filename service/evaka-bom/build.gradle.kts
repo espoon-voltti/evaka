@@ -56,7 +56,7 @@ dependencies {
     api(platform("com.fasterxml.jackson:jackson-bom:2.17.0"))
     api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     api(platform("io.netty:netty-bom:4.1.108.Final")) // only needed for CVE fix
-    api(platform("io.opentelemetry:opentelemetry-bom:1.41.0"))
+    api(platform("io.opentelemetry:opentelemetry-bom:1.42.0"))
     api(platform("org.apache.cxf:cxf-bom:4.0.3"))
     // Spring Boot specifies a version constraint for Jetty, but we have other libraries relying
     // on an older version -> we enforce a specific Jetty BOM version and ignore Spring Boot
