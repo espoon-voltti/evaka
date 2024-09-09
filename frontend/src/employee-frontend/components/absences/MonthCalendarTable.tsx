@@ -17,11 +17,11 @@ import {
 import LocalDate from 'lib-common/local-date'
 import TimeRange from 'lib-common/time-range'
 import Tooltip from 'lib-components/atoms/Tooltip'
-import { Thead } from 'lib-components/layout/Table'
+import { Td, Thead } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
+import colors, { absenceColors } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamationTriangle } from 'lib-icons'
 
@@ -30,7 +30,10 @@ import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { ContractDaysIndicatorChip } from '../common/ContractDaysIndicatorChip'
 
 import { SelectedCell } from './GroupMonthCalendar'
-import MonthCalendarCell, { DisabledCell } from './MonthCalendarCell'
+import MonthCalendarCell, {
+  AbsenceCellDiv,
+  DisabledCell
+} from './MonthCalendarCell'
 import StaffAttendance from './StaffAttendance'
 
 interface MonthCalendarRow {
@@ -64,6 +67,27 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
     (c) => c.hasContractDays
   )
   const hourInfo = useMemo(() => getHourInfo(child), [child])
+
+  const selectedCellsOfChild = useMemo(
+    () => selectedCells.filter((c) => c.childId === child.id),
+    [selectedCells, child.id]
+  )
+
+  const selectedDates = useMemo(
+    () => selectedCellsOfChild.map((c) => c.date),
+    [selectedCellsOfChild]
+  )
+
+  const daysForChild = useMemo(
+    () =>
+      days.filter(([_, day]) => day !== undefined && day.childId === child.id),
+    [days, child.id]
+  )
+
+  const fullySelected = useMemo(
+    () => daysForChild.every(([date]) => selectedDates.includes(date)),
+    [daysForChild, selectedDates]
+  )
 
   return (
     <AbsenceTr data-qa={`absence-child-row-${child.id}`}>
@@ -101,6 +125,29 @@ const MonthCalendarRow = React.memo(function MonthCalendarRow({
           </Tooltip>
         </FixedSpaceRow>
       </ChildNameTd>
+      <Td
+        align="center"
+        verticalAlign="middle"
+        onClick={() => {
+          if (fullySelected) {
+            selectedCellsOfChild.forEach(toggleCellSelection)
+          } else {
+            daysForChild
+              .filter(([date]) => !selectedDates.includes(date))
+              .forEach(([date, day]) => {
+                if (day !== undefined) {
+                  toggleCellSelection({
+                    childId: child.id,
+                    date,
+                    absenceCategories: day.absenceCategories
+                  })
+                }
+              })
+          }
+        }}
+      >
+        <SelectAll $isSelected={fullySelected} />
+      </Td>
       {days.map(([date, day]) =>
         day !== undefined && day.scheduleType !== 'TERM_BREAK' ? (
           <CalendarTd
@@ -246,6 +293,7 @@ const MonthCalendarTableHead = React.memo(function AbsenceTableHead({
     <Thead sticky>
       <AbsenceTr>
         <th />
+        <th>{i18n.absences.table.selectAll}</th>
         {days.map(({ date, isOperationDay }) =>
           isOperationDay || featureFlags.intermittentShiftCare ? (
             <AbsenceTh
@@ -396,8 +444,6 @@ const CalendarTd = styled.td<{ $isToday: boolean }>`
 `
 
 const ChildNameTd = styled.td`
-  white-space: nowrap;
-
   a {
     display: inline-block;
     overflow: hidden;
@@ -451,4 +497,10 @@ const EmptyRow = styled.tr`
     cursor: default;
     height: 20px;
   }
+`
+
+const SelectAll = styled(AbsenceCellDiv)<{ $isSelected: boolean }>`
+  display: inline-block;
+  ${(p) =>
+    p.$isSelected ? '' : `background-color: ${absenceColors.NO_ABSENCE};`}
 `
