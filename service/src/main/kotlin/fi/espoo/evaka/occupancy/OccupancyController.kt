@@ -276,7 +276,7 @@ class OccupancyController(
                         unitId,
                     )
                     getAttendanceReservationReport(
-                        db = tx,
+                        tx = tx,
                         start = date,
                         end = date,
                         unitId = unitId,

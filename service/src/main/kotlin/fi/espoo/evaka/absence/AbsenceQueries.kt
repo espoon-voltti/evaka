@@ -467,6 +467,18 @@ fun Database.Read.getAbsencesOfChildByRange(childId: ChildId, range: DateRange):
         }
     )
 
+fun Database.Read.getAbsencesOfChildrenByRange(
+    childIds: Set<ChildId>,
+    range: DateRange,
+): List<Absence> =
+    getAbsences(
+        Predicate {
+            where(
+                "between_start_and_end(${bind(range)}, $it.date) AND $it.child_id = ANY(${bind(childIds)})"
+            )
+        }
+    )
+
 fun Database.Read.getAbsencesOfChildByDate(childId: ChildId, date: LocalDate): List<Absence> =
     getAbsences(Predicate { where("$it.date = ${bind(date)} AND $it.child_id = ${bind(childId)}") })
 
