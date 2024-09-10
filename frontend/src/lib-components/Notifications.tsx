@@ -22,13 +22,17 @@ import { faExclamation, faInfo, faRedo } from 'lib-icons'
 import { Button } from './atoms/buttons/Button'
 import { useTranslations } from './i18n'
 import { FixedSpaceColumn } from './layout/flex-helpers'
+import TimedToast from './molecules/TimedToast'
 import Toast from './molecules/Toast'
 import { defaultMargins } from './white-space'
 
 interface NotificationsState {
+  timedNotifications: Record<string, TimedNotification>
   notifications: Record<string, Notification>
   addNotification: (n: Notification, customId?: string) => void
   removeNotification: (id: string) => void
+  addTimedNotification: (n: TimedNotification) => void
+  removeTimedNotification: (id: string) => void
 }
 
 interface Notification {
@@ -40,10 +44,19 @@ interface Notification {
   dataQa?: string
 }
 
+interface TimedNotification {
+  children: React.ReactNode | React.ReactNode[]
+  ariaLabel?: string
+  dataQa?: string
+}
+
 export const NotificationsContext = createContext<NotificationsState>({
+  timedNotifications: {},
   notifications: {},
   addNotification: () => undefined,
-  removeNotification: () => undefined
+  removeNotification: () => undefined,
+  addTimedNotification: () => undefined,
+  removeTimedNotification: () => undefined
 })
 
 let idCounter = 1
@@ -55,6 +68,7 @@ export const NotificationsContextProvider = React.memo(
     children: React.ReactNode | React.ReactNode[]
   }) {
     const [notifications, setNotifications] = useState({})
+    const [timedNotifications, setTimedNotifications] = useState({})
     const addNotification = useCallback(
       (notification: Notification, customId?: string) =>
         setNotifications((notifications) => ({
@@ -68,13 +82,38 @@ export const NotificationsContextProvider = React.memo(
       setNotifications((notifications) => omit(notifications, id))
     }, [])
 
+    const addTimedNotification = useCallback(
+      (timedNotification: TimedNotification) =>
+        setTimedNotifications((timedNotifications) => ({
+          ...timedNotifications,
+          [(idCounter++).toString(10)]: timedNotification
+        })),
+      []
+    )
+
+    const removeTimedNotification = useCallback((id: string) => {
+      setTimedNotifications((timedNotifications) =>
+        omit(timedNotifications, id)
+      )
+    }, [])
+
     const value = useMemo(
       () => ({
+        timedNotifications,
         notifications,
         addNotification,
-        removeNotification
+        removeNotification,
+        addTimedNotification,
+        removeTimedNotification
       }),
-      [addNotification, notifications, removeNotification]
+      [
+        addNotification,
+        notifications,
+        removeNotification,
+        timedNotifications,
+        addTimedNotification,
+        removeTimedNotification
+      ]
     )
 
     return (
@@ -91,8 +130,13 @@ export const Notifications = React.memo(function Notifications({
   apiVersion: string | undefined
 }) {
   const i18n = useTranslations()
-  const { notifications, addNotification, removeNotification } =
-    useContext(NotificationsContext)
+  const {
+    notifications,
+    addNotification,
+    removeNotification,
+    timedNotifications,
+    removeTimedNotification
+  } = useContext(NotificationsContext)
   useOfflineNotification(
     i18n.offlineNotification,
     addNotification,
@@ -106,7 +150,12 @@ export const Notifications = React.memo(function Notifications({
   )
   return (
     <OuterContainer>
-      <ColumnContainer spacing="s" alignItems="flex-end">
+      <ColumnContainer
+        spacing="s"
+        alignItems="flex-end"
+        aria-live="polite"
+        data-qa="notification-container"
+      >
         {Object.entries(notifications).map(
           ([id, { children, onClose, onClick, dataQa, ...props }]) => (
             <Toast
@@ -122,6 +171,23 @@ export const Notifications = React.memo(function Notifications({
             >
               {children}
             </Toast>
+          )
+        )}
+        {Object.entries(timedNotifications).map(
+          ([id, { children, ariaLabel, dataQa, ...props }]) => (
+            <TimedToast
+              key={id}
+              {...props}
+              closeLabel={i18n.notifications.close}
+              onClick={() => removeTimedNotification(id)}
+              onClose={() => {
+                removeTimedNotification(id)
+              }}
+              data-qa={dataQa}
+              aria-label={ariaLabel}
+            >
+              {children}
+            </TimedToast>
           )
         )}
       </ColumnContainer>

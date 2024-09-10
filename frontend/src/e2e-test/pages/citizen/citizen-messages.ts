@@ -79,6 +79,23 @@ export default class CitizenMessagesPage {
     await this.#inboxEmpty.waitUntilVisible()
   }
 
+  async assertTimedNotification(content: string) {
+    await this.page
+      .findByDataQa('message-sent-notification')
+      .assertTextEquals(content)
+  }
+
+  async assertAriaLiveExistsAndIncludesNotification() {
+    await this.page
+      .findByDataQa('notification-container')
+      .assertAttributeEquals('aria-live', 'polite')
+    await this.page
+      .find(
+        '[data-qa="notification-container"] > [data-qa=message-sent-notification]'
+      )
+      .assertTextEquals('Viesti lähetetty')
+  }
+
   async assertThreadContent(message: {
     title: string
     content: string
