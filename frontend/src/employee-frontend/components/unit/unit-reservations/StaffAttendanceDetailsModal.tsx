@@ -424,7 +424,7 @@ function StaffAttendanceDetailsModal<
           <>
             <H4 noMargin>{i18n.unit.staffAttendance.continuationAttendance}</H4>
             <Gap size="xs" />
-            <div>
+            <div data-qa="continuation-attendance">
               {continuationAttendance.arrived.toLocalTime().format()} -{' '}
               {continuationAttendance.departed?.toLocalTime()?.format()}
             </div>
@@ -588,6 +588,7 @@ function StaffAttendanceDetailsModal<
               icon={faPlus}
               text={i18n.unit.staffAttendance.addNewAttendance}
               onClick={addNewAttendance}
+              disabled={arrivalWithoutDeparture !== undefined}
               data-qa="new-attendance"
             />
           </NewAttendance>
