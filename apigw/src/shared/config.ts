@@ -5,6 +5,8 @@
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import { RedisClientOptions } from 'redis'
 
+import { TrustedCertificates } from './certificates.js'
+
 export interface Config {
   citizen: SessionConfig
   employee: SessionConfig
@@ -131,6 +133,43 @@ function envArray<T>(
   }
 }
 
+type SfiMode = 'prod' | 'test' | 'mock'
+
+function sfiDefaultsForMode(mode: SfiMode):
+  | {
+      entryPoint: string
+      logoutUrl: string
+      publicCert: TrustedCertificates[]
+    }
+  | undefined {
+  switch (mode) {
+    case 'prod':
+      return {
+        entryPoint:
+          'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SSO',
+        logoutUrl:
+          'https://tunnistautuminen.suomi.fi/idp/profile/SAML2/Redirect/SLO',
+        publicCert: [
+          'saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem',
+          'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem'
+        ]
+      }
+    case 'test':
+      return {
+        entryPoint:
+          'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SSO',
+        logoutUrl:
+          'https://testi.apro.tunnistus.fi/idp/profile/SAML2/Redirect/SLO',
+        publicCert: [
+          'saml-signing-testi.apro.tunnistus.fi.2024.pem',
+          'saml-signing-testi.apro.tunnistus.fi.2022.pem'
+        ]
+      }
+    case 'mock':
+      return undefined
+  }
+}
+
 export function configFromEnv(): Config {
   const adMock =
     env('AD_MOCK', parseBoolean) ??
@@ -166,7 +205,10 @@ export function configFromEnv(): Config {
 
   const sfiMock =
     env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-  const sfiType = sfiMock ? 'mock' : 'saml'
+  const sfiMode = env('SFI_MODE', parseEnum(['test', 'prod', 'mock'] as const))
+  const sfiType = sfiMock || sfiMode === 'mock' ? 'mock' : 'saml'
+  const sfiDefaults = sfiMode && sfiDefaultsForMode(sfiMode)
+
   const sfi: Config['sfi'] =
     sfiType !== 'saml'
       ? { type: sfiType }
@@ -174,11 +216,16 @@ export function configFromEnv(): Config {
           type: sfiType,
           saml: {
             callbackUrl: required(process.env.SFI_SAML_CALLBACK_URL),
-            entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
-            logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
+            entryPoint: required(
+              process.env.SFI_SAML_ENTRYPOINT ?? sfiDefaults?.entryPoint
+            ),
+            logoutUrl: required(
+              process.env.SFI_SAML_LOGOUT_URL ?? sfiDefaults?.logoutUrl
+            ),
             issuer: required(process.env.SFI_SAML_ISSUER),
             publicCert: required(
-              envArray('SFI_SAML_PUBLIC_CERT', (value) => value)
+              envArray('SFI_SAML_PUBLIC_CERT', (value) => value) ??
+                sfiDefaults?.publicCert
             ),
             privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
             validateInResponseTo: ValidateInResponseTo.always,
