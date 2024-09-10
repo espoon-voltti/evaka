@@ -18,6 +18,7 @@ import {
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -237,13 +238,30 @@ function StaffAttendanceDetailsModal<
     [sortedAttendances]
   )
 
-  const plannedAttendancesToday = useMemo(
-    () =>
-      plannedAttendances.filter(
-        ({ end, start }) =>
-          end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
-      ),
-    [plannedAttendances, date]
+  const getTotalMinutesWithinDate = useCallback(
+    (
+      attendances: {
+        arrived: HelsinkiDateTime
+        departed: HelsinkiDateTime | null
+      }[]
+    ) =>
+      attendances.reduce((prev, { arrived, departed }) => {
+        const minTime = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
+        const maxTime = date.isToday()
+          ? HelsinkiDateTime.now()
+          : HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+
+        const arrivedWithinDate = arrived.isBefore(minTime) ? minTime : arrived
+        const departedWithinDate =
+          !departed || departed.isAfter(maxTime) ? maxTime : departed
+
+        return (
+          prev + (departedWithinDate.timestamp - arrivedWithinDate.timestamp)
+        )
+      }, 0) /
+      1000 /
+      60,
+    [date]
   )
 
   const totalMinutes = useMemo(
@@ -254,16 +272,8 @@ function StaffAttendanceDetailsModal<
           !departed
       )
         ? 'incalculable'
-        : gaplessAttendances.reduce(
-            (prev, { arrived, departed }) =>
-              prev +
-              ((departed?.timestamp ?? HelsinkiDateTime.now().timestamp) -
-                arrived.timestamp),
-            0
-          ) /
-          1000 /
-          60,
-    [gaplessAttendances]
+        : getTotalMinutesWithinDate(gaplessAttendances),
+    [gaplessAttendances, getTotalMinutesWithinDate]
   )
 
   const arrivalWithoutDeparture = useMemo(() => {
@@ -278,18 +288,23 @@ function StaffAttendanceDetailsModal<
       : undefined
   }, [gaplessAttendances])
 
+  const plannedAttendancesToday = useMemo(
+    () =>
+      plannedAttendances
+        .filter(
+          ({ end, start }) =>
+            end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
+        )
+        .map(({ start, end }) => ({ arrived: start, departed: end })),
+    [plannedAttendances, date]
+  )
+
   const diffPlannedTotalMinutes = useMemo(
     () =>
       totalMinutes === 'incalculable'
         ? 0
-        : totalMinutes -
-          (plannedAttendancesToday?.reduce(
-            (prev, { start, end }) => prev + (end.timestamp - start.timestamp),
-            0
-          ) ?? 0) /
-            1000 /
-            60,
-    [plannedAttendancesToday, totalMinutes]
+        : totalMinutes - getTotalMinutesWithinDate(plannedAttendancesToday),
+    [totalMinutes, plannedAttendancesToday, getTotalMinutesWithinDate]
   )
 
   const getGapBefore = useCallback(
