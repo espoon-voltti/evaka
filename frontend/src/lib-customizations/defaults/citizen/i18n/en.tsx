@@ -2319,7 +2319,7 @@ const en: Translations = {
       variableTime: 'Daily time varies',
       empty: 'Not defined'
     },
-    vasu: {
+    childDocuments: {
       title: 'Pedagogical documents',
       plansTitle:
         'Early childhood education and care plans and learning plans for pre-primary education',
@@ -2327,55 +2327,7 @@ const en: Translations = {
       hojksTitle: 'Individual education plans',
       otherDocumentsTitle: 'Other documents',
       noDocuments: 'No documents',
-      lastModified: 'Last modified',
-      lastPublished: 'Last published',
-      leavePage: 'Leave page',
-      edited: 'Edited',
-      eventTypes: {
-        PUBLISHED: 'Published',
-        MOVED_TO_READY: 'Move to ready',
-        RETURNED_TO_READY: 'Returned to ready',
-        MOVED_TO_REVIEWED: 'Moved to reviewed',
-        RETURNED_TO_REVIEWED: 'Returned to reviewed',
-        MOVED_TO_CLOSED: 'Moved to closed'
-      },
-      states: {
-        DRAFT: 'Draft',
-        READY: 'Ready',
-        REVIEWED: 'Reviewed',
-        CLOSED: 'Closed'
-      },
-      state: 'State',
-      events: {
-        DAYCARE: 'Early childhood plan events',
-        PRESCHOOL: 'Pre-primary plan events'
-      },
-      confidential: 'Confidential',
-      noRecord: 'No record',
-      givePermissionToShareInfoVasu:
-        'If necessary, some information from the plan will be transferred to other recipients (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
-      givePermissionToShareInfoVasuInfoText:
-        "Contact the unit for early childhood education if you want to change the recipients mentioned in the plan. The plan may be handed over to a new provider of early childhood education, pre-primary education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 41 of the Act on Early Childhood Education and Care, Section 41 of the Basic Education Act).",
-      givePermissionToShareTitleVasu:
-        'Confirmation of the transfer of the early childhood education plan to other recipients',
-      givePermissionToShareTitleLeops:
-        'Confirmation of the transfer of the pre-primary education learning plan to other recipients',
-      givePermissionToShareVasu:
-        "I confirm that the child's early childhood education plan may be handed over to the parties mentioned in the “Recipients” section.",
-      givePermissionToShareLeops:
-        "I confirm that the child's pre-primary education learning plan may be handed over to the parties mentioned in the “Information Recipients” section.",
-      givePermissionToShareInfoBase:
-        "If you want to change the recipients mentioned in the plan, contact the staff of your child's early childhood education unit.",
-      givePermissionToShareReminder:
-        'Confirm the recipients to whom the plan may be disclosed',
-      sharingLeopsDisclaimer:
-        "When a child changes to another early childhood education unit in the City of Espoo, the early childhood education plan and other early childhood education documents are transferred to the new unit (also applies to early childhood education organized by Espoo as a purchasing service). The guardian will be informed about the transfer in advance. We ask the guardian for permission to hand over the early childhood education plan to an outsider. However, if a child enters private or other municipality's early childhood education, the early childhood education plan must be submitted to the new early childhood education provider even without permission, if the information is necessary for arranging the child's early childhood education (section 41 (3) of the Early Childhood Education Act). In addition, the early childhood education plan must be submitted to the organizer of pre-primary or primary education if it is necessary for the organization of the child's education (section 41 (4) of the Basic Education Act). The guardian will be informed of the transfer in advance.",
-      sharingVasuDisclaimer:
-        "The pre-primary learning plan may be handed over to a new provider of early childhood education, pre-primary education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 4 of the Act on Early Childhood Education and Care, Section 41 of the Basic Education Act).",
-      givePermissionToShareVasuBrief:
-        'Necessary information will be shared if required to do so. (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
-      givePermissionToShareLeopsBrief:
-        'Necessary information will be shared if required to do so. (Section 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)'
+      confidential: 'Confidential'
     }
   },
   accessibilityStatement: (
