@@ -286,7 +286,6 @@ export interface PagedIncomeStatementsAwaitingHandler {
 export interface SearchIncomeStatementsRequest {
   areas: string[] | null
   page: number
-  pageSize: number
   placementValidDate: LocalDate | null
   providerTypes: ProviderType[] | null
   sentEndDate: LocalDate | null

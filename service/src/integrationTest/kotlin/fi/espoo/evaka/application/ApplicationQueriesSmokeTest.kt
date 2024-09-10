@@ -74,7 +74,6 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                     params =
                         SearchApplicationRequest(
                             page = 1,
-                            pageSize = 10,
                             sortBy = ApplicationSortColumn.STATUS,
                             sortDir = ApplicationSortDirection.ASC,
                             areas = emptyList(),

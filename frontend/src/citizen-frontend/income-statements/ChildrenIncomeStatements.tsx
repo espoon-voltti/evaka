@@ -61,7 +61,7 @@ const ChildIncomeStatementsTable = React.memo(
 
     const [page, setPage] = useState(1)
     const incomeStatements = useQueryResult(
-      childIncomeStatementsQuery({ childId: child.id, page, pageSize: 10 })
+      childIncomeStatementsQuery({ childId: child.id, page })
     )
 
     const onEdit = useCallback(

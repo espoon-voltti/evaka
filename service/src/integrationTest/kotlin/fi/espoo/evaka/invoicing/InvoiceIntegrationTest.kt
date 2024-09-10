@@ -212,13 +212,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             testInvoices.filter { it.status == InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
         val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    pageSize = 200,
-                    status = listOf(InvoiceStatus.DRAFT),
-                )
-            )
+            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.DRAFT)))
         assertEqualEnough(drafts.map(::toSummary), result)
     }
 
@@ -228,9 +222,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val sent = testInvoices.filter { it.status == InvoiceStatus.SENT }
 
         val result =
-            searchInvoices(
-                SearchInvoicesRequest(page = 1, pageSize = 200, status = listOf(InvoiceStatus.SENT))
-            )
+            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.SENT)))
         assertEqualEnough(sent.map(::toSummary), result)
     }
 
@@ -240,13 +232,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val canceled = testInvoices.filter { it.status == InvoiceStatus.CANCELED }
 
         val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    pageSize = 200,
-                    status = listOf(InvoiceStatus.CANCELED),
-                )
-            )
+            searchInvoices(SearchInvoicesRequest(page = 1, status = listOf(InvoiceStatus.CANCELED)))
+
         assertEqualEnough(canceled.map(::toSummary), result)
     }
 
@@ -262,7 +249,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     status = listOf(InvoiceStatus.SENT, InvoiceStatus.CANCELED),
                 )
             )
@@ -279,7 +265,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     status = listOf(InvoiceStatus.DRAFT, InvoiceStatus.SENT, InvoiceStatus.CANCELED),
                 )
             )
@@ -291,10 +276,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(page = 1, pageSize = 200, area = listOf("test_area"))
-            )
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("test_area")))
         assertEqualEnough(invoices.map(::toSummary), result)
     }
 
@@ -307,7 +289,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     area = listOf("test_area"),
                     status = listOf(InvoiceStatus.DRAFT),
                 )
@@ -324,10 +305,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(page = 1, pageSize = 200, area = listOf("non_existent"))
-            )
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, area = listOf("non_existent")))
         assertEqualEnough(listOf(), result)
     }
 
@@ -339,7 +317,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     searchTerms =
                         "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}",
                 )
@@ -355,7 +332,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}",
                 )
             )
@@ -370,7 +346,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             searchInvoices(
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 200,
                     searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch",
                 )
             )
@@ -382,9 +357,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
         val result =
-            searchInvoices(
-                SearchInvoicesRequest(page = 1, pageSize = 200, searchTerms = testChild_2.firstName)
-            )
+            searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testChild_2.firstName))
         assertEqualEnough(testInvoices.takeLast(1).map(::toSummary), result)
     }
 
@@ -392,10 +365,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.insertInvoices(testInvoices) }
 
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(page = 1, pageSize = 200, searchTerms = testAdult_1.ssn)
-            )
+        val result = searchInvoices(SearchInvoicesRequest(page = 1, searchTerms = testAdult_1.ssn))
         assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
     }
 
@@ -405,64 +375,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val result =
             searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    pageSize = 200,
-                    searchTerms = testAdult_1.ssn!!.substring(0, 6),
-                )
+                SearchInvoicesRequest(page = 1, searchTerms = testAdult_1.ssn!!.substring(0, 6))
             )
         assertEqualEnough(testInvoices.take(2).map(::toSummary), result)
-    }
-
-    @Test
-    fun `search with pageSize 1 will find only one result`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).first())
-
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    pageSize = 1,
-                    sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC,
-                )
-            )
-        assertEqualEnough(sent.map(::toSummary), result)
-    }
-
-    @Test
-    fun `search with pageSize 1 and pageNumber 2 will find the second result`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id }))[1])
-
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 2,
-                    pageSize = 1,
-                    sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC,
-                )
-            )
-        assertEqualEnough(sent.map(::toSummary), result)
-    }
-
-    @Test
-    fun `search with pageSize 2 and pageNumber 1 will find first two results`() {
-        db.transaction { tx -> tx.insertInvoices(testInvoices) }
-        val sent = testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).subList(0, 2)
-
-        val result =
-            searchInvoices(
-                SearchInvoicesRequest(
-                    page = 1,
-                    pageSize = 2,
-                    sortBy = InvoiceSortParam.START,
-                    sortDirection = SortDirection.ASC,
-                )
-            )
-        assertEqualEnough(sent.map(::toSummary), result)
     }
 
     @Test
@@ -481,7 +396,6 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 RealEvakaClock(),
                 SearchInvoicesRequest(
                     page = 1,
-                    pageSize = 2,
                     status = listOf(InvoiceStatus.DRAFT),
                     sortBy = InvoiceSortParam.START,
                     sortDirection = SortDirection.DESC,

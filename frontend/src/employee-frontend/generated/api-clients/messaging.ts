@@ -123,12 +123,10 @@ export async function getAccountsByUser(): Promise<AuthorizedMessageAccount[]> {
 export async function getArchivedMessages(
   request: {
     accountId: UUID,
-    pageSize: number,
     page: number
   }
 ): Promise<PagedMessageThreads> {
   const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
@@ -162,12 +160,10 @@ export async function getDraftMessages(
 export async function getMessageCopies(
   request: {
     accountId: UUID,
-    pageSize: number,
     page: number
   }
 ): Promise<PagedMessageCopies> {
   const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedMessageCopies>>({
@@ -185,12 +181,10 @@ export async function getMessageCopies(
 export async function getReceivedMessages(
   request: {
     accountId: UUID,
-    pageSize: number,
     page: number
   }
 ): Promise<PagedMessageThreads> {
   const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedMessageThreads>>({
@@ -220,12 +214,10 @@ export async function getReceiversForNewMessage(): Promise<MessageReceiversRespo
 export async function getSentMessages(
   request: {
     accountId: UUID,
-    pageSize: number,
     page: number
   }
 ): Promise<PagedSentMessages> {
   const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedSentMessages>>({

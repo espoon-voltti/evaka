@@ -132,7 +132,6 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedCitizenMessageThreads {
         return db.connect { dbc ->
@@ -141,7 +140,7 @@ class MessageControllerCitizen(
                     dbc.read {
                             it.getThreads(
                                 accountId,
-                                pageSize,
+                                pageSize = 10,
                                 page,
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,

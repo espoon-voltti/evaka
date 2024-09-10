@@ -43,8 +43,6 @@ const getIncomeStatementsAwaitingHandlerResult = wrapResult(
   getIncomeStatementsAwaitingHandler
 )
 
-const pageSize = 50
-
 function IncomeStatementsList({
   data,
   sortBy,
@@ -165,7 +163,6 @@ export default React.memo(function IncomeStatementsPage() {
     return getIncomeStatementsAwaitingHandlerResult({
       body: {
         page,
-        pageSize,
         sortBy,
         sortDirection,
         areas: searchFilters.area.length > 0 ? searchFilters.area : null,

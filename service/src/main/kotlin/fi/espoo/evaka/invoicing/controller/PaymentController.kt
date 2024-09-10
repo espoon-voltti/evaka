@@ -158,7 +158,6 @@ class PaymentController(
 
 data class SearchPaymentsRequest(
     val page: Int,
-    val pageSize: Int,
     val sortBy: PaymentSortParam,
     val sortDirection: SortDirection,
     val searchTerms: String,

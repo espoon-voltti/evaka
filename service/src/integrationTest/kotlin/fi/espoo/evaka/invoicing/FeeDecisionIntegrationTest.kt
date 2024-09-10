@@ -76,7 +76,6 @@ import fi.espoo.evaka.toPersonDetailed
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -352,7 +351,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `search works with no data in DB`() {
-        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50))
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0))
 
         assertEqualEnough(listOf(), result.data)
     }
@@ -361,27 +360,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works with test data in DB`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50))
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0))
 
         assertEqualEnough(testDecisions.map(::toSummary), result.data)
-    }
-
-    @Test
-    fun `search works with strings and integers`() {
-        db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
-
-        val data1 = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 1)).data
-        assertEquals(data1.size, 1)
-
-        val data2 = searchDecisions(SearchFeeDecisionRequest(page = 1, pageSize = 1)).data
-        assertEquals(data2.size, 1)
-
-        assertNotEquals(data1[0].id, data2[0].id)
-
-        val data3 = searchDecisions(SearchFeeDecisionRequest(page = 1, pageSize = 1)).data
-        assertEquals(data3.size, 1)
-
-        assertEquals(data2[0].id, data3[0].id)
     }
 
     @Test
@@ -391,11 +372,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    pageSize = 50,
-                    statuses = listOf(FeeDecisionStatus.DRAFT),
-                )
+                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
             )
 
         assertEqualEnough(drafts.map(::toSummary), result.data)
@@ -408,11 +385,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    pageSize = 50,
-                    statuses = listOf(FeeDecisionStatus.SENT),
-                )
+                SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
             )
 
         assertEqualEnough(sent.map(::toSummary), result.data)
@@ -426,7 +399,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     statuses = listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT),
                 )
             )
@@ -454,7 +426,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     distinctions = listOf(DistinctiveParams.UNCONFIRMED_HOURS),
                 )
             )
@@ -476,7 +447,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     distinctions = listOf(DistinctiveParams.EXTERNAL_CHILD),
                 )
             )
@@ -498,7 +468,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     distinctions = listOf(DistinctiveParams.RETROACTIVE),
                 )
             )
@@ -544,7 +513,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     distinctions = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS),
                 )
             )
@@ -557,9 +525,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf(area1.shortName))
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, area = listOf(area1.shortName)))
 
         assertEqualEnough(testDecisions.map(::toSummary).take(3), result.data)
     }
@@ -572,7 +538,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     area = listOf(area1.shortName),
                     statuses = listOf(FeeDecisionStatus.DRAFT),
                 )
@@ -586,9 +551,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf("non_existent"))
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, area = listOf("non_existent")))
         assertEqualEnough(listOf(), result.data)
     }
 
@@ -596,8 +559,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun `search works as expected with a unit param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val result =
-            searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50, unit = daycare1.id))
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, unit = daycare1.id))
 
         val expected =
             testDecisions.filter { decision ->
@@ -611,13 +573,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    pageSize = 50,
-                    unit = DaycareId(UUID.randomUUID()),
-                )
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, unit = DaycareId(UUID.randomUUID())))
 
         assertEqualEnough(listOf(), result.data)
     }
@@ -630,7 +586,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     searchTerms =
                         "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}",
                 )
@@ -649,7 +604,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}",
                 )
             )
@@ -665,7 +619,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch",
                 )
             )
@@ -681,7 +634,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     searchTerms = testChild_2.firstName,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.ASC,
@@ -703,10 +655,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val otherDecision = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision, otherDecision)) }
 
-        val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, searchTerms = "123123123")
-            )
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, searchTerms = "123123123"))
 
         assertEqualEnough(listOf(sentDecision).map(::toSummary), result.data)
     }
@@ -716,9 +665,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, searchTerms = testAdult_1.ssn)
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, searchTerms = testAdult_1.ssn))
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
     }
@@ -729,11 +676,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result =
             searchDecisions(
-                SearchFeeDecisionRequest(
-                    page = 0,
-                    pageSize = 50,
-                    searchTerms = testAdult_1.ssn!!.substring(0, 6),
-                )
+                SearchFeeDecisionRequest(page = 0, searchTerms = testAdult_1.ssn!!.substring(0, 6))
             )
 
         assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
@@ -1240,11 +1183,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.DRAFT),
-                    )
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
                 )
                 .data
 
@@ -1271,11 +1210,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val draftDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.DRAFT),
-                    )
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.DRAFT))
                 )
                 .data
 
@@ -1420,11 +1355,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val newSentDecisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.SENT),
-                    )
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
                 )
                 .data
 
@@ -1435,7 +1366,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                     SearchFeeDecisionRequest(
                         page = 0,
-                        pageSize = 50,
                         statuses = listOf(FeeDecisionStatus.ANNULLED),
                     )
                 )
@@ -1536,11 +1466,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val decisions =
             searchDecisions(
-                    SearchFeeDecisionRequest(
-                        page = 0,
-                        pageSize = 50,
-                        statuses = listOf(FeeDecisionStatus.SENT),
-                    )
+                    SearchFeeDecisionRequest(page = 0, statuses = listOf(FeeDecisionStatus.SENT))
                 )
                 .data
 
@@ -1574,7 +1500,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     startDate = LocalDate.of(1900, 1, 1),
                     endDate = LocalDate.of(1901, 1, 1),
                 )
@@ -1597,7 +1522,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     startDate = now.minusMonths(3),
                     endDate = now.minusDays(1),
                 )
@@ -1619,7 +1543,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     startDate = now.plusDays(1),
                     endDate = now.plusMonths(8),
                 )
@@ -1642,7 +1565,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     startDate = now.minusMonths(6),
                     endDate = now.minusMonths(1),
                 )
@@ -1652,7 +1574,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     startDate = now.plusMonths(2),
                     endDate = now.plusMonths(8),
                 )
@@ -1673,10 +1594,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, endDate = now.plusYears(8))
-            )
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, endDate = now.plusYears(8)))
 
         assertEqualEnough(listOf(toSummary(oldDecision), toSummary(futureDecision)), result.data)
     }
@@ -1692,9 +1610,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
         val result =
-            searchDecisions(
-                SearchFeeDecisionRequest(page = 0, pageSize = 50, startDate = now.minusYears(8))
-            )
+            searchDecisions(SearchFeeDecisionRequest(page = 0, startDate = now.minusYears(8)))
 
         assertEqualEnough(listOf(toSummary(oldDecision), toSummary(futureDecision)), result.data)
     }
@@ -1720,7 +1636,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.ASC,
                 )
@@ -1738,7 +1653,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.STATUS,
                     sortDirection = SortDirection.DESC,
                 )
@@ -1756,7 +1670,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.ASC,
                 )
@@ -1774,7 +1687,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
                     sortDirection = SortDirection.DESC,
                 )
@@ -1792,7 +1704,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.VALIDITY,
                     sortDirection = SortDirection.ASC,
                 )
@@ -1810,7 +1721,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     sortBy = FeeDecisionSortParam.VALIDITY,
                     sortDirection = SortDirection.DESC,
                 )
@@ -2086,7 +1996,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             searchDecisions(
                 SearchFeeDecisionRequest(
                     page = 0,
-                    pageSize = 50,
                     distinctions = listOf(DistinctiveParams.PRESCHOOL_CLUB),
                 )
             )

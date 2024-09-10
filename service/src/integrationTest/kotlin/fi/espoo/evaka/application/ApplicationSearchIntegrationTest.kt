@@ -287,7 +287,6 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getApplicationSummaries(
         page: Int? = null,
-        pageSize: Int? = null,
         sortBy: ApplicationSortColumn? = null,
         sortDir: ApplicationSortDirection? = null,
         area: List<AreaId>? = null,
@@ -310,7 +309,6 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             now,
             SearchApplicationRequest(
                 page = page,
-                pageSize = pageSize,
                 sortBy = sortBy,
                 sortDir = sortDir,
                 areas = area,

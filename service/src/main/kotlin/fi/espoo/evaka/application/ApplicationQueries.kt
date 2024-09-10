@@ -163,7 +163,7 @@ fun Database.Read.fetchApplicationSummaries(
     canReadServiceWorkerNotes: Boolean,
 ): PagedApplicationSummaries {
     val page = params.page ?: 1
-    val pageSize = params.pageSize ?: 100
+    val pageSize = 50
     val sortBy = params.sortBy ?: ApplicationSortColumn.CHILD_NAME
     val sortDir = params.sortDir ?: ApplicationSortDirection.ASC
     val areas = params.areas ?: emptyList()

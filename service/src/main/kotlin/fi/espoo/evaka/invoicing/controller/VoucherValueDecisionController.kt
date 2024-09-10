@@ -84,8 +84,6 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest,
     ): PagedVoucherValueDecisionSummaries {
-        val maxPageSize = 5000
-        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -98,7 +96,7 @@ class VoucherValueDecisionController(
                         clock,
                         featureConfig.postOffice,
                         body.page,
-                        body.pageSize,
+                        pageSize = 200,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
                         body.sortDirection ?: SortDirection.DESC,
                         body.statuses,
@@ -474,7 +472,6 @@ enum class VoucherValueDecisionDistinctiveParams {
 
 data class SearchVoucherValueDecisionRequest(
     val page: Int,
-    val pageSize: Int,
     val sortBy: VoucherValueDecisionSortParam?,
     val sortDirection: SortDirection?,
     val statuses: List<VoucherValueDecisionStatus>,

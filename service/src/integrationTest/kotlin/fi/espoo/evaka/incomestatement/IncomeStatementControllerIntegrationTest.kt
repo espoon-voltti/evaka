@@ -999,7 +999,6 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             RealEvakaClock(),
             personId,
             page = 1,
-            pageSize = 10,
         )
     }
 
@@ -1018,7 +1017,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
-            SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
+            SearchIncomeStatementsRequest(1, null, null, emptyList(), emptyList(), null, null),
         clock: EvakaClock = RealEvakaClock(),
     ): PagedIncomeStatementsAwaitingHandler {
         return incomeStatementController.getIncomeStatementsAwaitingHandler(

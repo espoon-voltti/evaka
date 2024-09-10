@@ -40,7 +40,6 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -55,7 +54,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                         includeEmployeeContent = false,
                         page = page,
-                        pageSize = pageSize,
+                        pageSize = 10,
                     )
                 }
             }
@@ -74,7 +73,6 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -89,7 +87,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId,
                         includeEmployeeContent = false,
                         page = page,
-                        pageSize = pageSize,
+                        pageSize = 10,
                     )
                 }
             }

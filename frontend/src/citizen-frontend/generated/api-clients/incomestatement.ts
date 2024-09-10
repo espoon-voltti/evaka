@@ -109,13 +109,11 @@ export async function getChildIncomeStatementStartDates(
 export async function getChildIncomeStatements(
   request: {
     childId: UUID,
-    page: number,
-    pageSize: number
+    page: number
   }
 ): Promise<PagedIncomeStatements> {
   const params = createUrlSearchParams(
-    ['page', request.page.toString()],
-    ['pageSize', request.pageSize.toString()]
+    ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements/child/${request.childId}`.toString(),
@@ -171,13 +169,11 @@ export async function getIncomeStatementStartDates(): Promise<LocalDate[]> {
 */
 export async function getIncomeStatements(
   request: {
-    page: number,
-    pageSize: number
+    page: number
   }
 ): Promise<PagedIncomeStatements> {
   const params = createUrlSearchParams(
-    ['page', request.page.toString()],
-    ['pageSize', request.pageSize.toString()]
+    ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/citizen/income-statements`.toString(),

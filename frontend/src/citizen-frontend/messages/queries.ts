@@ -24,8 +24,7 @@ const queryKeys = createQueryKeys('messages', {
 })
 
 export const receivedMessagesQuery = pagedInfiniteQuery({
-  api: (pageSize: number) => (page: number) =>
-    getReceivedMessages({ page, pageSize }),
+  api: () => (page: number) => getReceivedMessages({ page }),
   queryKey: queryKeys.receivedMessages,
   id: (thread) => thread.id
 })

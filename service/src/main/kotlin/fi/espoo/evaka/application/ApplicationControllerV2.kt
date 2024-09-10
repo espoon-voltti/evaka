@@ -215,10 +215,6 @@ class ApplicationControllerV2(
                 "Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)"
             )
         }
-        val maxPageSize = 5000
-        if (body.pageSize != null && body.pageSize > maxPageSize)
-            throw BadRequest("Maximum page size is $maxPageSize")
-
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val canReadServiceWorkerNotes =
@@ -801,7 +797,6 @@ data class PaperApplicationCreateRequest(
 
 data class SearchApplicationRequest(
     val page: Int?,
-    val pageSize: Int?,
     val sortBy: ApplicationSortColumn?,
     val sortDir: ApplicationSortDirection?,
     val areas: List<AreaId>?,

@@ -335,7 +335,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                     getEmployeesPaged(
                         tx,
                         body.page ?: 1,
-                        (body.pageSize ?: 50).coerceAtMost(100),
+                        pageSize = 50,
                         body.searchTerm ?: "",
                         body.hideDeactivated ?: false,
                     )
@@ -404,7 +404,6 @@ data class PinCode(val pin: String)
 
 data class SearchEmployeeRequest(
     val page: Int?,
-    val pageSize: Int?,
     val searchTerm: String?,
     val hideDeactivated: Boolean?,
 )
