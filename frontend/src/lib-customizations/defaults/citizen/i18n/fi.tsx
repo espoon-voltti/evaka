@@ -550,7 +550,8 @@ export default {
       addShiftCareAttachment: 'Liitä työvuorolista',
       search: 'Haku',
       noResults: 'Ei tuloksia, valitse ensin lapsi tai lapsia',
-      messageSendError: 'Viestin lähetys epäonnistui'
+      messageSendError: 'Viestin lähetys epäonnistui',
+      messageSentNotification: 'Viesti lähetetty'
     },
     confirmDelete: {
       title: 'Haluatko varmasti poistaa viestiketjun?',

@@ -544,7 +544,8 @@ const sv: Translations = {
       addShiftCareAttachment: 'Bifoga ett arbetsschema',
       search: 'Sök',
       noResults: 'Inga resultat, välj ett barn eller flera barn först',
-      messageSendError: 'Misslyckades med att skicka meddelande'
+      messageSendError: 'Misslyckades med att skicka meddelande',
+      messageSentNotification: 'Meddelande skickat'
     },
     confirmDelete: {
       title: 'Vill du verkligen radera meddelandetråden?',

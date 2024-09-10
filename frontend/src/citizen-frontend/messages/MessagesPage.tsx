@@ -9,9 +9,11 @@ import styled from 'styled-components'
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
+import { useTranslation } from 'citizen-frontend/localization'
 import { combine } from 'lib-common/api'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
+import { NotificationsContext } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
@@ -43,10 +45,12 @@ const StyledFlex = styled(AdaptiveFlex)`
 `
 
 export default React.memo(function MessagesPage() {
+  const i18n = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { messageAccount, selectedThread, setSelectedThread } =
     useContext(MessageContext)
+  const { addTimedNotification } = useContext(NotificationsContext)
   const [editorVisible, setEditorVisible] = useState<boolean>(false)
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
 
@@ -141,6 +145,11 @@ export default React.memo(function MessagesPage() {
                     onSend={(body) => sendMessage({ body })}
                     onSuccess={() => {
                       changeEditorVisibility(false)
+                      addTimedNotification({
+                        children:
+                          i18n.messages.messageEditor.messageSentNotification,
+                        dataQa: 'message-sent-notification'
+                      })
                     }}
                     onFailure={() => setDisplaySendError(true)}
                     onClose={() => changeEditorVisibility(false)}

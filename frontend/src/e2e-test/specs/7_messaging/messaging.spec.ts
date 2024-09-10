@@ -403,6 +403,22 @@ describe('Sending and receiving messages', () => {
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
 
+      test('Citizen can send a message and receive a notification on success', async () => {
+        const receivers = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          [],
+          receivers,
+          false
+        )
+        await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
+        await citizenMessagesPage.assertTimedNotification('Viesti lähetetty')
+      })
+
       test('Citizen with shift care child can send attachments', async () => {
         const serviceNeedOption = await Fixture.serviceNeedOption({
           validPlacementType: daycarePlacementFixture.type,
