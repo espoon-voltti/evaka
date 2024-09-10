@@ -39,7 +39,7 @@ import {
   ModalCloseButton,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import { H1, H2, H3, LabelLike } from 'lib-components/typography'
+import { H1, H2, H3, H4, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -122,23 +122,32 @@ function StaffAttendanceDetailsModal<
     [attendances]
   )
 
+  const continuationAttendance = useMemo(
+    () =>
+      sortedAttendances.find(
+        (a) =>
+          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
+          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+      ),
+    [sortedAttendances, date]
+  )
+
   const initialEditState = useMemo(
     () =>
-      sortedAttendances.map(
-        ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
-          id,
-          groupId,
-          arrived: date.isEqual(arrived.toLocalDate())
-            ? arrived.toLocalTime().format()
-            : '',
-          departed:
-            departed && date.isEqual(departed.toLocalDate())
-              ? departed.toLocalTime().format()
+      sortedAttendances
+        .filter((a) => a.arrived.toLocalDate().isEqual(date))
+        .map(
+          ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
+            id,
+            groupId,
+            arrived: date.isEqual(arrived.toLocalDate())
+              ? arrived.toLocalTime().format()
               : '',
-          type,
-          hasStaffOccupancyEffect: occupancyCoefficient > 0
-        })
-      ),
+            departed: departed ? departed.toLocalTime().format() : '',
+            type,
+            hasStaffOccupancyEffect: occupancyCoefficient > 0
+          })
+        ),
     [date, sortedAttendances]
   )
   const [{ editState, editStateDate }, setEditState] = useState<{
@@ -396,6 +405,18 @@ function StaffAttendanceDetailsModal<
             <Gap size="s" />
           </FullGridWidth>
         )}
+        {continuationAttendance && (
+          <>
+            <H4 noMargin>{i18n.unit.staffAttendance.continuationAttendance}</H4>
+            <Gap size="xs" />
+            <div>
+              {continuationAttendance.arrived.toLocalTime().format()} -{' '}
+              {continuationAttendance.departed?.toLocalTime()?.format()}
+            </div>
+            <Gap />
+          </>
+        )}
+
         <ListGrid rowGap="s" labelWidth="auto">
           {editState.map(
             (
