@@ -3584,7 +3584,9 @@ export const fi = {
         start: 'Tuloaika',
         end: 'Lähtöaika'
       },
-      absenceType: 'Poissaolo',
+      absence: 'Poissaolo',
+      noReservation: 'Varaus puuttuu',
+      filterByTime: 'Suodata ajan perusteella',
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö',
       timeFilterError: 'Virhe'

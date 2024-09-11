@@ -6,7 +6,7 @@ import { mutation, query } from 'lib-common/query'
 import { Arg0, UUID } from 'lib-common/types'
 
 import {
-  getAttendanceReservationReportByUnitAndChild,
+  getAttendanceReservationReportByChild,
   getChildAttendanceReport,
   getCustomerFeesReport,
   getExceededServiceNeedReportRows,
@@ -37,8 +37,8 @@ import { createQueryKeys } from '../../query'
 import { OccupancyReportFilters } from './Occupancies'
 
 const queryKeys = createQueryKeys('reports', {
-  attendanceReservationByUnitAndChild: (
-    filters: Arg0<typeof getAttendanceReservationReportByUnitAndChild>
+  attendanceReservationByChild: (
+    filters: Arg0<typeof getAttendanceReservationReportByChild>
   ) => ['attendanceReservationByUnitAndChild', filters],
   childAttendance: (filters: Arg0<typeof getChildAttendanceReport>) => [
     'childAttendance',
@@ -85,9 +85,9 @@ const queryKeys = createQueryKeys('reports', {
   ]
 })
 
-export const attendanceReservationReportByUnitAndChildQuery = query({
-  api: getAttendanceReservationReportByUnitAndChild,
-  queryKey: queryKeys.attendanceReservationByUnitAndChild
+export const attendanceReservationReportByChildQuery = query({
+  api: getAttendanceReservationReportByChild,
+  queryKey: queryKeys.attendanceReservationByChild
 })
 
 export const childAttendanceReportQuery = query({

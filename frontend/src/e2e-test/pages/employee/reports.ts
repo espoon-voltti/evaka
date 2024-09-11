@@ -573,42 +573,48 @@ export class PreschoolAbsenceReport {
   }
 }
 
-export class ChildAttendanceReservationReport {
-  constructor(private page: Page) {}
+export class ChildAttendanceReservationByChildReport {
+  startDateInput: DatePicker
+  endDateInput: DatePicker
+  unitSelector: Combobox
+  groupSelector: MultiSelect
+  filterByTime: Checkbox
+  startTimeInput: TextInput
+  endTimeInput: TextInput
+  searchButton: Element
+
+  constructor(private page: Page) {
+    this.startDateInput = new DatePicker(page.findByDataQa('start-date'))
+    this.endDateInput = new DatePicker(page.findByDataQa('end-date'))
+    this.unitSelector = new Combobox(page.findByDataQa('unit-select'))
+    this.groupSelector = new MultiSelect(page.findByDataQa('group-select'))
+    this.filterByTime = new Checkbox(page.findByDataQa('filter-by-time'))
+    this.searchButton = page.findByDataQa('search-button')
+    this.startTimeInput = new TextInput(page.findByDataQa('start-time-filter'))
+    this.endTimeInput = new TextInput(page.findByDataQa('end-time-filter'))
+  }
 
   async setDates(startDate: LocalDate, endDate: LocalDate) {
-    const startDateInput = new DatePicker(this.page.findByDataQa('start-date'))
-    await startDateInput.fill(startDate)
-    const endDateInput = new DatePicker(this.page.findByDataQa('end-date'))
-    await endDateInput.fill(endDate)
+    await this.startDateInput.fill(startDate)
+    await this.endDateInput.fill(endDate)
   }
 
   async endDate(date: LocalDate) {
-    const endDateInput = new DatePicker(this.page.findByDataQa('end-date'))
-    await endDateInput.fill(date)
+    await this.endDateInput.fill(date)
   }
 
   async selectUnit(unitName: string) {
-    const unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
-    await unitSelector.fillAndSelectFirst(unitName)
+    await this.unitSelector.fillAndSelectFirst(unitName)
   }
 
   async selectGroup(groupName: string) {
-    const groupSelector = new MultiSelect(
-      this.page.findByDataQa('group-select')
-    )
-    await groupSelector.fillAndSelectFirst(groupName)
+    await this.groupSelector.fillAndSelectFirst(groupName)
   }
 
   async selectTimeFilter(startTime: string, endTime: string) {
-    const startTimeInput = new TextInput(
-      this.page.findByDataQa('start-time-filter')
-    )
-    const endTimeInput = new TextInput(
-      this.page.findByDataQa('end-time-filter')
-    )
-    await startTimeInput.fill(startTime)
-    await endTimeInput.fill(endTime)
+    await this.filterByTime.check()
+    await this.startTimeInput.fill(startTime)
+    await this.endTimeInput.fill(endTime)
   }
 
   async assertRows(

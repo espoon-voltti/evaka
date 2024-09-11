@@ -7,7 +7,6 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
-import LocalTime from '../../local-time'
 import TimeInterval from '../../time-interval'
 import TimeRange from '../../time-range'
 import { AbsenceType } from './absence'
@@ -115,21 +114,34 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildRow
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.AttendanceReservationReportByChildBody
 */
-export interface AttendanceReservationReportByChildRow {
-  absenceId: UUID | null
-  absenceType: AbsenceType | null
+export interface AttendanceReservationReportByChildBody {
+  groupIds: UUID[]
+  range: FiniteDateRange
+  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildGroup
+*/
+export interface AttendanceReservationReportByChildGroup {
+  groupId: UUID | null
+  groupName: string | null
+  items: AttendanceReservationReportByChildItem[]
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildItem
+*/
+export interface AttendanceReservationReportByChildItem {
+  backupCare: boolean
   childFirstName: string
   childId: UUID
   childLastName: string
   date: LocalDate
-  groupId: UUID | null
-  groupName: string | null
-  isBackupCare: boolean
-  reservationEndTime: LocalTime | null
-  reservationId: UUID | null
-  reservationStartTime: LocalTime | null
+  fullDayAbsence: boolean
+  reservation: TimeRange | null
 }
 
 /**
@@ -957,12 +969,27 @@ export function deserializeJsonAssistanceNeedDecisionsReportRow(json: JsonOf<Ass
 }
 
 
-export function deserializeJsonAttendanceReservationReportByChildRow(json: JsonOf<AttendanceReservationReportByChildRow>): AttendanceReservationReportByChildRow {
+export function deserializeJsonAttendanceReservationReportByChildBody(json: JsonOf<AttendanceReservationReportByChildBody>): AttendanceReservationReportByChildBody {
+  return {
+    ...json,
+    range: FiniteDateRange.parseJson(json.range)
+  }
+}
+
+
+export function deserializeJsonAttendanceReservationReportByChildGroup(json: JsonOf<AttendanceReservationReportByChildGroup>): AttendanceReservationReportByChildGroup {
+  return {
+    ...json,
+    items: json.items.map(e => deserializeJsonAttendanceReservationReportByChildItem(e))
+  }
+}
+
+
+export function deserializeJsonAttendanceReservationReportByChildItem(json: JsonOf<AttendanceReservationReportByChildItem>): AttendanceReservationReportByChildItem {
   return {
     ...json,
     date: LocalDate.parseIso(json.date),
-    reservationEndTime: (json.reservationEndTime != null) ? LocalTime.parseIso(json.reservationEndTime) : null,
-    reservationStartTime: (json.reservationStartTime != null) ? LocalTime.parseIso(json.reservationStartTime) : null
+    reservation: (json.reservation != null) ? TimeRange.parseJson(json.reservation) : null
   }
 }
 
