@@ -14,14 +14,15 @@ import {
   setAttendances
 } from '../generated/api-clients/attendance'
 import { createQueryKeys } from '../query'
+import LocalDate from '../../lib-common/local-date'
 
 const queryKeys = createQueryKeys('staffAttendance', {
-  ofUnit: (unitId: UUID) => ['unit', unitId]
+  ofUnitDate: (unitId: UUID, date: LocalDate | null | undefined) => ['unit-date', unitId, date]
 })
 
 export const staffAttendanceQuery = query({
   api: getAttendancesByUnit,
-  queryKey: ({ unitId }) => queryKeys.ofUnit(unitId)
+  queryKey: ({ unitId, date }) => queryKeys.ofUnitDate(unitId, date)
 })
 
 export const staffArrivalMutation = mutation({

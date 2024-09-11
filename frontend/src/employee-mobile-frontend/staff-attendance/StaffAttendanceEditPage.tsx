@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -69,6 +69,7 @@ import { unitInfoQuery } from '../units/queries'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
+import ListGrid from '../../lib-components/layout/ListGrid'
 
 const typesWithoutGroup: StaffAttendanceType[] = ['TRAINING', 'OTHER_WORK']
 const emptyGroupIdDomValue = ''
@@ -151,7 +152,7 @@ const initialFormState = (
   groups: GroupInfo[],
   attendances: StaffMemberAttendance[]
 ): StateOf<typeof staffAttendancesForm> => ({
-  rows: sortBy(attendances, (attendance) => attendance.arrived).map(
+  rows: sortBy(attendances.filter(a => a.arrived.toLocalDate().isEqual(date)), (attendance) => attendance.arrived).map(
     (attendance) => initialRowState(i18n, date, groups, attendance)
   )
 })
@@ -213,10 +214,15 @@ export default React.memo(function StaffAttendanceEditPage({
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
+
+  const [searchParams] = useSearchParams()
+  const queryDate = searchParams.get('date')
+  const [date] = useState(LocalDate.tryParseIso(queryDate ?? '') ?? LocalDate.todayInHelsinkiTz())
+
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(
-    staffAttendanceQuery({ unitId })
+    staffAttendanceQuery({ unitId, date })
   )
   const combinedResult = useMemo(
     () =>
@@ -240,6 +246,7 @@ export default React.memo(function StaffAttendanceEditPage({
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
         <StaffAttendancesEditor
+          date={date}
           unitOrGroup={unitOrGroup}
           employeeId={employeeId}
           groups={groups}
@@ -251,11 +258,13 @@ export default React.memo(function StaffAttendanceEditPage({
 })
 
 const StaffAttendancesEditor = ({
+  date,
   unitOrGroup,
   employeeId,
   groups,
   staffMember
 }: {
+  date: LocalDate
   unitOrGroup: UnitOrGroup
   employeeId: UUID
   groups: GroupInfo[]
@@ -264,7 +273,7 @@ const StaffAttendancesEditor = ({
   const unitId = unitOrGroup.unitId
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
-  const [date] = useState(LocalDate.todayInHelsinkiTz())
+
   const [mode, setMode] = useState<'editor' | 'pin'>('editor')
   const form = useForm(
     staffAttendancesForm,
@@ -282,6 +291,16 @@ const StaffAttendancesEditor = ({
   const [errorCode, setErrorCode] = useState<string>()
 
   const rowsInputInfo = rows.inputInfo()
+
+  const continuationAttendance = useMemo(
+    () =>
+      staffMember.attendances.find(
+        (a) =>
+          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
+          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+      ),
+    [staffMember, date]
+  )
 
   if (mode === 'pin') {
     return (
@@ -367,6 +386,55 @@ const StaffAttendancesEditor = ({
           </span>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
+
+        {continuationAttendance && (
+          <>
+            <ListGrid rowGap="xxs" labelWidth="auto" mobileMaxWidth="0">
+              <div>
+                {groups.find((g) => g.id === continuationAttendance.groupId)
+                  ?.name ?? i18n.attendances.noGroup}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow justifyContent="space-between">
+                  <DateInfoDiv>
+                    {continuationAttendance.arrived
+                      .toLocalDate()
+                      .format('dd.MM.')}
+                  </DateInfoDiv>
+                  <div />
+                  <DateInfoDiv>
+                    {continuationAttendance.departed
+                      ?.toLocalDate()
+                      ?.format('dd.MM.')}
+                  </DateInfoDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+              <div>
+                {i18n.attendances.staffTypes[continuationAttendance.type]}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow
+                  data-qa="continuation-attendance"
+                  justifyContent="space-between"
+                >
+                  <TimeDiv>
+                    {continuationAttendance.arrived.toLocalTime().format()}
+                  </TimeDiv>
+                  <div>–</div>
+                  <TimeDiv>
+                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                  </TimeDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+            </ListGrid>
+            <Gap size="xs" />
+            <ContinuationInfo>
+              {i18n.attendances.staff.continuationAttendance}
+            </ContinuationInfo>
+            <Gap />
+          </>
+        )}
+
         {boundRows.length > 0 ? (
           boundRows.map((row, index) => (
             <React.Fragment key={index}>
@@ -537,7 +605,6 @@ const StaffAttendanceEditor = ({
             )}
             <TimeInputF
               bind={departedTime}
-              readonly={!departedDateValue.isEqual(date)}
               info={
                 departedTime.state === ''
                   ? { text: i18n.attendances.staff.open, status: 'warning' }
@@ -571,4 +638,23 @@ const DateLabel = styled.div`
 
 const IconContainer = styled.div`
   margin-left: ${defaultMargins.X3L};
+`
+
+const TimesDiv = styled.div`
+  width: 120px;
+`
+
+const TimeDiv = styled.div`
+  width: 40px;
+`
+
+const DateInfoDiv = styled(TimeDiv)`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+  font-size: 14px;
+`
+
+const ContinuationInfo = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-style: italic;
 `

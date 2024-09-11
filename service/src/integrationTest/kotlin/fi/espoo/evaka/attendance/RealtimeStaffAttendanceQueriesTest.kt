@@ -95,7 +95,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         }
 
         db.read {
-            val attendances = it.getStaffAttendances(testDaycare.id, now)
+            val attendances = it.getStaffAttendances(testDaycare.id, now.toLocalDate(), now)
             assertEquals(4, attendances.size)
             assertEquals(
                 listOf("One", "Three", "Four", "Two"),

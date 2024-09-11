@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -46,6 +45,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
+        @RequestParam date: LocalDate?,
     ): CurrentDayStaffAttendanceResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -57,7 +57,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         unitId,
                     )
                     CurrentDayStaffAttendanceResponse(
-                        staff = tx.getStaffAttendances(unitId, clock.now()),
+                        staff =
+                            tx.getStaffAttendances(
+                                unitId = unitId,
+                                date = date ?: clock.today(),
+                                now = clock.now(),
+                            ),
                         extraAttendances = tx.getExternalStaffAttendances(unitId),
                     )
                 }
@@ -245,14 +250,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
                 ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
 
-                if (
-                    body.rows.any {
-                        !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
-                            .includes(body.date)
-                    }
-                ) {
+                if (body.rows.any { it.arrived.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")
-                }
 
                 dbc.transaction { tx ->
                     val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
@@ -261,7 +260,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
 
                     val existing =
-                        tx.getEmployeeAttendancesForDate(unitId, body.employeeId, body.date)
+                        tx.getEmployeeAttendancesByArrivalDateDate(
+                            unitId,
+                            body.employeeId,
+                            body.date,
+                        )
 
                     val ids = body.rows.mapNotNull { it.id }
                     if (ids.any { id -> !existing.map { it.id }.contains(id) }) {

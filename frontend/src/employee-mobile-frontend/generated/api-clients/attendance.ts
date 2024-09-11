@@ -242,11 +242,13 @@ export async function returnToPresent(
 */
 export async function getAttendancesByUnit(
   request: {
-    unitId: UUID
+    unitId: UUID,
+    date?: LocalDate | null
   }
 ): Promise<CurrentDayStaffAttendanceResponse> {
   const params = createUrlSearchParams(
-    ['unitId', request.unitId]
+    ['unitId', request.unitId],
+    ['date', request.date?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
     url: uri`/employee-mobile/realtime-staff-attendances`.toString(),

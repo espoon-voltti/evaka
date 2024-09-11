@@ -10,6 +10,7 @@ interface ListGridProps {
   labelWidth?: string
   rowGap?: SpacingSize
   columnGap?: SpacingSize
+  mobileMaxWidth?: string
 }
 const ListGrid = styled.div<ListGridProps>`
   display: grid;
@@ -17,7 +18,7 @@ const ListGrid = styled.div<ListGridProps>`
   row-gap: ${(p) => defaultMargins[p.rowGap || 'xs']};
   column-gap: ${(p) => defaultMargins[p.columnGap || 's']};
 
-  @media (max-width: 600px) {
+  @media (max-width: ${p => p.mobileMaxWidth ?? '600px'}) {
     grid-template-columns: auto;
     row-gap: ${defaultMargins.xxs};
 
