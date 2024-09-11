@@ -14,6 +14,7 @@ import {
 } from 'react-router-dom'
 import { StyleSheetManager, ThemeProvider } from 'styled-components'
 
+import LocalDate from 'lib-common/local-date'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Uri, uri } from 'lib-common/uri'
@@ -67,6 +68,7 @@ import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
 import StaffMarkArrivedPage from './staff-attendance/StaffMarkArrivedPage'
 import StaffMarkDepartedPage from './staff-attendance/StaffMarkDepartedPage'
 import StaffMemberPage from './staff-attendance/StaffMemberPage'
+import StaffPreviousAttendancesPage from './staff-attendance/StaffPreviousAttendancesPage'
 import { ChildAttendanceUIState } from './types'
 import UnitList from './units/UnitList'
 import { unitInfoQuery } from './units/queries'
@@ -333,6 +335,10 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         element={<StaffMemberPage unitOrGroup={unitOrGroup} />}
       />
       <Route
+        path=":employeeId/previous"
+        element={<StaffPreviousAttendancesPage unitOrGroup={unitOrGroup} />}
+      />
+      <Route
         path=":employeeId/edit"
         element={<StaffAttendanceEditPage unitOrGroup={unitOrGroup} />}
       />
@@ -441,14 +447,21 @@ export const routes = {
   staffAttendance(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}`
   },
-  staffAttendanceEdit(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
-    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/edit`
+  staffAttendanceEdit(
+    unitOrGroup: UnitOrGroup,
+    employeeId: UUID,
+    date?: LocalDate
+  ): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/edit?date=${(date ?? LocalDate.todayInHelsinkiTz()).formatIso()}`
   },
   staffMarkArrived(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/mark-arrived`
   },
   staffMarkDeparted(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/mark-departed`
+  },
+  staffPreviousAttendances(unitOrGroup: UnitOrGroup, employeeId: UUID): Uri {
+    return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance/${employeeId}/previous`
   },
   messages(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/messages`

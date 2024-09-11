@@ -18,7 +18,7 @@ const ListGrid = styled.div<ListGridProps>`
   row-gap: ${(p) => defaultMargins[p.rowGap || 'xs']};
   column-gap: ${(p) => defaultMargins[p.columnGap || 's']};
 
-  @media (max-width: ${p => p.mobileMaxWidth ?? '600px'}) {
+  @media (max-width: ${(p) => p.mobileMaxWidth ?? '600px'}) {
     grid-template-columns: auto;
     row-gap: ${defaultMargins.xxs};
 

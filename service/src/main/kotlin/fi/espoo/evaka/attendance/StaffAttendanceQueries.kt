@@ -19,10 +19,11 @@ import java.time.LocalTime
 
 fun Database.Read.getStaffAttendances(
     unitId: DaycareId,
-    date: LocalDate,
+    dateRange: FiniteDateRange,
     now: HelsinkiDateTime,
+    employeeId: EmployeeId? = null,
 ): List<StaffMember> {
-    val range = date.asHelsinkiDateTimeRange()
+    val range = dateRange.asHelsinkiDateTimeRange()
 
     return createQuery {
             sql(
@@ -78,7 +79,9 @@ LEFT JOIN LATERAL (
     ORDER BY sa.arrived DESC
     LIMIT 1
 ) att ON TRUE
-WHERE dacl.daycare_id = ${bind(unitId)} AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+WHERE dacl.daycare_id = ${bind(unitId)} 
+    AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+    ${if (employeeId != null) "AND e.id = ${bind(employeeId)}" else ""}
 ORDER BY e.last_name, first_name
 """
             )

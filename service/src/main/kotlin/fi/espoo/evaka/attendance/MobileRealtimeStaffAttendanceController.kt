@@ -17,8 +17,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -34,10 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/mobile/realtime-staff-attendances", // deprecated
-    "/employee-mobile/realtime-staff-attendances",
-)
+@RequestMapping("/employee-mobile/realtime-staff-attendances")
 class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendancesByUnit(
@@ -60,7 +59,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         staff =
                             tx.getStaffAttendances(
                                 unitId = unitId,
-                                date = date ?: clock.today(),
+                                dateRange = (date ?: clock.today()).toFiniteDateRange(),
                                 now = clock.now(),
                             ),
                         extraAttendances = tx.getExternalStaffAttendances(unitId),
@@ -75,6 +74,42 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "staffCount" to it.staff.size,
                             "externalStaffCount" to it.extraAttendances.size,
                         ),
+                )
+            }
+    }
+
+    @GetMapping("/employee")
+    fun getEmployeeAttendances(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId,
+        @RequestParam employeeId: EmployeeId,
+        @RequestParam from: LocalDate,
+        @RequestParam to: LocalDate,
+    ): StaffMember {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
+                        unitId,
+                    )
+                    tx.getStaffAttendances(
+                            unitId = unitId,
+                            dateRange = FiniteDateRange(from, to),
+                            now = clock.now(),
+                            employeeId = employeeId,
+                        )
+                        .find { it.employeeId == employeeId } ?: throw NotFound()
+                }
+            }
+            .also {
+                Audit.UnitStaffAttendanceRead.log(
+                    targetId = AuditId(unitId),
+                    objectId = AuditId(employeeId),
                 )
             }
     }

@@ -37,6 +37,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -52,6 +53,7 @@ import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
@@ -69,10 +71,22 @@ import { unitInfoQuery } from '../units/queries'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
-import ListGrid from '../../lib-components/layout/ListGrid'
 
 const typesWithoutGroup: StaffAttendanceType[] = ['TRAINING', 'OTHER_WORK']
 const emptyGroupIdDomValue = ''
+
+const getDeparted = (
+  date: LocalDate,
+  arrivedTime: LocalTime,
+  departedTime: LocalTime | null | undefined
+): HelsinkiDateTime | null => {
+  if (!departedTime) return null
+
+  const departedDate = departedTime.isBefore(arrivedTime)
+    ? date.addDays(1)
+    : date
+  return HelsinkiDateTime.fromLocal(departedDate, departedTime)
+}
 
 const staffAttendanceForm = mapped(
   validated(
@@ -83,7 +97,6 @@ const staffAttendanceForm = mapped(
       groupId: required(oneOf<UUID | null>()),
       arrivedDate: required(localDate()),
       arrivedTime: required(localTime()),
-      departedDate: required(localDate()),
       departedTime: localTime(),
       occupancyEffect: required(boolean())
     }),
@@ -91,21 +104,13 @@ const staffAttendanceForm = mapped(
       if (!typesWithoutGroup.includes(output.type) && output.groupId === null) {
         return { groupId: 'required' }
       }
-      if (output.departedTime !== undefined) {
-        const departed = HelsinkiDateTime.fromLocal(
-          output.departedDate,
-          output.departedTime
-        )
-        const arrived = HelsinkiDateTime.fromLocal(
-          output.arrivedDate,
-          output.arrivedTime
-        )
-        if (departed.isEqualOrBefore(arrived)) {
-          return { departedTime: 'timeFormat' }
-        }
-        if (departed.isAfter(HelsinkiDateTime.now())) {
-          return { departedTime: 'future' }
-        }
+      const departed = getDeparted(
+        output.arrivedDate,
+        output.arrivedTime,
+        output.departedTime
+      )
+      if (departed && departed.isAfter(HelsinkiDateTime.now())) {
+        return { departedTime: 'future' }
       }
       return undefined
     }
@@ -115,10 +120,11 @@ const staffAttendanceForm = mapped(
     type: output.type,
     groupId: output.groupId,
     arrived: HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime),
-    departed:
-      output.departedTime !== undefined
-        ? HelsinkiDateTime.fromLocal(output.departedDate, output.departedTime)
-        : null,
+    departed: getDeparted(
+      output.arrivedDate,
+      output.arrivedTime,
+      output.departedTime
+    ),
     hasStaffOccupancyEffect: output.occupancyEffect
   })
 )
@@ -152,9 +158,10 @@ const initialFormState = (
   groups: GroupInfo[],
   attendances: StaffMemberAttendance[]
 ): StateOf<typeof staffAttendancesForm> => ({
-  rows: sortBy(attendances.filter(a => a.arrived.toLocalDate().isEqual(date)), (attendance) => attendance.arrived).map(
-    (attendance) => initialRowState(i18n, date, groups, attendance)
-  )
+  rows: sortBy(
+    attendances.filter((a) => a.arrived.toLocalDate().isEqual(date)),
+    (attendance) => attendance.arrived
+  ).map((attendance) => initialRowState(i18n, groups, attendance))
 })
 
 function isUpsert(
@@ -165,7 +172,6 @@ function isUpsert(
 
 const initialRowState = (
   i18n: Translations,
-  date: LocalDate,
   groups: GroupInfo[],
   attendance: StaffMemberAttendance | StaffAttendanceUpsert
 ): StateOf<typeof staffAttendanceForm> => ({
@@ -196,7 +202,6 @@ const initialRowState = (
   },
   arrivedDate: localDate.fromDate(attendance.arrived.toLocalDate()),
   arrivedTime: attendance.arrived.toLocalTime().format(),
-  departedDate: localDate.fromDate(attendance.departed?.toLocalDate() ?? date),
   departedTime: attendance.departed?.toLocalTime().format() ?? '',
   occupancyEffect: isUpsert(attendance)
     ? attendance.hasStaffOccupancyEffect
@@ -217,7 +222,9 @@ export default React.memo(function StaffAttendanceEditPage({
 
   const [searchParams] = useSearchParams()
   const queryDate = searchParams.get('date')
-  const [date] = useState(LocalDate.tryParseIso(queryDate ?? '') ?? LocalDate.todayInHelsinkiTz())
+  const [date] = useState(
+    LocalDate.tryParseIso(queryDate ?? '') ?? LocalDate.todayInHelsinkiTz()
+  )
 
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
@@ -481,11 +488,16 @@ const StaffAttendancesEditor = ({
                   )
                 rows.update((prev) => [
                   ...prev,
-                  initialRowState(i18n, date, groups, {
+                  initialRowState(i18n, groups, {
                     id: null,
                     type: latest?.type ?? 'PRESENT',
                     groupId: latest?.groupId ?? null,
-                    arrived: latest?.departed ?? HelsinkiDateTime.now(),
+                    arrived:
+                      latest?.departed ??
+                      HelsinkiDateTime.fromLocal(
+                        date,
+                        LocalTime.nowInHelsinkiTz()
+                      ),
                     departed: null,
                     hasStaffOccupancyEffect: staffMember.occupancyEffect
                   })
@@ -541,7 +553,6 @@ const StaffAttendanceEditor = ({
     groupId,
     arrivedDate,
     arrivedTime,
-    departedDate,
     departedTime,
     occupancyEffect
   } = useFormFields(form)
@@ -549,8 +560,12 @@ const StaffAttendanceEditor = ({
   const groupIdDomValue = groupId.state.domValue
   const groupIdInputInfo = groupId.inputInfo()
   const arrivedDateValue = arrivedDate.value()
-  const departedDateValue = departedDate.value()
-  const dateLabelVisible = !arrivedDateValue.isEqual(departedDateValue)
+  const departed =
+    arrivedTime.isValid() && departedTime.isValid()
+      ? getDeparted(arrivedDateValue, arrivedTime.value(), departedTime.value())
+      : null
+  const dateLabelVisible =
+    departed && !departed.toLocalDate().isEqual(arrivedDateValue)
 
   return (
     <FlexColumn>
@@ -600,8 +615,8 @@ const StaffAttendanceEditor = ({
           </div>
           <span>–</span>
           <div>
-            {dateLabelVisible && (
-              <DateLabel>{departedDate.value().format('d.M.')}</DateLabel>
+            {departed && dateLabelVisible && (
+              <DateLabel>{departed.toLocalDate().format('d.M.')}</DateLabel>
             )}
             <TimeInputF
               bind={departedTime}
