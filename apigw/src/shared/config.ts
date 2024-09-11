@@ -8,7 +8,6 @@ import { RedisClientOptions } from 'redis'
 import { TrustedCertificates } from './certificates.js'
 
 export interface EnvVariables {
-  NODE_ENV?: 'local' | 'test' | 'production'
   VOLTTI_ENV?: string
   HTTP_PORT?: number
   ENABLE_DEV_API?: boolean
@@ -40,6 +39,7 @@ export interface EnvVariables {
 
   JWT_PRIVATE_KEY?: string
   JWT_KID?: string
+  JWT_REFRESH_ENABLED?: boolean
 
   EVAKA_BASE_URL?: string
   EVAKA_SERVICE_URL?: string
@@ -141,8 +141,7 @@ export interface EvakaSamlConfig {
   nameIdFormat?: string | undefined
 }
 
-export type NodeEnv = NonNullable<EnvVariables['NODE_ENV']>
-const nodeEnvs: NodeEnv[] = ['local', 'test', 'production']
+type NodeEnv = 'local' | 'test' | 'production'
 
 const defaultEnvs: EnvVariables = {
   VOLTTI_ENV: ifNodeEnv(['local'], 'local'),
@@ -168,6 +167,7 @@ const defaultEnvs: EnvVariables = {
     ['local', 'test'],
     'config/test-cert/jwt_private_key.pem'
   ),
+  JWT_REFRESH_ENABLED: ifNodeEnv(['test'], false) ?? true,
 
   EVAKA_BASE_URL: ifNodeEnv(['local', 'test'], 'local'),
   EVAKA_SERVICE_URL: ifNodeEnv(['local', 'test'], 'http://localhost:8888'),
@@ -469,7 +469,6 @@ export function configFromEnv(): Config {
   }
 }
 
-export const nodeEnv = optionalEnv('NODE_ENV', parseEnum(nodeEnvs))
 export const appBuild = optionalEnv('APP_BUILD', unchanged) ?? 'UNDEFINED'
 export const appCommit = optionalEnv('APP_COMMIT', unchanged) ?? 'UNDEFINED'
 export const hostIp = optionalEnv('HOST_IP', unchanged) ?? 'UNDEFINED'
@@ -486,6 +485,10 @@ export const traceAgentPort =
   optionalEnv('DD_TRACE_AGENT_PORT', parseInteger) ?? 8126
 
 export const jwtPrivateKey = requiredEnv('JWT_PRIVATE_KEY', unchanged)
+export const jwtRefreshEnabled = requiredEnv(
+  'JWT_REFRESH_ENABLED',
+  parseBoolean
+)
 
 export const serviceName = 'evaka-api-gw'
 export const jwtKid = optionalEnv('JWT_KID', unchanged) ?? serviceName

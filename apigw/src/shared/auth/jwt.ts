@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 
 import jwt from 'jsonwebtoken'
 
-import { jwtKid, jwtPrivateKey, nodeEnv } from '../config.js'
+import { jwtKid, jwtPrivateKey, jwtRefreshEnabled } from '../config.js'
 
 const privateKey = readFileSync(jwtPrivateKey)
 const jwtLifetimeSeconds = 60 * 60 // 1 hour
@@ -20,7 +20,7 @@ export function getJwt(): string {
       keyid: jwtKid
     })
 
-    if (nodeEnv !== 'test') {
+    if (jwtRefreshEnabled) {
       // Calculate a new JWT one minute before the old one expires
       setTimeout(
         () => {
