@@ -277,8 +277,7 @@ private data class ReservationRow(
 )
 
 private fun Database.Read.getReservations(
-    start: LocalDate,
-    end: LocalDate,
+    range: FiniteDateRange,
     children: Set<ChildId>,
 ): Map<ChildId, List<HelsinkiDateTimeRange>> {
     return createQuery {
@@ -287,7 +286,7 @@ private fun Database.Read.getReservations(
 SELECT pl.child_id, ar.date, ar.start_time, ar.end_time
 FROM attendance_reservation ar
 JOIN placement pl on ar.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
-WHERE pl.child_id = ANY(${bind(children)}) AND daterange(${bind(start)}, ${bind(end)}, '[]') @> ar.date
+WHERE pl.child_id = ANY(${bind(children)}) AND between_start_and_end(${bind(range)}, ar.date)
 AND ar.start_time IS NOT NULL AND ar.end_time IS NOT NULL
     """
             )
@@ -357,7 +356,7 @@ fun getAttendanceReservationReport(
     val childInfoMap = tx.getChildInfo(allChildren).associateBy { it.childId }
     val serviceNeedsMap = tx.getServiceNeeds(start, end, allChildren).groupBy { it.childId }
     val assistanceNeedsMap = tx.getCapacityFactors(range, allChildren).groupBy { it.childId }
-    val reservationsMap = tx.getReservations(start, end, allChildren)
+    val reservationsMap = tx.getReservations(range, allChildren)
     val absences =
         tx.getAbsencesOfChildrenByRange(allChildren, range.asDateRange())
             .groupBy { it.childId }
