@@ -8,7 +8,8 @@ import expressHttpProxy from 'express-http-proxy'
 import {
   digitransitApiEnabled,
   digitransitApiKey,
-  digitransitApiUrl
+  digitransitApiUrl,
+  enableDevApi
 } from '../shared/config.js'
 import { logError, logWarn } from '../shared/logging.js'
 import { createProxy } from '../shared/proxy-utils.js'
@@ -78,14 +79,18 @@ router.get(
   '/map-api/autocomplete',
   digitransitApiEnabled
     ? createDigitransitProxy('/geocoding/v1/autocomplete')
-    : createProxy({ path: '/dev-api/digitransit/autocomplete' })
+    : enableDevApi
+      ? createProxy({ path: '/dev-api/digitransit/autocomplete' })
+      : (_, res) => res.status(404)
 )
 
 router.post(
   '/map-api/query',
   digitransitApiEnabled
     ? createDigitransitProxy('/routing/v1/routers/finland/index/graphql')
-    : createProxy({ path: '/dev-api/digitransit/query' })
+    : enableDevApi
+      ? createProxy({ path: '/dev-api/digitransit/query' })
+      : (_, res) => res.status(404)
 )
 
 export default router

@@ -30,6 +30,7 @@ export interface EnvVariables {
   APP_BUILD?: string
   APP_COMMIT?: string
   HOST_IP?: string
+  INCLUDE_ALL_ERROR_MESSAGES?: boolean
   PRETTY_LOGS?: boolean
 
   DD_TRACE_ENABLED?: boolean
@@ -81,6 +82,7 @@ export interface EnvVariables {
   EVAKA_TITANIA_USERNAME?: string
   EVAKA_TITANIA_PASSWORD?: string
 
+  DIGITRANSIT_API_ENABLED?: boolean
   DIGITRANSIT_API_URL?: string
   DIGITRANSIT_API_KEY?: string
 }
@@ -141,65 +143,76 @@ export interface EvakaSamlConfig {
   nameIdFormat?: string | undefined
 }
 
-type NodeEnv = 'local' | 'test' | 'production'
+/**
+ * Creates default fallback values for environment variables.
+ *
+ * Some defaults depend on the value of the NODE_ENV environment variable
+ */
+function createDefaultEnvs(): EnvVariables {
+  /**
+   * True if we are in a local development environment
+   */
+  const isLocal = process.env.NODE_ENV === 'local'
+  /**
+   * True if we are in an automated test
+   */
+  const isTest = process.env.NODE_ENV === 'test'
 
-const defaultEnvs: EnvVariables = {
-  VOLTTI_ENV: ifNodeEnv(['local'], 'local'),
-  HTTP_PORT: 3000,
-  ENABLE_DEV_API: ifNodeEnv(['local', 'test'], true) ?? false,
+  return {
+    VOLTTI_ENV: isLocal ? 'local' : undefined,
+    HTTP_PORT: 3000,
+    ENABLE_DEV_API: isLocal || isTest,
 
-  COOKIE_SECRET: ifNodeEnv(
-    ['local', 'test'],
-    'A very hush hush cookie secret.'
-  ),
-  USE_SECURE_COOKIES: ifNodeEnv(['local', 'test'], false) ?? true,
-  PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
+    COOKIE_SECRET:
+      isLocal || isTest ? 'A very hush hush cookie secret.' : undefined,
+    USE_SECURE_COOKIES: !isLocal && !isTest,
+    PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
 
-  ...ifNodeEnv(['local'], {
-    REDIS_HOST: '127.0.0.1',
-    REDIS_PORT: 6379,
-    REDIS_DISABLE_SECURITY: true
-  }),
+    ...(isLocal && {
+      REDIS_HOST: '127.0.0.1',
+      REDIS_PORT: 6379,
+      REDIS_DISABLE_SECURITY: true
+    }),
 
-  PRETTY_LOGS: ifNodeEnv(['local'], true) ?? false,
+    INCLUDE_ALL_ERROR_MESSAGES: isLocal || isTest,
+    PRETTY_LOGS: isLocal,
 
-  JWT_PRIVATE_KEY: ifNodeEnv(
-    ['local', 'test'],
-    'config/test-cert/jwt_private_key.pem'
-  ),
-  JWT_REFRESH_ENABLED: ifNodeEnv(['test'], false) ?? true,
+    JWT_PRIVATE_KEY:
+      isLocal || isTest ? 'config/test-cert/jwt_private_key.pem' : undefined,
+    JWT_REFRESH_ENABLED: !isTest,
 
-  EVAKA_BASE_URL: ifNodeEnv(['local', 'test'], 'local'),
-  EVAKA_SERVICE_URL: ifNodeEnv(['local', 'test'], 'http://localhost:8888'),
+    EVAKA_BASE_URL: isLocal || isTest ? 'local' : undefined,
+    EVAKA_SERVICE_URL: isLocal || isTest ? 'http://localhost:8888' : undefined,
 
-  AD_MOCK: ifNodeEnv(['local', 'test'], true),
-  AD_SAML_EXTERNAL_ID_PREFIX: 'espoo-ad',
-  AD_USER_ID_KEY:
-    'http://schemas.microsoft.com/identity/claims/objectidentifier',
-  AD_DECRYPT_ASSERTIONS: false,
+    AD_MOCK: isLocal || isTest,
+    AD_SAML_EXTERNAL_ID_PREFIX: 'espoo-ad',
+    AD_USER_ID_KEY:
+      'http://schemas.microsoft.com/identity/claims/objectidentifier',
+    AD_DECRYPT_ASSERTIONS: false,
 
-  SFI_MODE: ifNodeEnv(['local', 'test'], 'mock'),
+    SFI_MODE: isLocal || isTest ? 'mock' : undefined,
 
-  ...ifNodeEnv(['local', 'test'], {
-    EVAKA_SAML_CALLBACK_URL: `http://localhost:9099/api/internal/auth/evaka/login/callback`,
-    EVAKA_SAML_ENTRYPOINT:
-      'http://localhost:8080/auth/realms/evaka/protocol/saml',
-    EVAKA_SAML_ISSUER: 'evaka',
-    EVAKA_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
-    EVAKA_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
+    ...((isLocal || isTest) && {
+      EVAKA_SAML_CALLBACK_URL: `http://localhost:9099/api/internal/auth/evaka/login/callback`,
+      EVAKA_SAML_ENTRYPOINT:
+        'http://localhost:8080/auth/realms/evaka/protocol/saml',
+      EVAKA_SAML_ISSUER: 'evaka',
+      EVAKA_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
+      EVAKA_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
 
-    EVAKA_CUSTOMER_SAML_CALLBACK_URL: `http://localhost:9099/api/application/auth/evaka-customer/login/callback`,
-    EVAKA_CUSTOMER_SAML_ENTRYPOINT:
-      'http://localhost:8080/auth/realms/evaka-customer/protocol/saml',
-    EVAKA_CUSTOMER_SAML_ISSUER: 'evaka-customer',
-    EVAKA_CUSTOMER_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
-    EVAKA_CUSTOMER_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem'
-  })
+      EVAKA_CUSTOMER_SAML_CALLBACK_URL: `http://localhost:9099/api/application/auth/evaka-customer/login/callback`,
+      EVAKA_CUSTOMER_SAML_ENTRYPOINT:
+        'http://localhost:8080/auth/realms/evaka-customer/protocol/saml',
+      EVAKA_CUSTOMER_SAML_ISSUER: 'evaka-customer',
+      EVAKA_CUSTOMER_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
+      EVAKA_CUSTOMER_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem'
+    }),
+
+    DIGITRANSIT_API_ENABLED: !isLocal && !isTest
+  }
 }
 
-function ifNodeEnv<T>(envs: NodeEnv[], value: T): T | undefined {
-  return envs.some((env) => process.env.NODE_ENV === env) ? value : undefined
-}
+const defaultEnvs = createDefaultEnvs()
 
 function nonNullable<T>(
   value: T | undefined,
@@ -472,7 +485,10 @@ export function configFromEnv(): Config {
 export const appBuild = optionalEnv('APP_BUILD', unchanged) ?? 'UNDEFINED'
 export const appCommit = optionalEnv('APP_COMMIT', unchanged) ?? 'UNDEFINED'
 export const hostIp = optionalEnv('HOST_IP', unchanged) ?? 'UNDEFINED'
-export const debug = ifNodeEnv(['local', 'test'], true) ?? false
+export const includeAllErrorMessages = requiredEnv(
+  'INCLUDE_ALL_ERROR_MESSAGES',
+  parseBoolean
+)
 
 export const tracingEnabled = optionalEnv('DD_TRACE_ENABLED', parseBoolean)
 export const profilingEnabled = optionalEnv(
@@ -518,7 +534,10 @@ export const titaniaConfig = titaniaUsername
     }
   : undefined
 
-export const digitransitApiEnabled = ifNodeEnv(['local', 'test'], false) ?? true
+export const digitransitApiEnabled = requiredEnv(
+  'DIGITRANSIT_API_ENABLED',
+  parseBoolean
+)
 export const digitransitApiUrl =
   optionalEnv('DIGITRANSIT_API_URL', unchanged) ?? 'https://api.digitransit.fi'
 export const digitransitApiKey = optionalEnv('DIGITRANSIT_API_KEY', unchanged)
