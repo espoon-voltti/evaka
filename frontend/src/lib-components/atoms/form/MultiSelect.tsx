@@ -50,9 +50,25 @@ function MultiSelect<T>({
 }: MultiSelectProps<T>) {
   const { colors } = useTheme()
 
+  // If MsEdge's translation feature is active and react-select uses aria live
+  // messaging, the React app crashes when the dropdown menu is closed. Because
+  // of this we disable aria live messaging when MsEdge's translation feature is
+  // active.
+  // https://github.com/JedWatson/react-select/issues/5816
+  const msEdgeTranslationActive = !!document.querySelector('*[_msttexthash]')
+  const ariaLiveMessages = msEdgeTranslationActive
+    ? {
+        guidance: () => '',
+        onChange: () => '',
+        onFilter: () => '',
+        onFocus: () => ''
+      }
+    : undefined
+
   return (
     <div data-qa={props['data-qa']} className="multi-select">
       <ReactSelect
+        ariaLiveMessages={ariaLiveMessages}
         styles={{
           menu: (base) => ({
             ...base,
