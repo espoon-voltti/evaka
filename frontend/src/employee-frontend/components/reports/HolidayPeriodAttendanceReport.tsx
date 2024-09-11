@@ -53,7 +53,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
     () =>
       periods.map((g) =>
         orderBy(
-          g.filter((p) => p.period.end > LocalDate.todayInHelsinkiTz()),
+          g.filter((p) => p.period.end >= LocalDate.todayInHelsinkiTz()),
           (item) => item.period
         )
       ),
@@ -307,7 +307,7 @@ const ChildList = React.memo(function ChildList({
 })
 
 const orderChildren = (children: ChildWithName[]) =>
-  orderBy(children, [(c) => c.lastName, (c) => c.firstName, (c) => c.firstName])
+  orderBy(children, [(c) => c.lastName, (c) => c.firstName, (c) => c.id])
 
 const CellWrapper = styled.div`
   display: flex;
@@ -323,7 +323,7 @@ const ChildListLabel = styled.p`
 `
 
 const ShortTd = styled(Td)`
-  max-width: 100px;
+  max-width: 90px;
 `
 
 const ShortTh = styled(Th)`
