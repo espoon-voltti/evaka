@@ -425,7 +425,7 @@ describe('Realtime staff attendances', () => {
         realized: '→ – 09:00',
         hours: '9:00'
       })
-      await modal.continuationAttendance.assertTextEquals('21:00 - 09:00')
+      await modal.continuationAttendance.assertTextEquals('21:00\n–\n09:00*')
     })
 
     test('If departure is earlier than arrival, departure is on the next day', async () => {

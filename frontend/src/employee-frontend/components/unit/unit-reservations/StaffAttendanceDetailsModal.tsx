@@ -40,7 +40,7 @@ import {
   ModalCloseButton,
   PlainModal
 } from 'lib-components/molecules/modals/BaseModal'
-import { H1, H2, H3, H4, LabelLike } from 'lib-components/typography'
+import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
@@ -308,26 +308,30 @@ function StaffAttendanceDetailsModal<
   )
 
   const getGapBefore = useCallback(
-    (currentIndex: number) => {
+    (i: number) => {
       if (!requestBody) return undefined
 
-      const previousEntry = requestBody[currentIndex - 1]
-      const currentEntry = requestBody[currentIndex]
+      const previousDeparted =
+        i === 0
+          ? continuationAttendance?.departed
+          : requestBody[i - 1]?.departed
+      const arrived = requestBody[i].arrived
+      if (!previousDeparted || !arrived) return undefined
 
-      if (!previousEntry || !currentEntry) return undefined
-
-      if (
-        !previousEntry.departed ||
-        !currentEntry.arrived.isEqual(previousEntry.departed)
-      ) {
-        return `${
-          previousEntry.departed?.toLocalTime().format() ?? ''
-        } – ${currentEntry.arrived.toLocalTime().format()}`
+      if (arrived.isAfter(previousDeparted.addHours(8))) {
+        // gap is so large that it must be a new work day already
+        return undefined
       }
+
+      if (arrived.isAfter(previousDeparted))
+        return {
+          gapStart: previousDeparted,
+          gapEnd: arrived
+        }
 
       return undefined
     },
-    [requestBody]
+    [requestBody, continuationAttendance]
   )
 
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
@@ -420,14 +424,51 @@ function StaffAttendanceDetailsModal<
             <Gap size="s" />
           </FullGridWidth>
         )}
+
         {continuationAttendance && (
           <>
-            <H4 noMargin>{i18n.unit.staffAttendance.continuationAttendance}</H4>
+            <ListGrid rowGap="xxs" labelWidth="auto">
+              <div>
+                {groups.find((g) => g.id === continuationAttendance.groupId)
+                  ?.name ?? i18n.unit.staffAttendance.noGroup}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow justifyContent="space-between">
+                  <DateInfoDiv>
+                    {continuationAttendance.arrived
+                      .toLocalDate()
+                      .format('dd.MM.')}
+                  </DateInfoDiv>
+                  <div />
+                  <DateInfoDiv>
+                    {continuationAttendance.departed
+                      ?.toLocalDate()
+                      ?.format('dd.MM.')}
+                  </DateInfoDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+              <div>
+                {i18n.unit.staffAttendance.types[continuationAttendance.type]}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow
+                  data-qa="continuation-attendance"
+                  justifyContent="space-between"
+                >
+                  <TimeDiv>
+                    {continuationAttendance.arrived.toLocalTime().format()}
+                  </TimeDiv>
+                  <div>–</div>
+                  <TimeDiv>
+                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                  </TimeDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+            </ListGrid>
             <Gap size="xs" />
-            <div data-qa="continuation-attendance">
-              {continuationAttendance.arrived.toLocalTime().format()} -{' '}
-              {continuationAttendance.departed?.toLocalTime()?.format()}
-            </div>
+            <ContinuationInfo>
+              {i18n.unit.staffAttendance.continuationAttendance}
+            </ContinuationInfo>
             <Gap />
           </>
         )}
@@ -454,7 +495,9 @@ function StaffAttendanceDetailsModal<
                           color={colors.status.warning}
                         />
                         <div data-qa={`attendance-gap-warning-${index}`}>
-                          {i18n.unit.staffAttendance.gapWarning(gap)}
+                          {i18n.unit.staffAttendance.gapWarning(
+                            `${gap.gapStart.toLocalTime().format()} – ${gap.gapEnd.toLocalTime().format()}`
+                          )}
                         </div>
                       </FixedSpaceRow>
                     </FullGridWidth>
@@ -578,6 +621,7 @@ function StaffAttendanceDetailsModal<
                       }
                     />
                   </FullGridWidth>
+                  <Gap size="xs" />
                 </Fragment>
               )
             }
@@ -654,4 +698,23 @@ const ModalActions = styled.div`
 
 const FullGridWidth = styled.div`
   grid-column: 1 / -1;
+`
+
+const TimesDiv = styled.div`
+  width: 130px;
+`
+
+const TimeDiv = styled.div`
+  width: 40px;
+`
+
+const DateInfoDiv = styled(TimeDiv)`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+  font-size: 14px;
+`
+
+const ContinuationInfo = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-style: italic;
 `
