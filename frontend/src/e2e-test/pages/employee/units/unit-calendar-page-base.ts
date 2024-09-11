@@ -299,6 +299,9 @@ export class UnitStaffAttendancesTable extends Element {
 
 export class StaffAttendanceDetailsModal extends Element {
   openAttendanceWarning = this.findByDataQa(`open-attendance-warning`)
+  openAttendanceInAnotherUnitWarning = this.findByDataQa(
+    'open-attendance-in-another-unit-warning'
+  )
   arrivalTimeInputInfo = this.findByDataQa('arrival-time-input-info')
   continuationAttendance = this.findByDataQa('continuation-attendance')
   newAttendanceButton = this.findByDataQa('new-attendance')

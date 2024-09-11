@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -318,27 +319,40 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
     }
 
     @GetMapping("/employee/staff-attendances/realtime/open-attendences")
-    fun getOpenAttendances(
+    fun getOpenGroupAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam userId: EmployeeId,
-    ): OpenAttendanceResponse {
+        @RequestParam unitId: DaycareId,
+    ): OpenGroupAttendanceResponse {
         val openAttendance =
             db.connect { dbc ->
-                    // TODO check permissions
-                    dbc.transaction { tx -> tx.getOpenAttendancesForEmployee(userId) }
+                    dbc.transaction { tx ->
+                        // Check if the authenticated user has permission to read staff attendances
+                        // for this unit
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_ATTENDANCES,
+                            unitId,
+                        )
+                        // Also check that the given user belongs to this unit
+                        val targetUserPartOfUnit =
+                            tx.getDaycareAclRows(unitId, false).any { it.employee.id == userId }
+                        if (!targetUserPartOfUnit) {
+                            throw BadRequest("User doesn't belong to the unit")
+                        }
+                        // If the user has the permission to read staff attendances from this unit,
+                        // then they are also permitted to check for open attendances of a colleague
+                        // from all units
+                        tx.getOpenGroupAttendancesForEmployee(userId)
+                    }
                 }
                 .also { Audit.StaffOpenAttendanceRead.log(targetId = AuditId(userId)) }
-        return OpenAttendanceResponse(openAttendance)
+        return OpenGroupAttendanceResponse(openAttendance)
     }
 
-    data class OpenAttendanceResponse(val openAttendance: OpenAttendance?)
-
-    data class OpenAttendance(
-        val unitName: String,
-        val unitId: DaycareId,
-        val date: LocalDate,
-        val groupId: GroupId? = null,
-    )
+    data class OpenGroupAttendanceResponse(val openGroupAttendance: OpenGroupAttendance?)
 }

@@ -247,20 +247,20 @@ export interface GroupInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenAttendance
+* Generated from fi.espoo.evaka.attendance.OpenGroupAttendance
 */
-export interface OpenAttendance {
+export interface OpenGroupAttendance {
   date: LocalDate
-  groupId: UUID | null
+  groupId: UUID
   unitId: UUID
   unitName: string
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenAttendanceResponse
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
 */
-export interface OpenAttendanceResponse {
-  openAttendance: OpenAttendance | null
+export interface OpenGroupAttendanceResponse {
+  openGroupAttendance: OpenGroupAttendance | null
 }
 
 /**
@@ -558,7 +558,7 @@ export function deserializeJsonExternalStaffMember(json: JsonOf<ExternalStaffMem
 }
 
 
-export function deserializeJsonOpenAttendance(json: JsonOf<OpenAttendance>): OpenAttendance {
+export function deserializeJsonOpenGroupAttendance(json: JsonOf<OpenGroupAttendance>): OpenGroupAttendance {
   return {
     ...json,
     date: LocalDate.parseIso(json.date)
@@ -566,10 +566,10 @@ export function deserializeJsonOpenAttendance(json: JsonOf<OpenAttendance>): Ope
 }
 
 
-export function deserializeJsonOpenAttendanceResponse(json: JsonOf<OpenAttendanceResponse>): OpenAttendanceResponse {
+export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGroupAttendanceResponse>): OpenGroupAttendanceResponse {
   return {
     ...json,
-    openAttendance: (json.openAttendance != null) ? deserializeJsonOpenAttendance(json.openAttendance) : null
+    openGroupAttendance: (json.openGroupAttendance != null) ? deserializeJsonOpenGroupAttendance(json.openGroupAttendance) : null
   }
 }
 

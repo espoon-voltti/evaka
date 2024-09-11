@@ -613,9 +613,14 @@ WHERE
     )
 }
 
-fun Database.Read.getOpenAttendancesForEmployee(
-    employeeId: EmployeeId
-): RealtimeStaffAttendanceController.OpenAttendance? =
+data class OpenGroupAttendance(
+    val unitName: String,
+    val unitId: DaycareId,
+    val date: LocalDate,
+    val groupId: GroupId,
+)
+
+fun Database.Read.getOpenGroupAttendancesForEmployee(employeeId: EmployeeId): OpenGroupAttendance? =
     createQuery {
             sql(
                 """
@@ -625,4 +630,4 @@ fun Database.Read.getOpenAttendancesForEmployee(
                 """
             )
         }
-        .exactlyOneOrNull<RealtimeStaffAttendanceController.OpenAttendance>()
+        .exactlyOneOrNull<OpenGroupAttendance>()

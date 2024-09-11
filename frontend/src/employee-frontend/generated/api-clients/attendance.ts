@@ -8,34 +8,36 @@ import LocalDate from 'lib-common/local-date'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
-import { OpenAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
-import { deserializeJsonOpenAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendances
 */
-export async function getOpenAttendances(
+export async function getOpenGroupAttendances(
   request: {
-    userId: UUID
+    userId: UUID,
+    unitId: UUID
   }
-): Promise<OpenAttendanceResponse> {
+): Promise<OpenGroupAttendanceResponse> {
   const params = createUrlSearchParams(
-    ['userId', request.userId]
+    ['userId', request.userId],
+    ['unitId', request.unitId]
   )
-  const { data: json } = await client.request<JsonOf<OpenAttendanceResponse>>({
+  const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
     url: uri`/employee/staff-attendances/realtime/open-attendences`.toString(),
     method: 'GET',
     params
   })
-  return deserializeJsonOpenAttendanceResponse(json)
+  return deserializeJsonOpenGroupAttendanceResponse(json)
 }
 
 
