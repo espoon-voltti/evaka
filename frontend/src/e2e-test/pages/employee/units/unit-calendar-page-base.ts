@@ -300,6 +300,8 @@ export class UnitStaffAttendancesTable extends Element {
 export class StaffAttendanceDetailsModal extends Element {
   openAttendanceWarning = this.findByDataQa(`open-attendance-warning`)
   arrivalTimeInputInfo = this.findByDataQa('arrival-time-input-info')
+  continuationAttendance = this.findByDataQa('continuation-attendance')
+  newAttendanceButton = this.findByDataQa('new-attendance')
 
   async setGroup(row: number, groupId: UUID) {
     await new Select(
@@ -332,7 +334,7 @@ export class StaffAttendanceDetailsModal extends Element {
   }
 
   async addNewAttendance() {
-    await this.findByDataQa('new-attendance').click()
+    await this.newAttendanceButton.click()
   }
 
   async save() {

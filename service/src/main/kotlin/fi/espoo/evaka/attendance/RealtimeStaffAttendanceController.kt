@@ -17,12 +17,10 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -206,15 +204,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
                         body.unitId,
                     )
-                    val wholeDay =
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0)),
-                        )
-                    tx.deleteStaffAttendancesInRangeExcept(
+                    tx.deleteStaffAttendancesOnDateExcept(
                         body.unitId,
                         body.employeeId,
-                        wholeDay,
+                        body.date,
                         body.entries.mapNotNull { it.id },
                     )
 
@@ -294,14 +287,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
                         body.unitId,
                     )
-                    val wholeDay =
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0)),
-                        )
-                    tx.deleteExternalAttendancesInRangeExcept(
+                    tx.deleteExternalAttendancesOnDateExcept(
                         body.name,
-                        wholeDay,
+                        body.date,
                         body.entries.mapNotNull { it.id },
                     )
                     body.entries.map {

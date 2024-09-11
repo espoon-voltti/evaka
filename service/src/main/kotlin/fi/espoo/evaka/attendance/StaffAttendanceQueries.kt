@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.asHelsinkiDateTimeRange
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -579,10 +579,10 @@ ORDER BY departed DESC LIMIT 1
         }
         .exactlyOneOrNull<StaffAttendance>()
 
-fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
+fun Database.Transaction.deleteStaffAttendancesOnDateExcept(
     unitId: DaycareId,
     employeeId: EmployeeId,
-    timeRange: HelsinkiDateTimeRange,
+    arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceRealtimeId>,
 ) = execute {
     sql(
@@ -591,21 +591,24 @@ DELETE FROM staff_attendance_realtime
 WHERE
     (group_id IS NULL OR group_id = ANY (SELECT id FROM daycare_group WHERE daycare_id = ${bind(unitId)})) AND
     employee_id = ${bind(employeeId)} AND
-    tstzrange(arrived, departed) && ${bind(timeRange)} AND
+    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND
     NOT id = ANY(${bind(exceptIds)})
 """
     )
 }
 
-fun Database.Transaction.deleteExternalAttendancesInRangeExcept(
+fun Database.Transaction.deleteExternalAttendancesOnDateExcept(
     name: String,
-    timeRange: HelsinkiDateTimeRange,
+    arrivalDate: LocalDate,
     exceptIds: List<StaffAttendanceExternalId>,
 ) = execute {
     sql(
         """
 DELETE FROM staff_attendance_external
-WHERE name = ${bind(name)} AND tstzrange(arrived, departed) && ${bind(timeRange)} AND NOT id = ANY(${bind(exceptIds)})
+WHERE 
+    name = ${bind(name)} AND 
+    between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, arrived) AND 
+    NOT id = ANY(${bind(exceptIds)})
 """
     )
 }

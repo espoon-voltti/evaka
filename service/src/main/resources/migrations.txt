@@ -430,3 +430,4 @@ V430__child_attendance_timestamps.sql
 V431__child_attendance_range_index.sql
 V432__document_template_placement_types.sql
 V433__child_document_template_index.sql
+V434__more_staff_indexes.sql

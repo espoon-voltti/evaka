@@ -2607,6 +2607,7 @@ export const fi = {
       realized: 'Toteutuma',
       hours: 'Tunnit',
       dailyAttendances: 'Päivän kirjaukset',
+      continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
       addNewAttendance: 'Lisää uusi kirjaus',
       saveChanges: 'Tallenna muutokset',
       noGroup: 'Ei ryhmää',

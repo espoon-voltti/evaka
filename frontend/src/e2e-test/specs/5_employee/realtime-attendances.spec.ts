@@ -389,33 +389,45 @@ describe('Realtime staff attendances', () => {
         hours: '8:00'
       })
     })
-    test('An existing overnight entry can be edited', async () => {
+
+    test('An existing overnight entry can only be edited through arrival date', async () => {
       await prepareTest({
-        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0))
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(21, 0))
       })
 
-      let modal = await staffAttendances.openDetails(1, mockedToday)
-      await modal.setDepartureTime(0, '16:00')
+      let modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
+      await modal.setDepartureTime(0, '09:00')
       await modal.save()
+
+      modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '21:00 – →',
+        hours: '3:00'
+      })
+      await modal.continuationAttendance.waitUntilHidden()
+      await modal.close()
 
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 1,
-        attendances: [['07:00', '→']]
+        attendances: [['21:00', '→']]
       })
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 2,
-        attendances: [['→', '16:00']]
+        attendances: [['→', '09:00']]
       })
 
       modal = await staffAttendances.openDetails(1, mockedToday)
       await waitUntilEqual(() => modal.summary(), {
         plan: '–',
-        realized: '→ – 16:00',
-        hours: '33:00'
+        realized: '→ – 09:00',
+        hours: '9:00'
       })
+      await modal.continuationAttendance.assertTextEquals('21:00\n–\n09:00*')
     })
+
     test('If departure is earlier than arrival, departure is on the next day', async () => {
       const arrivalDate = mockedToday.subDays(1)
       await prepareTest({
@@ -441,9 +453,10 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => modal.summary(), {
         plan: '–',
         realized: '07:00 – →',
-        hours: '23:00'
+        hours: '17:00'
       })
     })
+
     test('Multiple new entries can be added', async () => {
       await prepareTest({
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
@@ -488,6 +501,7 @@ describe('Realtime staff attendances', () => {
         hours: '8:00'
       })
     })
+
     test('Gaps in attendances are warned about', async () => {
       await prepareTest({
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
@@ -515,9 +529,10 @@ describe('Realtime staff attendances', () => {
         'Kirjaus puuttuu välillä 13:00 – 13:20'
       )
     })
+
     test('Departure time is required when editing days that are not today', async () => {
       await prepareTest({
-        arrived: mockedToday.subDays(2).toHelsinkiDateTime(LocalTime.of(7, 0))
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(7, 0))
       })
 
       const modal = await staffAttendances.openDetails(
@@ -527,6 +542,7 @@ describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(0, '08:00')
       await waitUntilEqual(() => modal.departureTimeInfo(0), 'Pakollinen tieto')
     })
+
     test('Departure time is NOT required when editing today', async () => {
       await prepareTest({
         arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
@@ -537,39 +553,18 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => modal.arrivalTimeInfo(0), 'Pakollinen tieto')
       await modal.assertDepartureTimeInfoHidden(0)
     })
-    test('If there is an open arrival, new arrival cannot be marked', async () => {
+
+    test('If there is an open arrival on earlier day, new arrival cannot be marked', async () => {
       await prepareTest({
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)).subHours(24)
+        arrived: mockedToday.subDays(2).toHelsinkiDateTime(LocalTime.of(21, 0))
       })
 
-      let modal = await staffAttendances.openDetails(1, mockedToday)
+      const modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.newAttendanceButton.assertDisabled(true)
       await modal.openAttendanceWarning.waitUntilVisible()
-      await modal.arrivalTimeInputInfo.assertText((text) =>
-        text.includes('Avoin kirjaus')
-      )
-
-      await modal.setDepartureTime(0, '06:00')
-      await modal.save()
-
-      await staffAttendances.assertTableRow({
-        rowIx: 1,
-        nth: 1,
-        attendances: [['07:00', '→']]
-      })
-      await staffAttendances.assertTableRow({
-        rowIx: 1,
-        nth: 2,
-        attendances: [['→', '06:00']]
-      })
-
-      modal = await staffAttendances.openDetails(1, mockedToday)
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '→ – 06:00',
-        hours: '23:00'
-      })
     })
   })
+
   describe('Staff count sums in the table', () => {
     let staffAttendances: UnitStaffAttendancesTable
 

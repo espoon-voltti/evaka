@@ -18,6 +18,7 @@ import {
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -122,23 +123,32 @@ function StaffAttendanceDetailsModal<
     [attendances]
   )
 
+  const continuationAttendance = useMemo(
+    () =>
+      sortedAttendances.find(
+        (a) =>
+          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
+          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+      ),
+    [sortedAttendances, date]
+  )
+
   const initialEditState = useMemo(
     () =>
-      sortedAttendances.map(
-        ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
-          id,
-          groupId,
-          arrived: date.isEqual(arrived.toLocalDate())
-            ? arrived.toLocalTime().format()
-            : '',
-          departed:
-            departed && date.isEqual(departed.toLocalDate())
-              ? departed.toLocalTime().format()
+      sortedAttendances
+        .filter((a) => a.arrived.toLocalDate().isEqual(date))
+        .map(
+          ({ id, groupId, arrived, departed, type, occupancyCoefficient }) => ({
+            id,
+            groupId,
+            arrived: date.isEqual(arrived.toLocalDate())
+              ? arrived.toLocalTime().format()
               : '',
-          type,
-          hasStaffOccupancyEffect: occupancyCoefficient > 0
-        })
-      ),
+            departed: departed ? departed.toLocalTime().format() : '',
+            type,
+            hasStaffOccupancyEffect: occupancyCoefficient > 0
+          })
+        ),
     [date, sortedAttendances]
   )
   const [{ editState, editStateDate }, setEditState] = useState<{
@@ -228,13 +238,30 @@ function StaffAttendanceDetailsModal<
     [sortedAttendances]
   )
 
-  const plannedAttendancesToday = useMemo(
-    () =>
-      plannedAttendances.filter(
-        ({ end, start }) =>
-          end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
-      ),
-    [plannedAttendances, date]
+  const getTotalMinutesWithinDate = useCallback(
+    (
+      attendances: {
+        arrived: HelsinkiDateTime
+        departed: HelsinkiDateTime | null
+      }[]
+    ) =>
+      attendances.reduce((prev, { arrived, departed }) => {
+        const minTime = HelsinkiDateTime.fromLocal(date, LocalTime.MIN)
+        const maxTime = date.isToday()
+          ? HelsinkiDateTime.now()
+          : HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.MIN)
+
+        const arrivedWithinDate = arrived.isBefore(minTime) ? minTime : arrived
+        const departedWithinDate =
+          !departed || departed.isAfter(maxTime) ? maxTime : departed
+
+        return (
+          prev + (departedWithinDate.timestamp - arrivedWithinDate.timestamp)
+        )
+      }, 0) /
+      1000 /
+      60,
+    [date]
   )
 
   const totalMinutes = useMemo(
@@ -245,16 +272,8 @@ function StaffAttendanceDetailsModal<
           !departed
       )
         ? 'incalculable'
-        : gaplessAttendances.reduce(
-            (prev, { arrived, departed }) =>
-              prev +
-              ((departed?.timestamp ?? HelsinkiDateTime.now().timestamp) -
-                arrived.timestamp),
-            0
-          ) /
-          1000 /
-          60,
-    [gaplessAttendances]
+        : getTotalMinutesWithinDate(gaplessAttendances),
+    [gaplessAttendances, getTotalMinutesWithinDate]
   )
 
   const arrivalWithoutDeparture = useMemo(() => {
@@ -269,41 +288,50 @@ function StaffAttendanceDetailsModal<
       : undefined
   }, [gaplessAttendances])
 
+  const plannedAttendancesToday = useMemo(
+    () =>
+      plannedAttendances
+        .filter(
+          ({ end, start }) =>
+            end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
+        )
+        .map(({ start, end }) => ({ arrived: start, departed: end })),
+    [plannedAttendances, date]
+  )
+
   const diffPlannedTotalMinutes = useMemo(
     () =>
       totalMinutes === 'incalculable'
         ? 0
-        : totalMinutes -
-          (plannedAttendancesToday?.reduce(
-            (prev, { start, end }) => prev + (end.timestamp - start.timestamp),
-            0
-          ) ?? 0) /
-            1000 /
-            60,
-    [plannedAttendancesToday, totalMinutes]
+        : totalMinutes - getTotalMinutesWithinDate(plannedAttendancesToday),
+    [totalMinutes, plannedAttendancesToday, getTotalMinutesWithinDate]
   )
 
   const getGapBefore = useCallback(
-    (currentIndex: number) => {
+    (i: number) => {
       if (!requestBody) return undefined
 
-      const previousEntry = requestBody[currentIndex - 1]
-      const currentEntry = requestBody[currentIndex]
+      const previousDeparted =
+        i === 0
+          ? continuationAttendance?.departed
+          : requestBody[i - 1]?.departed
+      const arrived = requestBody[i].arrived
+      if (!previousDeparted || !arrived) return undefined
 
-      if (!previousEntry || !currentEntry) return undefined
-
-      if (
-        !previousEntry.departed ||
-        !currentEntry.arrived.isEqual(previousEntry.departed)
-      ) {
-        return `${
-          previousEntry.departed?.toLocalTime().format() ?? ''
-        } – ${currentEntry.arrived.toLocalTime().format()}`
+      if (arrived.isAfter(previousDeparted.addHours(8))) {
+        // gap is so large that it must be a new work day already
+        return undefined
       }
+
+      if (arrived.isAfter(previousDeparted))
+        return {
+          gapStart: previousDeparted,
+          gapEnd: arrived
+        }
 
       return undefined
     },
-    [requestBody]
+    [requestBody, continuationAttendance]
   )
 
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
@@ -396,6 +424,55 @@ function StaffAttendanceDetailsModal<
             <Gap size="s" />
           </FullGridWidth>
         )}
+
+        {continuationAttendance && (
+          <>
+            <ListGrid rowGap="xxs" labelWidth="auto">
+              <div>
+                {groups.find((g) => g.id === continuationAttendance.groupId)
+                  ?.name ?? i18n.unit.staffAttendance.noGroup}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow justifyContent="space-between">
+                  <DateInfoDiv>
+                    {continuationAttendance.arrived
+                      .toLocalDate()
+                      .format('dd.MM.')}
+                  </DateInfoDiv>
+                  <div />
+                  <DateInfoDiv>
+                    {continuationAttendance.departed
+                      ?.toLocalDate()
+                      ?.format('dd.MM.')}
+                  </DateInfoDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+              <div>
+                {i18n.unit.staffAttendance.types[continuationAttendance.type]}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow
+                  data-qa="continuation-attendance"
+                  justifyContent="space-between"
+                >
+                  <TimeDiv>
+                    {continuationAttendance.arrived.toLocalTime().format()}
+                  </TimeDiv>
+                  <div>–</div>
+                  <TimeDiv>
+                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                  </TimeDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+            </ListGrid>
+            <Gap size="xs" />
+            <ContinuationInfo>
+              {i18n.unit.staffAttendance.continuationAttendance}
+            </ContinuationInfo>
+            <Gap />
+          </>
+        )}
+
         <ListGrid rowGap="s" labelWidth="auto">
           {editState.map(
             (
@@ -418,7 +495,9 @@ function StaffAttendanceDetailsModal<
                           color={colors.status.warning}
                         />
                         <div data-qa={`attendance-gap-warning-${index}`}>
-                          {i18n.unit.staffAttendance.gapWarning(gap)}
+                          {i18n.unit.staffAttendance.gapWarning(
+                            `${gap.gapStart.toLocalTime().format()} – ${gap.gapEnd.toLocalTime().format()}`
+                          )}
                         </div>
                       </FixedSpaceRow>
                     </FullGridWidth>
@@ -542,6 +621,7 @@ function StaffAttendanceDetailsModal<
                       }
                     />
                   </FullGridWidth>
+                  <Gap size="xs" />
                 </Fragment>
               )
             }
@@ -552,6 +632,7 @@ function StaffAttendanceDetailsModal<
               icon={faPlus}
               text={i18n.unit.staffAttendance.addNewAttendance}
               onClick={addNewAttendance}
+              disabled={arrivalWithoutDeparture !== undefined}
               data-qa="new-attendance"
             />
           </NewAttendance>
@@ -617,4 +698,23 @@ const ModalActions = styled.div`
 
 const FullGridWidth = styled.div`
   grid-column: 1 / -1;
+`
+
+const TimesDiv = styled.div`
+  width: 130px;
+`
+
+const TimeDiv = styled.div`
+  width: 40px;
+`
+
+const DateInfoDiv = styled(TimeDiv)`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+  font-size: 14px;
+`
+
+const ContinuationInfo = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-style: italic;
 `

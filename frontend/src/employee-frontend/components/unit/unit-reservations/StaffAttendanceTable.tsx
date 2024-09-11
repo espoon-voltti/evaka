@@ -742,18 +742,23 @@ export const staffAttendanceValidator =
   ): [undefined | StaffAttendanceUpsert[], ValidationError[]] => {
     const body: (StaffAttendanceUpsert | undefined)[] = []
     const errors: ValidationError[] = []
+
+    const continuationAttendance = config.attendances.find(
+      (a) =>
+        a.arrived.toLocalDate().isBefore(config.date) &&
+        (!a.departed || a.departed.toLocalDate().isEqualOrAfter(config.date))
+    )
+
     for (let i = 0; i < state.length; i++) {
       const item = state[i]
-      const existing = config.attendances.find((a) => a.id === item.id)
-      const isFirstAttendance = i === 0
       const isLastAttendance = i === state.length - 1
 
+      const previousDeparted =
+        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
-        existing,
-        isFirstAttendance,
-        body[i - 1]?.departed
+        previousDeparted
       )
       const [departed, departedError] = validateDeparted(
         config,
@@ -801,18 +806,22 @@ export const externalAttendanceValidator =
     const body: (ExternalAttendanceUpsert | undefined)[] = []
     const errors: ValidationError[] = []
 
+    const continuationAttendance = config.attendances.find(
+      (a) =>
+        a.arrived.toLocalDate().isBefore(config.date) &&
+        (!a.departed || a.departed.toLocalDate().isEqualOrAfter(config.date))
+    )
+
     for (let i = 0; i < state.length; i++) {
       const item = state[i]
-      const existing = config.attendances.find((a) => a.id === item.id)
-      const isFirstAttendance = i === 0
       const isLastAttendance = i === state.length - 1
 
+      const previousDeparted =
+        i === 0 ? continuationAttendance?.departed : body[i - 1]?.departed
       const [arrived, arrivedError] = validateArrived(
         config,
         item,
-        existing,
-        isFirstAttendance,
-        body[i - 1]?.departed
+        previousDeparted
       )
       const [departed, departedError] = validateDeparted(
         config,
@@ -851,11 +860,10 @@ export const externalAttendanceValidator =
 
     return [undefined, errors]
   }
+
 const validateArrived = (
   config: ValidatorConfig,
   item: EditedAttendance,
-  existing: ModalAttendance | undefined,
-  isFirstAttendance: boolean,
   previousDeparted: HelsinkiDateTime | null | undefined
 ): [undefined, ErrorKey] | [HelsinkiDateTime, undefined] => {
   const parsedArrived = item.arrived
@@ -868,22 +876,6 @@ const validateArrived = (
     parsedArrived.isAfter(LocalTime.nowInHelsinkiTz())
   ) {
     return [undefined, 'generic']
-  }
-
-  const isOvernightAttendance =
-    existing && existing.arrived.toLocalDate().isBefore(config.date)
-
-  // If there is an open attendance (arrival without departure), check that only departure can be set
-  if (
-    isFirstAttendance &&
-    isOvernightAttendance &&
-    existing.departed === null
-  ) {
-    if (!item.departed || item.arrived) return [undefined, 'openAttendance']
-  }
-
-  if (!item.arrived && isFirstAttendance && isOvernightAttendance) {
-    return [existing.arrived, undefined]
   }
 
   if (!item.arrived) {
@@ -901,6 +893,7 @@ const validateArrived = (
 
   return [arrived, undefined]
 }
+
 const validateDeparted = (
   config: ValidatorConfig,
   item: EditedAttendance,
