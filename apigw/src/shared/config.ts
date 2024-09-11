@@ -7,6 +7,84 @@ import { RedisClientOptions } from 'redis'
 
 import { TrustedCertificates } from './certificates.js'
 
+export interface EnvVariables {
+  NODE_ENV?: 'local' | 'test' | 'production'
+  VOLTTI_ENV?: string
+  HTTP_PORT?: number
+  ENABLE_DEV_API?: boolean
+
+  COOKIE_SECRET?: string
+  USE_SECURE_COOKIES?: boolean
+  SESSION_TIMEOUT_MINUTES?: number
+  CITIZEN_COOKIE_SECRET?: string
+  CITIZEN_SESSION_TIMEOUT_MINUTES?: number
+  EMPLOYEE_COOKIE_SECRET?: string
+  EMPLOYEE_SESSION_TIMEOUT_MINUTES?: number
+  PIN_SESSION_TIMEOUT_SECONDS?: number
+
+  REDIS_HOST?: string
+  REDIS_PORT?: number
+  REDIS_PASSWORD?: string
+  REDIS_TLS_SERVER_NAME?: string
+  REDIS_DISABLE_SECURITY?: boolean
+
+  APP_BUILD?: string
+  APP_COMMIT?: string
+  HOST_IP?: string
+  PRETTY_LOGS?: boolean
+
+  DD_TRACE_ENABLED?: boolean
+  DD_PROFILING_ENABLED?: boolean
+  DD_TRACE_AGENT_HOSTNAME?: string
+  DD_TRACE_AGENT_PORT?: number
+
+  JWT_PRIVATE_KEY?: string
+  JWT_KID?: string
+
+  EVAKA_BASE_URL?: string
+  EVAKA_SERVICE_URL?: string
+
+  DEV_LOGIN?: boolean
+  AD_MOCK?: boolean
+  AD_SAML_EXTERNAL_ID_PREFIX?: string
+  AD_USER_ID_KEY?: string
+  AD_SAML_CALLBACK_URL?: string
+  AD_SAML_ENTRYPOINT_URL?: string
+  AD_SAML_LOGOUT_URL?: string
+  AD_SAML_ISSUER?: string
+  AD_SAML_PUBLIC_CERT?: string[]
+  AD_SAML_PRIVATE_CERT?: string
+  AD_DECRYPT_ASSERTIONS?: boolean
+  AD_NAME_ID_FORMAT?: string
+
+  SFI_MOCK?: boolean
+  SFI_MODE?: 'test' | 'prod' | 'mock'
+  SFI_SAML_CALLBACK_URL?: string
+  SFI_SAML_ENTRYPOINT?: string
+  SFI_SAML_LOGOUT_URL?: string
+  SFI_SAML_ISSUER?: string
+  SFI_SAML_PUBLIC_CERT?: string[]
+  SFI_SAML_PRIVATE_CERT?: string
+
+  EVAKA_SAML_CALLBACK_URL?: string
+  EVAKA_SAML_ENTRYPOINT?: string
+  EVAKA_SAML_ISSUER?: string
+  EVAKA_SAML_PUBLIC_CERT?: string[]
+  EVAKA_SAML_PRIVATE_CERT?: string
+
+  EVAKA_CUSTOMER_SAML_CALLBACK_URL?: string
+  EVAKA_CUSTOMER_SAML_ENTRYPOINT?: string
+  EVAKA_CUSTOMER_SAML_ISSUER?: string
+  EVAKA_CUSTOMER_SAML_PUBLIC_CERT?: string[]
+  EVAKA_CUSTOMER_SAML_PRIVATE_CERT?: string
+
+  EVAKA_TITANIA_USERNAME?: string
+  EVAKA_TITANIA_PASSWORD?: string
+
+  DIGITRANSIT_API_URL?: string
+  DIGITRANSIT_API_KEY?: string
+}
+
 export interface Config {
   citizen: SessionConfig
   employee: SessionConfig
@@ -63,21 +141,81 @@ export interface EvakaSamlConfig {
   nameIdFormat?: string | undefined
 }
 
-export type NodeEnv = (typeof nodeEnvs)[number]
-export const nodeEnvs = ['local', 'test', 'production'] as const
+export type NodeEnv = NonNullable<EnvVariables['NODE_ENV']>
+const nodeEnvs: NodeEnv[] = ['local', 'test', 'production']
+
+const defaultEnvs: EnvVariables = {
+  VOLTTI_ENV: ifNodeEnv(['local'], 'local'),
+  HTTP_PORT: 3000,
+  ENABLE_DEV_API: ifNodeEnv(['local', 'test'], true) ?? false,
+
+  COOKIE_SECRET: ifNodeEnv(
+    ['local', 'test'],
+    'A very hush hush cookie secret.'
+  ),
+  USE_SECURE_COOKIES: ifNodeEnv(['local', 'test'], false) ?? true,
+  PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
+
+  ...ifNodeEnv(['local'], {
+    REDIS_HOST: '127.0.0.1',
+    REDIS_PORT: 6379,
+    REDIS_DISABLE_SECURITY: true
+  }),
+
+  PRETTY_LOGS: ifNodeEnv(['local'], true) ?? false,
+
+  JWT_PRIVATE_KEY: ifNodeEnv(
+    ['local', 'test'],
+    'config/test-cert/jwt_private_key.pem'
+  ),
+
+  EVAKA_BASE_URL: ifNodeEnv(['local', 'test'], 'local'),
+  EVAKA_SERVICE_URL: ifNodeEnv(['local', 'test'], 'http://localhost:8888'),
+
+  AD_MOCK: ifNodeEnv(['local', 'test'], true),
+  AD_SAML_EXTERNAL_ID_PREFIX: 'espoo-ad',
+  AD_USER_ID_KEY:
+    'http://schemas.microsoft.com/identity/claims/objectidentifier',
+  AD_DECRYPT_ASSERTIONS: false,
+
+  SFI_MODE: ifNodeEnv(['local', 'test'], 'mock'),
+
+  ...ifNodeEnv(['local', 'test'], {
+    EVAKA_SAML_CALLBACK_URL: `http://localhost:9099/api/internal/auth/evaka/login/callback`,
+    EVAKA_SAML_ENTRYPOINT:
+      'http://localhost:8080/auth/realms/evaka/protocol/saml',
+    EVAKA_SAML_ISSUER: 'evaka',
+    EVAKA_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
+    EVAKA_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem',
+
+    EVAKA_CUSTOMER_SAML_CALLBACK_URL: `http://localhost:9099/api/application/auth/evaka-customer/login/callback`,
+    EVAKA_CUSTOMER_SAML_ENTRYPOINT:
+      'http://localhost:8080/auth/realms/evaka-customer/protocol/saml',
+    EVAKA_CUSTOMER_SAML_ISSUER: 'evaka-customer',
+    EVAKA_CUSTOMER_SAML_PUBLIC_CERT: ['config/test-cert/keycloak-local.pem'],
+    EVAKA_CUSTOMER_SAML_PRIVATE_CERT: 'config/test-cert/saml-private.pem'
+  })
+}
 
 function ifNodeEnv<T>(envs: NodeEnv[], value: T): T | undefined {
   return envs.some((env) => process.env.NODE_ENV === env) ? value : undefined
 }
 
-function required<T>(value: T | undefined): T {
-  if (value === undefined) {
-    throw new Error('Configuration parameter was not provided')
+function nonNullable<T>(
+  value: T | undefined,
+  errorMessage: string
+): NonNullable<T> {
+  if (value == null) {
+    throw new Error(errorMessage)
   }
   return value
 }
 
-function parseInteger(value: string): number {
+type Parser<T> = (value: string) => T
+
+const unchanged: Parser<string> = (value) => value
+
+const parseInteger: Parser<number> = (value) => {
   const result = Number.parseInt(value, 10)
   if (Number.isNaN(result)) throw new Error('Invalid integer')
   return result
@@ -90,14 +228,12 @@ const booleans: Record<string, boolean> = {
   false: false
 }
 
-function parseBoolean(value: string): boolean {
+const parseBoolean: Parser<boolean> = (value) => {
   if (value in booleans) return booleans[value]
   throw new Error('Invalid boolean')
 }
 
-function parseEnum<T extends string>(
-  variants: readonly T[]
-): (value: string) => T {
+function parseEnum<T extends string>(variants: readonly T[]): Parser<T> {
   return (value) => {
     for (const variant of variants) {
       if (value === variant) return variant
@@ -106,34 +242,38 @@ function parseEnum<T extends string>(
   }
 }
 
-function env<T>(key: string, parser: (value: string) => T): T | undefined {
-  const value = process.env[key]
-  if (value === undefined || value === '') return undefined
+function parseArray<T>(elementParser: Parser<T>, separator = ','): Parser<T[]> {
+  return (value) => value.split(separator).map(elementParser)
+}
+
+function parseEnv<K extends keyof EnvVariables, T>(
+  key: K,
+  f: (value: string | undefined) => T
+): T {
+  const value = process.env[key]?.trim()
   try {
-    return parser(value)
+    return f(value == null || value === '' ? undefined : value)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     throw new Error(`${message}: ${key}=${value}`)
   }
 }
 
-function envArray<T>(
-  key: string,
-  parser: (value: string) => T,
-  separator = ','
-): T[] | undefined {
-  const value = process.env[key]
-  if (value === undefined || value === '') return undefined
-  const values = value.split(separator)
-  try {
-    return values.map(parser)
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    throw new Error(`${message}: ${key}=${value}`)
-  }
-}
+const optionalEnv = <K extends keyof EnvVariables>(
+  key: K,
+  parser: Parser<EnvVariables[K]>
+): EnvVariables[K] | undefined =>
+  parseEnv(key, (value) => (value ? parser(value) : defaultEnvs[key]))
 
-type SfiMode = 'prod' | 'test' | 'mock'
+const requiredEnv = <K extends keyof EnvVariables>(
+  key: K,
+  parser: Parser<NonNullable<EnvVariables[K]>>
+): NonNullable<EnvVariables[K]> =>
+  parseEnv(key, (value) =>
+    value ? parser(value) : nonNullable(defaultEnvs[key], `${key} must be set`)
+  )
+
+export type SfiMode = NonNullable<EnvVariables['SFI_MODE']>
 
 function sfiDefaultsForMode(mode: SfiMode):
   | {
@@ -172,40 +312,42 @@ function sfiDefaultsForMode(mode: SfiMode):
 
 export function configFromEnv(): Config {
   const adMock =
-    env('AD_MOCK', parseBoolean) ??
-    env('DEV_LOGIN', parseBoolean) ??
-    ifNodeEnv(['local', 'test'], true) ??
+    optionalEnv('AD_MOCK', parseBoolean) ??
+    optionalEnv('DEV_LOGIN', parseBoolean) ??
     false
   const adType = adMock ? 'mock' : 'saml'
-  const defaultUserIdKey =
-    'http://schemas.microsoft.com/identity/claims/objectidentifier'
   const ad: Config['ad'] = {
-    externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
-    userIdKey: process.env.AD_USER_ID_KEY ?? defaultUserIdKey,
+    externalIdPrefix: requiredEnv('AD_SAML_EXTERNAL_ID_PREFIX', unchanged),
+    userIdKey: requiredEnv('AD_USER_ID_KEY', unchanged),
     ...(adType !== 'saml'
       ? { type: adType }
       : {
           type: adType,
           saml: {
-            callbackUrl: required(process.env.AD_SAML_CALLBACK_URL),
-            entryPoint: required(process.env.AD_SAML_ENTRYPOINT_URL),
-            logoutUrl: required(process.env.AD_SAML_LOGOUT_URL),
-            issuer: required(process.env.AD_SAML_ISSUER),
-            publicCert: required(
-              envArray('AD_SAML_PUBLIC_CERT', (value) => value)
+            callbackUrl: requiredEnv('AD_SAML_CALLBACK_URL', unchanged),
+            entryPoint: requiredEnv('AD_SAML_ENTRYPOINT_URL', unchanged),
+            logoutUrl: requiredEnv('AD_SAML_LOGOUT_URL', unchanged),
+            issuer: requiredEnv('AD_SAML_ISSUER', unchanged),
+            publicCert: requiredEnv(
+              'AD_SAML_PUBLIC_CERT',
+              parseArray(unchanged)
             ),
-            privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
+            privateCert: requiredEnv('AD_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
-            decryptAssertions:
-              env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
-            nameIdFormat: process.env.AD_NAME_ID_FORMAT
+            decryptAssertions: requiredEnv(
+              'AD_DECRYPT_ASSERTIONS',
+              parseBoolean
+            ),
+            nameIdFormat: requiredEnv('AD_NAME_ID_FORMAT', unchanged)
           }
         })
   }
 
-  const sfiMock =
-    env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-  const sfiMode = env('SFI_MODE', parseEnum(['test', 'prod', 'mock'] as const))
+  const sfiMock = requiredEnv('SFI_MOCK', parseBoolean)
+  const sfiMode = optionalEnv(
+    'SFI_MODE',
+    parseEnum(['test', 'prod', 'mock'] as const)
+  )
   const sfiType = sfiMock || sfiMode === 'mock' ? 'mock' : 'saml'
   const sfiDefaults = sfiMode && sfiDefaultsForMode(sfiMode)
 
@@ -215,218 +357,165 @@ export function configFromEnv(): Config {
       : {
           type: sfiType,
           saml: {
-            callbackUrl: required(process.env.SFI_SAML_CALLBACK_URL),
-            entryPoint: required(
-              process.env.SFI_SAML_ENTRYPOINT ?? sfiDefaults?.entryPoint
+            callbackUrl: requiredEnv('SFI_SAML_CALLBACK_URL', unchanged),
+            entryPoint: nonNullable(
+              optionalEnv('SFI_SAML_ENTRYPOINT', unchanged) ??
+                sfiDefaults?.entryPoint,
+              'Either SFI_ENV or SFI_SAML_ENTRYPOINT must be set'
             ),
-            logoutUrl: required(
-              process.env.SFI_SAML_LOGOUT_URL ?? sfiDefaults?.logoutUrl
+            logoutUrl: nonNullable(
+              optionalEnv('SFI_SAML_LOGOUT_URL', unchanged) ??
+                sfiDefaults?.logoutUrl,
+              'Either SFI_ENV or SFI_SAML_LOGOUT_URL must be set'
             ),
-            issuer: required(process.env.SFI_SAML_ISSUER),
-            publicCert: required(
-              envArray('SFI_SAML_PUBLIC_CERT', (value) => value) ??
-                sfiDefaults?.publicCert
+            issuer: requiredEnv('SFI_SAML_ISSUER', unchanged),
+            publicCert: nonNullable(
+              optionalEnv('SFI_SAML_PUBLIC_CERT', parseArray(unchanged)) ??
+                sfiDefaults?.publicCert,
+              'Either SFI_ENV or SFI_SAML_PUBLIC_CERT must be set'
             ),
-            privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
+            privateCert: requiredEnv('SFI_SAML_PRIVATE_CERT', unchanged),
             validateInResponseTo: ValidateInResponseTo.always,
             decryptAssertions: true
           }
         }
 
-  const keycloakEmployeeCallbackUrl =
-    process.env.EVAKA_SAML_CALLBACK_URL ??
-    ifNodeEnv(
-      ['local', 'test'],
-      `http://localhost:9099/api/internal/auth/evaka/login/callback`
-    )
+  const keycloakEmployeeCallbackUrl = optionalEnv(
+    'EVAKA_SAML_CALLBACK_URL',
+    unchanged
+  )
 
   const keycloakEmployee: EvakaSamlConfig | undefined =
     keycloakEmployeeCallbackUrl
       ? {
-          callbackUrl: required(keycloakEmployeeCallbackUrl),
-          entryPoint: required(
-            process.env.EVAKA_SAML_ENTRYPOINT ??
-              ifNodeEnv(
-                ['local', 'test'],
-                'http://localhost:8080/auth/realms/evaka/protocol/saml'
-              )
-          ),
+          callbackUrl: keycloakEmployeeCallbackUrl,
+          entryPoint: requiredEnv('EVAKA_SAML_ENTRYPOINT', unchanged),
           // NOTE: Same as entrypoint, on purpose
-          logoutUrl: required(
-            process.env.EVAKA_SAML_ENTRYPOINT ??
-              ifNodeEnv(
-                ['local', 'test'],
-                'http://localhost:8080/auth/realms/evaka/protocol/saml'
-              )
+          logoutUrl: requiredEnv('EVAKA_SAML_ENTRYPOINT', unchanged),
+          issuer: requiredEnv('EVAKA_SAML_ISSUER', unchanged),
+          publicCert: requiredEnv(
+            'EVAKA_SAML_PUBLIC_CERT',
+            parseArray(unchanged)
           ),
-          issuer: required(
-            process.env.EVAKA_SAML_ISSUER ??
-              ifNodeEnv(['local', 'test'], 'evaka')
-          ),
-          publicCert: required(
-            envArray('EVAKA_SAML_PUBLIC_CERT', (value) => value) ??
-              ifNodeEnv(
-                ['local', 'test'],
-                ['config/test-cert/keycloak-local.pem']
-              )
-          ),
-          privateCert: required(
-            process.env.EVAKA_SAML_PRIVATE_CERT ??
-              ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-          ),
+          privateCert: requiredEnv('EVAKA_SAML_PRIVATE_CERT', unchanged),
           validateInResponseTo: ValidateInResponseTo.always,
           decryptAssertions: true
         }
       : undefined
 
-  const keycloakCitizenCallbackUrl =
-    process.env.EVAKA_CUSTOMER_SAML_CALLBACK_URL ??
-    ifNodeEnv(
-      ['local', 'test'],
-      `http://localhost:9099/api/application/auth/evaka-customer/login/callback`
-    )
+  const keycloakCitizenCallbackUrl = optionalEnv(
+    'EVAKA_CUSTOMER_SAML_CALLBACK_URL',
+    unchanged
+  )
 
   const keycloakCitizen: EvakaSamlConfig | undefined =
     keycloakCitizenCallbackUrl
       ? {
-          callbackUrl: required(keycloakCitizenCallbackUrl),
-          entryPoint: required(
-            process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-              ifNodeEnv(
-                ['local', 'test'],
-                'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-              )
+          callbackUrl: keycloakCitizenCallbackUrl,
+          entryPoint: requiredEnv('EVAKA_CUSTOMER_SAML_ENTRYPOINT', unchanged),
+          logoutUrl: requiredEnv('EVAKA_CUSTOMER_SAML_ENTRYPOINT', unchanged),
+          issuer: requiredEnv('EVAKA_CUSTOMER_SAML_ISSUER', unchanged),
+          publicCert: requiredEnv(
+            'EVAKA_CUSTOMER_SAML_PUBLIC_CERT',
+            parseArray(unchanged)
           ),
-          logoutUrl: required(
-            process.env.EVAKA_CUSTOMER_SAML_ENTRYPOINT ??
-              ifNodeEnv(
-                ['local', 'test'],
-                'http://localhost:8080/auth/realms/evaka-customer/protocol/saml'
-              )
-          ),
-          issuer: required(
-            process.env.EVAKA_CUSTOMER_SAML_ISSUER ??
-              ifNodeEnv(['local', 'test'], 'evaka-customer')
-          ),
-          publicCert: required(
-            envArray('EVAKA_CUSTOMER_SAML_PUBLIC_CERT', (value) => value) ??
-              ifNodeEnv(
-                ['local', 'test'],
-                ['config/test-cert/keycloak-local.pem']
-              )
-          ),
-          privateCert: required(
-            process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
-              ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
+          privateCert: requiredEnv(
+            'EVAKA_CUSTOMER_SAML_PRIVATE_CERT',
+            unchanged
           ),
           validateInResponseTo: ValidateInResponseTo.always,
           decryptAssertions: true
         }
       : undefined
 
-  const legacyCookieSecret =
-    process.env.COOKIE_SECRET ??
-    ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
-  const useSecureCookies =
-    env('USE_SECURE_COOKIES', parseBoolean) ??
-    ifNodeEnv(['local', 'test'], false) ??
-    true
+  const legacyCookieSecret = optionalEnv('COOKIE_SECRET', unchanged)
+  const useSecureCookies = requiredEnv('USE_SECURE_COOKIES', parseBoolean)
   const defaultSessionTimeoutMinutes =
-    env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
+    optionalEnv('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
 
   return {
     citizen: {
       useSecureCookies,
-      cookieSecret: required(
-        process.env.CITIZEN_COOKIE_SECRET ?? legacyCookieSecret
+      cookieSecret: nonNullable(
+        optionalEnv('CITIZEN_COOKIE_SECRET', unchanged) ?? legacyCookieSecret,
+        'Either COOKIE_SECRET or CITIZEN_COOKIE_SECRET must be set'
       ),
       sessionTimeoutMinutes:
-        env('CITIZEN_SESSION_TIMEOUT_MINUTES', parseInteger) ??
+        optionalEnv('CITIZEN_SESSION_TIMEOUT_MINUTES', parseInteger) ??
         defaultSessionTimeoutMinutes
     },
     employee: {
       useSecureCookies,
-      cookieSecret: required(
-        process.env.EMPLOYEE_COOKIE_SECRET ?? legacyCookieSecret
+      cookieSecret: nonNullable(
+        optionalEnv('EMPLOYEE_COOKIE_SECRET', unchanged) ?? legacyCookieSecret,
+        'Either COOKIE_SECRET or EMPLOYEE_COOKIE_SECRET must be set'
       ),
       sessionTimeoutMinutes:
-        env('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
+        optionalEnv('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
         defaultSessionTimeoutMinutes
     },
     ad,
     sfi,
     redis: {
-      host: process.env.REDIS_HOST ?? ifNodeEnv(['local'], '127.0.0.1'),
-      port: env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379),
-      password: process.env.REDIS_PASSWORD,
-      tlsServerName: process.env.REDIS_TLS_SERVER_NAME,
+      host: optionalEnv('REDIS_HOST', unchanged),
+      port: optionalEnv('REDIS_PORT', parseInteger),
+      password: optionalEnv('REDIS_PASSWORD', unchanged),
+      tlsServerName: optionalEnv('REDIS_TLS_SERVER_NAME', unchanged),
       disableSecurity:
-        env('REDIS_DISABLE_SECURITY', parseBoolean) ??
-        ifNodeEnv(['local'], true) ??
-        false
+        optionalEnv('REDIS_DISABLE_SECURITY', parseBoolean) ?? false
     },
     keycloakEmployee,
     keycloakCitizen
   }
 }
 
-export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
-export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
-export const appCommit = process.env.APP_COMMIT ?? 'UNDEFINED'
-export const hostIp = process.env.HOST_IP ?? 'UNDEFINED'
+export const nodeEnv = optionalEnv('NODE_ENV', parseEnum(nodeEnvs))
+export const appBuild = optionalEnv('APP_BUILD', unchanged) ?? 'UNDEFINED'
+export const appCommit = optionalEnv('APP_COMMIT', unchanged) ?? 'UNDEFINED'
+export const hostIp = optionalEnv('HOST_IP', unchanged) ?? 'UNDEFINED'
 export const debug = ifNodeEnv(['local', 'test'], true) ?? false
 
-export const tracingEnabled = process.env.DD_TRACE_ENABLED === 'true'
-export const profilingEnabled = process.env.DD_PROFILING_ENABLED === 'true'
-export const traceAgentHostname =
-  process.env.DD_TRACE_AGENT_HOSTNAME ?? 'localhost'
-export const traceAgentPort = env('DD_TRACE_AGENT_PORT', parseInteger) ?? 8126
-
-export const jwtPrivateKey = required(
-  process.env.JWT_PRIVATE_KEY ??
-    ifNodeEnv(['local', 'test'], 'config/test-cert/jwt_private_key.pem')
+export const tracingEnabled = optionalEnv('DD_TRACE_ENABLED', parseBoolean)
+export const profilingEnabled = optionalEnv(
+  'DD_PROFILING_ENABLED',
+  parseBoolean
 )
+export const traceAgentHostname =
+  optionalEnv('DD_TRACE_AGENT_HOSTNAME', unchanged) ?? 'localhost'
+export const traceAgentPort =
+  optionalEnv('DD_TRACE_AGENT_PORT', parseInteger) ?? 8126
+
+export const jwtPrivateKey = requiredEnv('JWT_PRIVATE_KEY', unchanged)
 
 export const serviceName = 'evaka-api-gw'
-export const jwtKid = process.env.JWT_KID ?? serviceName
+export const jwtKid = optionalEnv('JWT_KID', unchanged) ?? serviceName
 
-export const evakaBaseUrl = required(
-  process.env.EVAKA_BASE_URL ?? ifNodeEnv(['local', 'test'], 'local')
+export const evakaBaseUrl = requiredEnv('EVAKA_BASE_URL', unchanged)
+export const evakaServiceUrl = requiredEnv('EVAKA_SERVICE_URL', unchanged)
+export const useSecureCookies = requiredEnv('USE_SECURE_COOKIES', parseBoolean)
+
+export const prettyLogs = requiredEnv('PRETTY_LOGS', parseBoolean)
+
+export const volttiEnv = optionalEnv('VOLTTI_ENV', unchanged)
+
+export const httpPort = requiredEnv('HTTP_PORT', parseInteger)
+
+export const pinSessionTimeoutSeconds = requiredEnv(
+  'PIN_SESSION_TIMEOUT_SECONDS',
+  parseInteger
 )
 
-export const evakaServiceUrl = required(
-  process.env.EVAKA_SERVICE_URL ??
-    ifNodeEnv(['local', 'test'], 'http://localhost:8888')
-)
-export const useSecureCookies =
-  env('USE_SECURE_COOKIES', parseBoolean) ??
-  ifNodeEnv(['local', 'test'], false) ??
-  true
+export const enableDevApi = requiredEnv('ENABLE_DEV_API', parseBoolean)
 
-export const prettyLogs =
-  env('PRETTY_LOGS', parseBoolean) ?? ifNodeEnv(['local'], true) ?? false
-
-export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
-
-export const httpPort = env('HTTP_PORT', parseInteger) ?? 3000
-
-export const pinSessionTimeoutSeconds =
-  env('PIN_SESSION_TIMEOUT_SECONDS', parseInteger) ?? 10 * 60
-
-export const enableDevApi =
-  env('ENABLE_DEV_API', parseBoolean) ??
-  ifNodeEnv(['local', 'test'], true) ??
-  false
-
-const titaniaUsername = process.env.EVAKA_TITANIA_USERNAME
+const titaniaUsername = optionalEnv('EVAKA_TITANIA_USERNAME', unchanged)
 export const titaniaConfig = titaniaUsername
   ? {
       username: titaniaUsername,
-      password: required(process.env.EVAKA_TITANIA_PASSWORD)
+      password: requiredEnv('EVAKA_TITANIA_PASSWORD', unchanged)
     }
   : undefined
 
 export const digitransitApiEnabled = ifNodeEnv(['local', 'test'], false) ?? true
 export const digitransitApiUrl =
-  process.env.DIGITRANSIT_API_URL ?? 'https://api.digitransit.fi'
-export const digitransitApiKey = process.env.DIGITRANSIT_API_KEY
+  optionalEnv('DIGITRANSIT_API_URL', unchanged) ?? 'https://api.digitransit.fi'
+export const digitransitApiKey = optionalEnv('DIGITRANSIT_API_KEY', unchanged)
