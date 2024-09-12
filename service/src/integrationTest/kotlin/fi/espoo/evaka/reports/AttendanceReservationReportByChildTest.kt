@@ -7,15 +7,19 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
-import fi.espoo.evaka.children.Group
+import fi.espoo.evaka.insertServiceNeedOptions
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevBackupCare
+import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.DevReservation
@@ -23,22 +27,11 @@ import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.testArea
-import fi.espoo.evaka.testChild_1
-import fi.espoo.evaka.testChild_2
-import fi.espoo.evaka.testChild_3
-import fi.espoo.evaka.testChild_4
-import fi.espoo.evaka.testChild_5
-import fi.espoo.evaka.testChild_6
-import fi.espoo.evaka.testChild_7
-import fi.espoo.evaka.testChild_8
-import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.shared.domain.isWeekend
 import java.time.LocalDate
 import java.time.LocalTime
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,30 +42,21 @@ internal class AttendanceReservationReportByChildTest :
     private lateinit var attendanceReservationReportController:
         AttendanceReservationReportController
 
-    private val admin =
-        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
+    private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
 
     @BeforeEach
     fun setup() {
+        // val daycare2 = DevDaycare(areaId = area.id)
         db.transaction { tx ->
-            tx.insert(testArea)
-            tx.insert(testDaycare)
-            tx.insert(testDaycare2)
-            tx.insert(
-                unitSupervisorOfTestDaycare,
-                mapOf(testDaycare.id to UserRole.UNIT_SUPERVISOR),
-            )
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8,
-                )
-                .forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insertServiceNeedOptions()
+            tx.insert(admin)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
         }
     }
 
@@ -80,11 +64,13 @@ internal class AttendanceReservationReportByChildTest :
     fun `returns only unit's operation days`() {
         val startDate = LocalDate.of(2022, 9, 1) // Thu
         val endDate = LocalDate.of(2022, 9, 6) // Tue
+        val weekDays =
+            FiniteDateRange(startDate, endDate).dates().filter { !it.isWeekend() }.toList()
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -92,7 +78,7 @@ internal class AttendanceReservationReportByChildTest :
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
                 tx.insert(
                     DevReservation(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = date,
                         startTime = LocalTime.of(8, 15),
                         endTime = LocalTime.of(15, 48),
@@ -102,15 +88,16 @@ internal class AttendanceReservationReportByChildTest :
             }
         }
 
-        val result = getReport(startDate, endDate)
-        assertThat(result)
-            .extracting({ it.childId }, { it.date })
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 1)), // Thu
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)), // Fri
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 5)), // Mon
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 6)), // Tue
-            )
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = weekDays.map { reportItem(child, it) },
+                )
+            ),
+            getReport(startDate, endDate),
+        )
     }
 
     @Test
@@ -119,15 +106,15 @@ internal class AttendanceReservationReportByChildTest :
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
@@ -136,10 +123,16 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(date, date)
-        assertThat(result)
-            .extracting({ it.childId }, { it.date })
-            .containsExactlyInAnyOrder(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)))
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = listOf(reportItem(child, date)),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
@@ -148,15 +141,15 @@ internal class AttendanceReservationReportByChildTest :
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = null,
                     endTime = null,
@@ -165,16 +158,16 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(date, date)
-        assertThat(result)
-            .extracting(
-                { it.childId },
-                { it.date },
-                { it.reservationId },
-                { it.reservationStartTime },
-                { it.reservationEndTime },
-            )
-            .containsExactly(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2), null, null, null))
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = listOf(reportItem(child, date, reservation = null)),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
@@ -183,7 +176,7 @@ internal class AttendanceReservationReportByChildTest :
         db.transaction { tx ->
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
@@ -192,25 +185,35 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(date, date)
-        assertThat(result).isEmpty()
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = emptyList(),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
     fun `child with placement to a different unit is not included`() {
         val date = LocalDate.of(2020, 5, 28)
+        val daycare2 = DevDaycare(areaId = area.id)
         db.transaction { tx ->
+            tx.insert(daycare2)
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
+                    childId = child.id,
+                    unitId = daycare2.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
                     endTime = LocalTime.of(15, 48),
@@ -219,152 +222,160 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(date, date)
-        assertThat(result).isEmpty()
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = emptyList(),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
     fun `backup care is supported`() {
         val date = LocalDate.of(2020, 5, 28)
+        val daycare2 = DevDaycare(areaId = area.id)
+        val group = DevDaycareGroup(daycareId = daycare2.id, startDate = date, endDate = date)
+        val child2 = DevPerson(lastName = "Doe", firstName = "Jane")
         db.transaction { tx ->
-            val groupId =
-                tx.insert(
-                    DevDaycareGroup(daycareId = testDaycare2.id, startDate = date, endDate = date)
-                )
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(daycare2)
+            tx.insert(group)
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_1.id,
-                                unitId = testDaycare2.id,
+                                childId = child.id,
+                                unitId = daycare2.id,
                                 startDate = date,
                                 endDate = date,
                             )
                         ),
-                    daycareGroupId = groupId,
+                    daycareGroupId = group.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevBackupCare(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     groupId = null,
                     period = FiniteDateRange(date, date),
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val result = getReport(date, date)
-        assertThat(result)
-            .extracting({ it.childId }, { it.date }, { it.isBackupCare })
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, date, true),
-                Tuple(testChild_2.id, date, false),
-            )
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                                reportItem(child, date, backupCare = true),
+                                reportItem(child2, date, backupCare = false),
+                            )
+                            .sortedWith(compareBy({ it.childLastName }, { it.childFirstName })),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
     fun `multiple children is supported`() {
         val date = LocalDate.of(2020, 5, 28)
+        val children = (1..8).map { i -> DevPerson(lastName = "Doe $i", firstName = "Jane") }
         db.transaction { tx ->
-            listOf(
-                    testChild_1,
-                    testChild_2,
-                    testChild_3,
-                    testChild_4,
-                    testChild_5,
-                    testChild_6,
-                    testChild_7,
-                    testChild_8,
+            children.forEach { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = date,
+                        endDate = date,
+                    )
                 )
-                .forEach { testChild ->
-                    tx.insert(
-                        DevPlacement(
-                            childId = testChild.id,
-                            unitId = testDaycare.id,
-                            startDate = date,
-                            endDate = date,
-                        )
+                tx.insert(
+                    DevReservation(
+                        childId = child.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 15),
+                        endTime = LocalTime.of(15, 48),
+                        createdBy = admin.evakaUserId,
                     )
-                    tx.insert(
-                        DevReservation(
-                            childId = testChild.id,
-                            date = date,
-                            startTime = LocalTime.of(8, 15),
-                            endTime = LocalTime.of(8, 16),
-                            createdBy = admin.evakaUserId,
-                        )
-                    )
-                }
+                )
+            }
         }
 
-        val result = getReport(date, date)
-        assertThat(result)
-            .extracting({ it.childLastName }, { it.childFirstName }, { it.date })
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.lastName, testChild_1.firstName, date),
-                Tuple(testChild_2.lastName, testChild_2.firstName, date),
-                Tuple(testChild_3.lastName, testChild_3.firstName, date),
-                Tuple(testChild_4.lastName, testChild_4.firstName, date),
-                Tuple(testChild_5.lastName, testChild_5.firstName, date),
-                Tuple(testChild_6.lastName, testChild_6.firstName, date),
-                Tuple(testChild_7.lastName, testChild_7.firstName, date),
-                Tuple(testChild_8.lastName, testChild_8.firstName, date),
-            )
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        children
+                            .map { reportItem(it, date) }
+                            .sortedWith(compareBy({ it.childLastName }, { it.childFirstName })),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
     fun `group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
-        val group1 =
-            db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")).let {
-                    Group(it, "Testiläiset 1")
-                }
-            }
-        val group2 =
-            db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")).let {
-                    Group(it, "Testiläiset 2")
-                }
-            }
+        val group1 = DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 1")
+        val group2 = DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 2")
+        val child2 = DevPerson()
+        val child3 = DevPerson()
+        val child4 = DevPerson()
         db.transaction { tx ->
+            tx.insert(group1)
+            tx.insert(group2)
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(child3, DevPersonType.CHILD)
+            tx.insert(child4, DevPersonType.CHILD)
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_1.id,
-                                unitId = testDaycare.id,
+                                childId = child.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -376,10 +387,10 @@ internal class AttendanceReservationReportByChildTest :
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
@@ -388,8 +399,8 @@ internal class AttendanceReservationReportByChildTest :
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_2.id,
-                                unitId = testDaycare.id,
+                                childId = child2.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -401,10 +412,10 @@ internal class AttendanceReservationReportByChildTest :
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_2.id,
+                    childId = child2.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
@@ -413,8 +424,8 @@ internal class AttendanceReservationReportByChildTest :
                     daycarePlacementId =
                         tx.insert(
                             DevPlacement(
-                                childId = testChild_3.id,
-                                unitId = testDaycare.id,
+                                childId = child3.id,
+                                unitId = daycare.id,
                                 startDate = date,
                                 endDate = date,
                             )
@@ -426,111 +437,152 @@ internal class AttendanceReservationReportByChildTest :
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_3.id,
+                    childId = child3.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
             tx.insert(
                 DevPlacement(
-                    childId = testChild_4.id,
-                    unitId = testDaycare.id,
+                    childId = child4.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_4.id,
+                    childId = child4.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val result = getReport(date, date, listOf(group1.id, group2.id))
-        assertThat(result)
-            .extracting({ it.groupId }, { it.groupName }, { it.childId })
-            .containsExactlyInAnyOrder(
-                Tuple(group1.id, group1.name, testChild_1.id),
-                Tuple(group1.id, group1.name, testChild_2.id),
-                Tuple(group2.id, group2.name, testChild_3.id),
-            )
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = group1.id,
+                    groupName = group1.name,
+                    items =
+                        listOf(child, child2)
+                            .map { reportItem(it, date) }
+                            .sortedWith(compareBy({ it.childLastName }, { it.childFirstName })),
+                ),
+                AttendanceReservationReportByChildGroup(
+                    groupId = group2.id,
+                    groupName = group2.name,
+                    items = listOf(reportItem(child3, date)),
+                ),
+            ),
+            getReport(date, date, listOf(group1.id, group2.id)),
+        )
     }
 
     @Test
     fun `group placement without group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
+        val group = DevDaycareGroup(daycareId = daycare.id, startDate = date, endDate = date)
         db.transaction { tx ->
             val placementId =
                 tx.insert(
                     DevPlacement(
-                        childId = testChild_1.id,
-                        unitId = testDaycare.id,
+                        childId = child.id,
+                        unitId = daycare.id,
                         startDate = date,
                         endDate = date,
                     )
                 )
-            val groupId =
-                tx.insert(
-                    DevDaycareGroup(daycareId = testDaycare.id, startDate = date, endDate = date)
-                )
+            tx.insert(group)
             tx.insert(
                 DevDaycareGroupPlacement(
                     daycarePlacementId = placementId,
-                    daycareGroupId = groupId,
+                    daycareGroupId = group.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
                     startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    endTime = LocalTime.of(15, 48),
                     createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val result = getReport(date, date, null)
-        assertThat(result)
-            .extracting({ it.groupId }, { it.childId })
-            .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items = listOf(reportItem(child, date)),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
-    fun `empty group ids works`() {
-        val date = LocalDate.of(2020, 5, 28)
+    fun `multiple reservations are supported`() {
+        val date = LocalDate.of(2022, 9, 2)
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = date,
                     endDate = date,
                 )
             )
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = date,
-                    startTime = LocalTime.of(8, 15),
-                    endTime = LocalTime.of(8, 16),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(12, 0),
+                    createdBy = admin.evakaUserId,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child.id,
+                    date = date,
+                    startTime = LocalTime.of(19, 0),
+                    endTime = LocalTime.of(23, 59),
                     createdBy = admin.evakaUserId,
                 )
             )
         }
 
-        val result = getReport(date, date, listOf())
-        assertThat(result)
-            .extracting({ it.groupId }, { it.childId })
-            .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                            reportItem(
+                                child,
+                                date,
+                                reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(12, 0)),
+                            ),
+                            reportItem(
+                                child,
+                                date,
+                                reservation = TimeRange(LocalTime.of(19, 0), LocalTime.of(23, 59)),
+                            ),
+                        ),
+                )
+            ),
+            getReport(date, date),
+        )
     }
 
     @Test
@@ -540,8 +592,8 @@ internal class AttendanceReservationReportByChildTest :
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -549,7 +601,7 @@ internal class AttendanceReservationReportByChildTest :
             FiniteDateRange(startDate, endDate).dates().forEach { date ->
                 tx.insert(
                     DevReservation(
-                        childId = testChild_1.id,
+                        childId = child.id,
                         date = date,
                         startTime = LocalTime.of(8, 15),
                         endTime = LocalTime.of(15, 48),
@@ -559,7 +611,7 @@ internal class AttendanceReservationReportByChildTest :
             }
             tx.insert(
                 DevAbsence(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = LocalDate.of(2022, 10, 27),
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -567,7 +619,7 @@ internal class AttendanceReservationReportByChildTest :
             )
             tx.insert(
                 DevAbsence(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = LocalDate.of(2022, 10, 28),
                     absenceType = AbsenceType.PARENTLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -575,31 +627,93 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(startDate, endDate)
-        assertThat(result)
-            .extracting(
-                { it.childId },
-                { it.date },
-                { it.reservationStartTime },
-                { it.absenceType },
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                            reportItem(child, startDate),
+                            reportItem(child, startDate.plusDays(1)),
+                            reportItem(child, startDate.plusDays(2)),
+                            reportItem(
+                                child,
+                                startDate.plusDays(3),
+                                reservation = null,
+                                fullDayAbsence = true,
+                            ),
+                            reportItem(
+                                child,
+                                startDate.plusDays(4),
+                                reservation = null,
+                                fullDayAbsence = true,
+                            ),
+                        ),
+                )
+            ),
+            getReport(startDate, endDate),
+        )
+    }
+
+    @Test
+    fun `preschool daycare requires 2 absences for full-day absence`() {
+        val startDate = LocalDate.of(2022, 10, 24)
+        val endDate = LocalDate.of(2022, 10, 25)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
             )
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 15), null),
-                Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(8, 15), null),
-                Tuple(testChild_1.id, LocalDate.of(2022, 10, 26), LocalTime.of(8, 15), null),
-                Tuple(
-                    testChild_1.id,
-                    LocalDate.of(2022, 10, 27),
-                    LocalTime.of(8, 15),
-                    AbsenceType.SICKLEAVE,
-                ),
-                Tuple(
-                    testChild_1.id,
-                    LocalDate.of(2022, 10, 28),
-                    LocalTime.of(8, 15),
-                    AbsenceType.PARENTLEAVE,
-                ),
+
+            // full-day absence
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = startDate,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                )
             )
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = startDate,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
+                )
+            )
+
+            // not a full-day absence
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = endDate,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                )
+            )
+        }
+
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                            reportItem(child, startDate, reservation = null, fullDayAbsence = true),
+                            reportItem(child, endDate, reservation = null, fullDayAbsence = false),
+                        ),
+                )
+            ),
+            getReport(startDate, endDate),
+        )
     }
 
     @Test
@@ -609,8 +723,8 @@ internal class AttendanceReservationReportByChildTest :
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = daycare.id,
                     startDate = startDate,
                     endDate = endDate,
                 )
@@ -619,7 +733,7 @@ internal class AttendanceReservationReportByChildTest :
             // 8-16 every day
             tx.insert(
                 DevDailyServiceTimes(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     validityPeriod = DateRange(startDate, endDate),
                 )
             )
@@ -627,7 +741,7 @@ internal class AttendanceReservationReportByChildTest :
             // Reservation on the second day 9:00 - 15:00
             tx.insert(
                 DevReservation(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = startDate.plusDays(1),
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(15, 0),
@@ -638,7 +752,7 @@ internal class AttendanceReservationReportByChildTest :
             // Absence on the third day
             tx.insert(
                 DevAbsence(
-                    childId = testChild_1.id,
+                    childId = child.id,
                     date = endDate,
                     absenceType = AbsenceType.SICKLEAVE,
                     absenceCategory = AbsenceCategory.BILLABLE,
@@ -646,39 +760,66 @@ internal class AttendanceReservationReportByChildTest :
             )
         }
 
-        val result = getReport(startDate, endDate, null)
-        assertThat(result)
-            .extracting(
-                { it.childId },
-                { it.date },
-                { it.reservationStartTime },
-                { it.absenceType },
-            )
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 0), null),
-                Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(9, 0), null),
-                Tuple(
-                    testChild_1.id,
-                    LocalDate.of(2022, 10, 26),
-                    LocalTime.of(8, 0),
-                    AbsenceType.SICKLEAVE,
-                ),
-            )
+        assertEquals(
+            listOf(
+                AttendanceReservationReportByChildGroup(
+                    groupId = null,
+                    groupName = null,
+                    items =
+                        listOf(
+                            reportItem(
+                                child,
+                                startDate,
+                                reservation = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                            ),
+                            reportItem(
+                                child,
+                                startDate.plusDays(1),
+                                reservation = TimeRange(LocalTime.of(9, 0), LocalTime.of(15, 0)),
+                            ),
+                            reportItem(
+                                child,
+                                startDate.plusDays(2),
+                                reservation = null,
+                                fullDayAbsence = true,
+                            ),
+                        ),
+                )
+            ),
+            getReport(startDate, endDate),
+        )
     }
 
     private fun getReport(
         startDate: LocalDate,
         endDate: LocalDate,
-        groupIds: List<GroupId>? = null,
-    ): List<AttendanceReservationReportByChildRow> {
-        return attendanceReservationReportController.getAttendanceReservationReportByUnitAndChild(
+        groupIds: List<GroupId> = emptyList(),
+    ) =
+        attendanceReservationReportController.getAttendanceReservationReportByChild(
             dbInstance(),
             RealEvakaClock(),
-            admin,
-            testDaycare.id,
-            startDate,
-            endDate,
-            groupIds,
+            admin.user,
+            AttendanceReservationReportController.AttendanceReservationReportByChildBody(
+                FiniteDateRange(startDate, endDate),
+                daycare.id,
+                groupIds,
+            ),
         )
-    }
+
+    private fun reportItem(
+        child: DevPerson,
+        date: LocalDate,
+        reservation: TimeRange? = TimeRange(LocalTime.of(8, 15), LocalTime.of(15, 48)),
+        fullDayAbsence: Boolean = false,
+        backupCare: Boolean = false,
+    ) =
+        AttendanceReservationReportByChildItem(
+            date,
+            child.id,
+            child.lastName,
+            child.firstName,
+            reservation,
+            fullDayAbsence,
+            backupCare,
+        )
 }

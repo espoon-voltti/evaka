@@ -21,7 +21,7 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import { DevEmployee, DevPerson } from '../../generated/api-types'
-import { ChildAttendanceReservationReport } from '../../pages/employee/reports'
+import { ChildAttendanceReservationByChildReport } from '../../pages/employee/reports'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -77,10 +77,11 @@ describe('Child attendance reservation report', () => {
     await page.goto(
       `${config.employeeUrl}/reports/attendance-reservation-by-child`
     )
-    const report = new ChildAttendanceReservationReport(page)
+    const report = new ChildAttendanceReservationByChildReport(page)
     await report.setDates(mockedTime, mockedTime)
     await report.selectUnit(testDaycare.name)
     await report.selectGroup(testDaycareGroup.name)
+    await report.searchButton.click()
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,
@@ -95,6 +96,7 @@ describe('Child attendance reservation report', () => {
     ])
 
     await report.selectTimeFilter('00:00', '09:59')
+    await report.searchButton.click()
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,
@@ -104,6 +106,7 @@ describe('Child attendance reservation report', () => {
     ])
 
     await report.selectTimeFilter('14:00', '23:59')
+    await report.searchButton.click()
     await report.assertRows([
       {
         childName: `${child.lastName} ${child.firstName}`,

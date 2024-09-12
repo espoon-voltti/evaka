@@ -39,6 +39,14 @@ namespace TimeRangeEndpoint {
       return new End(this.__inner)
     }
 
+    format(pattern = 'HH:mm'): string {
+      return this.__inner.format(pattern)
+    }
+
+    formatIso(): string {
+      return this.__inner.formatIso()
+    }
+
     /** @deprecated Use the range operations of TimeRange instead */
     asLocalTime(): LocalTime {
       return this.__inner
@@ -79,6 +87,14 @@ namespace TimeRangeEndpoint {
 
     asEnd(): End {
       return this
+    }
+
+    format(pattern = 'HH:mm'): string {
+      return this.__inner.format(pattern)
+    }
+
+    formatIso(): string {
+      return this.__inner.formatIso()
     }
 
     /** @deprecated Use the range operations of TimeRange instead */

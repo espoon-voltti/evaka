@@ -10,7 +10,8 @@ import { ApplicationsReportRow } from 'lib-common/generated/api-types/reports'
 import { AssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
 import { AssistanceNeedsAndActionsReport } from 'lib-common/generated/api-types/reports'
 import { AssistanceNeedsAndActionsReportByChild } from 'lib-common/generated/api-types/reports'
-import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
+import { AttendanceReservationReportByChildBody } from 'lib-common/generated/api-types/reports'
+import { AttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { CareType } from 'lib-common/generated/api-types/daycare'
 import { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
@@ -29,6 +30,7 @@ import { FamilyDaycareMealReportResult } from 'lib-common/generated/api-types/re
 import { FinanceDecisionType } from 'lib-common/generated/api-types/invoicing'
 import { FuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { InvoiceReport } from 'lib-common/generated/api-types/reports'
+import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { ManualDuplicationReportRow } from 'lib-common/generated/api-types/reports'
 import { ManualDuplicationReportViewMode } from 'lib-common/generated/api-types/reports'
@@ -62,7 +64,7 @@ import { VardaUnitErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAssistanceNeedDecisionsReportRow } from 'lib-common/generated/api-types/reports'
-import { deserializeJsonAttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonAttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonAttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonDuplicatePeopleReportRow } from 'lib-common/generated/api-types/reports'
@@ -171,6 +173,23 @@ export async function getAssistanceNeedsAndActionsReportByChild(
 
 
 /**
+* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.getAttendanceReservationReportByChild
+*/
+export async function getAttendanceReservationReportByChild(
+  request: {
+    body: AttendanceReservationReportByChildBody
+  }
+): Promise<AttendanceReservationReportByChildGroup[]> {
+  const { data: json } = await client.request<JsonOf<AttendanceReservationReportByChildGroup[]>>({
+    url: uri`/employee/reports/attendance-reservation/by-child`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<AttendanceReservationReportByChildBody>
+  })
+  return json.map(e => deserializeJsonAttendanceReservationReportByChildGroup(e))
+}
+
+
+/**
 * Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.getAttendanceReservationReportByUnit
 */
 export async function getAttendanceReservationReportByUnit(
@@ -192,31 +211,6 @@ export async function getAttendanceReservationReportByUnit(
     params
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
-}
-
-
-/**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.getAttendanceReservationReportByUnitAndChild
-*/
-export async function getAttendanceReservationReportByUnitAndChild(
-  request: {
-    unitId: UUID,
-    start: LocalDate,
-    end: LocalDate,
-    groupIds?: UUID[] | null
-  }
-): Promise<AttendanceReservationReportByChildRow[]> {
-  const params = createUrlSearchParams(
-    ['start', request.start.formatIso()],
-    ['end', request.end.formatIso()],
-    ...(request.groupIds?.map((e): [string, string | null | undefined] => ['groupIds', e]) ?? [])
-  )
-  const { data: json } = await client.request<JsonOf<AttendanceReservationReportByChildRow[]>>({
-    url: uri`/employee/reports/attendance-reservation/${request.unitId}/by-child`.toString(),
-    method: 'GET',
-    params
-  })
-  return json.map(e => deserializeJsonAttendanceReservationReportByChildRow(e))
 }
 
 
