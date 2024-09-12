@@ -50,7 +50,9 @@ export function internalGwRouter(
 
   router.use(
     cacheControl((req) =>
-      req.path.startsWith('/child-images/') ? 'allow-cache' : 'forbid-cache'
+      req.path.startsWith('/employee-mobile/child-images/')
+        ? 'allow-cache'
+        : 'forbid-cache'
     )
   )
 
