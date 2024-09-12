@@ -2595,7 +2595,7 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `haeHenkilo is used for children without ssn`() {
+    fun `children without ssn are sent`() {
         val child = DevPerson(ssn = null, ophPersonOid = "ophPersonOid")
 
         db.transaction { tx ->
@@ -2609,8 +2609,8 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
 
         class TestReadClient : FailEveryOperation() {
-            override fun haeHenkilo(
-                body: VardaReadClient.HaeHenkiloRequest
+            override fun getOrCreateHenkilo(
+                body: VardaReadClient.GetOrCreateHenkiloRequest
             ): VardaReadClient.HenkiloResponse =
                 VardaReadClient.HenkiloResponse(
                     url = URI.create("henkilo"),
