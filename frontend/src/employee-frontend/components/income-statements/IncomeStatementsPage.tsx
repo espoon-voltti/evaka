@@ -8,11 +8,13 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
+import LocalDate from 'lib-common/local-date'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -145,6 +147,13 @@ export default React.memo(function IncomeStatementsPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('CREATED')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+  const [searchParams, setSearchParams] = useState<{
+    areas: string[] | null
+    providerTypes: ProviderType[] | null
+    sentStartDate: LocalDate | null
+    sentEndDate: LocalDate | null
+    placementValidDate: LocalDate | null
+  }>()
 
   const {
     incomeStatements: { searchFilters }
@@ -152,26 +161,30 @@ export default React.memo(function IncomeStatementsPage() {
 
   const { sentStartDate, sentEndDate } = searchFilters
   const incomeStatements = useQueryResult(
-    sentStartDate === undefined ||
-      sentEndDate === undefined ||
-      !sentStartDate.isAfter(sentEndDate)
+    searchParams !== undefined
       ? incomeStatementsAwaitingHandlerQuery({
-          body: {
-            page,
-            sortBy,
-            sortDirection,
-            areas: searchFilters.area.length > 0 ? searchFilters.area : null,
-            providerTypes:
-              searchFilters.providerTypes.length > 0
-                ? searchFilters.providerTypes
-                : null,
-            sentStartDate: searchFilters.sentStartDate ?? null,
-            sentEndDate: searchFilters.sentEndDate ?? null,
-            placementValidDate: searchFilters.placementValidDate ?? null
-          }
+          body: { ...searchParams, page, sortBy, sortDirection }
         })
       : constantQuery({ data: [], pages: 0, total: 0 })
   )
+  const handleSearch = () => {
+    if (
+      sentStartDate === undefined ||
+      sentEndDate === undefined ||
+      !sentStartDate.isAfter(sentEndDate)
+    ) {
+      setSearchParams({
+        areas: searchFilters.area.length > 0 ? searchFilters.area : null,
+        providerTypes:
+          searchFilters.providerTypes.length > 0
+            ? searchFilters.providerTypes
+            : null,
+        sentStartDate: searchFilters.sentStartDate ?? null,
+        sentEndDate: searchFilters.sentEndDate ?? null,
+        placementValidDate: searchFilters.placementValidDate ?? null
+      })
+    }
+  }
 
   return (
     <Container
@@ -180,7 +193,7 @@ export default React.memo(function IncomeStatementsPage() {
     >
       <ContentArea opaque>
         <H1>{i18n.incomeStatement.table.title}</H1>
-        <IncomeStatementFilters />
+        <IncomeStatementFilters onSearch={handleSearch} />
       </ContentArea>
       <Gap size="s" />
       {renderResult(incomeStatements, ({ data, pages, total }) => (

@@ -65,6 +65,7 @@ export class FeeDecisionsPage {
   #sendFeeDecisionsButton: AsyncButton
   #openDecisionHandlerSelectModalButton: AsyncButton
   #firstFeeDecisionRow: Element
+
   constructor(private readonly page: Page) {
     this.#feeDecisionListPage = page.findByDataQa('fee-decisions-page')
     this.#navigateBackButton = page.findByDataQa('navigate-back')
@@ -137,6 +138,7 @@ export class FeeDecisionDetailsPage {
   #decisionHandler: Element
   #openDecisionHandlerSelectModalButton: AsyncButton
   #childIncome: ElementCollection
+
   constructor(private readonly page: Page) {
     this.#partnerName = page.findByDataQa('partner')
     this.#headOfFamily = page.findByDataQa('head-of-family')
@@ -186,6 +188,7 @@ export class ValueDecisionsPage {
   #sendValueDecisionsButton: AsyncButton
   #openDecisionHandlerSelectModalButton: AsyncButton
   #firstValueDecisionRow: Element
+
   constructor(private readonly page: Page) {
     this.#fromDateInput = new DatePickerDeprecated(
       page.findByDataQa('value-decisions-start-date')
@@ -270,6 +273,7 @@ export class ValueDecisionDetailsPage {
   #sendDecisionButton: Element
   #openDecisionHandlerSelectModalButton: AsyncButton
   #childIncome: ElementCollection
+
   constructor(private readonly page: Page) {
     this.#partnerName = page.findByDataQa('partner')
     this.#headOfFamily = page.findByDataQa('head-of-family')
@@ -321,6 +325,7 @@ export class FinanceDecisionHandlerSelectModal {
   #decisionHandlerSelect: Select
   #decisionHandlerSelectModalResolveBtn: AsyncButton
   #decisionHandlerSelectModalRejectBtn: AsyncButton
+
   constructor(readonly page: Page) {
     this.#decisionHandlerSelect = new Select(
       page.findByDataQa('finance-decision-handler-select')
@@ -363,6 +368,7 @@ export class InvoicesPage {
   #markInvoiceSentButton: AsyncButton
   #invoices: Element
   #sendInvoicesButton: AsyncButton
+
   constructor(private readonly page: Page) {
     this.#invoicesPage = page.findByDataQa('invoices-page')
     this.#invoiceDetailsPage = page.findByDataQa('invoice-details-page')
@@ -475,9 +481,12 @@ export class InvoicesPage {
 }
 
 export class IncomeStatementsPage {
+  searchButton: Element
   incomeStatementRows: ElementCollection
+
   constructor(private readonly page: Page) {
     this.incomeStatementRows = page.findAll(`[data-qa="income-statement-row"]`)
+    this.searchButton = page.findByDataQa('search-button')
   }
 
   #providerTypeFilter = (type: ProviderType) =>
