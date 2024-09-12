@@ -321,7 +321,13 @@ const IncomeTypeSelection = React.memo(
     const startDateInputInfo = useMemo(
       () =>
         errorToInputInfo(
-          formData.startDate ? undefined : 'validDate',
+          formData.startDate
+            ? formData.startDate.isBefore(
+                LocalDate.todayInSystemTz().subMonths(12)
+              )
+              ? 'dateTooEarly'
+              : undefined
+            : 'validDate',
           t.validationErrors
         ),
       [formData.startDate, t]
@@ -360,7 +366,9 @@ const IncomeTypeSelection = React.memo(
     return (
       <ContentArea opaque paddingVertical="L" ref={ref}>
         <FixedSpaceColumn spacing="zero">
-          <H2 noMargin>{t.income.incomeInfo}</H2>
+          <H2 noMargin data-qa="title">
+            {t.income.incomeInfo}
+          </H2>
           <Gap size="s" />
           {showFormErrors && (
             <>
@@ -412,6 +420,16 @@ const IncomeTypeSelection = React.memo(
               />
             </div>
           </FixedSpaceRow>
+          {validateEndDate(formData.endDate) === 'dateTooLate' && (
+            <>
+              <Gap size="s" />
+              <InfoBox
+                message={t.income.errors.dateRangeInvalid}
+                thin
+                data-qa="date-range-info"
+              />
+            </>
+          )}
           <Gap size="L" />
           <H3 noMargin>{t.income.incomeType.title}</H3>
           <Gap size="s" />

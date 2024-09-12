@@ -64,9 +64,22 @@ describe('Income statements', () => {
 
     test('Gross income', async () => {
       await header.selectTab('income')
+
       await incomeStatementsPage.createNewIncomeStatement()
+
+      // Start date can be max 1y from now so an error is shown
+      await incomeStatementsPage.setValidFromDate(
+        LocalDate.todayInHelsinkiTz()
+          .subMonths(12)
+          .subDays(1)
+          .format('d.M.yyyy')
+      )
+      await incomeStatementsPage.incomeStartDateInfo.waitUntilVisible()
+
       await incomeStatementsPage.setValidFromDate(startDate)
+      await incomeStatementsPage.incomeStartDateInfo.waitUntilHidden()
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
+
       await incomeStatementsPage.selectIncomeStatementType('gross-income')
       await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
 

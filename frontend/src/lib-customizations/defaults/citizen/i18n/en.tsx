@@ -2121,7 +2121,9 @@ const en: Translations = {
         'The form is missing some required information or the information is incorrect. Please review the information you filled in.',
       choose: 'Please select an option',
       chooseAtLeastOne: 'Select at least one option',
-      deleteFailed: 'The income statement could not be deleted'
+      deleteFailed: 'The income statement could not be deleted',
+      dateRangeInvalid:
+        'Income information can be valid for a maximum of one year'
     },
     table: {
       title: 'Income statements',

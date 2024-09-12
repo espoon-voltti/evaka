@@ -2359,7 +2359,8 @@ export default {
         'Lomakkeelta puuttuu joitakin tarvittavia tietoja tai tiedot ovat virheellisiä. Ole hyvä ja tarkista täyttämäsi tiedot.',
       choose: 'Valitse vaihtoehto',
       chooseAtLeastOne: 'Valitse vähintään yksi vaihtoehto',
-      deleteFailed: 'Tuloselvitystä ei voitu poistaa'
+      deleteFailed: 'Tuloselvitystä ei voitu poistaa',
+      dateRangeInvalid: `Tulotiedot voivat olla voimassa korkeintaan vuoden`
     },
     table: {
       title: 'Omat tuloselvitykseni',

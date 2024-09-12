@@ -18,6 +18,7 @@ export default class CitizenIncomePage {
   #entrepreneurDate: TextInput
   validFromDate: TextInput
   validToDate: TextInput
+  incomeStartDateInfo: Element
   incomeEndDateInfo: Element
   constructor(private readonly page: Page) {
     this.requiredAttachments = page.findByDataQa('required-attachments')
@@ -28,6 +29,7 @@ export default class CitizenIncomePage {
     )
     this.validFromDate = new TextInput(page.findByDataQa('income-start-date'))
     this.validToDate = new TextInput(page.findByDataQa('income-end-date'))
+    this.incomeStartDateInfo = page.findByDataQa('income-start-date-info')
     this.incomeEndDateInfo = page.findByDataQa('income-end-date-info')
   }
 
@@ -44,12 +46,12 @@ export default class CitizenIncomePage {
 
   async setValidFromDate(date: string) {
     await this.validFromDate.fill(date)
-    await this.validFromDate.press('Enter')
+    await this.page.findByDataQa('title').click()
   }
 
   async setValidToDate(date: string) {
     await this.validToDate.fill(date)
-    await this.validToDate.press('Enter')
+    await this.page.findByDataQa('title').click()
   }
 
   async submit() {
