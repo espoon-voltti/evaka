@@ -30,23 +30,6 @@ private fun maskName(name: String): String =
 
 interface VardaReadClient {
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class HaeHenkiloRequest(
-        val henkilotunnus: String? = null,
-        val henkilo_oid: String? = null,
-    ) {
-        init {
-            check(henkilotunnus != null || henkilo_oid != null) {
-                "Both params henkilotunnus and henkilo_oid must not be null"
-            }
-        }
-
-        override fun toString(): String =
-            "HaeHenkiloRequest(henkilotunnus=${maskHenkilotunnus(henkilotunnus)}, henkilo_oid=$henkilo_oid)"
-    }
-
-    fun haeHenkilo(body: HaeHenkiloRequest): HenkiloResponse
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     data class GetOrCreateHenkiloRequest(
         val etunimet: String,
         val sukunimi: String,
@@ -252,10 +235,6 @@ class VardaClient(
 ) : VardaReadClient, VardaWriteClient, VardaUnitClient {
     private var token: String? = null
     private val baseUrl = vardaBaseUrl.ensureTrailingSlash()
-
-    override fun haeHenkilo(
-        body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse = post(baseUrl.resolve("v1/hae-henkilo/"), body)
 
     override fun getOrCreateHenkilo(
         body: VardaReadClient.GetOrCreateHenkiloRequest

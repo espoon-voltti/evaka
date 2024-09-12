@@ -2861,12 +2861,6 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 }
 
 open class FailEveryOperation : VardaReadClient {
-    override fun haeHenkilo(
-        body: VardaReadClient.HaeHenkiloRequest
-    ): VardaReadClient.HenkiloResponse {
-        throw NotImplementedError()
-    }
-
     override fun getOrCreateHenkilo(
         body: VardaReadClient.GetOrCreateHenkiloRequest
     ): VardaReadClient.HenkiloResponse {
