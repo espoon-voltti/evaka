@@ -12,7 +12,12 @@ import * as redis from 'redis'
 import { enduserGwRouter } from './enduser/app.js'
 import { internalGwRouter } from './internal/app.js'
 import { configFromEnv, httpPort, toRedisClientOpts } from './shared/config.js'
-import { logError, loggingMiddleware, logInfo } from './shared/logging.js'
+import {
+  logError,
+  loggingMiddleware,
+  logInfo,
+  logWarn
+} from './shared/logging.js'
 import { fallbackErrorHandler } from './shared/middleware/error-handler.js'
 import tracing from './shared/middleware/tracing.js'
 import { assertRedisConnection } from './shared/redis-client.js'
@@ -20,6 +25,13 @@ import { trustReverseProxy } from './shared/reverse-proxy.js'
 import csp from './shared/routes/csp.js'
 
 const config = configFromEnv()
+
+const deprecatedEnvVariables = ['COOKIE_SECRET', 'SFI_MOCK', 'DEV_LOGIN']
+deprecatedEnvVariables.forEach((name) => {
+  if (process.env[name] !== undefined) {
+    logWarn(`Deprecated environment variable ${name} was specified`)
+  }
+})
 
 const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
