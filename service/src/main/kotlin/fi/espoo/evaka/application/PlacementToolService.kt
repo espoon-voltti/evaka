@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.PreschoolTerm
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getPreschoolTerm
 import fi.espoo.evaka.daycare.getPreschoolTerms
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
@@ -20,6 +21,8 @@ import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -70,68 +73,52 @@ class PlacementToolService(
         clock: EvakaClock,
         file: MultipartFile,
     ) {
-
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val serviceNeedOptions = tx.getServiceNeedOptions()
-                val partTimeServiceNeedOption =
+                val partTimeServiceNeedOptionId =
                     serviceNeedOptions
                         .firstOrNull {
                             it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption
                         }
-                        ?.let {
-                            ServiceNeedOption(
-                                id = it.id,
-                                nameFi = it.nameFi,
-                                nameSv = it.nameSv,
-                                nameEn = it.nameEn,
-                                validPlacementType = it.validPlacementType,
-                            )
-                        }
-                if (null == partTimeServiceNeedOption) {
+                        ?.id
+                if (null == partTimeServiceNeedOptionId) {
                     throw NotFound("No part time service need option found")
                 }
-                val defaultServiceNeedOption =
+                val defaultServiceNeedOptionId =
                     serviceNeedOptions
                         .firstOrNull {
                             it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE &&
                                 it.defaultOption
                         }
-                        ?.let {
-                            ServiceNeedOption(
-                                id = it.id,
-                                nameFi = it.nameFi,
-                                nameSv = it.nameSv,
-                                nameEn = it.nameEn,
-                                validPlacementType = it.validPlacementType,
-                            )
-                        }
-                if (null == defaultServiceNeedOption) {
+                        ?.id
+                if (null == defaultServiceNeedOptionId) {
                     throw NotFound("No default service need option found")
                 }
-                val nextPreschoolTerm =
-                    tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > clock.today() }
-                if (null == nextPreschoolTerm) {
+                val nextPreschoolTermId =
+                    tx.getPreschoolTerms()
+                        .firstOrNull { it.finnishPreschool.start > clock.today() }
+                        ?.id
+                if (null == nextPreschoolTermId) {
                     throw NotFound("No next preschool term found")
                 }
-                val placements = parsePlacementToolCsv(file.inputStream)
-                placements
-                    .forEach { data ->
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.PlacementTool(
-                                    user,
-                                    data,
-                                    partTimeServiceNeedOption,
-                                    defaultServiceNeedOption,
-                                    nextPreschoolTerm,
-                                )
-                            ),
-                            runAt = clock.now(),
-                            retryCount = 1,
-                        )
-                    }
+                val placements: List<PlacementToolData>
+                file.inputStream.use { placements = parsePlacementToolCsv(it) }
+                asyncJobRunner
+                    .plan(
+                        tx,
+                        placements.map { data ->
+                            AsyncJob.PlacementTool(
+                                user,
+                                data,
+                                partTimeServiceNeedOptionId,
+                                defaultServiceNeedOptionId,
+                                nextPreschoolTermId,
+                            )
+                        },
+                        runAt = clock.now(),
+                        retryCount = 1,
+                    )
                     .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
             }
         }
@@ -142,9 +129,9 @@ class PlacementToolService(
         user: AuthenticatedUser,
         clock: EvakaClock,
         data: PlacementToolData,
-        partTimeServiceNeedOption: ServiceNeedOption?,
-        defaultServiceNeedOption: ServiceNeedOption?,
-        nextPreschoolTerm: PreschoolTerm,
+        partTimeServiceNeedOptionId: ServiceNeedOptionId?,
+        defaultServiceNeedOptionId: ServiceNeedOptionId?,
+        nextPreschoolTermId: PreschoolTermId,
     ) {
         dbc.transaction { tx ->
             if (tx.getChild(data.childId) == null) {
@@ -188,6 +175,32 @@ class PlacementToolService(
                 )
 
             val application = tx.fetchApplicationDetails(applicationId)!!
+            val serviceNeedOptions = tx.getServiceNeedOptions()
+            val partTimeServiceNeedOption =
+                serviceNeedOptions
+                    .firstOrNull { it.id == partTimeServiceNeedOptionId }
+                    ?.let {
+                        ServiceNeedOption(
+                            it.id,
+                            it.nameFi,
+                            it.nameSv,
+                            it.nameEn,
+                            it.validPlacementType,
+                        )
+                    }
+            val defaultServiceNeedOption =
+                serviceNeedOptions
+                    .firstOrNull { it.id == defaultServiceNeedOptionId }
+                    ?.let {
+                        ServiceNeedOption(
+                            it.id,
+                            it.nameFi,
+                            it.nameSv,
+                            it.nameEn,
+                            it.validPlacementType,
+                        )
+                    }
+            val nextPreschoolTerm = tx.getPreschoolTerm(nextPreschoolTermId)!!
 
             updateApplicationPreferences(
                 tx,
@@ -196,38 +209,14 @@ class PlacementToolService(
                 application,
                 data,
                 guardianIds,
-                partTimeServiceNeedOption,
-                defaultServiceNeedOption,
+                partTimeServiceNeedOption!!,
+                defaultServiceNeedOption!!,
                 nextPreschoolTerm,
             )
 
             applicationStateService.sendPlacementToolApplication(tx, user, clock, application)
         }
     }
-
-    fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
-        CSVFormat.Builder.create(CSVFormat.DEFAULT)
-            .setHeader()
-            .apply { setIgnoreSurroundingSpaces(true) }
-            .apply { setDelimiter(';') }
-            .build()
-            .parse(inputStream.reader())
-            .filter { row ->
-                row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
-                    row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
-            }
-            .map { row ->
-                PlacementToolData(
-                    childId =
-                        ChildId(UUID.fromString(row.get(PlacementToolCsvField.CHILD_ID.fieldName))),
-                    preschoolId =
-                        DaycareId(
-                            UUID.fromString(
-                                row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName)
-                            )
-                        ),
-                )
-            }
 
     private fun updateApplicationPreferences(
         tx: Database.Transaction,
@@ -236,8 +225,8 @@ class PlacementToolService(
         application: ApplicationDetails,
         data: PlacementToolData,
         guardianIds: List<PersonId>,
-        partTimeServiceNeedOption: ServiceNeedOption?,
-        defaultServiceNeedOption: ServiceNeedOption?,
+        partTimeServiceNeedOption: ServiceNeedOption,
+        defaultServiceNeedOption: ServiceNeedOption,
         preschoolTerm: PreschoolTerm,
     ) {
         val preferredUnit = tx.getDaycare(data.preschoolId)!!
@@ -295,5 +284,27 @@ class PlacementToolService(
         )
     }
 }
+
+fun parsePlacementToolCsv(inputStream: InputStream): List<PlacementToolData> =
+    CSVFormat.Builder.create(CSVFormat.DEFAULT)
+        .setHeader()
+        .apply { setIgnoreSurroundingSpaces(true) }
+        .apply { setDelimiter(';') }
+        .build()
+        .parse(inputStream.reader())
+        .filter { row ->
+            row.get(PlacementToolCsvField.CHILD_ID.fieldName).isNotBlank() &&
+                row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName).isNotBlank()
+        }
+        .map { row ->
+            PlacementToolData(
+                childId =
+                    ChildId(UUID.fromString(row.get(PlacementToolCsvField.CHILD_ID.fieldName))),
+                preschoolId =
+                    DaycareId(
+                        UUID.fromString(row.get(PlacementToolCsvField.PRESCHOOL_UNIT_ID.fieldName))
+                    ),
+            )
+        }
 
 data class PlacementToolData(val childId: ChildId, val preschoolId: DaycareId)

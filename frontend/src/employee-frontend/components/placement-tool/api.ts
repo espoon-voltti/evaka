@@ -16,7 +16,7 @@ export async function uploadPlacementFile(
 
   try {
     const { data } = await client.post<string>(
-      '/v2/applications/placement-tool',
+      '/employee/placement-tool',
       formData,
       {
         headers: { 'Content-Type': 'multipart/form-data' },

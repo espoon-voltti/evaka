@@ -615,7 +615,6 @@ private val knownLegacyPaths =
         "/v2/applications/by-child/{childId}",
         "/v2/applications/by-guardian/{guardianId}",
         "/v2/applications/placement-proposals/{unitId}/accept",
-        "/v2/applications/placement-tool",
         "/v2/applications/search",
         "/v2/applications/units/{unitId}",
         "/value-decisions/head-of-family/{headOfFamilyId}",

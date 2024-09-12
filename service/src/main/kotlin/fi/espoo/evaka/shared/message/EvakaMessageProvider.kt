@@ -166,7 +166,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
     override fun getPlacementToolHeader(lang: OfficialLanguage): String =
         when (lang) {
             OfficialLanguage.FI ->
-                "Esitäyttetty hakemus esiopetukseen / Pre-filled application for preschool education"
+                "Esitäytetty hakemus esiopetukseen / Pre-filled application for preschool education"
             OfficialLanguage.SV -> "Förfyllad ansökan om förskoleundervisning"
         }
 

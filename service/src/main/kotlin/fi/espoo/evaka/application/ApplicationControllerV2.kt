@@ -45,17 +45,13 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
-import java.util.UUID
-import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 
 enum class ApplicationTypeToggle {
     CLUB,
@@ -128,7 +124,6 @@ class ApplicationControllerV2(
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
-    private val placementToolService: PlacementToolService,
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -163,19 +158,6 @@ class ApplicationControllerV2(
             meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
         )
         return applicationId
-    }
-
-    @PostMapping("/placement-tool", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun createPlacementToolApplications(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @RequestPart("file") file: MultipartFile,
-    ): UUID {
-        placementToolService.createPlacementToolApplications(db, user, clock, file)
-
-        // this is needed for fileUpload component
-        return UUID.randomUUID()
     }
 
     @PostMapping("/search")
