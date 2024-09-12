@@ -14,6 +14,7 @@ export type QueryKeyPrefix =
   | 'employees'
   | 'financeBasics'
   | 'holidayPeriods'
+  | 'incomeStatements'
   | 'reports'
   | 'timeline'
   | 'unit'
