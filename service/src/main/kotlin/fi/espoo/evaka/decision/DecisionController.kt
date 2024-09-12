@@ -25,10 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/decisions2", // deprecated
-    "/employee/decisions",
-)
+@RequestMapping("/employee/decisions")
 class DecisionController(
     private val decisionService: DecisionService,
     private val accessControl: AccessControl,

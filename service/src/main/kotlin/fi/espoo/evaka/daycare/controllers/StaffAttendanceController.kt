@@ -30,10 +30,7 @@ class StaffAttendanceController(
     private val staffAttendanceService: StaffAttendanceService,
     private val accessControl: AccessControl,
 ) {
-    @GetMapping(
-        "/staff-attendances/unit/{unitId}", // deprecated
-        "/employee-mobile/staff-attendances/unit/{unitId}",
-    )
+    @GetMapping("/employee-mobile/staff-attendances/unit/{unitId}")
     fun getAttendancesByUnit(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -55,10 +52,7 @@ class StaffAttendanceController(
             .also { Audit.UnitStaffAttendanceRead.log(targetId = AuditId(unitId)) }
     }
 
-    @GetMapping(
-        "/staff-attendances/group/{groupId}", // deprecated
-        "/employee/staff-attendances/group/{groupId}",
-    )
+    @GetMapping("/employee/staff-attendances/group/{groupId}")
     fun getStaffAttendancesByGroup(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -100,8 +94,7 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId,
     ) = upsertStaffAttendance(db, user as AuthenticatedUser, clock, staffAttendance, groupId)
 
-    @PostMapping("/staff-attendances/group/{groupId}") // deprecated
-    fun upsertStaffAttendance(
+    private fun upsertStaffAttendance(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

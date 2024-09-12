@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ChildSensitiveInfoController(private val ac: AccessControl) {
 
-    @GetMapping(
-        "/children/{childId}/sensitive-info", // deprecated
-        "/employee-mobile/children/{childId}/sensitive-info",
-    )
+    @GetMapping("/employee-mobile/children/{childId}/sensitive-info")
     fun getSensitiveInfo(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

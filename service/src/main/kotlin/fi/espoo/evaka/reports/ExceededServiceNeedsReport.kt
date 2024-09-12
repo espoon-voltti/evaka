@@ -39,10 +39,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ExceededServiceNeedsReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/exceeded-service-need/units", // deprecated
-        "/employee/reports/exceeded-service-need/units",
-    )
+    @GetMapping("/employee/reports/exceeded-service-need/units")
     fun getExceededServiceNeedReportUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -62,10 +59,7 @@ class ExceededServiceNeedsReportController(private val accessControl: AccessCont
         }
     }
 
-    @GetMapping(
-        "/reports/exceeded-service-need/rows", // deprecated
-        "/employee/reports/exceeded-service-need/rows",
-    )
+    @GetMapping("/employee/reports/exceeded-service-need/rows")
     fun getExceededServiceNeedReportRows(
         db: Database,
         user: AuthenticatedUser.Employee,

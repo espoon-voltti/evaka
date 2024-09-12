@@ -31,10 +31,7 @@ class AssistanceNeedVoucherCoefficientController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    @PostMapping(
-        "/children/{childId}/assistance-need-voucher-coefficients", // deprecated
-        "/employee/children/{childId}/assistance-need-voucher-coefficients",
-    )
+    @PostMapping("/employee/children/{childId}/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficient(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -74,10 +71,7 @@ class AssistanceNeedVoucherCoefficientController(
             }
     }
 
-    @GetMapping(
-        "/children/{childId}/assistance-need-voucher-coefficients", // deprecated
-        "/employee/children/{childId}/assistance-need-voucher-coefficients",
-    )
+    @GetMapping("/employee/children/{childId}/assistance-need-voucher-coefficients")
     fun getAssistanceNeedVoucherCoefficients(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -110,10 +104,7 @@ class AssistanceNeedVoucherCoefficientController(
             }
     }
 
-    @PutMapping(
-        "/assistance-need-voucher-coefficients/{id}", // deprecated
-        "/employee/assistance-need-voucher-coefficients/{id}",
-    )
+    @PutMapping("/employee/assistance-need-voucher-coefficients/{id}")
     fun updateAssistanceNeedVoucherCoefficient(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -154,10 +145,7 @@ class AssistanceNeedVoucherCoefficientController(
             .also { Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = AuditId(id)) }
     }
 
-    @DeleteMapping(
-        "/assistance-need-voucher-coefficients/{id}", // deprecated
-        "/employee/assistance-need-voucher-coefficients/{id}",
-    )
+    @DeleteMapping("/employee/assistance-need-voucher-coefficients/{id}")
     fun deleteAssistanceNeedVoucherCoefficient(
         db: Database,
         user: AuthenticatedUser.Employee,

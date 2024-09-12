@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MobileDevicesController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/mobile-devices", // deprecated
-        "/employee/mobile-devices",
-    )
+    @GetMapping("/employee/mobile-devices")
     fun getMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -53,10 +50,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             }
     }
 
-    @GetMapping(
-        "/mobile-devices/personal", // deprecated
-        "/employee/mobile-devices/personal",
-    )
+    @GetMapping("/employee/mobile-devices/personal")
     fun getPersonalMobileDevices(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -83,10 +77,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
 
     data class RenameRequest(val name: String)
 
-    @PutMapping(
-        "/mobile-devices/{id}/name", // deprecated
-        "/employee/mobile-devices/{id}/name",
-    )
+    @PutMapping("/employee/mobile-devices/{id}/name")
     fun putMobileDeviceName(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -109,10 +100,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         Audit.MobileDevicesRename.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping(
-        "/mobile-devices/{id}", // deprecated
-        "/employee/mobile-devices/{id}",
-    )
+    @DeleteMapping("/employee/mobile-devices/{id}")
     fun deleteMobileDevice(
         db: Database,
         user: AuthenticatedUser.Employee,

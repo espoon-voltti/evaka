@@ -36,10 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/fee-alterations", // deprecated
-    "/employee/fee-alterations",
-)
+@RequestMapping("/employee/fee-alterations")
 class FeeAlterationController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl,

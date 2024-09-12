@@ -47,10 +47,7 @@ class PairingsController(
         data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
 
-    @PostMapping(
-        "/pairings", // deprecated
-        "/employee/pairings",
-    )
+    @PostMapping("/employee/pairings")
     fun postPairing(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -103,13 +100,7 @@ class PairingsController(
      */
     data class PostPairingChallengeReq(val challengeKey: String)
 
-    @PostMapping(
-        path =
-            [
-                "/public/pairings/challenge", // deprecated
-                "/employee-mobile/public/pairings/challenge",
-            ]
-    )
+    @PostMapping("/employee-mobile/public/pairings/challenge")
     fun postPairingChallenge(
         db: Database,
         clock: EvakaClock,
@@ -136,10 +127,7 @@ class PairingsController(
      */
     data class PostPairingResponseReq(val challengeKey: String, val responseKey: String)
 
-    @PostMapping(
-        "/pairings/{id}/response", // deprecated
-        "/employee/pairings/{id}/response",
-    )
+    @PostMapping("/employee/pairings/{id}/response")
     fun postPairingResponse(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -239,7 +227,6 @@ class PairingsController(
     @GetMapping(
         path =
             [
-                "/public/pairings/{id}/status", // deprecated
                 "/employee/public/pairings/{id}/status",
                 "/employee-mobile/public/pairings/{id}/status",
             ]

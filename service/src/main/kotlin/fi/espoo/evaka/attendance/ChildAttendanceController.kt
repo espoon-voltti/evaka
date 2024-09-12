@@ -53,10 +53,7 @@ class ChildAttendanceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
 ) {
-    @GetMapping(
-        "/attendances/units/{unitId}/children", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children",
-    )
+    @GetMapping("/employee-mobile/attendances/units/{unitId}/children")
     fun getChildren(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -122,10 +119,7 @@ class ChildAttendanceController(
         val status: AttendanceStatus,
     )
 
-    @GetMapping(
-        "/attendances/units/{unitId}/attendances", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/attendances",
-    )
+    @GetMapping("/employee-mobile/attendances/units/{unitId}/attendances")
     fun getAttendanceStatuses(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -190,10 +184,7 @@ class ChildAttendanceController(
         @ForceCodeGenType(String::class) @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/arrival", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -230,10 +221,7 @@ class ChildAttendanceController(
         )
     }
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/return-to-coming", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-coming",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-coming")
     fun returnToComing(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -269,8 +257,7 @@ class ChildAttendanceController(
     data class ExpectedAbsencesOnDepartureResponse(val categories: Set<AbsenceCategory>?)
 
     @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/departure/expected-absences", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure/expected-absences",
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure/expected-absences"
     )
     fun getChildExpectedAbsencesOnDeparture(
         db: Database,
@@ -321,10 +308,7 @@ class ChildAttendanceController(
         val absenceTypeBillable: AbsenceType?,
     )
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/departure", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/departure",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -436,10 +420,7 @@ class ChildAttendanceController(
         setChildDateAbsences(tx, now, user.evakaUserId, childId, now.toLocalDate(), absences)
     }
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/return-to-present", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-present",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/return-to-present")
     fun returnToPresent(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -471,10 +452,7 @@ class ChildAttendanceController(
 
     data class FullDayAbsenceRequest(val absenceType: AbsenceType)
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/full-day-absence", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -523,8 +501,7 @@ class ChildAttendanceController(
     }
 
     @DeleteMapping(
-        "/attendances/units/{unitId}/children/{childId}/full-day-absence", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence",
+        "/employee-mobile/attendances/units/{unitId}/children/{childId}/full-day-absence"
     )
     fun cancelFullDayAbsence(
         db: Database,
@@ -567,10 +544,7 @@ class ChildAttendanceController(
 
     data class AbsenceRangeRequest(val absenceType: AbsenceType, val range: FiniteDateRange)
 
-    @PostMapping(
-        "/attendances/units/{unitId}/children/{childId}/absence-range", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range",
-    )
+    @PostMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range")
     fun postAbsenceRange(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -623,10 +597,7 @@ class ChildAttendanceController(
         )
     }
 
-    @DeleteMapping(
-        "/attendances/units/{unitId}/children/{childId}/absence-range", // deprecated
-        "/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range",
-    )
+    @DeleteMapping("/employee-mobile/attendances/units/{unitId}/children/{childId}/absence-range")
     fun deleteAbsenceRange(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

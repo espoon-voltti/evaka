@@ -29,7 +29,7 @@ class PaymentController(
     private val accessControl: AccessControl,
     private val paymentService: PaymentService,
 ) {
-    @PostMapping(path = ["/payments/search", "/employee/payments/search"])
+    @PostMapping("/employee/payments/search")
     fun searchPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -38,7 +38,7 @@ class PaymentController(
         return db.connect { dbc -> dbc.read { tx -> tx.searchPayments(params) } }
     }
 
-    @PostMapping(path = ["/payments/create-drafts", "/employee/payments/create-drafts"])
+    @PostMapping("/employee/payments/create-drafts")
     fun createPaymentDrafts(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -60,7 +60,7 @@ class PaymentController(
         val paymentIds: List<PaymentId>,
     )
 
-    @PostMapping(path = ["/payments/delete-drafts", "/employee/payments/delete-drafts"])
+    @PostMapping("/employee/payments/delete-drafts")
     fun deleteDraftPayments(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -82,7 +82,7 @@ class PaymentController(
         Audit.PaymentsDeleteDrafts.log(targetId = AuditId(paymentIds))
     }
 
-    @PostMapping(path = ["/payments/send", "/employee/payments/send"])
+    @PostMapping("/employee/payments/send")
     fun sendPayments(
         db: Database,
         user: AuthenticatedUser.Employee,

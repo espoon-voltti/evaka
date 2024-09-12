@@ -52,10 +52,7 @@ enum class Report {
 
 @RestController
 class ReportPermissions(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports", // deprecated
-        "/employee/reports",
-    )
+    @GetMapping("/employee/reports")
     fun getPermittedReports(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MissingServiceNeedReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/missing-service-need", // deprecated
-        "/employee/reports/missing-service-need",
-    )
+    @GetMapping("/employee/reports/missing-service-need")
     fun getMissingServiceNeedReport(
         db: Database,
         user: AuthenticatedUser.Employee,

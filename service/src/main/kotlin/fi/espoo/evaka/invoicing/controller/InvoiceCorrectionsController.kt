@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/invoice-corrections", "/employee/invoice-corrections")
+@RequestMapping("/employee/invoice-corrections")
 class InvoiceCorrectionsController(private val accessControl: AccessControl) {
     @GetMapping("/{personId}")
     fun getPersonInvoiceCorrections(

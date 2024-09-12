@@ -39,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/child-documents", // deprecated
-    "/employee/child-documents",
-)
+@RequestMapping("/employee/child-documents")
 class ChildDocumentController(
     private val accessControl: AccessControl,
     private val childDocumentService: ChildDocumentService,

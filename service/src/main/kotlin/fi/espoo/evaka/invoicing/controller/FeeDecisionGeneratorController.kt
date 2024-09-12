@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 data class GenerateDecisionsBody(val starting: String, val targetHeads: List<PersonId?>)
 
 @RestController
-@RequestMapping(
-    "/fee-decision-generator", // deprecated
-    "/employee/fee-decision-generator",
-)
+@RequestMapping("/employee/fee-decision-generator")
 class FeeDecisionGeneratorController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,

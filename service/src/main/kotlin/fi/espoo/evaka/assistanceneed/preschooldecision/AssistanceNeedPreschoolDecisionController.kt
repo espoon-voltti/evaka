@@ -45,10 +45,7 @@ class AssistanceNeedPreschoolDecisionController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val assistanceNeedPreschoolDecisionService: AssistanceNeedPreschoolDecisionService,
 ) {
-    @PostMapping(
-        "/children/{childId}/assistance-need-preschool-decisions", // deprecated
-        "/employee/children/{childId}/assistance-need-preschool-decisions",
-    )
+    @PostMapping("/employee/children/{childId}/assistance-need-preschool-decisions")
     fun createAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -98,10 +95,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @GetMapping(
-        "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}",
-    )
+    @GetMapping("/employee/assistance-need-preschool-decisions/{id}")
     fun getAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -154,10 +148,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}")
     fun updateAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -181,10 +172,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionUpdate.log(targetId = AuditId(id)) }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/send", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/send",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/send")
     fun sendAssistanceNeedPreschoolDecisionForDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -221,10 +209,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionSend.log(targetId = AuditId(id)) }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/unsend", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/unsend",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/unsend")
     fun revertAssistanceNeedPreschoolDecisionToUnsent(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -249,10 +234,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/mark-as-opened", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/mark-as-opened",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/mark-as-opened")
     fun markAssistanceNeedPreschoolDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -275,10 +257,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionOpened.log(targetId = AuditId(id)) }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/decide", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decide",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/decide")
     fun decideAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -369,10 +348,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/annul", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/annul",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/annul")
     fun annulAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -406,10 +382,7 @@ class AssistanceNeedPreschoolDecisionController(
             .also { Audit.ChildAssistanceNeedPreschoolDecisionAnnul.log(targetId = AuditId(id)) }
     }
 
-    @GetMapping(
-        "/children/{childId}/assistance-need-preschool-decisions", // deprecated
-        "/employee/children/{childId}/assistance-need-preschool-decisions",
-    )
+    @GetMapping("/employee/children/{childId}/assistance-need-preschool-decisions")
     fun getAssistanceNeedPreschoolDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -453,10 +426,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @DeleteMapping(
-        "/assistance-need-preschool-decisions/{id}", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}",
-    )
+    @DeleteMapping("/employee/assistance-need-preschool-decisions/{id}")
     fun deleteAssistanceNeedPreschoolDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -485,10 +455,7 @@ class AssistanceNeedPreschoolDecisionController(
     }
 
     // TODO: Unused endpoint?
-    @PutMapping(
-        "/assistance-need-preschool-decisions/{id}/decision-maker", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decision-maker",
-    )
+    @PutMapping("/employee/assistance-need-preschool-decisions/{id}/decision-maker")
     fun updateAssistanceNeedPreschoolDecisionDecisionMaker(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -528,10 +495,7 @@ class AssistanceNeedPreschoolDecisionController(
             }
     }
 
-    @GetMapping(
-        "/assistance-need-preschool-decisions/{id}/decision-maker-options", // deprecated
-        "/employee/assistance-need-preschool-decisions/{id}/decision-maker-options",
-    )
+    @GetMapping("/employee/assistance-need-preschool-decisions/{id}/decision-maker-options")
     fun getAssistancePreschoolDecisionMakerOptions(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -76,10 +76,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/daycares", // deprecated
-    "/employee/daycares",
-)
+@RequestMapping("/employee/daycares")
 class DaycareController(
     private val daycareService: DaycareService,
     private val accessControl: AccessControl,

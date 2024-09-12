@@ -43,34 +43,17 @@ private val logger = KotlinLogging.logger {}
 @RestController
 class TermsController(private val accessControl: AccessControl) {
 
-    @GetMapping(
-        path =
-            [
-                "/public/club-terms", // deprecated
-                "/citizen/public/club-terms",
-                "/employee/public/club-terms",
-            ]
-    )
+    @GetMapping("/citizen/public/club-terms", "/employee/public/club-terms")
     fun getClubTerms(db: Database): List<ClubTerm> {
         return db.connect { dbc -> dbc.read { it.getClubTerms() } }
     }
 
-    @GetMapping(
-        path =
-            [
-                "/public/preschool-terms", // deprecated
-                "/citizen/public/preschool-terms",
-                "/employee/public/preschool-terms",
-            ]
-    )
+    @GetMapping("/citizen/public/preschool-terms", "/employee/public/preschool-terms")
     fun getPreschoolTerms(db: Database): List<PreschoolTerm> {
         return db.connect { dbc -> dbc.read { it.getPreschoolTerms() } }
     }
 
-    @PostMapping(
-        "/club-terms", // deprecated
-        "/employee/club-terms",
-    )
+    @PostMapping("/employee/club-terms")
     fun createClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -94,10 +77,7 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.ClubTermCreate.log(targetId = AuditId(termId)) }
     }
 
-    @PutMapping(
-        "/club-terms/{id}", // deprecated
-        "/employee/club-terms/{id}",
-    )
+    @PutMapping("/employee/club-terms/{id}")
     fun updateClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -119,10 +99,7 @@ class TermsController(private val accessControl: AccessControl) {
             .also { Audit.ClubTermUpdate.log(targetId = AuditId(id)) }
     }
 
-    @DeleteMapping(
-        "/club-terms/{id}", // deprecated
-        "/employee/club-terms/{id}",
-    )
+    @DeleteMapping("/employee/club-terms/{id}")
     fun deleteClubTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -146,10 +123,7 @@ class TermsController(private val accessControl: AccessControl) {
             .also { Audit.ClubTermDelete.log(targetId = AuditId(id)) }
     }
 
-    @PostMapping(
-        "/preschool-terms", // deprecated
-        "/employee/preschool-terms",
-    )
+    @PostMapping("/employee/preschool-terms")
     fun createPreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -179,10 +153,7 @@ class TermsController(private val accessControl: AccessControl) {
             .also { termId -> Audit.PreschoolTermCreate.log(targetId = AuditId(termId)) }
     }
 
-    @PutMapping(
-        "/preschool-terms/{id}", // deprecated
-        "/employee/preschool-terms/{id}",
-    )
+    @PutMapping("/employee/preschool-terms/{id}")
     fun updatePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -217,10 +188,7 @@ class TermsController(private val accessControl: AccessControl) {
             .also { Audit.PreschoolTermUpdate.log(targetId = AuditId(id)) }
     }
 
-    @DeleteMapping(
-        "/preschool-terms/{id}", // deprecated
-        "/employee/preschool-terms/{id}",
-    )
+    @DeleteMapping("/employee/preschool-terms/{id}")
     fun deletePreschoolTerm(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class RawReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/raw", // deprecated
-        "/employee/reports/raw",
-    )
+    @GetMapping("/employee/reports/raw")
     fun getRawReport(
         db: Database,
         user: AuthenticatedUser.Employee,

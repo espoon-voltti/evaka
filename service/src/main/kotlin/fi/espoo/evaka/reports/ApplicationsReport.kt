@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ApplicationsReportController(private val accessControl: AccessControl) {
-    @GetMapping("/reports/applications", "/employee/reports/applications")
+    @GetMapping("/employee/reports/applications")
     fun getApplicationsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

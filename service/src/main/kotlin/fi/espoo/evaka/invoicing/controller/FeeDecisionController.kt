@@ -71,11 +71,7 @@ enum class DistinctiveParams {
 }
 
 @RestController
-@RequestMapping(
-    "/fee-decisions", // deprecated
-    "/decisions", // deprecated
-    "/employee/fee-decisions",
-)
+@RequestMapping("/employee/fee-decisions")
 class FeeDecisionController(
     private val service: FeeDecisionService,
     private val generator: FinanceDecisionGenerator,

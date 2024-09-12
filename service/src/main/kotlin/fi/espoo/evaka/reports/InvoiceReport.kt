@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class InvoiceReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/invoices", // deprecated
-        "/employee/reports/invoices",
-    )
+    @GetMapping("/employee/reports/invoices")
     fun getInvoiceReport(
         db: Database,
         user: AuthenticatedUser.Employee,

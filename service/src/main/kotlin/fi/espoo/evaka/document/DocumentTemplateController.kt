@@ -35,10 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/document-templates", // deprecated
-    "/employee/document-templates",
-)
+@RequestMapping("/employee/document-templates")
 class DocumentTemplateController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,

@@ -22,10 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ServiceNeedReport(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/service-need", // deprecated
-        "/employee/reports/service-need",
-    )
+    @GetMapping("/employee/reports/service-need")
     fun getServiceNeedReport(
         db: Database,
         user: AuthenticatedUser.Employee,

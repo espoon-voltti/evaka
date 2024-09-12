@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/absences", // deprecated
-    "/employee/absences",
-)
+@RequestMapping("/employee/absences")
 class AbsenceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,

@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PlacementCountReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/placement-count", // deprecated
-        "/employee/reports/placement-count",
-    )
+    @GetMapping("/employee/reports/placement-count")
     fun getPlacementCountReport(
         db: Database,
         user: AuthenticatedUser.Employee,

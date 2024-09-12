@@ -45,10 +45,7 @@ class VasuController(
 
     data class CreateDocumentRequest(val templateId: VasuTemplateId)
 
-    @PostMapping(
-        "/children/{childId}/vasu", // deprecated
-        "/employee/children/{childId}/vasu",
-    )
+    @PostMapping("/employee/children/{childId}/vasu")
     fun createDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -94,10 +91,7 @@ class VasuController(
             }
     }
 
-    @GetMapping(
-        "/children/{childId}/vasu-summaries", // deprecated
-        "/employee/children/{childId}/vasu-summaries",
-    )
+    @GetMapping("/employee/children/{childId}/vasu-summaries")
     fun getVasuSummariesByChild(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -150,10 +144,7 @@ class VasuController(
 
     data class ChangeDocumentStateRequest(val eventType: VasuDocumentEventType)
 
-    @GetMapping(
-        "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}",
-    )
+    @GetMapping("/employee/vasu/{id}")
     fun getDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -220,10 +211,7 @@ class VasuController(
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 
-    @PutMapping(
-        "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}",
-    )
+    @PutMapping("/employee/vasu/{id}")
     fun putDocument(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -332,10 +320,7 @@ class VasuController(
         }
     }
 
-    @PostMapping(
-        "/vasu/{id}/update-state", // deprecated
-        "/employee/vasu/{id}/update-state",
-    )
+    @PostMapping("/employee/vasu/{id}/update-state")
     fun updateDocumentState(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -370,10 +355,7 @@ class VasuController(
         Audit.VasuDocumentEventCreate.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping(
-        "/vasu/{id}", // deprecated
-        "/employee/vasu/{id}",
-    )
+    @DeleteMapping("/employee/vasu/{id}")
     fun deleteDocument(
         dbc: Database,
         user: AuthenticatedUser.Employee,

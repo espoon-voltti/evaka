@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/income-statements", // deprecated
-    "/employee/income-statements",
-)
+@RequestMapping("/employee/income-statements")
 class IncomeStatementController(private val accessControl: AccessControl) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(

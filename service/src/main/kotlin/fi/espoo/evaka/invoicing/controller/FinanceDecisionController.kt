@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/finance-decisions", // deprecated
-    "/employee/finance-decisions",
-)
+@RequestMapping("/employee/finance-decisions")
 class FinanceDecisionController(private val accessControl: AccessControl) {
 
     @GetMapping("/selectable-handlers")

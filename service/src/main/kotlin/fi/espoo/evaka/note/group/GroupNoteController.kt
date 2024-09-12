@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GroupNoteController(private val ac: AccessControl) {
-    @GetMapping(
-        "/daycare-groups/{groupId}/group-notes", // deprecated
-        "/employee-mobile/daycare-groups/{groupId}/group-notes",
-    )
+    @GetMapping("/employee-mobile/daycare-groups/{groupId}/group-notes")
     fun getGroupNotes(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -65,8 +62,7 @@ class GroupNoteController(private val ac: AccessControl) {
         @RequestBody body: GroupNoteBody,
     ): GroupNoteId = createGroupNote(db, user as AuthenticatedUser, clock, groupId, body)
 
-    @PostMapping("/daycare-groups/{groupId}/group-notes") // deprecated
-    fun createGroupNote(
+    private fun createGroupNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -103,8 +99,7 @@ class GroupNoteController(private val ac: AccessControl) {
         @RequestBody body: GroupNoteBody,
     ): GroupNote = updateGroupNote(db, user as AuthenticatedUser, clock, noteId, body)
 
-    @PutMapping("/group-notes/{noteId}") // deprecated
-    fun updateGroupNote(
+    private fun updateGroupNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -136,8 +131,7 @@ class GroupNoteController(private val ac: AccessControl) {
         @PathVariable noteId: GroupNoteId,
     ) = deleteGroupNote(db, user as AuthenticatedUser, clock, noteId)
 
-    @DeleteMapping("/group-notes/{noteId}") // deprecated
-    fun deleteGroupNote(
+    private fun deleteGroupNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class BackupCareController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/children/{childId}/backup-cares", // deprecated
-        "/employee/children/{childId}/backup-cares",
-    )
+    @GetMapping("/employee/children/{childId}/backup-cares")
     fun getChildBackupCares(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -73,10 +70,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         )
     }
 
-    @PostMapping(
-        "/children/{childId}/backup-cares", // deprecated
-        "/employee/children/{childId}/backup-cares",
-    )
+    @PostMapping("/employee/children/{childId}/backup-cares")
     fun createBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -121,10 +115,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         }
     }
 
-    @PostMapping(
-        "/backup-cares/{id}", // deprecated
-        "/employee/backup-cares/{id}",
-    )
+    @PostMapping("/employee/backup-cares/{id}")
     fun updateBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -230,10 +221,7 @@ class BackupCareController(private val accessControl: AccessControl) {
         }
     }
 
-    @DeleteMapping(
-        "/backup-cares/{id}", // deprecated
-        "/employee/backup-cares/{id}",
-    )
+    @DeleteMapping("/employee/backup-cares/{id}")
     fun deleteBackupCare(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/ended-placements", // deprecated
-        "/employee/reports/ended-placements",
-    )
+    @GetMapping("/employee/reports/ended-placements")
     fun getEndedPlacementsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

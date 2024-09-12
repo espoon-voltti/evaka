@@ -61,10 +61,7 @@ class MealReportController(
     private val mealTypeMapper: MealTypeMapper,
 ) {
 
-    @GetMapping(
-        "/reports/meal/{unitId}", // deprecated
-        "/employee/reports/meal/{unitId}",
-    )
+    @GetMapping("/employee/reports/meal/{unitId}")
     fun getMealReportByUnit(
         db: Database,
         clock: EvakaClock,

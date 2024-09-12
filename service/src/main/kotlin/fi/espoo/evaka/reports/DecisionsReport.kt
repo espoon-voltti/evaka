@@ -25,10 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class DecisionsReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/decisions", // deprecated
-        "/employee/reports/decisions",
-    )
+    @GetMapping("/employee/reports/decisions")
     fun getDecisionsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -34,10 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/family", // deprecated
-    "/employee/family",
-)
+@RequestMapping("/employee/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
     private val personService: PersonService,

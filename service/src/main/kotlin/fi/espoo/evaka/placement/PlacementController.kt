@@ -50,10 +50,7 @@ class PlacementController(
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
 
-    @GetMapping(
-        "/placements", // deprecated
-        "/employee/placements",
-    )
+    @GetMapping("/employee/placements")
     fun getPlacements(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -144,10 +141,7 @@ class PlacementController(
             }
     }
 
-    @PostMapping(
-        "/placements", // deprecated
-        "/employee/placements",
-    )
+    @PostMapping("/employee/placements")
     fun createPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -211,10 +205,7 @@ class PlacementController(
         )
     }
 
-    @PutMapping(
-        "/placements/{placementId}", // deprecated
-        "/employee/placements/{placementId}",
-    )
+    @PutMapping("/employee/placements/{placementId}")
     fun updatePlacementById(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -278,10 +269,7 @@ class PlacementController(
         Audit.PlacementUpdate.log(targetId = AuditId(placementId))
     }
 
-    @DeleteMapping(
-        "/placements/{placementId}", // deprecated
-        "/employee/placements/{placementId}",
-    )
+    @DeleteMapping("/employee/placements/{placementId}")
     fun deletePlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -328,10 +316,7 @@ class PlacementController(
             }
     }
 
-    @PostMapping(
-        "/placements/{placementId}/group-placements", // deprecated
-        "/employee/placements/{placementId}/group-placements",
-    )
+    @PostMapping("/employee/placements/{placementId}/group-placements")
     fun createGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -365,10 +350,7 @@ class PlacementController(
             }
     }
 
-    @DeleteMapping(
-        "/group-placements/{groupPlacementId}", // deprecated
-        "/employee/group-placements/{groupPlacementId}",
-    )
+    @DeleteMapping("/employee/group-placements/{groupPlacementId}")
     fun deleteGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -390,10 +372,7 @@ class PlacementController(
         Audit.DaycareGroupPlacementDelete.log(targetId = AuditId(groupPlacementId))
     }
 
-    @PostMapping(
-        "/group-placements/{groupPlacementId}/transfer", // deprecated
-        "/employee/group-placements/{groupPlacementId}/transfer",
-    )
+    @PostMapping("/employee/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -419,10 +398,7 @@ class PlacementController(
         )
     }
 
-    @GetMapping(
-        "/placements/child-placement-periods/{adultId}", // deprecated
-        "/employee/placements/child-placement-periods/{adultId}",
-    )
+    @GetMapping("/employee/placements/child-placement-periods/{adultId}")
     fun getChildPlacementPeriods(
         db: Database,
         user: AuthenticatedUser.Employee,

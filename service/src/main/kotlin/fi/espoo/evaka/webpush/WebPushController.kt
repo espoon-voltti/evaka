@@ -36,10 +36,7 @@ data class WebPushSubscription(
 
 @RestController
 class WebPushController(private val accessControl: AccessControl) {
-    @PostMapping(
-        "/mobile-devices/push-subscription", // deprecated
-        "/employee-mobile/push-subscription",
-    )
+    @PostMapping("/employee-mobile/push-subscription")
     fun upsertPushSubscription(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -57,10 +54,7 @@ class WebPushController(private val accessControl: AccessControl) {
         val groups: Set<GroupId>,
     )
 
-    @GetMapping(
-        "/mobile-devices/push-settings", // deprecated
-        "/employee-mobile/push-settings",
-    )
+    @GetMapping("/employee-mobile/push-settings")
     fun getPushSettings(
         db: Database,
         clock: EvakaClock,
@@ -83,10 +77,7 @@ class WebPushController(private val accessControl: AccessControl) {
             }
             .also { Audit.PushSettingsRead.log(targetId = AuditId(user.id)) }
 
-    @PutMapping(
-        "/mobile-devices/push-settings", // deprecated
-        "/employee-mobile/push-settings",
-    )
+    @PutMapping("/employee-mobile/push-settings")
     fun setPushSettings(
         db: Database,
         clock: EvakaClock,

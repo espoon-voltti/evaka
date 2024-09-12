@@ -45,10 +45,7 @@ class AssistanceNeedDecisionController(
     private val accessControl: AccessControl,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
-    @PostMapping(
-        "/children/{childId}/assistance-needs/decision", // deprecated
-        "/employee/children/{childId}/assistance-needs/decision",
-    )
+    @PostMapping("/employee/children/{childId}/assistance-needs/decision")
     fun createAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -127,10 +124,7 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @GetMapping(
-        "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
-    )
+    @GetMapping("/employee/assistance-need-decision/{id}")
     fun getAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -180,10 +174,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionDownloadEmployee.log(targetId = AuditId(id)) }
     }
 
-    @PutMapping(
-        "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
-    )
+    @PutMapping("/employee/assistance-need-decision/{id}")
     fun updateAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -235,10 +226,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = AuditId(id)) }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/send", // deprecated
-        "/employee/assistance-need-decision/{id}/send",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/send")
     fun sendAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -301,10 +289,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionSend.log(targetId = AuditId(id)) }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/revert-to-unsent", // deprecated
-        "/employee/assistance-need-decision/{id}/revert-to-unsent",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/revert-to-unsent")
     fun revertToUnsentAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -342,10 +327,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionRevertToUnsent.log(targetId = AuditId(id)) }
     }
 
-    @GetMapping(
-        "/children/{childId}/assistance-needs/decisions", // deprecated
-        "/employee/children/{childId}/assistance-needs/decisions",
-    )
+    @GetMapping("/employee/children/{childId}/assistance-needs/decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -388,10 +370,7 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @DeleteMapping(
-        "/assistance-need-decision/{id}", // deprecated
-        "/employee/assistance-need-decision/{id}",
-    )
+    @DeleteMapping("/employee/assistance-need-decision/{id}")
     fun deleteAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -419,10 +398,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionDelete.log(targetId = AuditId(id)) }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/decide", // deprecated
-        "/employee/assistance-need-decision/{id}/decide",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/decide")
     fun decideAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -520,10 +496,7 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/mark-as-opened", // deprecated
-        "/employee/assistance-need-decision/{id}/mark-as-opened",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/mark-as-opened")
     fun markAssistanceNeedDecisionAsOpened(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -545,10 +518,7 @@ class AssistanceNeedDecisionController(
             .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = AuditId(id)) }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/update-decision-maker", // deprecated
-        "/employee/assistance-need-decision/{id}/update-decision-maker",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/update-decision-maker")
     fun updateAssistanceNeedDecisionDecisionMaker(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -598,10 +568,7 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @GetMapping(
-        "/assistance-need-decision/{id}/decision-maker-option", // deprecated
-        "/employee/assistance-need-decision/{id}/decision-maker-option",
-    )
+    @GetMapping("/employee/assistance-need-decision/{id}/decision-maker-option")
     fun getAssistanceDecisionMakerOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -632,10 +599,7 @@ class AssistanceNeedDecisionController(
             }
     }
 
-    @PostMapping(
-        "/assistance-need-decision/{id}/annul", // deprecated
-        "/employee/assistance-need-decision/{id}/annul",
-    )
+    @PostMapping("/employee/assistance-need-decision/{id}/annul")
     fun annulAssistanceNeedDecision(
         db: Database,
         user: AuthenticatedUser.Employee,

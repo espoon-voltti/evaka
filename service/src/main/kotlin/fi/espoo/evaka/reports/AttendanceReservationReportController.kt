@@ -42,10 +42,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
 
-    @GetMapping(
-        "/reports/attendance-reservation/{unitId}", // deprecated
-        "/employee/reports/attendance-reservation/{unitId}",
-    )
+    @GetMapping("/employee/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
         db: Database,
         clock: EvakaClock,

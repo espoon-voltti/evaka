@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class BackupPickupController(private val accessControl: AccessControl) {
-    @PostMapping(
-        "/children/{childId}/backup-pickups", // deprecated
-        "/employee/children/{childId}/backup-pickups",
-    )
+    @PostMapping("/employee/children/{childId}/backup-pickups")
     fun createBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -56,10 +53,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         )
     }
 
-    @GetMapping(
-        "/children/{childId}/backup-pickups", // deprecated
-        "/employee/children/{childId}/backup-pickups",
-    )
+    @GetMapping("/employee/children/{childId}/backup-pickups")
     fun getBackupPickups(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -86,10 +80,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
             }
     }
 
-    @PutMapping(
-        "/backup-pickups/{id}", // deprecated
-        "/employee/backup-pickups/{id}",
-    )
+    @PutMapping("/employee/backup-pickups/{id}")
     fun updateBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -106,10 +97,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
         Audit.ChildBackupPickupUpdate.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping(
-        "/backup-pickups/{id}", // deprecated
-        "/employee/backup-pickups/{id}",
-    )
+    @DeleteMapping("/employee/backup-pickups/{id}")
     fun deleteBackupPickup(
         db: Database,
         user: AuthenticatedUser.Employee,
