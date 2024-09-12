@@ -260,7 +260,7 @@ export async function employeePinLogin(
   req: express.Request
 ): Promise<EmployeePinLoginResponse> {
   const { data } = await client.post<EmployeePinLoginResponse>(
-    `/mobile-devices/pin-login`,
+    `/employee-mobile/pin-login`,
     req.body,
     {
       headers: {
