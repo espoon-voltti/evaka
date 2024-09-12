@@ -46,7 +46,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
 
   it('should fail POST to a proxied API when there is no CSRF token', async () => {
     const res = await tester.client.post(
-      '/api/internal/some-proxied-api',
+      '/api/internal/employee/some-proxied-api',
       undefined,
       {
         validateStatus: () => true
@@ -55,16 +55,20 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
     expect(res.status).toBe(403)
   })
   it('should pass GET to a proxied API when there is no CSRF token', async () => {
-    tester.nockScope.get('/some-proxied-api').reply(200)
-    const res = await tester.client.get('/api/internal/some-proxied-api')
+    tester.nockScope.get('/employee/some-proxied-api').reply(200)
+    const res = await tester.client.get(
+      '/api/internal/employee/some-proxied-api'
+    )
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
   it('should pass POST to a proxied API after CSRF token has been set up by the auth/status endpoint', async () => {
     await setupAntiCsrfToken()
 
-    tester.nockScope.post('/some-proxied-api').reply(200)
-    const res = await tester.client.post('/api/internal/some-proxied-api')
+    tester.nockScope.post('/employee/some-proxied-api').reply(200)
+    const res = await tester.client.post(
+      '/api/internal/employee/some-proxied-api'
+    )
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
@@ -73,7 +77,7 @@ describe('CSRF middleware and cookie handling in internal-gw', () => {
     await tester.expireSession()
 
     const res = await tester.client.post(
-      '/api/internal/some-proxied-api',
+      '/api/internal/employee/some-proxied-api',
       undefined,
       {
         validateStatus: () => true

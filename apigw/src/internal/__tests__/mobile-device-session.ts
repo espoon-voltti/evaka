@@ -52,8 +52,10 @@ describe('Mobile device pairing process', () => {
   it('creates an active session', async () => {
     await finishPairing()
 
-    tester.nockScope.get('/some-proxied-api').reply(200)
-    const res = await tester.client.get('/api/internal/some-proxied-api')
+    tester.nockScope.get('/employee-mobile/some-proxied-api').reply(200)
+    const res = await tester.client.get(
+      '/api/internal/employee-mobile/some-proxied-api'
+    )
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
