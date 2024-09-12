@@ -110,16 +110,20 @@ const DateAttendances = React.memo(function DateAttendances({
   const { i18n, lang } = useTranslation()
 
   return (
-    <FixedSpaceColumn spacing="xs" alignItems="flex-start">
+    <FixedSpaceColumn
+      spacing="xs"
+      alignItems="flex-start"
+      data-qa={`previous-attendances-${date.formatIso()}`}
+    >
       <H4 noMargin>{date.format('EEEEEE dd.MM.yyyy', lang)}</H4>
       {attendances.map((a) => (
-        <FixedSpaceRow key={a.id}>
-          <div>
+        <FixedSpaceRow key={a.id} data-qa="attendance">
+          <div data-qa="group-or-type">
             {a.groupId
               ? groups.find((g) => g.id === a.groupId)?.name
               : i18n.attendances.staffTypes[a.type]}
           </div>
-          <div>
+          <div data-qa="times">
             {a.arrived.toLocalTime().format()} -{' '}
             {a.departed?.toLocalTime()?.format()}
           </div>
@@ -127,6 +131,7 @@ const DateAttendances = React.memo(function DateAttendances({
       ))}
       {attendances.length === 0 && <div>{i18n.attendances.staff.absent}</div>}
       <Button
+        data-qa="edit"
         appearance="inline"
         text={i18n.common.edit}
         icon={faPen}

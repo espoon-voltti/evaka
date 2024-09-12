@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { DevDaycareGroup } from '../../generated/api-types'
@@ -106,6 +107,7 @@ export default class StaffPage {
 
 export class StaffAttendancePage {
   editButton: Element
+  previousAttendancesButton: Element
   arrivalTime: Element
   departureTime: Element
 
@@ -113,6 +115,16 @@ export class StaffAttendancePage {
   #tabs: { present: Element; absent: Element }
   pinInput: Element
 
+  previousAttendancesPage: {
+    attendanceOfDate: (
+      date: LocalDate,
+      i: number
+    ) => {
+      times: Element
+      groupOrType: Element
+    }
+    editAttendancesOfDateButton: (date: LocalDate) => Element
+  }
   anyArrivalPage: {
     arrivedInput: TextInput
     markArrived: Element
@@ -154,6 +166,9 @@ export class StaffAttendancePage {
 
   constructor(private readonly page: Page) {
     this.editButton = this.page.findByDataQa('edit')
+    this.previousAttendancesButton = this.page.findByDataQa(
+      'previous-attendances'
+    )
     this.arrivalTime = this.page.findByDataQa('arrival-time')
     this.departureTime = this.page.findByDataQa('departure-time')
     this.#addNewExternalMemberButton = page.findByDataQa(
@@ -165,6 +180,24 @@ export class StaffAttendancePage {
     }
 
     this.pinInput = page.findByDataQa('pin-input')
+    this.previousAttendancesPage = {
+      attendanceOfDate: (date: LocalDate, i: number) => ({
+        times: this.page
+          .findByDataQa(`previous-attendances-${date.formatIso()}`)
+          .findAllByDataQa('attendance')
+          .nth(i)
+          .findByDataQa('times'),
+        groupOrType: this.page
+          .findByDataQa(`previous-attendances-${date.formatIso()}`)
+          .findAllByDataQa('attendance')
+          .nth(i)
+          .findByDataQa('group-or-type')
+      }),
+      editAttendancesOfDateButton: (date) =>
+        this.page
+          .findByDataQa(`previous-attendances-${date.formatIso()}`)
+          .findByDataQa('edit')
+    }
     this.anyArrivalPage = {
       arrivedInput: new TextInput(page.findByDataQa('input-arrived')),
       markArrived: page.findByDataQa('mark-arrived-btn')
@@ -429,8 +462,10 @@ export class StaffAttendanceEditPage {
   async selectGroup(index: number, groupId: UUID) {
     const editor = new Element(this.page.findAllByDataQa('group').nth(index))
     const name = editor.findByDataQa('group-name')
-    if (await name.visible) {
+    try {
       await name.click()
+    } catch (e) {
+      // already clicked
     }
     const select = new Select(editor.findByDataQa('group-selector'))
     await select.selectOption({ value: groupId })

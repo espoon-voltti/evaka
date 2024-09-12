@@ -197,6 +197,7 @@ export default React.memo(function StaffMemberPage({
                     </>
                   )}
                   <Button
+                    data-qa="previous-attendances"
                     appearance="inline"
                     text={i18n.attendances.staff.previousDays}
                     onClick={() =>

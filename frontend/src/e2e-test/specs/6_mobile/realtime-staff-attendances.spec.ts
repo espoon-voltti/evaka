@@ -708,7 +708,7 @@ describe('Realtime staff attendance page', () => {
 })
 
 describe('Realtime staff attendance edit page', () => {
-  test('Staff member can add new attendance with attendace types disabled', async () => {
+  test('Staff member can add new attendance with attendance types disabled', async () => {
     const date = LocalDate.of(2022, 5, 5)
     const arrivalTime = '05:59'
     const departureTime = '12:45'
@@ -858,26 +858,76 @@ describe('Realtime staff attendance edit page', () => {
     await staffAttendancePage.assertEmployeeAttendances([])
   })
 
-  test('Staff member can edit ongoing attendance from yesterday', async () => {
-    const date = LocalDate.of(2023, 1, 24)
+  test('Staff member can edit past attendances', async () => {
+    const today = LocalDate.of(2023, 1, 24)
+    const date = today.subDays(3)
+    const arrivalTime = '09:00'
+    const departureTime = '17:00'
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      type: 'TRAINING',
+      groupId: null,
+      arrived: HelsinkiDateTime.fromLocal(date, LocalTime.parse(arrivalTime)),
+      departed: HelsinkiDateTime.fromLocal(date, LocalTime.parse(departureTime))
+    }).save()
+
+    await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+    await staffAttendancePage.previousAttendancesButton.click()
+
+    await staffAttendancePage.previousAttendancesPage
+      .attendanceOfDate(date, 0)
+      .times.assertTextEquals('09:00 - 17:00')
+    await staffAttendancePage.previousAttendancesPage
+      .attendanceOfDate(date, 0)
+      .groupOrType.assertTextEquals('Koulutus')
+    await staffAttendancePage.previousAttendancesPage
+      .editAttendancesOfDateButton(date)
+      .click()
+
+    const editPage = new StaffAttendanceEditPage(page)
+    await editPage.fillArrived(0, '09:15')
+    await editPage.fillDeparted(0, '16:30')
+    await editPage.submit(pin)
+
+    await staffAttendancePage.previousAttendancesButton.click()
+    await staffAttendancePage.previousAttendancesPage
+      .attendanceOfDate(date, 0)
+      .times.assertTextEquals('09:15 - 16:30')
+  })
+
+  test('Staff member can edit ongoing attendance from yesterday through previous attendances', async () => {
+    const today = LocalDate.of(2023, 1, 24)
+    const yesterday = today.subDays(1)
     const arrivalTime = '22:00'
     await Fixture.realtimeStaffAttendance({
       employeeId: staffFixture.id,
       groupId: testDaycareGroup.id,
       arrived: HelsinkiDateTime.fromLocal(
-        date.subDays(1),
+        yesterday,
         LocalTime.parse(arrivalTime)
       ),
       departed: null
     }).save()
 
-    await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(2, 0)))
+    await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(21, 0)))
     await staffAttendancePage.assertPresentStaffCount(1)
     await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
-    await staffAttendancePage.editButton.click()
+    await staffAttendancePage.previousAttendancesButton.click()
 
-    const newDepartureTime = '02:00'
+    await staffAttendancePage.previousAttendancesPage
+      .attendanceOfDate(yesterday, 0)
+      .times.assertTextEquals('22:00 -')
+    await staffAttendancePage.previousAttendancesPage
+      .attendanceOfDate(yesterday, 0)
+      .groupOrType.assertTextEquals(testDaycareGroup.name)
+    await staffAttendancePage.previousAttendancesPage
+      .editAttendancesOfDateButton(yesterday)
+      .click()
+
+    const newDepartureTime = '08:00'
     const editPage = new StaffAttendanceEditPage(page)
     await editPage.fillDeparted(0, newDepartureTime)
     await editPage.submit(pin)
