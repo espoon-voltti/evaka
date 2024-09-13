@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const names = [
   'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem',
+  'saml-signing.idp.tunnistautuminen.suomi.fi.2024.pem',
   'saml-signing-testi.apro.tunnistus.fi.2022.pem',
   'saml-signing-testi.apro.tunnistus.fi.2024.pem'
 ] as const
