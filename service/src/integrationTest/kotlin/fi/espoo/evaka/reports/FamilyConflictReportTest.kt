@@ -143,7 +143,7 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     ) {
         val (_, response, result) =
             http
-                .get("/reports/family-conflicts", listOf("from" to from, "to" to to))
+                .get("/employee/reports/family-conflicts", listOf("from" to from, "to" to to))
                 .asUser(testUser)
                 .responseObject<List<FamilyConflictReportRow>>(jsonMapper)
 

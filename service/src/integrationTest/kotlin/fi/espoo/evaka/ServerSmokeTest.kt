@@ -31,7 +31,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `a valid JWT token and user header are required in API requests`() {
-        val (_, res, _) = http.get("/daycares").responseString()
+        val (_, res, _) = http.get("/employee/daycares").responseString()
         assertEquals(401, res.statusCode)
 
         val user =
@@ -39,7 +39,7 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER),
             )
-        val (_, res2, _) = http.get("/daycares").asUser(user).responseString()
+        val (_, res2, _) = http.get("/employee/daycares").asUser(user).responseString()
         assertEquals(200, res2.statusCode)
     }
 }

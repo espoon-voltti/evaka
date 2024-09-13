@@ -1147,7 +1147,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         val (_, response, data) =
             http
                 .get(
-                    "/reports/service-voucher-value/units/$unitId",
+                    "/employee/reports/service-voucher-value/units/$unitId",
                     listOf("year" to year, "month" to month),
                 )
                 .asUser(adminUser)

@@ -228,7 +228,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     ) =
         jsonMapper.readValue<PedagogicalDocument>(
             http
-                .post("/pedagogical-document")
+                .post("/employee/pedagogical-document")
                 .jsonBody(jsonMapper.writeValueAsString(body))
                 .asUser(user)
                 .responseString()
@@ -243,7 +243,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
     ) =
         jsonMapper.readValue<PedagogicalDocument>(
             http
-                .put("/pedagogical-document/$id")
+                .put("/employee/pedagogical-document/$id")
                 .jsonBody(jsonMapper.writeValueAsString(body))
                 .asUser(user)
                 .responseString()

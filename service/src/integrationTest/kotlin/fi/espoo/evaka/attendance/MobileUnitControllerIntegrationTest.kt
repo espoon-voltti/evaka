@@ -246,7 +246,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun fetchUnitInfo(unitId: DaycareId): UnitInfo {
         val (_, res, result) =
             http
-                .get("/mobile/units/$unitId")
+                .get("/employee-mobile/units/$unitId")
                 .asUser(mobileUser)
                 .withMockedTime(now)
                 .responseObject<UnitInfo>(jsonMapper)
@@ -259,7 +259,7 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val (_, res, result) =
             http
                 .get(
-                    "/mobile/units/stats",
+                    "/employee-mobile/units/stats",
                     listOf(Pair("unitIds", unitIds.joinToString { it.toString() })),
                 )
                 .asUser(mobileUser)
