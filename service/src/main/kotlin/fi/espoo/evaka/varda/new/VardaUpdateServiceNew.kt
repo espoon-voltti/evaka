@@ -344,26 +344,16 @@ class VardaUpdater(
 
     private fun getVardaState(client: VardaReadClient, evakaHenkilo: Henkilo): VardaHenkiloNode {
         val henkilo =
-            if (evakaHenkilo.henkilotunnus != null) {
-                // Get or create henkilo if they have a henkilotunnus. Varda validates the name of
-                // the person, and in this case the names are probably correct since eVaka got them
-                // from VTJ.
-                client.getOrCreateHenkilo(
-                    VardaReadClient.GetOrCreateHenkiloRequest(
-                        etunimet = evakaHenkilo.etunimet,
-                        sukunimi = evakaHenkilo.sukunimi,
-                        // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
-                        henkilotunnus = evakaHenkilo.henkilotunnus,
-                        henkilo_oid = null,
-                    )
+            client.getOrCreateHenkilo(
+                VardaReadClient.GetOrCreateHenkiloRequest(
+                    etunimet = evakaHenkilo.etunimet,
+                    sukunimi = evakaHenkilo.sukunimi,
+                    // Avoid sending both henkilotunnus and henkilo_oid (error code HE004)
+                    henkilotunnus = evakaHenkilo.henkilotunnus,
+                    henkilo_oid =
+                        evakaHenkilo.henkilo_oid.takeIf { evakaHenkilo.henkilotunnus == null },
                 )
-            } else {
-                // The hae-henkilo endpoint is deprecated and limited to 500 requests/day, so only
-                // use it as a fallback if the child doesn't have a henkilotunnus.
-                client.haeHenkilo(
-                    VardaReadClient.HaeHenkiloRequest(henkilo_oid = evakaHenkilo.henkilo_oid)
-                )
-            }
+            )
         return VardaHenkiloNode(
             henkilo = henkilo,
             lapset =
