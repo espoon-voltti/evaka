@@ -263,8 +263,10 @@ data class DvvModificationsEnv(
         fun fromEnvironment(env: Environment) =
             DvvModificationsEnv(
                 url =
-                    env.lookup("evaka.integration.dvv_modifications.url")
-                        ?: env.lookup("fi.espoo.integration.dvv-modifications-service.url"),
+                    env.lookup(
+                        "evaka.integration.dvv_modifications.url",
+                        "fi.espoo.integration.dvv-modifications-service.url",
+                    ),
                 userId = env.lookup("evaka.integration.dvv_modifications.user_id"),
                 password = Sensitive(env.lookup("evaka.integration.dvv_modifications.password")),
                 xroadClientId = env.lookup("evaka.integration.dvv_modifications.xroad_client_id"),
