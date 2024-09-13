@@ -72,6 +72,7 @@ ORDER BY period DESC, unit_name
 data class PagedPayments(val data: List<Payment>, val total: Int, val pages: Int)
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): PagedPayments {
+    val pageSize = 200
     val orderBy =
         when (params.sortBy) {
             PaymentSortParam.UNIT -> "lower(p.unit_name)"
@@ -110,11 +111,11 @@ WHERE
         between_start_and_end(daterange(${bind(params.paymentDateStart)}, ${bind(params.paymentDateEnd)}, '[]'), p.payment_date)
     )
 ORDER BY $orderBy $ascDesc
-LIMIT ${bind(params.pageSize)} OFFSET ${bind(params.pageSize)} * (${bind(params.page)} - 1)
+LIMIT ${bind(pageSize)} OFFSET ${bind(pageSize)} * (${bind(params.page)} - 1)
 """
             )
         }
-        .mapToPaged(::PagedPayments, params.pageSize)
+        .mapToPaged(::PagedPayments, pageSize)
 }
 
 fun Database.Read.getMaxPaymentNumber(): Long {

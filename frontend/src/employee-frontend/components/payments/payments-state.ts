@@ -33,8 +33,6 @@ const createPaymentDraftsResult = wrapResult(createPaymentDrafts)
 const searchPaymentsResult = wrapResult(searchPayments)
 const sendPaymentsResult = wrapResult(sendPayments)
 
-const pageSize = 200
-
 type State = {
   page: number
   pages: number
@@ -159,7 +157,6 @@ export function usePaymentsState() {
         ...searchFilters,
         searchTerms: debouncedSearchTerms,
         page: state.page,
-        pageSize,
         sortBy: state.sortBy,
         sortDirection: state.sortDirection
       }

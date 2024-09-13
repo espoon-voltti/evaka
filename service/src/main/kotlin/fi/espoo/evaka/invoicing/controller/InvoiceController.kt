@@ -23,7 +23,6 @@ import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
@@ -70,8 +69,6 @@ class InvoiceController(
         clock: EvakaClock,
         @RequestBody body: SearchInvoicesRequest,
     ): PagedInvoiceSummaryResponses {
-        val maxPageSize = 5000
-        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -83,7 +80,7 @@ class InvoiceController(
                     val paged =
                         tx.paginatedSearch(
                             body.page,
-                            body.pageSize,
+                            pageSize = 200,
                             body.sortBy ?: InvoiceSortParam.STATUS,
                             body.sortDirection ?: SortDirection.DESC,
                             body.status ?: emptyList(),
@@ -326,7 +323,6 @@ data class InvoicePayload(
 
 data class SearchInvoicesRequest(
     val page: Int,
-    val pageSize: Int,
     val sortBy: InvoiceSortParam? = null,
     val sortDirection: SortDirection? = null,
     val status: List<InvoiceStatus>? = null,

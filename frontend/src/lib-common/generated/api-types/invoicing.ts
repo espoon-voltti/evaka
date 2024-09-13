@@ -878,7 +878,6 @@ export interface SearchFeeDecisionRequest {
   endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
   page: number
-  pageSize: number
   searchByStartDate: boolean
   searchTerms: string | null
   sortBy: FeeDecisionSortParam | null
@@ -895,7 +894,6 @@ export interface SearchInvoicesRequest {
   area: string[] | null
   distinctions: InvoiceDistinctiveParams[] | null
   page: number
-  pageSize: number
   periodEnd: LocalDate | null
   periodStart: LocalDate | null
   searchTerms: string | null
@@ -912,7 +910,6 @@ export interface SearchPaymentsRequest {
   area: string[]
   distinctions: PaymentDistinctiveParams[]
   page: number
-  pageSize: number
   paymentDateEnd: LocalDate | null
   paymentDateStart: LocalDate | null
   searchTerms: string
@@ -932,7 +929,6 @@ export interface SearchVoucherValueDecisionRequest {
   endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
   page: number
-  pageSize: number
   searchByStartDate: boolean
   searchTerms: string | null
   sortBy: VoucherValueDecisionSortParam | null

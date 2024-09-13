@@ -697,12 +697,6 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(1, result.pages)
         assertNull(result.data.first().endDate)
         assertEquals(LocalDate.of(2020, 12, 31), result.data.last().endDate)
-
-        val paged = getIncomeStatements(pageSize = 1)
-        assertEquals(2, paged.total)
-        assertEquals(2, paged.pages)
-        assertEquals(1, paged.data.size)
-        assertNull(paged.data.first().endDate)
     }
 
     @Test
@@ -848,19 +842,17 @@ WHERE id = ${bind(id)}
         assertEquals(getIncomeStatementChildren().size, 0)
     }
 
-    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): PagedIncomeStatements {
+    private fun getIncomeStatements(page: Int = 1): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getIncomeStatements(
             dbInstance(),
             citizen,
             RealEvakaClock(),
             page = page,
-            pageSize = pageSize,
         )
     }
 
     private fun getIncomeStatementsForChild(
         childId: ChildId,
-        pageSize: Int = 10,
         page: Int = 1,
     ): PagedIncomeStatements {
         return incomeStatementControllerCitizen.getChildIncomeStatements(
@@ -869,7 +861,6 @@ WHERE id = ${bind(id)}
             RealEvakaClock(),
             childId,
             page = page,
-            pageSize = pageSize,
         )
     }
 

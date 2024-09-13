@@ -89,7 +89,7 @@ export const MessageContextProvider = React.memo(
       fetchNextPage,
       hasNextPage,
       transform
-    } = usePagedInfiniteQueryResult(receivedMessagesQuery(10), {
+    } = usePagedInfiniteQueryResult(receivedMessagesQuery(), {
       enabled: messageAccount.isSuccess
     })
 

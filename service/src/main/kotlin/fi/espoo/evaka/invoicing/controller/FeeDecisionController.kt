@@ -90,8 +90,6 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest,
     ): PagedFeeDecisionSummaries {
-        val maxPageSize = 5000
-        if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {
             throw BadRequest("End date cannot be before start date")
         }
@@ -107,7 +105,7 @@ class FeeDecisionController(
                         clock,
                         featureConfig.postOffice,
                         body.page,
-                        body.pageSize,
+                        pageSize = 200,
                         body.sortBy ?: FeeDecisionSortParam.STATUS,
                         body.sortDirection ?: SortDirection.DESC,
                         body.statuses ?: emptyList(),
@@ -377,7 +375,6 @@ data class CreateRetroactiveFeeDecisionsBody(val from: LocalDate)
 
 data class SearchFeeDecisionRequest(
     val page: Int,
-    val pageSize: Int,
     val sortBy: FeeDecisionSortParam? = null,
     val sortDirection: SortDirection? = null,
     val statuses: List<FeeDecisionStatus>? = null,

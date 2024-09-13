@@ -22,8 +22,6 @@ import { renderResult } from '../async-rendering'
 import { EmployeeList } from './EmployeeList'
 import { searchEmployeesQuery } from './queries'
 
-const PAGE_SIZE = 50
-
 const TopBar = styled.section`
   display: flex;
   justify-content: space-between;
@@ -55,7 +53,6 @@ export default React.memo(function EmployeesPage() {
     searchEmployeesQuery({
       body: {
         page,
-        pageSize: PAGE_SIZE,
         searchTerm: debouncedSearchTerm,
         hideDeactivated
       }

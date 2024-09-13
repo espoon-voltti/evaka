@@ -31,8 +31,6 @@ import FeeDecisions from './FeeDecisions'
 const confirmFeeDecisionDraftsResult = wrapResult(confirmFeeDecisionDrafts)
 const searchFeeDecisionsResult = wrapResult(searchFeeDecisions)
 
-const pageSize = 200
-
 export type PagedFeeDecisions = Record<number, Result<FeeDecisionSummary[]>>
 
 export default React.memo(function FeeDecisionsPage() {
@@ -75,7 +73,6 @@ export default React.memo(function FeeDecisionsPage() {
 
     const params: SearchFeeDecisionRequest = {
       page: page - 1,
-      pageSize,
       sortBy,
       sortDirection,
       statuses: searchFilters.statuses,

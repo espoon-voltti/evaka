@@ -24,12 +24,7 @@ import { createQueryKeys } from '../query'
 
 const queryKeys = createQueryKeys('incomeStatements', {
   allIncomeStatements: () => ['incomeStatements'],
-  incomeStatements: (page: number, pageSize: number) => [
-    'incomeStatements',
-    'paginated',
-    page,
-    pageSize
-  ],
+  incomeStatements: (page: number) => ['incomeStatements', 'paginated', page],
   incomeStatement: (incomeStatementId: UUID) => [
     'incomeStatements',
     'single',
@@ -43,12 +38,11 @@ const queryKeys = createQueryKeys('incomeStatements', {
     'childIncomeStatements',
     childId
   ],
-  childIncomeStatements: (childId: UUID, page: number, pageSize: number) => [
+  childIncomeStatements: (childId: UUID, page: number) => [
     'childIncomeStatements',
     childId,
     'paginated',
-    page,
-    pageSize
+    page
   ],
   childIncomeStatement: ({
     childId,
@@ -68,7 +62,7 @@ const queryKeys = createQueryKeys('incomeStatements', {
 
 export const incomeStatementsQuery = query({
   api: getIncomeStatements,
-  queryKey: ({ page, pageSize }) => queryKeys.incomeStatements(page, pageSize)
+  queryKey: ({ page }) => queryKeys.incomeStatements(page)
 })
 
 export const incomeStatementQuery = query({
@@ -106,8 +100,8 @@ export const guardianIncomeStatementChildrenQuery = query({
 
 export const childIncomeStatementsQuery = query({
   api: getChildIncomeStatements,
-  queryKey: ({ childId, page, pageSize }) =>
-    queryKeys.childIncomeStatements(childId, page, pageSize)
+  queryKey: ({ childId, page }) =>
+    queryKeys.childIncomeStatements(childId, page)
 })
 
 export const childIncomeStatementQuery = query({

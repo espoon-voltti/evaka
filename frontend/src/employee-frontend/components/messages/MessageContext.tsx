@@ -73,7 +73,6 @@ const getUnreadMessagesResult = wrapResult(getUnreadMessages)
 const markThreadReadResult = wrapResult(markThreadRead)
 const getThreadResult = wrapResult(getThread)
 
-const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
@@ -351,7 +350,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadReceivedMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getReceivedMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
+        getReceivedMessagesResult({ accountId, page }),
       setReceivedMessagesResult
     )
 
@@ -371,7 +370,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadSentMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getSentMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
+        getSentMessagesResult({ accountId, page }),
       setSentMessagesResult
     )
 
@@ -386,7 +385,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadMessageCopies = useRestApi(
       (accountId: UUID, page: number) =>
-        getMessageCopiesResult({ accountId, page, pageSize: PAGE_SIZE }),
+        getMessageCopiesResult({ accountId, page }),
       setMessageCopiesResult
     )
 
@@ -401,7 +400,7 @@ export const MessageContextProvider = React.memo(
     )
     const loadArchivedMessages = useRestApi(
       (accountId: UUID, page: number) =>
-        getArchivedMessagesResult({ accountId, page, pageSize: PAGE_SIZE }),
+        getArchivedMessagesResult({ accountId, page }),
       setArchivedMessagesResult
     )
 

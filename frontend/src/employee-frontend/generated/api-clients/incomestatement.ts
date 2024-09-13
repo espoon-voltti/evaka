@@ -60,13 +60,11 @@ export async function getIncomeStatementChildren(
 export async function getIncomeStatements(
   request: {
     personId: UUID,
-    page: number,
-    pageSize: number
+    page: number
   }
 ): Promise<PagedIncomeStatements> {
   const params = createUrlSearchParams(
-    ['page', request.page.toString()],
-    ['pageSize', request.pageSize.toString()]
+    ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedIncomeStatements>>({
     url: uri`/employee/income-statements/person/${request.personId}`.toString(),

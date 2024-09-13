@@ -136,10 +136,9 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedMessageThreads =
-        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, pageSize, page)
+        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
     @GetMapping("/employee-mobile/messages/{accountId}/received")
     fun getReceivedMessages(
@@ -147,10 +146,9 @@ class MessageController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedMessageThreads =
-        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, pageSize, page)
+        getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
     @GetMapping("/messages/{accountId}/received") // deprecated
     fun getReceivedMessages(
@@ -158,7 +156,6 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedMessageThreads {
         return db.connect { dbc ->
@@ -166,7 +163,7 @@ class MessageController(
                 dbc.read {
                     it.getReceivedThreads(
                         accountId,
-                        pageSize,
+                        pageSize = 20,
                         page,
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
@@ -190,7 +187,6 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedMessageThreads {
         return db.connect { dbc ->
@@ -202,7 +198,7 @@ class MessageController(
                     } else {
                         it.getReceivedThreads(
                             accountId,
-                            pageSize,
+                            pageSize = 20,
                             page,
                             featureConfig.municipalMessageAccountName,
                             featureConfig.serviceWorkerMessageAccountName,
@@ -228,12 +224,11 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedMessageCopies {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
+                dbc.read { it.getMessageCopiesByAccount(accountId, pageSize = 20, page) }
             }
             .also {
                 Audit.MessagingReceivedMessageCopiesRead.log(
@@ -249,10 +244,8 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
-    ): PagedSentMessages =
-        getSentMessages(db, user as AuthenticatedUser, clock, accountId, pageSize, page)
+    ): PagedSentMessages = getSentMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
     @GetMapping("/employee-mobile/messages/{accountId}/sent")
     fun getSentMessages(
@@ -260,10 +253,8 @@ class MessageController(
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
-    ): PagedSentMessages =
-        getSentMessages(db, user as AuthenticatedUser, clock, accountId, pageSize, page)
+    ): PagedSentMessages = getSentMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
     @GetMapping("/messages/{accountId}/sent") // deprecated
     fun getSentMessages(
@@ -271,12 +262,11 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): PagedSentMessages {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+                dbc.read { it.getMessagesSentByAccount(accountId, pageSize = 20, page) }
             }
             .also {
                 Audit.MessagingSentMessagesRead.log(

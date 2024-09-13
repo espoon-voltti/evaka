@@ -40,8 +40,6 @@ import {
   sendInvoicesMutation
 } from './queries'
 
-const pageSize = 200
-
 export default React.memo(function InvoicesPage() {
   const { user } = useContext(UserContext)
   const {
@@ -60,7 +58,6 @@ export default React.memo(function InvoicesPage() {
       ? invoicesQuery({
           body: {
             page,
-            pageSize,
             sortBy,
             sortDirection,
             area,

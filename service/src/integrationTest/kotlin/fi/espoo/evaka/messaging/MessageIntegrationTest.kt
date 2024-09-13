@@ -1565,7 +1565,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime = readTime,
     ): List<CitizenMessageThread.Regular> {
         return messageControllerCitizen
-            .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1, pageSize = 100)
+            .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1)
             .data
             .filterIsInstance<CitizenMessageThread.Regular>()
     }
@@ -1576,14 +1576,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime = readTime,
     ): List<MessageThread> {
         return messageController
-            .getReceivedMessages(
-                dbInstance(),
-                user,
-                MockEvakaClock(now),
-                accountId,
-                page = 1,
-                pageSize = 100,
-            )
+            .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), accountId, page = 1)
             .data
     }
 
@@ -1592,14 +1585,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
     ): List<SentMessage> {
         return messageController
-            .getSentMessages(
-                dbInstance(),
-                user,
-                MockEvakaClock(readTime),
-                accountId,
-                page = 1,
-                pageSize = 100,
-            )
+            .getSentMessages(dbInstance(), user, MockEvakaClock(readTime), accountId, page = 1)
             .data
     }
 

@@ -32,8 +32,6 @@ const PaddedDiv = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.L};
 `
 
-const pageSize = 50
-
 export default React.memo(function ApplicationsPage() {
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
@@ -68,7 +66,6 @@ export default React.memo(function ApplicationsPage() {
   const loadApplications = useCallback(() => {
     const params: SearchApplicationRequest = {
       page,
-      pageSize,
       sortBy,
       sortDir: sortDirection,
       areas: debouncedApplicationSearchFilters.area.includes('All')

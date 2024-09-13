@@ -35,8 +35,6 @@ const sendVoucherValueDecisionDraftsResult = wrapResult(
   sendVoucherValueDecisionDrafts
 )
 
-const pageSize = 200
-
 export type PagedValueDecisions = Record<
   number,
   Result<VoucherValueDecisionSummary[]>
@@ -83,7 +81,6 @@ export default React.memo(function VoucherValueDecisionsPage() {
 
     const params: SearchVoucherValueDecisionRequest = {
       page: page - 1,
-      pageSize,
       sortBy,
       sortDirection,
       statuses: searchFilters.statuses,

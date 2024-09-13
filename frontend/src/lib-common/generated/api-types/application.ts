@@ -681,7 +681,6 @@ export interface SearchApplicationRequest {
   dateType: ApplicationDateType[] | null
   distinctions: ApplicationDistinctions[] | null
   page: number | null
-  pageSize: number | null
   periodEnd: LocalDate | null
   periodStart: LocalDate | null
   preschoolType: ApplicationPreschoolTypeToggle[] | null

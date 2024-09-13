@@ -38,7 +38,6 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
-        @RequestParam pageSize: Int,
     ): PagedIncomeStatements {
         return db.connect { dbc ->
                 dbc.read {
@@ -53,7 +52,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         personId = personId,
                         includeEmployeeContent = true,
                         page = page,
-                        pageSize = pageSize,
+                        pageSize = 10,
                     )
                 }
             }
@@ -144,7 +143,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         body.sentEndDate,
                         body.placementValidDate,
                         body.page,
-                        body.pageSize,
+                        pageSize = 50,
                         body.sortBy ?: IncomeStatementSortParam.CREATED,
                         body.sortDirection ?: SortDirection.ASC,
                     )
@@ -183,7 +182,6 @@ class IncomeStatementController(private val accessControl: AccessControl) {
 
 data class SearchIncomeStatementsRequest(
     val page: Int = 1,
-    val pageSize: Int = 50,
     val sortBy: IncomeStatementSortParam? = null,
     val sortDirection: SortDirection? = null,
     val areas: List<String>? = emptyList(),

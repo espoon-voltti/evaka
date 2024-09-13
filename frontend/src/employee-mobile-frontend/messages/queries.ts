@@ -55,18 +55,16 @@ export const messagingAccountsQuery = query({
   queryKey: queryKeys.accounts
 })
 
-const PAGE_SIZE = 20
-
 export const receivedMessagesQuery = pagedInfiniteQuery({
   api: (accountId: string) => (page: number) =>
-    getReceivedMessages({ accountId, page, pageSize: PAGE_SIZE }),
+    getReceivedMessages({ accountId, page }),
   id: (thread) => thread.id,
   queryKey: queryKeys.receivedMessages
 })
 
 export const sentMessagesQuery = pagedInfiniteQuery({
   api: (accountId: string) => (page: number) =>
-    getSentMessages({ accountId, page, pageSize: PAGE_SIZE }),
+    getSentMessages({ accountId, page }),
   id: (message) => message.contentId,
   queryKey: queryKeys.sentMessages
 })

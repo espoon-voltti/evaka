@@ -108,7 +108,7 @@ export const IncomeStatements = React.memo(function IncomeStatements({
   const { i18n } = useTranslation()
   const [page, setPage] = useState(1)
   const [incomeStatements] = useApiState(
-    () => getIncomeStatementsResult({ personId, page, pageSize: 10 }),
+    () => getIncomeStatementsResult({ personId, page }),
     [personId, page]
   )
 

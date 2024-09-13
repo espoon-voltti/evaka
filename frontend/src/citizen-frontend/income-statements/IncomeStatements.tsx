@@ -124,9 +124,7 @@ export default React.memo(function IncomeStatements() {
   const { setErrorMessage } = useContext(OverlayContext)
 
   const [page, setPage] = useState(1)
-  const incomeStatements = useQueryResult(
-    incomeStatementsQuery({ page, pageSize: 10 })
-  )
+  const incomeStatements = useQueryResult(incomeStatementsQuery({ page }))
   const { mutateAsync: deleteIncomeStatement } = useMutation(
     deleteIncomeStatementMutation
   )

@@ -601,7 +601,6 @@ export interface RestrictedDetails {
 export interface SearchEmployeeRequest {
   hideDeactivated: boolean | null
   page: number | null
-  pageSize: number | null
   searchTerm: string | null
 }
 

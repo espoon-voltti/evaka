@@ -403,7 +403,6 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             paymentDateStart = null,
             paymentDateEnd = null,
             page = 1,
-            pageSize = 50,
             sortBy = PaymentSortParam.AMOUNT,
             sortDirection = SortDirection.ASC,
         )

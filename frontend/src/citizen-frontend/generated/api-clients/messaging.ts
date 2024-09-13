@@ -53,12 +53,10 @@ export async function getMyAccount(): Promise<MyAccountResponse> {
 */
 export async function getReceivedMessages(
   request: {
-    pageSize: number,
     page: number
   }
 ): Promise<PagedCitizenMessageThreads> {
   const params = createUrlSearchParams(
-    ['pageSize', request.pageSize.toString()],
     ['page', request.page.toString()]
   )
   const { data: json } = await client.request<JsonOf<PagedCitizenMessageThreads>>({
