@@ -24,6 +24,7 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
@@ -468,8 +469,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(
                 DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Supervisor")
             )
+            val docId = AssistanceNeedPreschoolDecisionId(UUID.randomUUID())
             tx.insertTestAssistanceNeedPreschoolDecision(
                 DevAssistanceNeedPreschoolDecision(
+                    id = docId,
                     decisionNumber = 999,
                     childId = testChild_1.id,
                     form =
@@ -519,6 +522,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     unreadGuardianIds = emptySet(),
                 )
             )
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO assistance_need_preschool_decision_guardian(assistance_need_decision_id, person_id) VALUES(${bind(docId)}, ${bind(testAdult_1.id)})"
+                    )
+                }
+                .execute()
         }
 
         assertCleanedUpPeople(testDate, setOf())
