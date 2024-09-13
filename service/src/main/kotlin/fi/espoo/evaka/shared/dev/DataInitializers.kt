@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.shared.dev
 
-import fi.espoo.evaka.absence.AbsenceCategory
-import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.DatabaseForm
@@ -27,7 +25,6 @@ import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionFee
-import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AreaId
@@ -78,12 +75,10 @@ import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.PreschoolTermId
 import fi.espoo.evaka.shared.ServiceNeedId
-import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
@@ -376,16 +371,6 @@ RETURNING id
         }
 }
 
-@Deprecated("use insert(DevParentship(..)) instead")
-fun Database.Transaction.insertTestParentship(
-    headOfChild: PersonId,
-    childId: ChildId,
-    id: ParentshipId = ParentshipId(UUID.randomUUID()),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-): ParentshipId = insert(DevParentship(id, childId, headOfChild, startDate, endDate, createdAt))
-
 fun Database.Transaction.insert(row: DevParentship): ParentshipId =
     createUpdate {
             sql(
@@ -500,59 +485,6 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
-
-@Deprecated("use insert(DevPlacement(..)) instead")
-fun Database.Transaction.insertTestPlacement(
-    id: PlacementId = PlacementId(UUID.randomUUID()),
-    childId: ChildId = ChildId(UUID.randomUUID()),
-    unitId: DaycareId = DaycareId(UUID.randomUUID()),
-    type: PlacementType = PlacementType.DAYCARE,
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    terminationRequestedDate: LocalDate? = null,
-    terminatedBy: EvakaUserId? = null,
-    placeGuarantee: Boolean = false,
-): PlacementId {
-    createUpdate {
-            sql(
-                """
-INSERT INTO placement (id, child_id, unit_id, type, start_date, end_date, termination_requested_date, terminated_by, place_guarantee)
-VALUES (${bind(id)}, ${bind(childId)}, ${bind(unitId)}, ${bind(type)}::placement_type, ${bind(startDate)}, ${bind(endDate)}, ${bind(terminationRequestedDate)}, ${bind(terminatedBy)}, ${bind(placeGuarantee)})
-"""
-            )
-        }
-        .execute()
-    return id
-}
-
-@Deprecated("use insert(DevHoliday(..)) instead")
-fun Database.Transaction.insertTestHoliday(date: LocalDate, description: String = "holiday") =
-    insert(DevHoliday(date, description))
-
-@Deprecated("use insert(DevServiceNeed(..)) instead")
-fun Database.Transaction.insertTestServiceNeed(
-    confirmedBy: EvakaUserId,
-    placementId: PlacementId,
-    period: FiniteDateRange,
-    optionId: ServiceNeedOptionId,
-    shiftCare: ShiftCareType = ShiftCareType.NONE,
-    partWeek: Boolean = false,
-    confirmedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-    id: ServiceNeedId = ServiceNeedId(UUID.randomUUID()),
-): ServiceNeedId =
-    insert(
-        DevServiceNeed(
-            id,
-            placementId,
-            period.start,
-            period.end,
-            optionId,
-            shiftCare,
-            partWeek,
-            confirmedBy,
-            confirmedAt,
-        )
-    )
 
 fun Database.Transaction.insertServiceNeedOption(option: ServiceNeedOption) {
     createUpdate {
@@ -690,16 +622,6 @@ VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGrou
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-@Deprecated("use insert(DevDaycareGroupPlacement(..)) instead")
-fun Database.Transaction.insertTestDaycareGroupPlacement(
-    daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),
-    groupId: GroupId = GroupId(UUID.randomUUID()),
-    id: GroupPlacementId = GroupPlacementId(UUID.randomUUID()),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-): GroupPlacementId =
-    insert(DevDaycareGroupPlacement(id, daycarePlacementId, groupId, startDate, endDate))
-
 fun Database.Transaction.insertTestPlacementPlan(
     applicationId: ApplicationId,
     unitId: DaycareId,
@@ -773,15 +695,6 @@ RETURNING id
             val counts = insertAssistanceActionOptionRefs(it, row.actions)
             assert(counts.size == row.actions.size)
         }
-
-@Deprecated("use insert(DevDaycareCaretaker(..)) instead")
-fun Database.Transaction.insertTestCaretakers(
-    groupId: GroupId,
-    id: DaycareCaretakerId = DaycareCaretakerId(UUID.randomUUID()),
-    amount: Double = 3.0,
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate? = null,
-) = insert(DevDaycareCaretaker(id, groupId, amount.toBigDecimal(), startDate, endDate))
 
 fun Database.Transaction.insertTestAssistanceNeedPreschoolDecision(
     decision: DevAssistanceNeedPreschoolDecision
@@ -934,17 +847,6 @@ VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
-@Deprecated("use insert(DevAbsence(..)) instead")
-fun Database.Transaction.insertTestAbsence(
-    id: AbsenceId = AbsenceId(UUID.randomUUID()),
-    childId: ChildId,
-    date: LocalDate,
-    category: AbsenceCategory,
-    absenceType: AbsenceType = AbsenceType.SICKLEAVE,
-    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-    modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
-) = insert(DevAbsence(id, childId, date, absenceType, modifiedAt, modifiedBy, category))
-
 fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtimeId =
     createUpdate {
             sql(
@@ -991,16 +893,6 @@ VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${b
         )
     }
 }
-
-@Deprecated("use insert(DevBackupCare(..)) instead")
-fun Database.Transaction.insertTestBackUpCare(
-    childId: ChildId,
-    unitId: DaycareId,
-    startDate: LocalDate,
-    endDate: LocalDate,
-    groupId: GroupId? = null,
-    id: BackupCareId = BackupCareId(UUID.randomUUID()),
-) = insert(DevBackupCare(id, childId, unitId, groupId, FiniteDateRange(startDate, endDate)))
 
 fun Database.Transaction.insert(row: DevBackupCare): BackupCareId =
     createUpdate {

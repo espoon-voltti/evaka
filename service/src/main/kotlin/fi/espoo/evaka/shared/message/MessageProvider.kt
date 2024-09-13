@@ -41,10 +41,3 @@ interface IMessageProvider {
 
     fun getPlacementToolContent(lang: OfficialLanguage): String
 }
-
-@Deprecated(
-    message = "use OfficialLanguage instead",
-    replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
-)
-typealias MessageLanguage = OfficialLanguage

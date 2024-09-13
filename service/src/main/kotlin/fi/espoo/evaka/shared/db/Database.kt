@@ -227,16 +227,6 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): IntArray = prepareBatch(f).addAll(rows).execute()
 
-        @Deprecated(
-            "Use new query API instead: executeBatch(rows) { sql(...) } or prepareBatch(rows) { sql(...) }"
-        )
-        fun prepareBatch(@Language("sql") sql: String): LegacyPreparedBatch =
-            LegacyPreparedBatch(handle.prepareBatch(sql))
-
-        @Deprecated("Use new query API instead: execute { sql(...) }")
-        fun execute(@Language("sql") sql: String, vararg args: Any): Int =
-            handle.execute(sql, *args)
-
         /**
          * Registers a function to be called after this transaction has been committed successfully.
          *
@@ -766,9 +756,6 @@ abstract class SqlBuilder {
 data class QuerySql(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
         operator fun invoke(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
-
-        @Deprecated("use QuerySql {} instead (drop the .of call)")
-        fun of(f: Builder.() -> QuerySql): QuerySql = Builder().run { f(this) }
     }
 
     class Builder : SqlBuilder() {

@@ -20,10 +20,3 @@ data class VoucherValueDecisionPdfData(
     val settings: Map<SettingType, String>,
     val lang: OfficialLanguage,
 )
-
-@Deprecated(
-    message = "use OfficialLanguage instead",
-    replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
-)
-typealias DocumentLang = OfficialLanguage
