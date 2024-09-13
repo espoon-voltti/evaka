@@ -68,60 +68,52 @@ class PlacementToolService(
     }
 
     fun createPlacementToolApplications(
-        db: Database,
+        tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
         file: MultipartFile,
     ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                val serviceNeedOptions = tx.getServiceNeedOptions()
-                val partTimeServiceNeedOptionId =
-                    serviceNeedOptions
-                        .firstOrNull {
-                            it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption
-                        }
-                        ?.id
-                if (null == partTimeServiceNeedOptionId) {
-                    throw NotFound("No part time service need option found")
+        val serviceNeedOptions = tx.getServiceNeedOptions()
+        val partTimeServiceNeedOptionId =
+            serviceNeedOptions
+                .firstOrNull {
+                    it.validPlacementType == PlacementType.PRESCHOOL && it.defaultOption
                 }
-                val defaultServiceNeedOptionId =
-                    serviceNeedOptions
-                        .firstOrNull {
-                            it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE &&
-                                it.defaultOption
-                        }
-                        ?.id
-                if (null == defaultServiceNeedOptionId) {
-                    throw NotFound("No default service need option found")
-                }
-                val nextPreschoolTermId =
-                    tx.getPreschoolTerms()
-                        .firstOrNull { it.finnishPreschool.start > clock.today() }
-                        ?.id
-                if (null == nextPreschoolTermId) {
-                    throw NotFound("No next preschool term found")
-                }
-                val placements: List<PlacementToolData>
-                file.inputStream.use { placements = parsePlacementToolCsv(it) }
-                asyncJobRunner
-                    .plan(
-                        tx,
-                        placements.map { data ->
-                            AsyncJob.PlacementTool(
-                                user,
-                                data,
-                                partTimeServiceNeedOptionId,
-                                defaultServiceNeedOptionId,
-                                nextPreschoolTermId,
-                            )
-                        },
-                        runAt = clock.now(),
-                        retryCount = 1,
-                    )
-                    .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
-            }
+                ?.id
+        if (null == partTimeServiceNeedOptionId) {
+            throw NotFound("No part time service need option found")
         }
+        val defaultServiceNeedOptionId =
+            serviceNeedOptions
+                .firstOrNull {
+                    it.validPlacementType == PlacementType.PRESCHOOL_DAYCARE && it.defaultOption
+                }
+                ?.id
+        if (null == defaultServiceNeedOptionId) {
+            throw NotFound("No default service need option found")
+        }
+        val nextPreschoolTermId =
+            tx.getPreschoolTerms().firstOrNull { it.finnishPreschool.start > clock.today() }?.id
+        if (null == nextPreschoolTermId) {
+            throw NotFound("No next preschool term found")
+        }
+        val placements = file.inputStream.use { parsePlacementToolCsv(it) }
+        asyncJobRunner
+            .plan(
+                tx,
+                placements.map { data ->
+                    AsyncJob.PlacementTool(
+                        user,
+                        data,
+                        partTimeServiceNeedOptionId,
+                        defaultServiceNeedOptionId,
+                        nextPreschoolTermId,
+                    )
+                },
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+            .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
     }
 
     fun createApplication(

@@ -226,7 +226,7 @@ class SystemController(
                             submitPatuReport =
                                 permittedGlobalActions.contains(Action.Global.SUBMIT_PATU_REPORT),
                             placementTool =
-                                permittedGlobalActions.contains(Action.Global.PLACEMENT_TOOL_PAGE),
+                                permittedGlobalActions.contains(Action.Global.PLACEMENT_TOOL),
                         )
 
                     EmployeeUserResponse(
