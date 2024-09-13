@@ -78,7 +78,7 @@ async function validateUser(
           pushApplicationServerKey
         },
         globalRoles: [],
-        allScopedRoles: ['MOBILE']
+        allScopedRoles: []
       }
     }
     case 'EMPLOYEE': {
