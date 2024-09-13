@@ -61,6 +61,12 @@ WITH people_with_no_archive_data AS (
     EXCEPT
     SELECT DISTINCT child_id FROM assistance_need_preschool_decision
     EXCEPT
+    SELECT DISTINCT person_id FROM assistance_need_preschool_decision_guardian
+    EXCEPT
+    SELECT DISTINCT child_id FROM pedagogical_document
+    EXCEPT
+    SELECT DISTINCT person_id FROM pedagogical_document_read
+    EXCEPT
     SELECT DISTINCT person_id FROM message_account
     WHERE person_id IS NOT NULL
     AND (

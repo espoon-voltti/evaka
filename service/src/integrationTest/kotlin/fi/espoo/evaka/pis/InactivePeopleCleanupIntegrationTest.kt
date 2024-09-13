@@ -24,8 +24,10 @@ import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.pis.service.blockGuardian
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.AssistanceNeedPreschoolDecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
@@ -34,6 +36,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -317,6 +320,24 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     }
 
     @Test
+    fun `adult and child with pedagogical document is not cleaned up`() {
+        db.transaction { tx ->
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            val docId = PedagogicalDocumentId(UUID.randomUUID())
+            tx.insert(DevPedagogicalDocument(docId, testChild_1.id, "document"))
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(docId)}, ${bind(testDate)})"
+                    )
+                }
+                .execute()
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
     fun `adult with received messages is cleaned up`() {
         val now = HelsinkiDateTime.now()
         db.transaction { tx ->
@@ -448,8 +469,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insert(
                 DevEmployee(id = employeeId, firstName = "Firstname", lastName = "Supervisor")
             )
+            val docId = AssistanceNeedPreschoolDecisionId(UUID.randomUUID())
             tx.insertTestAssistanceNeedPreschoolDecision(
                 DevAssistanceNeedPreschoolDecision(
+                    id = docId,
                     decisionNumber = 999,
                     childId = testChild_1.id,
                     form =
@@ -499,6 +522,12 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     unreadGuardianIds = emptySet(),
                 )
             )
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO assistance_need_preschool_decision_guardian(assistance_need_decision_id, person_id) VALUES(${bind(docId)}, ${bind(testAdult_1.id)})"
+                    )
+                }
+                .execute()
         }
 
         assertCleanedUpPeople(testDate, setOf())
