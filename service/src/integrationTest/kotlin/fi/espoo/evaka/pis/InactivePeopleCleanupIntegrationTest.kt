@@ -26,6 +26,7 @@ import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedDecision
 import fi.espoo.evaka.shared.dev.DevAssistanceNeedPreschoolDecision
@@ -34,6 +35,7 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevParentship
+import fi.espoo.evaka.shared.dev.DevPedagogicalDocument
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -311,6 +313,24 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     42,
                 )
             )
+        }
+
+        assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult and child with pedagogical document is not cleaned up`() {
+        db.transaction { tx ->
+            tx.insert(testChild_1, DevPersonType.RAW_ROW)
+            val docId = PedagogicalDocumentId(UUID.randomUUID())
+            tx.insert(DevPedagogicalDocument(docId, testChild_1.id, "document"))
+            tx.insert(testAdult_1, DevPersonType.RAW_ROW)
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO pedagogical_document_read (person_id, pedagogical_document_id, read_at) VALUES (${bind(testAdult_1.id)}, ${bind(docId)}, ${bind(testDate)})"
+                    )
+                }
+                .execute()
         }
 
         assertCleanedUpPeople(testDate, setOf())
