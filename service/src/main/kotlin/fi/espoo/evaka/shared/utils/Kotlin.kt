@@ -9,6 +9,9 @@ import java.util.EnumSet
 inline fun <T> T.applyIf(condition: Boolean, block: T.() -> Unit): T =
     if (condition) this.apply(block) else this
 
+inline fun <T> T.letIf(condition: Boolean, block: (T) -> T): T =
+    if (condition) this.let(block) else this
+
 inline fun <reified T : Enum<T>> Array<out T>.toEnumSet(): EnumSet<T> =
     emptyEnumSet<T>().also { it += this }
 

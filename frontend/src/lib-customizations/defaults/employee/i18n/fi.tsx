@@ -3681,6 +3681,8 @@ export const fi = {
         'koski_study_right.child_id': 'Koski opinto- oikeuksia',
         'pedagogical_document.child_id': 'Pedagogisia dokumentteja',
         'placement.child_id': 'Sijoituksia',
+        'service_application.child_id': 'Palv.tarve hakemuksia (lapsena)',
+        'service_application.person_id': 'Palv.tarve hakemuksia (huoltajana)',
         'varda_child.person_id': 'Varda lapsi',
         'varda_service_need.evaka_child_id': 'Varda palvelun -tarpeita',
         'vasu_document.child_id': 'Vasuja',
