@@ -84,7 +84,7 @@ type QuestionForm = typeof questionForm
 
 const getAnswerState = (
   numberOfFields: number,
-  answer?: Answer | undefined
+  answer?: Answer
 ): StateOf<QuestionForm>['answer'] =>
   answer !== undefined ? answer : [Array<string>(numberOfFields).fill('')]
 
