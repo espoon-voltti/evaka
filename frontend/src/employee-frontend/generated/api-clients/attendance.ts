@@ -20,9 +20,9 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendances
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendance
 */
-export async function getOpenGroupAttendances(
+export async function getOpenGroupAttendance(
   request: {
     userId: UUID,
     unitId: UUID
@@ -33,7 +33,7 @@ export async function getOpenGroupAttendances(
     ['unitId', request.unitId]
   )
   const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
-    url: uri`/employee/staff-attendances/realtime/open-attendences`.toString(),
+    url: uri`/employee/staff-attendances/realtime/open-attendence`.toString(),
     method: 'GET',
     params
   })

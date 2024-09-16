@@ -50,7 +50,7 @@ import { faExclamationTriangle, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
-import { openAttendancesQuery } from '../queries'
+import { openAttendanceQuery } from '../queries'
 
 export interface ModalAttendance {
   id: UUID
@@ -352,7 +352,7 @@ function StaffAttendanceDetailsModal<
 
   const openAttendanceResult = useQueryResult(
     employeeId && unitId
-      ? openAttendancesQuery({ userId: employeeId, unitId })
+      ? openAttendanceQuery({ userId: employeeId, unitId })
       : constantQuery({ openGroupAttendance: null })
   )
   const openAttendance = openAttendanceResult.isSuccess
