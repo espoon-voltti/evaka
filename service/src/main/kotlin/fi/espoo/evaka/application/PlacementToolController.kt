@@ -45,6 +45,6 @@ class PlacementToolController(
                     UUID.randomUUID()
                 }
             }
-            .also { Audit.PlacementTool }
+            .also { Audit.PlacementTool.log() }
     }
 }
