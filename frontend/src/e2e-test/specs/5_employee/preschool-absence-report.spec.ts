@@ -55,9 +55,22 @@ beforeEach(async () => {
     date: mockedToday,
     childId: child.id
   }).save()
+  await Fixture.absence({
+    absenceType: 'SICKLEAVE',
+    absenceCategory: 'NONBILLABLE',
+    date: mockedToday.addDays(1), // future absence is not included
+    childId: child.id
+  }).save()
   await Fixture.childAttendance({
     childId: child.id,
     date: mockedToday.subDays(1),
+    arrived: LocalTime.of(8, 0),
+    departed: LocalTime.of(12, 30),
+    unitId: unit.id
+  }).save()
+  await Fixture.childAttendance({
+    childId: child.id,
+    date: mockedToday.addDays(1), // future attendance is not included
     arrived: LocalTime.of(8, 0),
     departed: LocalTime.of(12, 30),
     unitId: unit.id

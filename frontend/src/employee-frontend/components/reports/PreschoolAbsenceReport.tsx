@@ -210,10 +210,11 @@ const PreschoolAbsenceGrid = ({
 }) => {
   const { i18n } = useTranslation()
 
+  const today = LocalDate.todayInHelsinkiTz()
   const reportResult = useQueryResult(
     preschoolAbsenceReportQuery({
       termStart: term.start,
-      termEnd: term.end,
+      termEnd: term.end.isAfter(today) ? today : term.end,
       unitId: daycare.id,
       groupId: groupId ?? null
     })
