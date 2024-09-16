@@ -83,9 +83,8 @@ const questionForm = mapped(
 
 type QuestionForm = typeof questionForm
 
-const getAnswerState = (
-  answer?: Answer | undefined
-): StateOf<QuestionForm>['answer'] => (answer !== undefined ? answer : null)
+const getAnswerState = (answer?: Answer): StateOf<QuestionForm>['answer'] =>
+  answer !== undefined ? answer : null
 
 const GroupIndentation = styled.div`
   margin-left: ${defaultMargins.s};

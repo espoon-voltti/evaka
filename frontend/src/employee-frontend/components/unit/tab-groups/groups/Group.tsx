@@ -501,7 +501,7 @@ interface GroupPlacementRowProps {
   permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
   permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
-  onShowNote: (child?: IdAndName | undefined) => void
+  onShowNote: (child?: IdAndName) => void
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
   ) => void

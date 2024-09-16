@@ -62,9 +62,8 @@ const questionForm = mapped(
 
 type QuestionForm = typeof questionForm
 
-const getAnswerState = (
-  answer?: Answer | undefined
-): StateOf<QuestionForm>['answer'] => (answer !== undefined ? answer : false)
+const getAnswerState = (answer?: Answer): StateOf<QuestionForm>['answer'] =>
+  answer !== undefined ? answer : false
 
 const View = React.memo(function View({
   bind,
