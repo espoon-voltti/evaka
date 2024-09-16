@@ -485,19 +485,6 @@ FROM assistance_need_decision ad
             )
         }
 
-    // For Tampere
-    fun andIsDecisionMakerForAssistanceNeedDecision(cfg: ChildAclConfig = ChildAclConfig()) =
-        ruleViaChildAcl<AssistanceNeedDecisionId>(cfg) { user, _ ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_decision ad
-WHERE ad.decision_maker_employee_id = ${bind(user.id)}
-  AND ad.sent_for_decision IS NOT NULL
-            """
-            )
-        }
-
     fun inPlacementUnitOfChildOfAssistanceNeedPreschoolDecision(
         cfg: ChildAclConfig = ChildAclConfig()
     ) =
@@ -516,21 +503,6 @@ FROM assistance_need_preschool_decision ad
                 """
 SELECT ad.id, child_id
 FROM assistance_need_preschool_decision ad
-            """
-            )
-        }
-
-    // For Tampere
-    fun andIsDecisionMakerForAssistanceNeedPreschoolDecision(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<AssistanceNeedPreschoolDecisionId>(cfg) { user, _ ->
-            sql(
-                """
-SELECT ad.id, child_id
-FROM assistance_need_preschool_decision ad
-WHERE ad.decision_maker_employee_id = ${bind(user.id)}
-  AND ad.sent_for_decision IS NOT NULL
             """
             )
         }
