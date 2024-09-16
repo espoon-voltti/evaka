@@ -3266,7 +3266,7 @@ export const fi = {
       UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
       PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
       TEMPORARY_RELOCATION: 'Lapsi varasijoitettuna muualla',
-      PARENTLEAVE: 'Isyys-/vanhempainvapaa',
+      PARENTLEAVE: 'Vanhempainvapaa',
       FORCE_MAJEURE: 'Maksuton päivä',
       FREE_ABSENCE: 'Maksuton poissaolo',
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
@@ -3302,7 +3302,7 @@ export const fi = {
       TEMPORARY_RELOCATION:
         'Lapselle on tehty varasijoitus toiseen yksikköön. Poissaolon voi merkitä, mikäli sellainen on tiedossa. Tutustu kuitenkin loma-ajan ohjeeseen, mikäli poissaolo koskee loma-aikaa.',
       PARENTLEAVE:
-        'Isyys-/vanhempainvapaa, merkitään vain sille lapselle, jonka vuoksi huoltaja on vapaalla, ei sisaruksille. Vaikuttaa maksuun siten, että ko. aika on maksuton.',
+        'Vanhempainvapaa, merkitään vain sille lapselle, jonka vuoksi huoltaja on vapaalla, ei sisaruksille. Vaikuttaa maksuun siten, että ko. aika on maksuton.',
       FORCE_MAJEURE:
         'Käytetään vain erikoistilanteissa hallinnon ohjeiden mukaan.',
       FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
@@ -3338,7 +3338,7 @@ export const fi = {
         UNKNOWN_ABSENCE: 'Ilmoittamaton poissaolo',
         PLANNED_ABSENCE: 'Vuorotyöpoissaolo',
         TEMPORARY_RELOCATION: 'Varasijoitettuna muualla',
-        PARENTLEAVE: 'Isyys-/vanhempainvapaa',
+        PARENTLEAVE: 'Vanhempainvapaa',
         FORCE_MAJEURE: 'Maksuton päivä (rajoitettu käyttö)',
         FREE_ABSENCE: 'Maksuton poissaolo',
         UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
