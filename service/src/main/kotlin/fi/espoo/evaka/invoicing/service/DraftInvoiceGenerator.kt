@@ -68,12 +68,6 @@ object DefaultInvoiceGenerationLogic : InvoiceGenerationLogicChooser {
     ): InvoiceGenerationLogic = InvoiceGenerationLogic.Default
 }
 
-private val PRESCHOOL_CLUB_FREE_MONTHS = setOf(Month.JUNE)
-private val PRESCHOOL_CLUB_HALF_FEE_MONTHS = setOf(Month.AUGUST)
-private val calculateHalfFee: (Int) -> Int = { fee ->
-    BigDecimal(fee).divide(BigDecimal(2), 0, RoundingMode.HALF_UP).toInt()
-}
-
 @Component
 class DraftInvoiceGenerator(
     private val productProvider: InvoiceProductProvider,
@@ -190,15 +184,6 @@ class DraftInvoiceGenerator(
             )
         }
 
-        val isFreeMonth: (FeeDecisionChild) -> Boolean = { part ->
-            part.placement.type == PlacementType.PRESCHOOL_CLUB &&
-                PRESCHOOL_CLUB_FREE_MONTHS.contains(invoicePeriod.start.month)
-        }
-        val isHalfFeeMonth: (FeeDecisionChild) -> Boolean = { part ->
-            part.placement.type == PlacementType.PRESCHOOL_CLUB &&
-                PRESCHOOL_CLUB_HALF_FEE_MONTHS.contains(invoicePeriod.start.month)
-        }
-
         val getInvoiceMaxFee: (ChildId, Boolean) -> Int = { childId, capMaxFeeAtDefault ->
             val childDecisions =
                 decisions.mapNotNull { decision ->
@@ -212,13 +197,7 @@ class DraftInvoiceGenerator(
                 }
 
             val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
-                val baseFee =
-                    when {
-                        isFreeMonth(part) -> 0
-                        isHalfFeeMonth(part) -> calculateHalfFee(part.baseFee)
-                        else -> part.baseFee
-                    }
-                val maxFeeBeforeFeeAlterations = calculateMaxFee(baseFee, part.siblingDiscount)
+                val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
                 part.feeAlterations.fold(maxFeeBeforeFeeAlterations) { currentFee, feeAlteration ->
                     currentFee +
                         feeAlterationEffect(
@@ -325,33 +304,11 @@ class DraftInvoiceGenerator(
                                                     part.placement.unitId,
                                                     part.placement.type,
                                                 ),
-                                                when {
-                                                    isFreeMonth(part) -> 0
-                                                    isHalfFeeMonth(part) ->
-                                                        calculateHalfFee(part.fee)
-                                                    else -> part.fee
-                                                },
+                                                part.fee,
                                                 part.feeAlterations.map { feeAlteration ->
                                                     Pair(feeAlteration.type, feeAlteration.effect)
                                                 },
-                                                when {
-                                                    isFreeMonth(part) -> 0
-                                                    isHalfFeeMonth(part) -> {
-                                                        val fee = calculateHalfFee(part.fee)
-                                                        part.feeAlterations.fold(fee) {
-                                                            currentFee,
-                                                            feeAlteration ->
-                                                            currentFee +
-                                                                feeAlterationEffect(
-                                                                    currentFee,
-                                                                    feeAlteration.type,
-                                                                    feeAlteration.amount,
-                                                                    feeAlteration.isAbsolute,
-                                                                )
-                                                        }
-                                                    }
-                                                    else -> part.finalFee
-                                                },
+                                                part.finalFee,
                                                 part.serviceNeed.contractDaysPerMonth,
                                             )
                                     }
@@ -364,19 +321,9 @@ class DraftInvoiceGenerator(
                 .groupBy { (_, stub) -> stub.child }
                 .flatMap { (child, childStubs) ->
                     val separatePeriods =
-                        mergePeriods(
-                                childStubs.map { it.first.asDateRange() to it.second },
-                                { olderValue, newerValue ->
-                                    if (isPreschoolClub(olderValue) && isPreschoolClub(newerValue))
-                                        true
-                                    else olderValue == newerValue
-                                },
-                                ::isPreschoolClub,
-                            )
-                            .map {
-                                it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to
-                                    it.second
-                            }
+                        mergePeriods(childStubs.map { it.first.asDateRange() to it.second }).map {
+                            it.first.asFiniteDateRange(defaultEnd = invoicePeriod.end) to it.second
+                        }
 
                     val logic =
                         invoiceGenerationLogicChooser.logicForMonth(
@@ -501,9 +448,6 @@ class DraftInvoiceGenerator(
             FullMonthAbsenceType.NOTHING
         }
     }
-
-    private fun isPreschoolClub(row: InvoiceRowStub): Boolean =
-        row.placement.type == PlacementType.PRESCHOOL_CLUB
 
     private fun getAttendanceDates(
         period: FiniteDateRange,
@@ -675,10 +619,7 @@ class DraftInvoiceGenerator(
             attendanceDates.take(dailyFeeDivisor).filter { period.includes(it) }
         if (periodAttendanceDates.isEmpty()) return listOf()
 
-        val isFullMonth =
-            periodAttendanceDates.size == numRelevantOperationalDays ||
-                placementType ==
-                    PlacementType.PRESCHOOL_CLUB // always full month regardless attendance
+        val isFullMonth = periodAttendanceDates.size == numRelevantOperationalDays
 
         val product = productProvider.mapToProduct(placementType)
         val (amount, unitPrice) =
