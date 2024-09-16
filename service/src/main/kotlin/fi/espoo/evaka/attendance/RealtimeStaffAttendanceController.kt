@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -25,17 +26,15 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/staff-attendances/realtime", // deprecated
-    "/employee/staff-attendances/realtime",
-)
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
-    @GetMapping
+    @GetMapping(
+        "/staff-attendances/realtime", // deprecated
+        "/employee/staff-attendances/realtime",
+    )
     fun getRealtimeStaffAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -180,7 +179,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping("/upsert")
+    @PostMapping(
+        "/staff-attendances/realtime/upsert", // deprecated
+        "/employee/staff-attendances/realtime/upsert",
+    )
     fun upsertDailyStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -263,7 +265,10 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping("/upsert-external")
+    @PostMapping(
+        "/staff-attendances/realtime/upsert-external", // deprecated
+        "/employee/staff-attendances/realtime/upsert-external",
+    )
     fun upsertDailyExternalRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -312,4 +317,42 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             meta = mapOf("date" to body.date),
         )
     }
+
+    @GetMapping("/employee/staff-attendances/realtime/open-attendence")
+    fun getOpenGroupAttendance(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam userId: EmployeeId,
+        @RequestParam unitId: DaycareId,
+    ): OpenGroupAttendanceResponse {
+        val openAttendance =
+            db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        // Check if the authenticated user has permission to read staff attendances
+                        // for this unit
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_ATTENDANCES,
+                            unitId,
+                        )
+                        // Also check that the given user belongs to this unit
+                        val targetUserPartOfUnit =
+                            tx.getDaycareAclRows(unitId, false).any { it.employee.id == userId }
+                        if (!targetUserPartOfUnit) {
+                            throw BadRequest("User doesn't belong to the unit")
+                        }
+                        // If the user has the permission to read staff attendances from this unit,
+                        // then they are also permitted to check for open attendances of a colleague
+                        // from all units
+                        tx.getOpenGroupAttendancesForEmployee(userId)
+                    }
+                }
+                .also { Audit.StaffOpenAttendanceRead.log(targetId = AuditId(userId)) }
+        return OpenGroupAttendanceResponse(openAttendance)
+    }
+
+    data class OpenGroupAttendanceResponse(val openGroupAttendance: OpenGroupAttendance?)
 }

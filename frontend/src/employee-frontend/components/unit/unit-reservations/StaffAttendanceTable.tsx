@@ -310,7 +310,6 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
         : undefined,
     [date, target, unitId]
   )
-
   return target.type === 'employee' ? (
     <StaffAttendanceDetailsModal
       isExternal={false}
@@ -318,6 +317,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       staffOccupancyEffectDefault={target.hasOccupancyEffect}
       validate={staffAttendanceValidator(detailsModalConfig)}
       name={detailsModalConfig.name}
+      employeeId={target.employeeId}
       date={detailsModalConfig.date}
       attendances={modalData.attendances}
       plannedAttendances={modalData.plannedAttendances}
@@ -325,6 +325,7 @@ const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
       defaultGroupId={defaultGroupId}
       onClose={onClose}
       onSuccess={onSuccess}
+      unitId={unitId}
     />
   ) : (
     <StaffAttendanceDetailsModal

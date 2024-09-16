@@ -13,13 +13,19 @@ import {
   testDaycare2,
   Fixture,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycare, DevEmployee, DevPerson } from '../../generated/api-types'
+import {
+  DevCareArea,
+  DevDaycare,
+  DevEmployee,
+  DevPerson
+} from '../../generated/api-types'
 import { UnitCalendarPage, UnitPage } from '../../pages/employee/units/unit'
 import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
@@ -30,6 +36,7 @@ let unitPage: UnitPage
 let calendarPage: UnitCalendarPage
 let child1Fixture: DevPerson
 let child1DaycarePlacementId: UUID
+let careArea: DevCareArea
 let daycare: DevDaycare
 let unitSupervisor: DevEmployee
 let nonGroupStaff: DevEmployee
@@ -45,7 +52,7 @@ beforeEach(async () => {
   await resetServiceState()
 
   await Fixture.family(familyWithTwoGuardians).save()
-  const careArea = await Fixture.careArea(testCareArea2).save()
+  careArea = await Fixture.careArea(testCareArea2).save()
   daycare = await Fixture.daycare({
     ...testDaycare2,
     areaId: careArea.id,
@@ -355,10 +362,16 @@ describe('Realtime staff attendances', () => {
   describe('Details modal', () => {
     let staffAttendances: UnitStaffAttendancesTable
 
-    async function prepareTest({ arrived }: { arrived: HelsinkiDateTime }) {
+    async function prepareTest({
+      arrived,
+      attendedGroupId = groupId
+    }: {
+      arrived: HelsinkiDateTime
+      attendedGroupId?: string
+    }) {
       await Fixture.realtimeStaffAttendance({
         employeeId: groupStaff.id,
-        groupId,
+        groupId: attendedGroupId,
         arrived,
         departed: null
       }).save()
@@ -562,6 +575,27 @@ describe('Realtime staff attendances', () => {
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.newAttendanceButton.assertDisabled(true)
       await modal.openAttendanceWarning.waitUntilVisible()
+    })
+    test('If there is open attendance entry for yesterday in another unit, warning is visible', async () => {
+      const anotherDaycare = await Fixture.daycare({
+        ...testDaycare,
+        areaId: careArea.id,
+        enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+      }).save()
+
+      const anotherGroupId = uuidv4()
+      await Fixture.daycareGroup({
+        id: anotherGroupId,
+        daycareId: anotherDaycare.id,
+        name: 'Toiset testailijat'
+      }).save()
+      await prepareTest({
+        arrived: mockedToday.subDays(1).toHelsinkiDateTime(LocalTime.of(21, 0)),
+        attendedGroupId: anotherGroupId
+      })
+
+      const modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.openAttendanceInAnotherUnitWarning.waitUntilVisible()
     })
   })
 

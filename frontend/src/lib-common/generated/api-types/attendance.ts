@@ -247,6 +247,23 @@ export interface GroupInfo {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.OpenGroupAttendance
+*/
+export interface OpenGroupAttendance {
+  date: LocalDate
+  groupId: UUID
+  unitId: UUID
+  unitName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
+*/
+export interface OpenGroupAttendanceResponse {
+  openGroupAttendance: OpenGroupAttendance | null
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.PlannedStaffAttendance
 */
 export interface PlannedStaffAttendance {
@@ -537,6 +554,22 @@ export function deserializeJsonExternalStaffMember(json: JsonOf<ExternalStaffMem
   return {
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived)
+  }
+}
+
+
+export function deserializeJsonOpenGroupAttendance(json: JsonOf<OpenGroupAttendance>): OpenGroupAttendance {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
+  }
+}
+
+
+export function deserializeJsonOpenGroupAttendanceResponse(json: JsonOf<OpenGroupAttendanceResponse>): OpenGroupAttendanceResponse {
+  return {
+    ...json,
+    openGroupAttendance: (json.openGroupAttendance != null) ? deserializeJsonOpenGroupAttendance(json.openGroupAttendance) : null
   }
 }
 

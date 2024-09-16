@@ -8,13 +8,37 @@ import LocalDate from 'lib-common/local-date'
 import { ExternalAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceBody } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
+
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendance
+*/
+export async function getOpenGroupAttendance(
+  request: {
+    userId: UUID,
+    unitId: UUID
+  }
+): Promise<OpenGroupAttendanceResponse> {
+  const params = createUrlSearchParams(
+    ['userId', request.userId],
+    ['unitId', request.unitId]
+  )
+  const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
+    url: uri`/employee/staff-attendances/realtime/open-attendence`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonOpenGroupAttendanceResponse(json)
+}
 
 
 /**

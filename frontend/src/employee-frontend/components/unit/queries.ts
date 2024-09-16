@@ -12,6 +12,7 @@ import {
   getUnitApplications,
   respondToPlacementProposal
 } from '../../generated/api-clients/application'
+import { getOpenGroupAttendance } from '../../generated/api-clients/attendance'
 import {
   createBackupCare,
   updateBackupCare
@@ -88,6 +89,10 @@ export const queryKeys = createQueryKeys('unit', {
 
   expectedAbsences: (arg: Arg0<typeof getExpectedAbsences>) => [
     'expectedAbsences',
+    arg
+  ],
+  openGroupAttendance: (arg: Arg0<typeof getOpenGroupAttendance>) => [
+    'openGroupAttendance',
     arg
   ]
 })
@@ -263,4 +268,9 @@ export const respondToPlacementProposalMutation = mutation({
     queryKeys.unitApplications(unitId),
     queryKeys.unitNotifications(unitId)
   ]
+})
+
+export const openAttendanceQuery = query({
+  api: getOpenGroupAttendance,
+  queryKey: queryKeys.openGroupAttendance
 })

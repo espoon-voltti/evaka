@@ -7,6 +7,7 @@ import initial from 'lodash/initial'
 import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
@@ -19,6 +20,7 @@ import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -48,6 +50,7 @@ import { faExclamationTriangle, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
+import { openAttendanceQuery } from '../queries'
 
 export interface ModalAttendance {
   id: UUID
@@ -68,6 +71,7 @@ interface Props<
 > {
   date: LocalDate
   name: string
+  employeeId?: UUID
   staffOccupancyEffectDefault: boolean
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
@@ -78,6 +82,7 @@ interface Props<
   onSave: (body: T[]) => void
   onSuccess: () => void
   onClose: () => void
+  unitId?: string
 }
 
 export interface EditedAttendance {
@@ -105,6 +110,7 @@ function StaffAttendanceDetailsModal<
 >({
   date,
   name,
+  employeeId,
   staffOccupancyEffectDefault,
   attendances,
   plannedAttendances,
@@ -114,7 +120,8 @@ function StaffAttendanceDetailsModal<
   validate,
   onSave,
   onSuccess,
-  onClose
+  onClose,
+  unitId
 }: Props<T>) {
   const { i18n } = useTranslation()
 
@@ -343,6 +350,15 @@ function StaffAttendanceDetailsModal<
     [editState, initialEditState, requestBody]
   )
 
+  const openAttendanceResult = useQueryResult(
+    employeeId && unitId
+      ? openAttendanceQuery({ userId: employeeId, unitId })
+      : constantQuery({ openGroupAttendance: null })
+  )
+  const openAttendance = openAttendanceResult.isSuccess
+    ? openAttendanceResult.value.openGroupAttendance
+    : null
+
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
       <Content>
@@ -473,6 +489,37 @@ function StaffAttendanceDetailsModal<
           </>
         )}
 
+        {!arrivalWithoutDeparture &&
+          !!openAttendance &&
+          openAttendance.date.isEqualOrBefore(date) && (
+            <FullGridWidth>
+              <FixedSpaceRow
+                justifyContent="left"
+                alignItems="center"
+                spacing="s"
+              >
+                <FontAwesomeIcon
+                  icon={faExclamationTriangle}
+                  color={colors.status.warning}
+                />
+                <div data-qa="open-attendance-in-another-unit-warning">
+                  {i18n.unit.staffAttendance.openAttendanceInAnotherUnitWarning}
+                  <Link
+                    to={`/units/${openAttendance.unitId}/calendar?group=${openAttendance.groupId ? openAttendance.groupId : 'staff'}&date=${openAttendance.date.formatIso()}&mode=week`}
+                  >
+                    {openAttendance.date.formatExotic('EEEEEE d.M.yyyy') +
+                      ' - ' +
+                      openAttendance.unitName}
+                  </Link>
+                  {
+                    i18n.unit.staffAttendance
+                      .openAttendanceInAnotherUnitWarningCont
+                  }
+                </div>
+              </FixedSpaceRow>
+              <Gap size="s" />
+            </FullGridWidth>
+          )}
         <ListGrid rowGap="s" labelWidth="auto">
           {editState.map(
             (
