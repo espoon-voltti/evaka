@@ -486,6 +486,7 @@ data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
+    val incomeEndDate: LocalDate?,
     val handlerNote: String,
     val type: IncomeStatementType,
     val personId: PersonId,
@@ -519,7 +520,7 @@ private fun awaitingHandlerQuery(
 
     sql(
         """
-SELECT DISTINCT ON (i.created, i.start_date, i.id)
+SELECT DISTINCT ON (created, start_date, income_end_date, id)
     i.id,
     i.type,
     i.created,
@@ -527,7 +528,13 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.handler_note,
     person.id AS personId,
     person.last_name || ' ' || person.first_name AS personName,
-    ca.name AS primaryCareArea
+    ca.name AS primaryCareArea,
+    (
+        SELECT valid_to FROM income
+        WHERE person_id = i.person_id AND effect <> 'INCOMPLETE'
+        ORDER BY valid_to DESC
+        LIMIT 1
+    ) AS income_end_date
 FROM income_statement i
 JOIN person ON person.id = i.person_id
 
@@ -609,8 +616,12 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     val count = createQuery { sql("SELECT COUNT(*) FROM (${subquery(query)}) q") }.exactlyOne<Int>()
     val sortColumn =
         when (sortBy) {
-            IncomeStatementSortParam.CREATED -> "i.created ${sortDirection.name}, i.start_date"
-            IncomeStatementSortParam.START_DATE -> "i.start_date ${sortDirection.name}, i.created"
+            IncomeStatementSortParam.CREATED ->
+                "i.created ${sortDirection.name}, i.start_date, income_end_date"
+            IncomeStatementSortParam.START_DATE ->
+                "i.start_date ${sortDirection.name}, i.created, income_end_date"
+            IncomeStatementSortParam.INCOME_END_DATE ->
+                "income_end_date ${sortDirection.name}, i.created, i.start_date"
         }
     val rows =
         createQuery {

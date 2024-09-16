@@ -2089,6 +2089,7 @@ export const fi = {
       area: 'Alue',
       created: 'Luotu',
       startDate: 'Voimassa',
+      incomeEndDate: 'Tulotieto päättyy',
       type: 'Tyyppi',
       link: 'Selvitys',
       note: 'Muistiinpano'

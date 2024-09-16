@@ -86,6 +86,12 @@ function IncomeStatementsList({
           >
             {i18n.incomeStatement.table.startDate}
           </SortableTh>
+          <SortableTh
+            sorted={isSorted('INCOME_END_DATE')}
+            onClick={toggleSort('INCOME_END_DATE')}
+          >
+            {i18n.incomeStatement.table.incomeEndDate}
+          </SortableTh>
           <Th>{i18n.incomeStatement.table.type}</Th>
           <Th minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
           <Th minimalWidth={true}>{i18n.incomeStatement.table.note}</Th>
@@ -109,6 +115,7 @@ function IncomeStatementsList({
             <Td>{row.primaryCareArea}</Td>
             <Td>{row.created.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>
+            <Td>{row.incomeEndDate?.format() ?? '-'}</Td>
             <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
             </Td>
