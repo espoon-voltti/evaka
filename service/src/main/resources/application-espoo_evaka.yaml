@@ -23,6 +23,6 @@ evaka:
     sfi:
       contact_organization:
         name: "eVaka Espoo"
-        street_address: "Karaportti 1 PL 302"
+        street_address: "Karaportti 1 PL 30"
         postal_code: "02070"
         post_office: "Espoo"
