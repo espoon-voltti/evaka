@@ -7,6 +7,7 @@
   "license": "LGPL-2.1-or-later",
   "scripts": {
     "clean": "rm -rf ./build ./dist",
+    "type-check": "tsc --noEmit",
     "build": "yarn clean && yarn install && tsc --build src",
     "lint": "eslint --max-warnings 0 .",
     "lint:fix": "yarn lint --fix",
