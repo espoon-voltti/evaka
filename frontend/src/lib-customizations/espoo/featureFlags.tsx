@@ -108,6 +108,7 @@ const features: Features = {
     noAbsenceType: false,
     discussionReservations: true,
     forceUnpublishDocumentTemplate: false,
+    automaticFixedScheduleAbsences: true,
     invoiceDisplayAccountNumber: true
   }
 }
