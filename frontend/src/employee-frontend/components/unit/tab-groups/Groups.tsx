@@ -209,7 +209,8 @@ export default React.memo(function Groups({
             'ADMIN',
             'SERVICE_WORKER',
             'UNIT_SUPERVISOR',
-            'FINANCE_ADMIN'
+            'FINANCE_ADMIN',
+            'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
           )}
           filters={filters}
           setFilters={setFilters}
