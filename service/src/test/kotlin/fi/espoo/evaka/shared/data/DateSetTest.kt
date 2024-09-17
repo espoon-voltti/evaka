@@ -132,6 +132,20 @@ class DateSetTest {
         assertEquals(x, b.intersection(a))
     }
 
+    @Test
+    fun `intersectRanges takes a clamp range that both filters and clamps the returned results`() {
+        // 123456789
+        // AAA AA AA
+        //  RRRRRRR
+        //  == == =
+        val a = DateSet.of(testRange(1, 3), testRange(5, 6), testRange(8, 9))
+        val r = testRange(2, 8)
+        assertEquals(
+            listOf(testRange(2, 3), testRange(5, 6), testRange(8, 8)),
+            a.intersectRanges(r).toList(),
+        )
+    }
+
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
 
     private fun testRange(from: Int, to: Int) = FiniteDateRange(testDate(from), testDate(to))

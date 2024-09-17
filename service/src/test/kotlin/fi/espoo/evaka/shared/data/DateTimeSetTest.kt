@@ -132,6 +132,17 @@ class DateTimeSetTest {
         assertEquals(x, b.intersection(a))
     }
 
+    @Test
+    fun `intersectRanges takes a clamp range that both filters and clamps the returned results`() {
+        // 123456789
+        // AA_ A_ A_
+        //  RRRRRR_
+        //  =_ =_
+        val a = DateTimeSet.of(testRange(1, 3), testRange(5, 6), testRange(8, 9))
+        val r = testRange(2, 8)
+        assertEquals(listOf(testRange(2, 3), testRange(5, 6)), a.intersectRanges(r).toList())
+    }
+
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
     private fun testRange(from: Int, to: Int) =

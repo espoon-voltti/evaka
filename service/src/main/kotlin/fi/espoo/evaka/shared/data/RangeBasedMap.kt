@@ -24,13 +24,62 @@ abstract class RangeBasedMap<
     /**
      * Returns a sequence of all ranges in the map, sorted in ascending order.
      *
-     * The ranges never overlap, but some may be adjacent if the adjacent ranges have different
-     * values in the map.
+     * The returned ranges never overlap, but some may be adjacent if the adjacent ranges have
+     * different values in the map.
      */
     fun ranges(): Sequence<Range> = entries.asSequence().map { it.first }
 
+    /**
+     * Returns a sequence of ranges in the map that overlap with the given range, sorted in
+     * ascending order.
+     *
+     * The returned ranges never overlap, but some may be adjacent if the adjacent ranges have
+     * different values in the map. The ranges are intersections instead of the originals, so they
+     * never extend outside the given range.
+     */
+    fun intersectRanges(range: Range): Sequence<Range> =
+        entries
+            .asSequence()
+            .dropWhile { !it.first.overlaps(range) }
+            .takeWhile { it.first.overlaps(range) }
+            .mapNotNull { it.first.intersection(range) }
+
+    /**
+     * Returns a sequence of all values in the map, sorted by range in ascending order.
+     *
+     * Duplicates are possible if the same value exists in multiple ranges in the original map.
+     */
+    fun values(): Sequence<T> = this.entries.asSequence().map { it.second }
+
+    /**
+     * Returns a sequence of values in the map that overlap with the given range, sorted by range in
+     * ascending order.
+     *
+     * Duplicates are possible if the same value exists in multiple ranges in the original map.
+     */
+    fun intersectValues(range: Range): Sequence<T> =
+        this.entries
+            .asSequence()
+            .dropWhile { !it.first.overlaps(range) }
+            .takeWhile { it.first.overlaps(range) }
+            .map { it.second }
+
     /** Returns a sequence of all entries in the map, sorted by range in ascending order. */
     fun entries(): Sequence<Pair<Range, T>> = this.entries.asSequence()
+
+    /**
+     * Returns a sequence of entries in the map that overlap with the given range, sorted by range
+     * in ascending order.
+     *
+     * The returned entry ranges are intersections instead of the originals, so no data is ever
+     * returned that continues outside the given clamp range.
+     */
+    fun intersectEntries(range: Range): Sequence<Pair<Range, T>> =
+        this.entries
+            .asSequence()
+            .dropWhile { !it.first.overlaps(range) }
+            .takeWhile { it.first.overlaps(range) }
+            .mapNotNull { Pair(it.first.intersection(range) ?: return@mapNotNull null, it.second) }
 
     /**
      * Returns the largest range that covers all the points in all the ranges in the map, or null if
