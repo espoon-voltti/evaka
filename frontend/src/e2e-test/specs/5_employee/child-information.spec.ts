@@ -149,8 +149,8 @@ describe('Child Information - edit additional information', () => {
         }
       ]
     })
-    const dietCaption = 'L - 79'
-    const dietSearchTerm = 'L - 79'
+    const dietCaption = 'L'
+    const dietSearchTerm = 'L'
     const dietId = 79
 
     await page.goto(

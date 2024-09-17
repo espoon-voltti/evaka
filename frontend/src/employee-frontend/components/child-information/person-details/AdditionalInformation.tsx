@@ -64,7 +64,7 @@ const filterDiets = (
 ): SpecialDiet[] => {
   const filter = input.toLowerCase()
   return diets.filter((diet) =>
-    getDietCaption(diet).toLowerCase().includes(filter)
+    getDietCaption(diet).toLowerCase().startsWith(filter)
   )
 }
 
@@ -74,7 +74,7 @@ const filterMealTextures = (
 ): MealTexture[] => {
   const filter = input.toLowerCase()
   return mealTextures.filter((mealTexture) =>
-    getMealTextureCaption(mealTexture).toLowerCase().includes(filter)
+    getMealTextureCaption(mealTexture).toLowerCase().startsWith(filter)
   )
 }
 
@@ -83,11 +83,11 @@ interface Props {
 }
 
 function getDietCaption(diet: SpecialDiet) {
-  return `${diet.abbreviation} - ${diet.id}`
+  return diet.abbreviation
 }
 
 function getMealTextureCaption(mealTexture: MealTexture) {
-  return `${mealTexture.name} - ${mealTexture.id}`
+  return mealTexture.name
 }
 
 export default React.memo(function AdditionalInformation({ childId }: Props) {
@@ -145,9 +145,17 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
   const specialDiets = useQueryResult(specialDietsQuery(), {
     enabled: editing
   }).getOrElse([])
+  const specialDietsOrdered = useMemo(
+    () => sortBy(specialDiets, getDietCaption),
+    [specialDiets]
+  )
   const mealTextures = useQueryResult(mealTexturesQuery(), {
     enabled: editing
   }).getOrElse([])
+  const mealTexturesOrdered = useMemo(
+    () => sortBy(mealTextures, getMealTextureCaption),
+    [mealTextures]
+  )
 
   return (
     <div data-qa="additional-information-section">
@@ -310,7 +318,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         <>
                           <Combobox
                             data-qa="diet-input"
-                            items={specialDiets}
+                            items={specialDietsOrdered}
                             getItemDataQa={(item) => `diet-${item.id}`}
                             selectedItem={form.specialDiet}
                             onChange={(diet) =>
@@ -341,7 +349,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         <>
                           <Combobox
                             data-qa="meal-texture-input"
-                            items={mealTextures}
+                            items={mealTexturesOrdered}
                             getItemDataQa={(item) => `meal-texture-${item.id}`}
                             selectedItem={form.mealTexture}
                             onChange={(mealTexture) =>
