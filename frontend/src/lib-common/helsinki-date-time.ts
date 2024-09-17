@@ -55,7 +55,7 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     return this.mapZoned((zoned) =>
       set(zoned, {
         year: date.year,
-        month: date.month,
+        month: date.month - 1,
         date: date.date
       })
     )
