@@ -145,9 +145,17 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
   const specialDiets = useQueryResult(specialDietsQuery(), {
     enabled: editing
   }).getOrElse([])
+  const specialDietsOrdered = useMemo(
+    () => sortBy(specialDiets, getDietCaption),
+    [specialDiets]
+  )
   const mealTextures = useQueryResult(mealTexturesQuery(), {
     enabled: editing
   }).getOrElse([])
+  const mealTexturesOrdered = useMemo(
+    () => sortBy(mealTextures, getMealTextureCaption),
+    [mealTextures]
+  )
 
   return (
     <div data-qa="additional-information-section">
@@ -310,7 +318,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         <>
                           <Combobox
                             data-qa="diet-input"
-                            items={specialDiets}
+                            items={specialDietsOrdered}
                             getItemDataQa={(item) => `diet-${item.id}`}
                             selectedItem={form.specialDiet}
                             onChange={(diet) =>
@@ -341,7 +349,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         <>
                           <Combobox
                             data-qa="meal-texture-input"
-                            items={mealTextures}
+                            items={mealTexturesOrdered}
                             getItemDataQa={(item) => `meal-texture-${item.id}`}
                             selectedItem={form.mealTexture}
                             onChange={(mealTexture) =>
