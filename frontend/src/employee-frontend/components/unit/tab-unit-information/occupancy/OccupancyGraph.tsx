@@ -7,8 +7,8 @@ import { fi } from 'date-fns/locale'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
 
-import { formatDate } from 'lib-common/date'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import colors from 'lib-customizations/common'
 
 type DatePoint = { x: Date; y: number | null | undefined }
@@ -68,7 +68,9 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
           title: function (tooltipItems) {
             const tooltipItem = tooltipItems[0]
             const date = new Date(tooltipItem.parsed.x)
-            return formatDate(date)
+            return HelsinkiDateTime.fromSystemTzDate(date)
+              .toLocalDate()
+              .format()
           },
           label: function (tooltipItem) {
             return `${String(tooltipItem.parsed.y)} %`

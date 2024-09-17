@@ -5,6 +5,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { ApiFunction, Failure, Result, Success } from 'lib-common/api'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -21,7 +22,7 @@ type State =
 
 export interface AutosaveStatus {
   state: State
-  savedAt?: Date
+  savedAt?: HelsinkiDateTime
 }
 
 const debounceInterval = isAutomatedTest ? 200 : 2000
@@ -87,7 +88,7 @@ export function useAutosave<T, F extends ApiFunction>({
             }
           }
 
-          return { state: 'clean', savedAt: new Date() }
+          return { state: 'clean', savedAt: HelsinkiDateTime.now() }
         })
       }
     })

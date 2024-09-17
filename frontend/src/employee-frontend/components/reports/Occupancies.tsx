@@ -11,13 +11,13 @@ import { Link } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
 import { careTypes } from 'lib-common/generated/api-types/daycare'
 import { OccupancyType } from 'lib-common/generated/api-types/occupancy'
 import {
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow
 } from 'lib-common/generated/api-types/reports'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { Arg0 } from 'lib-common/types'
@@ -605,7 +605,11 @@ export default React.memo(function Occupancies() {
                       usedValues !== 'raw'
                         ? i18n.reports.occupancies.average
                         : undefined,
-                      ...dateCols.map((date) => formatDate(date, 'dd.MM.'))
+                      ...dateCols.map((date) =>
+                        HelsinkiDateTime.fromSystemTzDate(date)
+                          .toLocalDate()
+                          .format('dd.MM.')
+                      )
                     ].filter((label) => label !== undefined),
                     ...displayCells.map((row) =>
                       row.map((column) => column.value)
@@ -643,7 +647,9 @@ export default React.memo(function Occupancies() {
                           key={date.toDateString()}
                           colSpan={usedValues === 'raw' ? 4 : undefined}
                         >
-                          {formatDate(date, 'dd.MM.')}
+                          {HelsinkiDateTime.fromSystemTzDate(date)
+                            .toLocalDate()
+                            .format('dd.MM.')}
                         </Th>
                       ))}
                     </Tr>

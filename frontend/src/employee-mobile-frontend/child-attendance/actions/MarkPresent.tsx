@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime } from 'lib-common/date'
 import {
   AttendanceChild,
   ChildAttendanceStatusResponse
@@ -22,7 +21,6 @@ import {
 } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -61,7 +59,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
+  const [time, setTime] = useState(() => LocalTime.nowInHelsinkiTz().format())
 
   const { mutateAsync: createArrival } = useMutationResult(
     createArrivalMutation

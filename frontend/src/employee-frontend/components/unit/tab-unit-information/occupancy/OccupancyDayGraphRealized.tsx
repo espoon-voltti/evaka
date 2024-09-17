@@ -12,7 +12,6 @@ import React, { useMemo, useCallback, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import styled from 'styled-components'
 
-import { formatTime } from 'lib-common/date'
 import { useBoolean } from 'lib-common/form/hooks'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -172,7 +171,11 @@ const Graph = React.memo(function Graph({
     () =>
       tooltipParams.data ? (
         <>
-          <span>{formatTime(tooltipParams.data.date)}</span>
+          <span>
+            {HelsinkiDateTime.fromSystemTzDate(tooltipParams.data.date)
+              .toLocalTime()
+              .format()}
+          </span>
           <Gap size="xs" />
           <table>
             <tbody>

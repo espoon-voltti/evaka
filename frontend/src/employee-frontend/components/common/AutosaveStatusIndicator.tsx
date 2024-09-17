@@ -6,7 +6,6 @@ import React from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { AutosaveStatus } from 'employee-frontend/utils/use-autosave'
-import { formatTime } from 'lib-common/date'
 import { InformationText } from 'lib-components/typography'
 
 export default React.memo(function AutosaveStatusIndicator({
@@ -29,7 +28,7 @@ export default React.memo(function AutosaveStatusIndicator({
       case 'dirty':
       case 'clean':
         return status.savedAt
-          ? `${i18n.common.saved}\n${formatTime(status.savedAt)}`
+          ? `${i18n.common.saved}\n${status.savedAt.toLocalTime().format()}`
           : null
     }
   }
