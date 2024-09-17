@@ -21,6 +21,7 @@ import {
 import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import { NotificationsContext } from 'lib-components/Notifications'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -220,6 +221,7 @@ export default React.memo(function ThreadView({
 }: Props) {
   const i18n = useTranslation()
   const { setReplyContent, getReplyContent } = useContext(MessageContext)
+  const { addTimedNotification } = useContext(NotificationsContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
   const [replyEditorVisible, useReplyEditorVisible] = useBoolean(false)
@@ -313,7 +315,13 @@ export default React.memo(function ThreadView({
             })}
             onUpdateContent={onUpdateContent}
             onDiscard={onDiscard}
-            onSuccess={hideReplyEditor}
+            onSuccess={() => {
+              hideReplyEditor()
+              addTimedNotification({
+                children: i18n.messages.messageEditor.messageSentNotification,
+                dataQa: 'message-sent-notification'
+              })
+            }}
             recipients={recipients}
             onToggleRecipient={onToggleRecipient}
             replyContent={replyContent}
