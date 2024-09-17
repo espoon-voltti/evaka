@@ -64,7 +64,7 @@ const filterDiets = (
 ): SpecialDiet[] => {
   const filter = input.toLowerCase()
   return diets.filter((diet) =>
-    getDietCaption(diet).toLowerCase().includes(filter)
+    getDietCaption(diet).toLowerCase().startsWith(filter)
   )
 }
 
@@ -74,7 +74,7 @@ const filterMealTextures = (
 ): MealTexture[] => {
   const filter = input.toLowerCase()
   return mealTextures.filter((mealTexture) =>
-    getMealTextureCaption(mealTexture).toLowerCase().includes(filter)
+    getMealTextureCaption(mealTexture).toLowerCase().startsWith(filter)
   )
 }
 
