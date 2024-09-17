@@ -22,6 +22,7 @@ import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.ses.SesClient
+import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.utils.AttributeMap
 
 @Configuration
@@ -90,4 +91,9 @@ class AwsConfig {
     @Bean
     fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient =
         SesClient.builder().credentialsProvider(awsCredentialsProvider).build()
+
+    @Lazy
+    @Bean
+    fun amazonSSM(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SsmClient =
+        SsmClient.builder().credentialsProvider(awsCredentialsProvider).build()
 }

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 interface SfiMessagesClient {
     fun send(msg: SfiMessage)
+
+    fun rotatePassword()
 }
 
 @JsonIgnoreProperties(value = ["language"]) // ignore legacy properties

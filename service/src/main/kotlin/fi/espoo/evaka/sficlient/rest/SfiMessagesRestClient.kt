@@ -68,11 +68,7 @@ class Config(env: SfiEnv) {
                     },
             )
         )
-    val accessTokenRequestBody =
-        AccessTokenRequestBody(
-            username = requireNotNull(env.restUsername) { "SFI REST username must be set" },
-            password = requireNotNull(env.restPassword?.value) { "SFI REST password must be set" },
-        )
+    val restUsername = requireNotNull(env.restUsername) { "SFI REST username must be set" }
 
     fun messageRequestBody(msg: SfiMessage, file: FileReference) =
         NewMessageFromClientOrganisation(
@@ -105,6 +101,7 @@ class Config(env: SfiEnv) {
 class SfiMessagesRestClient(
     env: SfiEnv,
     private val getDocument: (bucketName: String, key: String) -> Document,
+    private val passwordStore: PasswordStore,
 ) : SfiMessagesClient {
     private val config = Config(env)
     private val jsonMapper = defaultJsonMapperBuilder().build()
@@ -127,7 +124,13 @@ class SfiMessagesRestClient(
             }
             .build()
 
-    private val authorizationHeader = InMemoryStore { Sensitive("Bearer ${getAccessToken()}") }
+    private val authorizationHeader = InMemoryStore {
+        Sensitive("Bearer ${getAccessToken(cachedPassword.get())}")
+    }
+    private val cachedPassword = InMemoryStore {
+        passwordStore.getPassword(PasswordStore.Label.CURRENT)?.password
+            ?: error("Current password not found")
+    }
 
     private val logger = KotlinLogging.logger {}
 
@@ -146,15 +149,22 @@ class SfiMessagesRestClient(
                 )
         } ?: error("Expected JSON response body ${T::class}, got nothing")
 
-    private fun getAccessToken(): String {
-        logger.info { "Requesting new access token" }
+    private fun getAccessToken(password: Sensitive<String>): String {
+        logger.info { "Requesting a new access token" }
 
         httpClient
             .newCall(
                 Request.Builder()
                     .url(config.urls.token)
                     .header("Accept", "application/json")
-                    .post(jsonRequestBody(config.accessTokenRequestBody))
+                    .post(
+                        jsonRequestBody(
+                            AccessTokenRequestBody(
+                                username = config.restUsername,
+                                password = password.value,
+                            )
+                        )
+                    )
                     .build()
             )
             .execute()
@@ -163,6 +173,9 @@ class SfiMessagesRestClient(
                     val body = jsonResponseBody<AccessTokenResponse>(response)
                     return body.access_token
                 } else {
+                    if (response.code == 400) {
+                        cachedPassword.expire(password)
+                    }
                     val body = jsonResponseBody<ApiError>(response)
                     error(
                         "Access token request failed with HTTP ${response.code} ${response.message}: $body"
@@ -236,5 +249,102 @@ class SfiMessagesRestClient(
                     )
                 }
             }
+    }
+
+    override fun rotatePassword() {
+        logger.info { "Rotating password" }
+        val pending = passwordStore.getPassword(PasswordStore.Label.PENDING)
+        val current =
+            passwordStore.getPassword(PasswordStore.Label.CURRENT)
+                ?: error("Current password not found")
+        val newPassword =
+            if (pending == null || pending == current) {
+                // A new pending password is needed
+                val password = generatePassword()
+                val version = passwordStore.putPassword(password)
+                passwordStore.moveLabel(version, PasswordStore.Label.PENDING)
+                PasswordStore.VersionedPassword(password, version)
+            } else {
+                logger.info { "Pending password found -> testing if it's valid" }
+                val gotAccessToken =
+                    try {
+                        getAccessToken(pending.password)
+                        true
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to get access token with pending password" }
+                        false
+                    }
+                if (gotAccessToken) {
+                    // The pending password is already in use and should be current
+                    passwordStore.moveLabel(pending.version, PasswordStore.Label.CURRENT)
+                    cachedPassword.expire(current.password)
+                    return
+                } else {
+                    // The pending password is not yet in use but can be reused
+                    pending
+                }
+            }
+
+        val authorization = authorizationHeader.get()
+        val accessToken = authorization.value.removePrefix("Bearer ")
+        httpClient
+            .newCall(
+                Request.Builder()
+                    .url(config.urls.changePassword)
+                    .header("Authorization", authorizationHeader.get().value)
+                    .header("Accept", "application/json")
+                    .post(
+                        jsonRequestBody(
+                            ChangePasswordRequestBody(
+                                accessToken = accessToken,
+                                currentPassword = current.password.value,
+                                newPassword = newPassword.password.value,
+                            )
+                        )
+                    )
+                    .build()
+            )
+            .execute()
+            .use { response ->
+                if (!response.isSuccessful) {
+                    val body = jsonResponseBody<ApiError>(response)
+                    error(
+                        "Password change request failed with HTTP ${response.code} ${response.message}: $body"
+                    )
+                }
+            }
+
+        passwordStore.moveLabel(newPassword.version, PasswordStore.Label.CURRENT)
+        // Expiring the cache guarantees this instance will re-fetch the password from the store.
+        // Other service containers will re-fetch the password once they get an authentication
+        // failure when attempting to acquire a new access token.
+        cachedPassword.expire(current.password)
+    }
+
+    private fun generatePassword(): Sensitive<String> =
+        Sensitive(
+            (
+                // one of each type is required in the final password
+                sequenceOf(
+                    PASSWORD_NUMBERS.random(),
+                    PASSWORD_LOWERCASE.random(),
+                    PASSWORD_UPPERCASE.random(),
+                    PASSWORD_SYMBOL.random(),
+                ) +
+                    // fill the rest with anything
+                    generateSequence { PASSWORD_ANY.random() })
+                .take(PASSWORD_LENGTH)
+                .shuffled()
+                .joinToString("")
+        )
+
+    companion object {
+        const val PASSWORD_LENGTH = 32
+        val PASSWORD_NUMBERS = ('0'..'9')
+        val PASSWORD_LOWERCASE = ('a'..'z')
+        val PASSWORD_UPPERCASE = ('A'..'Z')
+        val PASSWORD_SYMBOL = listOf('$', '#', '~', '!')
+        val PASSWORD_ANY =
+            PASSWORD_NUMBERS + PASSWORD_LOWERCASE + PASSWORD_UPPERCASE + PASSWORD_SYMBOL
     }
 }

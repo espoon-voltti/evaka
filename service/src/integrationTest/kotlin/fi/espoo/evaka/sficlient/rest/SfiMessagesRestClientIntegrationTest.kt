@@ -16,6 +16,7 @@ import fi.espoo.evaka.sficlient.SfiMessage
 import java.net.URI
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -49,7 +50,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
             restEnabled = true,
             restAddress = URI.create("http://localhost:$httpPort/public/mock-sfi-messages"),
             restUsername = MockSfiMessagesRestEndpoint.USERNAME,
-            restPassword = Sensitive(MockSfiMessagesRestEndpoint.PASSWORD),
+            restPasswordSsmName = null,
             // dummy fields only used by the SOAP implementation
             address = "",
             trustStore = KeystoreEnv(location = URI.create("")),
@@ -95,6 +96,10 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                     assertEquals(message.documentKey, key)
                     Document(key, fileContent, contentType = "content-type")
                 },
+                passwordStore =
+                    MockPasswordStore(
+                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD
+                    ),
             )
     }
 
@@ -177,5 +182,17 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         MockSfiMessagesRestEndpoint.clearTokens()
         client.send(message.copy(messageId = "message-id-2"))
         assertEquals(2, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
+    }
+
+    @Test
+    fun `changing password works`() {
+        val oldPassword = MockSfiMessagesRestEndpoint.getCurrentPassword()
+        client.rotatePassword()
+        val newPassword = MockSfiMessagesRestEndpoint.getCurrentPassword()
+        assertNotEquals(oldPassword, newPassword)
+
+        // sending a message should still work after password change
+        client.send(message)
+        assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
     }
 }

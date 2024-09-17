@@ -19,6 +19,8 @@ class MockSfiMessagesClient : SfiMessagesClient {
         lock.write { data[msg.messageId] = msg }
     }
 
+    override fun rotatePassword() {}
+
     companion object {
         private val data = mutableMapOf<MessageId, SfiMessage>()
         private val lock = ReentrantReadWriteLock()

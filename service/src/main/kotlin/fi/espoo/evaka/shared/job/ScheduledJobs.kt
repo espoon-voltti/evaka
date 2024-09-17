@@ -29,6 +29,7 @@ import fi.espoo.evaka.pis.deactivateInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
 import fi.espoo.evaka.reservations.MissingHolidayReservationsReminders
 import fi.espoo.evaka.reservations.MissingReservationsReminders
+import fi.espoo.evaka.sficlient.SfiMessagesClient
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.runSanityChecks
@@ -200,6 +201,13 @@ enum class ScheduledJob(
         ScheduledJobs::databaseSanityChecks,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(LocalTime.of(3, 45))),
     ),
+    RotateSfiMessagesPassword(
+        ScheduledJobs::rotateSfiMessagesPassword,
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.cron("0 0 0 1 * *"), // first day of month
+        ),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -223,6 +231,7 @@ class ScheduledJobs(
     private val childDocumentService: ChildDocumentService,
     private val attachmentService: AttachmentService,
     private val jamixService: JamixService,
+    private val sfiMessagesClient: SfiMessagesClient?,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -444,4 +453,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) =
         db.transaction { runSanityChecks(it, clock) }
+
+    fun rotateSfiMessagesPassword(db: Database.Connection, clock: EvakaClock) =
+        sfiMessagesClient?.rotatePassword()
 }

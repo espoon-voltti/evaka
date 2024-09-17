@@ -14,11 +14,17 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 // https://api.messages-qa.suomi.fi/api-docs
-data class ApiUrls(val token: HttpUrl, val files: HttpUrl, val messages: HttpUrl) {
+data class ApiUrls(
+    val token: HttpUrl,
+    val files: HttpUrl,
+    val messages: HttpUrl,
+    val changePassword: HttpUrl,
+) {
     constructor(
         base: HttpUrl
     ) : this(
         token = base.newBuilder().addPathSegments("v1/token").build(),
+        changePassword = base.newBuilder().addPathSegments("v1/change-password").build(),
         files = base.newBuilder().addPathSegments("v1/files").build(),
         messages = base.newBuilder().addPathSegments("v1/messages").build(),
     )
@@ -175,3 +181,10 @@ data class Address(
         require(countryCode.isNotBlank()) { "countryCode must not be blank" }
     }
 }
+
+// https://api.messages-qa.suomi.fi/api-docs#model-ChangePasswordRequestBody
+data class ChangePasswordRequestBody(
+    val accessToken: String,
+    val currentPassword: String,
+    val newPassword: String,
+)

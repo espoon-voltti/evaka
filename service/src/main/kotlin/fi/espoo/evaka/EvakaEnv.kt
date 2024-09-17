@@ -441,8 +441,18 @@ data class SfiEnv(
     val restAddress: URI?,
     /** Username for the messages REST API, also known as "systemId" */
     val restUsername: String?,
-    /** Password for the messages REST API */
-    val restPassword: Sensitive<String>?,
+    /**
+     * SSM parameter name for the messages REST API password.
+     *
+     * The service instance must have the permission to perform the following operations on it:
+     * - GetParameter
+     * - PutParameter
+     * - LabelParameterVersion
+     *
+     * Required first time manual setup: save the password received from Suomi.fi to SSM and add the
+     * label CURRENT to it
+     */
+    val restPasswordSsmName: String?,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -477,8 +487,7 @@ data class SfiEnv(
                 restEnabled = env.lookup("evaka.integration.sfi.rest_enabled") ?: false,
                 restAddress = env.lookup("evaka.integration.sfi.rest_address"),
                 restUsername = env.lookup("evaka.integration.sfi.rest_username"),
-                restPassword =
-                    env.lookup<String?>("evaka.integration.sfi.rest_password")?.let(::Sensitive),
+                restPasswordSsmName = env.lookup("evaka.integration.sfi.rest_password_ssm_name"),
             )
     }
 }
