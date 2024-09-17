@@ -83,11 +83,11 @@ interface Props {
 }
 
 function getDietCaption(diet: SpecialDiet) {
-  return `${diet.abbreviation} - ${diet.id}`
+  return diet.abbreviation
 }
 
 function getMealTextureCaption(mealTexture: MealTexture) {
-  return `${mealTexture.name} - ${mealTexture.id}`
+  return mealTexture.name
 }
 
 export default React.memo(function AdditionalInformation({ childId }: Props) {
