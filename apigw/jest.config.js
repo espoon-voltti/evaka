@@ -17,7 +17,6 @@ export default {
       }
     ]
   },
-  roots: ['<rootDir>/src'],
   testEnvironment: 'node',
   reporters: ['default', 'jest-junit'],
   coverageDirectory: './build/coverage-reports',
