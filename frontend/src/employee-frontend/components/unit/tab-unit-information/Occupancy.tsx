@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
@@ -55,6 +55,15 @@ export default React.memo(function OccupancyContainer({
   const [groupId, setGroupId] = useState<UUID | null>(null)
   const [mode, setMode] = useState<DayGraphMode>('PLANNED')
 
+  const activeGroups = useMemo(
+    () =>
+      groups.filter(
+        (group) =>
+          group.endDate === null || group.endDate.isEqualOrAfter(endDate)
+      ),
+    [endDate, groups]
+  )
+
   return (
     <CollapsibleContentArea
       title={<H3 noMargin>{i18n.unit.occupancies}</H3>}
@@ -71,9 +80,9 @@ export default React.memo(function OccupancyContainer({
       <FixedSpaceRow alignItems="center">
         <Label>{i18n.unit.occupancy.display}</Label>
         <Select
-          items={[null, ...groups]}
+          items={[null, ...activeGroups]}
           selectedItem={
-            groupId ? groups.find((g) => g.id === groupId) ?? null : null
+            groupId ? activeGroups.find((g) => g.id === groupId) ?? null : null
           }
           onChange={(g) => setGroupId(g ? g.id : null)}
           getItemValue={(g: DaycareGroupResponse | null) => (g ? g.id : '')}
