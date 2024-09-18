@@ -57,7 +57,8 @@ export default React.memo(function FuturePreschoolersReport() {
                   { label: 'lapsen_osoite', key: 'childAddress' },
                   { label: 'postinumero', key: 'childPostalCode' },
                   { label: 'toimipaikka', key: 'childPostOffice' },
-                  { label: 'toimintayksikko', key: 'unitName' },
+                  { label: 'toimintayksikon_id', key: 'unitId' },
+                  { label: 'toimintayksikon_nimi', key: 'unitName' },
                   { label: 'ominaisuudet', key: 'options' }
                 ]}
                 filename="Esiopetusoppilaat_rakenne.csv"
