@@ -36,6 +36,7 @@ val forceIncludes: Set<KType> =
     setOf(
         typeOf<SystemController.CitizenUserResponse>(),
         typeOf<SystemController.EmployeeUserResponse>(),
+        typeOf<SystemController.PinLoginResponse>(),
         typeOf<MobileDeviceDetails>(),
         typeOf<CurriculumTemplateError>(),
     )
