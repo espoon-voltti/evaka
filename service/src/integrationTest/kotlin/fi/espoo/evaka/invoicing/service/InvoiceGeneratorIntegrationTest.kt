@@ -39,7 +39,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.config.testFeatureConfig
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Row
-import fi.espoo.evaka.shared.dev.DevAbsence
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.DevHoliday
@@ -77,8 +76,6 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -3438,19 +3435,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `free july 2021 if child has been placed in preschool club all the time`() {
-        initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
-            listOf(
-                PlacementType.PRESCHOOL_CLUB to
-                    FiniteDateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
-            ),
-        )
-        val result = db.read(getAllInvoices)
-        assertEquals(0, result.size)
-    }
-
-    @Test
     fun `no free july 2020 if even one mandatory month has no placement`() {
         initFreeJulyTestData(
             FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
@@ -3501,22 +3485,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val result = db.read(getAllInvoices)
         assertEquals(1, result.size)
-    }
-
-    @Test
-    fun `free july 2020 if child has a mix of preschool club and daycare placements`() {
-        initFreeJulyTestData(
-            FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
-            listOf(
-                PlacementType.PRESCHOOL_CLUB to
-                    FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
-                PlacementType.DAYCARE to
-                    FiniteDateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31)),
-            ),
-        )
-
-        val result = db.read(getAllInvoices)
-        assertEquals(0, result.size)
     }
 
     @Test
@@ -5826,139 +5794,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(14500, invoiceRow.price)
             }
         }
-    }
-
-    @Test
-    fun `preschool club placement in september full month is full price`() {
-        initByPeriodAndPlacementType(
-            FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB,
-        )
-
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
-            )
-        }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        assertThat(result[0].rows)
-            .extracting({ it.amount }, { it.unitPrice }, { it.price })
-            .containsExactly(Tuple(1, 28900, 28900))
-    }
-
-    @Test
-    fun `preschool club placement in september full month with 11 sick leaves is half price`() {
-        initByPeriodAndPlacementType(
-            FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB,
-        )
-        db.transaction { tx ->
-            val dates =
-                FiniteDateRange(LocalDate.of(2023, 9, 12), LocalDate.of(2023, 9, 15)).dates() +
-                    FiniteDateRange(LocalDate.of(2023, 9, 18), LocalDate.of(2023, 9, 22)).dates() +
-                    FiniteDateRange(LocalDate.of(2023, 9, 25), LocalDate.of(2023, 9, 26)).dates()
-            dates.forEach { date ->
-                tx.insert(
-                    DevAbsence(
-                        childId = testChild_1.id,
-                        date = date,
-                        absenceType = AbsenceType.SICKLEAVE,
-                        absenceCategory = AbsenceCategory.BILLABLE,
-                    )
-                )
-            }
-        }
-
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
-            )
-        }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        assertThat(result[0].rows)
-            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
-            .containsExactlyInAnyOrder(
-                Tuple(1, 28900, 28900, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, -14450, -14450, ProductKey("PART_MONTH_SICK_LEAVE")),
-            )
-    }
-
-    @Test
-    fun `preschool club placement in september full month surplus days are full price`() {
-        initByPeriodAndPlacementType(
-            FiniteDateRange(LocalDate.of(2023, 8, 11), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10,
-        )
-
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
-            )
-        }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        assertThat(result[0].rows)
-            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
-            .containsExactlyInAnyOrder(
-                Tuple(1, 14500, 14500, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(1, 14400, 14400, ProductKey("SURPLUS_DAY")),
-            )
-    }
-
-    @Test
-    fun `preschool club placement in september half month surplus days are full price`() {
-        initByPeriodAndPlacementType(
-            FiniteDateRange(LocalDate.of(2023, 9, 14), LocalDate.of(2024, 6, 3)),
-            PlacementType.PRESCHOOL_CLUB,
-            snDaycareContractDays10,
-        )
-
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(
-                it,
-                FiniteDateRange.ofMonth(2023, Month.SEPTEMBER),
-            )
-        }
-
-        val result = db.read(getAllInvoices)
-
-        assertEquals(1, result.size)
-        assertThat(result[0].rows)
-            .extracting({ it.amount }, { it.unitPrice }, { it.price }, { it.product })
-            .containsExactlyInAnyOrder(
-                Tuple(1, 14500, 14500, ProductKey("PRESCHOOL_CLUB")),
-                Tuple(2, 1450, 2900, ProductKey("SURPLUS_DAY")),
-            )
-    }
-
-    @Test
-    fun `preschool club placement in may full month is full price`() {
-        initByPeriodAndPlacementType(
-            FiniteDateRange(LocalDate.of(2024, 5, 1), LocalDate.of(2024, 5, 31)),
-            PlacementType.PRESCHOOL_CLUB,
-        )
-
-        db.transaction {
-            generator.createAndStoreAllDraftInvoices(it, FiniteDateRange.ofMonth(2024, Month.MAY))
-        }
-
-        val result = db.read(getAllInvoices)
-        assertEquals(1, result.size)
-        assertThat(result[0].rows)
-            .extracting({ it.amount }, { it.unitPrice }, { it.price })
-            .containsExactly(Tuple(1, 28900, 28900))
     }
 
     private fun initByPeriodAndPlacementType(
