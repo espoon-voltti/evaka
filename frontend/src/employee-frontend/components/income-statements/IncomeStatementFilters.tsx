@@ -19,7 +19,11 @@ import {
   ProviderTypeFilter
 } from '../common/Filters'
 
-export default React.memo(function IncomeStatementsFilters() {
+export default React.memo(function IncomeStatementsFilters({
+  onSearch
+}: {
+  onSearch: () => void
+}) {
   const {
     incomeStatements: { searchFilters, setSearchFilters, clearSearchFilters },
     shared: { availableAreas }
@@ -74,6 +78,7 @@ export default React.memo(function IncomeStatementsFilters() {
   return (
     <Filters
       clearFilters={clearSearchFilters}
+      onSearch={onSearch}
       column1={
         <AreaFilter
           areas={availableAreas.getOrElse([])}

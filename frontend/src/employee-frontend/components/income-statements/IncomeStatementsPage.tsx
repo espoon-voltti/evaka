@@ -7,13 +7,15 @@ import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { isLoading, Success, wrapResult } from 'lib-common/api'
+import { isLoading } from 'lib-common/api'
+import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import {
   IncomeStatementAwaitingHandler,
   IncomeStatementSortParam
 } from 'lib-common/generated/api-types/incomestatement'
 import { SortDirection } from 'lib-common/generated/api-types/invoicing'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import LocalDate from 'lib-common/local-date'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Pagination from 'lib-components/Pagination'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -32,16 +34,12 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCommentAlt, fasCommentAltLines, fasFile } from 'lib-icons'
 
-import { getIncomeStatementsAwaitingHandler } from '../../generated/api-clients/incomestatement'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { renderResult } from '../async-rendering'
 
 import IncomeStatementFilters from './IncomeStatementFilters'
-
-const getIncomeStatementsAwaitingHandlerResult = wrapResult(
-  getIncomeStatementsAwaitingHandler
-)
+import { incomeStatementsAwaitingHandlerQuery } from './queries'
 
 function IncomeStatementsList({
   data,
@@ -88,6 +86,12 @@ function IncomeStatementsList({
           >
             {i18n.incomeStatement.table.startDate}
           </SortableTh>
+          <SortableTh
+            sorted={isSorted('INCOME_END_DATE')}
+            onClick={toggleSort('INCOME_END_DATE')}
+          >
+            {i18n.incomeStatement.table.incomeEndDate}
+          </SortableTh>
           <Th>{i18n.incomeStatement.table.type}</Th>
           <Th minimalWidth={true}>{i18n.incomeStatement.table.link}</Th>
           <Th minimalWidth={true}>{i18n.incomeStatement.table.note}</Th>
@@ -111,6 +115,7 @@ function IncomeStatementsList({
             <Td>{row.primaryCareArea}</Td>
             <Td>{row.created.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>
+            <Td>{row.incomeEndDate?.format() ?? '-'}</Td>
             <Td data-qa="income-statement-type">
               {i18n.incomeStatement.statementTypes[row.type].toLowerCase()}
             </Td>
@@ -149,22 +154,33 @@ export default React.memo(function IncomeStatementsPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('CREATED')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+  const [searchParams, setSearchParams] = useState<{
+    areas: string[] | null
+    providerTypes: ProviderType[] | null
+    sentStartDate: LocalDate | null
+    sentEndDate: LocalDate | null
+    placementValidDate: LocalDate | null
+  }>()
 
   const {
     incomeStatements: { searchFilters }
   } = useContext(InvoicingUiContext)
 
-  const [incomeStatements] = useApiState(() => {
-    const { sentStartDate, sentEndDate } = searchFilters
-    if (sentStartDate && sentEndDate && sentStartDate.isAfter(sentEndDate)) {
-      return Promise.resolve(Success.of({ data: [], pages: 0, total: 0 }))
-    }
-
-    return getIncomeStatementsAwaitingHandlerResult({
-      body: {
-        page,
-        sortBy,
-        sortDirection,
+  const { sentStartDate, sentEndDate } = searchFilters
+  const incomeStatements = useQueryResult(
+    searchParams !== undefined
+      ? incomeStatementsAwaitingHandlerQuery({
+          body: { ...searchParams, page, sortBy, sortDirection }
+        })
+      : constantQuery({ data: [], pages: 0, total: 0 })
+  )
+  const handleSearch = () => {
+    if (
+      sentStartDate === undefined ||
+      sentEndDate === undefined ||
+      !sentStartDate.isAfter(sentEndDate)
+    ) {
+      setSearchParams({
         areas: searchFilters.area.length > 0 ? searchFilters.area : null,
         providerTypes:
           searchFilters.providerTypes.length > 0
@@ -173,9 +189,9 @@ export default React.memo(function IncomeStatementsPage() {
         sentStartDate: searchFilters.sentStartDate ?? null,
         sentEndDate: searchFilters.sentEndDate ?? null,
         placementValidDate: searchFilters.placementValidDate ?? null
-      }
-    })
-  }, [page, sortBy, sortDirection, searchFilters])
+      })
+    }
+  }
 
   return (
     <Container
@@ -184,7 +200,7 @@ export default React.memo(function IncomeStatementsPage() {
     >
       <ContentArea opaque>
         <H1>{i18n.incomeStatement.table.title}</H1>
-        <IncomeStatementFilters />
+        <IncomeStatementFilters onSearch={handleSearch} />
       </ContentArea>
       <Gap size="s" />
       {renderResult(incomeStatements, ({ data, pages, total }) => (

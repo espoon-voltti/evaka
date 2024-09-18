@@ -72,6 +72,7 @@ import { FlexRow } from './styled/containers'
 interface Props {
   freeText?: string
   setFreeText?: (s: string) => void
+  onSearch?: () => void
   clearFilters: () => void
   column1?: React.JSX.Element
   column2?: React.JSX.Element
@@ -117,6 +118,7 @@ export function Filters({
   freeText,
   setFreeText,
   clearFilters,
+  onSearch,
   column1,
   column2,
   column3,
@@ -146,6 +148,17 @@ export function Filters({
           onClick={clearFilters}
           text={i18n.filters.clear}
         />
+        {onSearch && (
+          <>
+            <Gap horizontal size="s" />
+            <Button
+              primary
+              text={i18n.common.search}
+              onClick={onSearch}
+              data-qa="search-button"
+            />
+          </>
+        )}
       </ClearOptions>
     </FiltersContainer>
   )

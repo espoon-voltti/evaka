@@ -194,4 +194,5 @@ data class SearchIncomeStatementsRequest(
 enum class IncomeStatementSortParam {
     CREATED,
     START_DATE,
+    INCOME_END_DATE,
 }

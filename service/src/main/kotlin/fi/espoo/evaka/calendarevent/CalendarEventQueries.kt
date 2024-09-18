@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.HtmlSafe
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -28,7 +28,7 @@ fun Database.Read.getCalendarEventsByUnit(
 ): List<CalendarEvent> =
     getCalendarEventsQuery(unit(unitId).and(range(range))).toList<CalendarEvent>()
 
-private fun Database.Read.getCalendarEventsQuery(where: Predicate) = createQuery {
+private fun Database.Read.getCalendarEventsQuery(where: PredicateSql) = createQuery {
     sql(
         """
 SELECT
@@ -61,7 +61,7 @@ JOIN calendar_event ce ON cea.calendar_event_id = ce.id
 LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN person p ON p.id = cea.child_id
 LEFT JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
-WHERE ${predicate(where.forTable(""))}
+WHERE ${predicate(where)}
 AND (cea.child_id IS NULL OR EXISTS(
     -- filter out attendees that haven't been placed in the specified unit/group,
     -- for example due to changes in placements after the event creation or a new backup care
@@ -76,19 +76,19 @@ GROUP BY ce.id, cea.unit_id
     )
 }
 
-private fun unit(unitId: DaycareId) = Predicate { where("cea.unit_id = ${bind(unitId)}") }
+private fun unit(unitId: DaycareId) = PredicateSql { where("cea.unit_id = ${bind(unitId)}") }
 
-private fun range(range: FiniteDateRange) = Predicate { where("ce.period && ${bind(range)}") }
+private fun range(range: FiniteDateRange) = PredicateSql { where("ce.period && ${bind(range)}") }
 
-private fun event(eventId: CalendarEventId) = Predicate { where("ce.id = ${bind(eventId)}") }
+private fun event(eventId: CalendarEventId) = PredicateSql { where("ce.id = ${bind(eventId)}") }
 
-private fun events(eventIds: Set<CalendarEventId>) = Predicate {
+private fun events(eventIds: Set<CalendarEventId>) = PredicateSql {
     where("ce.id = ANY (${bind(eventIds)})")
 }
 
-private fun group(groupId: GroupId) = Predicate { where("cea.group_id = ${bind(groupId)}") }
+private fun group(groupId: GroupId) = PredicateSql { where("cea.group_id = ${bind(groupId)}") }
 
-private fun eventType(eventTypes: List<CalendarEventType>) = Predicate {
+private fun eventType(eventTypes: List<CalendarEventType>) = PredicateSql {
     where("ce.event_type = ANY(${bind(eventTypes)})")
 }
 

@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.data.DateSet
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -438,13 +439,13 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
 ): Map<ChildId, DateSet> {
     val enabledForHourBasedServiceNeedsPredicate =
         if (enabledForHourBasedServiceNeeds) {
-            Predicate {
+            PredicateSql {
                 where(
                     "COALESCE(sno.daycare_hours_per_month, sno_default.daycare_hours_per_month) IS NOT NULL"
                 )
             }
         } else {
-            Predicate.alwaysFalse()
+            PredicateSql.alwaysFalse()
         }
 
     return createQuery {
@@ -462,7 +463,7 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
                 daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
                 daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)} AND (
                     COALESCE(sno.contract_days_per_month, sno_default.contract_days_per_month) IS NOT NULL OR
-                    ${predicate(enabledForHourBasedServiceNeedsPredicate.forTable(""))}
+                    ${predicate(enabledForHourBasedServiceNeedsPredicate)}
                 )
             GROUP BY child_id
             """

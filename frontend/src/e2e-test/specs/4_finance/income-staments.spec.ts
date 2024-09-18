@@ -78,6 +78,7 @@ describe('Income statements', () => {
     })
 
     let incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.incomeStatementRows.assertCount(2)
     const personProfilePage =
       await incomeStatementsPage.openNthIncomeStatementForGuardian(1)
@@ -102,6 +103,7 @@ describe('Income statements', () => {
     )
 
     incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
   })
 
@@ -142,18 +144,22 @@ describe('Income statements', () => {
     })
 
     const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
+
     // No filters -> is shown
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by the placed unit provider type -> is shown
     await incomeStatementsPage.selectProviderType(testDaycare.providerType)
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
 
     // Filter by other unit provider type -> not shown
     await incomeStatementsPage.unSelectProviderType(testDaycare.providerType)
     await incomeStatementsPage.selectProviderType('EXTERNAL_PURCHASED')
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
     await incomeStatementsPage.incomeStatementRows.assertCount(0)
   })
@@ -175,6 +181,7 @@ describe('Income statements', () => {
     })
 
     const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.incomeStatementRows.assertCount(1)
     await incomeStatementsPage.assertNthIncomeStatement(
       0,

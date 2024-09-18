@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.db.PredicateSql
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
@@ -484,6 +486,7 @@ data class IncomeStatementAwaitingHandler(
     val id: IncomeStatementId,
     val created: HelsinkiDateTime,
     val startDate: LocalDate,
+    val incomeEndDate: LocalDate?,
     val handlerNote: String,
     val type: IncomeStatementType,
     val personId: PersonId,
@@ -491,10 +494,33 @@ data class IncomeStatementAwaitingHandler(
     val primaryCareArea: String?,
 )
 
-// language=SQL
-private const val awaitingHandlerQuery =
-    """
-SELECT DISTINCT ON (i.created, i.start_date, i.id)
+private fun awaitingHandlerQuery(
+    today: LocalDate,
+    areas: List<String>,
+    providerTypes: List<ProviderType>,
+    sentStartDate: LocalDate?,
+    sentEndDate: LocalDate?,
+    placementValidDate: LocalDate?,
+) = QuerySql {
+    val filters =
+        PredicateSql.allNotNull(
+            PredicateSql { where("ca.short_name = ANY(${bind(areas)})") }
+                .takeIf { areas.isNotEmpty() },
+            PredicateSql { where("d.provider_type = ANY(${bind(providerTypes)})") }
+                .takeIf { providerTypes.isNotEmpty() },
+            PredicateSql {
+                    where(
+                        "p.start_date IS NOT NULL AND p.end_date IS NOT NULL AND daterange(p.start_date, p.end_date, '[]') @> ${bind(placementValidDate)}"
+                    )
+                }
+                .takeIf { placementValidDate != null },
+        )
+    val sentStart = sentStartDate?.let { HelsinkiDateTime.atStartOfDay(it) }
+    val sentEnd = sentEndDate?.let { HelsinkiDateTime.atStartOfDay(it.plusDays(1)) }
+
+    sql(
+        """
+SELECT DISTINCT ON (created, start_date, income_end_date, id)
     i.id,
     i.type,
     i.created,
@@ -502,7 +528,13 @@ SELECT DISTINCT ON (i.created, i.start_date, i.id)
     i.handler_note,
     person.id AS personId,
     person.last_name || ' ' || person.first_name AS personName,
-    ca.name AS primaryCareArea
+    ca.name AS primaryCareArea,
+    (
+        SELECT valid_to FROM income
+        WHERE person_id = i.person_id AND effect <> 'INCOMPLETE'
+        ORDER BY valid_to DESC
+        LIMIT 1
+    ) AS income_end_date
 FROM income_statement i
 JOIN person ON person.id = i.person_id
 
@@ -512,22 +544,22 @@ LEFT JOIN guardian g ON g.guardian_id = i.person_id
 -- head of child
 LEFT JOIN fridge_child fc_head ON (
     fc_head.head_of_child = i.person_id AND
-    :today BETWEEN fc_head.start_date AND fc_head.end_date
+    ${bind(today)} BETWEEN fc_head.start_date AND fc_head.end_date
 )
 
 -- spouse of the head of child
-LEFT JOIN fridge_partner fp ON fp.person_id = i.person_id AND :today BETWEEN fp.start_date AND fp.end_date
+LEFT JOIN fridge_partner fp ON fp.person_id = i.person_id AND ${bind(today)} BETWEEN fp.start_date AND fp.end_date
 LEFT JOIN fridge_partner fp_spouse ON (
     fp_spouse.partnership_id = fp.partnership_id AND
     fp_spouse.person_id <> i.person_id AND
-    :today BETWEEN fp_spouse.start_date AND fp_spouse.end_date
+    ${bind(today)} BETWEEN fp_spouse.start_date AND fp_spouse.end_date
 )
 LEFT JOIN fridge_child fc_spouse ON (
     fc_spouse.head_of_child = fp_spouse.person_id AND
-    :today BETWEEN fc_spouse.start_date AND fc_spouse.end_date
+    ${bind(today)} BETWEEN fc_spouse.start_date AND fc_spouse.end_date
 )
 
-LEFT JOIN placement p ON :today BETWEEN p.start_date AND p.end_date AND p.child_id IN (
+LEFT JOIN placement p ON ${bind(today)} BETWEEN p.start_date AND p.end_date AND p.child_id IN (
     i.person_id,  -- child's own income statement
     fc_head.child_id,
     fc_spouse.child_id
@@ -546,13 +578,13 @@ LEFT JOIN daycare d ON d.id IN (
     (a.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid
 )
 LEFT JOIN care_area ca ON ca.id = d.care_area_id
-
-WHERE handler_id IS NULL
-AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
-AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
-AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
-AND (:placementValidDate IS NULL OR (p.start_date IS NOT NULL AND p.end_date IS NOT NULL AND daterange(p.start_date, p.end_date, '[]') @> :placementValidDate))
+WHERE
+    handler_id IS NULL AND
+    between_start_and_end(tstzrange(${bind(sentStart)}, ${bind(sentEnd)}, '[)'), i.created) AND
+    ${predicate(filters)}
 """
+    )
+}
 
 data class PagedIncomeStatementsAwaitingHandler(
     val data: List<IncomeStatementAwaitingHandler>,
@@ -572,39 +604,35 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     sortBy: IncomeStatementSortParam,
     sortDirection: SortDirection,
 ): PagedIncomeStatementsAwaitingHandler {
-    val count =
-        @Suppress("DEPRECATION")
-        createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
-            .bind("today", today)
-            .bind("areas", areas)
-            .bind("providerTypes", providerTypes)
-            .bind("sentStartDate", sentStartDate)
-            .bind("sentEndDate", sentEndDate)
-            .bind("placementValidDate", placementValidDate)
-            .exactlyOne<Int>()
+    val query =
+        awaitingHandlerQuery(
+            today,
+            areas,
+            providerTypes,
+            sentStartDate,
+            sentEndDate,
+            placementValidDate,
+        )
+    val count = createQuery { sql("SELECT COUNT(*) FROM (${subquery(query)}) q") }.exactlyOne<Int>()
     val sortColumn =
         when (sortBy) {
-            IncomeStatementSortParam.CREATED -> "i.created ${sortDirection.name}, i.start_date"
-            IncomeStatementSortParam.START_DATE -> "i.start_date ${sortDirection.name}, i.created"
+            IncomeStatementSortParam.CREATED ->
+                "i.created ${sortDirection.name}, i.start_date, income_end_date"
+            IncomeStatementSortParam.START_DATE ->
+                "i.start_date ${sortDirection.name}, i.created, income_end_date"
+            IncomeStatementSortParam.INCOME_END_DATE ->
+                "income_end_date ${sortDirection.name}, i.created, i.start_date"
         }
     val rows =
-        @Suppress("DEPRECATION")
-        createQuery(
-                """
-$awaitingHandlerQuery
+        createQuery {
+                sql(
+                    """
+${subquery(query)}
 ORDER BY $sortColumn, i.id, ca.id, person.last_name, person.first_name  -- order by area to get the same result each time
-LIMIT :pageSize OFFSET :offset
-        """
-                    .trimIndent()
-            )
-            .bind("today", today)
-            .bind("areas", areas)
-            .bind("providerTypes", providerTypes)
-            .bind("sentStartDate", sentStartDate)
-            .bind("sentEndDate", sentEndDate)
-            .bind("placementValidDate", placementValidDate)
-            .bind("pageSize", pageSize)
-            .bind("offset", (page - 1) * pageSize)
+LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
+"""
+                )
+            }
             .toList<IncomeStatementAwaitingHandler>()
 
     return if (rows.isEmpty()) {
