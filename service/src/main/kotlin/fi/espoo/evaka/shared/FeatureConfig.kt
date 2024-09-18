@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.shared.auth.UserRole
+import java.time.MonthDay
 
 data class FeatureConfig(
     /**
@@ -150,6 +151,9 @@ data class FeatureConfig(
      * August)
      */
     val freeJulyStartOnSeptember: Boolean = false,
+
+    /** Default daycare end month-day for new placement plans */
+    val daycarePlacementPlanEndMonthDay: MonthDay = MonthDay.of(7, 31),
 )
 
 enum class ArchiveProcessType {

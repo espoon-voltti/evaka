@@ -39,6 +39,7 @@ class PlacementPlanService(
     featureConfig: FeatureConfig,
 ) {
     private val useFiveYearsOldDaycare = featureConfig.fiveYearsOldDaycareEnabled
+    private val daycarePlacementPlanEndMonthDay = featureConfig.daycarePlacementPlanEndMonthDay
 
     fun getPlacementPlanDraft(
         tx: Database.Read,
@@ -120,12 +121,12 @@ class PlacementPlanService(
                 )
             }
             ApplicationType.DAYCARE -> {
-                val endFromBirthDate = LocalDate.of(child.dob.year + 6, 7, 31)
+                val endFromBirthDate = daycarePlacementPlanEndMonthDay.atYear(child.dob.year + 6)
                 val endFromStartDate =
                     if (startDate.month >= Month.AUGUST) {
-                        LocalDate.of(startDate.year + 1, 7, 31)
+                        daycarePlacementPlanEndMonthDay.atYear(startDate.year + 1)
                     } else {
-                        LocalDate.of(startDate.year, 7, 31)
+                        daycarePlacementPlanEndMonthDay.atYear(startDate.year)
                     }
                 val period =
                     FiniteDateRange(
