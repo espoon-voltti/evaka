@@ -53,7 +53,7 @@ export default React.memo(function OccupancyContainer({
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(true)
   const [groupId, setGroupId] = useState<UUID | null>(null)
-  const [mode, setMode] = useState<DayGraphMode>('REALIZED')
+  const [mode, setMode] = useState<DayGraphMode>('PLANNED')
 
   return (
     <CollapsibleContentArea
