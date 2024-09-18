@@ -640,6 +640,23 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.assertReplyContentIsEmpty()
       })
 
+      test('Citizen can reply to a thread and receive a notification on success', async () => {
+        await openSupervisorPage(mockedDateAt10)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        const messageEditor = await messagesPage.openMessageEditor()
+        await messageEditor.sendNewMessage(defaultMessage)
+        await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+        await openCitizen(mockedDateAt11)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+        await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await citizenMessagesPage.assertAriaLiveExistsAndIncludesNotification()
+        await citizenMessagesPage.assertTimedNotification('Viesti lähetetty')
+      })
+
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
           await openSupervisorPage(mockedDateAt10)
