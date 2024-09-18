@@ -2,20 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { createDefaultEsmPreset } from 'ts-jest'
+
 export default {
-  extensionsToTreatAsEsm: ['.ts'],
+  ...createDefaultEsmPreset({
+    tsconfig: 'tsconfig.test.json',
+    isolatedModules: true
+  }),
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
-  },
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.test.json',
-        useESM: true,
-        isolatedModules: true
-      }
-    ]
   },
   testEnvironment: 'node',
   reporters: ['default', 'jest-junit'],
