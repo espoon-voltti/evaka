@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.async
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.PlacementToolData
 import fi.espoo.evaka.calendarevent.CalendarEventTime
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.invoicing.service.IncomeNotificationType
@@ -33,6 +34,8 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -404,6 +407,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class PlacementTool(
+        override val user: AuthenticatedUser,
+        val data: PlacementToolData,
+        val partTimeServiceNeedOption: ServiceNeedOptionId,
+        val defaultServiceNeedOption: ServiceNeedOptionId,
+        val nextPreschoolTerm: PreschoolTermId,
+    ) : AsyncJob
+
     companion object {
         val main =
             AsyncJobRunner.Pool(
@@ -434,6 +445,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     UpdateFromVtj::class,
                     UploadToKoski::class,
                     VTJRefresh::class,
+                    PlacementTool::class,
                 ),
             )
         val email =

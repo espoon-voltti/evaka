@@ -40,6 +40,12 @@ import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.messaging.MessageRecipient
+import fi.espoo.evaka.messaging.MessageRecipientType
+import fi.espoo.evaka.messaging.MessageService
+import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.messaging.NewMessageStub
+import fi.espoo.evaka.messaging.getServiceWorkerAccountId
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -74,6 +80,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.OfficialLanguage
+import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -88,6 +96,8 @@ class ApplicationStateService(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
+    private val messageProvider: IMessageProvider,
+    private val messageService: MessageService,
 ) {
     fun createApplication(
         tx: Database.Transaction,
@@ -317,6 +327,48 @@ class ApplicationStateService(
             }
 
         Audit.ApplicationSend.log(targetId = AuditId(applicationId))
+    }
+
+    fun sendPlacementToolApplication(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        application: ApplicationDetails,
+    ) {
+        val applicationFlags = tx.applicationFlags(application, clock.today())
+        tx.updateApplicationFlags(application.id, applicationFlags)
+
+        val sentDate = application.sentDate!!
+        val dueDate = application.sentDate
+        tx.updateApplicationDates(application.id, sentDate, dueDate)
+
+        messageService.sendMessageAsEmployee(
+            tx,
+            user,
+            clock.now(),
+            sender = tx.getServiceWorkerAccountId()!!,
+            type = MessageType.MESSAGE,
+            msg =
+                NewMessageStub(
+                    title = messageProvider.getPlacementToolHeader(OfficialLanguage.FI),
+                    content = messageProvider.getPlacementToolContent(OfficialLanguage.FI),
+                    urgent = false,
+                    sensitive = false,
+                ),
+            recipients =
+                setOf(MessageRecipient(MessageRecipientType.CITIZEN, application.guardianId)),
+            recipientNames =
+                listOf(
+                    tx.getPersonById(application.guardianId)?.let {
+                        "${it.firstName} ${it.lastName}"
+                    } ?: ""
+                ),
+            attachments = setOf(),
+            relatedApplication = application.id,
+            filters = null,
+        )
+
+        tx.updateApplicationStatus(application.id, SENT)
     }
 
     fun moveToWaitingPlacement(

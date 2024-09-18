@@ -162,4 +162,37 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
                     "",
                 )
         }
+
+    override fun getPlacementToolHeader(lang: OfficialLanguage): String =
+        when (lang) {
+            OfficialLanguage.FI ->
+                "Esitäytetty hakemus esiopetukseen / Pre-filled application for preschool education"
+            OfficialLanguage.SV -> "Förfyllad ansökan om förskoleundervisning"
+        }
+
+    override fun getPlacementToolContent(lang: OfficialLanguage): String =
+        when (lang) {
+            OfficialLanguage.FI ->
+                """
+Olemme tehneet lapsellenne esitäytetyn hakemuksen esiopetukseen. Hakemus on tehty lapsen oppilaaksiottoalueen mukaiseen esiopetusyksikköön.
+
+Mikäli haluatte hakeutua muuhun kuin lapsellenne osoitettuun paikkaan, voitte muokata hakemusta eVakassa.
+
+Jos taas hyväksytte osoitetun esiopetuspaikan, teidän ei tarvitse tehdä mitään.
+
+In English:
+
+We have made a pre-filled application for preschool education for your child. The application has been submitted to the pre-school unit according to the child's pupil enrollment area.
+
+If you want to apply for a place other than the one assigned to your child, you can edit the application in eVaka.
+
+If you accept the assigned pre-school place, you don't have to do anything.
+                """
+                    .trimIndent()
+            OfficialLanguage.SV ->
+                """
+Vi har gjort en förifylld ansökan om förskoleundervisning för ditt barn.
+                """
+                    .trimIndent()
+        }
 }

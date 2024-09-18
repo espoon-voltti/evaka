@@ -65,6 +65,7 @@ import InvoicesPage from './components/invoices/InvoicesPage'
 import MessagesPage from './components/messages/MessagesPage'
 import PaymentsPage from './components/payments/PaymentsPage'
 import PlacementDraftPage from './components/placement-draft/PlacementDraft'
+import PlacementToolPage from './components/placement-tool/PlacementToolPage'
 import ReportApplications from './components/reports/Applications'
 import AssistanceNeedDecisionsReport from './components/reports/AssistanceNeedDecisionsReport'
 import AssistanceNeedDecisionsReportDecision from './components/reports/AssistanceNeedDecisionsReportDecision'
@@ -997,6 +998,14 @@ export default createBrowserRouter(
           element: (
             <EmployeeRoute title="preschoolTerm">
               <PreschoolTermPeriodEditor />
+            </EmployeeRoute>
+          )
+        },
+        {
+          path: '/placement-tool',
+          element: (
+            <EmployeeRoute title="placementTool">
+              <PlacementToolPage />
             </EmployeeRoute>
           )
         },

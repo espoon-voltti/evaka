@@ -414,6 +414,15 @@ export default React.memo(function Header() {
                   {i18n.titles.unitFeatures}
                 </Link>
               )}
+              {user?.accessibleFeatures.placementTool && (
+                <Link
+                  to="/placement-tool"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-pacement-tool"
+                >
+                  {i18n.placementTool.title}
+                </Link>
+              )}
               {user?.accessibleFeatures.personalMobileDevice && (
                 <Link
                   to="/personal-mobile-devices"
