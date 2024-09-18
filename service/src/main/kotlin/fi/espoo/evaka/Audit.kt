@@ -203,6 +203,7 @@ enum class Audit(
     CitizenChildServiceApplicationsCreate,
     CitizenChildServiceApplicationsRead,
     CitizenChildServiceApplicationsDelete,
+    CitizenChildServiceNeedOptionsRead,
     CitizenChildServiceNeedRead(securityEvent = true, securityLevel = "high"),
     CitizenChildAttendanceSummaryRead(securityEvent = true, securityLevel = "high"),
     CitizenChildDailyServiceTimeRead(securityEvent = true, securityLevel = "high"),

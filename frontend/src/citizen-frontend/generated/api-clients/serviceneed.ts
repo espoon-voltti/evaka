@@ -4,11 +4,13 @@
 
 // GENERATED FILE: no manual modifications
 
+import LocalDate from 'lib-common/local-date'
 import { CitizenServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceApplicationCreateRequest } from 'lib-common/generated/api-types/serviceneed'
+import { ServiceNeedOptionBasics } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
@@ -88,4 +90,26 @@ export async function getChildServiceApplications(
     params
   })
   return json.map(e => deserializeJsonCitizenServiceApplication(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.getChildServiceNeedOptions
+*/
+export async function getChildServiceNeedOptions(
+  request: {
+    childId: UUID,
+    date: LocalDate
+  }
+): Promise<ServiceNeedOptionBasics[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId],
+    ['date', request.date.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<ServiceNeedOptionBasics[]>>({
+    url: uri`/citizen/service-applications/options`.toString(),
+    method: 'GET',
+    params
+  })
+  return json
 }

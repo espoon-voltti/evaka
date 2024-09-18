@@ -84,6 +84,48 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
             .also { Audit.CitizenChildServiceApplicationsRead.log(targetId = AuditId(childId)) }
     }
 
+    @GetMapping("/options")
+    fun getChildServiceNeedOptions(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestParam childId: ChildId,
+        @RequestParam date: LocalDate,
+    ): List<ServiceNeedOptionBasics> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_PLACEMENT,
+                        childId,
+                    )
+                    val placement =
+                        tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
+                            ?: return@read emptyList()
+
+                    tx.getServiceNeedOptions()
+                        .filter {
+                            it.validPlacementType == placement.type &&
+                                !it.defaultOption &&
+                                DateRange(it.validFrom, it.validTo).includes(date)
+                        }
+                        .map {
+                            ServiceNeedOptionBasics(
+                                id = it.id,
+                                nameFi = it.nameFi,
+                                nameSv = it.nameSv,
+                                nameEn = it.nameEn,
+                                validPlacementType = it.validPlacementType,
+                                partWeek = it.partWeek,
+                            )
+                        }
+                }
+            }
+            .also { Audit.CitizenChildServiceNeedOptionsRead.log(targetId = AuditId(childId)) }
+    }
+
     data class ServiceApplicationCreateRequest(
         val childId: ChildId,
         val startDate: LocalDate,

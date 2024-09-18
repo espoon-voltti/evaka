@@ -31,6 +31,7 @@ import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildDocumentPage from './child-documents/ChildDocumentPage'
 import ChildPage from './children/ChildPage'
+import NewServiceApplicationPage from './children/sections/service-need-and-daily-service-time/NewServiceApplicationPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import AssistancePreschoolDecisionPage from './decisions/assistance-decision-page/AssistancePreschoolDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
@@ -262,6 +263,20 @@ export default createBrowserRouter([
           </RequireAuth>
         )
       },
+      ...(featureFlags.serviceApplications
+        ? [
+            {
+              path: '/children/:childId/service-application',
+              element: (
+                <RequireAuth strength="STRONG">
+                  <ScrollToTop>
+                    <NewServiceApplicationPage />
+                  </ScrollToTop>
+                </RequireAuth>
+              )
+            }
+          ]
+        : []),
       {
         path: '/child-documents/:id',
         element: (

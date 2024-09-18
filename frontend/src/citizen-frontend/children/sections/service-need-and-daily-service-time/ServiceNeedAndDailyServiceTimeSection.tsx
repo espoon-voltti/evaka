@@ -12,7 +12,10 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import Spinner from 'lib-components/atoms/state/Spinner'
-import { MobileOnly } from 'lib-components/layout/responsive-layout'
+import {
+  MobileOnly,
+  TabletAndDesktop
+} from 'lib-components/layout/responsive-layout'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
@@ -24,6 +27,7 @@ import {
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'
 import DailyServiceTimeTable from './DailyServiceTimeTable'
+import ServiceApplications from './ServiceApplications'
 import ServiceNeedTable from './ServiceNeedTable'
 
 interface ServiceNeedProps {
@@ -89,11 +93,14 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           />
         </>
       )}
-      <MobileOnly>
-        <HorizontalLine slim />
-      </MobileOnly>
       {showServiceTimes && (
         <>
+          <TabletAndDesktop>
+            <Gap size="m" />
+          </TabletAndDesktop>
+          <MobileOnly>
+            <HorizontalLine slim />
+          </MobileOnly>
           <H3>{t.children.dailyServiceTime.title}</H3>
           {dailyServiceTimesResponse.mapAll({
             failure: () => (
@@ -104,6 +111,18 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
               <DailyServiceTimeTable dailyServiceTimes={dailyServiceTimes} />
             )
           })}
+        </>
+      )}
+      {featureFlags.serviceApplications && (
+        <>
+          <TabletAndDesktop>
+            <Gap size="m" />
+          </TabletAndDesktop>
+          <MobileOnly>
+            <HorizontalLine slim />
+          </MobileOnly>
+          <H3>{t.children.serviceApplication.title}</H3>
+          <ServiceApplications childId={childId} />
         </>
       )}
     </ResponsiveWholePageCollapsible>

@@ -11,19 +11,25 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementSummary
+import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.ServiceNeedSummary
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedSummary
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.letIf
+import java.time.LocalDate
 import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -40,23 +46,37 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
     ): List<ChildAndPermittedActions> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
                         user.id,
                     )
-                    val children = it.getChildrenByParent(user.id, clock.today())
+                    val children = tx.getChildrenByParent(user.id, clock.today())
                     val childIds = children.map { it.id }
+                    val serviceNeedOptions = tx.getServiceNeedOptions()
                     val permittedActions =
-                        accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
-                            it,
-                            user,
-                            clock,
-                            childIds,
-                        )
+                        accessControl
+                            .getPermittedActions<ChildId, Action.Citizen.Child>(
+                                tx,
+                                user,
+                                clock,
+                                childIds,
+                            )
+                            .mapValues { (childId, actions) ->
+                                actions.letIf(
+                                    !serviceApplicationPossibleOnSomeDate(
+                                        tx = tx,
+                                        today = clock.today(),
+                                        childId = childId,
+                                        serviceNeedOptions = serviceNeedOptions,
+                                    )
+                                ) {
+                                    it - Action.Citizen.Child.CREATE_SERVICE_APPLICATION
+                                }
+                            }
                     children.map { c ->
                         ChildAndPermittedActions.fromChild(c, permittedActions[c.id]!!)
                     }
@@ -68,6 +88,35 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     meta = mapOf("count" to it.size),
                 )
             }
+    }
+
+    private fun serviceApplicationPossibleOnSomeDate(
+        tx: Database.Read,
+        today: LocalDate,
+        childId: ChildId,
+        serviceNeedOptions: List<ServiceNeedOption>,
+    ): Boolean {
+        val placements = tx.getPlacementsForChildDuring(childId, today, null)
+        if (placements.isEmpty()) return false
+
+        val optionsMap =
+            serviceNeedOptions
+                .filter { !it.defaultOption && (it.validTo == null || it.validTo >= today) }
+                .fold(DateMap.empty<Set<PlacementType>>()) { acc, opt ->
+                    acc.update(
+                        range = FiniteDateRange(opt.validFrom, opt.validTo ?: LocalDate.MAX),
+                        value = setOf(opt.validPlacementType),
+                    ) { _, old, new ->
+                        old + new
+                    }
+                }
+
+        return placements.any { placement ->
+            val placementRange = FiniteDateRange(placement.startDate, placement.endDate)
+            optionsMap.entries().any { (range, set) ->
+                range.overlaps(placementRange) && set.contains(placement.type)
+            }
+        }
     }
 
     @GetMapping("/{childId}/service-needs")
