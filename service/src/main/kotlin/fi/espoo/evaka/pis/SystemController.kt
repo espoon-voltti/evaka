@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.AccessControlCitizen
@@ -286,6 +287,45 @@ class SystemController(
             }
     }
 
+    @PostMapping("/system/mobile-pin-login")
+    fun pinLogin(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @RequestBody params: PinLoginRequest,
+    ): PinLoginResponse =
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val employee = tx.getEmployeeUser(params.employeeId)
+                    if (employee?.active == false) {
+                        throw Forbidden("User is not active")
+                    }
+                    when (accessControl.verifyPinCode(tx, params.employeeId, params.pin, clock)) {
+                        AccessControl.PinError.PIN_LOCKED ->
+                            PinLoginResponse(PinLoginStatus.PIN_LOCKED)
+                        AccessControl.PinError.WRONG_PIN ->
+                            PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                        null -> {
+                            employee?.let {
+                                PinLoginResponse(
+                                    PinLoginStatus.SUCCESS,
+                                    PinLoginEmployee(
+                                        it.preferredFirstName ?: it.firstName,
+                                        it.lastName,
+                                    ),
+                                )
+                            } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                        }
+                    }
+                }
+            }
+            .also {
+                Audit.PinLogin.log(
+                    targetId = AuditId(params.employeeId),
+                    meta = mapOf("status" to it.status),
+                )
+            }
+
     data class EmployeeLoginRequest(
         val externalId: ExternalId,
         val firstName: String,
@@ -329,4 +369,16 @@ class SystemController(
         // TODO: remove this extra field, which is only for backwards compatibility
         val authLevel: CitizenAuthLevel,
     )
+
+    data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
+
+    enum class PinLoginStatus {
+        SUCCESS,
+        WRONG_PIN,
+        PIN_LOCKED,
+    }
+
+    data class PinLoginEmployee(val firstName: String, val lastName: String)
+
+    data class PinLoginResponse(val status: PinLoginStatus, val employee: PinLoginEmployee? = null)
 }

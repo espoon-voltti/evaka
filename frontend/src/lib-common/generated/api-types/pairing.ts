@@ -9,14 +9,6 @@ import { JsonOf } from '../../json'
 import { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.pairing.Employee
-*/
-export interface Employee {
-  firstName: string
-  lastName: string
-}
-
-/**
 * Generated from fi.espoo.evaka.pairing.MobileDevice
 */
 export interface MobileDevice {
@@ -65,30 +57,6 @@ export type PairingStatus =
 export interface PairingStatusRes {
   status: PairingStatus
 }
-
-/**
-* Generated from fi.espoo.evaka.pairing.PinLoginRequest
-*/
-export interface PinLoginRequest {
-  employeeId: UUID
-  pin: string
-}
-
-/**
-* Generated from fi.espoo.evaka.pairing.PinLoginResponse
-*/
-export interface PinLoginResponse {
-  employee: Employee | null
-  status: PinLoginStatus
-}
-
-/**
-* Generated from fi.espoo.evaka.pairing.PinLoginStatus
-*/
-export type PinLoginStatus =
-  | 'SUCCESS'
-  | 'WRONG_PIN'
-  | 'PIN_LOCKED'
 
 /**
 * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingChallengeReq

@@ -6,20 +6,16 @@ package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
-import fi.espoo.evaka.pis.getEmployeeUser
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -131,55 +127,4 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         }
         Audit.MobileDevicesDelete.log(targetId = AuditId(id))
     }
-
-    @PostMapping(
-        "/mobile-devices/pin-login", // deprecated
-        "/employee-mobile/pin-login",
-    )
-    fun pinLogin(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @RequestBody params: PinLoginRequest,
-    ): PinLoginResponse =
-        db.connect { dbc ->
-                dbc.transaction { tx ->
-                    val employee = tx.getEmployeeUser(params.employeeId)
-                    if (employee?.active == false) {
-                        throw Forbidden("User is not active")
-                    }
-                    when (accessControl.verifyPinCode(tx, params.employeeId, params.pin, clock)) {
-                        AccessControl.PinError.PIN_LOCKED ->
-                            PinLoginResponse(PinLoginStatus.PIN_LOCKED)
-                        AccessControl.PinError.WRONG_PIN ->
-                            PinLoginResponse(PinLoginStatus.WRONG_PIN)
-                        null -> {
-                            employee?.let {
-                                PinLoginResponse(
-                                    PinLoginStatus.SUCCESS,
-                                    Employee(it.preferredFirstName ?: it.firstName, it.lastName),
-                                )
-                            } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
-                        }
-                    }
-                }
-            }
-            .also {
-                Audit.PinLogin.log(
-                    targetId = AuditId(params.employeeId),
-                    meta = mapOf("status" to it.status),
-                )
-            }
 }
-
-data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
-
-enum class PinLoginStatus {
-    SUCCESS,
-    WRONG_PIN,
-    PIN_LOCKED,
-}
-
-data class Employee(val firstName: String, val lastName: String)
-
-data class PinLoginResponse(val status: PinLoginStatus, val employee: Employee? = null)

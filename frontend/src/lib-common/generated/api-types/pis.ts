@@ -588,6 +588,30 @@ export interface PinCode {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.SystemController.PinLoginEmployee
+*/
+export interface PinLoginEmployee {
+  firstName: string
+  lastName: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.SystemController.PinLoginResponse
+*/
+export interface PinLoginResponse {
+  employee: PinLoginEmployee | null
+  status: PinLoginStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.SystemController.PinLoginStatus
+*/
+export type PinLoginStatus =
+  | 'SUCCESS'
+  | 'WRONG_PIN'
+  | 'PIN_LOCKED'
+
+/**
 * Generated from fi.espoo.evaka.pis.service.RestrictedDetails
 */
 export interface RestrictedDetails {

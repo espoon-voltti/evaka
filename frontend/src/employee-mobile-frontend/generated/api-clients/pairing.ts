@@ -8,30 +8,11 @@ import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { Pairing } from 'lib-common/generated/api-types/pairing'
 import { PairingStatusRes } from 'lib-common/generated/api-types/pairing'
-import { PinLoginRequest } from 'lib-common/generated/api-types/pairing'
-import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
 import { PostPairingChallengeReq } from 'lib-common/generated/api-types/pairing'
 import { UUID } from 'lib-common/types'
 import { client } from '../../client'
 import { deserializeJsonPairing } from 'lib-common/generated/api-types/pairing'
 import { uri } from 'lib-common/uri'
-
-
-/**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.pinLogin
-*/
-export async function pinLogin(
-  request: {
-    body: PinLoginRequest
-  }
-): Promise<PinLoginResponse> {
-  const { data: json } = await client.request<JsonOf<PinLoginResponse>>({
-    url: uri`/employee-mobile/pin-login`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<PinLoginRequest>
-  })
-  return json
-}
 
 
 /**

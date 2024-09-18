@@ -10,7 +10,7 @@ import {
   MobileUser,
   User
 } from 'lib-common/api-types/employee-auth'
-import { PinLoginResponse } from 'lib-common/generated/api-types/pairing'
+import { PinLoginResponse } from 'lib-common/generated/api-types/pis'
 import { JsonOf } from 'lib-common/json'
 
 import { client } from '../client'
