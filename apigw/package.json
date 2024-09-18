@@ -86,37 +86,6 @@
     "xml-crypto": "^6.0.0",
     "xml2js": "^0.6.0"
   },
-  "jest": {
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "tsconfig": "tsconfig.test.json",
-          "useESM": true,
-          "isolatedModules": true
-        }
-      ]
-    },
-    "roots": [
-      "<rootDir>/src"
-    ],
-    "testEnvironment": "node",
-    "reporters": [
-      "default",
-      "jest-junit"
-    ],
-    "coverageDirectory": "./build/coverage-reports",
-    "coverageReporters": [
-      "text",
-      "html"
-    ]
-  },
   "jest-junit": {
     "outputDirectory": "./build/test-reports/",
     "outputName": "jest-junit.xml"
