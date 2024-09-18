@@ -416,7 +416,6 @@ $unsubscribeEn
 <p>Pyydämme toimittamaan tuloselvityksen eVakassa 28 päivän kuluessa tästä ilmoituksesta. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön. </p>
 <p>Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan. Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
 <p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut PL 30 02070 Espoon kaupunki</p>
-<p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tulotiedot: ${incomeLink(Language.fi)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
@@ -426,7 +425,6 @@ $unsubscribeFi
 <p>Vi ber att du skickar en inkomstutredning via eVaka inom 28 dagar från den här anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
 <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
 <p>Du kan vid behov också skicka inkomstutredningen per post till adressen Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad</p>
-<p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
@@ -436,7 +434,6 @@ $unsubscribeSv
 <p>We ask you to submit your income statement through eVaka within 28 days of this notification. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.</p>
 <p>If you do not provide your latest income information, your client fee will be determined based on the highest fee category. We will not retroactively reimburse you for fees charged in a situation where you have not provided your income information.</p>
 <p>If necessary, you can also send your income information by post to the following address: City of Espoo / Growth and Learning Sector, Financial Management / Early childhood education client fees, P.O. Box 30, 02070 City of Espoo.</p>
-<p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
@@ -455,7 +452,6 @@ $unsubscribeEn
 <p>Pyydämme toimittamaan tuloselvityksen eVakassa 14 päivän kuluessa tästä ilmoituksesta. eVakassa voitte myös antaa suostumuksen korkeimpaan maksuluokkaan tai tulorekisterin käyttöön.</p>
 <p>Mikäli ette toimita uusia tulotietoja, asiakasmaksu määräytyy korkeimman maksuluokan mukaan. Puuttuvilla tulotiedoilla määrättyä maksua ei korjata takautuvasti.</p>
 <p>Voitte tarvittaessa toimittaa tulotiedot myös postitse osoitteeseen Espoon kaupunki/ Kasvun ja oppimisen toimiala, talousyksikkö/ varhaiskasvatuksen asiakasmaksut PL 30 02070 Espoon kaupunki</p>
-<p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tulotiedot: ${incomeLink(Language.fi)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
@@ -465,7 +461,6 @@ $unsubscribeFi
 <p>Vi ber att du skickar en inkomstutredning via eVaka inom 14 dagar från denna anmälan. I eVaka kan du också ge ditt samtycke till den högsta avgiften eller till användning av inkomstregistret.</p>
 <p>Om du inte lämnar in en ny inkomstutredning bestäms din klientavgift enligt den högsta avgiften. En avgift som fastställts på grund av bristfälliga inkomstuppgifter korrigeras inte retroaktivt.</p>
 <p>Du kan vid behov också skicka inkomstutredningen per post till adressen: Esbo stad/sektorn för fostran och lärande, ekonomienheten/klientavgifter för småbarnspedagogik PB 30 02070 Esbo stad</p>
-<p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
@@ -475,7 +470,6 @@ $unsubscribeSv
 <p>We ask you to submit your income statement through eVaka within 14 days of this notification. Through eVaka, you can also give your consent to the highest fee or the use of the Incomes Register.</p>
 <p>If you do not provide your latest income information, your client fee will be determined based on the highest fee category. We will not retroactively reimburse you for fees charged in a situation where you have not provided your income information.</p>
 <p>If necessary, you can also send your income information by post to the following address: City of Espoo / Growth and Learning Sector, Financial Management / Early childhood education client fees, P.O. Box 30, 02070 City of Espoo</p>
-<p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
@@ -491,19 +485,16 @@ $unsubscribeEn
                 """
 <p>Hyvä asiakkaamme</p>
 <p>Seuraava asiakasmaksunne määräytyy korkeimman maksuluokan mukaan, sillä ette ole toimittaneet uusia tulotietoja määräaikaan mennessä.</p>
-<p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
 <p>Bästä klient</p>
 <p>Din följande klientavgift bestäms enligt den högsta avgiften, eftersom du inte har lämnat in en inkomstutredning inom utsatt tid.</p>
-<p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
 <hr>
 <p>Dear client</p>
 <p>Your next client fee will be determined based on the highest fee category as you did not provide your latest income information by the deadline.</p>
-<p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
 """,
@@ -518,21 +509,18 @@ $unsubscribeEn
                 """
 <p>Hyvä asiakkaamme</p>
 <p>Lapsenne on aloittamassa varhaiskasvatuksessa tämän kuukauden aikana. Pyydämme teitä toimittamaan tulotiedot eVaka-järjestelmän kautta tämän kuukauden loppuun mennessä.</p>
-<p>Lisätietoja saatte tarvittaessa: vaka.maksut@espoo.fi</p>
 <p>Tulotiedot: ${incomeLink(Language.fi)}</p>
 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
 $unsubscribeFi
 <hr>
 <p>Bästä klient</p>
 <p>Ditt barn börjar småbarnspedagogiken under den här månaden. Vi ber dig att lämna in din inkomstinformation via eVaka-systemet senast i slutet av denna månad.</p>
-<p>Mer information: vaka.maksut@espoo.fi</p>
 <p>Inkomstuppgifterna: ${incomeLink(Language.sv)}</p>
 <p>Detta besked skickas automatiskt av eVaka. Svara inte på detta besked.</p>
 $unsubscribeSv
 <hr>
 <p>Dear client</p>
 <p>Your child is starting early childhood education during this month. We ask you to submit your income information via eVaka system by the end of this month.</p>
-<p>Inquiries: vaka.maksut@espoo.fi</p>
 <p>Income information: ${incomeLink(Language.en)}</p>
 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>
 $unsubscribeEn
