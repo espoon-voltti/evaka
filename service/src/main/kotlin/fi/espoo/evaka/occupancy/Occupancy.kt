@@ -371,16 +371,12 @@ private fun Database.Read.getRealizedCaretakersForGroups(
                             )
                         val occupancyBasedSum =
                             occupancyCoefficientSums
-                                .entries()
-                                .dropWhile { (range) -> !range.overlaps(wholeDate) }
-                                .takeWhile { (range) -> range.overlaps(wholeDate) }
-                                .mapNotNull { (range, coefficient) ->
-                                    range.intersection(wholeDate)?.let { occupancyDuringDate ->
-                                        calculateCaretakers(
-                                            occupancyDuringDate.getDuration(),
-                                            coefficient,
-                                        )
-                                    }
+                                .intersectEntries(wholeDate)
+                                .map { (occupancyDuringDate, coefficient) ->
+                                    calculateCaretakers(
+                                        occupancyDuringDate.getDuration(),
+                                        coefficient,
+                                    )
                                 }
                                 .reduceOrNull(BigDecimal::plus)
 

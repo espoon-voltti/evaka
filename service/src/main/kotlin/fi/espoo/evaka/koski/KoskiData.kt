@@ -317,10 +317,7 @@ data class KoskiActivePreschoolDataRaw(
         val longestEce = specialSupportWithEce.ranges().maxByOrNull { it.durationInDays() }
         // Koski only accepts one range
         val longestTransportBenefit =
-            transportBenefit
-                .ranges()
-                .mapNotNull { it.intersection(placementSpan) }
-                .maxByOrNull { it.durationInDays() }
+            transportBenefit.intersectRanges(placementSpan).maxByOrNull { it.durationInDays() }
 
         return Lisätiedot(
                 vammainen =
