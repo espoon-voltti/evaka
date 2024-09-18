@@ -108,6 +108,7 @@ const StaffAttendanceRow = React.memo(function StaffAttendanceRow({
   return (
     <StaffAttendanceTr>
       <StaffAttendanceTd>{i18n.absences.table.staffRow}</StaffAttendanceTd>
+      <Td />
       {days.map(({ date, children }) => {
         const staffCount = groupAttendances
           .map(({ attendances }) => attendances[date.toString()])
