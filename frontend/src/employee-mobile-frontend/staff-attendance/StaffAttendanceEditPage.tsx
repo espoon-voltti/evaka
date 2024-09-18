@@ -59,7 +59,7 @@ import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
-import { faLockAlt, faTrash } from 'lib-icons'
+import { faLockAlt, faTrash, faArrowLeft } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
@@ -221,9 +221,11 @@ export default React.memo(function StaffAttendanceEditPage({
   const { i18n } = useTranslation()
 
   const [searchParams] = useSearchParams()
-  const queryDate = searchParams.get('date')
-  const [date] = useState(
-    LocalDate.tryParseIso(queryDate ?? '') ?? LocalDate.todayInHelsinkiTz()
+  const date = useMemo(
+    () =>
+      LocalDate.tryParseIso(searchParams.get('date') ?? '') ??
+      LocalDate.todayInHelsinkiTz(),
+    [searchParams]
   )
 
   const unitId = unitOrGroup.unitId
@@ -438,6 +440,21 @@ const StaffAttendancesEditor = ({
             <ContinuationInfo>
               {i18n.attendances.staff.continuationAttendance}
             </ContinuationInfo>
+            <Gap size="xs" />
+            <Button
+              text={i18n.attendances.staff.editContinuationAttendance}
+              icon={faArrowLeft}
+              appearance="link"
+              onClick={() =>
+                navigate(
+                  routes.staffAttendanceEdit(
+                    unitOrGroup,
+                    staffMember.employeeId,
+                    continuationAttendance?.arrived.toLocalDate()
+                  ).value
+                )
+              }
+            />
             <Gap />
           </>
         )}

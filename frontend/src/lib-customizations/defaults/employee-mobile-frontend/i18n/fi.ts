@@ -277,6 +277,7 @@ export const fi = {
       },
       previousDays: 'Aiemmat kirjaukset',
       continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
+      editContinuationAttendance: 'Siirry muokkaamaan',
       absent: 'Poissa',
       externalPerson: 'Muu henkilö',
       markExternalPerson: 'Kirjaa muu henkilö',
