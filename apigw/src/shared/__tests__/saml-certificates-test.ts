@@ -6,22 +6,19 @@ import { describe, expect, test } from '@jest/globals'
 import { differenceInMonths } from 'date-fns'
 import nodeForge from 'node-forge'
 
-import certificates, { TrustedCertificates } from '../certificates'
+import certificates, { TrustedCertificates } from '../certificates.js'
 
 describe('SAML certificates', () => {
   test('at least one certificate must exist', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(Object.keys(certificates).length).toBeGreaterThan(0)
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   test.each(Object.keys(certificates) as TrustedCertificates[])(
     '%s must decode successfully',
     (certificateName) => {
       const computeHash = false
       const strict = true
       const certificate = nodeForge.pki.certificateFromPem(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
         certificates[certificateName],
         computeHash,
         strict
