@@ -6,9 +6,62 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { JsonOf } from '../../json'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.CitizenServiceApplication
+*/
+export interface CitizenServiceApplication {
+  data: ServiceApplication
+  permittedActions: Action.Citizen.ServiceApplication[]
+}
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplication
+*/
+export interface ServiceApplication {
+  additionalInfo: string
+  childId: UUID
+  childName: string
+  decision: ServiceApplicationDecision | null
+  id: UUID
+  personId: UUID
+  personName: string
+  sentAt: HelsinkiDateTime
+  serviceNeedOption: ServiceNeedOptionBasics
+  startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.ServiceApplicationCreateRequest
+*/
+export interface ServiceApplicationCreateRequest {
+  additionalInfo: string
+  childId: UUID
+  serviceNeedOptionId: UUID
+  startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationDecision
+*/
+export interface ServiceApplicationDecision {
+  decidedAt: HelsinkiDateTime
+  decidedBy: UUID
+  decidedByName: string
+  rejectedReason: string | null
+  status: ServiceApplicationDecisionStatus
+}
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationDecisionStatus
+*/
+export type ServiceApplicationDecisionStatus =
+  | 'ACCEPTED'
+  | 'REJECTED'
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeed
@@ -76,6 +129,18 @@ export interface ServiceNeedOption {
 }
 
 /**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceNeedOptionBasics
+*/
+export interface ServiceNeedOptionBasics {
+  id: UUID
+  nameEn: string
+  nameFi: string
+  nameSv: string
+  partWeek: boolean | null
+  validPlacementType: PlacementType
+}
+
+/**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 */
 export interface ServiceNeedOptionPublicInfo {
@@ -131,6 +196,40 @@ export const shiftCareType = [
 ] as const
 
 export type ShiftCareType = typeof shiftCareType[number]
+
+
+export function deserializeJsonCitizenServiceApplication(json: JsonOf<CitizenServiceApplication>): CitizenServiceApplication {
+  return {
+    ...json,
+    data: deserializeJsonServiceApplication(json.data)
+  }
+}
+
+
+export function deserializeJsonServiceApplication(json: JsonOf<ServiceApplication>): ServiceApplication {
+  return {
+    ...json,
+    decision: (json.decision != null) ? deserializeJsonServiceApplicationDecision(json.decision) : null,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonServiceApplicationCreateRequest(json: JsonOf<ServiceApplicationCreateRequest>): ServiceApplicationCreateRequest {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonServiceApplicationDecision(json: JsonOf<ServiceApplicationDecision>): ServiceApplicationDecision {
+  return {
+    ...json,
+    decidedAt: HelsinkiDateTime.parseIso(json.decidedAt)
+  }
+}
 
 
 export function deserializeJsonServiceNeed(json: JsonOf<ServiceNeed>): ServiceNeed {

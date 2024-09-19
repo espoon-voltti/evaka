@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -481,6 +482,17 @@ AND (
 )
 AND NOT decision.document_contains_contact_info
 """
+            )
+        }
+
+    fun ownerOfServiceApplication() =
+        rule<ServiceApplicationId> { userId, _ ->
+            sql(
+                """
+SELECT id
+FROM service_application
+WHERE person_id = ${bind(userId)}
+            """
             )
         }
 

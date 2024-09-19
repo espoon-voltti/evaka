@@ -24,6 +24,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.getOperationalDatesForChild
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.utils.letIf
+import java.time.LocalDate
 import java.time.YearMonth
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -40,23 +42,34 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
     ): List<ChildAndPermittedActions> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
                         user.id,
                     )
-                    val children = it.getChildrenByParent(user.id, clock.today())
+                    val children = tx.getChildrenByParent(user.id, clock.today())
                     val childIds = children.map { it.id }
-                    val permittedActions =
-                        accessControl.getPermittedActions<ChildId, Action.Citizen.Child>(
-                            it,
-                            user,
-                            clock,
-                            childIds,
+                    val serviceApplicationPossible =
+                        tx.getChildrenWithServiceApplicationPossibleOnSomeDate(
+                            childIds.toSet(),
+                            clock.today(),
                         )
+                    val permittedActions =
+                        accessControl
+                            .getPermittedActions<ChildId, Action.Citizen.Child>(
+                                tx,
+                                user,
+                                clock,
+                                childIds,
+                            )
+                            .mapValues { (childId, actions) ->
+                                actions.letIf(!serviceApplicationPossible.contains(childId)) {
+                                    it - Action.Citizen.Child.CREATE_SERVICE_APPLICATION
+                                }
+                            }
                     children.map { c ->
                         ChildAndPermittedActions.fromChild(c, permittedActions[c.id]!!)
                     }
@@ -184,3 +197,24 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
 }
 
 data class AttendanceSummary(val attendanceDays: Int)
+
+private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
+    childIds: Set<ChildId>,
+    today: LocalDate,
+): Set<ChildId> =
+    createQuery {
+            sql(
+                """
+        SELECT DISTINCT child_id
+        FROM placement pl
+        JOIN service_need_option sno ON
+            sno.valid_placement_type = pl.type AND
+            daterange(sno.valid_from, sno.valid_to, '[]') && daterange(pl.start_date, pl.end_date, '[]') AND
+            NOT sno.default_option
+        WHERE
+            pl.child_id = ANY (${bind(childIds)}) AND
+            daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]')
+    """
+            )
+        }
+        .toSet()

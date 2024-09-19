@@ -54,6 +54,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
@@ -454,6 +455,14 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).guardianOfChild(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChild(),
             ),
+            CREATE_SERVICE_APPLICATION(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
+            ),
+            READ_SERVICE_APPLICATIONS(
+                IsCitizen(allowWeakLogin = true).guardianOfChild(),
+                IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
+            ),
             READ_SERVICE_NEEDS(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild(),
@@ -583,6 +592,14 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement(),
                 IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPlacement(),
             );
+
+            override fun toString(): String = "${javaClass.name}.$name"
+        }
+
+        enum class ServiceApplication(
+            override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>
+        ) : ScopedAction<ServiceApplicationId> {
+            DELETE(IsCitizen(allowWeakLogin = false).ownerOfServiceApplication());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

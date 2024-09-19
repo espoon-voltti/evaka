@@ -331,6 +331,7 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
                         Action.Citizen.Child.READ_ATTENDANCE_SUMMARY,
                         Action.Citizen.Child.CREATE_CALENDAR_EVENT_TIME_RESERVATION,
                         Action.Citizen.Child.DELETE_CALENDAR_EVENT_TIME_RESERVATION,
+                        Action.Citizen.Child.READ_SERVICE_APPLICATIONS,
                     ),
             )
         assertThat(

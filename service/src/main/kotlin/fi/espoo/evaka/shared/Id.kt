@@ -158,6 +158,8 @@ sealed interface DatabaseTable {
 
     sealed class PreschoolTerm : DatabaseTable
 
+    sealed class ServiceApplication : DatabaseTable
+
     sealed class ServiceNeed : DatabaseTable
 
     sealed class ServiceNeedOption : DatabaseTable
@@ -327,6 +329,8 @@ typealias PlacementPlanId = Id<DatabaseTable.PlacementPlan>
 typealias PreschoolAssistanceId = Id<DatabaseTable.PreschoolAssistance>
 
 typealias PreschoolTermId = Id<DatabaseTable.PreschoolTerm>
+
+typealias ServiceApplicationId = Id<DatabaseTable.ServiceApplication>
 
 typealias ServiceNeedId = Id<DatabaseTable.ServiceNeed>
 

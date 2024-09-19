@@ -259,6 +259,12 @@ interface BaseFeatureFlags {
    * Display account number on invoice details view.
    */
   invoiceDisplayAccountNumber?: boolean
+
+  /**
+   * Enable a feature where a citizen can apply for a change in service need.
+   * Not ready for production!
+   */
+  serviceApplications?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

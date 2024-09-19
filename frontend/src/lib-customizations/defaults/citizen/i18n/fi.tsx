@@ -2524,6 +2524,33 @@ export default {
       variableTime: 'Päivittäinen aika vaihtelee',
       empty: 'Ei määritelty'
     },
+    serviceApplication: {
+      title: 'Palveluntarpeen muutoshakemukset',
+      empty: 'Ei hakemuksia',
+      sentAt: 'Lähetetty',
+      startDate: 'Ehdotettu aloituspäivä',
+      serviceNeed: 'Ehdotettu palveluntarve',
+      additionalInfo: 'Lisätiedot',
+      cancelApplication: 'Peru hakemus',
+      status: 'Tila',
+      decision: {
+        statuses: {
+          undecided: 'Ehdotettu',
+          ACCEPTED: 'Hyväksytty',
+          REJECTED: 'Hylätty'
+        },
+        rejectedReason: 'Hylkäysperuste'
+      },
+      openApplicationInfo:
+        'Olet ehdottanut lapselle uutta palveluntarvetta. Ehdotuksesi on yksikön johtajalla hyväksyttävänä.',
+      createButton: 'Ehdota muutosta palveluntarpeeseen',
+      createTitle: 'Palveluntarpeen muutoshakemus',
+      send: 'Lähetä',
+      noSuitablePlacementTitle:
+        'Valitulle päivälle ei voi ehdottaa uutta palveluntarvetta',
+      noSuitablePlacementMessage:
+        'Valittuna päivänä lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.'
+    },
     placementTermination: {
       title: 'Paikan irtisanominen',
       description:
