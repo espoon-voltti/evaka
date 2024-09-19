@@ -92,7 +92,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <td th:text="#{text.table.combined}"></td>
               <td class="text-right" th:text="${totalIncome}"></td>
             </tr>
-            <tr th:if="${showTotalIncome}">
+            <tr>
               <td th:text="#{text.incomeMinThreshold(${familySize})}"></td>
               <td class="text-right" th:text="${incomeMinThreshold}"></td>
             </tr>
