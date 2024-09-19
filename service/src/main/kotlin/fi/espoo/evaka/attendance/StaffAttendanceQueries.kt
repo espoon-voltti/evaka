@@ -17,9 +17,14 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 
-fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime): List<StaffMember> {
-    val rangeStart = now.atStartOfDay()
-    val rangeEnd = now.atEndOfDay()
+fun Database.Read.getStaffAttendances(
+    unitId: DaycareId,
+    dateRange: FiniteDateRange,
+    now: HelsinkiDateTime,
+    employeeId: EmployeeId? = null,
+): List<StaffMember> {
+    val range = dateRange.asHelsinkiDateTimeRange()
+
     return createQuery {
             sql(
                 """
@@ -45,20 +50,12 @@ SELECT DISTINCT
         SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type, 'departedAutomatically', a.departed_automatically, 'occupancyCoefficient', a.occupancy_coefficient) ORDER BY a.arrived)
         FROM staff_attendance_realtime a
         LEFT JOIN daycare_group dg ON dg.id = a.group_id
-        WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(unitId)} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(${
-            bind(
-                rangeStart
-            )
-        }, ${bind(rangeEnd)})
+        WHERE e.id = a.employee_id AND (dg.daycare_id = ${bind(unitId)} OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && ${bind(range)}
     ), '[]'::jsonb) AS attendances,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type) ORDER BY p.start_time)
         FROM staff_attendance_plan p
-        WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(${bind(rangeStart)}, ${
-            bind(
-                rangeEnd
-            )
-        })
+        WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && ${bind(range)}
     ), '[]'::jsonb) AS planned_attendances,
     EXISTS(
         SELECT 1 FROM staff_attendance_realtime osar
@@ -78,15 +75,13 @@ LEFT JOIN LATERAL (
     SELECT sa.id, sa.employee_id, sa.arrived, sa.departed, sa.group_id, sa.type, sa.departed_automatically, sa.occupancy_coefficient
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
-    WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${
-            bind(
-                rangeStart
-            )
-        }, ${bind(rangeEnd)})
+    WHERE sa.employee_id = dacl.employee_id AND dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(range)}
     ORDER BY sa.arrived DESC
     LIMIT 1
 ) att ON TRUE
-WHERE dacl.daycare_id = ${bind(unitId)} AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+WHERE dacl.daycare_id = ${bind(unitId)} 
+    AND (dacl.role IN ('STAFF', 'SPECIAL_EDUCATION_TEACHER', 'EARLY_CHILDHOOD_EDUCATION_SECRETARY') OR dgacl.employee_id IS NOT NULL)
+    ${if (employeeId != null) "AND e.id = ${bind(employeeId)}" else ""}
 ORDER BY e.last_name, first_name
 """
             )
@@ -345,13 +340,11 @@ WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && 
         .toList()
 }
 
-fun Database.Read.getEmployeeAttendancesForDate(
+fun Database.Read.getEmployeeAttendancesByArrivalDateDate(
     unitId: DaycareId,
     employeeId: EmployeeId,
-    date: LocalDate,
+    arrivalDate: LocalDate,
 ): List<RawAttendance> {
-    val start = HelsinkiDateTime.of(date, LocalTime.of(0, 0))
-    val end = HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
     return createQuery {
             sql(
                 """
@@ -371,7 +364,9 @@ FROM staff_attendance_realtime sa
 LEFT JOIN daycare_group dg on sa.group_id = dg.id
 JOIN employee emp ON sa.employee_id = emp.id
 LEFT JOIN staff_occupancy_coefficient soc ON soc.daycare_id = dg.daycare_id AND soc.employee_id = emp.id
-WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) AND emp.id = ${bind(employeeId)} AND tstzrange(sa.arrived, sa.departed) && tstzrange(${bind(start)}, ${bind(end)})
+WHERE (dg.daycare_id IS NULL OR dg.daycare_id = ${bind(unitId)}) 
+    AND emp.id = ${bind(employeeId)} 
+    AND between_start_and_end(${bind(arrivalDate.asHelsinkiDateTimeRange())}, sa.arrived)
 """
             )
         }

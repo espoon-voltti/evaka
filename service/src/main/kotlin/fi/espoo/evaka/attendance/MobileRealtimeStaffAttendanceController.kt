@@ -16,10 +16,11 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.math.BigDecimal
@@ -35,10 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/mobile/realtime-staff-attendances", // deprecated
-    "/employee-mobile/realtime-staff-attendances",
-)
+@RequestMapping("/employee-mobile/realtime-staff-attendances")
 class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     @GetMapping
     fun getAttendancesByUnit(
@@ -46,6 +44,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
+        @RequestParam date: LocalDate?,
     ): CurrentDayStaffAttendanceResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -57,7 +56,12 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         unitId,
                     )
                     CurrentDayStaffAttendanceResponse(
-                        staff = tx.getStaffAttendances(unitId, clock.now()),
+                        staff =
+                            tx.getStaffAttendances(
+                                unitId = unitId,
+                                dateRange = (date ?: clock.today()).toFiniteDateRange(),
+                                now = clock.now(),
+                            ),
                         extraAttendances = tx.getExternalStaffAttendances(unitId),
                     )
                 }
@@ -70,6 +74,42 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "staffCount" to it.staff.size,
                             "externalStaffCount" to it.extraAttendances.size,
                         ),
+                )
+            }
+    }
+
+    @GetMapping("/employee")
+    fun getEmployeeAttendances(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId,
+        @RequestParam employeeId: EmployeeId,
+        @RequestParam from: LocalDate,
+        @RequestParam to: LocalDate,
+    ): StaffMember {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
+                        unitId,
+                    )
+                    tx.getStaffAttendances(
+                            unitId = unitId,
+                            dateRange = FiniteDateRange(from, to),
+                            now = clock.now(),
+                            employeeId = employeeId,
+                        )
+                        .find { it.employeeId == employeeId } ?: throw NotFound()
+                }
+            }
+            .also {
+                Audit.UnitStaffAttendanceRead.log(
+                    targetId = AuditId(unitId),
+                    objectId = AuditId(employeeId),
                 )
             }
     }
@@ -245,14 +285,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
                 ac.verifyPinCodeAndThrow(dbc, body.employeeId, body.pinCode, clock)
 
-                if (
-                    body.rows.any {
-                        !DateRange(it.arrived.toLocalDate(), it.departed?.toLocalDate())
-                            .includes(body.date)
-                    }
-                ) {
+                if (body.rows.any { it.arrived.toLocalDate() != body.date })
                     throw BadRequest("Attendances outside given date")
-                }
 
                 dbc.transaction { tx ->
                     val groupIds = body.rows.mapNotNull { it.groupId }.distinct()
@@ -261,7 +295,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
 
                     val existing =
-                        tx.getEmployeeAttendancesForDate(unitId, body.employeeId, body.date)
+                        tx.getEmployeeAttendancesByArrivalDateDate(
+                            unitId,
+                            body.employeeId,
+                            body.date,
+                        )
 
                     val ids = body.rows.mapNotNull { it.id }
                     if (ids.any { id -> !existing.map { it.id }.contains(id) }) {

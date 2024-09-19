@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testRoundTheClockDaycare
@@ -95,7 +96,8 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         }
 
         db.read {
-            val attendances = it.getStaffAttendances(testDaycare.id, now)
+            val attendances =
+                it.getStaffAttendances(testDaycare.id, now.toLocalDate().toFiniteDateRange(), now)
             assertEquals(4, attendances.size)
             assertEquals(
                 listOf("One", "Three", "Four", "Two"),

@@ -22,6 +22,7 @@ import { StaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffDepartureRequest } from 'lib-common/generated/api-types/attendance'
+import { StaffMember } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { UnitInfo } from 'lib-common/generated/api-types/attendance'
 import { UnitStats } from 'lib-common/generated/api-types/attendance'
@@ -30,6 +31,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { deserializeJsonStaffMember } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
 
@@ -242,11 +244,13 @@ export async function returnToPresent(
 */
 export async function getAttendancesByUnit(
   request: {
-    unitId: UUID
+    unitId: UUID,
+    date?: LocalDate | null
   }
 ): Promise<CurrentDayStaffAttendanceResponse> {
   const params = createUrlSearchParams(
-    ['unitId', request.unitId]
+    ['unitId', request.unitId],
+    ['date', request.date?.formatIso()]
   )
   const { data: json } = await client.request<JsonOf<CurrentDayStaffAttendanceResponse>>({
     url: uri`/employee-mobile/realtime-staff-attendances`.toString(),
@@ -254,6 +258,32 @@ export async function getAttendancesByUnit(
     params
   })
   return deserializeJsonCurrentDayStaffAttendanceResponse(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getEmployeeAttendances
+*/
+export async function getEmployeeAttendances(
+  request: {
+    unitId: UUID,
+    employeeId: UUID,
+    from: LocalDate,
+    to: LocalDate
+  }
+): Promise<StaffMember> {
+  const params = createUrlSearchParams(
+    ['unitId', request.unitId],
+    ['employeeId', request.employeeId],
+    ['from', request.from.formatIso()],
+    ['to', request.to.formatIso()]
+  )
+  const { data: json } = await client.request<JsonOf<StaffMember>>({
+    url: uri`/employee-mobile/realtime-staff-attendances/employee`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonStaffMember(json)
 }
 
 

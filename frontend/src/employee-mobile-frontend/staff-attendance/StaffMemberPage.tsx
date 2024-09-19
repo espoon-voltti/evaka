@@ -11,6 +11,7 @@ import styled from 'styled-components'
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
@@ -155,7 +156,7 @@ export default React.memo(function StaffMemberPage({
                 )
               )}
               <ContentArea opaque paddingHorizontal="s">
-                <FixedSpaceColumn>
+                <FixedSpaceColumn alignItems="center">
                   {staffMember.present ? (
                     <LegacyButton
                       primary
@@ -195,6 +196,19 @@ export default React.memo(function StaffMemberPage({
                       </LegacyButton>
                     </>
                   )}
+                  <Button
+                    data-qa="previous-attendances"
+                    appearance="inline"
+                    text={i18n.attendances.staff.previousDays}
+                    onClick={() =>
+                      navigate(
+                        routes.staffPreviousAttendances(
+                          unitOrGroup,
+                          staffMember.employeeId
+                        ).value
+                      )
+                    }
+                  />
                 </FixedSpaceColumn>
               </ContentArea>
             </FixedSpaceColumn>

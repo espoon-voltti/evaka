@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
@@ -37,6 +37,7 @@ import {
 } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
@@ -52,12 +53,13 @@ import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import { TimeInputF } from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
+import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { EMPTY_PIN, PinInputF } from 'lib-components/molecules/PinInput'
 import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
-import { faLockAlt, faTrash } from 'lib-icons'
+import { faLockAlt, faTrash, faArrowLeft } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
@@ -73,6 +75,19 @@ import { toStaff } from './utils'
 const typesWithoutGroup: StaffAttendanceType[] = ['TRAINING', 'OTHER_WORK']
 const emptyGroupIdDomValue = ''
 
+const getDeparted = (
+  date: LocalDate,
+  arrivedTime: LocalTime,
+  departedTime: LocalTime | null | undefined
+): HelsinkiDateTime | null => {
+  if (!departedTime) return null
+
+  const departedDate = departedTime.isBefore(arrivedTime)
+    ? date.addDays(1)
+    : date
+  return HelsinkiDateTime.fromLocal(departedDate, departedTime)
+}
+
 const staffAttendanceForm = mapped(
   validated(
     object({
@@ -82,7 +97,6 @@ const staffAttendanceForm = mapped(
       groupId: required(oneOf<UUID | null>()),
       arrivedDate: required(localDate()),
       arrivedTime: required(localTime()),
-      departedDate: required(localDate()),
       departedTime: localTime(),
       occupancyEffect: required(boolean())
     }),
@@ -90,21 +104,13 @@ const staffAttendanceForm = mapped(
       if (!typesWithoutGroup.includes(output.type) && output.groupId === null) {
         return { groupId: 'required' }
       }
-      if (output.departedTime !== undefined) {
-        const departed = HelsinkiDateTime.fromLocal(
-          output.departedDate,
-          output.departedTime
-        )
-        const arrived = HelsinkiDateTime.fromLocal(
-          output.arrivedDate,
-          output.arrivedTime
-        )
-        if (departed.isEqualOrBefore(arrived)) {
-          return { departedTime: 'timeFormat' }
-        }
-        if (departed.isAfter(HelsinkiDateTime.now())) {
-          return { departedTime: 'future' }
-        }
+      const departed = getDeparted(
+        output.arrivedDate,
+        output.arrivedTime,
+        output.departedTime
+      )
+      if (departed && departed.isAfter(HelsinkiDateTime.now())) {
+        return { departedTime: 'future' }
       }
       return undefined
     }
@@ -114,10 +120,11 @@ const staffAttendanceForm = mapped(
     type: output.type,
     groupId: output.groupId,
     arrived: HelsinkiDateTime.fromLocal(output.arrivedDate, output.arrivedTime),
-    departed:
-      output.departedTime !== undefined
-        ? HelsinkiDateTime.fromLocal(output.departedDate, output.departedTime)
-        : null,
+    departed: getDeparted(
+      output.arrivedDate,
+      output.arrivedTime,
+      output.departedTime
+    ),
     hasStaffOccupancyEffect: output.occupancyEffect
   })
 )
@@ -151,9 +158,10 @@ const initialFormState = (
   groups: GroupInfo[],
   attendances: StaffMemberAttendance[]
 ): StateOf<typeof staffAttendancesForm> => ({
-  rows: sortBy(attendances, (attendance) => attendance.arrived).map(
-    (attendance) => initialRowState(i18n, date, groups, attendance)
-  )
+  rows: sortBy(
+    attendances.filter((a) => a.arrived.toLocalDate().isEqual(date)),
+    (attendance) => attendance.arrived
+  ).map((attendance) => initialRowState(i18n, groups, attendance))
 })
 
 function isUpsert(
@@ -164,7 +172,6 @@ function isUpsert(
 
 const initialRowState = (
   i18n: Translations,
-  date: LocalDate,
   groups: GroupInfo[],
   attendance: StaffMemberAttendance | StaffAttendanceUpsert
 ): StateOf<typeof staffAttendanceForm> => ({
@@ -195,7 +202,6 @@ const initialRowState = (
   },
   arrivedDate: localDate.fromDate(attendance.arrived.toLocalDate()),
   arrivedTime: attendance.arrived.toLocalTime().format(),
-  departedDate: localDate.fromDate(attendance.departed?.toLocalDate() ?? date),
   departedTime: attendance.departed?.toLocalTime().format() ?? '',
   occupancyEffect: isUpsert(attendance)
     ? attendance.hasStaffOccupancyEffect
@@ -213,10 +219,19 @@ export default React.memo(function StaffAttendanceEditPage({
 }) {
   const { employeeId } = useRouteParams(['employeeId'])
   const { i18n } = useTranslation()
+
+  const [searchParams] = useSearchParams()
+  const date = useMemo(
+    () =>
+      LocalDate.tryParseIso(searchParams.get('date') ?? '') ??
+      LocalDate.todayInHelsinkiTz(),
+    [searchParams]
+  )
+
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
   const staffAttendanceResponse = useQueryResult(
-    staffAttendanceQuery({ unitId })
+    staffAttendanceQuery({ unitId, date })
   )
   const combinedResult = useMemo(
     () =>
@@ -240,6 +255,7 @@ export default React.memo(function StaffAttendanceEditPage({
         <ErrorSegment title={i18n.attendances.staff.pinLocked} />
       ) : (
         <StaffAttendancesEditor
+          date={date}
           unitOrGroup={unitOrGroup}
           employeeId={employeeId}
           groups={groups}
@@ -251,11 +267,13 @@ export default React.memo(function StaffAttendanceEditPage({
 })
 
 const StaffAttendancesEditor = ({
+  date,
   unitOrGroup,
   employeeId,
   groups,
   staffMember
 }: {
+  date: LocalDate
   unitOrGroup: UnitOrGroup
   employeeId: UUID
   groups: GroupInfo[]
@@ -264,7 +282,7 @@ const StaffAttendancesEditor = ({
   const unitId = unitOrGroup.unitId
   const { i18n, lang } = useTranslation()
   const navigate = useNavigate()
-  const [date] = useState(LocalDate.todayInHelsinkiTz())
+
   const [mode, setMode] = useState<'editor' | 'pin'>('editor')
   const form = useForm(
     staffAttendancesForm,
@@ -282,6 +300,16 @@ const StaffAttendancesEditor = ({
   const [errorCode, setErrorCode] = useState<string>()
 
   const rowsInputInfo = rows.inputInfo()
+
+  const continuationAttendance = useMemo(
+    () =>
+      staffMember.attendances.find(
+        (a) =>
+          a.arrived.toLocalDate().isEqual(date.subDays(1)) &&
+          (a.departed === null || a.departed.toLocalDate().isEqual(date))
+      ),
+    [staffMember, date]
+  )
 
   if (mode === 'pin') {
     return (
@@ -367,6 +395,70 @@ const StaffAttendancesEditor = ({
           </span>
         </div>
         <H3>{i18n.attendances.staff.rows}</H3>
+
+        {continuationAttendance && (
+          <>
+            <ListGrid rowGap="xxs" labelWidth="auto" mobileMaxWidth="0">
+              <div>
+                {groups.find((g) => g.id === continuationAttendance.groupId)
+                  ?.name ?? i18n.attendances.noGroup}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow justifyContent="space-between">
+                  <DateInfoDiv>
+                    {continuationAttendance.arrived
+                      .toLocalDate()
+                      .format('dd.MM.')}
+                  </DateInfoDiv>
+                  <div />
+                  <DateInfoDiv>
+                    {continuationAttendance.departed
+                      ?.toLocalDate()
+                      ?.format('dd.MM.')}
+                  </DateInfoDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+              <div>
+                {i18n.attendances.staffTypes[continuationAttendance.type]}
+              </div>
+              <TimesDiv>
+                <FixedSpaceRow
+                  data-qa="continuation-attendance"
+                  justifyContent="space-between"
+                >
+                  <TimeDiv>
+                    {continuationAttendance.arrived.toLocalTime().format()}
+                  </TimeDiv>
+                  <div>–</div>
+                  <TimeDiv>
+                    {continuationAttendance.departed?.toLocalTime()?.format()}*
+                  </TimeDiv>
+                </FixedSpaceRow>
+              </TimesDiv>
+            </ListGrid>
+            <Gap size="xs" />
+            <ContinuationInfo>
+              {i18n.attendances.staff.continuationAttendance}
+            </ContinuationInfo>
+            <Gap size="xs" />
+            <Button
+              text={i18n.attendances.staff.editContinuationAttendance}
+              icon={faArrowLeft}
+              appearance="link"
+              onClick={() =>
+                navigate(
+                  routes.staffAttendanceEdit(
+                    unitOrGroup,
+                    staffMember.employeeId,
+                    continuationAttendance?.arrived.toLocalDate()
+                  ).value
+                )
+              }
+            />
+            <Gap />
+          </>
+        )}
+
         {boundRows.length > 0 ? (
           boundRows.map((row, index) => (
             <React.Fragment key={index}>
@@ -413,11 +505,16 @@ const StaffAttendancesEditor = ({
                   )
                 rows.update((prev) => [
                   ...prev,
-                  initialRowState(i18n, date, groups, {
+                  initialRowState(i18n, groups, {
                     id: null,
                     type: latest?.type ?? 'PRESENT',
                     groupId: latest?.groupId ?? null,
-                    arrived: latest?.departed ?? HelsinkiDateTime.now(),
+                    arrived:
+                      latest?.departed ??
+                      HelsinkiDateTime.fromLocal(
+                        date,
+                        LocalTime.nowInHelsinkiTz()
+                      ),
                     departed: null,
                     hasStaffOccupancyEffect: staffMember.occupancyEffect
                   })
@@ -473,7 +570,6 @@ const StaffAttendanceEditor = ({
     groupId,
     arrivedDate,
     arrivedTime,
-    departedDate,
     departedTime,
     occupancyEffect
   } = useFormFields(form)
@@ -481,8 +577,12 @@ const StaffAttendanceEditor = ({
   const groupIdDomValue = groupId.state.domValue
   const groupIdInputInfo = groupId.inputInfo()
   const arrivedDateValue = arrivedDate.value()
-  const departedDateValue = departedDate.value()
-  const dateLabelVisible = !arrivedDateValue.isEqual(departedDateValue)
+  const departed =
+    arrivedTime.isValid() && departedTime.isValid()
+      ? getDeparted(arrivedDateValue, arrivedTime.value(), departedTime.value())
+      : null
+  const dateLabelVisible =
+    departed && !departed.toLocalDate().isEqual(arrivedDateValue)
 
   return (
     <FlexColumn>
@@ -532,12 +632,11 @@ const StaffAttendanceEditor = ({
           </div>
           <span>–</span>
           <div>
-            {dateLabelVisible && (
-              <DateLabel>{departedDate.value().format('d.M.')}</DateLabel>
+            {departed && dateLabelVisible && (
+              <DateLabel>{departed.toLocalDate().format('d.M.')}</DateLabel>
             )}
             <TimeInputF
               bind={departedTime}
-              readonly={!departedDateValue.isEqual(date)}
               info={
                 departedTime.state === ''
                   ? { text: i18n.attendances.staff.open, status: 'warning' }
@@ -571,4 +670,23 @@ const DateLabel = styled.div`
 
 const IconContainer = styled.div`
   margin-left: ${defaultMargins.X3L};
+`
+
+const TimesDiv = styled.div`
+  width: 120px;
+`
+
+const TimeDiv = styled.div`
+  width: 40px;
+`
+
+const DateInfoDiv = styled(TimeDiv)`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+  font-size: 14px;
+`
+
+const ContinuationInfo = styled.div`
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-style: italic;
 `

@@ -1066,6 +1066,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 mobileUser,
                 MockEvakaClock(now),
                 testDaycare.id,
+                date = null,
             )
         assertThat(attendances.staff).hasSize(1)
         assertThat(attendances.staff.first().attendances).hasSize(1)
@@ -1113,6 +1114,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 mobileUser,
                 MockEvakaClock(now),
                 testDaycare.id,
+                date = null,
             )
         assertThat(attendances2.staff).hasSize(1)
         assertThat(attendances2.staff.first().attendances).hasSize(1)
@@ -1473,6 +1475,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             user,
             MockEvakaClock(now),
             unitId,
+            date = null,
         )
     }
 

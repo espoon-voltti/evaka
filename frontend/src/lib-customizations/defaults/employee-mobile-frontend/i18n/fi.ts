@@ -275,6 +275,10 @@ export const fi = {
         employeeNotFound: 'Työntekijää ei löytynyt',
         wrongPin: 'Väärä PIN-koodi'
       },
+      previousDays: 'Aiemmat kirjaukset',
+      continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
+      editContinuationAttendance: 'Siirry muokkaamaan',
+      absent: 'Poissa',
       externalPerson: 'Muu henkilö',
       markExternalPerson: 'Kirjaa muu henkilö',
       markExternalPersonTitle: 'Kirjaa muu työntekijä sisään',
