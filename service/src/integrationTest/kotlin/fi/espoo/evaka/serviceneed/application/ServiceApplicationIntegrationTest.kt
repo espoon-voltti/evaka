@@ -110,6 +110,11 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     nameEn = snDaycareFullDay35.nameEn,
                                     validPlacementType = PlacementType.DAYCARE,
                                     partWeek = snDaycareFullDay35.partWeek,
+                                    validity =
+                                        DateRange(
+                                            snDaycareFullDay35.validFrom,
+                                            snDaycareFullDay35.validTo,
+                                        ),
                                 ),
                             additionalInfo = "Sain uuden duunin",
                             decision = null,

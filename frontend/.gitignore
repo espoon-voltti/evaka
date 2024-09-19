@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 node_modules/
+eslint-plugin/tsconfig.tsbuildinfo
 .cache/
 .idea/
 *.iml

@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
@@ -17,6 +18,14 @@ import { UUID } from '../../types'
 export interface CitizenServiceApplication {
   data: ServiceApplication
   permittedActions: Action.Citizen.ServiceApplication[]
+}
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.EmployeeServiceApplication
+*/
+export interface EmployeeServiceApplication {
+  data: ServiceApplication
+  permittedActions: Action.ServiceApplication[]
 }
 
 /**
@@ -62,6 +71,13 @@ export interface ServiceApplicationDecision {
 export type ServiceApplicationDecisionStatus =
   | 'ACCEPTED'
   | 'REJECTED'
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.ServiceApplicationRejection
+*/
+export interface ServiceApplicationRejection {
+  reason: string
+}
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.ServiceNeed
@@ -138,6 +154,7 @@ export interface ServiceNeedOptionBasics {
   nameSv: string
   partWeek: boolean | null
   validPlacementType: PlacementType
+  validity: DateRange
 }
 
 /**
@@ -206,11 +223,20 @@ export function deserializeJsonCitizenServiceApplication(json: JsonOf<CitizenSer
 }
 
 
+export function deserializeJsonEmployeeServiceApplication(json: JsonOf<EmployeeServiceApplication>): EmployeeServiceApplication {
+  return {
+    ...json,
+    data: deserializeJsonServiceApplication(json.data)
+  }
+}
+
+
 export function deserializeJsonServiceApplication(json: JsonOf<ServiceApplication>): ServiceApplication {
   return {
     ...json,
     decision: (json.decision != null) ? deserializeJsonServiceApplicationDecision(json.decision) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt),
+    serviceNeedOption: deserializeJsonServiceNeedOptionBasics(json.serviceNeedOption),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }
@@ -267,6 +293,14 @@ export function deserializeJsonServiceNeedOption(json: JsonOf<ServiceNeedOption>
     updated: HelsinkiDateTime.parseIso(json.updated),
     validFrom: LocalDate.parseIso(json.validFrom),
     validTo: (json.validTo != null) ? LocalDate.parseIso(json.validTo) : null
+  }
+}
+
+
+export function deserializeJsonServiceNeedOptionBasics(json: JsonOf<ServiceNeedOptionBasics>): ServiceNeedOptionBasics {
+  return {
+    ...json,
+    validity: DateRange.parseJson(json.validity)
   }
 }
 

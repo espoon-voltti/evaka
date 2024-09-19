@@ -37,6 +37,7 @@ import FeeAlteration from './child-information/FeeAlteration'
 import GuardiansAndParents from './child-information/GuardiansAndParents'
 import PedagogicalDocuments from './child-information/PedagogicalDocuments'
 import Placements from './child-information/Placements'
+import ServiceApplicationsSection from './child-information/ServiceApplicationsSection'
 import CircularLabel from './common/CircularLabel'
 import WarningLabel from './common/WarningLabel'
 import { getLayout, Layouts } from './layouts'
@@ -100,6 +101,10 @@ const components = {
     'READ_GUARDIANS'
   ),
   placements: requireOneOfPermittedActions(Placements, 'READ_PLACEMENT'),
+  serviceApplications: requireOneOfPermittedActions(
+    ServiceApplicationsSection,
+    'READ_SERVICE_APPLICATIONS'
+  ),
   'daily-service-times': requireOneOfPermittedActions(
     DailyServiceTimesSection,
     'READ_DAILY_SERVICE_TIMES'
@@ -135,6 +140,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'family-contacts', open: false },
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'childDocuments', open: false },
@@ -203,6 +209,7 @@ const layouts: Layouts<typeof components> = {
   ['UNIT_SUPERVISOR']: [
     { component: 'guardiansAndParents', open: false },
     { component: 'placements', open: false },
+    { component: 'serviceApplications', open: false },
     { component: 'backup-care', open: false },
     { component: 'daily-service-times', open: false },
     { component: 'assistance', open: false },

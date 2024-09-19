@@ -45,6 +45,7 @@ val generatedFiles =
                 generateEnum<Action.Person>(),
                 generateEnum<Action.Placement>(),
                 generateEnum<Action.PreschoolAssistance>(),
+                generateEnum<Action.ServiceApplication>(),
                 generateEnum<Action.ServiceNeed>(),
                 generateEnum<Action.Unit>(),
                 generateEnum<Action.VasuDocument>(),

@@ -81,6 +81,11 @@ import {
   getAssistanceNeedPreschoolDecisionMetadata,
   getChildDocumentMetadata
 } from '../../generated/api-clients/process'
+import {
+  acceptServiceApplication,
+  getChildServiceApplications,
+  rejectServiceApplication
+} from '../../generated/api-clients/serviceneed'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('childInformation', {
@@ -88,6 +93,7 @@ export const queryKeys = createQueryKeys('childInformation', {
   childDocument: (id: UUID) => ['childDocument', id],
   childDocumentMetadata: (id: UUID) => ['childDocumentMetadata', id],
   childDocumentWriteLock: (id: UUID) => ['childDocument', id, 'lock'],
+  serviceApplications: (childId: UUID) => ['serviceApplications', childId],
   assistance: (childId: UUID) => ['assistance', childId],
   assistanceNeedDecisionMetadata: (decisionId: UUID) => [
     'assistanceNeedDecisionMetadata',
@@ -192,6 +198,23 @@ export const deleteChildDocumentMutation = mutation({
     queryKeys.childDocuments(childId),
     queryKeys.childDocument(documentId)
   ]
+})
+
+export const childServiceApplicationsQuery = query({
+  api: getChildServiceApplications,
+  queryKey: ({ childId }) => queryKeys.serviceApplications(childId)
+})
+
+export const acceptServiceApplicationsMutation = mutation({
+  api: (arg: Arg0<typeof acceptServiceApplication> & { childId: UUID }) =>
+    acceptServiceApplication(arg),
+  invalidateQueryKeys: ({ childId }) => [queryKeys.serviceApplications(childId)]
+})
+
+export const rejectServiceApplicationsMutation = mutation({
+  api: (arg: Arg0<typeof rejectServiceApplication> & { childId: UUID }) =>
+    rejectServiceApplication(arg),
+  invalidateQueryKeys: ({ childId }) => [queryKeys.serviceApplications(childId)]
 })
 
 export const assistanceQuery = query({

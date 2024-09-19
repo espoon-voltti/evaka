@@ -1201,6 +1201,10 @@ sealed interface Action {
                 )
                 .inPlacementUnitOfChild(),
         ),
+        READ_SERVICE_APPLICATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
+        ),
         READ_FAMILY_CONTACTS(
             HasGlobalRole(ADMIN),
             HasUnitRole(
@@ -1965,6 +1969,21 @@ sealed interface Action {
         DELETE(
             HasGlobalRole(ADMIN),
             HasUnitRole(EARLY_CHILDHOOD_EDUCATION_SECRETARY).inPlacementUnitOfChildOfServiceNeed(),
+        );
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
+
+    enum class ServiceApplication(
+        override vararg val defaultRules: ScopedActionRule<in ServiceApplicationId>
+    ) : ScopedAction<ServiceApplicationId> {
+        ACCEPT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceApplication(),
+        ),
+        REJECT(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceApplication(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

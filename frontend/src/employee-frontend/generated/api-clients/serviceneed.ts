@@ -4,9 +4,11 @@
 
 // GENERATED FILE: no manual modifications
 
+import { EmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceApplicationRejection } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedCreateRequest } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
@@ -14,6 +16,7 @@ import { ServiceNeedUpdateRequest } from 'lib-common/generated/api-types/service
 import { UUID } from 'lib-common/types'
 import { client } from '../../api/client'
 import { createUrlSearchParams } from 'lib-common/api'
+import { deserializeJsonEmployeeServiceApplication } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
@@ -97,6 +100,60 @@ export async function putServiceNeed(
     url: uri`/employee/service-needs/${request.id}`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<ServiceNeedUpdateRequest>
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.acceptServiceApplication
+*/
+export async function acceptServiceApplication(
+  request: {
+    id: UUID
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/service-applications/${request.id}/accept`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.getChildServiceApplications
+*/
+export async function getChildServiceApplications(
+  request: {
+    childId: UUID
+  }
+): Promise<EmployeeServiceApplication[]> {
+  const params = createUrlSearchParams(
+    ['childId', request.childId]
+  )
+  const { data: json } = await client.request<JsonOf<EmployeeServiceApplication[]>>({
+    url: uri`/employee/service-applications`.toString(),
+    method: 'GET',
+    params
+  })
+  return json.map(e => deserializeJsonEmployeeServiceApplication(e))
+}
+
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.rejectServiceApplication
+*/
+export async function rejectServiceApplication(
+  request: {
+    id: UUID,
+    body: ServiceApplicationRejection
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/service-applications/${request.id}/reject`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<ServiceApplicationRejection>
   })
   return json
 }

@@ -1515,6 +1515,32 @@ export const fi = {
           'Valitun palveluntarvetyypin täytyy olla käytettävissä koko ajalla. Luo palveluntarve tarvittaessa kahdessa osassa.'
       }
     },
+    serviceApplications: {
+      title: 'Palveluntarpeen muutoshakemukset',
+      applicationTitle: 'Palveluntarpeen muutoshakemus',
+      sentAt: 'Lähetetty',
+      sentBy: 'Hakija',
+      startDate: 'Ehdotettu aloituspäivä',
+      serviceNeed: 'Ehdotettu palveluntarve',
+      additionalInfo: 'Lisätiedot',
+      status: 'Tila',
+      decision: {
+        statuses: {
+          ACCEPTED: 'Hyväksytty',
+          REJECTED: 'Hylätty'
+        },
+        rejectedReason: 'Hylkäysperuste',
+        accept: 'Hyväksy',
+        reject: 'Hylkää',
+        confirmAcceptTitle: 'Hyväksytäänkö hakemus uudesta palveluntarpeesta?',
+        confirmAcceptText:
+          'Muista tehdä tarvittavat vastaavat muutokset lapsen palveluntarpeeseen!',
+        confirmAcceptBtn: 'Merkitse hyväksytyksi',
+        confirmRejectTitle: 'Hakemuksen hylkääminen'
+      },
+      decidedApplications: 'Käsitellyt hakemukset',
+      noApplications: 'Ei hakemuksia'
+    },
     fridgeParents: {
       title: 'Päämiehet',
       name: 'Nimi',
