@@ -70,27 +70,24 @@ export default React.memo(function NewServiceApplicationPage() {
       : constantQuery([])
   )
 
+  const update = serviceNeed.update
   useEffect(() => {
-    const options = optionsResult
-      .map((options) =>
-        options.map((opt) => ({
-          value: opt.id,
-          domValue: opt.id,
-          label:
-            lang === 'sv' ? opt.nameSv : lang === 'en' ? opt.nameEn : opt.nameFi
-        }))
-      )
-      .getOrElse([])
-    serviceNeed.update((prev) => ({
-      ...prev,
-      options,
-      domValue:
-        optionsResult.isLoading ||
-        options.some((opt) => opt.domValue === prev.domValue)
+    if (optionsResult.isSuccess) {
+      const options = optionsResult.value.map((opt) => ({
+        value: opt.id,
+        domValue: opt.id,
+        label:
+          lang === 'sv' ? opt.nameSv : lang === 'en' ? opt.nameEn : opt.nameFi
+      }))
+      update((prev) => ({
+        ...prev,
+        options,
+        domValue: options.some((opt) => opt.domValue === prev.domValue)
           ? prev.domValue
           : ''
-    }))
-  }, [optionsResult, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+      }))
+    }
+  }, [optionsResult, lang, update])
 
   return (
     <>

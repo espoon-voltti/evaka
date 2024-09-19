@@ -11,17 +11,13 @@ import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementSummary
-import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
 import fi.espoo.evaka.serviceneed.ServiceNeedSummary
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.serviceneed.getServiceNeedSummary
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.data.DateMap
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -56,7 +52,11 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     )
                     val children = tx.getChildrenByParent(user.id, clock.today())
                     val childIds = children.map { it.id }
-                    val serviceNeedOptions = tx.getServiceNeedOptions()
+                    val serviceApplicationPossible =
+                        tx.getChildrenWithServiceApplicationPossibleOnSomeDate(
+                            childIds.toSet(),
+                            clock.today(),
+                        )
                     val permittedActions =
                         accessControl
                             .getPermittedActions<ChildId, Action.Citizen.Child>(
@@ -66,14 +66,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                                 childIds,
                             )
                             .mapValues { (childId, actions) ->
-                                actions.letIf(
-                                    !serviceApplicationPossibleOnSomeDate(
-                                        tx = tx,
-                                        today = clock.today(),
-                                        childId = childId,
-                                        serviceNeedOptions = serviceNeedOptions,
-                                    )
-                                ) {
+                                actions.letIf(!serviceApplicationPossible.contains(childId)) {
                                     it - Action.Citizen.Child.CREATE_SERVICE_APPLICATION
                                 }
                             }
@@ -88,35 +81,6 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                     meta = mapOf("count" to it.size),
                 )
             }
-    }
-
-    private fun serviceApplicationPossibleOnSomeDate(
-        tx: Database.Read,
-        today: LocalDate,
-        childId: ChildId,
-        serviceNeedOptions: List<ServiceNeedOption>,
-    ): Boolean {
-        val placements = tx.getPlacementsForChildDuring(childId, today, null)
-        if (placements.isEmpty()) return false
-
-        val optionsMap =
-            serviceNeedOptions
-                .filter { !it.defaultOption && (it.validTo == null || it.validTo >= today) }
-                .fold(DateMap.empty<Set<PlacementType>>()) { acc, opt ->
-                    acc.update(
-                        range = FiniteDateRange(opt.validFrom, opt.validTo ?: LocalDate.MAX),
-                        value = setOf(opt.validPlacementType),
-                    ) { _, old, new ->
-                        old + new
-                    }
-                }
-
-        return placements.any { placement ->
-            val placementRange = FiniteDateRange(placement.startDate, placement.endDate)
-            optionsMap.entries().any { (range, set) ->
-                range.overlaps(placementRange) && set.contains(placement.type)
-            }
-        }
     }
 
     @GetMapping("/{childId}/service-needs")
@@ -233,3 +197,24 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
 }
 
 data class AttendanceSummary(val attendanceDays: Int)
+
+private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
+    childIds: Set<ChildId>,
+    today: LocalDate,
+): Set<ChildId> =
+    createQuery {
+            sql(
+                """
+        SELECT DISTINCT child_id
+        FROM placement pl
+        JOIN service_need_option sno ON
+            sno.valid_placement_type = pl.type AND
+            daterange(sno.valid_from, sno.valid_to, '[]') && daterange(pl.start_date, pl.end_date, '[]') AND
+            NOT sno.default_option
+        WHERE
+            pl.child_id = ANY (${bind(childIds)}) AND
+            daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]')
+    """
+            )
+        }
+        .toSet()
