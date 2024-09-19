@@ -24,6 +24,7 @@ data class AssistanceNeedDecision(
     val decisionNumber: Long? = null,
     @Nested("child") val child: AssistanceNeedDecisionChild?,
     val validityPeriod: DateRange,
+    val endDateNotKnown: Boolean = false,
     val status: AssistanceNeedDecisionStatus,
     val language: OfficialLanguage,
     val decisionMade: LocalDate?,
@@ -54,6 +55,7 @@ data class AssistanceNeedDecision(
         AssistanceNeedDecisionForm(
             decisionNumber,
             validityPeriod,
+            endDateNotKnown,
             status,
             language,
             decisionMade,
@@ -84,6 +86,7 @@ data class AssistanceNeedDecision(
 data class AssistanceNeedDecisionForm(
     val decisionNumber: Long? = null,
     val validityPeriod: DateRange,
+    val endDateNotKnown: Boolean = false,
     val status: AssistanceNeedDecisionStatus,
     val language: OfficialLanguage,
     val decisionMade: LocalDate?,

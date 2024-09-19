@@ -47,6 +47,7 @@ export interface AssistanceNeedDecision {
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMaker | null
   decisionNumber: number | null
+  endDateNotKnown: boolean
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null
@@ -143,6 +144,7 @@ export interface AssistanceNeedDecisionForm {
   decisionMade: LocalDate | null
   decisionMaker: AssistanceNeedDecisionMakerForm | null
   decisionNumber: number | null
+  endDateNotKnown: boolean
   expertResponsibilities: string | null
   guardianInfo: AssistanceNeedDecisionGuardian[]
   guardiansHeardOn: LocalDate | null

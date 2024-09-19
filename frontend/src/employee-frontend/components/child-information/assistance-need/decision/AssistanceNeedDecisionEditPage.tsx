@@ -166,7 +166,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
           'preparator2Title',
         // there must be an end date if ASSISTANCE_SERVICES_FOR_TIME is selected
         formState?.assistanceLevels.includes('ASSISTANCE_SERVICES_FOR_TIME') &&
-          formState?.validityPeriod.end === null &&
+          formState?.validityPeriod.end === null && //TODO fixme
           'endDate',
         // at least one assistance level must be selected
         formState?.assistanceLevels.length === 0 && 'futureLevelOfAssistance'

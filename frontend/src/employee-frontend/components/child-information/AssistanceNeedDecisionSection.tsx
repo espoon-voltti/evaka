@@ -150,6 +150,7 @@ export default React.memo(function AssistanceNeedDecisionSection({
                       LocalDate.todayInHelsinkiTz(),
                       null
                     ),
+                    endDateNotKnown: false,
                     viewOfGuardians: null
                   }
                 }
