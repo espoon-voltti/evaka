@@ -4,7 +4,6 @@
 
 import { Locale } from 'date-fns'
 import { enGB, fi, sv } from 'date-fns/locale'
-import { formatInTimeZone } from 'date-fns-tz'
 
 import HelsinkiDateTime from './helsinki-date-time'
 
@@ -13,9 +12,6 @@ export const locales: { fi: Locale; sv: Locale; en: Locale } = {
   sv,
   en: enGB
 }
-
-export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
-const DATE_FORMAT_TIME_ONLY = 'HH:mm'
 
 type DateWithoutLeadingZeros = 'd.M.yyyy'
 type DateWithLeadingZeros = 'dd.MM.yyyy'
@@ -33,34 +29,6 @@ export type DateFormat =
 
 type Weekday = 'EEEEEE' // ma, ti.. må, ti.. Mo, Tu
 export type DateFormatWithWeekday = Weekday | `${Weekday} ${DateFormat}`
-
-type Time = typeof DATE_FORMAT_TIME_ONLY
-type DateTimeFormat = `${FullDate} ${Time}`
-
-type FormatWithoutWeekday = DateFormat | DateTimeFormat
-type AllowedDateFormat = FormatWithoutWeekday | DateFormatWithWeekday
-
-export function formatDate<T extends AllowedDateFormat>(
-  date: Date | null | undefined,
-  ...[dateFormat, locale]: T extends DateFormatWithWeekday
-    ? [DateFormatWithWeekday, keyof typeof locales]
-    : [FormatWithoutWeekday?]
-): string {
-  return date
-    ? formatInTimeZone(
-        date,
-        'Europe/Helsinki',
-        dateFormat ?? 'dd.MM.yyyy',
-        locale ? { locale: locales[locale] } : undefined
-      )
-    : ''
-}
-
-export function formatTime(date: Date | null | undefined): string {
-  return date
-    ? formatInTimeZone(date, 'Europe/Helsinki', DATE_FORMAT_TIME_ONLY)
-    : ''
-}
 
 // matches 24h format with mandatory leading zeros "23:59" and "00:09"
 const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/

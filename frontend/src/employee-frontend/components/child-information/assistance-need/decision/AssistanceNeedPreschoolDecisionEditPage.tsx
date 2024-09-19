@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
-import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -967,11 +966,7 @@ const DecisionEditor = React.memo(function DecisionEditor({
             >
               <span>
                 {i18n.common.saved}{' '}
-                {formatInTimeZone(
-                  lastSavedAt.timestamp,
-                  'Europe/Helsinki',
-                  'HH:mm:ss'
-                )}
+                {lastSavedAt.toLocalTime().format('HH:mm:ss')}
               </span>
               {!saved && (
                 <Spinner size={defaultMargins.m} data-qa="saving-spinner" />

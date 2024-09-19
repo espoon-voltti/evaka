@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useQueryClient } from '@tanstack/react-query'
-import { formatInTimeZone } from 'date-fns-tz'
 import isEqual from 'lodash/isEqual'
 import React, {
   useCallback,
@@ -278,11 +277,7 @@ const ChildDocumentEditViewInner = React.memo(
                 <FixedSpaceRow alignItems="center" spacing="xs">
                   <span>
                     {i18n.common.saved}{' '}
-                    {formatInTimeZone(
-                      lastSaved.timestamp,
-                      'Europe/Helsinki',
-                      'HH:mm:ss'
-                    )}
+                    {lastSaved.toLocalTime().format('HH:mm:ss')}
                   </span>
                   {!saved && (
                     <Spinner size={defaultMargins.m} data-qa="saving-spinner" />

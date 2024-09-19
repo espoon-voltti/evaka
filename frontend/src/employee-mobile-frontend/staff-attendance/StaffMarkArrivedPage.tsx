@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
+import { differenceInMinutes } from 'date-fns'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime } from 'lib-common/date'
 import {
   StaffAttendanceType,
   StaffMember,
@@ -20,7 +19,6 @@ import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useRouteParams from 'lib-common/useRouteParams'
-import { mockNow } from 'lib-common/utils/helpers'
 import Title from 'lib-components/atoms/Title'
 import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import {
@@ -95,7 +93,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
     staffMember.occupancyEffect
   )
 
-  const getNow = () => mockNow() ?? new Date()
+  const getNow = () => HelsinkiDateTime.now()
 
   const firstPlannedStartOfTheDay = useMemo(
     () =>
@@ -120,12 +118,12 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
   )
 
   const selectedTimeIsWithin30MinsFromNow = useCallback(
-    (now: Date) =>
+    (now: HelsinkiDateTime) =>
       time !== undefined &&
       Math.abs(
         differenceInMinutes(
           HelsinkiDateTime.now().withTime(time).toSystemTzDate(),
-          now
+          now.toSystemTzDate()
         )
       ) <= 30,
     [time]
@@ -232,8 +230,8 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
               ? {
                   status: 'warning',
                   text: i18n.common.validation.dateBetween(
-                    formatTime(subMinutes(getNow(), 30)),
-                    formatTime(addMinutes(getNow(), 30))
+                    getNow().subMinutes(30).toLocalTime().format(),
+                    getNow().addMinutes(30).toLocalTime().format()
                   )
                 }
               : undefined

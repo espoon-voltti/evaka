@@ -2,17 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { formatDate, isValidTime } from './date'
-
-describe('formatDate', () => {
-  it('should format valid date correctly', () => {
-    expect(formatDate(new Date('2019-01-01'))).toBe('01.01.2019')
-  })
-
-  it('should format undefined to empty string', () => {
-    expect(formatDate(undefined)).toBe('')
-  })
-})
+import { isValidTime } from './date'
 
 describe('isValidTime', () => {
   it.each(['23:59', '01:01', '00:01', '00:00'])(

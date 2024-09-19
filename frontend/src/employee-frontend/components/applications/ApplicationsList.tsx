@@ -7,7 +7,6 @@ import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { wrapResult } from 'lib-common/api'
-import { formatDate } from 'lib-common/date'
 import {
   ApplicationSortColumn,
   ApplicationSummary,
@@ -276,7 +275,7 @@ const ApplicationsList = React.memo(function Applications({
           />
           <span>
             {application.socialSecurityNumber ||
-              formatDate(application.dateOfBirth.toSystemTzDate())}
+              application.dateOfBirth.format()}
           </span>
         </FixedSpaceRow>
       )
