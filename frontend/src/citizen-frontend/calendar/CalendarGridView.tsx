@@ -654,8 +654,8 @@ const DayCell = styled.button<{
         `
       : ''};
 
-  :focus {
-    box-shadow: 0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
+  &:focus {
+    outline: 2px solid ${(p) => p.theme.colors.main.m2};
     z-index: 1;
   }
 `
