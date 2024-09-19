@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import useRouteParams from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -17,6 +17,7 @@ import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H4, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employeeMobile'
@@ -30,7 +31,7 @@ import { unitInfoQuery } from '../units/queries'
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { TimeInfo } from './components/staff-components'
-import { staffAttendanceQuery } from './queries'
+import { openAttendanceQuery, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
 export default React.memo(function StaffMemberPage({
@@ -59,6 +60,18 @@ export default React.memo(function StaffMemberPage({
       ),
     [employeeId, unitInfoResponse, staffAttendanceResponse]
   )
+
+  const openAttendanceResult = useQueryResult(
+    employeeId && unitId
+      ? openAttendanceQuery({ userId: employeeId })
+      : constantQuery({ openGroupAttendance: null })
+  )
+  const openAttendance = openAttendanceResult.isSuccess
+    ? openAttendanceResult.value.openGroupAttendance
+    : null
+
+  const openAttendanceInAnotherUnit =
+    !!openAttendance && openAttendance.unitId !== unitId
 
   return renderResult(
     employeeResponse,
@@ -156,6 +169,16 @@ export default React.memo(function StaffMemberPage({
                 )
               )}
               <ContentArea opaque paddingHorizontal="s">
+                {openAttendanceInAnotherUnit && (
+                  <AlertBox
+                    data-qa="open-attendance-in-another-unit-warning"
+                    message={`${i18n.attendances.staff.openAttendanceInAnotherUnitWarning} ${
+                      openAttendance.date.formatExotic('EEEEEE d.M.yyyy') +
+                      ' - ' +
+                      openAttendance.unitName
+                    }${i18n.attendances.staff.openAttendanceInAnotherUnitWarningCont}`}
+                  />
+                )}
                 <FixedSpaceColumn alignItems="center">
                   {staffMember.present ? (
                     <LegacyButton
@@ -182,7 +205,9 @@ export default React.memo(function StaffMemberPage({
                       <LegacyButton
                         primary
                         data-qa="mark-arrived-btn"
-                        disabled={!isOperationalDate}
+                        disabled={
+                          !isOperationalDate || openAttendanceInAnotherUnit
+                        }
                         onClick={() =>
                           navigate(
                             routes.staffMarkArrived(

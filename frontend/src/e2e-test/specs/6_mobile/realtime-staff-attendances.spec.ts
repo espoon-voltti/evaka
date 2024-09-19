@@ -14,14 +14,19 @@ import {
   Fixture,
   fullDayTimeRange,
   uuidv4,
-  familyWithTwoGuardians
+  familyWithTwoGuardians,
+  testDaycare
 } from '../../dev-api/fixtures'
 import {
   createDefaultServiceNeedOptions,
   getStaffAttendances,
   resetServiceState
 } from '../../generated/api-clients'
-import { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
+import {
+  DevCareArea,
+  DevDaycareGroup,
+  DevEmployee
+} from '../../generated/api-types'
 import MobileNav from '../../pages/mobile/mobile-nav'
 import {
   StaffAttendanceEditPage,
@@ -39,6 +44,8 @@ let employeeName: string
 
 const pin = '4242'
 
+let careArea: DevCareArea
+
 const daycareGroup2Fixture: DevDaycareGroup = {
   ...testDaycareGroup,
   id: uuidv4(),
@@ -50,10 +57,10 @@ beforeEach(async () => {
   await Fixture.family(familyWithTwoGuardians).save()
   await createDefaultServiceNeedOptions()
 
-  const area = await Fixture.careArea().save()
+  careArea = await Fixture.careArea().save()
   await Fixture.daycare({
     ...testDaycare2,
-    areaId: area.id,
+    areaId: careArea.id,
     enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
     operationTimes: [
       fullDayTimeRange,
@@ -290,6 +297,44 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.staffMemberPage.markArrivedBtn.assertDisabled(
+      true
+    )
+  })
+
+  test('Message is shown when open attendance exist in another unit', async () => {
+    const anotherDaycare = await Fixture.daycare({
+      ...testDaycare,
+      areaId: careArea.id,
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+    }).save()
+
+    const anotherGroupId = uuidv4()
+    await Fixture.daycareGroup({
+      id: anotherGroupId,
+      daycareId: anotherDaycare.id,
+      name: 'Toiset testailijat'
+    }).save()
+
+    const mockedDateTime = HelsinkiDateTime.of(2022, 5, 5, 12, 0)
+    const yesterday = mockedDateTime.subHours(24)
+
+    await Fixture.realtimeStaffAttendance({
+      employeeId: staffFixture.id,
+      groupId: anotherGroupId,
+      arrived: yesterday,
+      departed: null
+    }).save()
+
+    await initPages(mockedDateTime)
+
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(employeeName)
+
+    await staffAttendancePage.staffMemberPage.openAttendanceWarning.assertTextEquals(
+      'Avoin kirjaus ke 4.5.2022 - Alkuräjähdyksen päiväkoti. Kirjaus on päätettävä ennen uuden lisäystä.'
+    )
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.staffMemberPage.markArrivedBtn.assertDisabled(
       true
