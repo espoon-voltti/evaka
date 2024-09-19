@@ -19,7 +19,9 @@ const queryString =
   'associationId=3cfe8152-4e84-48ab-ae13-15bcfa9b69b7&periodId=a506303b-31e5-42c9-8ce0-7574d383c2a6'
 
 const validPinoReq: PinoRequest = {
-  url: `${path}?${queryString}`
+  url: `${path}?${queryString}`,
+  params: {},
+  query: {}
 }
 
 const validPinoRes: PinoResponse = {
@@ -35,6 +37,8 @@ describe('logging', () => {
       const MOCK_REQ: UserPinoRequest = {
         url: 'http://localhost',
         path: '/',
+        params: {},
+        query: {},
         raw: {
           user: {
             id: `${USER_ID}`,
@@ -54,6 +58,8 @@ describe('logging', () => {
     const MOCK_REQ: UserPinoRequest = {
       url: 'http://localhost',
       path: '/',
+      params: {},
+      query: {},
       raw: {}
     }
 
@@ -67,6 +73,8 @@ describe('logging', () => {
     const MOCK_REQ: UserPinoRequest = {
       url: 'http://localhost',
       path: '/',
+      params: {},
+      query: {},
       raw: {
         user: {
           id: null,
@@ -93,7 +101,9 @@ describe('logging', () => {
     describe('given a request without a query string', () => {
       test('returns a serialized request with a path field a an empty queryString field', () => {
         const reqWithoutQueryString: PinoRequest = {
-          url: path
+          url: path,
+          params: {},
+          query: {}
         }
         const serializedReq = queryStringReqSerializer(reqWithoutQueryString)
         expect(serializedReq.path).toEqual(path)

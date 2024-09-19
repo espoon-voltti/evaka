@@ -16,3 +16,4 @@
 !tsconfig.json
 !tsconfig.test.json
 !eslint.config.js
+!jest.config.js
