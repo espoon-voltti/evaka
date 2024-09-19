@@ -77,6 +77,7 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceId
@@ -1543,6 +1544,18 @@ fun Database.Transaction.insert(row: DevServiceNeed): ServiceNeedId =
                 """
 INSERT INTO service_need (id, option_id, placement_id, start_date, end_date, shift_care, part_week, confirmed_by, confirmed_at)
 VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind(row.startDate)}, ${bind(row.endDate)}, ${bind(row.shiftCare)}, ${bind(row.partWeek)}, ${bind(row.confirmedBy)}, ${bind(row.confirmedAt)})
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(row: DevServiceApplication): ServiceApplicationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO service_application (id, sent_at, person_id, child_id, start_date, service_need_option_id, additional_info, decision_status, decided_by, decided_at, rejected_reason) 
+VALUES (${bind(row.id)}, ${bind(row.sentAt)}, ${bind(row.personId)}, ${bind(row.childId)}, ${bind(row.startDate)}, ${bind(row.serviceNeedOptionId)}, ${bind(row.additionalInfo)}, ${bind(row.decisionStatus)}, ${bind(row.decidedBy)}, ${bind(row.decidedAt)}, ${bind(row.rejectedReason)})
 """
             )
         }

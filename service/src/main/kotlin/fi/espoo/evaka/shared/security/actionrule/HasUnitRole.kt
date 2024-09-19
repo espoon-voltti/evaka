@@ -704,7 +704,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ServiceApplicationId> { user, _ ->
             sql(
                 """
-SELECT service_need.id, role, acl.daycare_id AS unit_id
+SELECT service_application.id, role, acl.daycare_id AS unit_id
 FROM service_application
 JOIN placement ON placement.child_id = service_application.child_id AND
     between_start_and_end(daterange(placement.start_date, placement.end_date, '[]'), service_application.start_date)

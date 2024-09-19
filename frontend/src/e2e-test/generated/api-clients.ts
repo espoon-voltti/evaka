@@ -67,6 +67,7 @@ import { DevPersonalMobileDevice } from './api-types'
 import { DevPlacement } from './api-types'
 import { DevPreschoolAssistance } from './api-types'
 import { DevPreschoolTerm } from './api-types'
+import { DevServiceApplication } from './api-types'
 import { DevServiceNeed } from './api-types'
 import { DevStaffAttendance } from './api-types'
 import { DevStaffAttendancePlan } from './api-types'
@@ -1355,6 +1356,27 @@ export async function createPreschoolTerm(
       url: uri`/preschool-term`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevPreschoolTerm>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.createServiceApplications
+*/
+export async function createServiceApplications(
+  request: {
+    body: DevServiceApplication[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/service-applications`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevServiceApplication[]>
     })
     return json
   } catch (e) {

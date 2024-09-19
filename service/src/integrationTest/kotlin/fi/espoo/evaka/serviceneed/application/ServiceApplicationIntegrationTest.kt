@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevServiceApplication
 import fi.espoo.evaka.shared.dev.DevServiceNeed
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.Conflict
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var citizenController: ServiceApplicationControllerCitizen
+    @Autowired lateinit var employeeController: ServiceApplicationController
 
     private val today: LocalDate = LocalDate.of(2024, 1, 16)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(17, 0))
@@ -192,6 +194,112 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         createServiceApplication(serviceNeedOptionId = snDaycareFullDay35.id, childId = child2.id)
     }
 
+    @Test
+    fun `employee reads and accepts an application`() {
+        db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+            tx.insert(
+                DevServiceApplication(
+                    childId = child.id,
+                    personId = adult.id,
+                    startDate = startDate,
+                    serviceNeedOptionId = snDaycareFullDay35.id,
+                    additionalInfo = "Sain uuden duunin",
+                    sentAt = now.minusDays(1),
+                )
+            )
+        }
+
+        val applications = getChildServiceApplicationsAsEmployee()
+        assertEquals(
+            listOf(
+                ServiceApplicationController.EmployeeServiceApplication(
+                    data =
+                        ServiceApplication(
+                            id = applications.first().data.id,
+                            sentAt = now.minusDays(1),
+                            personId = adult.id,
+                            personName = "Minni Hiiri",
+                            childId = child.id,
+                            childName = "Tupu Ankka",
+                            startDate = startDate,
+                            serviceNeedOption =
+                                ServiceNeedOptionBasics(
+                                    id = snDaycareFullDay35.id,
+                                    nameFi = snDaycareFullDay35.nameFi,
+                                    nameSv = snDaycareFullDay35.nameSv,
+                                    nameEn = snDaycareFullDay35.nameEn,
+                                    validPlacementType = PlacementType.DAYCARE,
+                                    partWeek = snDaycareFullDay35.partWeek,
+                                    validity =
+                                        DateRange(
+                                            snDaycareFullDay35.validFrom,
+                                            snDaycareFullDay35.validTo,
+                                        ),
+                                ),
+                            additionalInfo = "Sain uuden duunin",
+                            decision = null,
+                        ),
+                    permittedActions =
+                        setOf(Action.ServiceApplication.ACCEPT, Action.ServiceApplication.REJECT),
+                )
+            ),
+            applications,
+        )
+
+        acceptServiceApplication(applications.first().data.id)
+
+        val decision = getChildServiceApplicationsAsEmployee().first().data.decision
+        assertEquals(
+            ServiceApplicationDecision(
+                status = ServiceApplicationDecisionStatus.ACCEPTED,
+                decidedBy = supervisor.id,
+                decidedByName = "Hanna Hanhi",
+                decidedAt = now,
+                rejectedReason = null,
+            ),
+            decision,
+        )
+
+        // citizen sees the same data
+        assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
+    }
+
+    @Test
+    fun `employee rejects an application`() {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+                tx.insert(
+                    DevServiceApplication(
+                        childId = child.id,
+                        personId = adult.id,
+                        startDate = startDate,
+                        serviceNeedOptionId = snDaycareFullDay35.id,
+                        additionalInfo = "Sain uuden duunin",
+                        sentAt = now.minusDays(1),
+                    )
+                )
+            }
+
+        rejectServiceApplication(applicationId, "Onnistuu vasta ensi kuussa")
+
+        val decision = getChildServiceApplicationsAsEmployee().first().data.decision
+        assertEquals(
+            ServiceApplicationDecision(
+                status = ServiceApplicationDecisionStatus.REJECTED,
+                decidedBy = supervisor.id,
+                decidedByName = "Hanna Hanhi",
+                decidedAt = now,
+                rejectedReason = "Onnistuu vasta ensi kuussa",
+            ),
+            decision,
+        )
+
+        // citizen sees the same data
+        assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
+    }
+
     private fun createServiceApplication(
         serviceNeedOptionId: ServiceNeedOptionId,
         childId: ChildId = child.id,
@@ -224,5 +332,25 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             adult.user(CitizenAuthLevel.STRONG),
             clock,
             id,
+        )
+
+    private fun getChildServiceApplicationsAsEmployee() =
+        employeeController.getChildServiceApplications(
+            dbInstance(),
+            supervisor.user,
+            clock,
+            child.id,
+        )
+
+    private fun acceptServiceApplication(id: ServiceApplicationId) =
+        employeeController.acceptServiceApplication(dbInstance(), supervisor.user, clock, id)
+
+    private fun rejectServiceApplication(id: ServiceApplicationId, reason: String) =
+        employeeController.rejectServiceApplication(
+            dbInstance(),
+            supervisor.user,
+            clock,
+            id,
+            ServiceApplicationController.ServiceApplicationRejection(reason),
         )
 }
