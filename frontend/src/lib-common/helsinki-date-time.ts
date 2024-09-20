@@ -2,16 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { tz, TZDate } from '@date-fns/tz'
 import {
   addHours,
   addMinutes,
   addSeconds,
-  format,
   isValid,
   parseJSON,
   set
 } from 'date-fns'
+import { formatInTimeZone, toZonedTime, fromZonedTime } from 'date-fns-tz'
 
 import LocalDate from './local-date'
 import LocalTime from './local-time'
@@ -19,36 +18,42 @@ import { Ordered } from './ordered'
 import { isAutomatedTest } from './utils/helpers'
 
 const EUROPE_HELSINKI = 'Europe/Helsinki'
-const helsinkiTz = tz(EUROPE_HELSINKI)
 
 export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
   private constructor(readonly timestamp: number) {}
 
   get year(): number {
-    return helsinkiTz(this.timestamp).getFullYear()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getFullYear()
   }
   get month(): number {
-    return helsinkiTz(this.timestamp).getMonth() + 1
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMonth() + 1
   }
   get date(): number {
-    return helsinkiTz(this.timestamp).getDate()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getDate()
   }
   get hour(): number {
-    return helsinkiTz(this.timestamp).getHours()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getHours()
   }
   get minute(): number {
-    return helsinkiTz(this.timestamp).getMinutes()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMinutes()
   }
   get second(): number {
-    return helsinkiTz(this.timestamp).getSeconds()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getSeconds()
   }
   get millisecond(): number {
-    return helsinkiTz(this.timestamp).getMilliseconds()
+    return toZonedTime(this.timestamp, EUROPE_HELSINKI).getMilliseconds()
   }
-
-  withDate(date: LocalDate): HelsinkiDateTime {
+  private mapZoned(f: (timestamp: Date) => Date): HelsinkiDateTime {
     return HelsinkiDateTime.fromSystemTzDate(
-      set(helsinkiTz(this.timestamp), {
+      fromZonedTime(
+        f(toZonedTime(this.timestamp, EUROPE_HELSINKI)),
+        EUROPE_HELSINKI
+      )
+    )
+  }
+  withDate(date: LocalDate): HelsinkiDateTime {
+    return this.mapZoned((zoned) =>
+      set(zoned, {
         year: date.year,
         month: date.month - 1,
         date: date.date
@@ -56,8 +61,8 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     )
   }
   withTime(time: LocalTime): HelsinkiDateTime {
-    return HelsinkiDateTime.fromSystemTzDate(
-      set(helsinkiTz(this.timestamp), {
+    return this.mapZoned((zoned) =>
+      set(zoned, {
         hours: time.hour,
         minutes: time.minute,
         seconds: time.second,
@@ -67,10 +72,14 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
   }
 
   format(): string {
-    return format(helsinkiTz(this.timestamp), 'dd.MM.yyyy HH:mm')
+    return formatInTimeZone(this.timestamp, EUROPE_HELSINKI, 'dd.MM.yyyy HH:mm')
   }
   formatIso(): string {
-    return format(helsinkiTz(this.timestamp), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+    return formatInTimeZone(
+      this.timestamp,
+      EUROPE_HELSINKI,
+      "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
+    )
   }
   toString(): string {
     return this.formatIso()
@@ -217,14 +226,8 @@ export default class HelsinkiDateTime implements Ordered<HelsinkiDateTime> {
     if (!LocalTime.tryCreate(hour, minute, second, millisToNanos(millisecond)))
       return undefined
     return HelsinkiDateTime.tryFromDate(
-      new TZDate(
-        year,
-        month - 1,
-        date,
-        hour,
-        minute,
-        second,
-        millisecond,
+      fromZonedTime(
+        new Date(year, month - 1, date, hour, minute, second, millisecond),
         EUROPE_HELSINKI
       )
     )
