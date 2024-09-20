@@ -133,13 +133,6 @@ enum class AssistanceNeedDecisionStatus : DatabaseEnum {
     fun isDecided() = this in listOf(ACCEPTED, REJECTED, ANNULLED)
 }
 
-@Deprecated(
-    message = "use OfficialLanguage instead",
-    replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
-)
-typealias AssistanceNeedDecisionLanguage = OfficialLanguage
-
 data class AssistanceNeedDecisionEmployee(
     @PropagateNull val employeeId: EmployeeId?,
     val title: String?,

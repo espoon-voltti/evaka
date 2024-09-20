@@ -75,13 +75,6 @@ private fun getStateFromEvents(events: List<VasuDocumentEvent>): VasuDocumentSta
     }
 }
 
-@Deprecated(
-    message = "use OfficialLanguage instead",
-    replaceWith =
-        ReplaceWith("OfficialLanguage", imports = ["fi.espoo.evaka.shared.domain.OfficialLanguage"]),
-)
-typealias VasuLanguage = OfficialLanguage
-
 data class VasuDocumentSummary(
     val id: VasuDocumentId,
     val name: String,

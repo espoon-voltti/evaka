@@ -35,7 +35,7 @@ export function createKeycloakCitizenSamlStrategy(
     return {
       id: person.id,
       userType: 'CITIZEN_WEAK',
-      globalRoles: ['CITIZEN_WEAK'],
+      globalRoles: [],
       allScopedRoles: []
     }
   })

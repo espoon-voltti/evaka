@@ -41,7 +41,7 @@ async function mobileLogin(
   await login(req, {
     id: device.id,
     globalRoles: [],
-    allScopedRoles: ['MOBILE'],
+    allScopedRoles: [],
     userType: 'MOBILE'
   })
   // Unconditionally refresh long-term cookie on each login to refresh expiry
