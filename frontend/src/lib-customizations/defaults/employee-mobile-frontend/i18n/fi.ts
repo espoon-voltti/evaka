@@ -306,7 +306,10 @@ export const fi = {
         dateTooEarly: 'Tarkista',
         dateTooLate: 'Tarkista'
       },
-      add: '+ Lisää uusi kirjaus'
+      add: '+ Lisää uusi kirjaus',
+      openAttendanceInAnotherUnitWarning: 'Avoin kirjaus ',
+      openAttendanceInAnotherUnitWarningCont:
+        '. Kirjaus on päätettävä ennen uuden lisäystä.'
     },
     timeDiffTooBigNotification:
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',

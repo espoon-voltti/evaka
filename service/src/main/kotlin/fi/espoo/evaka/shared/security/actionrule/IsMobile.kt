@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.Id
@@ -221,6 +222,24 @@ WHERE EXISTS (
     LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
     WHERE md.id = ${bind(user.id)} AND (md.unit_id = g.daycare_id OR acl.daycare_id = g.daycare_id)
 )
+"""
+            )
+        }
+
+    fun isAssociatedWithEmployee() =
+        rule<EmployeeId> { user, _ ->
+            sql(
+                """
+    SELECT acl.employee_id as id
+    FROM mobile_device md
+    JOIN daycare_acl acl ON md.unit_id = acl.daycare_id
+    WHERE md.id = ${bind(user.id)}
+    UNION ALL
+    SELECT targetacl.employee_id as id
+    FROM mobile_device md
+    JOIN daycare_acl useracl ON md.employee_id = useracl.employee_id
+    JOIN daycare_acl targetacl ON useracl.daycare_id = targetacl.daycare_id
+    WHERE md.id = ${bind(user.id)}
 """
             )
         }

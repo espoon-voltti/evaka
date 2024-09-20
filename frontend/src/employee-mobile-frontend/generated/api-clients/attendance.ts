@@ -18,6 +18,7 @@ import { ExternalStaffDepartureRequest } from 'lib-common/generated/api-types/at
 import { FullDayAbsenceRequest } from 'lib-common/generated/api-types/attendance'
 import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
+import { OpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { StaffArrivalRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateRequest } from 'lib-common/generated/api-types/attendance'
 import { StaffAttendanceUpdateResponse } from 'lib-common/generated/api-types/attendance'
@@ -31,6 +32,7 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonAttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonChildAttendanceStatusResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonCurrentDayStaffAttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { deserializeJsonOpenGroupAttendanceResponse } from 'lib-common/generated/api-types/attendance'
 import { deserializeJsonStaffMember } from 'lib-common/generated/api-types/attendance'
 import { uri } from 'lib-common/uri'
 
@@ -284,6 +286,26 @@ export async function getEmployeeAttendances(
     params
   })
   return deserializeJsonStaffMember(json)
+}
+
+
+/**
+* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getOpenGroupAttendance
+*/
+export async function getOpenGroupAttendance(
+  request: {
+    userId: UUID
+  }
+): Promise<OpenGroupAttendanceResponse> {
+  const params = createUrlSearchParams(
+    ['userId', request.userId]
+  )
+  const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
+    url: uri`/employee-mobile/realtime-staff-attendances/open-attendance`.toString(),
+    method: 'GET',
+    params
+  })
+  return deserializeJsonOpenGroupAttendanceResponse(json)
 }
 
 

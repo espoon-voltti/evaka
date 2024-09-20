@@ -9,6 +9,7 @@ import { Arg0, UUID } from 'lib-common/types'
 import {
   getAttendancesByUnit,
   getEmployeeAttendances,
+  getOpenGroupAttendance,
   markArrival,
   markDeparture,
   markExternalArrival,
@@ -36,7 +37,12 @@ const queryKeys = createQueryKeys('staffAttendance', {
     employeeId: UUID,
     from: LocalDate,
     to: LocalDate
-  ) => ['unit', unitId, 'employeeId', employeeId, 'range', from, to]
+  ) => ['unit', unitId, 'employeeId', employeeId, 'range', from, to],
+
+  openGroupAttendance: (arg: Arg0<typeof getOpenGroupAttendance>) => [
+    'openGroupAttendance',
+    arg
+  ]
 })
 
 export const staffAttendanceQuery = query({
@@ -76,4 +82,9 @@ export const externalStaffDepartureMutation = mutation({
 export const staffAttendanceMutation = mutation({
   api: setAttendances,
   invalidateQueryKeys: ({ unitId }) => [queryKeys.unit(unitId)]
+})
+
+export const openAttendanceQuery = query({
+  api: getOpenGroupAttendance,
+  queryKey: queryKeys.openGroupAttendance
 })

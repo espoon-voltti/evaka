@@ -24,13 +24,11 @@ import { uri } from 'lib-common/uri'
 */
 export async function getOpenGroupAttendance(
   request: {
-    userId: UUID,
-    unitId: UUID
+    userId: UUID
   }
 ): Promise<OpenGroupAttendanceResponse> {
   const params = createUrlSearchParams(
-    ['userId', request.userId],
-    ['unitId', request.unitId]
+    ['userId', request.userId]
   )
   const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
     url: uri`/employee/staff-attendances/realtime/open-attendence`.toString(),

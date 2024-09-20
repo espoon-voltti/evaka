@@ -298,4 +298,16 @@ SELECT EXISTS (
                     }
             },
         )
+
+    fun isInSameUnitWithEmployee() =
+        rule<EmployeeId> { user, _ ->
+            sql(
+                """
+    SELECT targetacl.employee_id as id
+    FROM daycare_acl useracl
+    JOIN daycare_acl targetacl ON useracl.daycare_id = targetacl.daycare_id
+    WHERE useracl.employee_id = ${bind(user.id)}
+"""
+            )
+        }
 }

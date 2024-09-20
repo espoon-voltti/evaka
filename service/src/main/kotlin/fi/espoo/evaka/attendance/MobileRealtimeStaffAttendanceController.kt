@@ -7,6 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
+import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -613,5 +614,29 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         }
 
         return listOf(ongoingAttendance.copy(departed = departureTime))
+    }
+
+    @GetMapping("open-attendance")
+    fun getOpenGroupAttendance(
+        db: Database,
+        user: AuthenticatedUser.MobileDevice,
+        clock: EvakaClock,
+        @RequestParam userId: EmployeeId,
+    ): OpenGroupAttendanceResponse {
+        val openAttendance =
+            db.connect { dbc ->
+                    dbc.read { tx ->
+                        ac.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Employee.READ_OPEN_GROUP_ATTENDANCE,
+                            userId,
+                        )
+                        tx.getOpenGroupAttendancesForEmployee(userId)
+                    }
+                }
+                .also { Audit.StaffOpenAttendanceRead.log(targetId = AuditId(userId)) }
+        return OpenGroupAttendanceResponse(openAttendance)
     }
 }

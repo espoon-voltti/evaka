@@ -157,6 +157,7 @@ export class StaffAttendancePage {
     shiftTimeText: Element
     attendanceTimeTexts: ElementCollection
     attendanceTimes: ElementCollection
+    openAttendanceWarning: Element
   }
   externalMemberPage: {
     arrivalTime: Element
@@ -238,7 +239,10 @@ export class StaffAttendancePage {
       attendanceTimes: page.findAllByDataQa('attendance-time'),
       markArrivedBtn: page.findByDataQa('mark-arrived-btn'),
       shiftTimeText: page.findByDataQa('shift-time'),
-      attendanceTimeTexts: page.findAllByDataQa('attendance-time')
+      attendanceTimeTexts: page.findAllByDataQa('attendance-time'),
+      openAttendanceWarning: page.findByDataQa(
+        'open-attendance-in-another-unit-warning'
+      )
     }
     this.externalMemberPage = {
       arrivalTime: page.findByDataQa('arrival-time'),
