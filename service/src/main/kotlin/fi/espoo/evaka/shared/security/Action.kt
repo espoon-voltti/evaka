@@ -1432,7 +1432,11 @@ sealed interface Action {
             IsEmployee.self(),
         ),
         ACTIVATE(HasGlobalRole(ADMIN)),
-        DEACTIVATE(HasGlobalRole(ADMIN));
+        DEACTIVATE(HasGlobalRole(ADMIN)),
+        READ_OPEN_GROUP_ATTENDANCE(
+            IsMobile(false).isAssociatedWithEmployee(),
+            IsEmployee.isInSameUnitWithEmployee(),
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

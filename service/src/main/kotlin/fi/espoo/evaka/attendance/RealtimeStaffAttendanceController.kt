@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -324,29 +323,17 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam userId: EmployeeId,
-        @RequestParam unitId: DaycareId,
     ): OpenGroupAttendanceResponse {
         val openAttendance =
             db.connect { dbc ->
-                    dbc.transaction { tx ->
-                        // Check if the authenticated user has permission to read staff attendances
-                        // for this unit
+                    dbc.read { tx ->
                         accessControl.requirePermissionFor(
                             tx,
                             user,
                             clock,
-                            Action.Unit.READ_STAFF_ATTENDANCES,
-                            unitId,
+                            Action.Employee.READ_OPEN_GROUP_ATTENDANCE,
+                            userId,
                         )
-                        // Also check that the given user belongs to this unit
-                        val targetUserPartOfUnit =
-                            tx.getDaycareAclRows(unitId, false).any { it.employee.id == userId }
-                        if (!targetUserPartOfUnit) {
-                            throw BadRequest("User doesn't belong to the unit")
-                        }
-                        // If the user has the permission to read staff attendances from this unit,
-                        // then they are also permitted to check for open attendances of a colleague
-                        // from all units
                         tx.getOpenGroupAttendancesForEmployee(userId)
                     }
                 }

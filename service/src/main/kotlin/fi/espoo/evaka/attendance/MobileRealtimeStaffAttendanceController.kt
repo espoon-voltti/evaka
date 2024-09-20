@@ -8,14 +8,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.absence.getDaycareIdByGroup
 import fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
-import fi.espoo.evaka.pairing.getDevice
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.StaffAttendanceExternalId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -618,7 +616,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         return listOf(ongoingAttendance.copy(departed = departureTime))
     }
 
-    @GetMapping("open-attendence")
+    @GetMapping("open-attendance")
     fun getOpenGroupAttendance(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -627,18 +625,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     ): OpenGroupAttendanceResponse {
         val openAttendance =
             db.connect { dbc ->
-                    dbc.transaction { tx ->
-                        val mobileDevice = tx.getDevice(user.id)
-
-                        val targetUserBelongsToUnitAssiciatedWithDevice =
-                            mobileDevice.unitIds.any { unitId ->
-                                tx.getDaycareAclRows(unitId, false).any { it.employee.id == userId }
-                            }
-                        if (!targetUserBelongsToUnitAssiciatedWithDevice) {
-                            throw BadRequest(
-                                "User doesn't belong to an unit which the device is associated with"
-                            )
-                        }
+                    dbc.read { tx ->
+                        ac.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Employee.READ_OPEN_GROUP_ATTENDANCE,
+                            userId,
+                        )
                         tx.getOpenGroupAttendancesForEmployee(userId)
                     }
                 }

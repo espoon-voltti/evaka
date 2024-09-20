@@ -62,7 +62,7 @@ export default React.memo(function StaffMemberPage({
   )
 
   const openAttendanceResult = useQueryResult(
-    employeeId && unitId
+    employeeId
       ? openAttendanceQuery({ userId: employeeId })
       : constantQuery({ openGroupAttendance: null })
   )

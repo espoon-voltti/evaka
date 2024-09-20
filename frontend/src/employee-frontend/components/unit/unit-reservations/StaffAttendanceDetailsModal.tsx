@@ -82,7 +82,6 @@ interface Props<
   onSave: (body: T[]) => void
   onSuccess: () => void
   onClose: () => void
-  unitId?: string
 }
 
 export interface EditedAttendance {
@@ -120,8 +119,7 @@ function StaffAttendanceDetailsModal<
   validate,
   onSave,
   onSuccess,
-  onClose,
-  unitId
+  onClose
 }: Props<T>) {
   const { i18n } = useTranslation()
 
@@ -351,8 +349,8 @@ function StaffAttendanceDetailsModal<
   )
 
   const openAttendanceResult = useQueryResult(
-    employeeId && unitId
-      ? openAttendanceQuery({ userId: employeeId, unitId })
+    employeeId
+      ? openAttendanceQuery({ userId: employeeId })
       : constantQuery({ openGroupAttendance: null })
   )
   const openAttendance = openAttendanceResult.isSuccess

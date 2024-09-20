@@ -335,6 +335,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.staffMemberPage.openAttendanceWarning.assertTextEquals(
       'Avoin kirjaus ke 4.5.2022 - Alkuräjähdyksen päiväkoti. Kirjaus on päätettävä ennen uuden lisäystä.'
     )
+
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.staffMemberPage.markArrivedBtn.assertDisabled(
       true
