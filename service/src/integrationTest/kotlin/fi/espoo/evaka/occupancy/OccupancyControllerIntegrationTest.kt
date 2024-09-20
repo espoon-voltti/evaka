@@ -955,7 +955,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             tx.insert(staffAttendance3)
         }
 
-        val occupanciesForUnit = getUnitRealizedOccupanciesForDay(today, groupId = null)
+        val occupanciesForUnit = getUnitRealizedOccupanciesForDay(today, groupIds = null)
         assertEquals(
             RealtimeOccupancy(
                 childAttendances =
@@ -1001,7 +1001,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             occupanciesForUnit,
         )
 
-        val occupanciesForGroup1 = getUnitRealizedOccupanciesForDay(today, group1.id)
+        val occupanciesForGroup1 = getUnitRealizedOccupanciesForDay(today, listOf(group1.id))
         assertEquals(
             RealtimeOccupancy(
                 childAttendances =
@@ -1091,13 +1091,12 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             groupId,
         )
 
-    private fun getUnitRealizedOccupanciesForDay(date: LocalDate, groupId: GroupId?) =
+    private fun getUnitRealizedOccupanciesForDay(date: LocalDate, groupIds: List<GroupId>?) =
         occupancyController.getUnitRealizedOccupanciesForDay(
             dbInstance(),
             AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER)),
             mockClock,
             testDaycare.id,
-            date,
-            groupId,
+            OccupancyController.GetUnitOccupanciesForDayBody(date, groupIds),
         )
 }
