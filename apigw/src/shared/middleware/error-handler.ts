@@ -4,7 +4,7 @@
 
 import { ErrorRequestHandler } from 'express'
 
-import { debug } from '../config.js'
+import { includeAllErrorMessages } from '../config.js'
 import { InvalidRequest } from '../express.js'
 import { logError } from '../logging.js'
 
@@ -28,7 +28,8 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
     }
     if (error instanceof InvalidRequest) {
       const response: LogResponse = {
-        message: includeErrorMessage || debug ? error.message : null
+        message:
+          includeErrorMessage || includeAllErrorMessages ? error.message : null
       }
       if (!res.headersSent) {
         res.status(400).json(response)
