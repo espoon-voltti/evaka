@@ -339,6 +339,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.saveAsDraftButton.click()
     await editorPage.modalOkBtn.click()
     await applicationsPage.editApplication(applicationId)
+    await editorPage.openSection('contactInfo')
     await editorPage.guardianPhoneInput.assertValueEquals('040123456789')
   })
 })
