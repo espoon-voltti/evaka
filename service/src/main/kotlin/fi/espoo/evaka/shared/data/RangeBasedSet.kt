@@ -24,6 +24,19 @@ abstract class RangeBasedSet<
     fun ranges(): Sequence<Range> = this.ranges.asSequence()
 
     /**
+     * Returns a sequence of all non-adjacent ranges in the set, sorted in ascending order.
+     *
+     * The ranges are intersections instead of the originals, so they never extend outside the given
+     * range.
+     */
+    fun intersectRanges(range: Range): Sequence<Range> =
+        ranges
+            .asSequence()
+            .dropWhile { !it.overlaps(range) }
+            .takeWhile { it.overlaps(range) }
+            .mapNotNull { it.intersection(range) }
+
+    /**
      * Returns the largest range that covers all the points in all the ranges in the set, or null if
      * the set is empty.
      */

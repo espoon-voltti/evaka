@@ -154,6 +154,27 @@ class DateTimeMapTest {
         )
     }
 
+    @Test
+    fun `intersectRanges,intersectEntries,intersectValues take a clamp range that both filters and clamps the returned results`() {
+        // 123456789
+        // AA_ B_ C_
+        //  RRRRRR_
+        //  =_ =_
+        val map =
+            DateTimeMap.of(
+                testRange(1 to 3) to "A",
+                testRange(5 to 6) to "B",
+                testRange(8 to 9) to "C",
+            )
+        val r = testRange(2 to 8)
+        assertEquals(listOf(testRange(2 to 3), testRange(5 to 6)), map.intersectRanges(r).toList())
+        assertEquals(listOf("A", "B"), map.intersectValues(r).toList())
+        assertEquals(
+            listOf(testRange(2 to 3) to "A", testRange(5 to 6) to "B"),
+            map.intersectEntries(r).toList(),
+        )
+    }
+
     private fun testDateTime(hour: Int) = HelsinkiDateTime.of(LocalDateTime.of(2019, 1, 1, hour, 0))
 
     private fun testRange(range: Pair<Int, Int>) =

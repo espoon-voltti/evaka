@@ -491,8 +491,7 @@ private fun sumOfHours(
 ): Int {
     return dateTimeRanges
         .intersection(DateTimeSet.of(placementDateRanges.map { it.asHelsinkiDateTimeRange() }))
-        .intersection(listOf(spanningDateRange.asHelsinkiDateTimeRange()))
-        .ranges()
+        .intersectRanges(spanningDateRange.asHelsinkiDateTimeRange())
         .sumOf { it.getDuration().toMinutes() }
         .let { minutes ->
             BigDecimal(minutes).divide(BigDecimal(60), 0, RoundingMode.FLOOR).toInt()

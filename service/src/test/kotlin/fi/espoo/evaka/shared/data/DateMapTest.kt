@@ -142,6 +142,25 @@ class DateMapTest {
         )
     }
 
+    @Test
+    fun `intersectRanges,intersectEntries,intersectValues take a clamp range that both filters and clamps the returned results`() {
+        // 123456789
+        // AAA_BB_CC
+        //  RRRRRRR
+        //  == == =
+        val map = DateMap.of(testRange(1..3) to "A", testRange(5..6) to "B", testRange(8..9) to "C")
+        val r = testRange(2..8)
+        assertEquals(
+            listOf(testRange(2..3), testRange(5..6), testRange(8..8)),
+            map.intersectRanges(r).toList(),
+        )
+        assertEquals(listOf("A", "B", "C"), map.intersectValues(r).toList())
+        assertEquals(
+            listOf(testRange(2..3) to "A", testRange(5..6) to "B", testRange(8..8) to "C"),
+            map.intersectEntries(r).toList(),
+        )
+    }
+
     private fun testDate(day: Int) = LocalDate.of(2019, 1, day)
 
     private fun testRange(range: IntRange) =

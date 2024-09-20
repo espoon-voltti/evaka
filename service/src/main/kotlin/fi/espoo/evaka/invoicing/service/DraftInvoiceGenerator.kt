@@ -257,8 +257,7 @@ class DraftInvoiceGenerator(
                     .map { (dateRange, maxFee) ->
                         val daysInRange =
                             businessDays
-                                .intersection(sequenceOf(dateRange))
-                                .ranges()
+                                .intersectRanges(dateRange)
                                 .map { it.durationInDays() }
                                 .sum()
                         (BigDecimal(maxFee) * BigDecimal(daysInRange)).divide(
