@@ -19,6 +19,11 @@ class TimeSet private constructor(ranges: List<TimeRange>) :
     override fun range(start: TimeRangeEndpoint, end: TimeRangeEndpoint): TimeRange =
         TimeRange(start, end)
 
+    override fun range(point: TimeRangeEndpoint): TimeRange =
+        point.asStart().let { start ->
+            TimeRange(start, TimeRangeEndpoint.Start(start.inner.plusNanos(1)))
+        }
+
     override fun equals(other: Any?): Boolean = other is TimeSet && this.ranges == other.ranges
 
     override fun hashCode(): Int = Objects.hash(ranges)

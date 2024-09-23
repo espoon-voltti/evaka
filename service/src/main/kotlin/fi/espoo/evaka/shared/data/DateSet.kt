@@ -25,6 +25,8 @@ class DateSet private constructor(ranges: List<FiniteDateRange>) :
     override fun range(start: LocalDate, end: LocalDate): FiniteDateRange =
         FiniteDateRange(start, end)
 
+    override fun range(point: LocalDate): FiniteDateRange = FiniteDateRange(point, point)
+
     override fun equals(other: Any?): Boolean = other is DateSet && this.ranges == other.ranges
 
     override fun hashCode(): Int = Objects.hash(ranges)

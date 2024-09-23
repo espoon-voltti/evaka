@@ -20,6 +20,9 @@ class DateTimeSet private constructor(ranges: List<HelsinkiDateTimeRange>) :
     override fun range(start: HelsinkiDateTime, end: HelsinkiDateTime): HelsinkiDateTimeRange =
         HelsinkiDateTimeRange(start, end)
 
+    override fun range(point: HelsinkiDateTime): HelsinkiDateTimeRange =
+        HelsinkiDateTimeRange(point, point.plusSeconds(1))
+
     override fun equals(other: Any?): Boolean = other is DateTimeSet && this.ranges == other.ranges
 
     override fun hashCode(): Int = Objects.hash(ranges)
