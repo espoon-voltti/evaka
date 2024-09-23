@@ -1701,7 +1701,6 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 },
                 citizenReservationThresholdHours,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1766,7 +1765,6 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 },
                 citizenReservationThresholdHours,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1851,7 +1849,6 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 adult.user(CitizenAuthLevel.WEAK),
                 listOf(DailyReservationRequest.Reservations(child.id, monday, preschoolTime)),
                 citizenReservationThresholdHours,
-                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 
@@ -1914,7 +1911,6 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(child.id, monday, veryShortReservation)
                 ),
                 citizenReservationThresholdHours,
-                automaticFixedScheduleAbsencesEnabled = true,
             )
         }
 

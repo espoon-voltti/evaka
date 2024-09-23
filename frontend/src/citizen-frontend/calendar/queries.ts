@@ -6,8 +6,6 @@ import sortBy from 'lodash/sortBy'
 
 import LocalDate from 'lib-common/local-date'
 import { mutation, query } from 'lib-common/query'
-import { Arg0 } from 'lib-common/types'
-import { featureFlags } from 'lib-customizations/citizen'
 
 import {
   addCalendarEventTimeReservation,
@@ -63,12 +61,7 @@ export const dailyServiceTimeNotificationsQuery = query({
 })
 
 export const postReservationsMutation = mutation({
-  api: (arg: Pick<Arg0<typeof postReservations>, 'body'>) =>
-    postReservations({
-      ...arg,
-      automaticFixedScheduleAbsencesEnabled:
-        featureFlags.automaticFixedScheduleAbsences
-    }),
+  api: postReservations,
   invalidateQueryKeys: () => [queryKeys.allReservations()]
 })
 

@@ -168,7 +168,6 @@ fun createReservationsAndAbsences(
     requests: List<DailyReservationRequest>,
     citizenReservationThresholdHours: Long,
     plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
-    automaticFixedScheduleAbsencesEnabled: Boolean = false,
 ): CreateReservationsResult? {
     if (requests.isEmpty()) return null
 
@@ -350,37 +349,33 @@ fun createReservationsAndAbsences(
         }
 
     val fixedScheduleAbsences =
-        if (automaticFixedScheduleAbsencesEnabled) {
-            validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { req ->
-                val placement =
-                    placements[req.childId]?.find { p -> p.range.includes(req.date) }
-                        ?: return@flatMap emptyList()
-                val plannedAbsenceEnabled =
-                    plannedAbsenceEnabledRanges[req.childId]?.includes(req.date) ?: false
-                getExpectedAbsenceCategories(
+        validated.filterIsInstance<DailyReservationRequest.Reservations>().flatMap { req ->
+            val placement =
+                placements[req.childId]?.find { p -> p.range.includes(req.date) }
+                    ?: return@flatMap emptyList()
+            val plannedAbsenceEnabled =
+                plannedAbsenceEnabledRanges[req.childId]?.includes(req.date) ?: false
+            getExpectedAbsenceCategories(
+                    req.date,
+                    listOfNotNull(req.reservation, req.secondReservation),
+                    placement.type,
+                    placement.unitLanguage,
+                    placement.dailyPreschoolTime,
+                    placement.dailyPreparatoryTime,
+                    preschoolTerms,
+                )
+                ?.map {
+                    AbsenceUpsert(
+                        req.childId,
                         req.date,
-                        listOfNotNull(req.reservation, req.secondReservation),
-                        placement.type,
-                        placement.unitLanguage,
-                        placement.dailyPreschoolTime,
-                        placement.dailyPreparatoryTime,
-                        preschoolTerms,
+                        it,
+                        if (plannedAbsenceEnabled && reservableRange.includes(req.date)) {
+                            AbsenceType.PLANNED_ABSENCE
+                        } else {
+                            AbsenceType.OTHER_ABSENCE
+                        },
                     )
-                    ?.map {
-                        AbsenceUpsert(
-                            req.childId,
-                            req.date,
-                            it,
-                            if (plannedAbsenceEnabled && reservableRange.includes(req.date)) {
-                                AbsenceType.PLANNED_ABSENCE
-                            } else {
-                                AbsenceType.OTHER_ABSENCE
-                            },
-                        )
-                    } ?: emptyList()
-            }
-        } else {
-            emptyList()
+                } ?: emptyList()
         }
     val upsertedFixedScheduleAbsences =
         if (fixedScheduleAbsences.isNotEmpty()) {

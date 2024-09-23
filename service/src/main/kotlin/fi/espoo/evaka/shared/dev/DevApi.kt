@@ -1004,7 +1004,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     body,
                     featureConfig.citizenReservationThresholdHours,
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
-                    automaticFixedScheduleAbsencesEnabled = false,
                 )
             }
         }

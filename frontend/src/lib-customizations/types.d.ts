@@ -250,12 +250,6 @@ interface BaseFeatureFlags {
   forceUnpublishDocumentTemplate?: boolean
 
   /**
-   * Create absences for preschool/preparatory/5-year-old children automatically
-   * when adding reservations.
-   */
-  automaticFixedScheduleAbsences?: boolean
-
-  /**
    * Display account number on invoice details view.
    */
   invoiceDisplayAccountNumber?: boolean
