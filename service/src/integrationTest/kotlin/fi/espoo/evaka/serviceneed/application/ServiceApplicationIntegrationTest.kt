@@ -215,6 +215,23 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
         }
 
+        val undecidedApplications = getUndecidedServiceApplications()
+        assertEquals(
+            listOf(
+                UndecidedServiceApplicationSummary(
+                    id = undecidedApplications.first().id,
+                    childId = child.id,
+                    childName = "Ankka Tupu",
+                    startDate = startDate,
+                    placementEndDate = placement.endDate,
+                    sentAt = now.minusDays(1),
+                    currentNeed = snDaycareFullDay25to35.nameFi,
+                    newNeed = snDaycareFullDay35.nameFi,
+                )
+            ),
+            undecidedApplications,
+        )
+
         val applications = getChildServiceApplicationsAsEmployee()
         assertEquals(
             listOf(
@@ -268,6 +285,8 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         // citizen sees the same data
         assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
+
+        assertEquals(emptyList(), getUndecidedServiceApplications())
     }
 
     @Test
@@ -303,6 +322,8 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         // citizen sees the same data
         assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
+
+        assertEquals(emptyList(), getUndecidedServiceApplications())
     }
 
     private fun createServiceApplication(
@@ -345,6 +366,14 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             supervisor.user,
             clock,
             child.id,
+        )
+
+    private fun getUndecidedServiceApplications() =
+        employeeController.getUndecidedServiceApplications(
+            dbInstance(),
+            supervisor.user,
+            clock,
+            daycare.id,
         )
 
     private fun acceptServiceApplication(id: ServiceApplicationId) =
