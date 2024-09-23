@@ -41,6 +41,7 @@ import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -693,6 +694,20 @@ WHERE employee_id = ${bind(user.id)} AND placement.start_date > ${bind(now)}
 SELECT service_need.id, role, acl.daycare_id AS unit_id
 FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
+JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
+WHERE employee_id = ${bind(user.id)}
+            """
+            )
+        }
+
+    fun inPlacementUnitOfChildOfServiceApplication() =
+        rule<ServiceApplicationId> { user, _ ->
+            sql(
+                """
+SELECT service_application.id, role, acl.daycare_id AS unit_id
+FROM service_application
+JOIN placement ON placement.child_id = service_application.child_id AND
+    between_start_and_end(daterange(placement.start_date, placement.end_date, '[]'), service_application.start_date)
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 WHERE employee_id = ${bind(user.id)}
             """

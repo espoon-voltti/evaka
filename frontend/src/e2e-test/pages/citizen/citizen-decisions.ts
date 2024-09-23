@@ -48,6 +48,9 @@ export default class CitizenDecisionsPage {
     const financeDecision = this.page.findByDataQa(
       `finance-decision-${decisionId}`
     )
+    if ((await financeDecision.getAttribute('data-status')) === 'closed') {
+      await financeDecision.click()
+    }
     await financeDecision
       .findByDataQa(`finance-decision-title`)
       .assertTextEquals(expectedTitle)

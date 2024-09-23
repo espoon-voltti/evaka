@@ -240,6 +240,7 @@ export type Child =
   | 'READ_PLACEMENT'
   | 'READ_PRESCHOOL_ASSISTANCES'
   | 'READ_SENSITIVE_INFO'
+  | 'READ_SERVICE_APPLICATIONS'
   | 'READ_VASU_DOCUMENT'
   | 'UPDATE_ADDITIONAL_INFO'
   | 'UPDATE_FAMILY_CONTACT_DETAILS'
@@ -402,6 +403,10 @@ export type PreschoolAssistance =
   | 'DELETE'
   | 'READ'
   | 'UPDATE'
+
+export type ServiceApplication =
+  | 'ACCEPT'
+  | 'REJECT'
 
 export type ServiceNeed =
   | 'DELETE'

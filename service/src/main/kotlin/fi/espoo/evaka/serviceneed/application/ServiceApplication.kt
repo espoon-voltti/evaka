@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.db.DatabaseEnum
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
@@ -30,6 +31,7 @@ data class ServiceNeedOptionBasics(
     val nameEn: String,
     val validPlacementType: PlacementType,
     val partWeek: Boolean?,
+    val validity: DateRange,
 )
 
 data class ServiceApplicationDecision(

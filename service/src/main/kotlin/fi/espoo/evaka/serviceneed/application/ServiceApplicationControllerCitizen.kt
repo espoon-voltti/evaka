@@ -119,6 +119,7 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                                 nameEn = it.nameEn,
                                 validPlacementType = it.validPlacementType,
                                 partWeek = it.partWeek,
+                                validity = DateRange(it.validFrom, it.validTo),
                             )
                         }
                 }

@@ -8,9 +8,11 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 
 fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplication> =
@@ -31,6 +33,7 @@ fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplicat
             sno.name_en AS service_need_option_name_en,
             sno.valid_placement_type AS service_need_option_valid_placement_type,
             sno.part_week AS service_need_option_part_week,
+            daterange(sno.valid_from, sno.valid_to, '[]') AS service_need_option_validity,
             sa.additional_info,
             sa.decision_status,
             sa.decided_by AS decision_decided_by,
@@ -84,3 +87,36 @@ fun Database.Transaction.deleteUndecidedServiceApplication(id: ServiceApplicatio
 """
     )
 }
+
+fun Database.Transaction.setServiceApplicationAccepted(
+    id: ServiceApplicationId,
+    now: HelsinkiDateTime,
+    user: AuthenticatedUser.Employee,
+) =
+    createUpdate {
+            sql(
+                """
+    UPDATE service_application
+    SET decision_status = 'ACCEPTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}
+    WHERE id = ${bind(id)} AND decision_status IS NULL
+"""
+            )
+        }
+        .updateExactlyOne()
+
+fun Database.Transaction.setServiceApplicationRejected(
+    id: ServiceApplicationId,
+    now: HelsinkiDateTime,
+    user: AuthenticatedUser.Employee,
+    rejectedReason: String,
+) =
+    createUpdate {
+            sql(
+                """
+    UPDATE service_application
+    SET decision_status = 'REJECTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}, rejected_reason = ${bind(rejectedReason)}
+    WHERE id = ${bind(id)} AND decision_status IS NULL
+"""
+            )
+        }
+        .updateExactlyOne()

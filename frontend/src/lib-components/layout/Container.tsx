@@ -161,7 +161,7 @@ export const CollapsibleContentArea = React.memo(
             />
           </IconContainer>
         </TitleContainer>
-        <Collapsible open={open}>{children}</Collapsible>
+        <Collapsible open={open}>{open && children}</Collapsible>
       </ContentArea>
     )
   }

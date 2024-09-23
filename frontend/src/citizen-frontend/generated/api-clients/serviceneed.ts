@@ -16,6 +16,7 @@ import { UUID } from 'lib-common/types'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCitizenServiceApplication } from 'lib-common/generated/api-types/serviceneed'
+import { deserializeJsonServiceNeedOptionBasics } from 'lib-common/generated/api-types/serviceneed'
 import { deserializeJsonServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import { uri } from 'lib-common/uri'
 
@@ -111,5 +112,5 @@ export async function getChildServiceNeedOptions(
     method: 'GET',
     params
   })
-  return json
+  return json.map(e => deserializeJsonServiceNeedOptionBasics(e))
 }

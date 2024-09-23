@@ -54,6 +54,7 @@ import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { PreschoolAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PushNotificationCategory } from 'lib-common/generated/api-types/webpush'
+import { ServiceApplicationDecisionStatus } from 'lib-common/generated/api-types/serviceneed'
 import { ServiceOptions } from 'lib-common/generated/api-types/assistanceneed'
 import { ShiftCareType } from 'lib-common/generated/api-types/serviceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
@@ -798,6 +799,23 @@ export interface DevPreschoolTerm {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevServiceApplication
+*/
+export interface DevServiceApplication {
+  additionalInfo: string
+  childId: UUID
+  decidedAt: HelsinkiDateTime | null
+  decidedBy: UUID | null
+  decisionStatus: ServiceApplicationDecisionStatus | null
+  id: UUID
+  personId: UUID
+  rejectedReason: string | null
+  sentAt: HelsinkiDateTime
+  serviceNeedOptionId: UUID
+  startDate: LocalDate
+}
+
+/**
 * Generated from fi.espoo.evaka.shared.dev.DevServiceNeed
 */
 export interface DevServiceNeed {
@@ -1433,6 +1451,16 @@ export function deserializeJsonDevPreschoolTerm(json: JsonOf<DevPreschoolTerm>):
     finnishPreschool: FiniteDateRange.parseJson(json.finnishPreschool),
     swedishPreschool: FiniteDateRange.parseJson(json.swedishPreschool),
     termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonDevServiceApplication(json: JsonOf<DevServiceApplication>): DevServiceApplication {
+  return {
+    ...json,
+    decidedAt: (json.decidedAt != null) ? HelsinkiDateTime.parseIso(json.decidedAt) : null,
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
+    startDate: LocalDate.parseIso(json.startDate)
   }
 }
 

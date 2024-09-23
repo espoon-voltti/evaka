@@ -123,6 +123,7 @@ import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
 import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.application.ServiceApplicationDecisionStatus
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.AbsenceId
@@ -172,6 +173,7 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.PreschoolAssistanceId
 import fi.espoo.evaka.shared.PreschoolTermId
+import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.StaffAttendanceRealtimeId
@@ -1276,6 +1278,16 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc -> dbc.transaction { tx -> serviceNeeds.forEach { tx.insert(it) } } }
     }
 
+    @PostMapping("/service-applications")
+    fun createServiceApplications(
+        db: Database,
+        @RequestBody serviceApplications: List<DevServiceApplication>,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> serviceApplications.forEach { tx.insert(it) } }
+        }
+    }
+
     @PostMapping("/service-need-option")
     fun createServiceNeedOption(
         db: Database,
@@ -2245,6 +2257,20 @@ data class DevServiceNeed(
     val partWeek: Boolean = false,
     val confirmedBy: EvakaUserId,
     val confirmedAt: HelsinkiDateTime? = null,
+)
+
+data class DevServiceApplication(
+    val id: ServiceApplicationId = ServiceApplicationId(UUID.randomUUID()),
+    val sentAt: HelsinkiDateTime,
+    val personId: PersonId,
+    val childId: ChildId,
+    val startDate: LocalDate,
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    val additionalInfo: String = "infoa",
+    val decisionStatus: ServiceApplicationDecisionStatus? = null,
+    val decidedBy: EmployeeId? = null,
+    val decidedAt: HelsinkiDateTime? = null,
+    val rejectedReason: String? = null,
 )
 
 data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
