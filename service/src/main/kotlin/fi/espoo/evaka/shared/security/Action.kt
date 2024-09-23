@@ -1204,7 +1204,8 @@ sealed interface Action {
         READ_SERVICE_APPLICATIONS(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR)
-                .inPlacementUnitOfChildWithPilotFeature(PilotFeature.SERVICE_APPLICATIONS),
+                .withUnitFeatures(PilotFeature.SERVICE_APPLICATIONS)
+                .inPlacementUnitOfChild(),
         ),
         READ_FAMILY_CONTACTS(
             HasGlobalRole(ADMIN),
@@ -2032,6 +2033,12 @@ sealed interface Action {
         READ_APPLICATIONS_AND_PLACEMENT_PLANS(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+        ),
+        READ_SERVICE_APPLICATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitFeatures(PilotFeature.SERVICE_APPLICATIONS)
+                .inUnit(),
         ),
         READ_GROUPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),

@@ -47,6 +47,7 @@ import {
   postChildDatePresence,
   postReservations
 } from '../../generated/api-clients/reservations'
+import { getUndecidedServiceApplications } from '../../generated/api-clients/serviceneed'
 import { createQueryKeys } from '../../query'
 
 export const queryKeys = createQueryKeys('unit', {
@@ -71,6 +72,10 @@ export const queryKeys = createQueryKeys('unit', {
     groupId: UUID | null
   ) => ['unitPlannedOccupanciesForDay', unitId, date, groupId],
   unitApplications: (unitId: UUID) => ['unitApplications', unitId],
+  unitServiceApplications: (unitId: UUID) => [
+    'unitServiceApplications',
+    unitId
+  ],
   unitGroups: (unitId: UUID) => ['unitGroups', unitId],
   unitSpeculatedOccupancyRates: (
     params: Arg0<typeof getOccupancyPeriodsSpeculated>
@@ -138,6 +143,11 @@ export const unitPlannedOccupanciesForDayQuery = query({
 export const unitApplicationsQuery = query({
   api: getUnitApplications,
   queryKey: ({ unitId }) => queryKeys.unitApplications(unitId)
+})
+
+export const unitServiceApplicationsQuery = query({
+  api: getUndecidedServiceApplications,
+  queryKey: ({ unitId }) => queryKeys.unitServiceApplications(unitId)
 })
 
 export const createGroupPlacementMutation = mutation({

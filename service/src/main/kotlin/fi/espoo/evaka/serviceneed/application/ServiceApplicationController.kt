@@ -9,6 +9,7 @@ import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -70,6 +71,28 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                 }
             }
             .also { Audit.ChildServiceApplicationsRead.log(targetId = AuditId(childId)) }
+    }
+
+    @GetMapping("/undecided")
+    fun getUndecidedServiceApplications(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam unitId: DaycareId,
+    ): List<UndecidedServiceApplicationSummary> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_SERVICE_APPLICATIONS,
+                        unitId,
+                    )
+                    tx.getUndecidedServiceApplicationsByUnit(unitId)
+                }
+            }
+            .also { Audit.UnitServiceApplicationsRead.log(targetId = AuditId(unitId)) }
     }
 
     @PutMapping("/{id}/accept")

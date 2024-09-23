@@ -563,28 +563,6 @@ FROM (${subquery(aclQuery)}) acl
             )
         }
 
-    fun inPlacementUnitOfChildWithPilotFeature(
-        pilotFeature: PilotFeature,
-        cfg: ChildAclConfig = ChildAclConfig(),
-    ) =
-        rule<ChildId> { user, now ->
-            union(
-                all = true,
-                cfg.aclQueries(user, now).map { aclQuery ->
-                    QuerySql {
-                        sql(
-                            """
-SELECT acl.child_id AS id, acl.role, acl.unit_id
-FROM (${subquery(aclQuery)}) acl
-JOIN daycare ON acl.unit_id = daycare.id
-WHERE ${bind(pilotFeature)} = ANY(daycare.enabled_pilot_features)
-"""
-                        )
-                    }
-                },
-            )
-        }
-
     fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
             sql(
