@@ -71,7 +71,8 @@ export default React.memo(function NonSsnChildren() {
             <ReportDownload
               data={rows.map((row) => ({
                 ...row,
-                dateOfBirth: row.dateOfBirth.format()
+                dateOfBirth: row.dateOfBirth.format(),
+                lastSentToVarda: row.lastSentToVarda?.format() ?? '-'
               }))}
               headers={[
                 {
@@ -88,11 +89,11 @@ export default React.memo(function NonSsnChildren() {
                 },
                 {
                   label: i18n.reports.nonSsnChildren.personOid,
-                  key: 'existingPersonOid'
+                  key: 'ophPersonOid'
                 },
                 {
-                  label: i18n.reports.nonSsnChildren.vardaOid,
-                  key: 'vardaOid'
+                  label: i18n.reports.nonSsnChildren.lastSentToVarda,
+                  key: 'lastSentToVarda'
                 }
               ]}
               filename={`Hetuttomat lapset ${LocalDate.todayInHelsinkiTz().formatIso()}.csv`}
@@ -138,7 +139,7 @@ export default React.memo(function NonSsnChildren() {
                         : undefined
                     }
                     onClick={() =>
-                      sortBy(['existingPersonOid', 'lastName', 'firstName'])
+                      sortBy(['ophPersonOid', 'lastName', 'firstName'])
                     }
                   >
                     {i18n.reports.nonSsnChildren.personOid}
@@ -154,10 +155,10 @@ export default React.memo(function NonSsnChildren() {
                         : undefined
                     }
                     onClick={() =>
-                      sortBy(['vardaOid', 'lastName', 'firstName'])
+                      sortBy(['lastSentToVarda', 'lastName', 'firstName'])
                     }
                   >
-                    {i18n.reports.nonSsnChildren.vardaOid}
+                    {i18n.reports.nonSsnChildren.lastSentToVarda}
                   </SortableTh>
                 </Tr>
               </Thead>
@@ -170,8 +171,10 @@ export default React.memo(function NonSsnChildren() {
                       </Link>
                     </Td>
                     <Td data-qa="date-of-birth">{row.dateOfBirth.format()}</Td>
-                    <Td data-qa="person-oid">{row.existingPersonOid}</Td>
-                    <Td data-qa="varda-oid">{row.vardaOid}</Td>
+                    <Td data-qa="oph-person-oid">{row.ophPersonOid}</Td>
+                    <Td data-qa="last-sent-to-varda">
+                      {row.lastSentToVarda?.format() ?? '-'}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

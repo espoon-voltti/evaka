@@ -125,14 +125,14 @@ const assertReport = async (report: NonSsnChildrenReport) => {
     {
       childName: `${child.lastName} ${child.firstName}`,
       dateOfBirth: child.dateOfBirth.format(),
-      personOid: child.ophPersonOid ?? '',
-      vardaOid: ''
+      ophPersonOid: child.ophPersonOid ?? '',
+      lastSentToVarda: '-'
     },
     {
       childName: `${child2.lastName} ${child2.firstName}`,
       dateOfBirth: child2.dateOfBirth.format(),
-      personOid: child2.ophPersonOid ?? '',
-      vardaOid: ''
+      ophPersonOid: child2.ophPersonOid ?? '',
+      lastSentToVarda: '-'
     }
   ]
 

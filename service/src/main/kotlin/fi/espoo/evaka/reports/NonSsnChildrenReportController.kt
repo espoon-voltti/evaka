@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -48,8 +49,8 @@ data class NonSsnChildrenReportRow(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    val existingPersonOid: String?,
-    val vardaOid: String?,
+    val ophPersonOid: String?,
+    val lastSentToVarda: HelsinkiDateTime?,
 )
 
 private fun Database.Read.getNonSsnChildren(
@@ -58,19 +59,20 @@ private fun Database.Read.getNonSsnChildren(
     createQuery {
             sql(
                 """
-SELECT child.first_name,
-       child.last_name,
-       child.id             AS child_id,
-       child.date_of_birth,
-       child.oph_person_oid AS existing_person_oid,
-       vac.varda_person_oid AS varda_oid
+SELECT
+    p.first_name,
+    p.last_name,
+    p.id AS child_id,
+    p.date_of_birth,
+    p.oph_person_oid,
+    v.last_success_at AS last_sent_to_varda
 FROM placement pl
-         JOIN person child ON child.id = pl.child_id
-         LEFT JOIN varda_organizer_child vac ON child.id = vac.evaka_person_id
-         WHERE child.social_security_number IS NULL
-         AND pl.end_date >= ${bind(examinationDate)}
-        """
-                    .trimIndent()
+JOIN person p ON p.id = pl.child_id
+LEFT JOIN varda_state v ON v.child_id = pl.child_id
+WHERE
+    p.social_security_number IS NULL AND
+    pl.end_date >= ${bind(examinationDate)}
+"""
             )
         }
         .toList<NonSsnChildrenReportRow>()
