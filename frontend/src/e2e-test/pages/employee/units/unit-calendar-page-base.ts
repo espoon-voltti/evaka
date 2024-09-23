@@ -22,6 +22,8 @@ import { UnitCalendarEventsSection } from './unit'
 
 /** Common elements and actions for both month and week calendar pages */
 export class UnitCalendarPageBase {
+  filterStartdate: DatePicker
+  graphModeSelect: Select
   occupancies: UnitOccupanciesSection
   monthModeButton: Element
   weekModeButton: Element
@@ -31,6 +33,10 @@ export class UnitCalendarPageBase {
   calendarEventsSection: UnitCalendarEventsSection
 
   constructor(protected readonly page: Page) {
+    this.filterStartdate = new DatePicker(
+      page.findByDataQa('unit-filter-start-date')
+    )
+    this.graphModeSelect = new Select(page.findByDataQa('graph-mode-select'))
     this.occupancies = new UnitOccupanciesSection(
       page.findByDataQa('occupancies')
     )
@@ -52,9 +58,7 @@ export class UnitCalendarPageBase {
   }
 
   async setFilterStartDate(date: LocalDate) {
-    await new DatePicker(this.page.findByDataQa('unit-filter-start-date')).fill(
-      date.format()
-    )
+    await this.filterStartdate.fill(date.format())
     await this.waitUntilLoaded()
   }
 
@@ -62,6 +66,10 @@ export class UnitCalendarPageBase {
     await this.page
       .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
       .click()
+  }
+
+  async selectGraphMode(mode: 'PLANNED' | 'REALIZED') {
+    await this.graphModeSelect.selectOption(mode)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
@@ -124,8 +132,14 @@ export class UnitCalendarPageBase {
 }
 
 export class UnitOccupanciesSection extends Element {
-  #graph = this.find('canvas')
-  #noDataPlaceholder = this.findByDataQa('no-data-placeholder')
+  #graph: Element
+  #noDataPlaceholder: Element
+
+  constructor(value: Element) {
+    super(value)
+    this.#graph = this.find('canvas')
+    this.#noDataPlaceholder = this.findByDataQa('no-data-placeholder')
+  }
 
   #elem = (
     which: 'minimum' | 'maximum' | 'no-valid-values',

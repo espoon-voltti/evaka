@@ -111,6 +111,7 @@ export default React.memo(function OccupancyContainer({
                 if (newMode !== null) setMode(newMode)
               }}
               getItemLabel={(item) => i18n.unit.occupancy.realtime.modes[item]}
+              data-qa="graph-mode-select"
             />
           </>
         ) : (
