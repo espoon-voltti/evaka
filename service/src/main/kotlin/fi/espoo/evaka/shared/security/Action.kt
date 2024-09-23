@@ -2040,6 +2040,12 @@ sealed interface Action {
             HasGlobalRole(ADMIN, SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR).inUnit(),
         ),
+        READ_SERVICE_APPLICATIONS(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .withUnitFeatures(PilotFeature.SERVICE_APPLICATIONS)
+                .inUnit(),
+        ),
         READ_GROUPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(

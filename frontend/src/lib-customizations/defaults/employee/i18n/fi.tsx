@@ -2310,6 +2310,14 @@ export const fi = {
       status: 'Tila',
       extendedCare: 'Vuorohoito'
     },
+    serviceApplications: {
+      title: 'Käsittelyä odottavat palveluntarpeen muutoshakemukset',
+      child: 'Lapsi',
+      range: 'Ajalle',
+      newNeed: 'Uusi tarve',
+      currentNeed: 'Nykyinen tarve',
+      sentDate: 'Lähetetty'
+    },
     placements: {
       title: 'Ryhmää odottavat lapset',
       name: 'Nimi',

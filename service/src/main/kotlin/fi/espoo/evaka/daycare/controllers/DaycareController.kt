@@ -48,6 +48,7 @@ import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitApplicationNotifications
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
+import fi.espoo.evaka.serviceneed.application.getUndecidedServiceApplicationsByUnit
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
@@ -631,19 +632,34 @@ class DaycareController(
     ): UnitNotifications {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
-                    UnitNotifications(
-                        applications =
-                            if (
-                                accessControl.hasPermissionFor(
-                                    tx,
-                                    user,
-                                    clock,
-                                    Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
-                                    daycareId,
-                                )
+                    val daycareApplications =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
+                                daycareId,
                             )
-                                tx.getUnitApplicationNotifications(daycareId)
-                            else 0,
+                        )
+                            tx.getUnitApplicationNotifications(daycareId)
+                        else 0
+
+                    val serviceApplications =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_SERVICE_APPLICATIONS,
+                                daycareId,
+                            )
+                        )
+                            tx.getUndecidedServiceApplicationsByUnit(daycareId).size
+                        else 0
+
+                    UnitNotifications(
+                        applications = daycareApplications + serviceApplications,
                         groups =
                             if (
                                 accessControl.hasPermissionFor(

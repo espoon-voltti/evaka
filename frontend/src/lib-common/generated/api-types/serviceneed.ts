@@ -214,6 +214,20 @@ export const shiftCareType = [
 
 export type ShiftCareType = typeof shiftCareType[number]
 
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.UndecidedServiceApplicationSummary
+*/
+export interface UndecidedServiceApplicationSummary {
+  childId: UUID
+  childName: string
+  currentNeed: string | null
+  id: UUID
+  newNeed: string | null
+  placementEndDate: LocalDate
+  sentAt: HelsinkiDateTime
+  startDate: LocalDate
+}
+
 
 export function deserializeJsonCitizenServiceApplication(json: JsonOf<CitizenServiceApplication>): CitizenServiceApplication {
   return {
@@ -336,6 +350,16 @@ export function deserializeJsonServiceNeedUpdateRequest(json: JsonOf<ServiceNeed
   return {
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonUndecidedServiceApplicationSummary(json: JsonOf<UndecidedServiceApplicationSummary>): UndecidedServiceApplicationSummary {
+  return {
+    ...json,
+    placementEndDate: LocalDate.parseIso(json.placementEndDate),
+    sentAt: HelsinkiDateTime.parseIso(json.sentAt),
     startDate: LocalDate.parseIso(json.startDate)
   }
 }
