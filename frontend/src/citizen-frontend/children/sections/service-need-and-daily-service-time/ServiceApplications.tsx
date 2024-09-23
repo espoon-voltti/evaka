@@ -7,14 +7,11 @@ import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Lang, useLang, useTranslation } from 'citizen-frontend/localization'
-import { combine, Failure, Result, Success } from 'lib-common/api'
-import { Action } from 'lib-common/generated/action'
 import {
   CitizenServiceApplication,
   ServiceApplication,
   ServiceNeedOptionBasics
 } from 'lib-common/generated/api-types/serviceneed'
-import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -43,23 +40,22 @@ import { faTrash, faFile } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
-import { renderResult } from '../../../async-rendering'
 import { AuthContext } from '../../../auth/state'
 import {
   CalendarModalBackground,
   CalendarModalCloseButton,
   CalendarModalSection
 } from '../../../calendar/CalendarModal'
-import {
-  childrenQuery,
-  childServiceApplicationsQuery,
-  deleteServiceApplicationsMutation
-} from '../../queries'
+import { deleteServiceApplicationsMutation } from '../../queries'
 
 export default React.memo(function ServiceApplications({
-  childId
+  childId,
+  applications,
+  canCreate
 }: {
   childId: UUID
+  applications: CitizenServiceApplication[]
+  canCreate: boolean
 }) {
   const i18n = useTranslation()
   const navigate = useNavigate()
@@ -68,74 +64,62 @@ export default React.memo(function ServiceApplications({
   const [detailsView, setDetailsView] = useState<ServiceApplication | null>(
     null
   )
-
-  const serviceApplications = useQueryResult(
-    childServiceApplicationsQuery({ childId })
+  const hasOpenApplication = useMemo(
+    () => applications.some((a) => a.data.decision === null),
+    [applications]
   )
-  const permittedActions: Result<Action.Citizen.Child[]> = useQueryResult(
-    childrenQuery()
-  )
-    .map((children) => children.find((child) => child.id === childId))
-    .chain((child) =>
-      child
-        ? Success.of(child.permittedActions)
-        : Failure.of({ message: 'Child not found' })
-    )
 
-  return renderResult(
-    combine(serviceApplications, permittedActions),
-    ([applications, permittedActions]) => {
-      const hasOpenApplication = applications.some(
-        (a) => a.data.decision === null
-      )
-      return (
-        <FixedSpaceColumn>
-          {hasOpenApplication && (
-            <>
-              <InfoBox
-                message={i18n.children.serviceApplication.openApplicationInfo}
-                noMargin
-              />
-              <Gap size="s" />
-            </>
-          )}
-          {detailsView && (
-            <ServiceApplicationsDetails
-              application={detailsView}
-              onClose={() => setDetailsView(null)}
+  return (
+    <FixedSpaceColumn>
+      {hasOpenApplication && (
+        <>
+          <InfoBox
+            message={i18n.children.serviceApplication.openApplicationInfo}
+            noMargin
+          />
+          <Gap size="s" />
+        </>
+      )}
+      {detailsView && (
+        <ServiceApplicationsDetails
+          application={detailsView}
+          onClose={() => setDetailsView(null)}
+        />
+      )}
+      {applications.length > 0 ? (
+        <div>
+          <TabletAndDesktop>
+            <ServiceApplicationsTable
+              applications={applications}
+              onOpenDetails={setDetailsView}
             />
-          )}
-          {applications.length > 0 ? (
-            <div>
-              <TabletAndDesktop>
-                <ServiceApplicationsTable
-                  applications={applications}
-                  onOpenDetails={setDetailsView}
-                />
-              </TabletAndDesktop>
-              <MobileOnly>
-                <ServiceApplicationsList
-                  applications={applications}
-                  onOpenDetails={setDetailsView}
-                />
-              </MobileOnly>
-            </div>
-          ) : (
-            <div>{i18n.children.serviceApplication.empty}</div>
-          )}
-          {!hasOpenApplication &&
-            permittedActions.includes('CREATE_SERVICE_APPLICATION') && (
-              <AddButton
-                icon={weakAuth ? faLockAlt : undefined}
-                text={i18n.children.serviceApplication.createButton}
-                onClick={() =>
-                  navigate(`/children/${childId}/service-application`)
-                }
-              />
-            )}
-        </FixedSpaceColumn>
-      )
-    }
+          </TabletAndDesktop>
+          <MobileOnly>
+            <ServiceApplicationsList
+              applications={applications}
+              onOpenDetails={setDetailsView}
+            />
+          </MobileOnly>
+        </div>
+      ) : (
+        <div>{i18n.children.serviceApplication.empty}</div>
+      )}
+      {!hasOpenApplication &&
+        (canCreate ? (
+          <AddButton
+            icon={weakAuth ? faLockAlt : undefined}
+            text={i18n.children.serviceApplication.createButton}
+            onClick={() => navigate(`/children/${childId}/service-application`)}
+          />
+        ) : (
+          <InfoBox
+            message={
+              i18n.children.serviceApplication.noSuitablePlacementMessage
+            }
+            noMargin
+          />
+        ))}
+    </FixedSpaceColumn>
   )
 })
 

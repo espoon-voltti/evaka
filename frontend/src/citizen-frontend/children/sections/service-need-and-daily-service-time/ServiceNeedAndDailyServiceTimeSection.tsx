@@ -6,7 +6,9 @@ import React, { useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { useTranslation } from 'citizen-frontend/localization'
-import { Success, wrapResult } from 'lib-common/api'
+import { combine, Failure, Result, Success, wrapResult } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -20,10 +22,12 @@ import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
+import { renderResult } from '../../../async-rendering'
 import {
   getChildDailyServiceTimes,
   getChildServiceNeeds
 } from '../../../generated/api-clients/children'
+import { childrenQuery, childServiceApplicationsQuery } from '../../queries'
 
 import AttendanceSummaryTable from './AttendanceSummaryTable'
 import DailyServiceTimeTable from './DailyServiceTimeTable'
@@ -63,6 +67,20 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
       )
     )
     .getOrElse(false)
+
+  const serviceApplications = useQueryResult(
+    childServiceApplicationsQuery({ childId })
+  )
+
+  const permittedActions: Result<Action.Citizen.Child[]> = useQueryResult(
+    childrenQuery()
+  )
+    .map((children) => children.find((child) => child.id === childId))
+    .chain((child) =>
+      child
+        ? Success.of(child.permittedActions)
+        : Failure.of({ message: 'Child not found' })
+    )
 
   return (
     <ResponsiveWholePageCollapsible
@@ -113,18 +131,35 @@ export default React.memo(function ServiceNeedAndDailyServiceTimeSection({
           })}
         </>
       )}
-      {featureFlags.serviceApplications && (
-        <>
-          <TabletAndDesktop>
-            <Gap size="m" />
-          </TabletAndDesktop>
-          <MobileOnly>
-            <HorizontalLine slim />
-          </MobileOnly>
-          <H3>{t.children.serviceApplication.title}</H3>
-          <ServiceApplications childId={childId} />
-        </>
-      )}
+      {featureFlags.serviceApplications &&
+        renderResult(
+          combine(serviceApplications, permittedActions),
+          ([serviceApplications, permittedActions]) => {
+            const canCreate = permittedActions.includes(
+              'CREATE_SERVICE_APPLICATION'
+            )
+            const hasApplications = serviceApplications.length > 0
+
+            if (!hasApplications && !canCreate) return null
+
+            return (
+              <>
+                <TabletAndDesktop>
+                  <Gap size="m" />
+                </TabletAndDesktop>
+                <MobileOnly>
+                  <HorizontalLine slim />
+                </MobileOnly>
+                <H3>{t.children.serviceApplication.title}</H3>
+                <ServiceApplications
+                  childId={childId}
+                  applications={serviceApplications}
+                  canCreate={canCreate}
+                />
+              </>
+            )
+          }
+        )}
     </ResponsiveWholePageCollapsible>
   )
 })
