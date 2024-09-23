@@ -244,6 +244,7 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun initTestData(monday: LocalDate): PreschoolAbsenceReportTestData {
+        val previousThursday = monday.minusDays(4)
         val previousFriday = monday.minusDays(3)
         val previousSunday = monday.minusDays(1)
         val tuesday = monday.plusDays(1)
@@ -252,12 +253,19 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
         val friday = monday.plusDays(4)
         val saturday = monday.plusDays(5)
         val nextTuesday = tuesday.plusWeeks(1)
+        val nextWednesday = wednesday.plusWeeks(1)
 
         return db.transaction { tx ->
             tx.insert(admin)
 
             val testTerm = FiniteDateRange(monday.minusMonths(6), monday.plusMonths(6))
-            tx.insertPreschoolTerm(testTerm, testTerm, testTerm, testTerm, DateSet.empty())
+            tx.insertPreschoolTerm(
+                testTerm,
+                testTerm,
+                testTerm,
+                testTerm,
+                DateSet.ofDates(previousThursday, nextWednesday),
+            )
 
             tx.insert(DevHoliday(date = previousFriday))
             tx.insert(DevHoliday(date = nextTuesday))
@@ -568,6 +576,34 @@ internal class PreschoolAbsenceReportTest : FullApplicationTest(resetDbBeforeEac
                     nextTuesday,
                     AbsenceType.OTHER_ABSENCE,
                     HelsinkiDateTime.atStartOfDay(nextTuesday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE,
+                )
+            )
+
+            // next wednesday
+            // absence on term break shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    nextWednesday,
+                    AbsenceType.OTHER_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(nextWednesday),
+                    EvakaUserId(admin.id.raw),
+                    AbsenceCategory.NONBILLABLE,
+                )
+            )
+
+            // previous thursday
+            // absence on term break shouldn't show up
+            tx.insert(
+                DevAbsence(
+                    id = AbsenceId(UUID.randomUUID()),
+                    testChildCecil.id,
+                    previousThursday,
+                    AbsenceType.OTHER_ABSENCE,
+                    HelsinkiDateTime.atStartOfDay(previousThursday),
                     EvakaUserId(admin.id.raw),
                     AbsenceCategory.NONBILLABLE,
                 )
