@@ -76,6 +76,7 @@ export default React.memo(function ServiceApplications({
           <InfoBox
             message={i18n.children.serviceApplication.openApplicationInfo}
             noMargin
+            data-qa="open-application-info-box"
           />
           <Gap size="s" />
         </>
@@ -110,6 +111,7 @@ export default React.memo(function ServiceApplications({
             icon={weakAuth ? faLockAlt : undefined}
             text={i18n.children.serviceApplication.createButton}
             onClick={() => navigate(`/children/${childId}/service-application`)}
+            data-qa="create-service-application"
           />
         ) : (
           <InfoBox
@@ -151,7 +153,7 @@ const ServiceApplicationsTable = React.memo(function ServiceApplicationsTable({
       </Thead>
       <Tbody>
         {sortedApplications.map(({ data: application, permittedActions }) => (
-          <Tr key={application.id} data-qa="service-application">
+          <Tr key={application.id} data-qa="service-application-row">
             <Td minimalWidth data-qa="application-sent-date">
               {application.sentAt.toLocalDate().format()}
             </Td>
@@ -192,6 +194,7 @@ const ServiceApplicationsTable = React.memo(function ServiceApplicationsTable({
                     ? colors.accents.a5orangeLight
                     : colors.main.m1
                 }
+                data-qa="application-status"
               >
                 {
                   i18n.children.serviceApplication.decision.statuses[
@@ -351,19 +354,21 @@ const ServiceApplicationsDetails = React.memo(
                   <Label>
                     {i18n.children.serviceApplication.additionalInfo}
                   </Label>
-                  <div>{application.additionalInfo}</div>
+                  <div data-qa="additional-info">
+                    {application.additionalInfo}
+                  </div>
                 </FixedSpaceColumn>
                 <FixedSpaceColumn spacing="xxs">
                   <Label>{i18n.children.serviceApplication.status}</Label>
                   {application.decision === null ? (
-                    <div>
+                    <div data-qa="decision-status">
                       {
                         i18n.children.serviceApplication.decision.statuses
                           .undecided
                       }
                     </div>
                   ) : (
-                    <div>
+                    <div data-qa="decision-status">
                       {
                         i18n.children.serviceApplication.decision.statuses[
                           application.decision.status
@@ -379,7 +384,9 @@ const ServiceApplicationsDetails = React.memo(
                     <Label>
                       {i18n.children.serviceApplication.decision.rejectedReason}
                     </Label>
-                    <div>{application.decision.rejectedReason}</div>
+                    <div data-qa="rejected-reason">
+                      {application.decision.rejectedReason}
+                    </div>
                   </FixedSpaceColumn>
                 )}
                 <FixedSpaceRow justifyContent="space-evenly">
@@ -393,6 +400,7 @@ const ServiceApplicationsDetails = React.memo(
             onClick={onClose}
             aria-label={i18n.common.closeModal}
             icon={faTimes}
+            data-qa="close-btn"
           />
         </PlainModal>
       </ModalAccessibilityWrapper>

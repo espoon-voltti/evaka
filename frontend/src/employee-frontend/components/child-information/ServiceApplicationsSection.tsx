@@ -77,7 +77,7 @@ const DetailsModal = React.memo(function DetailsModal({
             <Label>
               {i18n.childInformation.serviceApplications.additionalInfo}
             </Label>
-            <div>{application.additionalInfo}</div>
+            <div data-qa="additional-info">{application.additionalInfo}</div>
           </FixedSpaceColumn>
           {application.decision && (
             <>
@@ -85,7 +85,7 @@ const DetailsModal = React.memo(function DetailsModal({
                 <Label>
                   {i18n.childInformation.serviceApplications.status}
                 </Label>
-                <div>
+                <div data-qa="decision-status">
                   {
                     i18n.childInformation.serviceApplications.decision.statuses[
                       application.decision.status
@@ -103,7 +103,9 @@ const DetailsModal = React.memo(function DetailsModal({
                         .rejectedReason
                     }
                   </Label>
-                  <div>{application.decision.rejectedReason}</div>
+                  <div data-qa="rejected-reason">
+                    {application.decision.rejectedReason}
+                  </div>
                 </FixedSpaceColumn>
               )}
             </>
@@ -157,7 +159,11 @@ const RejectionModal = React.memo(function RejectionModal({
         <Label>
           {i18n.childInformation.serviceApplications.decision.rejectedReason} *
         </Label>
-        <InputFieldF bind={reason} hideErrorsBeforeTouched />
+        <InputFieldF
+          bind={reason}
+          hideErrorsBeforeTouched
+          data-qa="reject-reason"
+        />
       </FixedSpaceColumn>
     </MutateFormModal>
   )
@@ -181,7 +187,7 @@ const UndecidedServiceApplication = React.memo(
     ] = useBoolean(false)
 
     return (
-      <UndecidedServiceApplicationContainer>
+      <UndecidedServiceApplicationContainer data-qa="undecided-application">
         {rejectionModalOpen && (
           <RejectionModal
             application={application}
@@ -200,13 +206,15 @@ const UndecidedServiceApplication = React.memo(
               <Label>
                 {i18n.childInformation.serviceApplications.startDate}
               </Label>
-              <div>{application.startDate.format()}</div>
+              <div data-qa="start-date">{application.startDate.format()}</div>
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing="xs">
               <Label>
                 {i18n.childInformation.serviceApplications.serviceNeed}
               </Label>
-              <div>{application.serviceNeedOption.nameFi}</div>
+              <div data-qa="service-need">
+                {application.serviceNeedOption.nameFi}
+              </div>
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing="xs">
               <Label>{i18n.childInformation.serviceApplications.sentBy}</Label>
@@ -217,13 +225,16 @@ const UndecidedServiceApplication = React.memo(
             <Label>
               {i18n.childInformation.serviceApplications.additionalInfo}
             </Label>
-            <div>{application.additionalInfo.trim() || '-'}</div>
+            <div data-qa="additional-info">
+              {application.additionalInfo.trim() || '-'}
+            </div>
           </FixedSpaceColumn>
           <FixedSpaceRow justifyContent="flex-end">
             {permittedActions.includes('REJECT') && (
               <Button
                 text={i18n.childInformation.serviceApplications.decision.reject}
                 onClick={openRejectionModal}
+                data-qa="reject-application-button"
               />
             )}
             {permittedActions.includes('ACCEPT') && (
@@ -249,6 +260,7 @@ const UndecidedServiceApplication = React.memo(
                   i18n.childInformation.serviceApplications.decision
                     .confirmAcceptBtn
                 }
+                data-qa="accept-application-button"
               />
             )}
           </FixedSpaceRow>
@@ -314,10 +326,12 @@ const ServiceApplications = React.memo(function ServiceApplications({
             </Thead>
             <Tbody>
               {decidedApplications.map(({ data: application }) => (
-                <Tr key={application.id}>
+                <Tr key={application.id} data-qa="decided-application-row">
                   <Td>{application.sentAt.toLocalDate().format()}</Td>
-                  <Td>{application.startDate.format()}</Td>
-                  <Td>{application.serviceNeedOption.nameFi}</Td>
+                  <Td data-qa="start-date">{application.startDate.format()}</Td>
+                  <Td data-qa="service-need">
+                    {application.serviceNeedOption.nameFi}
+                  </Td>
                   <Td>{application.personName}</Td>
                   <Td>
                     <Button
@@ -329,7 +343,7 @@ const ServiceApplications = React.memo(function ServiceApplications({
                       onClick={() => setDetailsModal(application)}
                     />
                   </Td>
-                  <Td>
+                  <Td data-qa="decision-status">
                     {
                       i18n.childInformation.serviceApplications.decision
                         .statuses[application.decision!.status]

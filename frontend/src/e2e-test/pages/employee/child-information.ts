@@ -8,6 +8,7 @@ import {
   ShiftCareType,
   shiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -881,6 +882,67 @@ export class PlacementsSection extends Section {
   }
 }
 
+export class ServiceApplicationsSection extends Section {
+  undecidedApplication: Element
+
+  constructor(page: Page, root: Element) {
+    super(page, root)
+    this.undecidedApplication = page.findByDataQa('undecided-application')
+  }
+
+  assertUndecidedApplication = async (
+    startDate: string,
+    serviceNeed: string,
+    additionalInfo: string
+  ) => {
+    await this.undecidedApplication
+      .findByDataQa('start-date')
+      .assertTextEquals(startDate)
+    await this.undecidedApplication
+      .findByDataQa('service-need')
+      .assertTextEquals(serviceNeed)
+    await this.undecidedApplication
+      .findByDataQa('additional-info')
+      .assertTextEquals(additionalInfo)
+  }
+
+  acceptApplication = async () => {
+    await this.undecidedApplication
+      .findByDataQa('accept-application-button')
+      .click()
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  rejectApplication = async (reason: string) => {
+    await this.undecidedApplication
+      .findByDataQa('reject-application-button')
+      .click()
+    await new TextInput(this.page.findByDataQa('reject-reason')).fill(reason)
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  decidedApplication = (n: number) =>
+    this.page.findAllByDataQa('decided-application-row').nth(n)
+
+  assertDecidedApplication = async (
+    n: number,
+    startDate: string,
+    serviceNeed: string,
+    status: string,
+    decidedAt: HelsinkiDateTime
+  ) => {
+    await this.decidedApplication(n)
+      .findByDataQa('start-date')
+      .assertTextEquals(startDate)
+    await this.decidedApplication(n)
+      .findByDataQa('service-need')
+      .assertTextEquals(serviceNeed)
+    await this.decidedApplication(n)
+      .findByDataQa('decision-status')
+      .assertTextEquals(`${status}, ${decidedAt.toLocalDate().format()}`)
+  }
+}
+
 export class AssistanceSection extends Section {
   createAssistanceNeedVoucherCoefficientBtn: Element
   createAssistanceNeedVoucherCoefficientForm: Element
@@ -1217,6 +1279,10 @@ const collapsibles = {
   placements: {
     selector: '[data-qa="child-placements-collapsible"]',
     section: PlacementsSection
+  },
+  serviceApplications: {
+    selector: '[data-qa="service-applications-collapsible"]',
+    section: ServiceApplicationsSection
   },
   assistance: {
     selector: '[data-qa="assistance-collapsible"]',

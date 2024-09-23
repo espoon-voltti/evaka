@@ -2126,7 +2126,8 @@ export const testDaycare: DevDaycare = {
     'RESERVATIONS',
     'VASU_AND_PEDADOC',
     'MOBILE_MESSAGING',
-    'PLACEMENT_TERMINATION'
+    'PLACEMENT_TERMINATION',
+    'SERVICE_APPLICATIONS'
   ],
   businessId: '',
   iban: '',
