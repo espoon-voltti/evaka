@@ -29,6 +29,8 @@ yalc.lock
 !.yarn/versions
 .pnp.*
 
+eslint-plugin/tsconfig.tsbuildinfo
+
 src/lib-customizations/**/*
 !src/lib-customizations/defaults
 !src/lib-customizations/defaults/**/*
