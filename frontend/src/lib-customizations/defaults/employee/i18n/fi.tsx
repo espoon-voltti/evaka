@@ -4827,7 +4827,8 @@ export const fi = {
       MOBILE_MESSAGING: 'Mobiili-viestintä',
       PLACEMENT_TERMINATION: 'Paikan irtisanominen',
       REALTIME_STAFF_ATTENDANCE: 'Henkilökunnan reaaliaikainen läsnäolo',
-      PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot'
+      PUSH_NOTIFICATIONS: 'Mobiilinotifikaatiot',
+      SERVICE_APPLICATIONS: 'Palveluntarpeen muutoshakemukset'
     }
   },
   roles: {
