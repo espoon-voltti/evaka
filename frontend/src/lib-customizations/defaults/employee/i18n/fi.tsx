@@ -3993,8 +3993,8 @@ export const fi = {
         'Raportti hetuttomista sijoitetuista lapsista OID-tietojen tarkistamiseen',
       childName: 'Lapsen nimi',
       dateOfBirth: 'Syntymäpäivä',
-      vardaOid: 'Varda-tietojen OID',
       personOid: 'Lapsen tietojen OID',
+      lastSentToVarda: 'Viety Vardaan viimeksi',
       total: 'Yhteensä'
     },
     placementCount: {

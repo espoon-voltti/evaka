@@ -18,10 +18,13 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.varda.new.Henkilo
+import fi.espoo.evaka.varda.new.VardaUpdater
+import fi.espoo.evaka.varda.new.addNewChildrenForVardaUpdate
+import fi.espoo.evaka.varda.new.setVardaUpdateSuccess
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,14 +38,16 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             roles = setOf(UserRole.ADMIN),
         )
 
-    private final val testDay: LocalDate = LocalDate.of(2021, 5, 5)
-    private val testClock = MockEvakaClock(HelsinkiDateTime.of(testDay, LocalTime.of(12, 0)))
+    private final val today: LocalDate = LocalDate.of(2021, 5, 5)
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
+    private val clock = MockEvakaClock(now)
+
     private val jimmyNoSsn =
         DevPerson(
             id = PersonId(UUID.randomUUID()),
             firstName = "Jimmy",
             lastName = "No SSN",
-            dateOfBirth = testDay.minusYears(3),
+            dateOfBirth = today.minusYears(3),
             ssn = null,
             ophPersonOid = null,
         )
@@ -52,7 +57,7 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
             id = PersonId(UUID.randomUUID()),
             firstName = "Jackie",
             lastName = "No SSN",
-            dateOfBirth = testDay.minusYears(4),
+            dateOfBirth = today.minusYears(4),
             ssn = null,
             ophPersonOid = "MockOID",
         )
@@ -69,18 +74,32 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 DevPlacement(
                     childId = jimmyNoSsn.id,
                     unitId = testDaycare.id,
-                    startDate = testDay.minusDays(7),
-                    endDate = testDay.plusYears(1),
+                    startDate = today.minusDays(7),
+                    endDate = today.plusYears(1),
                 )
             )
             tx.insert(
                 DevPlacement(
                     childId = jackieNoSsn.id,
                     unitId = testDaycare2.id,
-                    startDate = testDay.minusDays(7),
-                    endDate = testDay.plusYears(1),
+                    startDate = today.minusDays(7),
+                    endDate = today.plusYears(1),
                 )
             )
+            tx.addNewChildrenForVardaUpdate()
+
+            val mockState =
+                VardaUpdater.EvakaHenkiloNode(
+                    henkilo =
+                        Henkilo(
+                            etunimet = jackieNoSsn.firstName,
+                            sukunimi = jackieNoSsn.lastName,
+                            henkilotunnus = jackieNoSsn.ssn,
+                            henkilo_oid = jackieNoSsn.ophPersonOid,
+                        ),
+                    lapset = emptyList(),
+                )
+            tx.setVardaUpdateSuccess(jackieNoSsn.id, now, mockState)
         }
     }
 
@@ -93,26 +112,25 @@ class NonSsnChildrenReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                     firstName = jackieNoSsn.firstName,
                     lastName = jackieNoSsn.lastName,
                     dateOfBirth = jackieNoSsn.dateOfBirth,
-                    existingPersonOid = jackieNoSsn.ophPersonOid,
-                    vardaOid = null,
+                    ophPersonOid = jackieNoSsn.ophPersonOid,
+                    lastSentToVarda = now,
                 ),
                 NonSsnChildrenReportRow(
                     childId = jimmyNoSsn.id,
                     firstName = jimmyNoSsn.firstName,
                     lastName = jimmyNoSsn.lastName,
                     dateOfBirth = jimmyNoSsn.dateOfBirth,
-                    existingPersonOid = null,
-                    vardaOid = null,
+                    ophPersonOid = null,
+                    lastSentToVarda = null,
                 ),
             )
         val result =
             nonSsnChildrenReportController.getNonSsnChildrenReportRows(
                 dbInstance(),
                 adminUser,
-                testClock,
+                clock,
             )
 
-        assertEquals(expectation.size, result.size)
-        result.forEach { assertContains(expectation, it) }
+        assertEquals(expectation.sortedBy { it.childId }, result.sortedBy { it.childId })
     }
 }

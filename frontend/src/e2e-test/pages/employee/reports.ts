@@ -99,6 +99,7 @@ export class MissingHeadOfFamilyReport {
 
 export class NonSsnChildrenReport {
   #nameHeader: Element
+
   constructor(private page: Page) {
     this.#nameHeader = page.findByDataQa(`child-name-header`)
   }
@@ -111,8 +112,8 @@ export class NonSsnChildrenReport {
     expected: {
       childName: string
       dateOfBirth: string
-      personOid: string
-      vardaOid: string
+      ophPersonOid: string
+      lastSentToVarda: string
     }[]
   ) {
     const rows = this.page.findAllByDataQa('non-ssn-child-row')
@@ -121,8 +122,12 @@ export class NonSsnChildrenReport {
       const row = rows.nth(index)
       await row.findByDataQa('child-name').assertTextEquals(data.childName)
       await row.findByDataQa('date-of-birth').assertTextEquals(data.dateOfBirth)
-      await row.findByDataQa('person-oid').assertTextEquals(data.personOid)
-      await row.findByDataQa('varda-oid').assertTextEquals(data.vardaOid)
+      await row
+        .findByDataQa('oph-person-oid')
+        .assertTextEquals(data.ophPersonOid)
+      await row
+        .findByDataQa('last-sent-to-varda')
+        .assertTextEquals(data.lastSentToVarda)
     }
   }
 }
@@ -130,6 +135,7 @@ export class NonSsnChildrenReport {
 export class ApplicationsReport {
   #table: Element
   #areaSelector: Combobox
+
   constructor(private page: Page) {
     this.#table = page.findByDataQa(`report-application-table`)
     this.#areaSelector = new Combobox(page.findByDataQa('select-area'))
@@ -223,6 +229,7 @@ export class PlacementGuaranteeReport {
 
 export class PlacementSketchingReport {
   #applicationStatus: MultiSelect
+
   constructor(private page: Page) {
     this.#applicationStatus = new MultiSelect(
       page.findByDataQa('select-application-status')
@@ -266,6 +273,7 @@ export class VoucherServiceProvidersReport {
   #year: Select
   #area: Select
   #downloadCsvLink: Element
+
   constructor(private page: Page) {
     this.#month = new Select(page.findByDataQa('select-month'))
     this.#year = new Select(page.findByDataQa('select-year'))
@@ -322,6 +330,7 @@ export class VoucherServiceProvidersReport {
 
 export class ServiceVoucherUnitReport {
   #childRows: ElementCollection
+
   constructor(private page: Page) {
     this.#childRows = page.findAllByDataQa('child-row')
   }
@@ -390,6 +399,7 @@ export class ManualDuplicationReport {
 export class VardaErrorsReport {
   #errorsTable: Element
   #errorRows: ElementCollection
+
   constructor(private page: Page) {
     this.#errorsTable = page.findByDataQa('varda-errors-table')
     this.#errorRows = page.findAll('[data-qa="varda-error-row"]')
@@ -417,6 +427,7 @@ export class VardaErrorsReport {
 
 export class AssistanceNeedDecisionsReport {
   rows: ElementCollection
+
   constructor(page: Page) {
     this.rows = page.findAllByDataQa('assistance-need-decision-row')
   }
@@ -451,6 +462,7 @@ export class AssistanceNeedDecisionsReportDecision {
   annulReasonInput: TextInput
   modalOkBtn: Element
   mismatchModalLink: Element
+
   constructor(private page: Page) {
     this.decisionMaker = page.findByDataQa('labelled-value-decision-maker')
     this.decisionStatus = new StaticChip(page.findByDataQa('decision-status'))
@@ -489,6 +501,7 @@ export class AssistanceNeedPreschoolDecisionsReportDecision {
   modalOkBtn: Element
   status: Element
   annulmentReason: Element
+
   constructor(page: Page) {
     this.returnForEditBtn = page.findByDataQa('return-for-edit-button')
     this.approveBtn = page.findByDataQa('approve-button')
@@ -507,6 +520,7 @@ export class AssistanceNeedsAndActionsReport {
   needsAndActionsRows: ElementCollection
   childRows: ElementCollection
   careAreaSelect: Combobox
+
   constructor(private page: Page) {
     this.needsAndActionsRows = page.findAllByDataQa(
       'assistance-needs-and-actions-row'

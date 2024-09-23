@@ -525,10 +525,10 @@ export interface MissingServiceNeedReportRow {
 export interface NonSsnChildrenReportRow {
   childId: UUID
   dateOfBirth: LocalDate
-  existingPersonOid: string | null
   firstName: string
   lastName: string
-  vardaOid: string | null
+  lastSentToVarda: HelsinkiDateTime | null
+  ophPersonOid: string | null
 }
 
 /**
@@ -1068,7 +1068,8 @@ export function deserializeJsonMissingHeadOfFamilyReportRow(json: JsonOf<Missing
 export function deserializeJsonNonSsnChildrenReportRow(json: JsonOf<NonSsnChildrenReportRow>): NonSsnChildrenReportRow {
   return {
     ...json,
-    dateOfBirth: LocalDate.parseIso(json.dateOfBirth)
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    lastSentToVarda: (json.lastSentToVarda != null) ? HelsinkiDateTime.parseIso(json.lastSentToVarda) : null
   }
 }
 
