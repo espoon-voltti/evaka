@@ -112,7 +112,8 @@ export const pilotFeatures = [
   'MOBILE_MESSAGING',
   'PLACEMENT_TERMINATION',
   'REALTIME_STAFF_ATTENDANCE',
-  'PUSH_NOTIFICATIONS'
+  'PUSH_NOTIFICATIONS',
+  'SERVICE_APPLICATIONS'
 ] as const
 
 export type PilotFeature = typeof pilotFeatures[number]
