@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snDaycareFullDay25to35
 import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
@@ -50,7 +51,11 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val child = DevPerson(firstName = "Tupu", lastName = "Ankka")
     private val adult = DevPerson(firstName = "Minni", lastName = "Hiiri")
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            enabledPilotFeatures = setOf(PilotFeature.SERVICE_APPLICATIONS),
+        )
     private val supervisor = DevEmployee(firstName = "Hanna", lastName = "Hanhi")
     private val placement =
         DevPlacement(

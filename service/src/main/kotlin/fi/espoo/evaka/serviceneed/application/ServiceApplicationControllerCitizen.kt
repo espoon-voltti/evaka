@@ -7,6 +7,7 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.getServiceNeedOptions
 import fi.espoo.evaka.shared.ChildId
@@ -21,6 +22,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.letIf
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -104,6 +106,9 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                     val placement =
                         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
                             ?: return@read emptyList()
+                    tx.getDaycare(placement.unitId)?.takeIf {
+                        it.enabledPilotFeatures.contains(PilotFeature.SERVICE_APPLICATIONS)
+                    } ?: return@read emptyList()
 
                     tx.getServiceNeedOptions()
                         .filter {
