@@ -1203,7 +1203,8 @@ sealed interface Action {
         ),
         READ_SERVICE_APPLICATIONS(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild(),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .inPlacementUnitOfChildWithPilotFeature(PilotFeature.SERVICE_APPLICATIONS),
         ),
         READ_FAMILY_CONTACTS(
             HasGlobalRole(ADMIN),
@@ -1979,11 +1980,13 @@ sealed interface Action {
     ) : ScopedAction<ServiceApplicationId> {
         ACCEPT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceApplication(),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .inPlacementUnitOfChildOfServiceApplicationWithPilotFeature(),
         ),
         REJECT(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfServiceApplication(),
+            HasUnitRole(UNIT_SUPERVISOR)
+                .inPlacementUnitOfChildOfServiceApplicationWithPilotFeature(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"

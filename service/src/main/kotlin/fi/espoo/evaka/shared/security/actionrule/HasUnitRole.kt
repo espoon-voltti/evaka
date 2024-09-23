@@ -563,6 +563,28 @@ FROM (${subquery(aclQuery)}) acl
             )
         }
 
+    fun inPlacementUnitOfChildWithPilotFeature(
+        pilotFeature: PilotFeature,
+        cfg: ChildAclConfig = ChildAclConfig(),
+    ) =
+        rule<ChildId> { user, now ->
+            union(
+                all = true,
+                cfg.aclQueries(user, now).map { aclQuery ->
+                    QuerySql {
+                        sql(
+                            """
+SELECT acl.child_id AS id, acl.role, acl.unit_id
+FROM (${subquery(aclQuery)}) acl
+JOIN daycare ON acl.unit_id = daycare.id
+WHERE ${bind(pilotFeature)} = ANY(daycare.enabled_pilot_features)
+"""
+                        )
+                    }
+                },
+            )
+        }
+
     fun inPlacementUnitOfChildOfChildDailyNote(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<ChildDailyNoteId>(cfg) { _, _ ->
             sql(
@@ -700,7 +722,7 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfChildOfServiceApplication() =
+    fun inPlacementUnitOfChildOfServiceApplicationWithPilotFeature() =
         rule<ServiceApplicationId> { user, _ ->
             sql(
                 """
@@ -709,6 +731,7 @@ FROM service_application
 JOIN placement ON placement.child_id = service_application.child_id AND
     between_start_and_end(daterange(placement.start_date, placement.end_date, '[]'), service_application.start_date)
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
+JOIN daycare ON acl.daycare_id = daycare.id AND 'SERVICE_APPLICATIONS' = ANY(daycare.enabled_pilot_features)
 WHERE employee_id = ${bind(user.id)}
             """
             )
