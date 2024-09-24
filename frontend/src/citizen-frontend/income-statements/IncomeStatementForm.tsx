@@ -338,21 +338,33 @@ const IncomeTypeSelection = React.memo(
       [formData.grossSelected, formData.entrepreneurSelected]
     )
 
+    const invalidDateRange = useMemo(
+      () =>
+        (formData.grossSelected || formData.entrepreneurSelected) &&
+        formData.endDate &&
+        formData.startDate
+          ? formData.endDate > formData.startDate.addYears(1)
+          : false,
+      [
+        formData.grossSelected,
+        formData.entrepreneurSelected,
+        formData.startDate,
+        formData.endDate
+      ]
+    )
+
     const validateEndDate = useCallback(
       (endDate: LocalDate | null) => {
-        if (!formData.startDate) return undefined
-
-        if (endDate && formData.startDate > endDate) return 'validDate'
-
-        if (formData.highestFeeSelected) return undefined
-
-        if (isEndDateRequired) {
-          if (!endDate) return 'required'
-
-          if (endDate > formData.startDate.addYears(1)) return 'dateTooLate'
-        }
-
-        return undefined
+        const status = !formData.startDate
+          ? undefined
+          : endDate && formData.startDate > endDate
+            ? 'validDate'
+            : formData.highestFeeSelected
+              ? undefined
+              : isEndDateRequired && !endDate
+                ? 'required'
+                : undefined
+        return status
       },
       [formData.highestFeeSelected, formData.startDate, isEndDateRequired]
     )
@@ -420,7 +432,7 @@ const IncomeTypeSelection = React.memo(
               />
             </div>
           </FixedSpaceRow>
-          {validateEndDate(formData.endDate) === 'dateTooLate' && (
+          {invalidDateRange && (
             <>
               <Gap size="s" />
               <InfoBox

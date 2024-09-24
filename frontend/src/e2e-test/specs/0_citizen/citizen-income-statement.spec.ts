@@ -88,10 +88,11 @@ describe('Income statements', () => {
       await incomeStatementsPage.setGrossIncomeEstimate(1500)
       // End date can be max 1y from start date so a warning is shown
       await incomeStatementsPage.setValidToDate('25.12.2045')
-      await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
+      await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilVisible()
 
       await incomeStatementsPage.setValidToDate(endDate)
       await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
+      await incomeStatementsPage.incomeValidMaxRangeInfo.waitUntilHidden()
       await incomeStatementsPage.submit()
       await assertIncomeStatementCreated(startDate)
     })
