@@ -84,17 +84,12 @@ export async function postChildDatePresence(
 */
 export async function postReservations(
   request: {
-    automaticFixedScheduleAbsencesEnabled?: boolean | null,
     body: DailyReservationRequest[]
   }
 ): Promise<void> {
-  const params = createUrlSearchParams(
-    ['automaticFixedScheduleAbsencesEnabled', request.automaticFixedScheduleAbsencesEnabled?.toString()]
-  )
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/attendance-reservations`.toString(),
     method: 'POST',
-    params,
     data: request.body satisfies JsonCompatible<DailyReservationRequest[]>
   })
   return json

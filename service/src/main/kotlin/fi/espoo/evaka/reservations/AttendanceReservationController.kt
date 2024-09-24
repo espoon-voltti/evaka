@@ -217,7 +217,6 @@ class AttendanceReservationController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>,
-        @RequestParam automaticFixedScheduleAbsencesEnabled: Boolean = false,
     ) {
         val children = body.map { it.childId }.toSet()
 
@@ -237,7 +236,6 @@ class AttendanceReservationController(
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
-                        automaticFixedScheduleAbsencesEnabled,
                     )
                 }
             }

@@ -43,7 +43,6 @@ const features: Features = {
     discussionReservations: true,
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
-    automaticFixedScheduleAbsences: true,
     invoiceDisplayAccountNumber: true,
     serviceApplications: true
   },
@@ -77,7 +76,6 @@ const features: Features = {
     discussionReservations: true,
     jamixIntegration: true,
     forceUnpublishDocumentTemplate: true,
-    automaticFixedScheduleAbsences: true,
     invoiceDisplayAccountNumber: true,
     serviceApplications: true
   },
@@ -110,7 +108,6 @@ const features: Features = {
     noAbsenceType: false,
     discussionReservations: true,
     forceUnpublishDocumentTemplate: false,
-    automaticFixedScheduleAbsences: true,
     invoiceDisplayAccountNumber: true,
     serviceApplications: false
   }
