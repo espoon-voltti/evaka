@@ -31,7 +31,7 @@ function ServiceNeedReadRow({
   const { i18n } = useTranslation()
   return (
     <Tr data-qa="service-need-row">
-      <Td>
+      <Td data-qa="service-need-range">
         {serviceNeed.startDate.format()} - {serviceNeed.endDate.format()}
       </Td>
       <Td data-qa="service-need-name">{serviceNeed.option.nameFi}</Td>
