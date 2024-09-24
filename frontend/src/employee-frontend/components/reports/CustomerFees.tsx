@@ -119,7 +119,10 @@ const CustomerFeesInner = React.memo(function CustomerFeesInner({
         {renderResult(sortedRows, (rows) => (
           <>
             <ReportDownload
-              data={rows}
+              data={rows.map((row) => ({
+                ...row,
+                feeAmount: formatCents(row.feeAmount, true)
+              }))}
               headers={[
                 {
                   label: i18n.reports.customerFees.fee,
