@@ -111,10 +111,35 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                         Action.ServiceApplication.ACCEPT,
                         id,
                     )
-                    val application =
-                        tx.getServiceApplication(id)?.also {
-                            validateApplicationForAccepting(tx, it)
-                        } ?: throw NotFound()
+                    val application = tx.getServiceApplication(id) ?: throw NotFound()
+
+                    if (application.decision != null) {
+                        throw Conflict("Application already decided")
+                    }
+
+                    if (!application.serviceNeedOption.validity.includes(application.startDate)) {
+                        throw BadRequest(
+                            "Selected service need is not valid on requested start date"
+                        )
+                    }
+
+                    val placement =
+                        tx.getPlacementsForChildDuring(
+                                childId = application.childId,
+                                start = application.startDate,
+                                end = application.startDate,
+                            )
+                            .firstOrNull()
+                            ?: throw BadRequest(
+                                "Child no longer has placement on requested start date"
+                            )
+
+                    if (placement.type != application.serviceNeedOption.validPlacementType) {
+                        throw BadRequest(
+                            "Selected service need is not valid with child's placement type"
+                        )
+                    }
+
                     tx.setServiceApplicationAccepted(id, clock.now(), user)
                     application.childId
                 }
@@ -161,28 +186,5 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                     objectId = AuditId(childId),
                 )
             }
-    }
-}
-
-private fun validateApplicationForAccepting(tx: Database.Read, application: ServiceApplication) {
-    if (application.decision != null) {
-        throw Conflict("Application already decided")
-    }
-
-    if (!application.serviceNeedOption.validity.includes(application.startDate)) {
-        throw BadRequest("Selected service need is not valid on requested start date")
-    }
-
-    val placement =
-        tx.getPlacementsForChildDuring(
-                application.childId,
-                application.startDate,
-                application.startDate,
-            )
-            .firstOrNull()
-            ?: throw BadRequest("Child no longer has placement on requested start date")
-
-    if (placement.type != application.serviceNeedOption.validPlacementType) {
-        throw BadRequest("Selected service need is not valid with child's placement type")
     }
 }
