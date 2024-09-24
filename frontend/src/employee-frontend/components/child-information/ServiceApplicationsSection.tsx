@@ -5,24 +5,30 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { object, required, validated, value } from 'lib-common/form/form'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import { boolean } from 'lib-common/form/fields'
+import { object, oneOf, required, validated, value } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import {
   EmployeeServiceApplication,
-  ServiceApplication
+  ServiceApplication,
+  shiftCareType,
+  ShiftCareType
 } from 'lib-common/generated/api-types/serviceneed'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
+import Radio from 'lib-components/atoms/form/Radio'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, H3, Label } from 'lib-components/typography'
@@ -116,6 +122,142 @@ const DetailsModal = React.memo(function DetailsModal({
   )
 })
 
+const acceptanceForm = object({
+  shiftCare: required(oneOf<ShiftCareType>()),
+  partWeek: required(boolean())
+})
+
+const AcceptanceModal = React.memo(function AcceptanceModal({
+  application,
+  onClose
+}: {
+  application: ServiceApplication
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+
+  const form = useForm(
+    acceptanceForm,
+    () => ({
+      shiftCare: {
+        options: shiftCareType.map((type) => ({
+          label:
+            i18n.childInformation.placements.serviceNeeds.shiftCareTypes[type],
+          value: type,
+          domValue: type
+        })),
+        domValue: 'NONE'
+      },
+      partWeek: application.serviceNeedOption.partWeek ?? false
+    }),
+    i18n.validationErrors
+  )
+
+  const { shiftCare, partWeek } = useFormFields(form)
+  const partWeekEditable = application.serviceNeedOption.partWeek === null
+
+  const currentPlacementEnd = application.currentPlacement?.endDate
+  if (!currentPlacementEnd) return null // cannot accept
+  const optionValidityEnd = application.serviceNeedOption.validity.end
+  const endDate =
+    optionValidityEnd === null ||
+    optionValidityEnd.isEqualOrAfter(currentPlacementEnd)
+      ? currentPlacementEnd
+      : optionValidityEnd
+  const range = new FiniteDateRange(application.startDate, endDate)
+
+  return (
+    <MutateFormModal
+      title={
+        i18n.childInformation.serviceApplications.decision.confirmAcceptTitle
+      }
+      resolveLabel={i18n.childInformation.serviceApplications.decision.accept}
+      rejectLabel={i18n.common.cancel}
+      resolveDisabled={!form.isValid()}
+      resolveMutation={acceptServiceApplicationsMutation}
+      resolveAction={() => ({
+        id: application.id,
+        childId: application.childId,
+        body: {
+          shiftCareType: shiftCare.value(),
+          partWeek: partWeek.value()
+        }
+      })}
+      rejectAction={onClose}
+      onSuccess={onClose}
+    >
+      <FixedSpaceColumn spacing="L">
+        <div>
+          <InfoBox
+            noMargin
+            message={i18n.childInformation.serviceApplications.decision.confirmAcceptText(
+              range
+            )}
+          />
+        </div>
+        <FixedSpaceColumn spacing="s">
+          <Label>
+            {i18n.childInformation.serviceApplications.decision.shiftCareLabel}
+          </Label>
+          {featureFlags.intermittentShiftCare ? (
+            <FixedSpaceColumn spacing="xs">
+              {shiftCareType.map((type) => (
+                <Radio
+                  key={type}
+                  data-qa={`shift-care-type-radio-${type}`}
+                  label={
+                    i18n.childInformation.placements.serviceNeeds
+                      .shiftCareTypes[type]
+                  }
+                  checked={shiftCare.value() === type}
+                  onChange={() =>
+                    shiftCare.update((s) => ({
+                      ...s,
+                      domValue: type
+                    }))
+                  }
+                />
+              ))}
+            </FixedSpaceColumn>
+          ) : (
+            <Checkbox
+              label={
+                i18n.childInformation.serviceApplications.decision
+                  .shiftCareCheckbox
+              }
+              data-qa="shift-care-toggle"
+              checked={shiftCare.value() === 'FULL'}
+              onChange={(checked) =>
+                shiftCare.update((s) => ({
+                  ...s,
+                  domValue: checked ? 'FULL' : 'NONE'
+                }))
+              }
+            />
+          )}
+        </FixedSpaceColumn>
+        <FixedSpaceColumn spacing="s">
+          <Label>
+            {i18n.childInformation.serviceApplications.decision.partWeekLabel}
+          </Label>
+          {partWeekEditable ? (
+            <CheckboxF
+              label={
+                i18n.childInformation.serviceApplications.decision
+                  .partWeekCheckbox
+              }
+              bind={partWeek}
+              data-qa="part-week-checkbox"
+            />
+          ) : (
+            <div>{partWeek.value() ? i18n.common.yes : i18n.common.no}</div>
+          )}
+        </FixedSpaceColumn>
+      </FixedSpaceColumn>
+    </MutateFormModal>
+  )
+})
+
 const rejectionForm = object({
   reason: validated(required(value<string>()), nonBlank)
 })
@@ -185,6 +327,10 @@ const UndecidedServiceApplication = React.memo(
       rejectionModalOpen,
       { on: openRejectionModal, off: closeRejectionModal }
     ] = useBoolean(false)
+    const [
+      acceptanceModalOpen,
+      { on: openAcceptanceModal, off: closeAcceptanceModal }
+    ] = useBoolean(false)
 
     return (
       <UndecidedServiceApplicationContainer data-qa="undecided-application">
@@ -192,6 +338,12 @@ const UndecidedServiceApplication = React.memo(
           <RejectionModal
             application={application}
             onClose={closeRejectionModal}
+          />
+        )}
+        {acceptanceModalOpen && (
+          <AcceptanceModal
+            application={application}
+            onClose={closeAcceptanceModal}
           />
         )}
         <FixedSpaceColumn spacing="L">
@@ -238,28 +390,10 @@ const UndecidedServiceApplication = React.memo(
               />
             )}
             {permittedActions.includes('ACCEPT') && (
-              <ConfirmedMutation
-                buttonText={
-                  i18n.childInformation.serviceApplications.decision.accept
-                }
+              <Button
                 primary
-                mutation={acceptServiceApplicationsMutation}
-                onClick={() => ({
-                  id: application.id,
-                  childId: application.childId
-                })}
-                confirmationTitle={
-                  i18n.childInformation.serviceApplications.decision
-                    .confirmAcceptTitle
-                }
-                confirmationText={
-                  i18n.childInformation.serviceApplications.decision
-                    .confirmAcceptText
-                }
-                confirmLabel={
-                  i18n.childInformation.serviceApplications.decision
-                    .confirmAcceptBtn
-                }
+                text={i18n.childInformation.serviceApplications.decision.accept}
+                onClick={openAcceptanceModal}
                 data-qa="accept-application-button"
               />
             )}

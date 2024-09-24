@@ -42,11 +42,15 @@ fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplicat
                 WHEN sa.decided_by IS NOT NULL THEN dm.first_name || ' ' || dm.last_name
             END AS decision_decided_by_name,
             sa.decided_at AS decision_decided_at,
-            sa.rejected_reason AS decision_rejected_reason
+            sa.rejected_reason AS decision_rejected_reason,
+            pl.id AS current_placement_id,
+            pl.type AS current_placement_type,
+            pl.end_date AS current_placement_end_date
         FROM service_application sa
         JOIN person pe ON pe.id = sa.person_id
         JOIN person ch ON ch.id = sa.child_id
         JOIN service_need_option sno ON sno.id = sa.service_need_option_id
+        LEFT JOIN placement pl ON pl.child_id = sa.child_id AND between_start_and_end(daterange(pl.start_date, pl.end_date, '[]'), sa.start_date)
         LEFT JOIN employee dm ON dm.id = sa.decided_by
         WHERE ${predicate(where.forTable("sa"))}
     """

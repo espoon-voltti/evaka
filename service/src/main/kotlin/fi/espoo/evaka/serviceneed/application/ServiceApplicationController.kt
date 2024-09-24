@@ -7,7 +7,6 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
-import fi.espoo.evaka.placement.getPlacementsForChildDuring
 import fi.espoo.evaka.serviceneed.ShiftCareType
 import fi.espoo.evaka.serviceneed.createServiceNeed
 import fi.espoo.evaka.shared.ChildId
@@ -97,12 +96,18 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
             .also { Audit.UnitServiceApplicationsRead.log(targetId = AuditId(unitId)) }
     }
 
+    data class AcceptServiceApplicationBody(
+        val shiftCareType: ShiftCareType,
+        val partWeek: Boolean,
+    )
+
     @PutMapping("/{id}/accept")
     fun acceptServiceApplication(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: ServiceApplicationId,
+        @RequestBody body: AcceptServiceApplicationBody,
     ) {
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -125,13 +130,15 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                         )
                     }
 
+                    if (
+                        application.serviceNeedOption.partWeek != null &&
+                            application.serviceNeedOption.partWeek != body.partWeek
+                    ) {
+                        throw BadRequest("Conflicting part week value")
+                    }
+
                     val placement =
-                        tx.getPlacementsForChildDuring(
-                                childId = application.childId,
-                                start = application.startDate,
-                                end = application.startDate,
-                            )
-                            .firstOrNull()
+                        application.currentPlacement
                             ?: throw BadRequest(
                                 "Child no longer has placement on requested start date"
                             )
@@ -158,8 +165,8 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                             startDate = application.startDate,
                             endDate = endDate,
                             optionId = application.serviceNeedOption.id,
-                            shiftCare = ShiftCareType.NONE, // todo
-                            partWeek = false, // todo
+                            shiftCare = body.shiftCareType,
+                            partWeek = body.partWeek,
                             confirmedAt = now,
                         )
 

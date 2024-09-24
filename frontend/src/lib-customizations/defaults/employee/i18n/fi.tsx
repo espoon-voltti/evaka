@@ -1533,9 +1533,13 @@ export const fi = {
         accept: 'Hyväksy',
         reject: 'Hylkää',
         confirmAcceptTitle: 'Hyväksytäänkö hakemus uudesta palveluntarpeesta?',
-        confirmAcceptText:
-          'Muista tehdä tarvittavat vastaavat muutokset lapsen palveluntarpeeseen!',
-        confirmAcceptBtn: 'Merkitse hyväksytyksi',
+        confirmAcceptText: (range: FiniteDateRange) =>
+          `Uusi palveluntarve luodaan ajalle ${range.format()}.`,
+        shiftCareLabel: 'Ilta/vuorohoito',
+        shiftCareCheckbox: 'Lapsella on oikeus ilta/vuorohoitoon',
+        partWeekLabel: 'Osaviikkoisuus',
+        partWeekCheckbox: 'Palveluntarve on osaviikkoinen',
+        confirmAcceptBtn: 'Vahvista',
         confirmRejectTitle: 'Hakemuksen hylkääminen'
       },
       decidedApplications: 'Käsitellyt hakemukset',

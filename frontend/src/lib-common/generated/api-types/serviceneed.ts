@@ -13,6 +13,14 @@ import { PlacementType } from './placement'
 import { UUID } from '../../types'
 
 /**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.AcceptServiceApplicationBody
+*/
+export interface AcceptServiceApplicationBody {
+  partWeek: boolean
+  shiftCareType: ShiftCareType
+}
+
+/**
 * Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.CitizenServiceApplication
 */
 export interface CitizenServiceApplication {
@@ -35,6 +43,7 @@ export interface ServiceApplication {
   additionalInfo: string
   childId: UUID
   childName: string
+  currentPlacement: ServiceApplicationPlacement | null
   decision: ServiceApplicationDecision | null
   id: UUID
   personId: UUID
@@ -71,6 +80,15 @@ export interface ServiceApplicationDecision {
 export type ServiceApplicationDecisionStatus =
   | 'ACCEPTED'
   | 'REJECTED'
+
+/**
+* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationPlacement
+*/
+export interface ServiceApplicationPlacement {
+  endDate: LocalDate
+  id: UUID
+  type: PlacementType
+}
 
 /**
 * Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.ServiceApplicationRejection
@@ -248,6 +266,7 @@ export function deserializeJsonEmployeeServiceApplication(json: JsonOf<EmployeeS
 export function deserializeJsonServiceApplication(json: JsonOf<ServiceApplication>): ServiceApplication {
   return {
     ...json,
+    currentPlacement: (json.currentPlacement != null) ? deserializeJsonServiceApplicationPlacement(json.currentPlacement) : null,
     decision: (json.decision != null) ? deserializeJsonServiceApplicationDecision(json.decision) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt),
     serviceNeedOption: deserializeJsonServiceNeedOptionBasics(json.serviceNeedOption),
@@ -268,6 +287,14 @@ export function deserializeJsonServiceApplicationDecision(json: JsonOf<ServiceAp
   return {
     ...json,
     decidedAt: HelsinkiDateTime.parseIso(json.decidedAt)
+  }
+}
+
+
+export function deserializeJsonServiceApplicationPlacement(json: JsonOf<ServiceApplicationPlacement>): ServiceApplicationPlacement {
+  return {
+    ...json,
+    endDate: LocalDate.parseIso(json.endDate)
   }
 }
 
