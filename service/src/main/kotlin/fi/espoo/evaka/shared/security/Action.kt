@@ -1457,6 +1457,7 @@ sealed interface Action {
         ACTIVATE(HasGlobalRole(ADMIN)),
         DEACTIVATE(HasGlobalRole(ADMIN)),
         READ_OPEN_GROUP_ATTENDANCE(
+            HasGlobalRole(ADMIN),
             IsMobile(false).isAssociatedWithEmployee(),
             IsEmployee.isInSameUnitWithEmployee(),
         );
