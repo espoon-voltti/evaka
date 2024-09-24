@@ -8,6 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.AuditId.Companion.invoke
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.createServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.ServiceApplicationId
@@ -140,14 +142,37 @@ class ServiceApplicationController(private val accessControl: AccessControl) {
                         )
                     }
 
-                    tx.setServiceApplicationAccepted(id, clock.now(), user)
-                    application.childId
+                    val now = clock.now()
+                    val optionValidityEnd = application.serviceNeedOption.validity.end
+                    val endDate =
+                        if (optionValidityEnd == null || optionValidityEnd >= placement.endDate) {
+                            placement.endDate
+                        } else {
+                            optionValidityEnd
+                        }
+                    val serviceNeedId =
+                        createServiceNeed(
+                            tx = tx,
+                            user = user,
+                            placementId = placement.id,
+                            startDate = application.startDate,
+                            endDate = endDate,
+                            optionId = application.serviceNeedOption.id,
+                            shiftCare = ShiftCareType.NONE, // todo
+                            partWeek = false, // todo
+                            confirmedAt = now,
+                        )
+
+                    tx.setServiceApplicationAccepted(id, now, user)
+
+                    application.childId to serviceNeedId
                 }
             }
-            .also { childId ->
+            .also { (childId, serviceNeedId) ->
                 Audit.ChildServiceApplicationAccept.log(
                     targetId = AuditId(id),
-                    objectId = AuditId(childId),
+                    objectId = AuditId(serviceNeedId),
+                    meta = mapOf("childId" to childId),
                 )
             }
     }
