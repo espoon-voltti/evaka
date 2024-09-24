@@ -195,28 +195,32 @@ export class CitizenChildPage {
   serviceApplicationCancelButton = (n: number) =>
     this.serviceApplicationRow(n).findByDataQa('cancel-application')
 
-  assertServiceApplicationDetails = async (
+  async assertServiceApplicationDetails(
     n: number,
     additionalInfo: string,
     status: string,
     rejectedReason: string | null
-  ) => {
-    await this.serviceApplicationRow(n).findByDataQa('open-details').click()
-    const modal = this.page.findByDataQa('service-application-modal')
+  ) {
+    {
+      await this.serviceApplicationRow(n).findByDataQa('open-details').click()
+      const modal = this.page.findByDataQa('service-application-modal')
 
-    await modal.findByDataQa('additional-info').assertTextEquals(additionalInfo)
-    await modal
-      .findByDataQa('decision-status')
-      .assertText((text) => text.startsWith(status))
-
-    if (rejectedReason) {
       await modal
-        .findByDataQa('rejected-reason')
-        .assertTextEquals(rejectedReason)
-    } else {
-      await modal.findByDataQa('rejected-reason').waitUntilHidden()
-    }
+        .findByDataQa('additional-info')
+        .assertTextEquals(additionalInfo)
+      await modal
+        .findByDataQa('decision-status')
+        .assertText((text) => text.startsWith(status))
 
-    await modal.findByDataQa('close-btn').click()
+      if (rejectedReason) {
+        await modal
+          .findByDataQa('rejected-reason')
+          .assertTextEquals(rejectedReason)
+      } else {
+        await modal.findByDataQa('rejected-reason').waitUntilHidden()
+      }
+
+      await modal.findByDataQa('close-btn').click()
+    }
   }
 }
