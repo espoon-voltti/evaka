@@ -2367,6 +2367,7 @@ export default {
       incomeStatementForm: 'Tuloselvitys',
       startDate: 'Voimassa alkaen',
       endDate: 'Voimassa asti',
+      createdAt: 'Luotu',
       handled: 'Käsitelty',
       openIncomeStatement: 'Avaa lomake',
       deleteConfirm: 'Haluatko poistaa tuloselvityksen?',

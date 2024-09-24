@@ -2376,6 +2376,7 @@ const sv: Translations = {
       incomeStatementForm: 'Blankett för inkomstutredning',
       startDate: 'Gäller från och med',
       endDate: 'Gäller till och med',
+      createdAt: 'Skapad',
       handled: 'Handläggare',
       openIncomeStatement: 'Öppna blanketten',
       deleteConfirm: 'Vill du radera inkomstutredningen?',
