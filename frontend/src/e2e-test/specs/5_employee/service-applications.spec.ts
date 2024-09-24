@@ -157,8 +157,6 @@ describe('Service applications', () => {
       mockedTime2
     )
 
-    await employeePage.reload() // TODO: Remove when the page reload issue is fixed
-
     await childInformationPage.waitUntilLoaded()
     const placementsSection =
       await childInformationPage.openCollapsible('placements')
