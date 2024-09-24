@@ -2546,9 +2546,11 @@ export default {
       createButton: 'Ehdota muutosta palveluntarpeeseen',
       createTitle: 'Palveluntarpeen muutoshakemus',
       send: 'Lähetä',
-      noSuitablePlacementTitle:
-        'Valitulle päivälle ei voi ehdottaa uutta palveluntarvetta',
       noSuitablePlacementMessage:
+        'Lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.',
+      noSuitablePlacementOnDateTitle:
+        'Valitulle päivälle ei voi ehdottaa uutta palveluntarvetta',
+      noSuitablePlacementOnDateMessage:
         'Valittuna päivänä lapsella ei ole sellaista varhaiskasvatussijoitusta, jonka palveluntarvetta voisi muuttaa eVakan kautta. Ota tarvittaessa yhteys yksikköön.'
     },
     placementTermination: {

@@ -211,9 +211,11 @@ private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
             sno.valid_placement_type = pl.type AND
             daterange(sno.valid_from, sno.valid_to, '[]') && daterange(pl.start_date, pl.end_date, '[]') AND
             NOT sno.default_option
+        JOIN daycare d ON d.id = pl.unit_id
         WHERE
             pl.child_id = ANY (${bind(childIds)}) AND
-            daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]')
+            daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]') AND
+            'SERVICE_APPLICATIONS' = ANY(d.enabled_pilot_features)
     """
             )
         }

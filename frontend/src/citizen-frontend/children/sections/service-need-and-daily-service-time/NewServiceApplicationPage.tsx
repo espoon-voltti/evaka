@@ -125,11 +125,11 @@ export default React.memo(function NewServiceApplicationPage() {
                         <AlertBox
                           title={
                             i18n.children.serviceApplication
-                              .noSuitablePlacementTitle
+                              .noSuitablePlacementOnDateTitle
                           }
                           message={
                             i18n.children.serviceApplication
-                              .noSuitablePlacementMessage
+                              .noSuitablePlacementOnDateMessage
                           }
                           noMargin
                         />
