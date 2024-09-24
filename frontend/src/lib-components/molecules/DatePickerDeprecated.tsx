@@ -49,11 +49,13 @@ const StyledInput = styled.input`
   background-color: transparent;
   padding-bottom: calc(0.5em - 1px);
 
-  :focus {
-    padding-bottom: calc(calc(0.5em - 1px) - 1px);
-    border-bottom-width: 2px;
-    border-color: ${(p) => p.theme.colors.main.m2};
+  &:focus {
     outline: none;
+  }
+  &:focus-visible {
+    border-radius: 2px;
+    border-width: 2px;
+    border-color: ${(p) => p.theme.colors.main.m2Focus};
   }
 `
 

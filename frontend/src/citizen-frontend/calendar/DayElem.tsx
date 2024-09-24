@@ -165,8 +165,9 @@ const Day = styled.button<{
         ? `background-color: ${colors.accents.a10powder}`
         : undefined};
 
-  :focus {
+  &:focus {
     outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    z-index: 1;
   }
 `
 const DayColumn = styled(FixedSpaceColumn)<{

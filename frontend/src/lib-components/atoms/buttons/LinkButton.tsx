@@ -36,13 +36,15 @@ export default styled.a`
   justify-content: center;
   align-items: center;
 
-  :hover {
+  &:hover {
     background-color: ${(p) => p.theme.colors.main.m2Hover};
   }
-  :focus {
-    background-color: ${(p) => p.theme.colors.main.m2Focus};
+  &:focus {
+    box-shadow:
+      0 0 0 2px ${(p) => p.theme.colors.grayscale.g0},
+      0 0 0 4px ${(p) => p.theme.colors.main.m2Focus};
   }
-  :active {
+  &:active {
     background-color: ${(p) => p.theme.colors.main.m2Active};
   }
 `

@@ -188,7 +188,7 @@ export const TitleContainer = styled.button`
   padding: ${defaultMargins.xs};
   width: calc(100% + 2 * ${defaultMargins.xs});
 
-  :focus {
+  &:focus {
     border-color: ${(p) => p.theme.colors.main.m2Focus};
   }
 

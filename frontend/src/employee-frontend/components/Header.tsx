@@ -121,7 +121,7 @@ const NavbarLink = styled(NavLink)`
       font-weight: ${fontWeights.bold};
     }
   }
-  :focus {
+  &:focus {
     border-color: ${(p) => p.theme.colors.main.m3};
   }
   :hover {
