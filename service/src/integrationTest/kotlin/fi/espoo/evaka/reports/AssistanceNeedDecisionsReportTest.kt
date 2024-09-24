@@ -170,7 +170,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     ): AssistanceNeedDecision {
         val (_, res, result) =
             http
-                .post("/children/${testChild_1.id}/assistance-needs/decision")
+                .post("/employee/children/${testChild_1.id}/assistance-needs/decision")
                 .jsonBody(jsonMapper.writeValueAsString(request))
                 .asUser(assistanceWorker)
                 .responseObject<AssistanceNeedDecision>(jsonMapper)
@@ -179,7 +179,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
 
         val (_, sendRes) =
             http
-                .post("/assistance-need-decision/${result.get().id}/send")
+                .post("/employee/assistance-need-decision/${result.get().id}/send")
                 .asUser(assistanceWorker)
                 .response()
 
@@ -193,7 +193,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     ): List<AssistanceNeedDecisionsReportRow> {
         val (_, res, result) =
             http
-                .get("/reports/assistance-need-decisions")
+                .get("/employee/reports/assistance-need-decisions")
                 .asUser(decisionMaker)
                 .responseObject<List<AssistanceNeedDecisionsReportRow>>(jsonMapper)
 
@@ -206,7 +206,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     ): Int {
         val (_, res, result) =
             http
-                .get("/reports/assistance-need-decisions/unread-count")
+                .get("/employee/reports/assistance-need-decisions/unread-count")
                 .asUser(decisionMaker)
                 .responseObject<Int>(jsonMapper)
 
@@ -220,7 +220,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
     ) {
         val (_, res) =
             http
-                .post("/assistance-need-decision/$id/mark-as-opened")
+                .post("/employee/assistance-need-decision/$id/mark-as-opened")
                 .asUser(decisionMaker)
                 .response()
 

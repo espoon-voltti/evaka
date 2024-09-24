@@ -22,10 +22,7 @@ const val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
 class PresenceReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/presences", // deprecated
-        "/employee/reports/presences",
-    )
+    @GetMapping("/employee/reports/presences")
     fun getPresenceReport(
         db: Database,
         user: AuthenticatedUser.Employee,

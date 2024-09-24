@@ -25,10 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FamilyDaycareMealReport(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/family-daycare-meal-count", // deprecated
-        "/employee/reports/family-daycare-meal-count",
-    )
+    @GetMapping("/employee/reports/family-daycare-meal-count")
     fun getFamilyDaycareMealReport(
         db: Database,
         user: AuthenticatedUser.Employee,

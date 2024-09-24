@@ -22,10 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ChildAgeLanguageReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/child-age-language", // deprecated
-        "/employee/reports/child-age-language",
-    )
+    @GetMapping("/employee/reports/child-age-language")
     fun getChildAgeLanguageReport(
         db: Database,
         user: AuthenticatedUser.Employee,

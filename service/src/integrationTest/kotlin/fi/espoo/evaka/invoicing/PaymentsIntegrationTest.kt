@@ -508,7 +508,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun searchPayments(params: SearchPaymentsRequest): PagedPayments {
         val (_, response, result) =
             http
-                .post("/payments/search")
+                .post("/employee/payments/search")
                 .asUser(financeUser)
                 .jsonBody(jsonMapper.writeValueAsString(params))
                 .responseObject<PagedPayments>(jsonMapper)

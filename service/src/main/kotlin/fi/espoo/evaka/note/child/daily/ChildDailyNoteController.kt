@@ -45,8 +45,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @RequestBody body: ChildDailyNoteBody,
     ): ChildDailyNoteId = createChildDailyNote(db, user as AuthenticatedUser, clock, childId, body)
 
-    @PostMapping("/children/{childId}/child-daily-notes") // deprecated
-    fun createChildDailyNote(
+    private fun createChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -98,8 +97,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @RequestBody body: ChildDailyNoteBody,
     ): ChildDailyNote = updateChildDailyNote(db, user as AuthenticatedUser, clock, noteId, body)
 
-    @PutMapping("/child-daily-notes/{noteId}") // deprecated
-    fun updateChildDailyNote(
+    private fun updateChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -131,8 +129,7 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @PathVariable noteId: ChildDailyNoteId,
     ) = deleteChildDailyNote(db, user as AuthenticatedUser, clock, noteId)
 
-    @DeleteMapping("/child-daily-notes/{noteId}")
-    fun deleteChildDailyNote(
+    private fun deleteChildDailyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

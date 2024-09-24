@@ -34,10 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/partnerships", // deprecated
-    "/employee/partnerships",
-)
+@RequestMapping("/employee/partnerships")
 class PartnershipsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val partnershipService: PartnershipService,

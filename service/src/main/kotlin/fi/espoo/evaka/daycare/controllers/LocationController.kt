@@ -26,14 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class LocationController {
-    @GetMapping(
-        value =
-            [
-                "/units", // deprecated
-                "/public/units", // deprecated
-                "/employee/units",
-            ]
-    )
+    @GetMapping("/employee/units")
     fun getApplicationUnits(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -46,13 +39,7 @@ class LocationController {
         }
     }
 
-    @GetMapping(
-        path =
-            [
-                "/public/units/{applicationType}", // deprecated
-                "/employee/public/units/{applicationType}",
-            ]
-    )
+    @GetMapping("/employee/public/units/{applicationType}")
     fun getAllApplicableUnits(
         db: Database,
         @PathVariable applicationType: ApplicationType,
@@ -60,10 +47,7 @@ class LocationController {
         return db.connect { dbc -> dbc.read { it.getAllApplicableUnits(applicationType) } }
     }
 
-    @GetMapping(
-        "/areas", // deprecated
-        "/employee/areas",
-    )
+    @GetMapping("/employee/areas")
     fun getAreas(db: Database, user: AuthenticatedUser.Employee): List<AreaJSON> {
         return db.connect { dbc ->
             dbc.read {
@@ -72,10 +56,7 @@ class LocationController {
         }
     }
 
-    @GetMapping(
-        "/filters/units", // deprecated
-        "/employee/filters/units",
-    )
+    @GetMapping("/employee/filters/units")
     fun getUnits(
         db: Database,
         user: AuthenticatedUser.Employee,

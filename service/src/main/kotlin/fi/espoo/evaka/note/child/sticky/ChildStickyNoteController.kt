@@ -45,8 +45,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
     ): ChildStickyNoteId =
         createChildStickyNote(db, user as AuthenticatedUser, clock, childId, body)
 
-    @PostMapping("/children/{childId}/child-sticky-notes") // deprecated
-    fun createChildStickyNote(
+    private fun createChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -93,8 +92,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         @RequestBody body: ChildStickyNoteBody,
     ): ChildStickyNote = updateChildStickyNote(db, user as AuthenticatedUser, clock, noteId, body)
 
-    @PutMapping("/child-sticky-notes/{noteId}")
-    fun updateChildStickyNote(
+    private fun updateChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -128,8 +126,7 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         @PathVariable noteId: ChildStickyNoteId,
     ) = deleteChildStickyNote(db, user as AuthenticatedUser, clock, noteId)
 
-    @DeleteMapping("/child-sticky-notes/{noteId}") // deprecated
-    fun deleteChildStickyNote(
+    private fun deleteChildStickyNote(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

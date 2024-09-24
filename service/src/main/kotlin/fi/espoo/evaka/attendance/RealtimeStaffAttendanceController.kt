@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class RealtimeStaffAttendanceController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/staff-attendances/realtime", // deprecated
-        "/employee/staff-attendances/realtime",
-    )
+    @GetMapping("/employee/staff-attendances/realtime")
     fun getRealtimeStaffAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -178,10 +175,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping(
-        "/staff-attendances/realtime/upsert", // deprecated
-        "/employee/staff-attendances/realtime/upsert",
-    )
+    @PostMapping("/employee/staff-attendances/realtime/upsert")
     fun upsertDailyStaffRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -264,10 +258,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             }
     }
 
-    @PostMapping(
-        "/staff-attendances/realtime/upsert-external", // deprecated
-        "/employee/staff-attendances/realtime/upsert-external",
-    )
+    @PostMapping("/employee/staff-attendances/realtime/upsert-external")
     fun upsertDailyExternalRealtimeAttendances(
         db: Database,
         user: AuthenticatedUser.Employee,

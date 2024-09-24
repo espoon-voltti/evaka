@@ -57,10 +57,7 @@ class MessageController(
     private val messageService: MessageService,
 ) {
 
-    @GetMapping(
-        "/messages/my-accounts", // deprecated
-        "/employee/messages/my-accounts",
-    )
+    @GetMapping("/employee/messages/my-accounts")
     fun getAccountsByUser(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -89,10 +86,7 @@ class MessageController(
             }
     }
 
-    @GetMapping(
-        "/messages/mobile/my-accounts/{unitId}", // deprecated
-        "/employee-mobile/messages/my-accounts/{unitId}",
-    )
+    @GetMapping("/employee-mobile/messages/my-accounts/{unitId}")
     fun getAccountsByDevice(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -150,8 +144,7 @@ class MessageController(
     ): PagedMessageThreads =
         getReceivedMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
-    @GetMapping("/messages/{accountId}/received") // deprecated
-    fun getReceivedMessages(
+    private fun getReceivedMessages(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -178,10 +171,7 @@ class MessageController(
             }
     }
 
-    @GetMapping(
-        "/messages/{accountId}/archived", // deprecated
-        "/employee/messages/{accountId}/archived",
-    )
+    @GetMapping("/employee/messages/{accountId}/archived")
     fun getArchivedMessages(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -215,10 +205,7 @@ class MessageController(
             }
     }
 
-    @GetMapping(
-        "/messages/{accountId}/copies", // deprecated
-        "/employee/messages/{accountId}/copies",
-    )
+    @GetMapping("/employee/messages/{accountId}/copies")
     fun getMessageCopies(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -256,8 +243,7 @@ class MessageController(
         @RequestParam page: Int,
     ): PagedSentMessages = getSentMessages(db, user as AuthenticatedUser, clock, accountId, page)
 
-    @GetMapping("/messages/{accountId}/sent") // deprecated
-    fun getSentMessages(
+    private fun getSentMessages(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -294,8 +280,7 @@ class MessageController(
         @PathVariable threadId: MessageThreadId,
     ): MessageThread = getThread(db, user as AuthenticatedUser, clock, accountId, threadId)
 
-    @GetMapping("/messages/{accountId}/thread/{threadId}") // deprecated
-    fun getThread(
+    private fun getThread(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -322,10 +307,7 @@ class MessageController(
 
     data class ThreadByApplicationResponse(val thread: MessageThread?)
 
-    @GetMapping(
-        "/messages/application/{applicationId}", // deprecated
-        "/employee/messages/application/{applicationId}",
-    )
+    @GetMapping("/employee/messages/application/{applicationId}")
     fun getThreadByApplicationId(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -356,10 +338,7 @@ class MessageController(
                 ThreadByApplicationResponse(thread = thread)
             }
 
-    @GetMapping(
-        "/messages/unread", // deprecated
-        "/employee/messages/unread",
-    )
+    @GetMapping("/employee/messages/unread")
     fun getUnreadMessages(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -384,10 +363,7 @@ class MessageController(
             }
     }
 
-    @GetMapping(
-        "/messages/unread/{unitId}", // deprecated
-        "/employee-mobile/messages/unread/{unitId}",
-    )
+    @GetMapping("/employee-mobile/messages/unread/{unitId}")
     fun getUnreadMessagesByUnit(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -448,8 +424,7 @@ class MessageController(
     ): PostMessagePreflightResponse =
         createMessagePreflightCheck(db, user as AuthenticatedUser, clock, accountId, body)
 
-    @PostMapping("/messages/{accountId}/preflight-check") // deprecated
-    fun createMessagePreflightCheck(
+    private fun createMessagePreflightCheck(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -514,8 +489,7 @@ class MessageController(
         @RequestBody body: PostMessageBody,
     ): CreateMessageResponse = createMessage(db, user as AuthenticatedUser, clock, accountId, body)
 
-    @PostMapping("/messages/{accountId}") // deprecated
-    fun createMessage(
+    private fun createMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -628,8 +602,7 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
     ): List<DraftContent> = getDraftMessages(db, user as AuthenticatedUser, clock, accountId)
 
-    @GetMapping("/messages/{accountId}/drafts") // deprecated
-    fun getDraftMessages(
+    private fun getDraftMessages(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -663,8 +636,7 @@ class MessageController(
         @PathVariable accountId: MessageAccountId,
     ): MessageDraftId = initDraftMessage(db, user as AuthenticatedUser, clock, accountId)
 
-    @PostMapping("/messages/{accountId}/drafts") // deprecated
-    fun initDraftMessage(
+    private fun initDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -702,8 +674,7 @@ class MessageController(
         @RequestBody content: UpdatableDraftContent,
     ) = updateDraftMessage(db, user as AuthenticatedUser, clock, accountId, draftId, content)
 
-    @PutMapping("/messages/{accountId}/drafts/{draftId}") // deprecated
-    fun updateDraftMessage(
+    private fun updateDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -741,8 +712,7 @@ class MessageController(
         @PathVariable draftId: MessageDraftId,
     ) = deleteDraftMessage(db, user as AuthenticatedUser, clock, accountId, draftId)
 
-    @DeleteMapping("/messages/{accountId}/drafts/{draftId}") // deprecated
-    fun deleteDraftMessage(
+    private fun deleteDraftMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -783,8 +753,7 @@ class MessageController(
     ): MessageService.ThreadReply =
         replyToThread(db, user as AuthenticatedUser, clock, accountId, messageId, body)
 
-    @PostMapping("/messages/{accountId}/{messageId}/reply") // deprecated
-    fun replyToThread(
+    private fun replyToThread(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -833,8 +802,7 @@ class MessageController(
         @PathVariable threadId: MessageThreadId,
     ) = markThreadRead(db, user as AuthenticatedUser, clock, accountId, threadId)
 
-    @PutMapping("/messages/{accountId}/threads/{threadId}/read") // deprecated
-    fun markThreadRead(
+    private fun markThreadRead(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -848,10 +816,7 @@ class MessageController(
         Audit.MessagingMarkMessagesReadWrite.log(targetId = AuditId(listOf(accountId, threadId)))
     }
 
-    @PutMapping(
-        "/messages/{accountId}/threads/{threadId}/archive", // deprecated
-        "/employee/messages/{accountId}/threads/{threadId}/archive",
-    )
+    @PutMapping("/employee/messages/{accountId}/threads/{threadId}/archive")
     fun archiveThread(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -882,8 +847,7 @@ class MessageController(
     ): List<MessageReceiversResponse> =
         getReceiversForNewMessage(db, user as AuthenticatedUser, clock)
 
-    @GetMapping("/messages/receivers") // deprecated
-    fun getReceiversForNewMessage(
+    private fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,

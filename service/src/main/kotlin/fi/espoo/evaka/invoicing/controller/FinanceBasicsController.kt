@@ -39,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/finance-basics", // deprecated
-    "/employee/finance-basics",
-)
+@RequestMapping("/employee/finance-basics")
 class FinanceBasicsController(private val accessControl: AccessControl) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(

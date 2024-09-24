@@ -39,7 +39,6 @@ class ChildImageController(
     private val bucket = env.data
 
     @PutMapping(
-        "/children/{childId}/image", // deprecated
         "/employee-mobile/children/{childId}/image",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -79,10 +78,7 @@ class ChildImageController(
         )
     }
 
-    @DeleteMapping(
-        "/children/{childId}/image", // deprecated
-        "/employee-mobile/children/{childId}/image",
-    )
+    @DeleteMapping("/employee-mobile/children/{childId}/image")
     fun deleteImage(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -116,7 +112,7 @@ class ChildImageController(
         @PathVariable imageId: ChildImageId,
     ): ResponseEntity<Any> = getImageInternal(db, user, clock, imageId)
 
-    @GetMapping("/child-images/{imageId}", "/employee-mobile/child-images/{imageId}")
+    @GetMapping("/employee-mobile/child-images/{imageId}")
     fun getImage(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

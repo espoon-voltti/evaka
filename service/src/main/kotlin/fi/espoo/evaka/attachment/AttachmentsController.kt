@@ -57,7 +57,6 @@ class AttachmentsController(
     private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
 
     @PostMapping(
-        "/attachments/applications/{applicationId}", // deprecated
         "/employee/attachments/applications/{applicationId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -100,7 +99,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/income-statements/{incomeStatementId}", // deprecated
         "/employee/attachments/income-statements/{incomeStatementId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -139,8 +137,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/income/{incomeId}", // deprecated
-        "/attachments/income", // deprecated
         "/employee/attachments/income/{incomeId}",
         "/employee/attachments/income",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -180,7 +176,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/messages/{draftId}", // deprecated
         "/employee/attachments/messages/{draftId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -214,7 +209,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/pedagogical-documents/{documentId}", // deprecated
         "/employee/attachments/pedagogical-documents/{documentId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -258,7 +252,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/citizen/applications/{applicationId}", // deprecated
         "/citizen/attachments/applications/{applicationId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
@@ -296,8 +289,6 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/citizen/income-statements/{incomeStatementId}", // deprecated
-        "/attachments/citizen/income-statements", // deprecated
         "/citizen/attachments/income-statements/{incomeStatementId}",
         "/citizen/attachments/income-statements",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -361,10 +352,8 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/attachments/fee-alteration/{feeAlterationId}", // deprecated
-        "/attachments/fee-alteration", // deprecated
-        "/employee/attachments/fee-alteration/{feeAlterationId}", // deprecated
-        "/employee/attachments/fee-alteration", // deprecated
+        "/employee/attachments/fee-alteration/{feeAlterationId}",
+        "/employee/attachments/fee-alteration",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun uploadFeeAlterationAttachment(
@@ -511,10 +500,7 @@ class AttachmentsController(
         @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> = getAttachmentInternal(db, user, clock, attachmentId, requestedFilename)
 
-    @GetMapping(
-        "/attachments/{attachmentId}/download/{requestedFilename}" // deprecated
-    )
-    fun getAttachmentInternal(
+    private fun getAttachmentInternal(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
@@ -621,10 +607,7 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId,
     ) = deleteAttachmentHandler(db, user, clock, attachmentId)
 
-    @DeleteMapping(
-        "/attachments/{attachmentId}", // deprecated
-        "/employee/attachments/{attachmentId}",
-    )
+    @DeleteMapping("/employee/attachments/{attachmentId}")
     fun deleteAttachment(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -36,10 +36,7 @@ private val defaultApplicationStatuses =
 
 @RestController
 class PlacementSketchingReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/placement-sketching", // deprecated
-        "/employee/reports/placement-sketching",
-    )
+    @GetMapping("/employee/reports/placement-sketching")
     fun getPlacementSketchingReport(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -103,7 +103,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `get placements works with daycareId and without dates`() {
         val (_, res, result) =
             http
-                .get("/placements?daycareId=$daycareId")
+                .get("/employee/placements?daycareId=$daycareId")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -131,7 +131,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, result) =
             http
                 .get(
-                    "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
+                    "/employee/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
                 )
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
@@ -145,7 +145,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, result) =
             http
                 .get(
-                    "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
+                    "/employee/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
                 )
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
@@ -158,7 +158,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `get placements returns an empty list if daycare is not found`() {
         val (_, res, result) =
             http
-                .get("/placements?daycareId=${UUID.randomUUID()}")
+                .get("/employee/placements?daycareId=${UUID.randomUUID()}")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -170,7 +170,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `get placements works with childId and without dates`() {
         val (_, res, result) =
             http
-                .get("/placements?childId=$childId")
+                .get("/employee/placements?childId=$childId")
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -192,7 +192,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, result) =
             http
                 .get(
-                    "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
+                    "/employee/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
                 )
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
@@ -206,7 +206,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val (_, res, result) =
             http
                 .get(
-                    "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
+                    "/employee/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
                 )
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
@@ -217,7 +217,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements throws BadRequest if daycare id and child id is not given`() {
-        val (_, res, _) = http.get("/placements").asUser(serviceWorker).response()
+        val (_, res, _) = http.get("/employee/placements").asUser(serviceWorker).response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
     }
@@ -992,13 +992,16 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             }
 
         val (_, res, _) =
-            http.delete("/group-placements/$groupPlacementId").asUser(unitSupervisor).response()
+            http
+                .delete("/employee/group-placements/$groupPlacementId")
+                .asUser(unitSupervisor)
+                .response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
         val (_, _, result) =
             http
-                .get("/placements?daycareId=$daycareId")
+                .get("/employee/placements?daycareId=$daycareId")
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -1035,7 +1038,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, res, result) =
             http
-                .get("/placements?childId=$childId")
+                .get("/employee/placements?childId=$childId")
                 .asUser(unitSupervisor)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -1069,7 +1072,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, forbidden, _) =
             http
-                .put("/placements/$restrictedId")
+                .put("/employee/placements/$restrictedId")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1078,7 +1081,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, allowed, _) =
             http
-                .put("/placements/$allowedId")
+                .put("/employee/placements/$allowedId")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1114,7 +1117,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, res, _) =
             http
-                .put("/placements/$allowedId")
+                .put("/employee/placements/$allowedId")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1151,7 +1154,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             ) // endDate overlaps with another placement
         val (_, res, _) =
             http
-                .put("/placements/${testPlacement.id}")
+                .put("/employee/placements/${testPlacement.id}")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1177,7 +1180,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, res, _) =
             http
-                .put("/placements/$daycareId")
+                .put("/employee/placements/$daycareId")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1193,7 +1196,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             }
 
         val (_, res, _) =
-            http.delete("/group-placements/$groupPlacementId").asUser(serviceWorker).response()
+            http
+                .delete("/employee/group-placements/$groupPlacementId")
+                .asUser(serviceWorker)
+                .response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(403)
     }
@@ -1215,7 +1221,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val body = PlacementUpdateRequestBody(startDate = placementStart, endDate = newEnd)
         val (_, res, _) =
             http
-                .put("/placements/${testPlacement.id}")
+                .put("/employee/placements/${testPlacement.id}")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1244,7 +1250,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = placementEnd)
         val (_, res, _) =
             http
-                .put("/placements/${testPlacement.id}")
+                .put("/employee/placements/${testPlacement.id}")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1282,7 +1288,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val body = PlacementUpdateRequestBody(startDate = placementStart, endDate = newEnd)
         val (_, res, _) =
             http
-                .put("/placements/${testPlacement.id}")
+                .put("/employee/placements/${testPlacement.id}")
                 .objectBody(bodyObject = body, mapper = jsonMapper)
                 .asUser(unitSupervisor)
                 .response()
@@ -1307,7 +1313,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         val (_, res, _) =
-            http.delete("/placements/${testPlacement.id}").asUser(serviceWorker).response()
+            http.delete("/employee/placements/${testPlacement.id}").asUser(serviceWorker).response()
 
         assertEquals(200, res.statusCode)
 
@@ -1320,7 +1326,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         groupPlacement: GroupPlacementRequestBody,
     ): ResponseResultOf<ByteArray> {
         return http
-            .post("/placements/$placementId/group-placements")
+            .post("/employee/placements/$placementId/group-placements")
             .asUser(unitSupervisor)
             .objectBody(bodyObject = groupPlacement, mapper = jsonMapper)
             .response()
@@ -1368,7 +1374,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         daycareId: DaycareId,
     ): List<DaycareGroupPlacement> {
         return http
-            .get("/placements?childId=$childId&daycareId=$daycareId")
+            .get("/employee/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<PlacementResponse>(jsonMapper)
             .third

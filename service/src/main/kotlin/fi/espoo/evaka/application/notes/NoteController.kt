@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/note", // deprecated
-    "/employee/note",
-)
+@RequestMapping("/employee/note")
 class NoteController(private val accessControl: AccessControl) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(

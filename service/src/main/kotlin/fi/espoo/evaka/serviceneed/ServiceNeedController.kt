@@ -44,10 +44,7 @@ class ServiceNeedController(
         val partWeek: Boolean,
     )
 
-    @PostMapping(
-        "/service-needs", // deprecated
-        "/employee/service-needs",
-    )
+    @PostMapping("/employee/service-needs")
     fun postServiceNeed(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -96,10 +93,7 @@ class ServiceNeedController(
         val partWeek: Boolean,
     )
 
-    @PutMapping(
-        "/service-needs/{id}", // deprecated
-        "/employee/service-needs/{id}",
-    )
+    @PutMapping("/employee/service-needs/{id}")
     fun putServiceNeed(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -141,7 +135,7 @@ class ServiceNeedController(
         Audit.PlacementServiceNeedUpdate.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping("/service-needs/{id}", "/employee/service-needs/{id}")
+    @DeleteMapping("/employee/service-needs/{id}")
     fun deleteServiceNeed(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -160,10 +154,7 @@ class ServiceNeedController(
         Audit.PlacementServiceNeedDelete.log(targetId = AuditId(id))
     }
 
-    @GetMapping(
-        "/service-needs/options", // deprecated
-        "/employee/service-needs/options",
-    )
+    @GetMapping("/employee/service-needs/options")
     fun getServiceNeedOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -184,12 +175,7 @@ class ServiceNeedController(
     }
 
     @GetMapping(
-        path =
-            [
-                "/public/service-needs/options", // deprecated
-                "/citizen/public/service-needs/options",
-                "/employee/public/service-needs/options",
-            ]
+        path = ["/citizen/public/service-needs/options", "/employee/public/service-needs/options"]
     )
     fun getServiceNeedOptionPublicInfos(
         db: Database,

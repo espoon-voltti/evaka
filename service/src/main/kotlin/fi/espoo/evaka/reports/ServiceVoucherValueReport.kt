@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/reports/service-voucher-value", // deprecated
-    "/employee/reports/service-voucher-value",
-)
+@RequestMapping("/employee/reports/service-voucher-value")
 class ServiceVoucherValueReportController(private val accessControl: AccessControl) {
 
     @GetMapping("/units")

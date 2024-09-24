@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class NonSsnChildrenReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/non-ssn-children", // deprecated
-        "/employee/reports/non-ssn-children",
-    )
+    @GetMapping("/employee/reports/non-ssn-children")
     fun getNonSsnChildrenReportRows(
         db: Database,
         user: AuthenticatedUser.Employee,

@@ -35,10 +35,7 @@ class ChildController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
 ) {
-    @GetMapping(
-        "/children/{childId}", // deprecated
-        "/employee/children/{childId}",
-    )
+    @GetMapping("/employee/children/{childId}")
     fun getChild(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -82,10 +79,7 @@ class ChildController(
             .also { Audit.PersonDetailsRead.log(targetId = AuditId(childId)) }
     }
 
-    @GetMapping(
-        "/children/{childId}/additional-information", // deprecated
-        "/employee/children/{childId}/additional-information",
-    )
+    @GetMapping("/employee/children/{childId}/additional-information")
     fun getAdditionalInfo(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -107,10 +101,7 @@ class ChildController(
             .also { Audit.ChildAdditionalInformationRead.log(targetId = AuditId(childId)) }
     }
 
-    @PutMapping(
-        "/children/{childId}/additional-information", // deprecated
-        "/employee/children/{childId}/additional-information",
-    )
+    @PutMapping("/employee/children/{childId}/additional-information")
     fun updateAdditionalInfo(
         db: Database,
         user: AuthenticatedUser.Employee,

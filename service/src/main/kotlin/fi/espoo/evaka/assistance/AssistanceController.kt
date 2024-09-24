@@ -67,10 +67,7 @@ class AssistanceController(
         val assistanceActions: List<AssistanceActionResponse>,
     )
 
-    @GetMapping(
-        "/children/{child}/assistance", // deprecated
-        "/employee/children/{child}/assistance",
-    )
+    @GetMapping("/employee/children/{child}/assistance")
     fun getChildAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -178,10 +175,7 @@ class AssistanceController(
             }
         }
 
-    @PostMapping(
-        "/children/{childId}/assistance-actions", // deprecated
-        "/employee/children/{childId}/assistance-actions",
-    )
+    @PostMapping("/employee/children/{childId}/assistance-actions")
     fun createAssistanceAction(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -214,10 +208,7 @@ class AssistanceController(
             }
     }
 
-    @PutMapping(
-        "/assistance-actions/{id}", // deprecated
-        "/employee/assistance-actions/{id}",
-    )
+    @PutMapping("/employee/assistance-actions/{id}")
     fun updateAssistanceAction(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -245,10 +236,7 @@ class AssistanceController(
             .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
     }
 
-    @DeleteMapping(
-        "/assistance-actions/{id}", // deprecated
-        "/employee/assistance-actions/{id}",
-    )
+    @DeleteMapping("/employee/assistance-actions/{id}")
     fun deleteAssistanceAction(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -270,10 +258,7 @@ class AssistanceController(
         Audit.ChildAssistanceActionDelete.log(targetId = AuditId(id))
     }
 
-    @GetMapping(
-        "/assistance-action-options", // deprecated
-        "/employee/assistance-action-options",
-    )
+    @GetMapping("/employee/assistance-action-options")
     fun getAssistanceActionOptions(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -293,10 +278,7 @@ class AssistanceController(
             .also { Audit.AssistanceActionOptionsRead.log() }
     }
 
-    @PostMapping(
-        "/children/{child}/assistance-factors", // deprecated
-        "/employee/children/{child}/assistance-factors",
-    )
+    @PostMapping("/employee/children/{child}/assistance-factors")
     fun createAssistanceFactor(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -331,10 +313,7 @@ class AssistanceController(
                 Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
             }
 
-    @PostMapping(
-        "/assistance-factors/{id}", // deprecated
-        "/employee/assistance-factors/{id}",
-    )
+    @PostMapping("/employee/assistance-factors/{id}")
     fun updateAssistanceFactor(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -372,10 +351,7 @@ class AssistanceController(
             }
             .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
 
-    @DeleteMapping(
-        "/assistance-factors/{id}", // deprecated
-        "/employee/assistance-factors/{id}",
-    )
+    @DeleteMapping("/employee/assistance-factors/{id}")
     fun deleteAssistanceFactor(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -411,10 +387,7 @@ class AssistanceController(
         deletedId?.let { Audit.AssistanceFactorDelete.log(targetId = AuditId(it)) }
     }
 
-    @PostMapping(
-        "/children/{child}/daycare-assistances", // deprecated
-        "/employee/children/{child}/daycare-assistances",
-    )
+    @PostMapping("/employee/children/{child}/daycare-assistances")
     fun createDaycareAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -438,10 +411,7 @@ class AssistanceController(
                 Audit.DaycareAssistanceCreate.log(targetId = AuditId(child), objectId = AuditId(id))
             }
 
-    @PostMapping(
-        "/daycare-assistances/{id}", // deprecated
-        "/employee/daycare-assistances/{id}",
-    )
+    @PostMapping("/employee/daycare-assistances/{id}")
     fun updateDaycareAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -463,10 +433,7 @@ class AssistanceController(
             }
             .also { Audit.DaycareAssistanceUpdate.log(targetId = AuditId(id)) }
 
-    @DeleteMapping(
-        "/daycare-assistances/{id}", // deprecated
-        "/employee/daycare-assistances/{id}",
-    )
+    @DeleteMapping("/employee/daycare-assistances/{id}")
     fun deleteDaycareAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -491,10 +458,7 @@ class AssistanceController(
         deletedId?.let { Audit.DaycareAssistanceDelete.log(targetId = AuditId(it)) }
     }
 
-    @PostMapping(
-        "/children/{child}/preschool-assistances", // deprecated
-        "/employee/children/{child}/preschool-assistances",
-    )
+    @PostMapping("/employee/children/{child}/preschool-assistances")
     fun createPreschoolAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -521,10 +485,7 @@ class AssistanceController(
                 )
             }
 
-    @PostMapping(
-        "/preschool-assistances/{id}", // deprecated
-        "/employee/preschool-assistances/{id}",
-    )
+    @PostMapping("/employee/preschool-assistances/{id}")
     fun updatePreschoolAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -546,10 +507,7 @@ class AssistanceController(
             }
             .also { Audit.PreschoolAssistanceUpdate.log(targetId = AuditId(id)) }
 
-    @DeleteMapping(
-        "/preschool-assistances/{id}", // deprecated
-        "/employee/preschool-assistances/{id}",
-    )
+    @DeleteMapping("/employee/preschool-assistances/{id}")
     fun deletePreschoolAssistance(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -574,10 +532,7 @@ class AssistanceController(
         deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
     }
 
-    @PostMapping(
-        "/children/{child}/other-assistance-measures", // deprecated
-        "/employee/children/{child}/other-assistance-measures",
-    )
+    @PostMapping("/employee/children/{child}/other-assistance-measures")
     fun createOtherAssistanceMeasure(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -604,10 +559,7 @@ class AssistanceController(
                 )
             }
 
-    @PostMapping(
-        "/other-assistance-measures/{id}", // deprecated
-        "/employee/other-assistance-measures/{id}",
-    )
+    @PostMapping("/employee/other-assistance-measures/{id}")
     fun updateOtherAssistanceMeasure(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -629,10 +581,7 @@ class AssistanceController(
             }
             .also { Audit.OtherAssistanceMeasureUpdate.log(targetId = AuditId(id)) }
 
-    @DeleteMapping(
-        "/other-assistance-measures/{id}", // deprecated
-        "/employee/other-assistance-measures/{id}",
-    )
+    @DeleteMapping("/employee/other-assistance-measures/{id}")
     fun deleteOtherAssistanceMeasure(
         db: Database,
         user: AuthenticatedUser.Employee,

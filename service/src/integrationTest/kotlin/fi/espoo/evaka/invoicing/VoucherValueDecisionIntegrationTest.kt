@@ -735,7 +735,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
 
         http
-            .post("/placements")
+            .post("/employee/placements")
             .asUser(serviceWorker)
             .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
@@ -744,7 +744,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val (_, _, data) =
             http
-                .get("/placements", listOf("childId" to childId))
+                .get("/employee/placements", listOf("childId" to childId))
                 .asUser(serviceWorker)
                 .responseObject<PlacementResponse>(jsonMapper)
 
@@ -757,7 +757,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val body = PlacementUpdateRequestBody(startDate = startDate, endDate = endDate)
 
         http
-            .put("/placements/$id")
+            .put("/employee/placements/$id")
             .asUser(serviceWorker)
             .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
@@ -768,10 +768,12 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deletePlacement(id: PlacementId) {
-        http.delete("/placements/$id").asUser(serviceWorker).withMockedTime(now).response().also {
-            (_, res, _) ->
-            assertEquals(200, res.statusCode)
-        }
+        http
+            .delete("/employee/placements/$id")
+            .asUser(serviceWorker)
+            .withMockedTime(now)
+            .response()
+            .also { (_, res, _) -> assertEquals(200, res.statusCode) }
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
     }
@@ -790,7 +792,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
 
         http
-            .post("/parentships")
+            .post("/employee/parentships")
             .asUser(serviceWorker)
             .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
@@ -806,7 +808,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     ): PagedVoucherValueDecisionSummaries {
         val (_, _, data) =
             http
-                .post("/value-decisions/search")
+                .post("/employee/value-decisions/search")
                 .jsonBody(
                     """{"page": 0, "pageSize": 100, "statuses": ["$status"], "searchTerms": "$searchTerms", "distinctions": $distinctionsString}"""
                 )
@@ -822,7 +824,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     ): List<VoucherValueDecisionId> {
         val (_, _, data) =
             http
-                .post("/value-decisions/search")
+                .post("/employee/value-decisions/search")
                 .jsonBody("""{"page": 0, "pageSize": 100, "statuses": ["DRAFT"]}""")
                 .withMockedTime(now)
                 .asUser(financeWorker)
@@ -831,7 +833,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val decisionIds = data.get().data.map { it.id }
         http
-            .post("/value-decisions/send")
+            .post("/employee/value-decisions/send")
             .objectBody(decisionIds, mapper = jsonMapper)
             .withMockedTime(now)
             .asUser(financeWorker)
@@ -861,7 +863,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         decisionId: VoucherValueDecisionId,
         user: AuthenticatedUser.Employee,
     ): Int {
-        val (_, response, _) = http.get("/value-decisions/pdf/$decisionId").asUser(user).response()
+        val (_, response, _) =
+            http.get("/employee/value-decisions/pdf/$decisionId").asUser(user).response()
         return response.statusCode
     }
 
@@ -882,7 +885,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         expectedErrorCode: String? = null,
     ) {
         http
-            .post("/value-decisions/mark-sent")
+            .post("/employee/value-decisions/mark-sent")
             .objectBody(decisionIds, mapper = jsonMapper)
             .withMockedTime(now)
             .asUser(financeWorker)

@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/foster-parent", // deprecated
-    "/employee/foster-parent",
-)
+@RequestMapping("/employee/foster-parent")
 class FosterParentController(private val accessControl: AccessControl) {
     @GetMapping("/by-parent/{parentId}")
     fun getFosterChildren(

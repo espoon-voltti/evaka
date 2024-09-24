@@ -282,11 +282,6 @@ server {
       client_max_body_size 100m;
       proxy_pass  $enduserUrl;
     }
-
-    location /api/application/attachments {
-      client_max_body_size 100m;
-      proxy_pass  $enduserUrl;
-    }
   }
 
   location /api/internal {
@@ -301,11 +296,6 @@ server {
     }
 
     location /api/internal/employee-mobile/attachments {
-      client_max_body_size 100m;
-      proxy_pass  $internalUrl;
-    }
-
-    location /api/internal/attachments {
       client_max_body_size 100m;
       proxy_pass  $internalUrl;
     }

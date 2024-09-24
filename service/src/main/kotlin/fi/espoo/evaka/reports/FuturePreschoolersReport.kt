@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FuturePreschoolersReport(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/future-preschoolers", // deprecated
-        "/employee/reports/future-preschoolers",
-    )
+    @GetMapping("/employee/reports/future-preschoolers")
     fun getFuturePreschoolersReport(
         db: Database,
         user: AuthenticatedUser.Employee,

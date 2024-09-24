@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class VardaErrorReport(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/varda-child-errors", // deprecated
-        "/employee/reports/varda-child-errors",
-    )
+    @GetMapping("/employee/reports/varda-child-errors")
     fun getVardaChildErrorsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -44,10 +41,7 @@ class VardaErrorReport(private val accessControl: AccessControl) {
             .also { Audit.VardaReportRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping(
-        "/reports/varda-unit-errors", // deprecated
-        "/employee/reports/varda-unit-errors",
-    )
+    @GetMapping("/employee/reports/varda-unit-errors")
     fun getVardaUnitErrorsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

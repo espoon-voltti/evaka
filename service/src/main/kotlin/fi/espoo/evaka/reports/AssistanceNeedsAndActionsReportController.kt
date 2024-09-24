@@ -34,10 +34,7 @@ class AssistanceNeedsAndActionsReportController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
 ) {
-    @GetMapping(
-        "/reports/assistance-needs-and-actions", // deprecated
-        "/employee/reports/assistance-needs-and-actions",
-    )
+    @GetMapping("/employee/reports/assistance-needs-and-actions")
     fun getAssistanceNeedsAndActionsReport(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -90,10 +87,7 @@ class AssistanceNeedsAndActionsReportController(
         val assistanceNeedVoucherCoefficientCount: Int,
     )
 
-    @GetMapping(
-        "/reports/assistance-needs-and-actions/by-child", // deprecated
-        "/employee/reports/assistance-needs-and-actions/by-child",
-    )
+    @GetMapping("/employee/reports/assistance-needs-and-actions/by-child")
     fun getAssistanceNeedsAndActionsReportByChild(
         db: Database,
         user: AuthenticatedUser.Employee,

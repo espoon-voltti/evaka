@@ -67,10 +67,7 @@ class AttendanceReservationController(
     private val featureConfig: FeatureConfig,
     private val env: EvakaEnv,
 ) {
-    @GetMapping(
-        "/attendance-reservations", // deprecated
-        "/employee/attendance-reservations",
-    )
+    @GetMapping("/employee/attendance-reservations")
     fun getAttendanceReservations(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -208,10 +205,7 @@ class AttendanceReservationController(
             }
     }
 
-    @PostMapping(
-        "/attendance-reservations", // deprecated
-        "/employee/attendance-reservations",
-    )
+    @PostMapping("/employee/attendance-reservations")
     fun postReservations(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -253,10 +247,7 @@ class AttendanceReservationController(
             }
     }
 
-    @PostMapping(
-        "/attendance-reservations/child-date", // deprecated
-        "/employee/attendance-reservations/child-date",
-    )
+    @PostMapping("/employee/attendance-reservations/child-date")
     fun postChildDatePresence(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -299,10 +290,7 @@ class AttendanceReservationController(
 
     data class ExpectedAbsencesResponse(val categories: Set<AbsenceCategory>?)
 
-    @PostMapping(
-        "/attendance-reservations/child-date/expected-absences", // deprecated
-        "/employee/attendance-reservations/child-date/expected-absences",
-    )
+    @PostMapping("/employee/attendance-reservations/child-date/expected-absences")
     fun getExpectedAbsences(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -342,10 +330,7 @@ class AttendanceReservationController(
             }
     }
 
-    @GetMapping(
-        "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
-        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range",
-    )
+    @GetMapping("/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range")
     fun getConfirmedRangeData(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -401,10 +386,7 @@ class AttendanceReservationController(
             .also { Audit.ChildConfirmedRangeReservationsRead.log(targetId = AuditId(childId)) }
     }
 
-    @PutMapping(
-        "/attendance-reservations/by-child/{childId}/confirmed-range", // deprecated
-        "/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range",
-    )
+    @PutMapping("/employee-mobile/attendance-reservations/by-child/{childId}/confirmed-range")
     fun setConfirmedRangeReservations(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -485,10 +467,7 @@ class AttendanceReservationController(
         val childReservations: List<ChildReservationInfo>,
     )
 
-    @GetMapping(
-        "/attendance-reservations/confirmed-days/daily", // deprecated
-        "/employee-mobile/attendance-reservations/confirmed-days/daily",
-    )
+    @GetMapping("/employee-mobile/attendance-reservations/confirmed-days/daily")
     fun getChildReservationsForDay(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -605,10 +584,7 @@ class AttendanceReservationController(
         val groupStatistics: List<GroupReservationStatisticResult>,
     )
 
-    @GetMapping(
-        "/attendance-reservations/confirmed-days/stats", // deprecated
-        "/employee-mobile/attendance-reservations/confirmed-days/stats",
-    )
+    @GetMapping("/employee-mobile/attendance-reservations/confirmed-days/stats")
     fun getReservationStatisticsForConfirmedDays(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

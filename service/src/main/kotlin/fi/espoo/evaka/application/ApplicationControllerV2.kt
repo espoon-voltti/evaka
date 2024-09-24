@@ -115,10 +115,7 @@ enum class VoucherApplicationFilter {
 }
 
 @RestController
-@RequestMapping(
-    "/v2/applications", // deprecated
-    "/employee/applications",
-)
+@RequestMapping("/employee/applications")
 class ApplicationControllerV2(
     private val accessControl: AccessControl,
     private val personService: PersonService,

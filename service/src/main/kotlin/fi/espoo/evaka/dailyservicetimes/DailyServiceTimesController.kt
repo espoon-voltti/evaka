@@ -35,10 +35,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         val permittedActions: Set<Action.DailyServiceTime>,
     )
 
-    @GetMapping(
-        "" + "/children/{childId}/daily-service-times", // deprecated
-        "/employee/children/{childId}/daily-service-times",
-    )
+    @GetMapping("/employee/children/{childId}/daily-service-times")
     fun getDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -71,10 +68,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             }
     }
 
-    @PostMapping(
-        "/children/{childId}/daily-service-times", // deprecated
-        "/employee/children/{childId}/daily-service-times",
-    )
+    @PostMapping("/employee/children/{childId}/daily-service-times")
     fun postDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -111,10 +105,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(childId), objectId = AuditId(id))
     }
 
-    @PutMapping(
-        "/daily-service-times/{id}", // deprecated
-        "/employee/daily-service-times/{id}",
-    )
+    @PutMapping("/employee/daily-service-times/{id}")
     fun putDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -164,10 +155,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     data class DailyServiceTimesEndDate(val endDate: LocalDate?)
 
-    @PutMapping(
-        "/daily-service-times/{id}/end", // deprecated
-        "/employee/daily-service-times/{id}/end",
-    )
+    @PutMapping("/employee/daily-service-times/{id}/end")
     fun putDailyServiceTimesEnd(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -234,10 +222,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(id))
     }
 
-    @DeleteMapping(
-        "/daily-service-times/{id}", // deprecated
-        "/employee/daily-service-times/{id}",
-    )
+    @DeleteMapping("/employee/daily-service-times/{id}")
     fun deleteDailyServiceTimes(
         db: Database,
         user: AuthenticatedUser.Employee,

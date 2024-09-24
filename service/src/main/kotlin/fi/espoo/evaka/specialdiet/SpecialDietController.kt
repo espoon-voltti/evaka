@@ -15,10 +15,7 @@ import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping(
-    "/diets", // deprecated
-    "/employee/diets",
-)
+@RequestMapping("/employee/diets")
 class SpecialDietController(private val accessControl: AccessControl) {
 
     /**

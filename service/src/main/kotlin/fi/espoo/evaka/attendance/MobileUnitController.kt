@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/mobile/units", // deprecated
-    "/employee-mobile/units",
-)
+@RequestMapping("/employee-mobile/units")
 class MobileUnitController(private val accessControl: AccessControl) {
     @GetMapping("/{unitId}")
     fun getUnitInfo(

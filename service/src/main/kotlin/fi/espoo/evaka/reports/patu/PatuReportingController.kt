@@ -25,10 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-@RequestMapping(
-    "/patu-report", // deprecated
-    "/employee/patu-report",
-)
+@RequestMapping("/employee/patu-report")
 class PatuReportingController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val accessControl: AccessControl,

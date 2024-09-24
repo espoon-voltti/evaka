@@ -44,10 +44,7 @@ class OccupancyController(
     private val placementPlanService: PlacementPlanService,
 ) {
 
-    @GetMapping(
-        "/occupancy/by-unit/{unitId}", // deprecated
-        "/employee-mobile/occupancy/by-unit/{unitId}",
-    )
+    @GetMapping("/employee-mobile/occupancy/by-unit/{unitId}")
     fun getOccupancyPeriods(
         db: Database,
         user: AuthenticatedUser.MobileDevice,
@@ -89,10 +86,7 @@ class OccupancyController(
         )
     }
 
-    @GetMapping(
-        "/occupancy/by-unit/{unitId}/speculated/{applicationId}",
-        "/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}",
-    )
+    @GetMapping("/employee/occupancy/by-unit/{unitId}/speculated/{applicationId}")
     fun getOccupancyPeriodsSpeculated(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -182,10 +176,7 @@ class OccupancyController(
             }
     }
 
-    @GetMapping(
-        "/occupancy/units/{unitId}", // deprecated
-        "/employee/occupancy/units/{unitId}",
-    )
+    @GetMapping("/employee/occupancy/units/{unitId}")
     fun getUnitOccupancies(
         db: Database,
         user: AuthenticatedUser.Employee,
@@ -289,10 +280,7 @@ class OccupancyController(
             .also { Audit.OccupancyRead.log(targetId = AuditId(unitId)) }
     }
 
-    @GetMapping(
-        "/occupancy/by-unit/{unitId}/groups", // deprecated
-        "/employee-mobile/occupancy/by-unit/{unitId}/groups",
-    )
+    @GetMapping("/employee-mobile/occupancy/by-unit/{unitId}/groups")
     fun getOccupancyPeriodsOnGroups(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

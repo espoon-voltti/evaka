@@ -107,7 +107,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     ) {
         val (_, response, result) =
             http
-                .get("/reports/missing-service-need", listOf("from" to from, "to" to to))
+                .get("/employee/reports/missing-service-need", listOf("from" to from, "to" to to))
                 .asUser(testUser)
                 .responseObject<List<MissingServiceNeedReportRow>>(jsonMapper)
 

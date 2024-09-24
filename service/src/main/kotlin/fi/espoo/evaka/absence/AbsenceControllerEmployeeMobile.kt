@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/absences/by-child/{childId}/future", // deprecated
-        "/employee-mobile/absences/by-child/{childId}/future",
-    )
+    @GetMapping("/employee-mobile/absences/by-child/{childId}/future")
     fun futureAbsencesOfChild(
         db: Database,
         user: AuthenticatedUser.MobileDevice,

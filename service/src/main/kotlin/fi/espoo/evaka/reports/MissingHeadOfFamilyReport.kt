@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/missing-head-of-family", // deprecated
-        "/employee/reports/missing-head-of-family",
-    )
+    @GetMapping("/employee/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
         db: Database,
         user: AuthenticatedUser.Employee,

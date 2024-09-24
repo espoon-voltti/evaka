@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/vasu/templates", // deprecated
-    "/employee/vasu/templates",
-)
+@RequestMapping("/employee/vasu/templates")
 class VasuTemplateController(
     private val accessControl: AccessControl,
     private val vasuMigratorService: VasuMigratorService,

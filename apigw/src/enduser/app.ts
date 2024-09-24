@@ -7,10 +7,11 @@ import express from 'express'
 import passport from 'passport'
 
 import { requireAuthentication } from '../shared/auth/index.js'
-import { Config } from '../shared/config.js'
+import { appCommit, Config } from '../shared/config.js'
 import { cacheControl } from '../shared/middleware/cache-control.js'
 import { csrf } from '../shared/middleware/csrf.js'
 import { errorHandler } from '../shared/middleware/error-handler.js'
+import { createProxy } from '../shared/proxy-utils.js'
 import { RedisClient } from '../shared/redis-client.js'
 import createSamlRouter from '../shared/routes/saml.js'
 import { createSamlConfig } from '../shared/saml/index.js'
@@ -20,9 +21,7 @@ import { sessionSupport } from '../shared/session.js'
 import { createDevSfiRouter } from './dev-sfi-auth.js'
 import { createKeycloakCitizenSamlStrategy } from './keycloak-citizen-saml.js'
 import mapRoutes from './mapRoutes.js'
-import publicRoutes from './publicRoutes.js'
 import authStatus from './routes/auth-status.js'
-import routes from './routes.js'
 import { createSuomiFiStrategy } from './suomi-fi-saml.js'
 
 export function enduserGwRouter(
@@ -45,7 +44,10 @@ export function enduserGwRouter(
     )
   )
 
-  router.use(publicRoutes)
+  router.get('/version', (_, res) => {
+    res.send({ commitId: appCommit })
+  })
+  router.all('/citizen/public/*', createProxy())
   router.use(mapRoutes)
 
   if (config.sfi.type === 'mock') {
@@ -87,7 +89,7 @@ export function enduserGwRouter(
   router.get('/auth/status', authStatus)
   router.use(requireAuthentication)
   router.use(csrf)
-  router.use(routes)
+  router.all('/citizen/*', createProxy())
   router.use(errorHandler(false))
   return router
 }

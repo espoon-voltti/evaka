@@ -48,7 +48,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val (_, _, result) =
             http
-                .get("/reports/duplicate-people")
+                .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
                 .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
@@ -83,7 +83,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val (_, _, result) =
             http
-                .get("/reports/duplicate-people")
+                .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
                 .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
@@ -117,7 +117,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val (_, _, result) =
             http
-                .get("/reports/duplicate-people")
+                .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
                 .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
@@ -146,7 +146,7 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
 
         val (_, _, result) =
             http
-                .get("/reports/duplicate-people")
+                .get("/employee/reports/duplicate-people")
                 .asUser(adminUser)
                 .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 

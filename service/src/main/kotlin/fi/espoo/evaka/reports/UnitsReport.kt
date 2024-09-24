@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class UnitsReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/units", // deprecated
-        "/employee/reports/units",
-    )
+    @GetMapping("/employee/reports/units")
     fun getUnitsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

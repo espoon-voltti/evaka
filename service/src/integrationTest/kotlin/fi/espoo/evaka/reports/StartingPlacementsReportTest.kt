@@ -129,7 +129,7 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         val (_, response, result) =
             http
                 .get(
-                    "/reports/starting-placements",
+                    "/employee/reports/starting-placements",
                     listOf("year" to date.year, "month" to date.monthValue),
                 )
                 .asUser(testUser)

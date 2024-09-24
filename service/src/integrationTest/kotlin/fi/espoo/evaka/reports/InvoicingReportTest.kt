@@ -84,7 +84,10 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
         val (_, response, result) =
             http
-                .get("/reports/invoices", listOf("date" to date.format(DateTimeFormatter.ISO_DATE)))
+                .get(
+                    "/employee/reports/invoices",
+                    listOf("date" to date.format(DateTimeFormatter.ISO_DATE)),
+                )
                 .asUser(testUser)
                 .responseObject<InvoiceReport>(jsonMapper)
 

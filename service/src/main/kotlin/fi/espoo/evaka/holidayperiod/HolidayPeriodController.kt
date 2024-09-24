@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/holiday-period", // deprecated
-    "/employee/holiday-period",
-)
+@RequestMapping("/employee/holiday-period")
 class HolidayPeriodController(private val accessControl: AccessControl) {
     @GetMapping
     fun getHolidayPeriods(

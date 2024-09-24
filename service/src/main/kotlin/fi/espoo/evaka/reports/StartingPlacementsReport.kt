@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/starting-placements", // deprecated
-        "/employee/reports/starting-placements",
-    )
+    @GetMapping("/employee/reports/starting-placements")
     fun getStartingPlacementsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

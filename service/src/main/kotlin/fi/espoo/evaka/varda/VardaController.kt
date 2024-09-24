@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/varda", // deprecated
-    "/employee/varda",
-)
+@RequestMapping("/employee/varda")
 class VardaController(
     private val vardaService: VardaUpdateService,
     private val vardaResetService: VardaResetService,

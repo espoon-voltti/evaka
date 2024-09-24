@@ -22,10 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class FamilyContactReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/family-contacts", // deprecated
-        "/employee/reports/family-contacts",
-    )
+    @GetMapping("/employee/reports/family-contacts")
     fun getFamilyContactsReport(
         db: Database,
         user: AuthenticatedUser.Employee,

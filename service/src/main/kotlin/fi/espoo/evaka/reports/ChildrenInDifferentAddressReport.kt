@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ChildrenInDifferentAddressReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/children-in-different-address", // deprecated
-        "/employee/reports/children-in-different-address",
-    )
+    @GetMapping("/employee/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
         db: Database,
         user: AuthenticatedUser.Employee,

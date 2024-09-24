@@ -114,7 +114,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
         http
-            .post("/pedagogical-document")
+            .post("/employee/pedagogical-document")
             .jsonBody("""{"childId": "$childId", "description": ""}""")
             .asUser(user)
             .responseString()
@@ -143,7 +143,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             .second
 
     private fun getPedagogicalDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
-        http.get("/pedagogical-document/child/$childId").asUser(user).responseString()
+        http.get("/employee/pedagogical-document/child/$childId").asUser(user).responseString()
 
     private fun getPedagogicalDocumentsAsCitizen(
         user: AuthenticatedUser.Citizen,
@@ -172,7 +172,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val (_, _, result) =
             http
-                .put("/pedagogical-document/$id")
+                .put("/employee/pedagogical-document/$id")
                 .jsonBody(
                     """{"id": "$id", "childId": "${testChild_1.id}", "description": "foobar", "attachmentId": null}"""
                 )
@@ -188,7 +188,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val testDescription = "foobar"
         http
-            .put("/pedagogical-document/$id")
+            .put("/employee/pedagogical-document/$id")
             .jsonBody(
                 """{"id": "$id", "childId": "${testChild_1.id}", "description": "$testDescription", "attachmentId": null}"""
             )
@@ -397,7 +397,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
 
         http
-            .put("/pedagogical-document/$id2")
+            .put("/employee/pedagogical-document/$id2")
             .jsonBody("""{"id": "$id2", "childId": "${testChild_1.id}", "description": "123123"}""")
             .asUser(employee)
             .responseString()
@@ -419,7 +419,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val attachmentId = uploadAttachment(id1)
 
         http
-            .put("/pedagogical-document/$id1")
+            .put("/employee/pedagogical-document/$id1")
             .jsonBody(
                 """{"id": "$id1", "childId": "${testChild_1.id}", "description": "123123", "attachmentId": "$attachmentId"}"""
             )
@@ -438,7 +438,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
         uploadAttachment(id)
 
-        http.post("/pedagogical-document/$id/mark-read").asUser(employee).responseString()
+        http.post("/employee/pedagogical-document/$id/mark-read").asUser(employee).responseString()
 
         assertEquals(
             1,
@@ -447,7 +447,8 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
-        val (_, res, _) = http.delete("/pedagogical-document/$id").asUser(employee).responseString()
+        val (_, res, _) =
+            http.delete("/employee/pedagogical-document/$id").asUser(employee).responseString()
 
         assertEquals(200, res.statusCode)
         assertEquals(

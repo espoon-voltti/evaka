@@ -48,10 +48,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/employee", // deprecated
-    "/employee/employees",
-)
+@RequestMapping("/employee/employees")
 class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping

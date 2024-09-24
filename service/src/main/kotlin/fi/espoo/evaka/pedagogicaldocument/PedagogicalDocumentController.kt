@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(
-    "/pedagogical-document", // deprecated
-    "/employee/pedagogical-document",
-)
+@RequestMapping("/employee/pedagogical-document")
 class PedagogicalDocumentController(
     private val accessControl: AccessControl,
     private val pedagogicalDocumentNotificationService: PedagogicalDocumentNotificationService,

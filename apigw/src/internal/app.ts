@@ -50,7 +50,9 @@ export function internalGwRouter(
 
   router.use(
     cacheControl((req) =>
-      req.path.startsWith('/child-images/') ? 'allow-cache' : 'forbid-cache'
+      req.path.startsWith('/employee-mobile/child-images/')
+        ? 'allow-cache'
+        : 'forbid-cache'
     )
   )
 
@@ -122,7 +124,6 @@ export function internalGwRouter(
   router.use(checkMobileEmployeeIdToken(redisClient))
 
   router.get('/auth/status', refreshMobileSession, authStatus(sessions))
-  router.all('/public/*', createProxy()) // deprecated
   router.all('/employee/public/*', createProxy())
   router.all('/employee-mobile/public/*', createProxy())
   router.get('/version', (_, res) => {
@@ -141,7 +142,8 @@ export function internalGwRouter(
     pinLogoutRequestHandler(redisClient)
   )
 
-  router.use(createProxy())
+  router.all('/employee/*', createProxy())
+  router.all('/employee-mobile/*', createProxy())
   router.use(errorHandler(true))
   return router
 }

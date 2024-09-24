@@ -531,7 +531,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private fun getAclRows(): List<DaycareAclRow> {
         val (_, res, body) =
             http
-                .get("/daycares/${testDaycare.id}/acl")
+                .get("/employee/daycares/${testDaycare.id}/acl")
                 .asUser(admin)
                 .responseObject<List<DaycareAclRow>>(jsonMapper)
         assertTrue(res.isSuccessful)
@@ -552,7 +552,10 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun deleteSupervisor(daycareId: DaycareId) {
         val (_, res, _) =
-            http.delete("/daycares/$daycareId/supervisors/${employee.id}").asUser(admin).response()
+            http
+                .delete("/employee/daycares/$daycareId/supervisors/${employee.id}")
+                .asUser(admin)
+                .response()
         assertTrue(res.isSuccessful)
     }
 
@@ -564,7 +567,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     ) {
         val (_, res, _) =
             http
-                .put("/daycares/$daycareId/full-acl/$employeeId")
+                .put("/employee/daycares/$daycareId/full-acl/$employeeId")
                 .asUser(admin)
                 .jsonBody(
                     getRoleBodyString(UnitAclController.FullAclInfo(update = update, role = role))
@@ -580,7 +583,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     ) {
         val (_, res, _) =
             http
-                .put("/daycares/$daycareId/staff/$employeeId/groups")
+                .put("/employee/daycares/$daycareId/staff/$employeeId/groups")
                 .asUser(admin)
                 .jsonBody(jsonMapper.writeValueAsString(update))
                 .response()
@@ -589,7 +592,10 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun deleteStaff() {
         val (_, res, _) =
-            http.delete("/daycares/${testDaycare.id}/staff/${employee.id}").asUser(admin).response()
+            http
+                .delete("/employee/daycares/${testDaycare.id}/staff/${employee.id}")
+                .asUser(admin)
+                .response()
         assertTrue(res.isSuccessful)
     }
 

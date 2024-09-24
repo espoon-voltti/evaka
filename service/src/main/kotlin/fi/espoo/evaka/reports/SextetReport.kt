@@ -19,10 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class SextetReportController(private val accessControl: AccessControl) {
-    @GetMapping(
-        "/reports/sextet", // deprecated
-        "/employee/reports/sextet",
-    )
+    @GetMapping("/employee/reports/sextet")
     fun getSextetReport(
         db: Database,
         user: AuthenticatedUser.Employee,
