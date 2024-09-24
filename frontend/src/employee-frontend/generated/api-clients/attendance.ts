@@ -31,7 +31,7 @@ export async function getOpenGroupAttendance(
     ['userId', request.userId]
   )
   const { data: json } = await client.request<JsonOf<OpenGroupAttendanceResponse>>({
-    url: uri`/employee/staff-attendances/realtime/open-attendence`.toString(),
+    url: uri`/employee/staff-attendances/realtime/open-attendance`.toString(),
     method: 'GET',
     params
   })
