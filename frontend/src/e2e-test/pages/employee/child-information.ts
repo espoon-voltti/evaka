@@ -890,11 +890,11 @@ export class ServiceApplicationsSection extends Section {
     this.undecidedApplication = page.findByDataQa('undecided-application')
   }
 
-  assertUndecidedApplication = async (
+  async assertUndecidedApplication(
     startDate: string,
     serviceNeed: string,
     additionalInfo: string
-  ) => {
+  ) {
     await this.undecidedApplication
       .findByDataQa('start-date')
       .assertTextEquals(startDate)
@@ -906,14 +906,14 @@ export class ServiceApplicationsSection extends Section {
       .assertTextEquals(additionalInfo)
   }
 
-  acceptApplication = async () => {
+  async acceptApplication() {
     await this.undecidedApplication
       .findByDataQa('accept-application-button')
       .click()
     await this.page.findByDataQa('modal-okBtn').click()
   }
 
-  rejectApplication = async (reason: string) => {
+  async rejectApplication(reason: string) {
     await this.undecidedApplication
       .findByDataQa('reject-application-button')
       .click()
@@ -924,13 +924,13 @@ export class ServiceApplicationsSection extends Section {
   decidedApplication = (n: number) =>
     this.page.findAllByDataQa('decided-application-row').nth(n)
 
-  assertDecidedApplication = async (
+  async assertDecidedApplication(
     n: number,
     startDate: string,
     serviceNeed: string,
     status: string,
     decidedAt: HelsinkiDateTime
-  ) => {
+  ) {
     await this.decidedApplication(n)
       .findByDataQa('start-date')
       .assertTextEquals(startDate)

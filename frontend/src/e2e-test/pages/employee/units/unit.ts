@@ -855,7 +855,7 @@ class WaitingConfirmationSection extends Element {
 class ServiceApplicationsSection {
   constructor(private readonly page: Page) {}
 
-  assertApplicationCount = async (n: number) => {
+  async assertApplicationCount(n: number) {
     await this.page
       .findByDataQa('service-applications-table')
       .waitUntilVisible()

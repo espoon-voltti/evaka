@@ -22,7 +22,6 @@ import { UnitPage } from '../../pages/employee/units/unit'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
-//let unit: DevDaycare
 let serviceNeedOption1: ServiceNeedOption
 
 describe('Service applications', () => {
