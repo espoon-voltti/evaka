@@ -6,6 +6,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import LocalDate from '../../local-date'
 import { Caretakers } from './daycare'
 import { JsonOf } from '../../json'
 import { UUID } from '../../types'
@@ -26,6 +27,14 @@ export interface ChildOccupancyAttendance {
   capacity: number
   childId: UUID
   departed: HelsinkiDateTime | null
+}
+
+/**
+* Generated from fi.espoo.evaka.occupancy.OccupancyController.GetUnitOccupanciesForDayBody
+*/
+export interface GetUnitOccupanciesForDayBody {
+  date: LocalDate
+  groupIds: UUID[] | null
 }
 
 /**
@@ -148,6 +157,14 @@ export function deserializeJsonChildOccupancyAttendance(json: JsonOf<ChildOccupa
     ...json,
     arrived: HelsinkiDateTime.parseIso(json.arrived),
     departed: (json.departed != null) ? HelsinkiDateTime.parseIso(json.departed) : null
+  }
+}
+
+
+export function deserializeJsonGetUnitOccupanciesForDayBody(json: JsonOf<GetUnitOccupanciesForDayBody>): GetUnitOccupanciesForDayBody {
+  return {
+    ...json,
+    date: LocalDate.parseIso(json.date)
   }
 }
 

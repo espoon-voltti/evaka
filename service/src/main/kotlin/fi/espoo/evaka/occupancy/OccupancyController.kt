@@ -33,6 +33,8 @@ import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
@@ -221,14 +223,15 @@ class OccupancyController(
         return occupancies
     }
 
-    @GetMapping("/employee/occupancy/units/{unitId}/day/realized")
+    data class GetUnitOccupanciesForDayBody(val date: LocalDate, val groupIds: List<GroupId>?)
+
+    @PostMapping("/employee/occupancy/units/{unitId}/day/realized")
     fun getUnitRealizedOccupanciesForDay(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-        @RequestParam groupId: GroupId?,
+        @RequestBody body: GetUnitOccupanciesForDayBody,
     ): RealtimeOccupancy {
         val occupancies =
             db.connect { dbc ->
@@ -242,14 +245,14 @@ class OccupancyController(
                     )
                     val queryTimeRange =
                         HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(date, LocalTime.MIN),
-                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.MIN),
+                            HelsinkiDateTime.of(body.date, LocalTime.MIN),
+                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.MIN),
                         )
                     RealtimeOccupancy(
                         childAttendances =
-                            tx.getChildOccupancyAttendances(unitId, queryTimeRange, groupId),
+                            tx.getChildOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
                         staffAttendances =
-                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, groupId),
+                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
                     )
                 }
             }
@@ -257,14 +260,13 @@ class OccupancyController(
         return occupancies
     }
 
-    @GetMapping("/employee/occupancy/units/{unitId}/day/planned")
+    @PostMapping("/employee/occupancy/units/{unitId}/day/planned")
     fun getUnitPlannedOccupanciesForDay(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-        @RequestParam groupId: GroupId?,
+        @RequestBody body: GetUnitOccupanciesForDayBody,
     ): List<AttendanceReservationReportRow> {
         return db.connect { dbc ->
                 dbc.read { tx ->
@@ -277,10 +279,10 @@ class OccupancyController(
                     )
                     getAttendanceReservationReport(
                         tx = tx,
-                        start = date,
-                        end = date,
+                        start = body.date,
+                        end = body.date,
                         unitId = unitId,
-                        groupIds = if (groupId != null) listOf(groupId) else null,
+                        groupIds = body.groupIds,
                     )
                 }
             }

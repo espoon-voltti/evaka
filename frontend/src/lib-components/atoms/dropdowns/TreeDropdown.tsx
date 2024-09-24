@@ -21,7 +21,7 @@ import { IconOnlyButton } from '../buttons/IconOnlyButton'
 const DropdownContainer = styled.div`
   border: 1px solid ${(p) => p.theme.colors.grayscale.g70};
   border-radius: 4px;
-  padding: ${defaultMargins.xs};
+  padding: ${defaultMargins.xxs} ${defaultMargins.xs};
   display: flex;
   gap: ${defaultMargins.xs};
   justify-content: space-between;
@@ -135,6 +135,10 @@ const ValueChip = styled.div`
   flex-wrap: wrap;
   gap: ${defaultMargins.xs};
   align-items: center;
+`
+
+const Placeholder = styled.div`
+  padding: ${defaultMargins.xxs} ${defaultMargins.xs};
 `
 
 /**
@@ -375,7 +379,11 @@ function TreeDropdown<N extends TreeNode>({
         data-qa-expanded={active}
       >
         <DropdownContainerContent data-qa="selected-values">
-          {treeValue.length === 0 ? placeholder : treeValue}
+          {treeValue.length === 0 ? (
+            <Placeholder>{placeholder}</Placeholder>
+          ) : (
+            treeValue
+          )}
         </DropdownContainerContent>
         <IconOnlyButton icon={faChevronDown} aria-label={i18n.expandDropdown} />
       </DropdownContainer>

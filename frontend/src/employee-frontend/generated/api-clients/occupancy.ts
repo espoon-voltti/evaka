@@ -6,6 +6,8 @@
 
 import LocalDate from 'lib-common/local-date'
 import { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
+import { GetUnitOccupanciesForDayBody } from 'lib-common/generated/api-types/occupancy'
+import { JsonCompatible } from 'lib-common/json'
 import { JsonOf } from 'lib-common/json'
 import { OccupancyResponseSpeculated } from 'lib-common/generated/api-types/occupancy'
 import { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy'
@@ -78,18 +80,13 @@ export async function getUnitOccupancies(
 export async function getUnitPlannedOccupanciesForDay(
   request: {
     unitId: UUID,
-    date: LocalDate,
-    groupId?: UUID | null
+    body: GetUnitOccupanciesForDayBody
   }
 ): Promise<AttendanceReservationReportRow[]> {
-  const params = createUrlSearchParams(
-    ['date', request.date.formatIso()],
-    ['groupId', request.groupId]
-  )
   const { data: json } = await client.request<JsonOf<AttendanceReservationReportRow[]>>({
     url: uri`/employee/occupancy/units/${request.unitId}/day/planned`.toString(),
-    method: 'GET',
-    params
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<GetUnitOccupanciesForDayBody>
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
 }
@@ -101,18 +98,13 @@ export async function getUnitPlannedOccupanciesForDay(
 export async function getUnitRealizedOccupanciesForDay(
   request: {
     unitId: UUID,
-    date: LocalDate,
-    groupId?: UUID | null
+    body: GetUnitOccupanciesForDayBody
   }
 ): Promise<RealtimeOccupancy> {
-  const params = createUrlSearchParams(
-    ['date', request.date.formatIso()],
-    ['groupId', request.groupId]
-  )
   const { data: json } = await client.request<JsonOf<RealtimeOccupancy>>({
     url: uri`/employee/occupancy/units/${request.unitId}/day/realized`.toString(),
-    method: 'GET',
-    params
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<GetUnitOccupanciesForDayBody>
   })
   return deserializeJsonRealtimeOccupancy(json)
 }

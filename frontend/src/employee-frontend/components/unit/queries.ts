@@ -63,13 +63,13 @@ export const queryKeys = createQueryKeys('unit', {
   unitRealizedOccupanciesForDay: (
     unitId: UUID,
     date: LocalDate,
-    groupId: UUID | null
-  ) => ['unitRealizedOccupanciesForDay', unitId, date, groupId],
+    groupIds: UUID[] | null
+  ) => ['unitRealizedOccupanciesForDay', unitId, date, groupIds],
   unitPlannedOccupanciesForDay: (
     unitId: UUID,
     date: LocalDate,
-    groupId: UUID | null
-  ) => ['unitPlannedOccupanciesForDay', unitId, date, groupId],
+    groupIds: UUID[] | null
+  ) => ['unitPlannedOccupanciesForDay', unitId, date, groupIds],
   unitApplications: (unitId: UUID) => ['unitApplications', unitId],
   unitGroups: (unitId: UUID) => ['unitGroups', unitId],
   unitSpeculatedOccupancyRates: (
@@ -125,14 +125,14 @@ export const unitOccupanciesQuery = query({
 
 export const unitRealizedOccupanciesForDayQuery = query({
   api: getUnitRealizedOccupanciesForDay,
-  queryKey: ({ unitId, date, groupId }) =>
-    queryKeys.unitRealizedOccupanciesForDay(unitId, date, groupId ?? null)
+  queryKey: ({ unitId, body }) =>
+    queryKeys.unitRealizedOccupanciesForDay(unitId, body.date, body.groupIds)
 })
 
 export const unitPlannedOccupanciesForDayQuery = query({
   api: getUnitPlannedOccupanciesForDay,
-  queryKey: ({ unitId, date, groupId }) =>
-    queryKeys.unitPlannedOccupanciesForDay(unitId, date, groupId ?? null)
+  queryKey: ({ unitId, body }) =>
+    queryKeys.unitPlannedOccupanciesForDay(unitId, body.date, body.groupIds)
 })
 
 export const unitApplicationsQuery = query({

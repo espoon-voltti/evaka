@@ -9,6 +9,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 
@@ -124,9 +126,26 @@ data class OccupancyPoint(
 fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange,
-    groupId: GroupId? = null,
-): List<ChildOccupancyAttendance> =
-    createQuery {
+    groupIds: List<GroupId>? = null,
+): List<ChildOccupancyAttendance> {
+    val groupFilter =
+        if (groupIds == null) PredicateSql.alwaysTrue()
+        else
+            PredicateSql {
+                where(
+                    """
+EXISTS(
+    SELECT FROM daycare_group_placement dgp
+    WHERE dgp.daycare_group_id = ANY (${bind(groupIds)}) AND dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ca.date
+) OR EXISTS(
+    SELECT FROM backup_care bc
+    WHERE bc.group_id = ANY (${bind(groupIds)}) AND bc.child_id = ca.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
+)            
+"""
+                )
+            }
+
+    return createQuery {
             sql(
                 """
 SELECT 
@@ -148,48 +167,47 @@ LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placeme
 LEFT JOIN assistance_factor an on an.child_id = ch.id AND an.valid_during @> ca.date
 WHERE
     ca.unit_id = ${bind(unitId)} AND
-    tstzrange(ca.arrived, ca.departed) && ${bind(timeRange)}
-    
-    ${if (groupId == null) "" else """
-        AND (EXISTS(
-            SELECT FROM daycare_group_placement dgp
-            WHERE dgp.daycare_group_id = ${bind(groupId)} AND dgp.daycare_placement_id = pl.id AND daterange(dgp.start_date, dgp.end_date, '[]') @> ca.date
-        ) OR EXISTS(
-            SELECT FROM backup_care bc
-            WHERE bc.group_id = ${bind(groupId)} AND bc.child_id = ca.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> ca.date
-        ))
-    """}
+    tstzrange(ca.arrived, ca.departed) && ${bind(timeRange)} AND
+    ${predicate(groupFilter)}
 """
             )
         }
         .toList<ChildOccupancyAttendance>()
+}
 
 val presentStaffAttendanceTypes =
-    "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
+    "'{${StaffAttendanceType.entries.filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
 
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange,
-    groupId: GroupId? = null,
-): List<StaffOccupancyAttendance> =
-    createQuery {
+    groupIds: List<GroupId>? = null,
+): List<StaffOccupancyAttendance> {
+    val groupFilter =
+        if (groupIds == null) Predicate.alwaysTrue()
+        else Predicate { where("$it.group_id = ANY (${bind(groupIds)})") }
+    return createQuery {
             sql(
                 """
 SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg ON dg.id = sa.group_id
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(timeRange)}
-AND type = ANY($presentStaffAttendanceTypes)
-${if (groupId == null) "" else "AND sa.group_id = ${bind(groupId)}"}
+WHERE
+    dg.daycare_id = ${bind(unitId)} AND tstzrange(sa.arrived, sa.departed) && ${bind(timeRange)} AND
+    type = ANY($presentStaffAttendanceTypes) AND
+    ${predicate(groupFilter.forTable("sa"))}
 
 UNION ALL
 
 SELECT sae.arrived, sae.departed, sae.occupancy_coefficient AS capacity
 FROM staff_attendance_external sae
 JOIN daycare_group dg ON dg.id = sae.group_id
-WHERE dg.daycare_id = ${bind(unitId)} AND tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)}
-${if (groupId == null) "" else "AND sae.group_id = ${bind(groupId)}"}
+WHERE
+    dg.daycare_id = ${bind(unitId)} AND
+    tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)} AND
+    ${predicate(groupFilter.forTable("sae"))}
 """
             )
         }
         .toList<StaffOccupancyAttendance>()
+}

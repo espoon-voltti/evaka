@@ -142,6 +142,7 @@ describe('Realtime staff attendances', () => {
 
     calendarPage = await openCalendar()
     await calendarPage.occupancies.assertGraphIsVisible()
+    await calendarPage.selectGraphMode('REALIZED')
     await calendarPage.setFilterStartDate(LocalDate.of(2022, 3, 1))
     await calendarPage.occupancies.assertGraphHasNoData()
   })

@@ -42,17 +42,17 @@ export const LegendSquare = styled.div<{ color: string; small?: boolean }>`
 export const RealtimeRealizedOccupanciesForSingleDay = React.memo(
   function RealtimeRealizedOccupanciesForSingleDay({
     unitId,
-    groupId,
+    groupIds,
     date,
     shiftCareUnit
   }: {
     unitId: UUID
-    groupId: UUID | null
+    groupIds: UUID[] | null
     date: LocalDate
     shiftCareUnit: boolean
   }) {
     const occupancies = useQueryResult(
-      unitRealizedOccupanciesForDayQuery({ unitId, date, groupId })
+      unitRealizedOccupanciesForDayQuery({ unitId, body: { date, groupIds } })
     )
 
     return renderResult(occupancies, (occupancies, isReloading) => (
@@ -70,15 +70,15 @@ export const RealtimeRealizedOccupanciesForSingleDay = React.memo(
 export const RealtimePlannedOccupanciesForSingleDay = React.memo(
   function RealtimePlannedOccupanciesForSingleDay({
     unitId,
-    groupId,
+    groupIds,
     date
   }: {
     unitId: UUID
-    groupId: UUID | null
+    groupIds: UUID[] | null
     date: LocalDate
   }) {
     const rows = useQueryResult(
-      unitPlannedOccupanciesForDayQuery({ unitId, date, groupId })
+      unitPlannedOccupanciesForDayQuery({ unitId, body: { date, groupIds } })
     )
 
     return renderResult(rows, (rows, isReloading) => (
