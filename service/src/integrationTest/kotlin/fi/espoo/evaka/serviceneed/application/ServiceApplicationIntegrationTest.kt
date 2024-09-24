@@ -7,6 +7,8 @@ package fi.espoo.evaka.serviceneed.application
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertServiceNeedOptions
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.ShiftCareType
+import fi.espoo.evaka.serviceneed.getServiceNeedsByChild
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ServiceApplicationId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
@@ -35,6 +37,7 @@ import fi.espoo.evaka.snDaycareFullDay35
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -125,6 +128,12 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                 ),
                             additionalInfo = "Sain uuden duunin",
                             decision = null,
+                            currentPlacement =
+                                ServiceApplicationPlacement(
+                                    id = placement.id,
+                                    type = placement.type,
+                                    endDate = placement.endDate,
+                                ),
                         ),
                     permittedActions = setOf(Action.Citizen.ServiceApplication.DELETE),
                 )
@@ -261,6 +270,12 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                 ),
                             additionalInfo = "Sain uuden duunin",
                             decision = null,
+                            currentPlacement =
+                                ServiceApplicationPlacement(
+                                    id = placement.id,
+                                    type = placement.type,
+                                    endDate = placement.endDate,
+                                ),
                         ),
                     permittedActions =
                         setOf(Action.ServiceApplication.ACCEPT, Action.ServiceApplication.REJECT),
@@ -269,7 +284,14 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             applications,
         )
 
-        acceptServiceApplication(applications.first().data.id)
+        acceptServiceApplication(
+            id = applications.first().data.id,
+            body =
+                ServiceApplicationController.AcceptServiceApplicationBody(
+                    shiftCareType = ShiftCareType.NONE,
+                    partWeek = false,
+                ),
+        )
 
         val decision = getChildServiceApplicationsAsEmployee().first().data.decision
         assertEquals(
@@ -287,6 +309,22 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
 
         assertEquals(emptyList(), getUndecidedServiceApplications())
+
+        // service need was updated
+        val serviceNeeds = db.read { it.getServiceNeedsByChild(child.id) }.sortedBy { it.startDate }
+        assertEquals(2, serviceNeeds.size)
+        serviceNeeds[0].let {
+            assertEquals(it.startDate, serviceNeed.startDate)
+            assertEquals(it.endDate, startDate.minusDays(1))
+            assertEquals(it.option.id, serviceNeed.optionId)
+        }
+        serviceNeeds[1].let {
+            assertEquals(it.startDate, startDate)
+            assertEquals(it.endDate, placement.endDate)
+            assertEquals(it.option.id, snDaycareFullDay35.id)
+            assertEquals(it.shiftCare, ShiftCareType.NONE)
+            assertFalse(it.partWeek)
+        }
     }
 
     @Test
@@ -324,6 +362,15 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(decision, getChildServiceApplicationsAsCitizen().first().data.decision)
 
         assertEquals(emptyList(), getUndecidedServiceApplications())
+
+        // service need was not updated
+        val serviceNeeds = db.read { it.getServiceNeedsByChild(child.id) }.sortedBy { it.startDate }
+        assertEquals(1, serviceNeeds.size)
+        serviceNeeds[0].let {
+            assertEquals(it.startDate, serviceNeed.startDate)
+            assertEquals(it.endDate, serviceNeed.endDate)
+            assertEquals(it.option.id, serviceNeed.optionId)
+        }
     }
 
     private fun createServiceApplication(
@@ -376,8 +423,10 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             daycare.id,
         )
 
-    private fun acceptServiceApplication(id: ServiceApplicationId) =
-        employeeController.acceptServiceApplication(dbInstance(), supervisor.user, clock, id)
+    private fun acceptServiceApplication(
+        id: ServiceApplicationId,
+        body: ServiceApplicationController.AcceptServiceApplicationBody,
+    ) = employeeController.acceptServiceApplication(dbInstance(), supervisor.user, clock, id, body)
 
     private fun rejectServiceApplication(id: ServiceApplicationId, reason: String) =
         employeeController.rejectServiceApplication(
