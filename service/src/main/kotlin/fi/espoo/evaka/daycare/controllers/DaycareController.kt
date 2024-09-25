@@ -46,8 +46,8 @@ import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getTerminatedPlacements
-import fi.espoo.evaka.placement.getUnitApplicationNotifications
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
+import fi.espoo.evaka.placement.getWaitingUnitConfirmationApplicationsCount
 import fi.espoo.evaka.serviceneed.application.getUndecidedServiceApplicationsByUnit
 import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareCaretakerId
@@ -642,7 +642,7 @@ class DaycareController(
                                 daycareId,
                             )
                         )
-                            tx.getUnitApplicationNotifications(daycareId)
+                            tx.getWaitingUnitConfirmationApplicationsCount(daycareId)
                         else 0
 
                     val serviceApplications =
