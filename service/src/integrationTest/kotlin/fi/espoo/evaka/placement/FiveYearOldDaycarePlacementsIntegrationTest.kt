@@ -5,9 +5,11 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -17,11 +19,16 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.util.UUID
 
 class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val childId = testChild_1.id
     private val yearChildTurnsFive = testChild_1.dateOfBirth.plusYears(5).year
+
+    private val now = HelsinkiDateTime.of(LocalDateTime.now())
+    private val userId = EvakaUserId(UUID.randomUUID())
 
     @BeforeEach
     fun beforeEach() {
@@ -47,6 +54,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     PlacementType.DAYCARE,
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = true,
+                    now = now,
+                    userId = userId,
                 )
             }
 
@@ -86,6 +95,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     PlacementType.DAYCARE,
                     useFiveYearsOldDaycare = false,
                     placeGuarantee = false,
+                    now = now,
+                    userId = userId,
                 )
             }
 
@@ -112,6 +123,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     PlacementType.DAYCARE_PART_TIME,
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = false,
+                    now = now,
+                    userId = userId,
                 )
             }
 
@@ -138,6 +151,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -149,6 +164,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 originalStartDate,
                 newEndDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId,
             )
         }
 
@@ -181,6 +198,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -192,6 +211,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 originalStartDate,
                 newEndDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId,
             )
         }
 
@@ -224,6 +245,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -235,6 +258,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newStartDate,
                 originalEndDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId,
             )
         }
 
@@ -267,6 +292,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -278,6 +305,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newStartDate,
                 originalEndDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId,
             )
         }
 
@@ -310,6 +339,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -322,6 +353,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newStartDate,
                 newEndDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId,
             )
         }
 
@@ -349,6 +382,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = false,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId,
                     )
                 }
                 .first()
@@ -361,6 +396,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newStartDate,
                 newEndDate,
                 useFiveYearsOldDaycare = false,
+                now = now,
+                userId = userId,
             )
         }
 

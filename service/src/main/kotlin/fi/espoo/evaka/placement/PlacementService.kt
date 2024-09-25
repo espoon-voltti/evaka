@@ -19,6 +19,7 @@ import fi.espoo.evaka.serviceneed.getServiceNeedsByUnit
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
@@ -55,11 +56,13 @@ fun createPlacements(
     serviceNeed: ApplicationServiceNeed? = null,
     cancelPlacementsAfterClub: Boolean? = false,
     placeGuarantee: Boolean,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ): List<Placement> {
     placementTypePeriods
         .sortedBy { it.first.start }
         .forEach { (period, type) ->
-            tx.clearOldPlacements(childId, period.start, period.end)
+            tx.clearOldPlacements(childId, period.start, period.end, now = now, userId = userId)
             if (cancelPlacementsAfterClub == true && type == PlacementType.CLUB) {
                 tx.clearFutureNonPreschoolRelatedPlacements(childId, period.end.plusDays(1))
             }
@@ -103,6 +106,8 @@ fun createPlacement(
     serviceNeed: ApplicationServiceNeed? = null,
     useFiveYearsOldDaycare: Boolean = false,
     placeGuarantee: Boolean,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ): List<Placement> {
     val placementTypePeriods =
         if (useFiveYearsOldDaycare) {
@@ -117,6 +122,8 @@ fun createPlacement(
         placementTypePeriods,
         serviceNeed,
         placeGuarantee = placeGuarantee,
+        now = now,
+        userId = userId,
     )
 }
 
@@ -126,6 +133,8 @@ fun Database.Transaction.updatePlacement(
     endDate: LocalDate,
     aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All,
     useFiveYearsOldDaycare: Boolean,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
@@ -148,6 +157,8 @@ fun Database.Transaction.updatePlacement(
         to = endDate,
         excludePlacement = id,
         aclAuth = aclAuth,
+        now,
+        userId,
     )
 
     try {
@@ -167,7 +178,7 @@ fun Database.Transaction.updatePlacement(
             }
 
         updatedPeriods.firstOrNull()?.let { (period, _) ->
-            updatePlacementStartAndEndDate(id, period.start, period.end)
+            updatePlacementStartAndEndDate(id, period.start, period.end, now, userId)
         }
             ?: run {
                 checkAclAuth(aclAuth, old)
@@ -317,6 +328,8 @@ private fun Database.Transaction.clearOldPlacements(
     to: LocalDate,
     excludePlacement: PlacementId? = null,
     aclAuth: AclAuthorization<DaycareId> = AclAuthorization.All,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
@@ -338,19 +351,19 @@ private fun Database.Transaction.clearOldPlacements(
                 // old placement encloses new placement
                 old.startDate.isBefore(from) && old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    splitPlacementWithGap(old, from, to)
+                    splitPlacementWithGap(old, from, to, now, userId)
                 }
 
                 // old placement overlaps with the beginning of new placement
                 old.startDate.isBefore(from) && !old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    movePlacementEndDateEarlier(old, from.minusDays(1))
+                    movePlacementEndDateEarlier(old, from.minusDays(1), now, userId)
                 }
 
                 // old placement overlaps with the ending of new placement
                 !old.startDate.isBefore(from) && old.endDate.isAfter(to) -> {
                     checkAclAuth(aclAuth, old)
-                    movePlacementStartDateLater(old, to.plusDays(1))
+                    movePlacementStartDateLater(old, to.plusDays(1), now, userId)
                 }
                 else -> throw Error("bug discovered: some forgotten case?")
             }.exhaust()
@@ -401,6 +414,8 @@ fun generateSchoolYearDateRanges(startingFrom: LocalDate) =
 fun Database.Transaction.movePlacementStartDateLater(
     placement: Placement,
     newStartDate: LocalDate,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ) {
     if (newStartDate.isBefore(placement.startDate))
         throw IllegalArgumentException("Use this method only for shortening placement")
@@ -411,10 +426,15 @@ fun Database.Transaction.movePlacementStartDateLater(
         placement.id,
         FiniteDateRange(placement.startDate, newStartDate.minusDays(1)),
     )
-    updatePlacementStartDate(placement.id, newStartDate)
+    updatePlacementStartDate(placement.id, newStartDate, now, userId)
 }
 
-fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEndDate: LocalDate) {
+fun Database.Transaction.movePlacementEndDateEarlier(
+    placement: Placement,
+    newEndDate: LocalDate,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+) {
     if (newEndDate.isAfter(placement.endDate))
         throw IllegalArgumentException("Use this method only for shortening placement")
 
@@ -424,15 +444,17 @@ fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEn
         placement.id,
         FiniteDateRange(newEndDate.plusDays(1), placement.endDate),
     )
-    updatePlacementEndDate(placement.id, newEndDate)
+    updatePlacementEndDate(placement.id, newEndDate, now, userId)
 }
 
 private fun Database.Transaction.splitPlacementWithGap(
     placement: Placement,
     gapStartInclusive: LocalDate,
     gapEndInclusive: LocalDate,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
 ) {
-    movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1))
+    movePlacementEndDateEarlier(placement, newEndDate = gapStartInclusive.minusDays(1), now, userId)
 
     insertPlacement(
         type = placement.type,
@@ -531,6 +553,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate,
                 placeGuarantee = daycarePlacement.placeGuarantee,
+                modifiedAt = daycarePlacement.modifiedAt,
+                modifiedBy = daycarePlacement.modifiedBy,
             )
         }
         .map(::addMissingGroupPlacements)
@@ -665,6 +689,8 @@ data class DaycarePlacement(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUser?
 )
 
 data class DaycarePlacementDetails(
@@ -679,6 +705,8 @@ data class DaycarePlacementDetails(
     val updated: HelsinkiDateTime?,
     @Nested("terminated_by") val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
+    val modifiedAt: HelsinkiDateTime?,
+    @Nested("modified_by") val modifiedBy: EvakaUser?
 )
 
 data class DaycarePlacementWithDetails(
@@ -696,6 +724,8 @@ data class DaycarePlacementWithDetails(
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUser?
 )
 
 data class PlacementResponse(

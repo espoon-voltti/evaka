@@ -836,6 +836,8 @@ class ApplicationStateService(
             if (featureConfig.applyPlacementUnitFromDecision) decision.unit.id else plan.unitId,
             plan.type,
             extent,
+            clock.now(),
+            user.evakaUserId,
         )
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)

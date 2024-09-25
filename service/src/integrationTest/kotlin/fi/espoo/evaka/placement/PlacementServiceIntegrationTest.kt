@@ -37,6 +37,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
 
 class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val area1 = DevCareArea(name = "Area 1", shortName = "area1")
@@ -55,6 +56,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     final val month = 1
     val placementStart = LocalDate.of(year, month, 10)
     val placementEnd = LocalDate.of(year, month, 20)
+
+    val now = HelsinkiDateTime.of(LocalDateTime.now())
+    val userId = EvakaUserId(UUID.randomUUID())
 
     lateinit var oldPlacement: Placement
     lateinit var groupId1: GroupId
@@ -132,6 +136,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -159,6 +165,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     PlacementType.PRESCHOOL,
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = false,
+                    now = now,
+                    userId = userId
                 )
             }
 
@@ -187,6 +195,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -219,6 +229,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -235,6 +247,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = newStart,
                 endDate = newPlacement.endDate,
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId
             )
         }
 
@@ -269,6 +283,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -306,6 +322,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -351,6 +369,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -381,6 +401,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -418,6 +440,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -448,6 +472,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -478,6 +504,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -515,6 +543,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PRESCHOOL_DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -531,6 +561,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.PREPARATORY,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -577,6 +609,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -624,6 +658,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -657,6 +693,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -697,6 +735,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -757,6 +797,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -819,6 +861,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             ),
                         cancelPlacementsAfterClub = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -848,6 +892,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -858,6 +904,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 19),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId
             )
         }
 
@@ -881,6 +929,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -913,6 +963,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 15),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId
             )
         }
 
@@ -956,6 +1008,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -991,6 +1045,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 PlacementType.PRESCHOOL_DAYCARE,
                 useFiveYearsOldDaycare = true,
                 placeGuarantee = false,
+                now = now,
+                userId = userId
             )
         }
 
@@ -1040,6 +1096,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -1050,6 +1108,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 startDate = oldPlacement.startDate,
                 endDate = LocalDate.of(year, month, 21),
                 useFiveYearsOldDaycare = true,
+                now = now,
+                userId = userId
             )
         }
 
@@ -1073,6 +1133,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         PlacementType.DAYCARE,
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
+                        now = now,
+                        userId = userId
                     )
                 }
                 .first()
@@ -1083,6 +1145,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = oldPlacement.startDate,
                     endDate = oldPlacement.startDate.minusDays(1),
                     useFiveYearsOldDaycare = true,
+                    now = now,
+                    userId = userId
                 )
             }
         }

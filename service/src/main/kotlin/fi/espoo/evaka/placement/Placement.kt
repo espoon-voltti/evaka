@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 
@@ -22,6 +23,8 @@ data class Placement(
     val terminationRequestedDate: LocalDate?,
     val terminationRequestedBy: EvakaUserId?,
     val placeGuarantee: Boolean,
+    val modifiedAt: HelsinkiDateTime?,
+    val modifiedBy: EvakaUserId?,
 )
 
 data class PlacementSummary(
