@@ -978,7 +978,7 @@ export default {
             'Jos lapsi on ollut kerhossa jo edellisen toimintakauden aikana, on hänellä suurempi mahdollisuus saada paikka kerhosta.'
         },
         urgent: {
-          label: 'Hakemus on kiireellinen',
+          label: 'Hakemus on kiireellinen (ei koske siirtohakemuksia)',
           attachmentsMessage: {
             text: (
               <P fitted={true}>

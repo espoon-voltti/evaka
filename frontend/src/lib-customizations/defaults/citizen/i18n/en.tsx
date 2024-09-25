@@ -1007,7 +1007,7 @@ const en: Translations = {
             'If the child has already been to the club during the previous club term, he or she has a better chance of getting a placement in the club.'
         },
         urgent: {
-          label: 'Application is urgent',
+          label: 'Application is urgent (does not apply to transfer applications)',
           attachmentsMessage: {
             text: (
               <P fitted={true}>

@@ -989,7 +989,7 @@ const sv: Translations = {
             'Om barnet redan har varit på klubben under föregående säsong har han eller hon större chans att få en plats i klubben.'
         },
         urgent: {
-          label: 'Ansökningen är brådskande',
+          label: 'Ansökningen är brådskande (gäller inte ansökan om byte)',
           attachmentsMessage: {
             text: (
               <P fitted={true}>
