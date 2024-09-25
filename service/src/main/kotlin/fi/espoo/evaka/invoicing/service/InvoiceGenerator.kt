@@ -45,6 +45,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
+import java.time.YearMonth
 import java.util.UUID
 import kotlin.math.abs
 import org.jdbi.v3.core.mapper.Nested
@@ -56,7 +57,9 @@ class InvoiceGenerator(
     private val featureConfig: FeatureConfig,
     private val tracer: Tracer = noopTracer(),
 ) {
-    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: FiniteDateRange) {
+    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, month: YearMonth) {
+        val range = FiniteDateRange.ofMonth(month)
+
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate { sql("LOCK TABLE invoice IN EXCLUSIVE MODE") }.execute()
@@ -65,7 +68,7 @@ class InvoiceGenerator(
         val invoices = draftInvoiceGenerator.generateDraftInvoices(tx, invoiceCalculationData)
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
-                applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+                applyCorrections(tx, invoices, month, invoiceCalculationData.areaIds)
             }
         tx.deleteDraftInvoicesByDateRange(range)
         tx.insertInvoices(
@@ -199,9 +202,10 @@ class InvoiceGenerator(
     fun applyCorrections(
         tx: Database.Read,
         invoices: List<Invoice>,
-        invoicePeriod: FiniteDateRange,
+        targetMonth: YearMonth,
         areaIds: Map<DaycareId, AreaId>,
     ): List<Invoice> {
+        val invoicePeriod = FiniteDateRange.ofMonth(targetMonth)
         val corrections = getUninvoicedCorrections(tx)
 
         val invoicesWithCorrections =
