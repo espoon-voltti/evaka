@@ -26,8 +26,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.Row
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
@@ -398,7 +398,7 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
 }
 
 fun Database.Transaction.setDraftsSent(
-    clock: EvakaClock,
+    now: HelsinkiDateTime,
     invoices: List<InvoiceDetailed>,
     sentBy: EvakaUserId,
 ) {
@@ -412,7 +412,7 @@ SET
     number = ${bind { it.number }},
     invoice_date = ${bind { it.invoiceDate }},
     due_date = ${bind { it.dueDate }},
-    sent_at = ${bind { clock.now() }},
+    sent_at = ${bind { now }},
     sent_by = ${bind(sentBy)},
     status = ${bind(InvoiceStatus.SENT)}
 WHERE id = ${bind { it.id }}

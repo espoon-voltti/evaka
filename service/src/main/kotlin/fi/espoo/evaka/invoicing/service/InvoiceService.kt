@@ -14,15 +14,16 @@ import fi.espoo.evaka.invoicing.data.setDraftsWaitingForManualSending
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.YearMonth
 import org.springframework.stereotype.Component
 
 data class InvoiceDaycare(val id: DaycareId, val name: String, val costCenter: String?)
@@ -37,8 +38,8 @@ class InvoiceService(
 ) {
     fun sendInvoices(
         tx: Database.Transaction,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
+        sentBy: EvakaUserId,
+        now: HelsinkiDateTime,
         invoiceIds: List<InvoiceId>,
         invoiceDate: LocalDate?,
         dueDate: LocalDate?,
@@ -66,12 +67,19 @@ class InvoiceService(
             }
 
         val sendResult = integrationClient.send(updatedInvoices)
-        tx.setDraftsSent(clock, sendResult.succeeded, user.evakaUserId)
+        tx.setDraftsSent(now, sendResult.succeeded, sentBy)
         tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
         tx.saveCostCenterFields(
             sendResult.succeeded.map { it.id } + sendResult.manuallySent.map { it.id }
         )
-        tx.markInvoicedCorrectionsAsComplete()
+        updateCorrectionsOfInvoices(tx, invoices)
+
+        // If any corrections didn't "fit" to these invoices, move them to next month right away
+        val invoiceMonth = YearMonth.from(invoices.maxOf { it.periodStart })
+        tx.movePastUnappliedInvoiceCorrections(
+            invoices.map { it.headOfFamily.id }.toSet(),
+            invoiceMonth.plusMonths(1),
+        )
     }
 
     fun getInvoiceIds(
@@ -120,23 +128,4 @@ RETURNING id
 
     if (updatedIds.toSet() != invoiceIds.toSet())
         throw BadRequest("Some invoices have incorrect status")
-}
-
-fun Database.Transaction.markInvoicedCorrectionsAsComplete() {
-    execute {
-        sql(
-            """
-WITH applied_corrections AS (
-    SELECT c.id
-    FROM invoice_correction c
-    LEFT JOIN invoice_row r ON c.id = r.correction_id AND NOT c.applied_completely
-    LEFT JOIN invoice i ON r.invoice_id = i.id AND i.status != 'DRAFT'
-    GROUP BY c.id
-    HAVING c.amount * c.unit_price = coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
-)
-UPDATE invoice_correction SET applied_completely = true
-WHERE id IN (SELECT id FROM applied_corrections)
-"""
-        )
-    }
 }

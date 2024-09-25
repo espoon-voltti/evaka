@@ -66,7 +66,10 @@ LEFT JOIN LATERAL (
     ORDER BY CASE WHEN i.status = 'DRAFT'::invoice_status THEN 2 ELSE 1 END ASC, i.period_start DESC
     LIMIT 1
 ) i ON true
-WHERE c.head_of_family_id = ${bind(personId)} AND NOT applied_completely
+WHERE
+    c.head_of_family_id = ${bind(personId)} AND
+    c.target_month IS NULL AND
+    NOT applied_completely
 """
                                 )
                             }
@@ -161,7 +164,9 @@ RETURNING id
 WITH deleted_invoice_row AS (
     DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = ${bind(id)} AND r.invoice_id = i.id AND i.status = 'DRAFT'
 )
-DELETE FROM invoice_correction WHERE id = ${bind(id)} RETURNING id
+DELETE FROM invoice_correction
+WHERE id = ${bind(id)} AND target_month IS NULL
+RETURNING id
 """
                             )
                         }
