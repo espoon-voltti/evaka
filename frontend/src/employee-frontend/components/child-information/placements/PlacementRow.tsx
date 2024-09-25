@@ -401,9 +401,7 @@ export default React.memo(function PlacementRow({
         )}
         {placement.modifiedAt && (
           <DataRow>
-            <DataLabel>
-              {i18n.childInformation.placements.modifiedAt}
-            </DataLabel>
+            <DataLabel>{i18n.childInformation.placements.modifiedAt}</DataLabel>
             <DataValue data-qa="placement-modified-at">
               {placement.modifiedAt.format()}
             </DataValue>
@@ -411,9 +409,7 @@ export default React.memo(function PlacementRow({
         )}
         {placement.modifiedBy && (
           <DataRow>
-            <DataLabel>
-              {i18n.childInformation.placements.modifiedBy}
-            </DataLabel>
+            <DataLabel>{i18n.childInformation.placements.modifiedBy}</DataLabel>
             <DataValue data-qa="placement-modified-by">
               {placement.modifiedBy.name}
             </DataValue>

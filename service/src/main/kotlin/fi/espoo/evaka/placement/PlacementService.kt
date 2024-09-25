@@ -690,7 +690,7 @@ data class DaycarePlacement(
     val endDate: LocalDate,
     val type: PlacementType,
     val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUser?
+    val modifiedBy: EvakaUser?,
 )
 
 data class DaycarePlacementDetails(
@@ -706,7 +706,7 @@ data class DaycarePlacementDetails(
     @Nested("terminated_by") val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
     val modifiedAt: HelsinkiDateTime?,
-    @Nested("modified_by") val modifiedBy: EvakaUser?
+    @Nested("modified_by") val modifiedBy: EvakaUser?,
 )
 
 data class DaycarePlacementWithDetails(
@@ -725,7 +725,7 @@ data class DaycarePlacementWithDetails(
     val terminatedBy: EvakaUser?,
     val placeGuarantee: Boolean,
     val modifiedAt: HelsinkiDateTime?,
-    val modifiedBy: EvakaUser?
+    val modifiedBy: EvakaUser?,
 )
 
 data class PlacementResponse(

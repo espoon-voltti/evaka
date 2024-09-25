@@ -106,7 +106,7 @@ fun Database.Transaction.insertPlacement(
     return createQuery {
             sql(
                 """
-INSERT INTO placement (type, child_id, unit_id, start_date, end_date, place_guarantee, modified_at, modified_by)
+INSERT INTO placement (type, child_id, unit_id, start_date, end_date, place_guarantee)
 VALUES (${bind(type)}::placement_type, ${bind(childId)}, ${bind(unitId)}, ${bind(startDate)}, ${bind(endDate)}, ${bind(placeGuarantee)})
 RETURNING *
         """
@@ -769,11 +769,12 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
         endDate = column("placement_end"),
         type = column("placement_type"),
         modifiedAt = column("modified_at"),
-        modifiedBy = EvakaUser(
-            EvakaUserId(column("modified_by_id")),
-            column("modified_by_name"),
-            EvakaUserType.valueOf(column("modified_by_type"))
-        )
+        modifiedBy =
+            EvakaUser(
+                EvakaUserId(column("modified_by_id")),
+                column("modified_by_name"),
+                EvakaUserType.valueOf(column("modified_by_type")),
+            ),
     )
 }
 

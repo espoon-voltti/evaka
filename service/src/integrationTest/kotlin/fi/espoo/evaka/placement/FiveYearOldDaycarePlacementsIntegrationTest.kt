@@ -5,7 +5,8 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -14,13 +15,13 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
-import java.util.UUID
 
 class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -28,7 +29,8 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
     private val yearChildTurnsFive = testChild_1.dateOfBirth.plusYears(5).year
 
     private val now = HelsinkiDateTime.of(LocalDateTime.now())
-    private val userId = EvakaUserId(UUID.randomUUID())
+    private val user =
+        DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Test", lastName = "User")
 
     @BeforeEach
     fun beforeEach() {
@@ -36,6 +38,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
             tx.insert(testArea)
             tx.insert(testDaycare)
             tx.insert(testChild_1, DevPersonType.CHILD)
+            tx.insert(user)
         }
     }
 
@@ -55,7 +58,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = true,
                     now = now,
-                    userId = userId,
+                    userId = user.evakaUserId,
                 )
             }
 
@@ -96,7 +99,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     useFiveYearsOldDaycare = false,
                     placeGuarantee = false,
                     now = now,
-                    userId = userId,
+                    userId = user.evakaUserId,
                 )
             }
 
@@ -124,7 +127,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                     useFiveYearsOldDaycare = true,
                     placeGuarantee = false,
                     now = now,
-                    userId = userId,
+                    userId = user.evakaUserId,
                 )
             }
 
@@ -152,7 +155,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -165,7 +168,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newEndDate,
                 useFiveYearsOldDaycare = true,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
@@ -199,7 +202,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -212,7 +215,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newEndDate,
                 useFiveYearsOldDaycare = true,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
@@ -246,7 +249,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -259,7 +262,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 originalEndDate,
                 useFiveYearsOldDaycare = true,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
@@ -293,7 +296,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -306,7 +309,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 originalEndDate,
                 useFiveYearsOldDaycare = true,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
@@ -340,7 +343,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = true,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -354,7 +357,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newEndDate,
                 useFiveYearsOldDaycare = true,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
@@ -383,7 +386,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                         useFiveYearsOldDaycare = false,
                         placeGuarantee = false,
                         now = now,
-                        userId = userId,
+                        userId = user.evakaUserId,
                     )
                 }
                 .first()
@@ -397,7 +400,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
                 newEndDate,
                 useFiveYearsOldDaycare = false,
                 now = now,
-                userId = userId,
+                userId = user.evakaUserId,
             )
         }
 
