@@ -1923,7 +1923,7 @@ const sv: Translations = {
       PRESCHOOL: 'Ansökan till förskolan',
       CLUB: 'Ansökan till klubbverksamhet'
     },
-    transferApplication: 'Ansökan om överföring',
+    transferApplication: 'om byte till en annan enhet',
     period: 'För tiden',
     created: 'Ansökan skapad',
     modified: 'Redigerad/uppdaterad',
